@@ -22,6 +22,18 @@ services:
       dockerfile: Dockerfile
     container_name: cyanrex-engine
     restart: unless-stopped
+    cap_add:
+      - BPF
+      - PERFMON
+      - SYS_ADMIN
+      - SYS_RESOURCE
+      - NET_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
     environment:
       ENGINE_HOST: 0.0.0.0
       ENGINE_PORT: 8080
@@ -32,6 +44,9 @@ services:
         condition: service_healthy
     ports:
       - "8080:8080"
+    volumes:
+      - /sys/fs/bpf:/sys/fs/bpf
+      - /lib/modules:/lib/modules:ro
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/health"]
       interval: 5s

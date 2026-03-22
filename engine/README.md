@@ -8,6 +8,7 @@ Axum backend skeleton for Cyanrex.
 - `module-manager`
 - `event-bus`
 - `command-dispatcher`
+- `ebpf-loader`
 
 ## Initial API
 
@@ -18,3 +19,4 @@ Axum backend skeleton for Cyanrex.
 - `POST /modules/stop`
 - `GET /events`
 - `POST /command`
+- `POST /ebpf/run`

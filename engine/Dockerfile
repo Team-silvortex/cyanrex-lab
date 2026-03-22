@@ -12,7 +12,7 @@ FROM debian:bookworm-slim AS runtime
 WORKDIR /app
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates wget \
+    && apt-get install -y --no-install-recommends ca-certificates wget clang bpftool linux-libc-dev libbpf-dev \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /app/target/release/cyanrex-engine /usr/local/bin/cyanrex-engine

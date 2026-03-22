@@ -14,6 +14,10 @@ async fn main() {
         .await
         .expect("failed to bind listener");
 
-    tracing::info!("cyanrex-engine listening on {}:{}", config.host, config.port);
+    tracing::info!(
+        "cyanrex-engine listening on {}:{}",
+        config.host,
+        config.port
+    );
     axum::serve(listener, app).await.expect("server error");
 }

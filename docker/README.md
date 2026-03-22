@@ -8,6 +8,12 @@ Run the full Cyanrex stack with Docker Compose.
 - `engine` on `localhost:8080`
 - `frontend` on `localhost:3000`
 
+## eBPF Notes
+
+- `engine` service is configured with elevated Linux capabilities for eBPF loading.
+- `memlock` is set to unlimited in compose to satisfy libbpf requirements.
+- Host paths `/sys/fs/bpf` and `/lib/modules` are mounted for kernel/BPF integration.
+
 ## Start
 
 ```bash
