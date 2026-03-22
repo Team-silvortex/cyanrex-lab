@@ -8,7 +8,7 @@ use std::sync::Arc;
 use axum::{http::HeaderValue, routing::get, Router};
 use services::{
     command_dispatcher::CommandDispatcher, ebpf_loader::EbpfLoader, event_bus::EventBus,
-    module_manager::ModuleManager,
+    environment_checker::EnvironmentChecker, module_manager::ModuleManager,
 };
 use tower_http::cors::{Any, CorsLayer};
 
@@ -18,6 +18,7 @@ pub struct AppState {
     pub event_bus: EventBus,
     pub command_dispatcher: CommandDispatcher,
     pub ebpf_loader: EbpfLoader,
+    pub environment_checker: EnvironmentChecker,
 }
 
 pub fn build_state() -> Arc<AppState> {
@@ -25,12 +26,14 @@ pub fn build_state() -> Arc<AppState> {
     let module_manager = ModuleManager::default();
     let command_dispatcher = CommandDispatcher::new(module_manager.clone(), event_bus.clone());
     let ebpf_loader = EbpfLoader;
+    let environment_checker = EnvironmentChecker;
 
     Arc::new(AppState {
         module_manager,
         event_bus,
         command_dispatcher,
         ebpf_loader,
+        environment_checker,
     })
 }
 
@@ -58,6 +61,10 @@ pub fn build_router(state: Arc<AppState>) -> Router {
             axum::routing::post(routes::command::dispatch_command),
         )
         .route("/ebpf/run", axum::routing::post(routes::ebpf::run_ebpf))
+        .route(
+            "/helper/environment",
+            axum::routing::get(routes::helper::environment_report),
+        )
         .layer(cors)
         .with_state(state)
 }

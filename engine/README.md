@@ -20,3 +20,4 @@ Axum backend skeleton for Cyanrex.
 - `GET /events`
 - `POST /command`
 - `POST /ebpf/run`
+- `GET /helper/environment`

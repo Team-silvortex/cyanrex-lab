@@ -97,3 +97,54 @@ async fn options_ebpf_run_should_allow_cors_preflight() {
 
     assert_eq!(allow_origin, Some("http://localhost:3000"));
 }
+
+#[tokio::test]
+async fn post_ebpf_run_with_oversized_code_should_fail_validation() {
+    let app = build_router(build_state());
+    let huge_code = "a".repeat(262_145);
+    let body = serde_json::json!({ "code": huge_code }).to_string();
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/ebpf/run")
+                .header("content-type", "application/json")
+                .body(Body::from(body))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+
+    let payload = response.into_body().collect().await.unwrap().to_bytes();
+    let json: Value = serde_json::from_slice(&payload).unwrap();
+
+    assert_eq!(json["stage"], "validation");
+    assert_eq!(json["success"], false);
+}
+
+#[tokio::test]
+async fn get_helper_environment_should_return_check_report() {
+    let app = build_router(build_state());
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/helper/environment")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+
+    let payload = response.into_body().collect().await.unwrap().to_bytes();
+    let json: Value = serde_json::from_slice(&payload).unwrap();
+
+    assert!(json["overall_ok"].is_boolean());
+    assert!(json["generated_at"].is_string());
+    assert!(json["checks"].is_array());
+}

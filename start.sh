@@ -37,8 +37,63 @@ print_endpoints() {
   echo "  postgres: localhost:15432"
 }
 
+run_host_preflight() {
+  echo "[cyanrex] Host preflight:"
+  if command -v uname >/dev/null 2>&1; then
+    echo "  kernel: $(uname -r)"
+  fi
+  if command -v clang >/dev/null 2>&1; then
+    echo "  clang:  $(clang --version | head -n 1)"
+  else
+    echo "  clang:  missing"
+  fi
+  if command -v bpftool >/dev/null 2>&1; then
+    echo "  bpftool: $(bpftool version | head -n 1)"
+  else
+    echo "  bpftool: missing"
+  fi
+  if [ -e /sys/kernel/btf/vmlinux ]; then
+    echo "  btf:    /sys/kernel/btf/vmlinux present"
+  else
+    echo "  btf:    /sys/kernel/btf/vmlinux missing"
+  fi
+}
+
+check_registry_mirrors() {
+  if ! command -v docker >/dev/null 2>&1; then
+    return
+  fi
+
+  local mirrors
+  mirrors="$(docker info --format '{{range .RegistryConfig.Mirrors}}{{println .}}{{end}}' 2>/dev/null || true)"
+  if [ -z "$mirrors" ]; then
+    return
+  fi
+
+  echo "[cyanrex] Docker registry mirror check:"
+  local mirror host
+  while IFS= read -r mirror; do
+    [ -z "$mirror" ] && continue
+    host="${mirror#http://}"
+    host="${host#https://}"
+    host="${host%%/*}"
+    if getent hosts "$host" >/dev/null 2>&1; then
+      echo "  [OK]   $mirror"
+    else
+      echo "  [FAIL] $mirror (DNS unresolved)"
+      echo "         Fix: remove/replace this mirror in /etc/docker/daemon.json, then restart docker."
+      echo "         Example daemon.json:"
+      echo '         { "registry-mirrors": ["https://mirror.gcr.io"] }'
+      echo "         Or remove registry-mirrors entirely to use docker.io directly."
+      return 1
+    fi
+  done <<< "$mirrors"
+}
+
 start_docker_stack() {
   require_cmd docker
+  run_host_preflight
+  check_registry_mirrors
   echo "[cyanrex] Starting Docker stack..."
   compose up --build -d
   print_endpoints
@@ -48,6 +103,8 @@ start_local_stack() {
   require_cmd docker
   require_cmd cargo
   require_cmd npm
+  run_host_preflight
+  check_registry_mirrors
 
   echo "[cyanrex] Starting postgres with Docker..."
   compose up -d postgres

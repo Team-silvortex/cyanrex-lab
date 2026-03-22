@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1.7
-
 FROM rust:1.90-bookworm AS builder
 WORKDIR /app
 

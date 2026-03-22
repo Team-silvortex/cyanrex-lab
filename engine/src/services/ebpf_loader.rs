@@ -49,6 +49,20 @@ impl EbpfLoader {
             };
         }
 
+        if code.contains("\"vmlinux.h\"") {
+            if let Err(err) = Self::ensure_vmlinux_header(&temp_dir).await {
+                return EbpfRunResponse {
+                    success: false,
+                    stage: "compile".to_string(),
+                    message: format!("failed to prepare vmlinux.h: {err}"),
+                    compile_stdout: String::new(),
+                    compile_stderr: String::new(),
+                    load_stdout: String::new(),
+                    load_stderr: String::new(),
+                };
+            }
+        }
+
         let clang_bin = Self::resolve_clang_binary();
         let mut compile_cmd = Command::new(clang_bin);
         compile_cmd
@@ -58,6 +72,8 @@ impl EbpfLoader {
             .arg("bpf")
             .arg("-I")
             .arg("/usr/include")
+            .arg("-I")
+            .arg(&temp_dir)
             .arg("-c")
             .arg(&source_path)
             .arg("-o")
@@ -183,5 +199,37 @@ impl EbpfLoader {
             .iter()
             .map(PathBuf::from)
             .find(|dir| dir.join("asm/types.h").exists())
+    }
+
+    async fn ensure_vmlinux_header(temp_dir: &Path) -> Result<(), String> {
+        let btf_path = Path::new("/sys/kernel/btf/vmlinux");
+        if !btf_path.exists() {
+            return Err("kernel BTF file /sys/kernel/btf/vmlinux not found".to_string());
+        }
+
+        let output = Command::new("bpftool")
+            .arg("btf")
+            .arg("dump")
+            .arg("file")
+            .arg(btf_path)
+            .arg("format")
+            .arg("c")
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .output()
+            .await
+            .map_err(|err| format!("failed to execute bpftool btf dump: {err}"))?;
+
+        if !output.status.success() {
+            let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+            return Err(format!("bpftool btf dump failed: {stderr}"));
+        }
+
+        let header_path = temp_dir.join("vmlinux.h");
+        fs::write(&header_path, output.stdout)
+            .await
+            .map_err(|err| format!("failed to write generated vmlinux.h: {err}"))?;
+
+        Ok(())
     }
 }

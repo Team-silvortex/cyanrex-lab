@@ -11,6 +11,7 @@ type NavItem = {
 const navItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/ebpf", label: "eBPF Runner" },
+  { href: "/helper", label: "Helper" },
   { href: "/modules", label: "Modules" },
   { href: "/events", label: "Events" },
   { href: "/terminal", label: "Terminal" },

@@ -1,6 +1,7 @@
 import { ChangeEvent, useMemo, useState } from "react";
 
 import SidebarLayout from "../src/components/SidebarLayout";
+import { sanitizeForDisplay } from "../src/utils/security";
 
 type EbpfRunResponse = {
   success: boolean;
@@ -10,6 +11,11 @@ type EbpfRunResponse = {
   compile_stderr: string;
   load_stdout: string;
   load_stderr: string;
+};
+
+type SyntaxHint = {
+  label: string;
+  ok: boolean;
 };
 
 const SAMPLE_EBPF = `#include <linux/bpf.h>
@@ -22,6 +28,29 @@ int xdp_pass(struct xdp_md *ctx) {
 
 char _license[] SEC("license") = "GPL";`;
 
+const MAX_UPLOAD_BYTES = 256 * 1024;
+
+function buildSyntaxHints(code: string): SyntaxHint[] {
+  return [
+    {
+      label: "包含 #include <linux/bpf.h>",
+      ok: /#include\s*<linux\/bpf\.h>/.test(code),
+    },
+    {
+      label: "包含 #include <bpf/bpf_helpers.h>",
+      ok: /#include\s*<bpf\/bpf_helpers\.h>/.test(code),
+    },
+    {
+      label: "至少有一个 SEC(\"...\") section",
+      ok: /SEC\("[^"]+"\)/.test(code),
+    },
+    {
+      label: "包含 GPL license 声明",
+      ok: /_license\[\]\s*SEC\("license"\)\s*=\s*"GPL"/.test(code),
+    },
+  ];
+}
+
 export default function EbpfPage() {
   const [code, setCode] = useState(SAMPLE_EBPF);
   const [result, setResult] = useState<EbpfRunResponse | null>(null);
@@ -33,14 +62,28 @@ export default function EbpfPage() {
     [],
   );
 
+  const syntaxHints = useMemo(() => buildSyntaxHints(code), [code]);
+
   const onUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+
+    if (file.size > MAX_UPLOAD_BYTES) {
+      setError(`Upload blocked: file is larger than ${MAX_UPLOAD_BYTES} bytes.`);
+      return;
+    }
+
     const text = await file.text();
     setCode(text);
+    setError(null);
   };
 
   const runEbpf = async () => {
+    if (code.length > MAX_UPLOAD_BYTES) {
+      setError(`Upload blocked: code is larger than ${MAX_UPLOAD_BYTES} bytes.`);
+      return;
+    }
+
     setRunning(true);
     setError(null);
     setResult(null);
@@ -85,29 +128,44 @@ export default function EbpfPage() {
             spellCheck={false}
           />
         </div>
+
+        <div className="panel" style={{ marginTop: 12, background: "#0b1425" }}>
+          <h3 style={{ marginTop: 0 }}>Syntax Hints</h3>
+          {syntaxHints.map((hint) => (
+            <p key={hint.label} className="meta" style={{ margin: "6px 0" }}>
+              {hint.ok ? "[OK]" : "[ ]"} {hint.label}
+            </p>
+          ))}
+        </div>
       </section>
 
       <section className="panel" style={{ marginTop: 16 }}>
         <h3>Result</h3>
         {!result && !error && <p className="meta">No run result yet.</p>}
-        {error && <p className="error">{error}</p>}
+        {error && <p className="error">{sanitizeForDisplay(error)}</p>}
         {result && (
           <>
-            <p><strong>success:</strong> {String(result.success)}</p>
-            <p><strong>stage:</strong> {result.stage}</p>
-            <p><strong>message:</strong> {result.message}</p>
+            <p>
+              <strong>success:</strong> {String(result.success)}
+            </p>
+            <p>
+              <strong>stage:</strong> {sanitizeForDisplay(result.stage)}
+            </p>
+            <p>
+              <strong>message:</strong> {sanitizeForDisplay(result.message)}
+            </p>
 
             <h4>Compile Stdout</h4>
-            <pre>{result.compile_stdout || "(empty)"}</pre>
+            <pre>{sanitizeForDisplay(result.compile_stdout || "(empty)")}</pre>
 
             <h4>Compile Stderr</h4>
-            <pre>{result.compile_stderr || "(empty)"}</pre>
+            <pre>{sanitizeForDisplay(result.compile_stderr || "(empty)")}</pre>
 
             <h4>Load Stdout</h4>
-            <pre>{result.load_stdout || "(empty)"}</pre>
+            <pre>{sanitizeForDisplay(result.load_stdout || "(empty)")}</pre>
 
             <h4>Load Stderr</h4>
-            <pre>{result.load_stderr || "(empty)"}</pre>
+            <pre>{sanitizeForDisplay(result.load_stderr || "(empty)")}</pre>
           </>
         )}
       </section>
