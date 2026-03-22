@@ -1,3 +1,4 @@
+pub mod c_headers;
 pub mod command;
 pub mod ebpf;
 pub mod events;

@@ -7,8 +7,8 @@ use std::sync::Arc;
 
 use axum::{http::HeaderValue, routing::get, Router};
 use services::{
-    command_dispatcher::CommandDispatcher, ebpf_loader::EbpfLoader, event_bus::EventBus,
-    environment_checker::EnvironmentChecker, module_manager::ModuleManager,
+    c_header_module::CHeaderModule, command_dispatcher::CommandDispatcher, ebpf_loader::EbpfLoader,
+    environment_checker::EnvironmentChecker, event_bus::EventBus, module_manager::ModuleManager,
 };
 use tower_http::cors::{Any, CorsLayer};
 
@@ -19,6 +19,7 @@ pub struct AppState {
     pub command_dispatcher: CommandDispatcher,
     pub ebpf_loader: EbpfLoader,
     pub environment_checker: EnvironmentChecker,
+    pub c_header_module: CHeaderModule,
 }
 
 pub fn build_state() -> Arc<AppState> {
@@ -27,6 +28,7 @@ pub fn build_state() -> Arc<AppState> {
     let command_dispatcher = CommandDispatcher::new(module_manager.clone(), event_bus.clone());
     let ebpf_loader = EbpfLoader;
     let environment_checker = EnvironmentChecker;
+    let c_header_module = CHeaderModule::default();
 
     Arc::new(AppState {
         module_manager,
@@ -34,6 +36,7 @@ pub fn build_state() -> Arc<AppState> {
         command_dispatcher,
         ebpf_loader,
         environment_checker,
+        c_header_module,
     })
 }
 
@@ -64,6 +67,26 @@ pub fn build_router(state: Arc<AppState>) -> Router {
         .route(
             "/helper/environment",
             axum::routing::get(routes::helper::environment_report),
+        )
+        .route(
+            "/modules/c-headers/catalog",
+            axum::routing::get(routes::c_headers::list_headers),
+        )
+        .route(
+            "/modules/c-headers/download",
+            axum::routing::post(routes::c_headers::download_header),
+        )
+        .route(
+            "/modules/c-headers/delete",
+            axum::routing::post(routes::c_headers::delete_header),
+        )
+        .route(
+            "/modules/c-headers/select",
+            axum::routing::post(routes::c_headers::select_header),
+        )
+        .route(
+            "/modules/c-headers/selected-metadata",
+            axum::routing::get(routes::c_headers::selected_metadata),
         )
         .layer(cors)
         .with_state(state)

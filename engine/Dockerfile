@@ -1,12 +1,14 @@
-FROM rust:1.90-bookworm AS builder
+FROM rust:bookworm AS builder
 WORKDIR /app
+ENV CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse \
+    CARGO_NET_RETRY=10
 
 COPY Cargo.toml Cargo.lock ./
 COPY src ./src
 
 RUN cargo build --release
 
-FROM debian:bookworm-slim AS runtime
+FROM debian:bookworm AS runtime
 WORKDIR /app
 
 RUN apt-get update \

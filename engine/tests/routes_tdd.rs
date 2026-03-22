@@ -148,3 +148,25 @@ async fn get_helper_environment_should_return_check_report() {
     assert!(json["generated_at"].is_string());
     assert!(json["checks"].is_array());
 }
+
+#[tokio::test]
+async fn get_c_headers_catalog_should_return_header_module_items() {
+    let app = build_router(build_state());
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/modules/c-headers/catalog")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+
+    let payload = response.into_body().collect().await.unwrap().to_bytes();
+    let json: Value = serde_json::from_slice(&payload).unwrap();
+
+    assert!(json["headers"].is_array());
+}

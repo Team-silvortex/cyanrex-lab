@@ -1,7 +1,15 @@
-import { ChangeEvent, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
+import { loader } from "@monaco-editor/react";
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 
 import SidebarLayout from "../src/components/SidebarLayout";
+import { analyzeCCode } from "../src/utils/cAnalyzer";
+import { registerEbpfIntelligence } from "../src/utils/cEbpfIntelligence";
 import { sanitizeForDisplay } from "../src/utils/security";
+
+const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
+  ssr: false,
+});
 
 type EbpfRunResponse = {
   success: boolean;
@@ -13,9 +21,14 @@ type EbpfRunResponse = {
   load_stderr: string;
 };
 
-type SyntaxHint = {
-  label: string;
-  ok: boolean;
+type SelectedHeaderMetadata = {
+  id: string;
+  include_hint: string;
+  local_path: string;
+};
+
+type HeaderSelectionMetadata = {
+  selected_headers: SelectedHeaderMetadata[];
 };
 
 const SAMPLE_EBPF = `#include <linux/bpf.h>
@@ -30,39 +43,70 @@ char _license[] SEC("license") = "GPL";`;
 
 const MAX_UPLOAD_BYTES = 256 * 1024;
 
-function buildSyntaxHints(code: string): SyntaxHint[] {
-  return [
-    {
-      label: "包含 #include <linux/bpf.h>",
-      ok: /#include\s*<linux\/bpf\.h>/.test(code),
-    },
-    {
-      label: "包含 #include <bpf/bpf_helpers.h>",
-      ok: /#include\s*<bpf\/bpf_helpers\.h>/.test(code),
-    },
-    {
-      label: "至少有一个 SEC(\"...\") section",
-      ok: /SEC\("[^"]+"\)/.test(code),
-    },
-    {
-      label: "包含 GPL license 声明",
-      ok: /_license\[\]\s*SEC\("license"\)\s*=\s*"GPL"/.test(code),
-    },
-  ];
-}
-
 export default function EbpfPage() {
   const [code, setCode] = useState(SAMPLE_EBPF);
   const [result, setResult] = useState<EbpfRunResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
+  const [injectedMetadata, setInjectedMetadata] = useState<SelectedHeaderMetadata[]>([]);
+  const monacoRef = useRef<any>(null);
+  const intelligenceRef = useRef<{ dispose: () => void } | null>(null);
 
   const engineUrl = useMemo(
     () => process.env.NEXT_PUBLIC_ENGINE_URL ?? "http://localhost:8080",
     [],
   );
 
-  const syntaxHints = useMemo(() => buildSyntaxHints(code), [code]);
+  const injectedIncludes = useMemo(
+    () => injectedMetadata.map((item) => toIncludePath(item.include_hint)),
+    [injectedMetadata],
+  );
+
+  const analysis = useMemo(
+    () => analyzeCCode(code, injectedIncludes),
+    [code, injectedIncludes],
+  );
+
+  useEffect(() => {
+    loader.config({
+      paths: {
+        vs: "/monaco/vs",
+      },
+    });
+
+    return () => {
+      intelligenceRef.current?.dispose();
+      intelligenceRef.current = null;
+    };
+  }, []);
+
+  const refreshInjectedMetadata = async () => {
+    try {
+      const response = await fetch(`${engineUrl}/modules/c-headers/selected-metadata`);
+      if (!response.ok) return;
+
+      const json = (await response.json()) as HeaderSelectionMetadata;
+      setInjectedMetadata(json.selected_headers ?? []);
+    } catch {
+      // ignore metadata refresh errors for now
+    }
+  };
+
+  useEffect(() => {
+    refreshInjectedMetadata();
+  }, []);
+
+  useEffect(() => {
+    if (!monacoRef.current) return;
+    const model = monacoRef.current.editor.getModels()[0];
+    if (!model) return;
+
+    applyMarkers(
+      { getModel: () => model },
+      monacoRef.current,
+      analysis.diagnostics,
+    );
+  }, [analysis.diagnostics]);
 
   const onUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -108,11 +152,52 @@ export default function EbpfPage() {
     }
   };
 
+  const onEditorMount = (editor: any, monaco: any) => {
+    monacoRef.current = monaco;
+
+    monaco.editor.defineTheme("cyanrex-c", {
+      base: "vs-dark",
+      inherit: true,
+      rules: [
+        { token: "keyword", foreground: "7aa2ff" },
+        { token: "string", foreground: "9cd67a" },
+        { token: "comment", foreground: "6f86b7" },
+      ],
+      colors: {
+        "editor.background": "#0b1425",
+        "editorLineNumber.foreground": "#5d7bb1",
+        "editorCursor.foreground": "#9ec0ff",
+      },
+    });
+
+    monaco.editor.setTheme("cyanrex-c");
+    if (!intelligenceRef.current) {
+      intelligenceRef.current = registerEbpfIntelligence(monaco);
+    }
+    applyMarkers(editor, monaco, analysis.diagnostics);
+  };
+
+  const onEditorChange = (value: string | undefined) => {
+    const next = value ?? "";
+    setCode(next);
+
+    if (monacoRef.current) {
+      const model = monacoRef.current.editor.getModels()[0];
+      if (model) {
+        applyMarkers(
+          { getModel: () => model },
+          monacoRef.current,
+          analyzeCCode(next, injectedIncludes).diagnostics,
+        );
+      }
+    }
+  };
+
   return (
     <SidebarLayout title="Cyanrex eBPF Runner">
       <section className="panel">
-        <h2>eBPF Runner</h2>
-        <p className="meta">上传或编辑 eBPF C 代码，后端编译加载并返回结果。</p>
+        <h2>eBPF Runner (Light clangd mode)</h2>
+        <p className="meta">Monaco + 常用 C 规则诊断 + 内联元数据（非完整 clangd）。</p>
 
         <div className="row" style={{ marginTop: 12 }}>
           <input type="file" accept=".c,.h,.txt" onChange={onUpload} />
@@ -121,22 +206,56 @@ export default function EbpfPage() {
           </button>
         </div>
 
-        <div style={{ marginTop: 12 }}>
-          <textarea
+        <div className="editor-shell" style={{ marginTop: 12 }}>
+          <MonacoEditor
+            height="360px"
+            language="c"
             value={code}
-            onChange={(event) => setCode(event.target.value)}
-            spellCheck={false}
+            onMount={onEditorMount}
+            onChange={onEditorChange}
+            options={{
+              minimap: { enabled: false },
+              fontSize: 13,
+              lineNumbersMinChars: 3,
+              wordWrap: "on",
+              smoothScrolling: true,
+              automaticLayout: true,
+            }}
           />
         </div>
+      </section>
 
-        <div className="panel" style={{ marginTop: 12, background: "#0b1425" }}>
-          <h3 style={{ marginTop: 0 }}>Syntax Hints</h3>
-          {syntaxHints.map((hint) => (
-            <p key={hint.label} className="meta" style={{ margin: "6px 0" }}>
-              {hint.ok ? "[OK]" : "[ ]"} {hint.label}
-            </p>
-          ))}
+      <section className="panel" style={{ marginTop: 16 }}>
+        <h3 style={{ marginTop: 0 }}>Inline Metadata</h3>
+        <div className="row" style={{ marginBottom: 8 }}>
+          <button type="button" onClick={refreshInjectedMetadata}>Refresh Injected Headers</button>
         </div>
+
+        <p className="meta">lines: {analysis.metadata.lines} | bytes: {analysis.metadata.bytes}</p>
+        <p className="meta">includes: {analysis.metadata.includes.join(", ") || "(none)"}</p>
+        <p className="meta">injected includes: {analysis.metadata.injectedIncludes.join(", ") || "(none)"}</p>
+        <p className="meta">sections: {analysis.metadata.sections.map((s) => `${s.name}@L${s.line}`).join(", ") || "(none)"}</p>
+        <p className="meta">functions: {analysis.metadata.functions.map((f) => `${f.name}@L${f.line}`).join(", ") || "(none)"}</p>
+      </section>
+
+      <section className="panel" style={{ marginTop: 16 }}>
+        <h3 style={{ marginTop: 0 }}>Injected Headers</h3>
+        {injectedMetadata.length === 0 && <p className="meta">No selected header metadata.</p>}
+        {injectedMetadata.map((item) => (
+          <p key={item.id} className="meta">
+            {item.include_hint} - {item.local_path}
+          </p>
+        ))}
+      </section>
+
+      <section className="panel" style={{ marginTop: 16 }}>
+        <h3 style={{ marginTop: 0 }}>Diagnostics</h3>
+        {analysis.diagnostics.length === 0 && <p className="meta">No diagnostics.</p>}
+        {analysis.diagnostics.map((d, idx) => (
+          <p key={`${d.line}-${idx}`} className={d.severity === "error" ? "error" : "meta"}>
+            [{d.severity.toUpperCase()}] L{d.line}:{d.column} {d.message}
+          </p>
+        ))}
       </section>
 
       <section className="panel" style={{ marginTop: 16 }}>
@@ -145,15 +264,9 @@ export default function EbpfPage() {
         {error && <p className="error">{sanitizeForDisplay(error)}</p>}
         {result && (
           <>
-            <p>
-              <strong>success:</strong> {String(result.success)}
-            </p>
-            <p>
-              <strong>stage:</strong> {sanitizeForDisplay(result.stage)}
-            </p>
-            <p>
-              <strong>message:</strong> {sanitizeForDisplay(result.message)}
-            </p>
+            <p><strong>success:</strong> {String(result.success)}</p>
+            <p><strong>stage:</strong> {sanitizeForDisplay(result.stage)}</p>
+            <p><strong>message:</strong> {sanitizeForDisplay(result.message)}</p>
 
             <h4>Compile Stdout</h4>
             <pre>{sanitizeForDisplay(result.compile_stdout || "(empty)")}</pre>
@@ -171,4 +284,30 @@ export default function EbpfPage() {
       </section>
     </SidebarLayout>
   );
+}
+
+function applyMarkers(editor: any, monaco: any, diagnostics: ReturnType<typeof analyzeCCode>["diagnostics"]) {
+  const model = editor.getModel?.();
+  if (!model) return;
+
+  const markers = diagnostics.map((d) => ({
+    startLineNumber: d.line,
+    startColumn: d.column,
+    endLineNumber: d.line,
+    endColumn: d.endColumn,
+    message: d.message,
+    severity:
+      d.severity === "error"
+        ? monaco.MarkerSeverity.Error
+        : d.severity === "warning"
+          ? monaco.MarkerSeverity.Warning
+          : monaco.MarkerSeverity.Info,
+  }));
+
+  monaco.editor.setModelMarkers(model, "cyanrex-c-analyzer", markers);
+}
+
+function toIncludePath(includeHint: string): string {
+  const match = includeHint.match(/[<"]([^>"]+)[>"]/);
+  return match ? match[1] : includeHint;
 }

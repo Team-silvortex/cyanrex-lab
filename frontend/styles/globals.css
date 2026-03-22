@@ -170,6 +170,32 @@ pre {
   flex-wrap: wrap;
 }
 
+.editor-shell {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #0b1425;
+}
+
+/* Prevent global form styles from corrupting Monaco internals. */
+.editor-shell .monaco-editor textarea,
+.editor-shell .monaco-editor input {
+  width: auto !important;
+  min-height: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+.editor-shell .monaco-editor pre {
+  width: auto !important;
+  border: none !important;
+  background: transparent !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  white-space: pre !important;
+}
+
 @media (max-width: 980px) {
   .app-shell {
     grid-template-columns: 1fr;
