@@ -3,12 +3,19 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 COMPOSE_FILE="$ROOT_DIR/docker/docker-compose.yml"
+LOCAL_DATABASE_URL="postgres://postgres:postgres@localhost:15432/cyanrex"
 
 usage() {
   cat <<'USAGE'
 Usage:
-  ./start.sh           # Start full stack with Docker Compose
-  ./start.sh --local   # Start postgres via Docker, engine/frontend locally
+  ./start.sh start [--local]   Start stack (default: docker)
+  ./start.sh stop              Stop docker stack
+  ./start.sh status            Show docker stack status
+  ./start.sh logs [service]    Follow docker logs (optional service)
+
+Compatible shortcuts:
+  ./start.sh                   Same as: ./start.sh start
+  ./start.sh --local           Same as: ./start.sh start --local
 USAGE
 }
 
@@ -19,14 +26,22 @@ require_cmd() {
   fi
 }
 
+compose() {
+  docker compose -f "$COMPOSE_FILE" "$@"
+}
+
+print_endpoints() {
+  echo "[cyanrex] Ready:"
+  echo "  frontend: http://localhost:3000"
+  echo "  engine:   http://localhost:8080/health"
+  echo "  postgres: localhost:15432"
+}
+
 start_docker_stack() {
   require_cmd docker
   echo "[cyanrex] Starting Docker stack..."
-  docker compose -f "$COMPOSE_FILE" up --build -d
-  echo "[cyanrex] Stack started."
-  echo "  frontend: http://localhost:3000"
-  echo "  engine:   http://localhost:8080/health"
-  echo "  postgres: localhost:5432"
+  compose up --build -d
+  print_endpoints
 }
 
 start_local_stack() {
@@ -35,16 +50,19 @@ start_local_stack() {
   require_cmd npm
 
   echo "[cyanrex] Starting postgres with Docker..."
-  docker compose -f "$COMPOSE_FILE" up -d postgres
+  compose up -d postgres
 
   echo "[cyanrex] Starting engine locally..."
   (
     cd "$ROOT_DIR/engine"
-    ENGINE_HOST=0.0.0.0 ENGINE_PORT=8080 DATABASE_URL=postgres://postgres:postgres@localhost:5432/cyanrex cargo run
+    ENGINE_HOST=0.0.0.0 \
+    ENGINE_PORT=8080 \
+    DATABASE_URL="$LOCAL_DATABASE_URL" \
+    cargo run
   ) &
   ENGINE_PID=$!
 
-  echo "[cyanrex] Installing frontend deps if needed..."
+  echo "[cyanrex] Starting frontend locally..."
   (
     cd "$ROOT_DIR/frontend"
     if [ ! -d node_modules ]; then
@@ -56,24 +74,64 @@ start_local_stack() {
 
   trap 'echo "[cyanrex] Stopping local services..."; kill "$ENGINE_PID" "$FRONTEND_PID" 2>/dev/null || true' INT TERM EXIT
 
-  echo "[cyanrex] Local stack started."
-  echo "  frontend: http://localhost:3000"
-  echo "  engine:   http://localhost:8080/health"
+  print_endpoints
   wait
 }
 
-case "${1:-}" in
-  "")
-    start_docker_stack
+stop_stack() {
+  require_cmd docker
+  echo "[cyanrex] Stopping Docker stack..."
+  compose down
+}
+
+status_stack() {
+  require_cmd docker
+  compose ps
+}
+
+logs_stack() {
+  require_cmd docker
+  if [ $# -gt 0 ]; then
+    compose logs -f "$1"
+  else
+    compose logs -f
+  fi
+}
+
+action="${1:-start}"
+
+if [ "$action" = "--local" ]; then
+  action="start"
+  set -- "start" "--local"
+fi
+
+case "$action" in
+  start)
+    mode="${2:-}"
+    if [ "$mode" = "--local" ]; then
+      start_local_stack
+    elif [ -z "$mode" ]; then
+      start_docker_stack
+    else
+      echo "Unknown option for start: $mode" >&2
+      usage
+      exit 1
+    fi
     ;;
-  --local)
-    start_local_stack
+  stop)
+    stop_stack
     ;;
-  -h|--help)
+  status)
+    status_stack
+    ;;
+  logs)
+    logs_stack "${2:-}"
+    ;;
+  -h|--help|help)
     usage
     ;;
   *)
-    echo "Unknown option: $1" >&2
+    echo "Unknown command: $action" >&2
     usage
     exit 1
     ;;

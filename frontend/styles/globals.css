@@ -1,0 +1,186 @@
+:root {
+  --bg: #04070f;
+  --bg-soft: #0a1120;
+  --panel: #0d1628;
+  --panel-2: #111d33;
+  --line: #1d2f4f;
+  --text: #d6e5ff;
+  --muted: #88a4cf;
+  --accent: #3b82ff;
+  --accent-soft: #1f355f;
+  --danger: #ff5f6d;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#__next {
+  margin: 0;
+  min-height: 100%;
+  background:
+    radial-gradient(circle at 20% 10%, #12213c 0%, transparent 40%),
+    radial-gradient(circle at 80% 0%, #0c1731 0%, transparent 30%),
+    var(--bg);
+  color: var(--text);
+  font-family: "Segoe UI", "SF Pro Text", "Helvetica Neue", sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+}
+
+.sidebar {
+  border-right: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(5, 9, 18, 0.95), rgba(8, 14, 27, 0.95));
+  padding: 26px 18px;
+}
+
+.brand {
+  margin-bottom: 24px;
+}
+
+.brand-kicker {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+}
+
+.brand h1 {
+  margin: 6px 0 0;
+  font-size: 20px;
+}
+
+.nav-list {
+  display: grid;
+  gap: 8px;
+}
+
+.nav-link {
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: var(--muted);
+  transition: 0.2s ease;
+}
+
+.nav-link:hover {
+  border-color: var(--line);
+  color: var(--text);
+  background: rgba(27, 48, 85, 0.35);
+}
+
+.nav-link.active {
+  border-color: #3a5a8e;
+  color: #e6f0ff;
+  background: linear-gradient(135deg, #152849, #0e1b32);
+}
+
+.content {
+  padding: 26px;
+}
+
+.panel {
+  background: linear-gradient(165deg, rgba(17, 29, 51, 0.9), rgba(11, 20, 36, 0.9));
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.grid {
+  display: grid;
+  gap: 16px;
+}
+
+.grid.cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.meta {
+  color: var(--muted);
+}
+
+textarea,
+pre,
+input,
+button {
+  font: inherit;
+}
+
+input,
+textarea,
+pre {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel);
+  color: var(--text);
+}
+
+input,
+textarea {
+  padding: 10px;
+}
+
+textarea {
+  min-height: 320px;
+  font-family: "JetBrains Mono", "SFMono-Regular", Menlo, monospace;
+  resize: vertical;
+}
+
+button {
+  border: 1px solid #2f4f88;
+  border-radius: 10px;
+  padding: 10px 14px;
+  background: linear-gradient(130deg, #1f3f79, #2d63bf);
+  color: #f3f7ff;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+pre {
+  padding: 10px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin: 8px 0;
+}
+
+.error {
+  color: var(--danger);
+}
+
+.row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 980px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .grid.cols-2 {
+    grid-template-columns: 1fr;
+  }
+}
