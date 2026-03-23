@@ -91,6 +91,41 @@ pub async fn export_events(
     }
 }
 
+pub async fn delete_events(
+    State(state): State<Arc<AppState>>,
+    headers: HeaderMap,
+    Query(query): Query<EventsExportQuery>,
+) -> Json<serde_json::Value> {
+    let username = current_username_from_headers(&state, &headers).await;
+    let events = state.event_bus.snapshot_for_user(&username).await;
+    let filtered = apply_filters(
+        events.clone(),
+        &query.category,
+        &query.severity,
+        None,
+        query.since_minutes,
+        &query.start,
+        &query.end,
+    );
+
+    let to_delete = build_event_key_set(&filtered);
+    let retained = events
+        .into_iter()
+        .filter(|event| !to_delete.contains(&event_key(event)))
+        .collect::<Vec<_>>();
+
+    let deleted_count = filtered.len();
+    state
+        .event_bus
+        .replace_user_events(&username, retained)
+        .await;
+
+    Json(serde_json::json!({
+        "ok": true,
+        "deleted": deleted_count,
+    }))
+}
+
 pub async fn ws_events(
     ws: WebSocketUpgrade,
     State(state): State<Arc<AppState>>,
@@ -271,4 +306,22 @@ fn build_download_response(content_type: &str, filename: &str, body: String) -> 
             .unwrap_or_else(|_| HeaderValue::from_static("attachment")),
     );
     response
+}
+
+fn event_key(event: &Event) -> String {
+    format!(
+        "{}|{}|{}|{}|{}",
+        event.timestamp.to_rfc3339(),
+        event.source,
+        event.event_type,
+        match event.category {
+            crate::models::event::EventCategory::Kernel => "kernel",
+            crate::models::event::EventCategory::Platform => "platform",
+        },
+        serde_json::to_string(&event.payload).unwrap_or_else(|_| "{}".to_string()),
+    )
+}
+
+fn build_event_key_set(events: &[Event]) -> std::collections::HashSet<String> {
+    events.iter().map(event_key).collect()
 }

@@ -63,13 +63,15 @@ export function analyzeCCode(
 
   const mergedIncludes = new Set([...includes, ...injectedIncludes]);
 
-  if (!mergedIncludes.has("linux/bpf.h")) {
+  const hasVmlinux = mergedIncludes.has("vmlinux.h");
+
+  if (!hasVmlinux && !mergedIncludes.has("linux/bpf.h")) {
     diagnostics.push({
       line: 1,
       column: 1,
       endColumn: 1,
       severity: "warning",
-      message: "Missing #include <linux/bpf.h>",
+      message: "Missing #include <linux/bpf.h> (or use #include <vmlinux.h> for CO-RE)",
     });
   }
 
@@ -80,6 +82,28 @@ export function analyzeCCode(
       endColumn: 1,
       severity: "warning",
       message: "Missing #include <bpf/bpf_helpers.h>",
+    });
+  }
+
+  const hasTypedSchedCtx = /\btrace_event_raw_sched_switch\b/.test(code);
+  if (hasTypedSchedCtx && !hasVmlinux) {
+    diagnostics.push({
+      line: 1,
+      column: 1,
+      endColumn: 1,
+      severity: "warning",
+      message: "Typed tracepoint ctx requires #include <vmlinux.h>",
+    });
+  }
+
+  const hasRingbufUsage = /\bbpf_ringbuf_(reserve|submit|discard)\b/.test(code);
+  if (hasRingbufUsage && !mergedIncludes.has("bpf/bpf_tracing.h")) {
+    diagnostics.push({
+      line: 1,
+      column: 1,
+      endColumn: 1,
+      severity: "warning",
+      message: "Ringbuf tracing helpers typically require #include <bpf/bpf_tracing.h>",
     });
   }
 

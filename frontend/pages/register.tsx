@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { FormEvent, useMemo, useState } from "react";
 
+import LanguageSwitcher from "../src/components/LanguageSwitcher";
+import { useI18n } from "../src/i18n/context";
 import { sanitizeForDisplay } from "../src/utils/security";
 
 type RegisterResponse = {
@@ -13,6 +15,7 @@ type RegisterResponse = {
 };
 
 export default function RegisterPage() {
+  const { t } = useI18n();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -33,7 +36,7 @@ export default function RegisterPage() {
     setQrDataUrl(null);
 
     if (password !== confirmPassword) {
-      setError("两次输入密码不一致");
+      setError("password confirmation mismatch");
       return;
     }
 
@@ -68,8 +71,11 @@ export default function RegisterPage() {
     <div className="auth-shell">
       <section className="auth-card">
         <p className="brand-kicker">CYANREX</p>
-        <h1 style={{ marginTop: 6 }}>注册账号</h1>
-        <p className="meta">创建账号后请立即绑定 OTP，登录必须使用 password + OTP。</p>
+        <div className="row" style={{ justifyContent: "space-between" }}>
+          <h1 style={{ marginTop: 6, marginBottom: 0 }}>{t("auth.register")}</h1>
+          <LanguageSwitcher compact />
+        </div>
+        <p className="meta">{t("auth.passwordOtpVerification")}</p>
 
         <form onSubmit={onSubmit} style={{ marginTop: 14 }}>
           <div className="grid" style={{ gap: 10 }}>
@@ -78,6 +84,7 @@ export default function RegisterPage() {
               value={username}
               onChange={(event) => setUsername(event.target.value)}
               placeholder="username (>=3)"
+              aria-label={t("auth.username")}
               required
             />
             <input
@@ -85,17 +92,18 @@ export default function RegisterPage() {
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               placeholder="password (>=8)"
+              aria-label={t("auth.password")}
               required
             />
             <input
               type="password"
               value={confirmPassword}
               onChange={(event) => setConfirmPassword(event.target.value)}
-              placeholder="confirm password"
+              placeholder={t("auth.confirmPassword")}
               required
             />
             <button type="submit" disabled={loading}>
-              {loading ? "Creating..." : "Create Account"}
+              {loading ? t("auth.creating") : t("auth.createAccount")}
             </button>
           </div>
         </form>
@@ -121,7 +129,7 @@ export default function RegisterPage() {
         )}
 
         <p style={{ marginTop: 12 }}>
-          <Link href="/login" className="meta">已有账号？返回登录</Link>
+          <Link href="/login" className="meta">{t("auth.hasAccount")}</Link>
         </p>
       </section>
     </div>

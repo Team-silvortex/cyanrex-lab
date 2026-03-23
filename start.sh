@@ -8,7 +8,8 @@ LOCAL_DATABASE_URL="postgres://postgres:postgres@localhost:15432/cyanrex"
 usage() {
   cat <<'USAGE'
 Usage:
-  ./start.sh start [--local]   Start stack (default: docker)
+  ./start.sh start [--local] [--rebuild] [--pull] [--no-fallback]
+                              Start stack (default: docker fast-start)
   ./start.sh stop              Stop docker stack
   ./start.sh status            Show docker stack status
   ./start.sh logs [service]    Follow docker logs (optional service)
@@ -16,6 +17,12 @@ Usage:
 Compatible shortcuts:
   ./start.sh                   Same as: ./start.sh start
   ./start.sh --local           Same as: ./start.sh start --local
+
+Start options:
+  --local        Run engine/frontend locally, only postgres in Docker
+  --rebuild      Force docker compose build (slower, for Dockerfile/deps changes)
+  --pull         Pull latest base images before start (can be slow on poor network)
+  --no-fallback  Disable fallback registry retry path
 USAGE
 }
 
@@ -92,13 +99,34 @@ check_registry_mirrors() {
 }
 
 start_docker_stack() {
+  local force_rebuild="${1:-0}"
+  local do_pull="${2:-0}"
+  local allow_fallback="${3:-1}"
+
   require_cmd docker
   run_host_preflight
   check_registry_mirrors
-  echo "[cyanrex] Starting Docker stack..."
-  if compose up --build -d; then
+  if [ "$do_pull" -eq 1 ]; then
+    echo "[cyanrex] Pulling base images..."
+    compose pull --ignore-pull-failures || true
+  fi
+
+  local mode_msg="fast-start"
+  local -a up_args=(up -d)
+  if [ "$force_rebuild" -eq 1 ]; then
+    mode_msg="rebuild"
+    up_args=(up --build -d)
+  fi
+
+  echo "[cyanrex] Starting Docker stack (${mode_msg})..."
+  if compose "${up_args[@]}"; then
     print_endpoints
     return
+  fi
+
+  if [ "$allow_fallback" -ne 1 ]; then
+    echo "[cyanrex] Start failed and fallback is disabled (--no-fallback)." >&2
+    return 1
   fi
 
   echo "[cyanrex] Primary registry path failed, retrying with fallback registry..."
@@ -106,7 +134,7 @@ start_docker_stack() {
   ENGINE_DEBIAN_IMAGE="m.daocloud.io/docker.io/library/debian:bookworm" \
   FRONTEND_NODE_IMAGE="m.daocloud.io/docker.io/library/node:20" \
   POSTGRES_IMAGE="m.daocloud.io/docker.io/library/postgres:16" \
-  compose up --build -d
+  compose "${up_args[@]}"
   print_endpoints
 }
 
@@ -178,15 +206,41 @@ fi
 
 case "$action" in
   start)
-    mode="${2:-}"
-    if [ "$mode" = "--local" ]; then
+    use_local=0
+    force_rebuild=0
+    do_pull=0
+    allow_fallback=1
+
+    if [ $# -gt 0 ]; then
+      shift
+    fi
+    while [ $# -gt 0 ]; do
+      case "$1" in
+        --local)
+          use_local=1
+          ;;
+        --rebuild)
+          force_rebuild=1
+          ;;
+        --pull)
+          do_pull=1
+          ;;
+        --no-fallback)
+          allow_fallback=0
+          ;;
+        *)
+          echo "Unknown option for start: $1" >&2
+          usage
+          exit 1
+          ;;
+      esac
+      shift
+    done
+
+    if [ "$use_local" -eq 1 ]; then
       start_local_stack
-    elif [ -z "$mode" ]; then
-      start_docker_stack
     else
-      echo "Unknown option for start: $mode" >&2
-      usage
-      exit 1
+      start_docker_stack "$force_rebuild" "$do_pull" "$allow_fallback"
     fi
     ;;
   stop)

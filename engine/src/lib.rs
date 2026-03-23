@@ -15,6 +15,7 @@ use services::{
     auth_service::AuthService, c_header_module::CHeaderModule,
     command_dispatcher::CommandDispatcher, ebpf_loader::EbpfLoader,
     environment_checker::EnvironmentChecker, event_bus::EventBus, module_manager::ModuleManager,
+    script_store::ScriptStore,
 };
 use tower_http::cors::CorsLayer;
 
@@ -25,6 +26,7 @@ pub struct AppState {
     pub event_bus: EventBus,
     pub command_dispatcher: CommandDispatcher,
     pub ebpf_loader: EbpfLoader,
+    pub script_store: ScriptStore,
     pub environment_checker: EnvironmentChecker,
     pub c_header_module: CHeaderModule,
 }
@@ -34,7 +36,8 @@ pub fn build_state() -> Arc<AppState> {
     let event_bus = EventBus::new(1024);
     let module_manager = ModuleManager::default();
     let command_dispatcher = CommandDispatcher::new(module_manager.clone(), event_bus.clone());
-    let ebpf_loader = EbpfLoader;
+    let ebpf_loader = EbpfLoader::default();
+    let script_store = ScriptStore::default();
     let environment_checker = EnvironmentChecker;
     let c_header_module = CHeaderModule::default();
 
@@ -44,6 +47,7 @@ pub fn build_state() -> Arc<AppState> {
         event_bus,
         command_dispatcher,
         ebpf_loader,
+        script_store,
         environment_checker,
         c_header_module,
     })
@@ -81,6 +85,10 @@ pub fn build_router(state: Arc<AppState>) -> Router {
             "/events/mark-read",
             axum::routing::post(routes::events::mark_read),
         )
+        .route(
+            "/events/delete",
+            axum::routing::post(routes::events::delete_events),
+        )
         .route("/ws/events", get(routes::events::ws_events))
         .route(
             "/command",
@@ -88,12 +96,36 @@ pub fn build_router(state: Arc<AppState>) -> Router {
         )
         .route("/ebpf/run", axum::routing::post(routes::ebpf::run_ebpf))
         .route(
+            "/ebpf/detach",
+            axum::routing::post(routes::ebpf::detach_ebpf),
+        )
+        .route(
+            "/ebpf/attachments",
+            axum::routing::get(routes::ebpf::list_attachments),
+        )
+        .route(
+            "/ebpf/attachments/details",
+            axum::routing::get(routes::ebpf::list_attachment_details),
+        )
+        .route(
             "/ebpf/templates",
             axum::routing::get(routes::ebpf::list_templates),
         )
         .route(
             "/helper/environment",
             axum::routing::get(routes::helper::environment_report),
+        )
+        .route(
+            "/scripts",
+            axum::routing::get(routes::scripts::list_scripts),
+        )
+        .route(
+            "/scripts/save",
+            axum::routing::post(routes::scripts::save_script),
+        )
+        .route(
+            "/scripts/delete",
+            axum::routing::post(routes::scripts::delete_script),
         )
         .route(
             "/modules/c-headers/catalog",

@@ -3,6 +3,8 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Deserialize)]
 pub struct EbpfRunRequest {
     pub code: String,
+    pub template_id: Option<String>,
+    pub program_name: Option<String>,
     pub sampling_per_sec: Option<u32>,
     pub stream_seconds: Option<u32>,
     pub enable_kernel_stream: Option<bool>,
@@ -42,4 +44,35 @@ pub struct EbpfTemplate {
     pub description: String,
     pub capability: String,
     pub code: String,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct EbpfDetachRequest {
+    pub pin_path: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct EbpfDetachResponse {
+    pub ok: bool,
+    pub message: String,
+    pub detached: Vec<String>,
+    pub clean: bool,
+    pub safety_notes: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct EbpfAttachmentListResponse {
+    pub pin_paths: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct EbpfAttachmentDetail {
+    pub pin_path: String,
+    pub source: String,
+    pub program_name: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct EbpfAttachmentDetailListResponse {
+    pub attachments: Vec<EbpfAttachmentDetail>,
 }

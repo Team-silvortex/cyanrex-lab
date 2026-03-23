@@ -26,6 +26,30 @@ const HOVER_DOCS: Record<string, HoverDoc> = {
     title: "bpf_map_update_elem(map, key, value, flags)",
     detail: "Insert or update map entry.",
   },
+  bpf_ringbuf_reserve: {
+    title: "bpf_ringbuf_reserve(map, size, flags)",
+    detail: "Reserve a record in ring buffer map; returns NULL on pressure.",
+  },
+  bpf_ringbuf_submit: {
+    title: "bpf_ringbuf_submit(data, flags)",
+    detail: "Submit reserved ringbuf record to user space reader.",
+  },
+  bpf_ktime_get_ns: {
+    title: "bpf_ktime_get_ns()",
+    detail: "Monotonic kernel timestamp in nanoseconds.",
+  },
+  bpf_get_smp_processor_id: {
+    title: "bpf_get_smp_processor_id()",
+    detail: "Return current CPU id.",
+  },
+  trace_event_raw_sched_switch: {
+    title: "struct trace_event_raw_sched_switch",
+    detail: "Tracepoint context from vmlinux.h; includes next_pid/prev_pid fields.",
+  },
+  next_pid: {
+    title: "ctx->next_pid",
+    detail: "PID of the task that will be scheduled in.",
+  },
   XDP_PASS: {
     title: "XDP_PASS",
     detail: "Allow packet to continue through network stack.",
@@ -58,6 +82,19 @@ const COMPLETIONS = [
     kind: "snippet",
   },
   {
+    label: "SEC tracepoint sched_switch",
+    insertText:
+      'SEC("tracepoint/sched/sched_switch")\\nint ${1:on_sched_switch}(struct trace_event_raw_sched_switch *ctx) {\\n  return 0;\\n}',
+    detail: "Typed tracepoint context snippet",
+    kind: "snippet",
+  },
+  {
+    label: "#include <vmlinux.h>",
+    insertText: "#include <vmlinux.h>",
+    detail: "CO-RE/BTF generated kernel type metadata header",
+    kind: "snippet",
+  },
+  {
     label: "GPL license",
     insertText: 'char _license[] SEC("license") = "GPL";',
     detail: "Required by many helpers/program types",
@@ -79,6 +116,18 @@ const COMPLETIONS = [
     label: "bpf_map_update_elem",
     insertText: "bpf_map_update_elem(&${1:map}, &${2:key}, &${3:value}, ${4:0})",
     detail: "Update map value",
+    kind: "function",
+  },
+  {
+    label: "bpf_ringbuf_reserve",
+    insertText: "bpf_ringbuf_reserve(&${1:events}, sizeof(${2:*evt}), 0)",
+    detail: "Reserve ringbuf record",
+    kind: "function",
+  },
+  {
+    label: "bpf_ringbuf_submit",
+    insertText: "bpf_ringbuf_submit(${1:evt}, 0)",
+    detail: "Submit ringbuf record",
     kind: "function",
   },
   {

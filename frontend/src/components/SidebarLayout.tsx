@@ -3,19 +3,22 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { PropsWithChildren, useEffect, useMemo, useState } from "react";
 
+import { useI18n } from "../i18n/context";
+import LanguageSwitcher from "./LanguageSwitcher";
+
 type NavItem = {
   href: string;
-  label: string;
+  key: string;
 };
 
 const navItems: NavItem[] = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/ebpf", label: "eBPF Runner" },
-  { href: "/helper", label: "Helper" },
-  { href: "/modules", label: "Modules" },
-  { href: "/events", label: "Events" },
-  { href: "/terminal", label: "Terminal" },
-  { href: "/account", label: "Account" },
+  { href: "/dashboard", key: "layout.nav.dashboard" },
+  { href: "/ebpf", key: "layout.nav.ebpf" },
+  { href: "/helper", key: "layout.nav.helper" },
+  { href: "/modules", key: "layout.nav.modules" },
+  { href: "/events", key: "layout.nav.events" },
+  { href: "/terminal", key: "layout.nav.terminal" },
+  { href: "/account", key: "layout.nav.account" },
 ];
 
 type SidebarLayoutProps = PropsWithChildren<{
@@ -23,6 +26,7 @@ type SidebarLayoutProps = PropsWithChildren<{
 }>;
 
 export default function SidebarLayout({ title, children }: SidebarLayoutProps) {
+  const { t } = useI18n();
   const router = useRouter();
   const [authReady, setAuthReady] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
@@ -116,12 +120,12 @@ export default function SidebarLayout({ title, children }: SidebarLayoutProps) {
           <aside className="sidebar">
             <div className="brand">
               <p className="brand-kicker">CYANREX</p>
-              <h1>Control Plane</h1>
+              <h1>{t("layout.controlPlane")}</h1>
             </div>
           </aside>
           <main className="content">
             <section className="panel">
-              <p className="meta">Checking session...</p>
+              <p className="meta">{t("layout.checkingSession")}</p>
             </section>
           </main>
         </div>
@@ -138,7 +142,10 @@ export default function SidebarLayout({ title, children }: SidebarLayoutProps) {
         <aside className="sidebar">
           <div className="brand">
             <p className="brand-kicker">CYANREX</p>
-            <h1>Control Plane</h1>
+            <h1>{t("layout.controlPlane")}</h1>
+          </div>
+          <div style={{ marginBottom: 10 }}>
+            <LanguageSwitcher />
           </div>
           <nav className="nav-list">
             {navItems.map((item) => {
@@ -149,7 +156,7 @@ export default function SidebarLayout({ title, children }: SidebarLayoutProps) {
                   href={item.href}
                   className={active ? "nav-link active" : "nav-link"}
                 >
-                  <span>{item.label}</span>
+                  <span>{t(item.key)}</span>
                   {item.href === "/events" && unreadEvents > 0 && (
                     <span className="nav-badge">{unreadEvents > 99 ? "99+" : unreadEvents}</span>
                   )}
@@ -159,7 +166,7 @@ export default function SidebarLayout({ title, children }: SidebarLayoutProps) {
           </nav>
           <div style={{ marginTop: 16 }}>
             <button type="button" onClick={onLogout} style={{ width: "100%" }}>
-              Logout
+              {t("layout.logout")}
             </button>
           </div>
         </aside>

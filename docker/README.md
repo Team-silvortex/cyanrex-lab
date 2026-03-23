@@ -17,7 +17,9 @@ Run the full Cyanrex stack with Docker Compose.
 ## Start
 
 ```bash
-docker compose -f docker/docker-compose.yml up --build -d
+./start.sh start
+# force rebuild when Dockerfile/dependencies changed:
+./start.sh start --rebuild
 ```
 
 ## Check

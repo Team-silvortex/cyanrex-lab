@@ -1,6 +1,6 @@
 # cyanrex-lab
 
-Version: `0.04`
+Version: `0.0.5`
 
 Cyanrex monorepo for eBPF experiments: Axum engine + Next.js dashboard + module utilities.
 
@@ -27,8 +27,11 @@ cyanrex-lab/
   - module control endpoints
   - eBPF run pipeline endpoint (`/ebpf/run`)
   - eBPF template catalog (`/ebpf/templates`)
+  - eBPF attachment endpoints (`/ebpf/attachments`, `/ebpf/attachments/details`, `/ebpf/detach`)
   - eBPF kernel trace stream (`/ws/events`, plus `/events` snapshot)
+  - eBPF attach diagnostics events (`ebpf.attach_verified / ebpf.attach_missing / ebpf.attach_not_applicable`)
   - helper environment check endpoint (`/helper/environment`)
+  - user script endpoints (`/scripts`, `/scripts/save`, `/scripts/delete`)
   - C header module endpoints (catalog/download/delete/select/inject metadata)
 - Auth system:
   - register/login/logout/session (`HTTP cookie`)
@@ -45,11 +48,21 @@ cyanrex-lab/
 - Frontend pages:
   - `/dashboard`, `/ebpf`, `/helper`, `/modules`, `/events`, `/terminal`
   - `/login`, `/register`, `/otp-setup`, `/account`
+- Frontend i18n:
+  - supported languages: Simplified Chinese (`zh-CN`), English (`en`), Spanish (`es`), Japanese (`ja`)
+  - sidebar + auth pages + core runtime pages integrated
+  - language preference persisted in browser local storage
 - Event center:
   - user-scoped persistent event storage
   - category split: `kernel` / `platform`
   - severity + color: success=green, warning=yellow, error=red
   - sidebar unread badge (red dot + count)
+  - export by filters (`/events/export`)
+  - delete by same filters (`/events/delete`)
+- Page state persistence (sessionStorage):
+  - helper report cache
+  - events filter state
+  - eBPF editor and runtime controls
 
 ## Quick Start
 
@@ -63,6 +76,9 @@ Useful commands:
 
 ```bash
 ./start.sh start --local
+./start.sh start              # fast-start (default, no forced rebuild)
+./start.sh start --rebuild    # force rebuild when deps/Dockerfile changed
+./start.sh start --pull       # pull base images before start
 ./start.sh status
 ./start.sh logs
 ./start.sh stop
@@ -99,21 +115,38 @@ You can override with environment variables:
 ## eBPF APIs (Implemented)
 
 - `POST /ebpf/run`
+  - accepts optional `program_name` and `template_id`
   - supports `sampling_per_sec` to control kernel event sampling rate
   - supports `stream_seconds` to control stream duration
   - supports `enable_kernel_stream` toggle
   - kernel stream prefers `ringbuf event_pipe` and falls back to `tracelog`
+- `GET /ebpf/attachments`
+- `GET /ebpf/attachments/details`
+- `POST /ebpf/detach`
 - `GET /ebpf/templates`
-  - includes typical templates: `xdp`, `tracepoint`, `ringbuf skeleton`
+  - includes typical templates: `xdp`, `tracepoint`, `ringbuf skeleton`, `ringbuf high-freq sampler`
 - `GET /events`
   - event snapshot
 - `GET /ws/events`
   - realtime event stream
+- `GET /helper/environment`
+  - runtime checks include `bpftool_autoattach`, `bpftool_link_show`, `btf_dump`, `bpffs_mount_type`, `runtime_context`
+
+## Scripts APIs (Implemented)
+
+- `GET /scripts` (user-scoped list)
+- `POST /scripts/save` (user-scoped create)
+- `POST /scripts/delete` (user-scoped delete)
 
 ## Auth Persistence
 
 - Tables: `users`, `sessions`
 - Migration template: `engine/migrations/0001_auth_users_sessions.sql`
+
+## Data Persistence
+
+- `event_records` for event center (`engine/migrations/0002_event_records.sql`)
+- `user_scripts` for script storage (`engine/migrations/0003_user_scripts.sql`)
 
 ## Engineering Rule
 

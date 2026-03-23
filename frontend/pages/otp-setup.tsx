@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { FormEvent, useMemo, useState } from "react";
 
+import LanguageSwitcher from "../src/components/LanguageSwitcher";
+import { useI18n } from "../src/i18n/context";
 import { sanitizeForDisplay } from "../src/utils/security";
 
 type TotpBootstrapResponse = {
@@ -13,6 +15,7 @@ type TotpBootstrapResponse = {
 };
 
 export default function OtpSetupPage() {
+  const { t } = useI18n();
   const [username, setUsername] = useState("admin");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -62,8 +65,11 @@ export default function OtpSetupPage() {
     <div className="auth-shell">
       <section className="auth-card">
         <p className="brand-kicker">CYANREX</p>
-        <h1 style={{ marginTop: 6 }}>OTP 绑定助手</h1>
-        <p className="meta">输入账号密码后生成 TOTP 二维码，扫码即可绑定。</p>
+        <div className="row" style={{ justifyContent: "space-between" }}>
+          <h1 style={{ marginTop: 6, marginBottom: 0 }}>{t("auth.otpSetup")}</h1>
+          <LanguageSwitcher compact />
+        </div>
+        <p className="meta">{t("auth.passwordOtpVerification")}</p>
 
         <form onSubmit={bootstrap} style={{ marginTop: 14 }}>
           <div className="grid" style={{ gap: 10 }}>
@@ -72,6 +78,7 @@ export default function OtpSetupPage() {
               value={username}
               onChange={(event) => setUsername(event.target.value)}
               placeholder="username"
+              aria-label={t("auth.username")}
               required
             />
             <input
@@ -79,10 +86,11 @@ export default function OtpSetupPage() {
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               placeholder="password"
+              aria-label={t("auth.password")}
               required
             />
             <button type="submit" disabled={loading}>
-              {loading ? "Generating..." : "生成绑定二维码"}
+              {loading ? t("auth.generating") : t("auth.generateQr")}
             </button>
           </div>
         </form>
@@ -111,7 +119,7 @@ export default function OtpSetupPage() {
         )}
 
         <p style={{ marginTop: 12 }}>
-          <Link href="/login" className="meta">返回登录</Link>
+          <Link href="/login" className="meta">{t("auth.backToLogin")}</Link>
         </p>
       </section>
     </div>

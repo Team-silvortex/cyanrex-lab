@@ -3,8 +3,10 @@ import { loader } from "@monaco-editor/react";
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 
 import SidebarLayout from "../src/components/SidebarLayout";
+import { useI18n } from "../src/i18n/context";
 import { analyzeCCode } from "../src/utils/cAnalyzer";
 import { registerEbpfIntelligence } from "../src/utils/cEbpfIntelligence";
+import { loadPageState, savePageState } from "../src/utils/pageState";
 import { sanitizeForDisplay } from "../src/utils/security";
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
@@ -22,12 +24,39 @@ type EbpfRunResponse = {
   pin_path?: string | null;
 };
 
+type EbpfDetachResponse = {
+  ok: boolean;
+  message: string;
+  detached: string[];
+  clean?: boolean;
+  safety_notes?: string[];
+};
+
+type EbpfAttachmentDetail = {
+  pin_path: string;
+  source: string;
+  program_name: string;
+};
+
+type EbpfAttachmentDetailListResponse = {
+  attachments: EbpfAttachmentDetail[];
+};
+
 type EbpfTemplate = {
   id: string;
   name: string;
   description: string;
   capability: string;
   code: string;
+};
+
+type UserScript = {
+  id: string;
+  username: string;
+  title: string;
+  script: string;
+  created_at: string;
+  updated_at: string;
 };
 
 type SelectedHeaderMetadata = {
@@ -53,16 +82,30 @@ char _license[] SEC("license") = "GPL";`;
 const MAX_UPLOAD_BYTES = 256 * 1024;
 
 export default function EbpfPage() {
-  const [code, setCode] = useState(SAMPLE_EBPF);
+  const { t } = useI18n();
+  const [code, setCode] = useState(() => loadPageState<string>("ebpf_code_v1") ?? SAMPLE_EBPF);
   const [result, setResult] = useState<EbpfRunResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
   const [injectedMetadata, setInjectedMetadata] = useState<SelectedHeaderMetadata[]>([]);
+  const [attachmentDetails, setAttachmentDetails] = useState<EbpfAttachmentDetail[]>([]);
   const [templates, setTemplates] = useState<EbpfTemplate[]>([]);
-  const [selectedTemplate, setSelectedTemplate] = useState("");
-  const [samplingPerSec, setSamplingPerSec] = useState(20);
-  const [streamSeconds, setStreamSeconds] = useState(10);
-  const [enableKernelStream, setEnableKernelStream] = useState(true);
+  const [selectedTemplate, setSelectedTemplate] = useState(
+    () => loadPageState<string>("ebpf_selected_template_v1") ?? "",
+  );
+  const [scriptTitle, setScriptTitle] = useState(
+    () => loadPageState<string>("ebpf_script_title_v1") ?? "untitled-ebpf",
+  );
+  const [savedScripts, setSavedScripts] = useState<UserScript[]>([]);
+  const [samplingPerSec, setSamplingPerSec] = useState(
+    () => loadPageState<number>("ebpf_sampling_v1") ?? 20,
+  );
+  const [streamSeconds, setStreamSeconds] = useState(
+    () => loadPageState<number>("ebpf_stream_seconds_v1") ?? 10,
+  );
+  const [enableKernelStream, setEnableKernelStream] = useState(
+    () => loadPageState<boolean>("ebpf_kernel_stream_v1") ?? true,
+  );
   const monacoRef = useRef<any>(null);
   const intelligenceRef = useRef<{ dispose: () => void } | null>(null);
 
@@ -74,6 +117,10 @@ export default function EbpfPage() {
   const injectedIncludes = useMemo(
     () => injectedMetadata.map((item) => toIncludePath(item.include_hint)),
     [injectedMetadata],
+  );
+  const attachments = useMemo(
+    () => attachmentDetails.map((item) => item.pin_path),
+    [attachmentDetails],
   );
 
   const analysis = useMemo(
@@ -94,6 +141,22 @@ export default function EbpfPage() {
     };
   }, []);
 
+  useEffect(() => {
+    savePageState("ebpf_code_v1", code);
+    savePageState("ebpf_selected_template_v1", selectedTemplate);
+    savePageState("ebpf_script_title_v1", scriptTitle);
+    savePageState("ebpf_sampling_v1", samplingPerSec);
+    savePageState("ebpf_stream_seconds_v1", streamSeconds);
+    savePageState("ebpf_kernel_stream_v1", enableKernelStream);
+  }, [
+    code,
+    selectedTemplate,
+    scriptTitle,
+    samplingPerSec,
+    streamSeconds,
+    enableKernelStream,
+  ]);
+
   const refreshInjectedMetadata = async () => {
     try {
       const response = await fetch(`${engineUrl}/modules/c-headers/selected-metadata`, {
@@ -111,6 +174,40 @@ export default function EbpfPage() {
   useEffect(() => {
     refreshInjectedMetadata();
   }, []);
+
+  const refreshAttachments = async () => {
+    try {
+      const response = await fetch(`${engineUrl}/ebpf/attachments/details`, {
+        credentials: "include",
+      });
+      if (!response.ok) return;
+      const json = (await response.json()) as EbpfAttachmentDetailListResponse;
+      setAttachmentDetails(json.attachments ?? []);
+    } catch {
+      // ignore attachment refresh errors
+    }
+  };
+
+  useEffect(() => {
+    refreshAttachments();
+  }, []);
+
+  const refreshScripts = async () => {
+    try {
+      const response = await fetch(`${engineUrl}/scripts`, {
+        credentials: "include",
+      });
+      if (!response.ok) return;
+      const json = (await response.json()) as UserScript[];
+      setSavedScripts(json ?? []);
+    } catch {
+      // ignore script list refresh errors
+    }
+  };
+
+  useEffect(() => {
+    refreshScripts();
+  }, [engineUrl]);
 
   useEffect(() => {
     const loadTemplates = async () => {
@@ -161,6 +258,9 @@ export default function EbpfPage() {
       return;
     }
 
+    const selectedTemplateDef = templates.find((item) => item.id === selectedTemplate);
+    const resolvedProgramName = selectedTemplateDef?.name || scriptTitle.trim() || "custom";
+
     setRunning(true);
     setError(null);
     setResult(null);
@@ -172,6 +272,8 @@ export default function EbpfPage() {
         credentials: "include",
         body: JSON.stringify({
           code,
+          template_id: selectedTemplate || null,
+          program_name: resolvedProgramName,
           sampling_per_sec: samplingPerSec,
           stream_seconds: streamSeconds,
           enable_kernel_stream: enableKernelStream,
@@ -180,6 +282,7 @@ export default function EbpfPage() {
 
       const json = (await response.json()) as EbpfRunResponse;
       setResult(json);
+      await refreshAttachments();
 
       if (!response.ok) {
         setError(`HTTP ${response.status}: ${json.message}`);
@@ -188,6 +291,79 @@ export default function EbpfPage() {
       setError((err as Error).message);
     } finally {
       setRunning(false);
+    }
+  };
+
+  const saveCurrentScript = async () => {
+    setError(null);
+    try {
+      const response = await fetch(`${engineUrl}/scripts/save`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          title: scriptTitle.trim() || "untitled-ebpf",
+          script: code,
+        }),
+      });
+      const json = (await response.json()) as { ok: boolean; message: string };
+      if (!response.ok || !json.ok) {
+        throw new Error(json.message || `HTTP ${response.status}`);
+      }
+      await refreshScripts();
+    } catch (err) {
+      setError((err as Error).message);
+    }
+  };
+
+  const deleteScript = async (id: string) => {
+    setError(null);
+    try {
+      const response = await fetch(`${engineUrl}/scripts/delete`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ id }),
+      });
+      const json = (await response.json()) as { ok: boolean; message: string };
+      if (!response.ok || !json.ok) {
+        throw new Error(json.message || `HTTP ${response.status}`);
+      }
+      await refreshScripts();
+    } catch (err) {
+      setError((err as Error).message);
+    }
+  };
+
+  const detach = async (pinPath?: string) => {
+    setError(null);
+    try {
+      const response = await fetch(`${engineUrl}/ebpf/detach`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ pin_path: pinPath ?? null }),
+      });
+      const json = (await response.json()) as EbpfDetachResponse;
+      if (!response.ok || !json.ok) {
+        throw new Error(json.message || `HTTP ${response.status}`);
+      }
+      if (json.clean === false && (json.safety_notes?.length ?? 0) > 0) {
+        setError(`Detach warning: ${json.safety_notes?.join(" | ")}`);
+      }
+      setResult((prev) =>
+        prev
+          ? {
+              ...prev,
+              message: `${prev.message} | detached: ${json.detached.length} | clean: ${
+                json.clean === false ? "no" : "yes"
+              }`,
+            }
+          : prev,
+      );
+      await refreshAttachments();
+    } catch (err) {
+      setError((err as Error).message);
     }
   };
 
@@ -233,15 +409,39 @@ export default function EbpfPage() {
   };
 
   return (
-    <SidebarLayout title="Cyanrex eBPF Runner">
+    <SidebarLayout title={t("ebpf.title")}>
       <section className="panel">
-        <h2>eBPF Runner (Light clangd mode)</h2>
-        <p className="meta">Monaco + 常用 C 规则诊断 + 内联元数据（非完整 clangd）。</p>
+        <h2>{t("ebpf.title")}</h2>
+        <p className="meta">{t("ebpf.subtitle")}</p>
 
         <div className="row" style={{ marginTop: 12 }}>
+          <input
+            type="text"
+            placeholder={t("ebpf.scriptTitle")}
+            value={scriptTitle}
+            onChange={(event) => setScriptTitle(event.target.value)}
+            style={{ maxWidth: 260 }}
+          />
           <input type="file" accept=".c,.h,.txt" onChange={onUpload} />
+          <button type="button" onClick={saveCurrentScript} disabled={running}>
+            {t("ebpf.saveScript")}
+          </button>
           <button type="button" onClick={runEbpf} disabled={running}>
-            {running ? "Running..." : "Compile & Run"}
+            {running ? t("ebpf.running") : t("ebpf.compileRun")}
+          </button>
+          <button
+            type="button"
+            onClick={() => detach(result?.pin_path || undefined)}
+            disabled={running || (!result?.pin_path && attachments.length === 0)}
+          >
+            {t("ebpf.detach")}
+          </button>
+          <button
+            type="button"
+            onClick={() => detach(undefined)}
+            disabled={running || attachments.length === 0}
+          >
+            {t("ebpf.detachAll")}
           </button>
         </div>
 
@@ -258,7 +458,7 @@ export default function EbpfPage() {
               }}
               style={{ width: "100%", padding: 10, borderRadius: 10 }}
             >
-              <option value="">Select a template...</option>
+              <option value="">{t("ebpf.selectTemplate")}</option>
               {templates.map((template) => (
                 <option key={template.id} value={template.id}>
                   {template.name} ({template.capability})
@@ -267,10 +467,10 @@ export default function EbpfPage() {
             </select>
           </div>
           <div>
-            <p className="meta" style={{ marginTop: 0 }}>Kernel Stream Control</p>
+            <p className="meta" style={{ marginTop: 0 }}>{t("ebpf.kernelStreamControl")}</p>
             <div className="row">
               <label className="meta">
-                sampling/s:
+                {t("ebpf.samplingPerSec")}:
                 {" "}
                 <input
                   type="number"
@@ -282,7 +482,7 @@ export default function EbpfPage() {
                 />
               </label>
               <label className="meta">
-                seconds:
+                {t("ebpf.seconds")}:
                 {" "}
                 <input
                   type="number"
@@ -299,7 +499,7 @@ export default function EbpfPage() {
                   checked={enableKernelStream}
                   onChange={(event) => setEnableKernelStream(event.target.checked)}
                 />
-                kernel stream
+                {t("ebpf.kernelStream")}
               </label>
             </div>
           </div>
@@ -325,21 +525,27 @@ export default function EbpfPage() {
       </section>
 
       <section className="panel" style={{ marginTop: 16 }}>
-        <h3 style={{ marginTop: 0 }}>Inline Metadata</h3>
+        <h3 style={{ marginTop: 0 }}>{t("ebpf.inlineMetadata")}</h3>
         <div className="row" style={{ marginBottom: 8 }}>
-          <button type="button" onClick={refreshInjectedMetadata}>Refresh Injected Headers</button>
+          <button type="button" onClick={refreshInjectedMetadata}>{t("ebpf.refreshInjectedHeaders")}</button>
         </div>
 
-        <p className="meta">lines: {analysis.metadata.lines} | bytes: {analysis.metadata.bytes}</p>
-        <p className="meta">includes: {analysis.metadata.includes.join(", ") || "(none)"}</p>
-        <p className="meta">injected includes: {analysis.metadata.injectedIncludes.join(", ") || "(none)"}</p>
-        <p className="meta">sections: {analysis.metadata.sections.map((s) => `${s.name}@L${s.line}`).join(", ") || "(none)"}</p>
-        <p className="meta">functions: {analysis.metadata.functions.map((f) => `${f.name}@L${f.line}`).join(", ") || "(none)"}</p>
+        <p className="meta">{t("ebpf.codeSize")}: {analysis.metadata.lines} lines | {analysis.metadata.bytes} bytes</p>
+        <p className="meta">{t("ebpf.includes")}: {analysis.metadata.includes.join(", ") || "(none)"}</p>
+        <p className="meta">{t("ebpf.injectedIncludes")}: {analysis.metadata.injectedIncludes.join(", ") || "(none)"}</p>
+        <p className="meta">
+          {t("ebpf.hookSections")}: {analysis.metadata.sections.map((s) => `${s.name}@L${s.line}`).join(", ") || "(none)"}
+        </p>
+        <p className="meta">{t("ebpf.hookSectionsMeaning")}</p>
+        <p className="meta">
+          {t("ebpf.cFunctions")}: {analysis.metadata.functions.map((f) => `${f.name}@L${f.line}`).join(", ") || "(none)"}
+        </p>
+        <p className="meta">{t("ebpf.cFunctionsMeaning")}</p>
       </section>
 
       <section className="panel" style={{ marginTop: 16 }}>
-        <h3 style={{ marginTop: 0 }}>Injected Headers</h3>
-        {injectedMetadata.length === 0 && <p className="meta">No selected header metadata.</p>}
+        <h3 style={{ marginTop: 0 }}>{t("ebpf.injectedHeaders")}</h3>
+        {injectedMetadata.length === 0 && <p className="meta">{t("ebpf.noInjectedMetadata")}</p>}
         {injectedMetadata.map((item) => (
           <p key={item.id} className="meta">
             {item.include_hint} - {item.local_path}
@@ -348,8 +554,8 @@ export default function EbpfPage() {
       </section>
 
       <section className="panel" style={{ marginTop: 16 }}>
-        <h3 style={{ marginTop: 0 }}>Diagnostics</h3>
-        {analysis.diagnostics.length === 0 && <p className="meta">No diagnostics.</p>}
+        <h3 style={{ marginTop: 0 }}>{t("ebpf.diagnostics")}</h3>
+        {analysis.diagnostics.length === 0 && <p className="meta">{t("ebpf.noDiagnostics")}</p>}
         {analysis.diagnostics.map((d, idx) => (
           <p key={`${d.line}-${idx}`} className={d.severity === "error" ? "error" : "meta"}>
             [{d.severity.toUpperCase()}] L{d.line}:{d.column} {d.message}
@@ -358,25 +564,77 @@ export default function EbpfPage() {
       </section>
 
       <section className="panel" style={{ marginTop: 16 }}>
-        <h3>Result</h3>
-        {!result && !error && <p className="meta">No run result yet.</p>}
+        <h3 style={{ marginTop: 0 }}>{t("ebpf.attachedPrograms")}</h3>
+        {attachments.length === 0 && <p className="meta">{t("ebpf.noAttachedPrograms")}</p>}
+        {attachmentDetails.map((item) => (
+          <details key={item.pin_path} className="panel" style={{ marginBottom: 10, background: "#0b1425" }}>
+            <summary className="row" style={{ cursor: "pointer", listStyle: "none" }}>
+              <code style={{ flex: 1 }}>{item.pin_path}</code>
+              <span className="event-tag green">{item.program_name || "custom"}</span>
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.preventDefault();
+                  detach(item.pin_path);
+                }}
+              >
+                {t("ebpf.detach")}
+              </button>
+            </summary>
+            <div style={{ marginTop: 10 }}>
+              <p className="meta" style={{ marginTop: 0 }}>{t("ebpf.source")}</p>
+              <pre style={{ margin: 0 }}>{sanitizeForDisplay(item.source || t("ebpf.sourceUnavailable"))}</pre>
+            </div>
+          </details>
+        ))}
+      </section>
+
+      <section className="panel" style={{ marginTop: 16 }}>
+        <h3 style={{ marginTop: 0 }}>{t("ebpf.savedScripts")}</h3>
+        {savedScripts.length === 0 && <p className="meta">{t("ebpf.noSavedScripts")}</p>}
+        {savedScripts.map((item) => (
+          <div key={item.id} className="panel" style={{ marginBottom: 8, background: "#0b1425" }}>
+            <div className="row" style={{ justifyContent: "space-between" }}>
+              <strong>{item.title}</strong>
+              <span className="meta">{new Date(item.updated_at).toLocaleString()}</span>
+            </div>
+            <div className="row" style={{ marginTop: 8 }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setScriptTitle(item.title);
+                  setCode(item.script);
+                }}
+              >
+                {t("ebpf.load")}
+              </button>
+              <button type="button" onClick={() => deleteScript(item.id)}>{t("ebpf.delete")}</button>
+            </div>
+          </div>
+        ))}
+      </section>
+
+      <section className="panel" style={{ marginTop: 16 }}>
+        <h3>{t("ebpf.result")}</h3>
+        {!result && !error && <p className="meta">{t("ebpf.noRunResult")}</p>}
         {error && <p className="error">{sanitizeForDisplay(error)}</p>}
         {result && (
           <>
             <p><strong>success:</strong> {String(result.success)}</p>
             <p><strong>stage:</strong> {sanitizeForDisplay(result.stage)}</p>
             <p><strong>message:</strong> {sanitizeForDisplay(result.message)}</p>
+            <p><strong>pin_path:</strong> {sanitizeForDisplay(result.pin_path || "(none)")}</p>
 
-            <h4>Compile Stdout</h4>
+            <h4>{t("ebpf.compileStdout")}</h4>
             <pre>{sanitizeForDisplay(result.compile_stdout || "(empty)")}</pre>
 
-            <h4>Compile Stderr</h4>
+            <h4>{t("ebpf.compileStderr")}</h4>
             <pre>{sanitizeForDisplay(result.compile_stderr || "(empty)")}</pre>
 
-            <h4>Load Stdout</h4>
+            <h4>{t("ebpf.loadStdout")}</h4>
             <pre>{sanitizeForDisplay(result.load_stdout || "(empty)")}</pre>
 
-            <h4>Load Stderr</h4>
+            <h4>{t("ebpf.loadStderr")}</h4>
             <pre>{sanitizeForDisplay(result.load_stderr || "(empty)")}</pre>
           </>
         )}

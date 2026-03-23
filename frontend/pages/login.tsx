@@ -2,6 +2,8 @@ import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 
+import LanguageSwitcher from "../src/components/LanguageSwitcher";
+import { useI18n } from "../src/i18n/context";
 import { sanitizeForDisplay } from "../src/utils/security";
 
 type LoginResponse = {
@@ -10,6 +12,7 @@ type LoginResponse = {
 };
 
 export default function LoginPage() {
+  const { t } = useI18n();
   const router = useRouter();
   const [username, setUsername] = useState("admin");
   const [password, setPassword] = useState("");
@@ -53,8 +56,11 @@ export default function LoginPage() {
     <div className="auth-shell">
       <section className="auth-card">
         <p className="brand-kicker">CYANREX</p>
-        <h1 style={{ marginTop: 6 }}>Login</h1>
-        <p className="meta">Password + OTP (TOTP) verification</p>
+        <div className="row" style={{ justifyContent: "space-between" }}>
+          <h1 style={{ marginTop: 6, marginBottom: 0 }}>{t("auth.login")}</h1>
+          <LanguageSwitcher compact />
+        </div>
+        <p className="meta">{t("auth.passwordOtpVerification")}</p>
 
         <form onSubmit={onSubmit} style={{ marginTop: 14 }}>
           <div className="grid" style={{ gap: 10 }}>
@@ -64,6 +70,7 @@ export default function LoginPage() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="username"
+              aria-label={t("auth.username")}
               required
             />
             <input
@@ -72,6 +79,7 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="password"
+              aria-label={t("auth.password")}
               required
             />
             <input
@@ -80,11 +88,11 @@ export default function LoginPage() {
               pattern="[0-9]{6}"
               value={otp}
               onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-              placeholder="6-digit OTP"
+              placeholder={t("auth.otp6")}
               required
             />
             <button type="submit" disabled={loading}>
-              {loading ? "Signing in..." : "Sign In"}
+              {loading ? t("auth.signingIn") : t("auth.signIn")}
             </button>
           </div>
         </form>
@@ -98,11 +106,11 @@ export default function LoginPage() {
         <div className="auth-otp-cta-wrap">
           <Link href="/otp-setup" className="auth-otp-cta">
             <span className="auth-otp-cta-kicker">OTP Setup</span>
-            <strong>还没绑定 OTP？去生成绑定二维码</strong>
+            <strong>{t("auth.noOtpBound")}</strong>
           </Link>
         </div>
         <p style={{ marginTop: 10 }}>
-          <Link href="/register" className="meta">没有账号？去注册</Link>
+          <Link href="/register" className="meta">{t("auth.noAccount")}</Link>
         </p>
       </section>
     </div>

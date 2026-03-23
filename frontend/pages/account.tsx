@@ -2,9 +2,11 @@ import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 
 import SidebarLayout from "../src/components/SidebarLayout";
+import { useI18n } from "../src/i18n/context";
 import { sanitizeForDisplay } from "../src/utils/security";
 
 export default function AccountPage() {
+  const { t } = useI18n();
   const router = useRouter();
   const engineUrl = useMemo(
     () => process.env.NEXT_PUBLIC_ENGINE_URL ?? "http://localhost:8080",
@@ -44,7 +46,7 @@ export default function AccountPage() {
         throw new Error(json.message || `HTTP ${response.status}`);
       }
 
-      setPasswordMessage("密码已更新");
+      setPasswordMessage(t("account.passwordUpdated"));
       setCurrentPassword("");
       setNewPassword("");
       setOtpForPassword("");
@@ -58,7 +60,7 @@ export default function AccountPage() {
     setDeleteError(null);
 
     if (deleteConfirm !== "DELETE") {
-      setDeleteError("请输入 DELETE 进行确认");
+      setDeleteError(t("account.deleteConfirmMismatch"));
       return;
     }
 
@@ -85,14 +87,14 @@ export default function AccountPage() {
   };
 
   return (
-    <SidebarLayout title="Cyanrex Account">
+    <SidebarLayout title={t("account.title")}>
       <section className="panel">
-        <h2>Account Security</h2>
-        <p className="meta">通过 OTP + 当前密码 修改密码；删号同样需要 OTP 验证。</p>
+        <h2>{t("account.title")}</h2>
+        <p className="meta">{t("account.subtitle")}</p>
       </section>
 
       <section className="panel" style={{ marginTop: 16 }}>
-        <h3 style={{ marginTop: 0 }}>修改密码</h3>
+        <h3 style={{ marginTop: 0 }}>{t("account.changePassword")}</h3>
         <form onSubmit={changePassword}>
           <div className="grid" style={{ gap: 10 }}>
             <input
@@ -116,7 +118,7 @@ export default function AccountPage() {
               placeholder="6位 OTP"
               required
             />
-            <button type="submit">更新密码</button>
+            <button type="submit">{t("account.updatePassword")}</button>
           </div>
         </form>
         {passwordMessage && <p className="meta" style={{ marginTop: 10 }}>{passwordMessage}</p>}
@@ -124,8 +126,8 @@ export default function AccountPage() {
       </section>
 
       <section className="panel" style={{ marginTop: 16, borderColor: "#6b2b39" }}>
-        <h3 style={{ marginTop: 0 }}>删除账号</h3>
-        <p className="meta">危险操作：删除后该账号不可恢复。</p>
+        <h3 style={{ marginTop: 0 }}>{t("account.deleteAccount")}</h3>
+        <p className="meta">{t("account.dangerous")}</p>
         <form onSubmit={deleteAccount}>
           <div className="grid" style={{ gap: 10 }}>
             <input
@@ -146,11 +148,11 @@ export default function AccountPage() {
               type="text"
               value={deleteConfirm}
               onChange={(event) => setDeleteConfirm(event.target.value)}
-              placeholder='输入 DELETE 确认'
+              placeholder={t("account.confirmDeleteHint")}
               required
             />
             <button type="submit" style={{ background: "linear-gradient(130deg, #662430, #a1394c)", borderColor: "#8b3c4b" }}>
-              删除账号
+              {t("account.deleteAction")}
             </button>
           </div>
         </form>

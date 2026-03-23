@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 
 import SidebarLayout from "../src/components/SidebarLayout";
+import { useI18n } from "../src/i18n/context";
+import { loadPageState, savePageState } from "../src/utils/pageState";
 
 type HeaderItem = {
   id: string;
@@ -22,10 +24,13 @@ type ActionResponse = {
 };
 
 export default function ModulesPage() {
+  const { t } = useI18n();
   const [state, setState] = useState<HeaderState | null>(null);
   const [loading, setLoading] = useState(false);
   const [batching, setBatching] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(() =>
+    loadPageState<string>("modules_message_v1"),
+  );
   const [progress, setProgress] = useState<{
     label: string;
     total: number;
@@ -53,6 +58,10 @@ export default function ModulesPage() {
   useEffect(() => {
     refresh();
   }, []);
+
+  useEffect(() => {
+    savePageState("modules_message_v1", message ?? "");
+  }, [message]);
 
   const download = async (id: string) => {
     setMessage(null);
@@ -108,7 +117,7 @@ export default function ModulesPage() {
 
     try {
       setProgress({
-        label: selected ? "正在批量勾选..." : "正在批量取消...",
+        label: selected ? t("modules.progressSelecting") : t("modules.progressUnselecting"),
         total: targets.length,
         done: 0,
       });
@@ -146,9 +155,9 @@ export default function ModulesPage() {
       setMessage(
         selected
           ? onlyDownloaded
-            ? "已全选（仅已下载头文件）"
-            : "已全选（全部头文件）"
-          : "已全部取消选择",
+            ? t("modules.selectedAllDownloaded")
+            : t("modules.selectedAll")
+          : t("modules.unselectedAll"),
       );
     } finally {
       setProgress(null);
@@ -165,7 +174,7 @@ export default function ModulesPage() {
     const targets = state.headers.filter((header) => header.selected);
     try {
       setProgress({
-        label: "正在下载已勾选头文件...",
+        label: t("modules.progressDownloading"),
         total: targets.length,
         done: 0,
       });
@@ -187,7 +196,7 @@ export default function ModulesPage() {
             : prev,
         );
       }
-      setMessage(`已下载 ${targets.length} 个已勾选头文件`);
+      setMessage(t("modules.downloadedCount", { count: targets.length }));
     } finally {
       setProgress(null);
       setBatching(false);
@@ -203,7 +212,7 @@ export default function ModulesPage() {
     const targets = state.headers.filter((header) => header.selected);
     try {
       setProgress({
-        label: "正在删除已勾选头文件...",
+        label: t("modules.progressDeleting"),
         total: targets.length,
         done: 0,
       });
@@ -225,7 +234,7 @@ export default function ModulesPage() {
             : prev,
         );
       }
-      setMessage(`已删除 ${targets.length} 个已勾选头文件`);
+      setMessage(t("modules.deletedCount", { count: targets.length }));
     } finally {
       setProgress(null);
       setBatching(false);
@@ -234,51 +243,51 @@ export default function ModulesPage() {
   };
 
   return (
-    <SidebarLayout title="Cyanrex Modules">
+    <SidebarLayout title={t("layout.nav.modules")}>
       <section className="panel">
-        <h2>C Header Module</h2>
+        <h2>{t("modules.title")}</h2>
         <p className="meta">
-          下载常用 C/eBPF 头文件到本地，并勾选注入编辑器 metadata/诊断。
+          {t("modules.subtitle")}
         </p>
 
         <div className="row" style={{ marginTop: 12 }}>
           <button type="button" onClick={refresh} disabled={loading}>
-            {loading ? "Refreshing..." : "Refresh Catalog"}
+            {loading ? t("modules.refreshing") : t("modules.refreshCatalog")}
           </button>
           <button
             type="button"
             onClick={() => batchToggle(true, false)}
             disabled={batching || loading}
           >
-            全选（全部）
+            {t("modules.selectAll")}
           </button>
           <button
             type="button"
             onClick={() => batchToggle(true, true)}
             disabled={batching || loading}
           >
-            全选（已下载）
+            {t("modules.selectDownloaded")}
           </button>
           <button
             type="button"
             onClick={() => batchToggle(false, false)}
             disabled={batching || loading}
           >
-            全部取消
+            {t("modules.unselectAll")}
           </button>
           <button
             type="button"
             onClick={batchDownloadSelected}
             disabled={batching || loading}
           >
-            下载已勾选
+            {t("modules.downloadSelected")}
           </button>
           <button
             type="button"
             onClick={batchDeleteSelected}
             disabled={batching || loading}
           >
-            删除已勾选
+            {t("modules.deleteSelected")}
           </button>
         </div>
 
@@ -317,15 +326,15 @@ export default function ModulesPage() {
           <article key={header.id} className="panel" style={{ marginTop: 12, background: "#0b1425" }}>
             <p><strong>{header.name}</strong></p>
             <p className="meta">{header.description}</p>
-            <p className="meta">source: {header.source_url}</p>
-            <p className="meta">local: {header.local_path}</p>
+            <p className="meta">{t("modules.source")}: {header.source_url}</p>
+            <p className="meta">{t("modules.local")}: {header.local_path}</p>
 
             <div className="row" style={{ marginTop: 8 }}>
               <button type="button" onClick={() => download(header.id)}>
-                Download
+                {t("modules.download")}
               </button>
               <button type="button" onClick={() => deleteOne(header.id)}>
-                Delete
+                {t("modules.delete")}
               </button>
               <label className="meta" style={{ display: "flex", gap: 8, alignItems: "center" }}>
                 <input
@@ -333,9 +342,9 @@ export default function ModulesPage() {
                   checked={header.selected}
                   onChange={(event) => toggle(header.id, event.target.checked)}
                 />
-                Inject to editor metadata
+                {t("modules.injectMetadata")}
               </label>
-              <span className="meta">downloaded: {String(header.downloaded)}</span>
+              <span className="meta">{t("modules.downloaded")}: {String(header.downloaded)}</span>
             </div>
           </article>
         ))}

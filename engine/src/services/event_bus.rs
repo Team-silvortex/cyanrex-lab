@@ -6,7 +6,7 @@ use std::{
     },
 };
 
-use sqlx::{postgres::PgPoolOptions, PgPool, Row};
+use sqlx::{postgres::PgPoolOptions, types::Json, PgPool, Row};
 use tokio::sync::{broadcast, OnceCell, RwLock};
 
 use crate::models::event::{Event, EventCategory, EventColor, EventSeverity};
@@ -104,9 +104,10 @@ impl EventBus {
                     Ok(rows) => {
                         let mut output = Vec::with_capacity(rows.len());
                         for row in rows {
-                            let payload_str: String = row.get("payload");
-                            let payload = serde_json::from_str(&payload_str)
-                                .unwrap_or_else(|_| serde_json::json!({"raw": payload_str}));
+                            let payload = row
+                                .try_get::<Json<serde_json::Value>, _>("payload")
+                                .map(|value| value.0)
+                                .unwrap_or_else(|_| serde_json::json!({}));
                             output.push(Event {
                                 username: row.get("username"),
                                 timestamp: row.get("timestamp"),
@@ -166,6 +167,51 @@ impl EventBus {
                 .await
                 {
                     self.disable_db(&format!("mark read failed: {error}"));
+                }
+            }
+        }
+    }
+
+    pub async fn replace_user_events(&self, username: &str, events: Vec<Event>) {
+        {
+            let mut history = self.history.write().await;
+            history.insert(username.to_string(), events.clone());
+        }
+        {
+            let mut unread = self.unread.write().await;
+            unread.insert(username.to_string(), 0);
+        }
+
+        if let Some(pool) = self.active_pool() {
+            if self.ensure_schema().await.is_ok() {
+                if let Err(error) = sqlx::query("DELETE FROM event_records WHERE username = $1")
+                    .bind(username)
+                    .execute(pool)
+                    .await
+                {
+                    self.disable_db(&format!("replace events delete failed: {error}"));
+                    return;
+                }
+
+                for event in events {
+                    if let Err(error) = sqlx::query(
+                        "INSERT INTO event_records (username, timestamp, source, event_type, category, severity, color, payload, is_read)
+                         VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, true)",
+                    )
+                    .bind(&event.username)
+                    .bind(event.timestamp)
+                    .bind(&event.source)
+                    .bind(&event.event_type)
+                    .bind(to_category_str(event.category))
+                    .bind(to_severity_str(event.severity))
+                    .bind(to_color_str(event.color))
+                    .bind(event.payload.to_string())
+                    .execute(pool)
+                    .await
+                    {
+                        self.disable_db(&format!("replace events insert failed: {error}"));
+                        return;
+                    }
                 }
             }
         }

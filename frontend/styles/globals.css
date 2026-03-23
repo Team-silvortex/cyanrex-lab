@@ -291,6 +291,29 @@ pre {
   background: #ff8f9a;
 }
 
+.safety-tag {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  border: 1px solid transparent;
+}
+
+.safety-tag.ok {
+  color: #c7ffdd;
+  background: rgba(43, 127, 79, 0.32);
+  border-color: rgba(128, 255, 184, 0.38);
+}
+
+.safety-tag.warn {
+  color: #ffe8ad;
+  background: rgba(125, 90, 17, 0.3);
+  border-color: rgba(255, 208, 94, 0.42);
+}
+
 select {
   border: 1px solid var(--line);
   border-radius: 8px;
