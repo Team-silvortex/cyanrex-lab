@@ -29,7 +29,9 @@ export default function HelperPage() {
     setError(null);
 
     try {
-      const response = await fetch(`${engineUrl}/helper/environment`);
+      const response = await fetch(`${engineUrl}/helper/environment`, {
+        credentials: "include",
+      });
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }

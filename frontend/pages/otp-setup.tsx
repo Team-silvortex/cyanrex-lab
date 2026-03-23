@@ -1,0 +1,119 @@
+import Link from "next/link";
+import { FormEvent, useMemo, useState } from "react";
+
+import { sanitizeForDisplay } from "../src/utils/security";
+
+type TotpBootstrapResponse = {
+  ok: boolean;
+  message: string;
+  issuer?: string;
+  account_name?: string;
+  secret?: string;
+  otpauth_uri?: string;
+};
+
+export default function OtpSetupPage() {
+  const [username, setUsername] = useState("admin");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [payload, setPayload] = useState<TotpBootstrapResponse | null>(null);
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+
+  const engineUrl = useMemo(
+    () => process.env.NEXT_PUBLIC_ENGINE_URL ?? "http://localhost:8080",
+    [],
+  );
+
+  const bootstrap = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setLoading(true);
+    setError(null);
+    setPayload(null);
+    setQrDataUrl(null);
+
+    try {
+      const response = await fetch(`${engineUrl}/auth/totp/bootstrap`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+      const json = (await response.json()) as TotpBootstrapResponse;
+      if (!response.ok || !json.ok || !json.otpauth_uri) {
+        throw new Error(json.message || `HTTP ${response.status}`);
+      }
+
+      setPayload(json);
+
+      const qrcode = await import("qrcode");
+      const dataUrl = await qrcode.toDataURL(json.otpauth_uri, {
+        width: 280,
+        margin: 1,
+      });
+      setQrDataUrl(dataUrl);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="auth-shell">
+      <section className="auth-card">
+        <p className="brand-kicker">CYANREX</p>
+        <h1 style={{ marginTop: 6 }}>OTP 绑定助手</h1>
+        <p className="meta">输入账号密码后生成 TOTP 二维码，扫码即可绑定。</p>
+
+        <form onSubmit={bootstrap} style={{ marginTop: 14 }}>
+          <div className="grid" style={{ gap: 10 }}>
+            <input
+              type="text"
+              value={username}
+              onChange={(event) => setUsername(event.target.value)}
+              placeholder="username"
+              required
+            />
+            <input
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="password"
+              required
+            />
+            <button type="submit" disabled={loading}>
+              {loading ? "Generating..." : "生成绑定二维码"}
+            </button>
+          </div>
+        </form>
+
+        {error && <p className="error" style={{ marginTop: 12 }}>{sanitizeForDisplay(error)}</p>}
+
+        {payload && (
+          <div className="panel" style={{ marginTop: 14, background: "#0b1425" }}>
+            <p className="meta" style={{ marginTop: 0 }}>
+              issuer: {payload.issuer} | account: {payload.account_name}
+            </p>
+            {qrDataUrl && (
+              <img
+                src={qrDataUrl}
+                alt="TOTP QR code"
+                style={{ width: 240, height: 240, borderRadius: 10, border: "1px solid #1d2f4f" }}
+              />
+            )}
+            <p className="meta" style={{ marginTop: 10 }}>
+              secret: <code>{payload.secret}</code>
+            </p>
+            <p className="meta" style={{ overflowWrap: "anywhere" }}>
+              otpauth: <code>{payload.otpauth_uri}</code>
+            </p>
+          </div>
+        )}
+
+        <p style={{ marginTop: 12 }}>
+          <Link href="/login" className="meta">返回登录</Link>
+        </p>
+      </section>
+    </div>
+  );
+}

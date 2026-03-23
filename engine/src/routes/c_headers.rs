@@ -10,9 +10,7 @@ use crate::{
     AppState,
 };
 
-pub async fn list_headers(
-    State(state): State<Arc<AppState>>,
-) -> Json<HeaderModuleState> {
+pub async fn list_headers(State(state): State<Arc<AppState>>) -> Json<HeaderModuleState> {
     Json(state.c_header_module.list().await)
 }
 

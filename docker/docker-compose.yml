@@ -39,6 +39,9 @@ services:
       ENGINE_PORT: 8080
       DATABASE_URL: postgres://postgres:postgres@postgres:5432/cyanrex
       RUST_LOG: info
+      CYANREX_ADMIN_USERNAME: admin
+      CYANREX_ADMIN_PASSWORD: cyanrex-admin
+      CYANREX_ADMIN_TOTP_SECRET: JBSWY3DPEHPK3PXP
     depends_on:
       postgres:
         condition: service_healthy

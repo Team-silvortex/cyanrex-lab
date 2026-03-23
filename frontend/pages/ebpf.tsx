@@ -82,7 +82,9 @@ export default function EbpfPage() {
 
   const refreshInjectedMetadata = async () => {
     try {
-      const response = await fetch(`${engineUrl}/modules/c-headers/selected-metadata`);
+      const response = await fetch(`${engineUrl}/modules/c-headers/selected-metadata`, {
+        credentials: "include",
+      });
       if (!response.ok) return;
 
       const json = (await response.json()) as HeaderSelectionMetadata;
@@ -136,6 +138,7 @@ export default function EbpfPage() {
       const response = await fetch(`${engineUrl}/ebpf/run`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ code }),
       });
 

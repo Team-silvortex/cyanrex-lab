@@ -54,7 +54,8 @@ const HEADER_SOURCES: [HeaderSource; 5] = [
         id: "linux_bpf_uapi",
         name: "linux/bpf.h",
         description: "Linux UAPI BPF definitions used by many eBPF program types.",
-        source_url: "https://raw.githubusercontent.com/torvalds/linux/master/include/uapi/linux/bpf.h",
+        source_url:
+            "https://raw.githubusercontent.com/torvalds/linux/master/include/uapi/linux/bpf.h",
         include_hint: "#include <linux/bpf.h>",
         file_name: "linux_bpf.h",
     },

@@ -5,15 +5,22 @@ pub mod services;
 
 use std::sync::Arc;
 
-use axum::{http::HeaderValue, routing::get, Router};
+use axum::{
+    http::{header, HeaderValue, Method},
+    middleware,
+    routing::get,
+    Router,
+};
 use services::{
-    c_header_module::CHeaderModule, command_dispatcher::CommandDispatcher, ebpf_loader::EbpfLoader,
+    auth_service::AuthService, c_header_module::CHeaderModule,
+    command_dispatcher::CommandDispatcher, ebpf_loader::EbpfLoader,
     environment_checker::EnvironmentChecker, event_bus::EventBus, module_manager::ModuleManager,
 };
-use tower_http::cors::{Any, CorsLayer};
+use tower_http::cors::CorsLayer;
 
 #[derive(Clone)]
 pub struct AppState {
+    pub auth_service: AuthService,
     pub module_manager: ModuleManager,
     pub event_bus: EventBus,
     pub command_dispatcher: CommandDispatcher,
@@ -23,6 +30,7 @@ pub struct AppState {
 }
 
 pub fn build_state() -> Arc<AppState> {
+    let auth_service = AuthService::new_with_default_admin();
     let event_bus = EventBus::new(1024);
     let module_manager = ModuleManager::default();
     let command_dispatcher = CommandDispatcher::new(module_manager.clone(), event_bus.clone());
@@ -31,6 +39,7 @@ pub fn build_state() -> Arc<AppState> {
     let c_header_module = CHeaderModule::default();
 
     Arc::new(AppState {
+        auth_service,
         module_manager,
         event_bus,
         command_dispatcher,
@@ -43,12 +52,19 @@ pub fn build_state() -> Arc<AppState> {
 pub fn build_router(state: Arc<AppState>) -> Router {
     let cors = CorsLayer::new()
         .allow_origin(HeaderValue::from_static("http://localhost:3000"))
-        .allow_methods(Any)
-        .allow_headers(Any);
+        .allow_methods([Method::GET, Method::POST, Method::OPTIONS])
+        .allow_headers([header::CONTENT_TYPE, header::COOKIE])
+        .allow_credentials(true);
 
-    Router::new()
-        .route("/", get(routes::index::index))
-        .route("/health", get(routes::health::health))
+    let protected = Router::new()
+        .route(
+            "/auth/password/change",
+            axum::routing::post(routes::auth::change_password),
+        )
+        .route(
+            "/auth/delete",
+            axum::routing::post(routes::auth::delete_account),
+        )
         .route("/modules", get(routes::modules::list_modules))
         .route(
             "/modules/start",
@@ -88,6 +104,26 @@ pub fn build_router(state: Arc<AppState>) -> Router {
             "/modules/c-headers/selected-metadata",
             axum::routing::get(routes::c_headers::selected_metadata),
         )
+        .layer(middleware::from_fn_with_state(
+            state.clone(),
+            routes::auth::auth_guard,
+        ));
+
+    Router::new()
+        .route("/", get(routes::index::index))
+        .route("/health", get(routes::health::health))
+        .route("/auth/login", axum::routing::post(routes::auth::login))
+        .route(
+            "/auth/totp/bootstrap",
+            axum::routing::post(routes::auth::bootstrap_totp),
+        )
+        .route(
+            "/auth/register",
+            axum::routing::post(routes::auth::register),
+        )
+        .route("/auth/me", get(routes::auth::me))
+        .route("/auth/logout", axum::routing::post(routes::auth::logout))
+        .merge(protected)
         .layer(cors)
         .with_state(state)
 }

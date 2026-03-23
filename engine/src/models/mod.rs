@@ -1,3 +1,4 @@
+pub mod auth;
 pub mod c_headers;
 pub mod command;
 pub mod ebpf;

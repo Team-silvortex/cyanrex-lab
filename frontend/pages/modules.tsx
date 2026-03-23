@@ -40,7 +40,9 @@ export default function ModulesPage() {
   const refresh = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${engineUrl}/modules/c-headers/catalog`);
+      const response = await fetch(`${engineUrl}/modules/c-headers/catalog`, {
+        credentials: "include",
+      });
       const json = (await response.json()) as HeaderState;
       setState(json);
     } finally {
@@ -57,6 +59,7 @@ export default function ModulesPage() {
     const response = await fetch(`${engineUrl}/modules/c-headers/download`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ id }),
     });
 
@@ -70,6 +73,7 @@ export default function ModulesPage() {
     const response = await fetch(`${engineUrl}/modules/c-headers/select`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ id, selected }),
     });
 
@@ -83,6 +87,7 @@ export default function ModulesPage() {
     const response = await fetch(`${engineUrl}/modules/c-headers/delete`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ id }),
     });
 
@@ -113,6 +118,7 @@ export default function ModulesPage() {
         await fetch(`${engineUrl}/modules/c-headers/select`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({ id: header.id, selected }),
         });
         setProgress((prev) =>
@@ -169,6 +175,7 @@ export default function ModulesPage() {
         await fetch(`${engineUrl}/modules/c-headers/download`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({ id: header.id }),
         });
         setProgress((prev) =>
@@ -206,6 +213,7 @@ export default function ModulesPage() {
         await fetch(`${engineUrl}/modules/c-headers/delete`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({ id: header.id }),
         });
         setProgress((prev) =>

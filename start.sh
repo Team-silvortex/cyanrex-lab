@@ -35,6 +35,7 @@ print_endpoints() {
   echo "  frontend: http://localhost:3000"
   echo "  engine:   http://localhost:8080/health"
   echo "  postgres: localhost:15432"
+  echo "  login:    admin / cyanrex-admin + TOTP secret JBSWY3DPEHPK3PXP"
 }
 
 run_host_preflight() {
@@ -115,6 +116,9 @@ start_local_stack() {
     ENGINE_HOST=0.0.0.0 \
     ENGINE_PORT=8080 \
     DATABASE_URL="$LOCAL_DATABASE_URL" \
+    CYANREX_ADMIN_USERNAME=admin \
+    CYANREX_ADMIN_PASSWORD=cyanrex-admin \
+    CYANREX_ADMIN_TOTP_SECRET=JBSWY3DPEHPK3PXP \
     cargo run
   ) &
   ENGINE_PID=$!
