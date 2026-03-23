@@ -75,11 +75,22 @@ pub fn build_router(state: Arc<AppState>) -> Router {
             axum::routing::post(routes::modules::stop_module),
         )
         .route("/events", get(routes::events::list_events))
+        .route("/events/export", get(routes::events::export_events))
+        .route("/events/unread-count", get(routes::events::unread_count))
+        .route(
+            "/events/mark-read",
+            axum::routing::post(routes::events::mark_read),
+        )
+        .route("/ws/events", get(routes::events::ws_events))
         .route(
             "/command",
             axum::routing::post(routes::command::dispatch_command),
         )
         .route("/ebpf/run", axum::routing::post(routes::ebpf::run_ebpf))
+        .route(
+            "/ebpf/templates",
+            axum::routing::get(routes::ebpf::list_templates),
+        )
         .route(
             "/helper/environment",
             axum::routing::get(routes::helper::environment_report),

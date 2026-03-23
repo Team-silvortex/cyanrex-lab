@@ -31,6 +31,7 @@ async fn get_health_should_return_ok_status() {
     let app = build_router(build_state());
 
     let response = app
+        .clone()
         .oneshot(
             Request::builder()
                 .uri("/health")
@@ -59,12 +60,13 @@ async fn post_ebpf_run_with_empty_code_should_fail_validation() {
     let session_cookie = login_and_get_session_cookie(&app, &otp).await;
 
     let response = app
+        .clone()
         .oneshot(
             Request::builder()
                 .method("POST")
                 .uri("/ebpf/run")
                 .header("content-type", "application/json")
-                .header(header::COOKIE, session_cookie)
+                .header(header::COOKIE, &session_cookie)
                 .body(Body::from(r#"{"code": ""}"#))
                 .unwrap(),
         )
@@ -78,6 +80,36 @@ async fn post_ebpf_run_with_empty_code_should_fail_validation() {
 
     assert_eq!(json["success"], false);
     assert_eq!(json["stage"], "validation");
+
+    let events_response = app
+        .oneshot(
+            Request::builder()
+                .method("GET")
+                .uri("/events")
+                .header(header::COOKIE, &session_cookie)
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(events_response.status(), StatusCode::OK);
+    let events_payload = events_response
+        .into_body()
+        .collect()
+        .await
+        .unwrap()
+        .to_bytes();
+    let events_json: Value = serde_json::from_slice(&events_payload).unwrap();
+    let has_validation_event = events_json
+        .as_array()
+        .map(|events| {
+            events
+                .iter()
+                .any(|event| event["event_type"] == "ebpf.validation_failed")
+        })
+        .unwrap_or(false);
+    assert!(has_validation_event);
 }
 
 #[tokio::test]
@@ -199,6 +231,34 @@ async fn get_c_headers_catalog_should_return_header_module_items() {
     let json: Value = serde_json::from_slice(&payload).unwrap();
 
     assert!(json["headers"].is_array());
+}
+
+#[tokio::test]
+async fn get_ebpf_templates_should_return_template_catalog() {
+    let state = build_state();
+    let app = build_router(state.clone());
+    let otp = state
+        .auth_service
+        .generate_current_totp_for_user("admin")
+        .expect("default admin otp should be available");
+    let session_cookie = login_and_get_session_cookie(&app, &otp).await;
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/ebpf/templates")
+                .header(header::COOKIE, session_cookie)
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let payload = response.into_body().collect().await.unwrap().to_bytes();
+    let json: Value = serde_json::from_slice(&payload).unwrap();
+    let templates = json.as_array().expect("templates should be array");
+    assert!(!templates.is_empty());
 }
 
 #[tokio::test]

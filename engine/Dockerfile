@@ -1,4 +1,6 @@
-FROM rust:bookworm AS builder
+ARG RUST_IMAGE=rust:bookworm
+ARG DEBIAN_IMAGE=debian:bookworm
+FROM ${RUST_IMAGE} AS builder
 WORKDIR /app
 ENV CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse \
     CARGO_NET_RETRY=10
@@ -8,7 +10,7 @@ COPY src ./src
 
 RUN cargo build --release
 
-FROM debian:bookworm AS runtime
+FROM ${DEBIAN_IMAGE} AS runtime
 WORKDIR /app
 
 RUN apt-get update \

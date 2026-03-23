@@ -19,6 +19,15 @@ type EbpfRunResponse = {
   compile_stderr: string;
   load_stdout: string;
   load_stderr: string;
+  pin_path?: string | null;
+};
+
+type EbpfTemplate = {
+  id: string;
+  name: string;
+  description: string;
+  capability: string;
+  code: string;
 };
 
 type SelectedHeaderMetadata = {
@@ -49,6 +58,11 @@ export default function EbpfPage() {
   const [error, setError] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
   const [injectedMetadata, setInjectedMetadata] = useState<SelectedHeaderMetadata[]>([]);
+  const [templates, setTemplates] = useState<EbpfTemplate[]>([]);
+  const [selectedTemplate, setSelectedTemplate] = useState("");
+  const [samplingPerSec, setSamplingPerSec] = useState(20);
+  const [streamSeconds, setStreamSeconds] = useState(10);
+  const [enableKernelStream, setEnableKernelStream] = useState(true);
   const monacoRef = useRef<any>(null);
   const intelligenceRef = useRef<{ dispose: () => void } | null>(null);
 
@@ -99,6 +113,23 @@ export default function EbpfPage() {
   }, []);
 
   useEffect(() => {
+    const loadTemplates = async () => {
+      try {
+        const response = await fetch(`${engineUrl}/ebpf/templates`, {
+          credentials: "include",
+        });
+        if (!response.ok) return;
+        const json = (await response.json()) as EbpfTemplate[];
+        setTemplates(json);
+      } catch {
+        // ignore template fetch errors for now
+      }
+    };
+
+    loadTemplates();
+  }, [engineUrl]);
+
+  useEffect(() => {
     if (!monacoRef.current) return;
     const model = monacoRef.current.editor.getModels()[0];
     if (!model) return;
@@ -139,7 +170,12 @@ export default function EbpfPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ code }),
+        body: JSON.stringify({
+          code,
+          sampling_per_sec: samplingPerSec,
+          stream_seconds: streamSeconds,
+          enable_kernel_stream: enableKernelStream,
+        }),
       });
 
       const json = (await response.json()) as EbpfRunResponse;
@@ -207,6 +243,66 @@ export default function EbpfPage() {
           <button type="button" onClick={runEbpf} disabled={running}>
             {running ? "Running..." : "Compile & Run"}
           </button>
+        </div>
+
+        <div className="grid cols-2" style={{ marginTop: 12 }}>
+          <div>
+            <p className="meta" style={{ marginTop: 0 }}>Template</p>
+            <select
+              value={selectedTemplate}
+              onChange={(event) => {
+                const nextId = event.target.value;
+                setSelectedTemplate(nextId);
+                const template = templates.find((item) => item.id === nextId);
+                if (template) setCode(template.code);
+              }}
+              style={{ width: "100%", padding: 10, borderRadius: 10 }}
+            >
+              <option value="">Select a template...</option>
+              {templates.map((template) => (
+                <option key={template.id} value={template.id}>
+                  {template.name} ({template.capability})
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <p className="meta" style={{ marginTop: 0 }}>Kernel Stream Control</p>
+            <div className="row">
+              <label className="meta">
+                sampling/s:
+                {" "}
+                <input
+                  type="number"
+                  min={1}
+                  max={200}
+                  value={samplingPerSec}
+                  onChange={(event) => setSamplingPerSec(Number(event.target.value) || 1)}
+                  style={{ width: 90, marginLeft: 6 }}
+                />
+              </label>
+              <label className="meta">
+                seconds:
+                {" "}
+                <input
+                  type="number"
+                  min={1}
+                  max={120}
+                  value={streamSeconds}
+                  onChange={(event) => setStreamSeconds(Number(event.target.value) || 1)}
+                  style={{ width: 90, marginLeft: 6 }}
+                />
+              </label>
+              <label className="meta" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <input
+                  type="checkbox"
+                  checked={enableKernelStream}
+                  onChange={(event) => setEnableKernelStream(event.target.checked)}
+                />
+                kernel stream
+              </label>
+            </div>
+          </div>
         </div>
 
         <div className="editor-shell" style={{ marginTop: 12 }}>

@@ -1,16 +1,19 @@
-FROM node:20 AS deps
+ARG NODE_IMAGE=node:20
+FROM ${NODE_IMAGE} AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 COPY scripts ./scripts
 RUN npm ci
 
-FROM node:20 AS builder
+ARG NODE_IMAGE=node:20
+FROM ${NODE_IMAGE} AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
 
-FROM node:20 AS runner
+ARG NODE_IMAGE=node:20
+FROM ${NODE_IMAGE} AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1

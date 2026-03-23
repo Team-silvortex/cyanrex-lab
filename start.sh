@@ -96,6 +96,16 @@ start_docker_stack() {
   run_host_preflight
   check_registry_mirrors
   echo "[cyanrex] Starting Docker stack..."
+  if compose up --build -d; then
+    print_endpoints
+    return
+  fi
+
+  echo "[cyanrex] Primary registry path failed, retrying with fallback registry..."
+  ENGINE_RUST_IMAGE="m.daocloud.io/docker.io/library/rust:bookworm" \
+  ENGINE_DEBIAN_IMAGE="m.daocloud.io/docker.io/library/debian:bookworm" \
+  FRONTEND_NODE_IMAGE="m.daocloud.io/docker.io/library/node:20" \
+  POSTGRES_IMAGE="m.daocloud.io/docker.io/library/postgres:16" \
   compose up --build -d
   print_endpoints
 }

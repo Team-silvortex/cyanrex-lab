@@ -31,6 +31,7 @@ impl EbpfLoader {
                 compile_stderr: String::new(),
                 load_stdout: String::new(),
                 load_stderr: String::new(),
+                pin_path: None,
             };
         }
 
@@ -46,6 +47,7 @@ impl EbpfLoader {
                 compile_stderr: String::new(),
                 load_stdout: String::new(),
                 load_stderr: String::new(),
+                pin_path: None,
             };
         }
 
@@ -59,6 +61,7 @@ impl EbpfLoader {
                     compile_stderr: String::new(),
                     load_stdout: String::new(),
                     load_stderr: String::new(),
+                    pin_path: None,
                 };
             }
         }
@@ -98,6 +101,7 @@ impl EbpfLoader {
                     compile_stderr: String::new(),
                     load_stdout: String::new(),
                     load_stderr: String::new(),
+                    pin_path: None,
                 }
             }
         };
@@ -114,6 +118,7 @@ impl EbpfLoader {
                 compile_stderr,
                 load_stdout: String::new(),
                 load_stderr: String::new(),
+                pin_path: None,
             };
         }
 
@@ -140,6 +145,7 @@ impl EbpfLoader {
                     compile_stderr,
                     load_stdout: String::new(),
                     load_stderr: String::new(),
+                    pin_path: Some(bpffs_pin.display().to_string()),
                 }
             }
         };
@@ -156,6 +162,7 @@ impl EbpfLoader {
                 compile_stderr,
                 load_stdout,
                 load_stderr,
+                pin_path: Some(bpffs_pin.display().to_string()),
             };
         }
 
@@ -167,6 +174,7 @@ impl EbpfLoader {
             compile_stderr,
             load_stdout,
             load_stderr,
+            pin_path: Some(bpffs_pin.display().to_string()),
         }
     }
 

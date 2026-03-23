@@ -26,6 +26,8 @@ cyanrex-lab/
 - Axum API server with:
   - module control endpoints
   - eBPF run pipeline endpoint (`/ebpf/run`)
+  - eBPF template catalog (`/ebpf/templates`)
+  - eBPF kernel trace stream (`/ws/events`, plus `/events` snapshot)
   - helper environment check endpoint (`/helper/environment`)
   - C header module endpoints (catalog/download/delete/select/inject metadata)
 - Auth system:
@@ -43,6 +45,11 @@ cyanrex-lab/
 - Frontend pages:
   - `/dashboard`, `/ebpf`, `/helper`, `/modules`, `/events`, `/terminal`
   - `/login`, `/register`, `/otp-setup`, `/account`
+- Event center:
+  - user-scoped persistent event storage
+  - category split: `kernel` / `platform`
+  - severity + color: success=green, warning=yellow, error=red
+  - sidebar unread badge (red dot + count)
 
 ## Quick Start
 
@@ -88,6 +95,20 @@ You can override with environment variables:
 - `POST /auth/logout`
 - `POST /auth/password/change` (requires auth session + OTP)
 - `POST /auth/delete` (requires auth session + OTP)
+
+## eBPF APIs (Implemented)
+
+- `POST /ebpf/run`
+  - supports `sampling_per_sec` to control kernel event sampling rate
+  - supports `stream_seconds` to control stream duration
+  - supports `enable_kernel_stream` toggle
+  - kernel stream prefers `ringbuf event_pipe` and falls back to `tracelog`
+- `GET /ebpf/templates`
+  - includes typical templates: `xdp`, `tracepoint`, `ringbuf skeleton`
+- `GET /events`
+  - event snapshot
+- `GET /ws/events`
+  - realtime event stream
 
 ## Auth Persistence
 
