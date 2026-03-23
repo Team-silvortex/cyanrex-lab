@@ -1,5 +1,7 @@
 # cyanrex-lab
 
+Version: `0.04`
+
 Cyanrex monorepo for eBPF experiments: Axum engine + Next.js dashboard + module utilities.
 
 ## Repository Layout
