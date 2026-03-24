@@ -14,7 +14,8 @@ use crate::{
     models::{
         ebpf::{
             EbpfAttachmentDetail, EbpfAttachmentDetailListResponse, EbpfAttachmentListResponse,
-            EbpfDetachRequest, EbpfDetachResponse, EbpfRunRequest, EbpfRunResponse, EbpfTemplate,
+            EbpfDetachRequest, EbpfDetachResponse, EbpfRunRequest, EbpfRunResponse,
+            EbpfRuntimeBackend, EbpfTemplate,
         },
         event::{Event, EventCategory, EventSeverity},
     },
@@ -44,6 +45,7 @@ pub async fn run_ebpf(
     let sample_per_sec = payload.sampling_per_sec.unwrap_or(20).clamp(1, 200);
     let stream_seconds = payload.stream_seconds.unwrap_or(10).clamp(1, 120);
     let enable_kernel_stream = payload.enable_kernel_stream.unwrap_or(true);
+    let runtime_backend = payload.runtime_backend.unwrap_or(EbpfRuntimeBackend::Bpftool);
 
     if let Some(validation_error) = validate_ebpf_source(&payload.code) {
         state
@@ -78,28 +80,45 @@ pub async fn run_ebpf(
                 "source_bytes": payload.code.len(),
                 "program_name": program_name,
                 "template_id": template_id.clone(),
+                "runtime_backend": runtime_backend,
             }),
         })
         .await;
 
     let result = state
         .ebpf_loader
-        .run(&username, &payload.code, Some(program_name))
+        .run(&username, &payload.code, Some(program_name), runtime_backend)
         .await;
+
+    let mut attach_verified = false;
+    let mut attach_expected = false;
 
     if result.success {
         let attach_check = verify_attach_state(
             result.pin_path.as_deref(),
             &payload.code,
-            &result.load_stderr,
+            &format!("{}\n{}", result.load_stdout, result.load_stderr),
+            &result.message,
+            runtime_backend,
         )
         .await;
         let expect_attach = expects_autoattach(&payload.code);
+        attach_expected = expect_attach;
+        attach_verified = attach_check.attached;
+        let attach_tooling_unavailable = attach_check
+            .reason
+            .contains("both autoattach and manual tracepoint attach are unsupported");
         let (event_type, severity, message) = if attach_check.attached {
             (
                 "ebpf.attach_verified",
                 EventSeverity::Success,
                 "eBPF attachment verified".to_string(),
+            )
+        } else if expect_attach && attach_tooling_unavailable {
+            (
+                "ebpf.attach_unavailable",
+                EventSeverity::Warning,
+                "eBPF loaded but current bpftool cannot attach this program type".to_string(),
             )
         } else if expect_attach {
             (
@@ -131,6 +150,7 @@ pub async fn run_ebpf(
                     "pin_path": result.pin_path.clone(),
                     "program_name": program_name,
                     "template_id": template_id.clone(),
+                    "runtime_backend": runtime_backend,
                     "expected_autoattach": expect_attach,
                     "attached": attach_check.attached,
                     "reason": attach_check.reason,
@@ -141,26 +161,49 @@ pub async fn run_ebpf(
             .await;
     }
 
-    if result.success && enable_kernel_stream {
+    if result.success && enable_kernel_stream && attach_verified {
         let event_bus = state.event_bus.clone();
+        let ebpf_loader = state.ebpf_loader.clone();
         let username_for_stream = username.clone();
         let program_name_for_stream = program_name.to_string();
         let template_id_for_stream = template_id.clone();
         let pin_path = result.pin_path.clone();
         let code = payload.code.clone();
+        let runtime_backend_for_stream = runtime_backend;
         tokio::spawn(async move {
             stream_kernel_events(
+                ebpf_loader,
                 event_bus,
                 username_for_stream,
                 program_name_for_stream,
                 template_id_for_stream,
                 code,
                 pin_path,
+                runtime_backend_for_stream,
                 sample_per_sec,
                 stream_seconds,
             )
             .await;
         });
+    } else if result.success && enable_kernel_stream && attach_expected && !attach_verified {
+        state
+            .event_bus
+            .publish(Event {
+                username: username.clone(),
+                timestamp: Utc::now(),
+                source: "module-ebpf".to_string(),
+                event_type: "ebpf.kernel_stream_skipped".to_string(),
+                category: EventCategory::Platform,
+                severity: EventSeverity::Warning,
+                color: EventSeverity::Warning.color(),
+                payload: json!({
+                    "message": "Kernel stream skipped because no active attach was detected",
+                    "program_name": program_name,
+                    "template_id": template_id.clone(),
+                    "runtime_backend": runtime_backend,
+                }),
+            })
+            .await;
     }
 
     state
@@ -191,6 +234,7 @@ pub async fn run_ebpf(
                 "message": result.message.clone(),
                 "program_name": program_name,
                 "template_id": template_id,
+                "runtime_backend": runtime_backend,
             }),
         })
         .await;
@@ -382,17 +426,42 @@ fn validate_ebpf_source(code: &str) -> Option<EbpfRunResponse> {
 }
 
 async fn stream_kernel_events(
+    ebpf_loader: crate::services::ebpf_loader::EbpfLoader,
     event_bus: crate::services::event_bus::EventBus,
     username: String,
     program_name: String,
     template_id: Option<String>,
     code: String,
     pin_path: Option<String>,
+    runtime_backend: EbpfRuntimeBackend,
     sample_per_sec: u32,
     stream_seconds: u32,
 ) {
+    if code.contains("tracepoint/sched/sched_switch") {
+        spawn_sched_switch_stimulus(stream_seconds);
+    }
+
     if is_ringbuf_program(&code) {
         let preferred_map = extract_ringbuf_map_name(&code).unwrap_or_else(|| "events".to_string());
+        if runtime_backend == EbpfRuntimeBackend::Aya {
+            if let Some(pin_path) = pin_path.clone() {
+                if stream_aya_ringbuf_events(
+                    ebpf_loader.clone(),
+                    event_bus.clone(),
+                    username.clone(),
+                    program_name.clone(),
+                    template_id.clone(),
+                    pin_path,
+                    preferred_map.clone(),
+                    sample_per_sec,
+                    stream_seconds,
+                )
+                .await
+                {
+                    return;
+                }
+            }
+        }
         if stream_ringbuf_events(
             event_bus.clone(),
             username.clone(),
@@ -437,6 +506,95 @@ async fn stream_kernel_events(
                 }),
             })
             .await;
+    }
+}
+
+async fn stream_aya_ringbuf_events(
+    ebpf_loader: crate::services::ebpf_loader::EbpfLoader,
+    event_bus: crate::services::event_bus::EventBus,
+    username: String,
+    program_name: String,
+    template_id: Option<String>,
+    pin_path: String,
+    preferred_map_name: String,
+    sample_per_sec: u32,
+    stream_seconds: u32,
+) -> bool {
+    let deadline = Instant::now() + Duration::from_secs(stream_seconds as u64);
+    let sample_interval = Duration::from_millis((1000 / sample_per_sec.max(1)) as u64);
+    let mut next_allowed = Instant::now();
+    let mut received_any = false;
+
+    while Instant::now() < deadline {
+        let polled = match ebpf_loader
+            .poll_aya_ringbuf(&pin_path, &preferred_map_name, 64)
+            .await
+        {
+            Ok(events) => events,
+            Err(error) => {
+                event_bus
+                    .publish(Event {
+                        username: username.clone(),
+                        timestamp: Utc::now(),
+                        source: "module-ebpf".to_string(),
+                        event_type: "ebpf.kernel_ringbuf_error".to_string(),
+                        category: EventCategory::Kernel,
+                        severity: EventSeverity::Warning,
+                        color: EventSeverity::Warning.color(),
+                        payload: json!({
+                            "message": "aya ringbuf poll failed",
+                            "error": error,
+                            "program_name": program_name,
+                            "template_id": template_id,
+                        }),
+                    })
+                    .await;
+                return false;
+            }
+        };
+
+        for data in polled {
+            received_any = true;
+            if Instant::now() < next_allowed {
+                continue;
+            }
+            next_allowed = Instant::now() + sample_interval;
+            event_bus
+                .publish(Event {
+                    username: username.clone(),
+                    timestamp: Utc::now(),
+                    source: "module-ebpf".to_string(),
+                    event_type: "ebpf.kernel_ringbuf".to_string(),
+                    category: EventCategory::Kernel,
+                    severity: EventSeverity::Success,
+                    color: EventSeverity::Success.color(),
+                    payload: json!({
+                        "bytes": data.len(),
+                        "preview_hex": hex_preview(&data, 64),
+                        "program_name": program_name,
+                        "template_id": template_id,
+                        "sampling_per_sec": sample_per_sec,
+                    }),
+                })
+                .await;
+        }
+
+        tokio::time::sleep(Duration::from_millis(25)).await;
+    }
+
+    received_any
+}
+
+fn spawn_sched_switch_stimulus(stream_seconds: u32) {
+    let rounds = std::cmp::max(1, stream_seconds);
+    for _ in 0..4 {
+        tokio::spawn(async move {
+            let stop_at = Instant::now() + Duration::from_secs(rounds as u64);
+            while Instant::now() < stop_at {
+                tokio::task::yield_now().await;
+                tokio::time::sleep(Duration::from_millis(1)).await;
+            }
+        });
     }
 }
 
@@ -614,6 +772,28 @@ async fn stream_ringbuf_events(
     }
 
     let _ = child.kill().await;
+    if let Ok(output) = child.wait_with_output().await {
+        let stderr = String::from_utf8_lossy(&output.stderr).trim().to_string();
+        if !stderr.is_empty() && !received_any {
+            event_bus
+                .publish(Event {
+                    username,
+                    timestamp: Utc::now(),
+                    source: "module-ebpf".to_string(),
+                    event_type: "ebpf.kernel_ringbuf_error".to_string(),
+                    category: EventCategory::Kernel,
+                    severity: EventSeverity::Warning,
+                    color: EventSeverity::Warning.color(),
+                    payload: json!({
+                        "message": "ringbuf event pipe returned no data",
+                        "stderr": stderr,
+                        "program_name": program_name,
+                        "template_id": template_id,
+                    }),
+                })
+                .await;
+        }
+    }
     received_any
 }
 
@@ -669,6 +849,7 @@ async fn resolve_ringbuf_target(
     let maps = value.as_array()?;
 
     let mut fallback_id = None;
+    let mut preferred_id = None;
     for map in maps {
         let map_type = map.get("type").and_then(Value::as_str).unwrap_or_default();
         if map_type != "ringbuf" {
@@ -677,9 +858,14 @@ async fn resolve_ringbuf_target(
         let id = map.get("id").and_then(Value::as_i64)?;
         let name = map.get("name").and_then(Value::as_str).unwrap_or_default();
         if name == preferred_map_name {
-            return Some(RingbufTarget::Id(id));
+            preferred_id = Some(preferred_id.map_or(id, |curr: i64| curr.max(id)));
+            continue;
         }
-        fallback_id = Some(id);
+        fallback_id = Some(fallback_id.map_or(id, |curr: i64| curr.max(id)));
+    }
+
+    if let Some(id) = preferred_id {
+        return Some(RingbufTarget::Id(id));
     }
 
     fallback_id.map(RingbufTarget::Id)
@@ -724,7 +910,32 @@ fn expects_autoattach(code: &str) -> bool {
         || code.contains("SEC(\"kretprobe/")
 }
 
-async fn verify_attach_state(pin_path: Option<&str>, code: &str, load_stderr: &str) -> AttachCheck {
+async fn verify_attach_state(
+    pin_path: Option<&str>,
+    code: &str,
+    load_output: &str,
+    run_message: &str,
+    runtime_backend: EbpfRuntimeBackend,
+) -> AttachCheck {
+    if runtime_backend == EbpfRuntimeBackend::Aya {
+        let lower_output = load_output.to_ascii_lowercase();
+        let attached = lower_output.contains("aya attach success")
+            || run_message
+                .to_ascii_lowercase()
+                .contains("attached successfully (aya backend)");
+        let reason = if attached {
+            "aya attach reported success".to_string()
+        } else {
+            "aya attach success marker not found in loader output/message".to_string()
+        };
+        return AttachCheck {
+            attached,
+            reason,
+            program_ids: Vec::new(),
+            linked_program_ids: Vec::new(),
+        };
+    }
+
     let Some(pin_path) = pin_path else {
         return AttachCheck {
             attached: false,
@@ -734,7 +945,7 @@ async fn verify_attach_state(pin_path: Option<&str>, code: &str, load_stderr: &s
         };
     };
 
-    let lower_stderr = load_stderr.to_ascii_lowercase();
+    let lower_stderr = load_output.to_ascii_lowercase();
     let autoattach_unsupported = lower_stderr.contains("autoattach")
         && (lower_stderr.contains("unknown")
             || lower_stderr.contains("invalid")
@@ -755,10 +966,16 @@ async fn verify_attach_state(pin_path: Option<&str>, code: &str, load_stderr: &s
         .iter()
         .any(|id| linked_program_ids.iter().any(|linked| linked == id));
 
+    let manual_tracepoint_attach_unsupported = lower_stderr
+        .contains("manual attach skipped: current bpftool does not support tracepoint attach");
+
     let reason = if attached {
         "program id matched active bpf link".to_string()
     } else if expects_autoattach(code) {
-        if autoattach_unsupported {
+        if autoattach_unsupported && manual_tracepoint_attach_unsupported {
+            "both autoattach and manual tracepoint attach are unsupported by current bpftool"
+                .to_string()
+        } else if autoattach_unsupported {
             "autoattach unsupported and no manual attach link matched pinned program ids"
                 .to_string()
         } else {

@@ -52,6 +52,8 @@ services:
       - "8080:8080"
     volumes:
       - /sys/fs/bpf:/sys/fs/bpf
+      - /sys/kernel/tracing:/sys/kernel/tracing:ro
+      - /sys/kernel/debug:/sys/kernel/debug:ro
       - /lib/modules:/lib/modules:ro
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/health"]

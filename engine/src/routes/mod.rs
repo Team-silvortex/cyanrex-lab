@@ -8,3 +8,4 @@ pub mod helper;
 pub mod index;
 pub mod modules;
 pub mod scripts;
+pub mod settings;

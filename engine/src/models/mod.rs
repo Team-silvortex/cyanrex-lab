@@ -6,3 +6,4 @@ pub mod environment;
 pub mod event;
 pub mod module;
 pub mod script;
+pub mod settings;

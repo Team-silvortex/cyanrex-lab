@@ -24,6 +24,8 @@ type EbpfRunResponse = {
   pin_path?: string | null;
 };
 
+type EbpfRuntimeBackend = "bpftool" | "aya";
+
 type EbpfDetachResponse = {
   ok: boolean;
   message: string;
@@ -106,6 +108,9 @@ export default function EbpfPage() {
   const [enableKernelStream, setEnableKernelStream] = useState(
     () => loadPageState<boolean>("ebpf_kernel_stream_v1") ?? true,
   );
+  const [runtimeBackend, setRuntimeBackend] = useState<EbpfRuntimeBackend>(
+    () => (loadPageState<EbpfRuntimeBackend>("ebpf_runtime_backend_v1") ?? "bpftool"),
+  );
   const monacoRef = useRef<any>(null);
   const intelligenceRef = useRef<{ dispose: () => void } | null>(null);
 
@@ -148,6 +153,7 @@ export default function EbpfPage() {
     savePageState("ebpf_sampling_v1", samplingPerSec);
     savePageState("ebpf_stream_seconds_v1", streamSeconds);
     savePageState("ebpf_kernel_stream_v1", enableKernelStream);
+    savePageState("ebpf_runtime_backend_v1", runtimeBackend);
   }, [
     code,
     selectedTemplate,
@@ -155,6 +161,7 @@ export default function EbpfPage() {
     samplingPerSec,
     streamSeconds,
     enableKernelStream,
+    runtimeBackend,
   ]);
 
   const refreshInjectedMetadata = async () => {
@@ -277,6 +284,7 @@ export default function EbpfPage() {
           sampling_per_sec: samplingPerSec,
           stream_seconds: streamSeconds,
           enable_kernel_stream: enableKernelStream,
+          runtime_backend: runtimeBackend,
         }),
       });
 
@@ -469,6 +477,18 @@ export default function EbpfPage() {
           <div>
             <p className="meta" style={{ marginTop: 0 }}>{t("ebpf.kernelStreamControl")}</p>
             <div className="row">
+              <label className="meta">
+                {t("ebpf.runtimeBackend")}:
+                {" "}
+                <select
+                  value={runtimeBackend}
+                  onChange={(event) => setRuntimeBackend(event.target.value as EbpfRuntimeBackend)}
+                  style={{ marginLeft: 6 }}
+                >
+                  <option value="bpftool">{t("ebpf.runtimeBpftool")}</option>
+                  <option value="aya">{t("ebpf.runtimeAya")}</option>
+                </select>
+              </label>
               <label className="meta">
                 {t("ebpf.samplingPerSec")}:
                 {" "}

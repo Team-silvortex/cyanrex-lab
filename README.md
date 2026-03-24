@@ -1,6 +1,6 @@
 # cyanrex-lab
 
-Version: `0.0.5`
+Version: `0.06`
 
 Cyanrex monorepo for eBPF experiments: Axum engine + Next.js dashboard + module utilities.
 
@@ -32,6 +32,7 @@ cyanrex-lab/
   - eBPF attach diagnostics events (`ebpf.attach_verified / ebpf.attach_missing / ebpf.attach_not_applicable`)
   - helper environment check endpoint (`/helper/environment`)
   - user script endpoints (`/scripts`, `/scripts/save`, `/scripts/delete`)
+  - event settings endpoint (`/settings/events`)
   - C header module endpoints (catalog/download/delete/select/inject metadata)
 - Auth system:
   - register/login/logout/session (`HTTP cookie`)
@@ -59,6 +60,9 @@ cyanrex-lab/
   - sidebar unread badge (red dot + count)
   - export by filters (`/events/export`)
   - delete by same filters (`/events/delete`)
+  - per-user event retention settings:
+    - max retained records
+    - overflow policy: `drop_oldest` / `drop_new`
 - Page state persistence (sessionStorage):
   - helper report cache
   - events filter state
@@ -116,10 +120,12 @@ You can override with environment variables:
 
 - `POST /ebpf/run`
   - accepts optional `program_name` and `template_id`
+  - accepts optional `runtime_backend` (`bpftool` | `aya`)
   - supports `sampling_per_sec` to control kernel event sampling rate
   - supports `stream_seconds` to control stream duration
   - supports `enable_kernel_stream` toggle
   - kernel stream prefers `ringbuf event_pipe` and falls back to `tracelog`
+  - `aya` backend currently targets tracepoint attach path (first-class for sched switch sampler)
 - `GET /ebpf/attachments`
 - `GET /ebpf/attachments/details`
 - `POST /ebpf/detach`
@@ -129,6 +135,10 @@ You can override with environment variables:
   - event snapshot
 - `GET /ws/events`
   - realtime event stream
+- `GET /settings/events`
+  - get current user event retention settings
+- `POST /settings/events`
+  - update user event retention settings (`max_records`, `overflow_policy`)
 - `GET /helper/environment`
   - runtime checks include `bpftool_autoattach`, `bpftool_link_show`, `btf_dump`, `bpffs_mount_type`, `runtime_context`
 

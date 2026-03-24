@@ -125,6 +125,16 @@ export default function EventsPage() {
     });
   }, [events, categoryFilter, severityFilter, rangePreset, startTime, endTime]);
 
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (categoryFilter !== "all") count += 1;
+    if (severityFilter !== "all") count += 1;
+    if (rangePreset !== "all") count += 1;
+    if (rangePreset === "custom" && startTime.trim()) count += 1;
+    if (rangePreset === "custom" && endTime.trim()) count += 1;
+    return count;
+  }, [categoryFilter, severityFilter, rangePreset, startTime, endTime]);
+
   useEffect(() => {
     savePageState("events_category_v1", categoryFilter);
     savePageState("events_severity_v1", severityFilter);
@@ -224,7 +234,7 @@ export default function EventsPage() {
       <section className="panel">
         <h2>{t("events.title")}</h2>
         <p className="meta">
-          {t("events.status")}: {connection} | {t("events.total")}: {events.length} | {t("events.filtered")}: {filteredEvents.length}
+          {t("events.status")}: {connection} | {t("events.total")}: {events.length} | {t("events.filtered")}: {filteredEvents.length} | {t("events.activeFilters", { count: activeFilterCount })}
         </p>
         <div className="row" style={{ marginTop: 10 }}>
           <label className="meta">

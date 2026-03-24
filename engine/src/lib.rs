@@ -89,6 +89,11 @@ pub fn build_router(state: Arc<AppState>) -> Router {
             "/events/delete",
             axum::routing::post(routes::events::delete_events),
         )
+        .route(
+            "/settings/events",
+            axum::routing::get(routes::settings::get_event_settings)
+                .post(routes::settings::update_event_settings),
+        )
         .route("/ws/events", get(routes::events::ws_events))
         .route(
             "/command",

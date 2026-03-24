@@ -17,6 +17,7 @@ const navItems: NavItem[] = [
   { href: "/helper", key: "layout.nav.helper" },
   { href: "/modules", key: "layout.nav.modules" },
   { href: "/events", key: "layout.nav.events" },
+  { href: "/settings", key: "layout.nav.settings" },
   { href: "/terminal", key: "layout.nav.terminal" },
   { href: "/account", key: "layout.nav.account" },
 ];

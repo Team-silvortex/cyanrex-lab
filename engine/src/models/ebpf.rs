@@ -1,10 +1,24 @@
 use serde::{Deserialize, Serialize};
 
+#[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum EbpfRuntimeBackend {
+    Bpftool,
+    Aya,
+}
+
+impl Default for EbpfRuntimeBackend {
+    fn default() -> Self {
+        Self::Bpftool
+    }
+}
+
 #[derive(Debug, Clone, Deserialize)]
 pub struct EbpfRunRequest {
     pub code: String,
     pub template_id: Option<String>,
     pub program_name: Option<String>,
+    pub runtime_backend: Option<EbpfRuntimeBackend>,
     pub sampling_per_sec: Option<u32>,
     pub stream_seconds: Option<u32>,
     pub enable_kernel_stream: Option<bool>,

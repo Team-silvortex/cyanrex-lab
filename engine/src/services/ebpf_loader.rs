@@ -1,17 +1,20 @@
 use std::{
     collections::BTreeMap,
+    convert::TryFrom,
     path::{Path, PathBuf},
     process::Stdio,
     sync::Arc,
 };
 
+use aya::{maps::RingBuf, programs::TracePoint, Ebpf};
 use tokio::{fs, process::Command, sync::RwLock};
 
-use crate::models::ebpf::EbpfRunResponse;
+use crate::models::ebpf::{EbpfRunResponse, EbpfRuntimeBackend};
 
 #[derive(Clone, Default)]
 pub struct EbpfLoader {
     attachments: Arc<RwLock<BTreeMap<String, AttachmentRecord>>>,
+    aya_sessions: Arc<RwLock<BTreeMap<String, AyaSession>>>,
 }
 
 #[derive(Clone, Debug)]
@@ -21,12 +24,17 @@ struct AttachmentRecord {
     program_name: String,
 }
 
+struct AyaSession {
+    _ebpf: Ebpf,
+}
+
 impl EbpfLoader {
     pub async fn run(
         &self,
         owner_username: &str,
         code: &str,
         program_name: Option<&str>,
+        runtime_backend: EbpfRuntimeBackend,
     ) -> EbpfRunResponse {
         if code.trim().is_empty() {
             return EbpfRunResponse::validation_error("eBPF source code is empty");
@@ -139,6 +147,11 @@ impl EbpfLoader {
         }
 
         let bpffs_pin = Self::pin_path();
+        if runtime_backend == EbpfRuntimeBackend::Aya {
+            return self
+                .run_with_aya(owner_username, code, program_name, &object_path, &bpffs_pin, compile_stdout, compile_stderr)
+                .await;
+        }
 
         let load_with_attach = Command::new("bpftool")
             .arg("prog")
@@ -306,19 +319,30 @@ impl EbpfLoader {
 
         let mut detached = Vec::new();
         for path in targets {
-            Self::validate_pin_path(&path)?;
-            let metadata = fs::metadata(&path)
-                .await
-                .map_err(|err| format!("failed to stat pin path {path}: {err}"))?;
+            let is_aya_path = {
+                let sessions = self.aya_sessions.read().await;
+                sessions.contains_key(&path)
+            };
 
-            if metadata.is_dir() {
-                fs::remove_dir_all(&path)
-                    .await
-                    .map_err(|err| format!("failed to remove pin directory {path}: {err}"))?;
+            if is_aya_path {
+                let mut sessions = self.aya_sessions.write().await;
+                sessions.remove(&path);
+                let _ = fs::remove_dir_all(&path).await;
             } else {
-                fs::remove_file(&path)
+                Self::validate_pin_path(&path)?;
+                let metadata = fs::metadata(&path)
                     .await
-                    .map_err(|err| format!("failed to remove pin file {path}: {err}"))?;
+                    .map_err(|err| format!("failed to stat pin path {path}: {err}"))?;
+
+                if metadata.is_dir() {
+                    fs::remove_dir_all(&path)
+                        .await
+                        .map_err(|err| format!("failed to remove pin directory {path}: {err}"))?;
+                } else {
+                    fs::remove_file(&path)
+                        .await
+                        .map_err(|err| format!("failed to remove pin file {path}: {err}"))?;
+                }
             }
 
             detached.push(path.clone());
@@ -368,6 +392,49 @@ impl EbpfLoader {
             .collect()
     }
 
+    pub async fn poll_aya_ringbuf(
+        &self,
+        pin_path: &str,
+        preferred_map_name: &str,
+        max_items: usize,
+    ) -> Result<Vec<Vec<u8>>, String> {
+        let mut sessions = self.aya_sessions.write().await;
+        let session = sessions
+            .get_mut(pin_path)
+            .ok_or_else(|| "aya session not found for pin path".to_string())?;
+
+        let mut map_name = None;
+        if session._ebpf.map(preferred_map_name).is_some() {
+            map_name = Some(preferred_map_name.to_string());
+        }
+        if map_name.is_none() {
+            for (name, map) in session._ebpf.maps() {
+                if matches!(map, aya::maps::Map::RingBuf(_)) {
+                    map_name = Some(name.to_string());
+                    break;
+                }
+            }
+        }
+
+        let map_name = map_name.ok_or_else(|| "no ringbuf map found in aya session".to_string())?;
+        let map = session
+            ._ebpf
+            .map_mut(&map_name)
+            .ok_or_else(|| format!("ringbuf map not found: {map_name}"))?;
+        let mut ring =
+            RingBuf::try_from(map).map_err(|err| format!("failed to open aya ringbuf: {err}"))?;
+
+        let mut out = Vec::new();
+        for _ in 0..max_items {
+            let Some(item) = ring.next() else {
+                break;
+            };
+            out.push(item.to_vec());
+        }
+
+        Ok(out)
+    }
+
     fn pin_path() -> PathBuf {
         let name = format!(
             "/sys/fs/bpf/cyanrex_{}_{}",
@@ -389,6 +456,199 @@ impl EbpfLoader {
             "/usr/bin/clang"
         } else {
             "clang"
+        }
+    }
+
+    async fn run_with_aya(
+        &self,
+        owner_username: &str,
+        code: &str,
+        program_name: Option<&str>,
+        object_path: &Path,
+        bpffs_pin: &Path,
+        compile_stdout: String,
+        compile_stderr: String,
+    ) -> EbpfRunResponse {
+        let sections = Self::extract_tracepoint_sections(code);
+        if sections.is_empty() {
+            return EbpfRunResponse {
+                success: false,
+                stage: "load".to_string(),
+                message: "aya backend currently supports tracepoint programs only".to_string(),
+                compile_stdout,
+                compile_stderr,
+                load_stdout: String::new(),
+                load_stderr: "no tracepoint SEC(\"tracepoint/... \") found".to_string(),
+                pin_path: None,
+            };
+        }
+
+        let trace_id_path = format!("/sys/kernel/tracing/events/{}/{}/id", sections[0].0, sections[0].1);
+        if !Path::new(&trace_id_path).exists() {
+            return EbpfRunResponse {
+                success: false,
+                stage: "load".to_string(),
+                message: "aya tracepoint attach requires tracefs mount".to_string(),
+                compile_stdout,
+                compile_stderr,
+                load_stdout: String::new(),
+                load_stderr: format!(
+                    "missing tracepoint id path: {} (mount /sys/kernel/tracing into engine container)",
+                    trace_id_path
+                ),
+                pin_path: None,
+            };
+        }
+
+        let mut ebpf = match Ebpf::load_file(object_path) {
+            Ok(value) => value,
+            Err(err) => {
+                return EbpfRunResponse {
+                    success: false,
+                    stage: "load".to_string(),
+                    message: "aya failed to load eBPF object".to_string(),
+                    compile_stdout,
+                    compile_stderr,
+                    load_stdout: String::new(),
+                    load_stderr: format!("aya load_file error: {err}"),
+                    pin_path: None,
+                };
+            }
+        };
+
+        let (category, name) = sections[0].clone();
+        let mut load_logs = Vec::new();
+        let mut attached = false;
+
+        let object_program_keys: Vec<String> = ebpf.programs().map(|(name, _)| name.to_string()).collect();
+        let mut candidates = Self::extract_function_names(code);
+        for key in &object_program_keys {
+            if !candidates.iter().any(|existing| existing == key) {
+                candidates.push(key.clone());
+            }
+        }
+        load_logs.push(format!("aya tracepoint target: {category}:{name}"));
+        load_logs.push(format!("aya object programs: {}", object_program_keys.join(", ")));
+        load_logs.push(format!("aya attach candidates: {}", candidates.join(", ")));
+
+        for candidate_name in candidates {
+            let Some(program) = ebpf.program_mut(&candidate_name) else {
+                continue;
+            };
+
+            let Ok(tracepoint) = <&mut TracePoint>::try_from(program) else {
+                load_logs.push(format!("aya skip non-tracepoint program: {candidate_name}"));
+                continue;
+            };
+
+            if let Err(err) = tracepoint.load() {
+                load_logs.push(format!("aya load failed ({candidate_name}): {err}"));
+                continue;
+            }
+
+            match tracepoint.attach(&category, &name) {
+                Ok(_) => {
+                    load_logs.push(format!(
+                        "aya attach success: {candidate_name} -> {category}:{name}"
+                    ));
+                    attached = true;
+                    break;
+                }
+                Err(err) => {
+                    load_logs.push(format!(
+                        "aya attach failed ({candidate_name} -> {category}:{name}): {err}"
+                    ));
+                }
+            }
+        }
+
+        if !attached {
+            return EbpfRunResponse {
+                success: false,
+                stage: "load".to_string(),
+                message: "aya failed to attach tracepoint program".to_string(),
+                compile_stdout,
+                compile_stderr,
+                load_stdout: String::new(),
+                load_stderr: load_logs.join("\n"),
+                pin_path: None,
+            };
+        }
+
+        if let Err(err) = fs::create_dir_all(bpffs_pin).await {
+            return EbpfRunResponse {
+                success: false,
+                stage: "load".to_string(),
+                message: format!("aya attached but failed to create pin directory: {err}"),
+                compile_stdout,
+                compile_stderr,
+                load_stdout: String::new(),
+                load_stderr: load_logs.join("\n"),
+                pin_path: None,
+            };
+        }
+        let maps_dir = bpffs_pin.join("maps");
+        if let Err(err) = fs::create_dir_all(&maps_dir).await {
+            return EbpfRunResponse {
+                success: false,
+                stage: "load".to_string(),
+                message: format!("aya attached but failed to create map pin directory: {err}"),
+                compile_stdout,
+                compile_stderr,
+                load_stdout: String::new(),
+                load_stderr: load_logs.join("\n"),
+                pin_path: None,
+            };
+        }
+
+        for (name, map) in ebpf.maps() {
+            let map_pin = maps_dir.join(name);
+            match map.pin(&map_pin) {
+                Ok(_) => load_logs.push(format!("aya map pinned: {} -> {}", name, map_pin.display())),
+                Err(err) => load_logs.push(format!("aya map pin failed: {} ({err})", name)),
+            }
+        }
+
+        let pin_path = bpffs_pin.display().to_string();
+        {
+            let mut sessions = self.aya_sessions.write().await;
+            sessions.insert(pin_path.clone(), AyaSession { _ebpf: ebpf });
+        }
+
+        let mut attachments = self.attachments.write().await;
+        attachments.insert(
+            pin_path.clone(),
+            AttachmentRecord {
+                owner_username: owner_username.to_string(),
+                source: code.to_string(),
+                program_name: program_name
+                    .map(str::trim)
+                    .filter(|v| !v.is_empty())
+                    .unwrap_or("custom")
+                    .to_string(),
+            },
+        );
+
+        EbpfRunResponse {
+            success: true,
+            stage: "run".to_string(),
+            message: "eBPF code compiled, loaded, and attached successfully (aya backend)"
+                .to_string(),
+            compile_stdout,
+            compile_stderr,
+            load_stdout: load_logs
+                .iter()
+                .filter(|line| !line.to_ascii_lowercase().contains("failed"))
+                .cloned()
+                .collect::<Vec<_>>()
+                .join("\n"),
+            load_stderr: load_logs
+                .iter()
+                .filter(|line| line.to_ascii_lowercase().contains("failed"))
+                .cloned()
+                .collect::<Vec<_>>()
+                .join("\n"),
+            pin_path: Some(pin_path),
         }
     }
 
@@ -464,6 +724,13 @@ impl EbpfLoader {
             return Ok((
                 false,
                 "manual attach skipped: no tracepoint SEC found".to_string(),
+            ));
+        }
+
+        if !Self::supports_tracepoint_prog_attach().await {
+            return Ok((
+                false,
+                "manual attach skipped: current bpftool does not support tracepoint attach via `bpftool prog attach`; upgrade bpftool or use host-side loader with libbpf".to_string(),
             ));
         }
 
@@ -543,6 +810,40 @@ impl EbpfLoader {
         Ok((any_success, logs.join("\n")))
     }
 
+    async fn supports_tracepoint_prog_attach() -> bool {
+        let output = match Command::new("bpftool")
+            .arg("prog")
+            .arg("help")
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .output()
+            .await
+        {
+            Ok(output) => output,
+            Err(_) => return false,
+        };
+
+        let combined = format!(
+            "{}\n{}",
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr)
+        )
+        .to_lowercase();
+
+        let attach_type_block = match combined.find("attach_type := {") {
+            Some(start) => {
+                let tail = &combined[start..];
+                let end = tail.find('}').map(|idx| start + idx).unwrap_or(combined.len());
+                &combined[start..end]
+            }
+            None => return false,
+        };
+
+        attach_type_block.contains("tracepoint")
+            || attach_type_block.contains(" tp ")
+            || attach_type_block.contains("| tp |")
+    }
+
     fn extract_tracepoint_sections(code: &str) -> Vec<(String, String)> {
         let mut sections = Vec::new();
         for line in code.lines() {
@@ -570,6 +871,29 @@ impl EbpfLoader {
             }
         }
         sections
+    }
+
+    fn extract_function_names(code: &str) -> Vec<String> {
+        let mut names = Vec::new();
+        for line in code.lines() {
+            let trimmed = line.trim();
+            if !(trimmed.starts_with("int ") || trimmed.starts_with("static int ")) {
+                continue;
+            }
+            let before_paren = match trimmed.split_once('(') {
+                Some((left, _)) => left,
+                None => continue,
+            };
+            let name = before_paren
+                .split_whitespace()
+                .last()
+                .unwrap_or_default()
+                .trim();
+            if !name.is_empty() && name != "int" {
+                names.push(name.to_string());
+            }
+        }
+        names
     }
 
     async fn list_pinned_prog_paths(pin_root: &Path) -> Result<Vec<String>, String> {
