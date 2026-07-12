@@ -13,6 +13,8 @@ type EnvironmentCheckItem = {
 type EnvironmentReport = {
   overall_ok: boolean;
   generated_at: string;
+  runtime_mode: "native-linux" | "wsl2" | "docker";
+  runtime_guidance: string;
   checks: EnvironmentCheckItem[];
 };
 
@@ -74,6 +76,10 @@ export default function HelperPage() {
             <p>
               <strong>{t("helper.overall")}:</strong> {report.overall_ok ? t("helper.ok") : t("helper.notReady")}
             </p>
+            <p>
+              <strong>Backend:</strong> <code>{report.runtime_mode}</code>
+            </p>
+            <p className="meta">{report.runtime_guidance}</p>
             <p className="meta">
               {t("helper.generatedAt")}: {new Date(report.generated_at).toLocaleString()}
             </p>

@@ -1,6 +1,14 @@
 fn derive_password_hash(password: &str, salt: &str) -> String {
+    let encoded_salt = SaltString::encode_b64(salt.as_bytes()).expect("UUID salt should be valid");
+    Argon2::default()
+        .hash_password(password.as_bytes(), &encoded_salt)
+        .expect("Argon2 password hashing should succeed")
+        .to_string()
+}
+
+fn derive_legacy_password_hash(password: &str, salt: &str) -> String {
     let mut material = format!("{salt}:{password}");
-    for _ in 0..PASSWORD_HASH_ROUNDS {
+    for _ in 0..LEGACY_PASSWORD_HASH_ROUNDS {
         let mut hasher = Sha256::new();
         hasher.update(material.as_bytes());
         material = format!("{:x}", hasher.finalize());
@@ -9,11 +17,24 @@ fn derive_password_hash(password: &str, salt: &str) -> String {
 }
 
 fn verify_password(password: &str, salt: &str, expected_hash: &str) -> bool {
-    derive_password_hash(password, salt) == expected_hash
+    if expected_hash.starts_with("$argon2") {
+        return PasswordHash::new(expected_hash)
+            .ok()
+            .is_some_and(|parsed| {
+                Argon2::default()
+                    .verify_password(password.as_bytes(), &parsed)
+                    .is_ok()
+            });
+    }
+    derive_legacy_password_hash(password, salt) == expected_hash
 }
 
 fn generate_password_salt() -> String {
     Uuid::new_v4().to_string()
+}
+
+fn hash_session_token(token: &str) -> String {
+    format!("{:x}", Sha256::digest(token.as_bytes()))
 }
 
 fn generate_totp_secret() -> String {

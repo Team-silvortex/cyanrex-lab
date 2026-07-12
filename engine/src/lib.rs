@@ -69,15 +69,6 @@ pub fn build_router(state: Arc<AppState>) -> Router {
             "/auth/delete",
             axum::routing::post(routes::auth::delete_account),
         )
-        .route("/modules", get(routes::modules::list_modules))
-        .route(
-            "/modules/start",
-            axum::routing::post(routes::modules::start_module),
-        )
-        .route(
-            "/modules/stop",
-            axum::routing::post(routes::modules::stop_module),
-        )
         .route("/events", get(routes::events::list_events))
         .route("/events/export", get(routes::events::export_events))
         .route("/events/unread-count", get(routes::events::unread_count))
@@ -96,27 +87,6 @@ pub fn build_router(state: Arc<AppState>) -> Router {
         )
         .route("/ws/events", get(routes::events::ws_events))
         .route(
-            "/command",
-            axum::routing::post(routes::command::dispatch_command),
-        )
-        .route("/ebpf/run", axum::routing::post(routes::ebpf::run_ebpf))
-        .route(
-            "/ebpf/detach",
-            axum::routing::post(routes::ebpf::detach_ebpf),
-        )
-        .route(
-            "/ebpf/attachments",
-            axum::routing::get(routes::ebpf::list_attachments),
-        )
-        .route(
-            "/ebpf/attachments/details",
-            axum::routing::get(routes::ebpf::list_attachment_details),
-        )
-        .route(
-            "/ebpf/templates",
-            axum::routing::get(routes::ebpf::list_templates),
-        )
-        .route(
             "/helper/environment",
             axum::routing::get(routes::helper::environment_report),
         )
@@ -132,9 +102,39 @@ pub fn build_router(state: Arc<AppState>) -> Router {
             "/scripts/delete",
             axum::routing::post(routes::scripts::delete_script),
         )
+        .layer(middleware::from_fn_with_state(
+            state.clone(),
+            routes::auth::auth_guard,
+        ));
+
+    let admin_only = Router::new()
+        .route("/modules", get(routes::modules::list_modules))
+        .route(
+            "/modules/start",
+            axum::routing::post(routes::modules::start_module),
+        )
+        .route(
+            "/modules/stop",
+            axum::routing::post(routes::modules::stop_module),
+        )
+        .route(
+            "/command",
+            axum::routing::post(routes::command::dispatch_command),
+        )
+        .route("/ebpf/run", axum::routing::post(routes::ebpf::run_ebpf))
+        .route(
+            "/ebpf/detach",
+            axum::routing::post(routes::ebpf::detach_ebpf),
+        )
+        .route("/ebpf/attachments", get(routes::ebpf::list_attachments))
+        .route(
+            "/ebpf/attachments/details",
+            get(routes::ebpf::list_attachment_details),
+        )
+        .route("/ebpf/templates", get(routes::ebpf::list_templates))
         .route(
             "/modules/c-headers/catalog",
-            axum::routing::get(routes::c_headers::list_headers),
+            get(routes::c_headers::list_headers),
         )
         .route(
             "/modules/c-headers/download",
@@ -150,11 +150,11 @@ pub fn build_router(state: Arc<AppState>) -> Router {
         )
         .route(
             "/modules/c-headers/selected-metadata",
-            axum::routing::get(routes::c_headers::selected_metadata),
+            get(routes::c_headers::selected_metadata),
         )
         .layer(middleware::from_fn_with_state(
             state.clone(),
-            routes::auth::auth_guard,
+            routes::auth::admin_guard,
         ));
 
     Router::new()
@@ -172,6 +172,7 @@ pub fn build_router(state: Arc<AppState>) -> Router {
         .route("/auth/me", get(routes::auth::me))
         .route("/auth/logout", axum::routing::post(routes::auth::logout))
         .merge(protected)
+        .merge(admin_only)
         .layer(cors)
         .with_state(state)
 }

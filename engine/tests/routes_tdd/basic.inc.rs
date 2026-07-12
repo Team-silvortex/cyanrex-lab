@@ -1,6 +1,6 @@
 #[tokio::test]
 async fn get_index_should_return_homepage_payload() {
-    let app = build_router(build_state());
+    let app = build_router(test_state());
 
     let response = app
         .oneshot(Request::builder().uri("/").body(Body::empty()).unwrap())
@@ -17,7 +17,7 @@ async fn get_index_should_return_homepage_payload() {
 }
 #[tokio::test]
 async fn get_health_should_return_ok_status() {
-    let app = build_router(build_state());
+    let app = build_router(test_state());
 
     let response = app
         .clone()
@@ -40,7 +40,7 @@ async fn get_health_should_return_ok_status() {
 
 #[tokio::test]
 async fn post_ebpf_run_with_empty_code_should_fail_validation() {
-    let state = build_state();
+    let state = test_state();
     let app = build_router(state.clone());
     let otp = state
         .auth_service
@@ -103,7 +103,7 @@ async fn post_ebpf_run_with_empty_code_should_fail_validation() {
 
 #[tokio::test]
 async fn options_ebpf_run_should_allow_cors_preflight() {
-    let app = build_router(build_state());
+    let app = build_router(test_state());
 
     let response = app
         .oneshot(
@@ -129,7 +129,7 @@ async fn options_ebpf_run_should_allow_cors_preflight() {
 
 #[tokio::test]
 async fn post_ebpf_run_with_oversized_code_should_fail_validation() {
-    let state = build_state();
+    let state = test_state();
     let app = build_router(state.clone());
     let otp = state
         .auth_service
@@ -164,7 +164,7 @@ async fn post_ebpf_run_with_oversized_code_should_fail_validation() {
 
 #[tokio::test]
 async fn get_helper_environment_should_return_check_report() {
-    let state = build_state();
+    let state = test_state();
     let app = build_router(state.clone());
     let otp = state
         .auth_service
@@ -190,12 +190,14 @@ async fn get_helper_environment_should_return_check_report() {
 
     assert!(json["overall_ok"].is_boolean());
     assert!(json["generated_at"].is_string());
+    assert!(json["runtime_mode"].is_string());
+    assert!(json["runtime_guidance"].is_string());
     assert!(json["checks"].is_array());
 }
 
 #[tokio::test]
 async fn get_c_headers_catalog_should_return_header_module_items() {
-    let state = build_state();
+    let state = test_state();
     let app = build_router(state.clone());
     let otp = state
         .auth_service
@@ -224,7 +226,7 @@ async fn get_c_headers_catalog_should_return_header_module_items() {
 
 #[tokio::test]
 async fn get_ebpf_templates_should_return_template_catalog() {
-    let state = build_state();
+    let state = test_state();
     let app = build_router(state.clone());
     let otp = state
         .auth_service
@@ -252,7 +254,7 @@ async fn get_ebpf_templates_should_return_template_catalog() {
 
 #[tokio::test]
 async fn post_auth_login_should_succeed_with_valid_password_and_totp() {
-    let state = build_state();
+    let state = test_state();
     let app = build_router(state.clone());
     let otp = state
         .auth_service
@@ -289,7 +291,7 @@ async fn post_auth_login_should_succeed_with_valid_password_and_totp() {
 
 #[tokio::test]
 async fn post_auth_login_should_fail_with_invalid_totp() {
-    let app = build_router(build_state());
+    let app = build_router(test_state());
 
     let response = app
         .oneshot(
@@ -314,7 +316,7 @@ async fn post_auth_login_should_fail_with_invalid_totp() {
 
 #[tokio::test]
 async fn get_auth_me_should_return_authenticated_after_login() {
-    let state = build_state();
+    let state = test_state();
     let app = build_router(state.clone());
     let otp = state
         .auth_service
@@ -344,7 +346,7 @@ async fn get_auth_me_should_return_authenticated_after_login() {
 
 #[tokio::test]
 async fn post_auth_totp_bootstrap_should_return_otpauth_uri_for_valid_credentials() {
-    let app = build_router(build_state());
+    let app = build_router(test_state());
 
     let response = app
         .oneshot(
@@ -374,7 +376,7 @@ async fn post_auth_totp_bootstrap_should_return_otpauth_uri_for_valid_credential
 
 #[tokio::test]
 async fn post_auth_totp_bootstrap_should_fail_with_invalid_credentials() {
-    let app = build_router(build_state());
+    let app = build_router(test_state());
 
     let response = app
         .oneshot(

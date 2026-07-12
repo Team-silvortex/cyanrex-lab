@@ -1,6 +1,6 @@
 #[tokio::test]
 async fn post_auth_register_should_create_user_with_totp_bootstrap_payload() {
-    let app = build_router(build_state());
+    let app = build_router(test_state());
 
     let response = app
         .oneshot(
@@ -26,7 +26,7 @@ async fn post_auth_register_should_create_user_with_totp_bootstrap_payload() {
 
 #[tokio::test]
 async fn post_auth_change_password_should_require_valid_otp_and_update_login_password() {
-    let state = build_state();
+    let state = test_state();
     let app = build_router(state.clone());
 
     register_user(&app, "alice", "alice-pass-123").await;
@@ -105,7 +105,7 @@ async fn post_auth_change_password_should_require_valid_otp_and_update_login_pas
 
 #[tokio::test]
 async fn post_auth_delete_should_remove_user_and_invalidate_login() {
-    let state = build_state();
+    let state = test_state();
     let app = build_router(state.clone());
 
     register_user(&app, "alice", "alice-pass-123").await;

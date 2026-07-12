@@ -12,7 +12,7 @@
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
     "monaco-editor": "^0.55.1",
-    "next": "^15.5.14",
+    "next": "15.5.18",
     "qrcode": "^1.5.4",
     "react": "19.0.0",
     "react-dom": "19.0.0"
@@ -23,5 +23,9 @@
     "@types/react": "19.0.10",
     "@types/react-dom": "19.0.4",
     "typescript": "5.8.3"
+  },
+  "overrides": {
+    "dompurify": "^3.4.11",
+    "postcss": "^8.5.10"
   }
 }

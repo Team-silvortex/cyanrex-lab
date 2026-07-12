@@ -59,10 +59,33 @@ pub async fn run_ebpf(
         })
         .await;
 
-    let result = state
-        .ebpf_loader
-        .run(&username, &payload.code, Some(program_name), runtime_backend)
-        .await;
+    let slots = EBPF_RUN_SLOTS.get_or_init(|| Semaphore::new(2));
+    let Ok(_permit) = slots.try_acquire() else {
+        return (
+            StatusCode::TOO_MANY_REQUESTS,
+            Json(EbpfRunResponse::validation_error(
+                "too many eBPF jobs are already running",
+            )),
+        );
+    };
+    let result = match tokio::time::timeout(
+        EBPF_EXECUTION_TIMEOUT,
+        state
+            .ebpf_loader
+            .run(&username, &payload.code, Some(program_name), runtime_backend),
+    )
+    .await
+    {
+        Ok(result) => result,
+        Err(_) => {
+            return (
+                StatusCode::REQUEST_TIMEOUT,
+                Json(EbpfRunResponse::validation_error(
+                    "eBPF job exceeded the 45 second execution limit",
+                )),
+            )
+        }
+    };
 
     let mut attach_verified = false;
     let mut attach_expected = false;
@@ -336,4 +359,3 @@ pub async fn detach_ebpf(
         ),
     }
 }
-

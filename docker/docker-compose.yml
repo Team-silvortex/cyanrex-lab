@@ -4,10 +4,10 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in docker/.env}
       POSTGRES_DB: cyanrex
     ports:
-      - "15432:5432"
+      - "127.0.0.1:15432:5432"
     volumes:
       - cyanrex-postgres-data:/var/lib/postgresql/data
     healthcheck:
@@ -23,8 +23,13 @@ services:
       args:
         RUST_IMAGE: ${ENGINE_RUST_IMAGE:-rust:bookworm}
         DEBIAN_IMAGE: ${ENGINE_DEBIAN_IMAGE:-debian:bookworm}
+        APT_MIRROR: ${ENGINE_APT_MIRROR:-deb.debian.org}
+        CARGO_SOURCE_MIRROR: ${ENGINE_CARGO_REGISTRY_INDEX:-}
     container_name: cyanrex-engine
     restart: unless-stopped
+    # This is an intentionally privileged teaching sandbox. Never expose it to untrusted users.
+    privileged: true
+    pid: host
     cap_add:
       - BPF
       - PERFMON
@@ -40,16 +45,21 @@ services:
     environment:
       ENGINE_HOST: 0.0.0.0
       ENGINE_PORT: 8080
-      DATABASE_URL: postgres://postgres:postgres@postgres:5432/cyanrex
+      DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/cyanrex
       RUST_LOG: info
+      CYANREX_RUNTIME_MODE: docker
       CYANREX_ADMIN_USERNAME: admin
-      CYANREX_ADMIN_PASSWORD: cyanrex-admin
-      CYANREX_ADMIN_TOTP_SECRET: JBSWY3DPEHPK3PXP
+      CYANREX_ADMIN_PASSWORD: ${CYANREX_ADMIN_PASSWORD:?set CYANREX_ADMIN_PASSWORD in docker/.env}
+      CYANREX_ADMIN_TOTP_SECRET: ${CYANREX_ADMIN_TOTP_SECRET:?set CYANREX_ADMIN_TOTP_SECRET in docker/.env}
+      CYANREX_ALLOW_REGISTRATION: ${CYANREX_ALLOW_REGISTRATION:-false}
+      CYANREX_ALLOW_TOTP_BOOTSTRAP: ${CYANREX_ALLOW_TOTP_BOOTSTRAP:-false}
+      CYANREX_SECURE_COOKIES: ${CYANREX_SECURE_COOKIES:-false}
+      CYANREX_ROTATE_ADMIN_CREDENTIALS: ${CYANREX_ROTATE_ADMIN_CREDENTIALS:-false}
     depends_on:
       postgres:
         condition: service_healthy
     ports:
-      - "8080:8080"
+      - "${CYANREX_BIND_ADDRESS:-127.0.0.1}:8080:8080"
     volumes:
       - /sys/fs/bpf:/sys/fs/bpf
       - /sys/kernel/tracing:/sys/kernel/tracing:ro
@@ -67,6 +77,7 @@ services:
       dockerfile: Dockerfile
       args:
         NODE_IMAGE: ${FRONTEND_NODE_IMAGE:-node:20}
+        NPM_REGISTRY: ${FRONTEND_NPM_REGISTRY:-https://registry.npmjs.org}
     container_name: cyanrex-frontend
     restart: unless-stopped
     environment:
@@ -76,7 +87,7 @@ services:
       engine:
         condition: service_healthy
     ports:
-      - "3000:3000"
+      - "${CYANREX_BIND_ADDRESS:-127.0.0.1}:3000:3000"
 
 volumes:
   cyanrex-postgres-data:

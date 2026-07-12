@@ -6,6 +6,10 @@ use std::{
     },
 };
 
+use argon2::{
+    password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
+    Argon2,
+};
 use chrono::{DateTime, Duration, Utc};
 use data_encoding::BASE32;
 use hmac::{Hmac, Mac};
@@ -23,12 +27,13 @@ const DEFAULT_ADMIN_TOTP_SECRET: &str = "JBSWY3DPEHPK3PXP";
 const SESSION_HOURS: i64 = 12;
 const TOTP_DIGITS: u32 = 6;
 const TOTP_STEP_SECONDS: i64 = 30;
-const PASSWORD_HASH_ROUNDS: usize = 120_000;
+const LEGACY_PASSWORD_HASH_ROUNDS: usize = 120_000;
 
 #[derive(Clone)]
 pub struct AuthService {
     users: Arc<RwLock<HashMap<String, UserRecord>>>,
     sessions: Arc<RwLock<HashMap<String, SessionRecord>>>,
+    login_attempts: Arc<RwLock<HashMap<String, LoginAttempt>>>,
     db_pool: Option<PgPool>,
     schema_ready: Arc<OnceCell<()>>,
     db_disabled: Arc<AtomicBool>,
@@ -41,6 +46,12 @@ struct UserRecord {
     password_salt: String,
     password_hash: String,
     totp_secret: String,
+}
+
+#[derive(Clone)]
+struct LoginAttempt {
+    failures: u32,
+    blocked_until: Option<DateTime<Utc>>,
 }
 
 #[derive(Clone)]
@@ -78,6 +89,7 @@ pub enum AuthError {
     InvalidInput,
     WeakPassword,
     Forbidden,
+    RateLimited,
 }
 
 include!("auth_service/service.inc.rs");

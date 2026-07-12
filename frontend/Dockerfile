@@ -1,9 +1,10 @@
 ARG NODE_IMAGE=node:20
 FROM ${NODE_IMAGE} AS deps
+ARG NPM_REGISTRY=https://registry.npmjs.org
 WORKDIR /app
 COPY package.json package-lock.json ./
 COPY scripts ./scripts
-RUN npm ci
+RUN npm config set registry "$NPM_REGISTRY" && npm ci
 
 ARG NODE_IMAGE=node:20
 FROM ${NODE_IMAGE} AS builder

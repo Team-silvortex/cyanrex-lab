@@ -79,6 +79,10 @@ cyanrex-lab/
 Useful commands:
 
 ```bash
+./start.sh start --mode auto   # WSL2-native inside WSL; Docker elsewhere
+./start.sh start --mode wsl    # Engine targets the WSL2 kernel
+./start.sh start --mode docker # Engine targets the Docker host/VM kernel
+./start.sh start --mode native # Engine targets the native Linux kernel
 ./start.sh start --local
 ./start.sh start              # fast-start (default, no forced rebuild)
 ./start.sh start --rebuild    # force rebuild when deps/Dockerfile changed
@@ -88,23 +92,31 @@ Useful commands:
 ./start.sh stop
 ```
 
+The eBPF Engine always runs on a Linux kernel. On Windows, use WSL2-native mode for direct access
+to the WSL kernel, or Docker mode for a disposable teaching sandbox. Docker mode is intentionally
+privileged and must not be exposed to untrusted users.
+
 ### 2) Open UI
 
 - Frontend: `http://localhost:3000`
 - Engine health: `http://localhost:8080/health`
-- Postgres: `localhost:15432`
+- Postgres: `127.0.0.1:15432` (not exposed to the LAN)
 
-### 3) Default dev account
+### 3) Private development account
 
 - username: `admin`
-- password: `cyanrex-admin`
-- TOTP secret (Base32): `JBSWY3DPEHPK3PXP`
+- password and TOTP secret: generated on first start in `docker/.env`
+- `docker/.env` is mode `0600` and ignored by Git; do not publish it
 
-You can override with environment variables:
+You can override with environment variables before the first start:
 
 - `CYANREX_ADMIN_USERNAME`
 - `CYANREX_ADMIN_PASSWORD`
 - `CYANREX_ADMIN_TOTP_SECRET`
+
+Registration and password-only TOTP bootstrap are disabled by default. Set
+`CYANREX_ALLOW_REGISTRATION=true` only for a supervised lab. Kernel/eBPF and module-management
+APIs require the configured administrator account even when registration is enabled.
 
 ## Auth API (Implemented)
 

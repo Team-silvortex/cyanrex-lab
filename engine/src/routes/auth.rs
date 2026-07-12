@@ -66,6 +66,16 @@ pub async fn login(
             }),
         )
             .into_response(),
+        Err(AuthError::RateLimited) => (
+            StatusCode::TOO_MANY_REQUESTS,
+            Json(LoginResponse {
+                ok: false,
+                message: "too many login failures; try again later".to_string(),
+                username: None,
+                expires_at: None,
+            }),
+        )
+            .into_response(),
         Err(
             AuthError::UserAlreadyExists
             | AuthError::InvalidInput
@@ -104,6 +114,20 @@ pub async fn bootstrap_totp(
     State(state): State<Arc<AppState>>,
     Json(request): Json<TotpBootstrapRequest>,
 ) -> Response {
+    if !env_flag("CYANREX_ALLOW_TOTP_BOOTSTRAP") {
+        return (
+            StatusCode::FORBIDDEN,
+            Json(TotpBootstrapResponse {
+                ok: false,
+                message: "TOTP bootstrap is disabled".to_string(),
+                issuer: None,
+                account_name: None,
+                secret: None,
+                otpauth_uri: None,
+            }),
+        )
+            .into_response();
+    }
     match state
         .auth_service
         .bootstrap_totp(&request.username, &request.password)
@@ -146,7 +170,8 @@ pub async fn bootstrap_totp(
             AuthError::UserAlreadyExists
             | AuthError::InvalidInput
             | AuthError::WeakPassword
-            | AuthError::Forbidden,
+            | AuthError::Forbidden
+            | AuthError::RateLimited,
         ) => (
             StatusCode::BAD_REQUEST,
             Json(TotpBootstrapResponse {
@@ -166,6 +191,20 @@ pub async fn register(
     State(state): State<Arc<AppState>>,
     Json(request): Json<RegisterRequest>,
 ) -> Response {
+    if !env_flag("CYANREX_ALLOW_REGISTRATION") {
+        return (
+            StatusCode::FORBIDDEN,
+            Json(RegisterResponse {
+                ok: false,
+                message: "registration is disabled".to_string(),
+                account_name: None,
+                issuer: None,
+                secret: None,
+                otpauth_uri: None,
+            }),
+        )
+            .into_response();
+    }
     match state
         .auth_service
         .register(&request.username, &request.password)
@@ -219,7 +258,12 @@ pub async fn register(
             }),
         )
             .into_response(),
-        Err(AuthError::InvalidCredentials | AuthError::InvalidOtp | AuthError::Forbidden) => (
+        Err(
+            AuthError::InvalidCredentials
+            | AuthError::InvalidOtp
+            | AuthError::Forbidden
+            | AuthError::RateLimited,
+        ) => (
             StatusCode::BAD_REQUEST,
             Json(RegisterResponse {
                 ok: false,
@@ -289,7 +333,12 @@ pub async fn change_password(
             Json(serde_json::json!({"ok": false, "message": "new password must be at least 8 characters"})),
         )
             .into_response(),
-        Err(AuthError::UserAlreadyExists | AuthError::InvalidInput | AuthError::Forbidden) => (
+        Err(
+            AuthError::UserAlreadyExists
+            | AuthError::InvalidInput
+            | AuthError::Forbidden
+            | AuthError::RateLimited,
+        ) => (
             StatusCode::BAD_REQUEST,
             Json(serde_json::json!({"ok": false, "message": "password change failed"})),
         )
@@ -344,7 +393,12 @@ pub async fn delete_account(
             Json(serde_json::json!({"ok": false, "message": "cannot delete the last user"})),
         )
             .into_response(),
-        Err(AuthError::WeakPassword | AuthError::UserAlreadyExists | AuthError::InvalidInput) => (
+        Err(
+            AuthError::WeakPassword
+            | AuthError::UserAlreadyExists
+            | AuthError::InvalidInput
+            | AuthError::RateLimited,
+        ) => (
             StatusCode::BAD_REQUEST,
             Json(serde_json::json!({"ok": false, "message": "delete account failed"})),
         )
@@ -393,10 +447,47 @@ pub async fn auth_guard(
     next.run(request).await
 }
 
+pub async fn admin_guard(
+    State(state): State<Arc<AppState>>,
+    request: Request,
+    next: Next,
+) -> Response {
+    let Some(session) = current_session_from_headers(state.as_ref(), request.headers()).await
+    else {
+        return (
+            StatusCode::UNAUTHORIZED,
+            Json(serde_json::json!({"ok": false, "message": "invalid auth session"})),
+        )
+            .into_response();
+    };
+    if !state.auth_service.is_admin_username(&session.username) {
+        return (
+            StatusCode::FORBIDDEN,
+            Json(serde_json::json!({"ok": false, "message": "administrator access required"})),
+        )
+            .into_response();
+    }
+    next.run(request).await
+}
+
 fn build_session_cookie(token: &str, max_age_seconds: i64) -> String {
+    let secure = if env_flag("CYANREX_SECURE_COOKIES") {
+        "; Secure"
+    } else {
+        ""
+    };
     format!(
-        "{SESSION_COOKIE_NAME}={token}; HttpOnly; Path=/; SameSite=Lax; Max-Age={max_age_seconds}"
+        "{SESSION_COOKIE_NAME}={token}; HttpOnly; Path=/; SameSite=Lax; Max-Age={max_age_seconds}{secure}"
     )
+}
+
+fn env_flag(name: &str) -> bool {
+    std::env::var(name).ok().is_some_and(|value| {
+        matches!(
+            value.trim().to_ascii_lowercase().as_str(),
+            "1" | "true" | "yes" | "on"
+        )
+    })
 }
 
 pub fn extract_session_token(headers: &HeaderMap) -> Option<String> {

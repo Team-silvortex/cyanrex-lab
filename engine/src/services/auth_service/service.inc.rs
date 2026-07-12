@@ -39,6 +39,7 @@ impl AuthService {
         Self {
             users: Arc::new(RwLock::new(users)),
             sessions: Arc::new(RwLock::new(HashMap::new())),
+            login_attempts: Arc::new(RwLock::new(HashMap::new())),
             db_pool,
             schema_ready: Arc::new(OnceCell::new()),
             db_disabled: Arc::new(AtomicBool::new(false)),
@@ -52,18 +53,43 @@ impl AuthService {
         password: &str,
         otp: &str,
     ) -> Result<LoginOk, AuthError> {
+        let attempt_key = username.trim().to_ascii_lowercase();
+        {
+            let attempts = self
+                .login_attempts
+                .read()
+                .expect("login attempts lock poisoned");
+            if attempts
+                .get(&attempt_key)
+                .and_then(|attempt| attempt.blocked_until)
+                .is_some_and(|until| until > Utc::now())
+            {
+                return Err(AuthError::RateLimited);
+            }
+        }
+
         let user = self
             .get_user(username)
             .await
-            .ok_or(AuthError::InvalidCredentials)?;
+            .ok_or_else(|| {
+                self.record_login_failure(&attempt_key);
+                AuthError::InvalidCredentials
+            })?;
 
         if !verify_password(password, &user.password_salt, &user.password_hash) {
+            self.record_login_failure(&attempt_key);
             return Err(AuthError::InvalidCredentials);
         }
 
         if !verify_totp(&user.totp_secret, otp) {
+            self.record_login_failure(&attempt_key);
             return Err(AuthError::InvalidOtp);
         }
+
+        self.login_attempts
+            .write()
+            .expect("login attempts lock poisoned")
+            .remove(&attempt_key);
 
         let token = Uuid::new_v4().to_string();
         let expires_at = Utc::now() + Duration::hours(SESSION_HOURS);
@@ -85,7 +111,7 @@ impl AuthService {
             } else if let Err(error) = sqlx::query(
                 "INSERT INTO sessions (token, username, expires_at) VALUES ($1, $2, $3)",
             )
-            .bind(&token)
+            .bind(hash_session_token(&token))
             .bind(&user.username)
             .bind(expires_at)
             .execute(pool)
@@ -102,13 +128,36 @@ impl AuthService {
         })
     }
 
+    fn record_login_failure(&self, key: &str) {
+        const MAX_FAILURES: u32 = 5;
+        const LOCK_MINUTES: i64 = 5;
+        let mut attempts = self
+            .login_attempts
+            .write()
+            .expect("login attempts lock poisoned");
+        let attempt = attempts.entry(key.to_string()).or_insert(LoginAttempt {
+            failures: 0,
+            blocked_until: None,
+        });
+        attempt.failures = attempt.failures.saturating_add(1);
+        if attempt.failures >= MAX_FAILURES {
+            attempt.blocked_until = Some(Utc::now() + Duration::minutes(LOCK_MINUTES));
+            attempt.failures = 0;
+        }
+    }
+
+    pub fn is_admin_username(&self, username: &str) -> bool {
+        username == self.default_admin.username
+    }
+
     pub async fn validate_session(&self, token: &str) -> Option<SessionRecord> {
+        let token_hash = hash_session_token(token);
         if let Some(pool) = self.active_pool() {
             if self.ensure_schema_and_seed().await.is_ok() {
                 match sqlx::query(
                     "SELECT token, username, expires_at FROM sessions WHERE token = $1",
                 )
-                .bind(token)
+                .bind(&token_hash)
                 .fetch_optional(pool)
                 .await
                 {
@@ -116,14 +165,14 @@ impl AuthService {
                         let expires_at: DateTime<Utc> = row.get("expires_at");
                         if expires_at <= Utc::now() {
                             let _ = sqlx::query("DELETE FROM sessions WHERE token = $1")
-                                .bind(token)
+                                .bind(&token_hash)
                                 .execute(pool)
                                 .await;
                             return None;
                         }
 
                         return Some(SessionRecord {
-                            token: row.get("token"),
+                            token: token.to_string(),
                             username: row.get("username"),
                             expires_at,
                         });
@@ -146,6 +195,7 @@ impl AuthService {
     }
 
     pub async fn logout(&self, token: &str) {
+        let token_hash = hash_session_token(token);
         {
             let mut sessions = self.sessions.write().expect("auth sessions lock poisoned");
             sessions.remove(token);
@@ -154,7 +204,7 @@ impl AuthService {
         if let Some(pool) = self.active_pool() {
             if self.ensure_schema_and_seed().await.is_ok() {
                 if let Err(error) = sqlx::query("DELETE FROM sessions WHERE token = $1")
-                    .bind(token)
+                    .bind(&token_hash)
                     .execute(pool)
                     .await
                 {
@@ -453,6 +503,27 @@ impl AuthService {
                 .bind(&self.default_admin.totp_secret)
                 .execute(pool)
                 .await?;
+
+                if std::env::var("CYANREX_ROTATE_ADMIN_CREDENTIALS")
+                    .ok()
+                    .is_some_and(|value| value.eq_ignore_ascii_case("true") || value == "1")
+                {
+                    sqlx::query(
+                        "UPDATE users
+                         SET password_salt = $1, password_hash = $2, totp_secret = $3, updated_at = NOW()
+                         WHERE username = $4",
+                    )
+                    .bind(&self.default_admin.password_salt)
+                    .bind(&self.default_admin.password_hash)
+                    .bind(&self.default_admin.totp_secret)
+                    .bind(&self.default_admin.username)
+                    .execute(pool)
+                    .await?;
+                    sqlx::query("DELETE FROM sessions WHERE username = $1")
+                        .bind(&self.default_admin.username)
+                        .execute(pool)
+                        .await?;
+                }
 
                 let rows = sqlx::query(
                     "SELECT username, password_salt, password_hash, totp_secret FROM users",

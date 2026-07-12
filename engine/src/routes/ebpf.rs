@@ -1,4 +1,7 @@
-use std::{path::Path, sync::Arc};
+use std::{
+    path::Path,
+    sync::{Arc, OnceLock},
+};
 
 use axum::{extract::State, http::HeaderMap, http::StatusCode, Json};
 use chrono::Utc;
@@ -7,6 +10,7 @@ use tokio::{
     fs,
     io::{AsyncBufReadExt, AsyncReadExt, BufReader},
     process::Command,
+    sync::Semaphore,
     time::{Duration, Instant},
 };
 
@@ -23,6 +27,8 @@ use crate::{
 };
 
 const MAX_EBPF_SOURCE_BYTES: usize = 256 * 1024;
+const EBPF_EXECUTION_TIMEOUT: Duration = Duration::from_secs(45);
+static EBPF_RUN_SLOTS: OnceLock<Semaphore> = OnceLock::new();
 
 include!("ebpf/handlers.inc.rs");
 include!("ebpf/stream.inc.rs");

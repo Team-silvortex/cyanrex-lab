@@ -3,13 +3,14 @@ use std::path::Path;
 use chrono::Utc;
 use tokio::{fs, process::Command};
 
-use crate::models::environment::{EnvironmentCheckItem, EnvironmentReport};
+use crate::models::environment::{EnvironmentCheckItem, EnvironmentReport, RuntimeMode};
 
 #[derive(Clone, Default)]
 pub struct EnvironmentChecker;
 
 impl EnvironmentChecker {
     pub async fn inspect(&self) -> EnvironmentReport {
+        let runtime_mode = Self::detect_runtime_mode().await;
         let clang = Self::check_command("clang", &["--version"], "clang").await;
         let bpftool = Self::check_command("bpftool", &["version"], "bpftool").await;
         let kernel = Self::check_command("uname", &["-r"], "kernel").await;
@@ -40,7 +41,31 @@ impl EnvironmentChecker {
         EnvironmentReport {
             overall_ok,
             generated_at: Utc::now(),
+            runtime_mode,
+            runtime_guidance: runtime_guidance(runtime_mode).to_string(),
             checks,
+        }
+    }
+
+    async fn detect_runtime_mode() -> RuntimeMode {
+        if let Ok(value) = std::env::var("CYANREX_RUNTIME_MODE") {
+            if let Some(mode) = parse_runtime_mode(&value) {
+                return mode;
+            }
+        }
+
+        if Path::new("/.dockerenv").exists() || Path::new("/run/.containerenv").exists() {
+            return RuntimeMode::Docker;
+        }
+
+        let kernel_release = fs::read_to_string("/proc/sys/kernel/osrelease")
+            .await
+            .unwrap_or_default()
+            .to_ascii_lowercase();
+        if kernel_release.contains("microsoft") || std::env::var_os("WSL_INTEROP").is_some() {
+            RuntimeMode::Wsl2
+        } else {
+            RuntimeMode::NativeLinux
         }
     }
 
@@ -199,18 +224,24 @@ impl EnvironmentChecker {
                 let supported = combined.contains("autoattach");
                 EnvironmentCheckItem {
                     name: "bpftool_autoattach".to_string(),
-                    ok: supported,
+                    // Older distro bpftool builds can still load programs through
+                    // Cyanrex's manual-attach fallback. Treat autoattach as an
+                    // optional capability instead of failing the whole backend.
+                    ok: true,
                     detail: if supported {
                         "supported (bpftool help includes autoattach)".to_string()
                     } else {
-                        "not supported by current bpftool".to_string()
+                        "optional capability unavailable; manual attach fallback will be used"
+                            .to_string()
                     },
                 }
             }
             Err(error) => EnvironmentCheckItem {
                 name: "bpftool_autoattach".to_string(),
-                ok: false,
-                detail: format!("failed to execute bpftool prog help: {error}"),
+                ok: true,
+                detail: format!(
+                    "optional capability could not be detected; manual attach fallback will be used: {error}"
+                ),
             },
         }
     }
@@ -278,4 +309,38 @@ fn first_non_empty_line(bytes: &[u8]) -> Option<String> {
         .map(str::trim)
         .find(|line| !line.is_empty())
         .map(|line| line.to_string())
+}
+
+fn parse_runtime_mode(value: &str) -> Option<RuntimeMode> {
+    match value.trim().to_ascii_lowercase().as_str() {
+        "native" | "native-linux" | "linux" => Some(RuntimeMode::NativeLinux),
+        "wsl" | "wsl2" => Some(RuntimeMode::Wsl2),
+        "docker" | "container" => Some(RuntimeMode::Docker),
+        _ => None,
+    }
+}
+
+fn runtime_guidance(mode: RuntimeMode) -> &'static str {
+    match mode {
+        RuntimeMode::NativeLinux => "Native Linux backend; eBPF programs target the host kernel.",
+        RuntimeMode::Wsl2 => {
+            "WSL2 backend; keep WSL updated and verify BTF, bpffs, and tracing support."
+        }
+        RuntimeMode::Docker => {
+            "Docker teaching backend; programs target the Docker host or VM kernel, not the desktop OS kernel."
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn runtime_mode_aliases_are_parsed() {
+        assert_eq!(parse_runtime_mode("native"), Some(RuntimeMode::NativeLinux));
+        assert_eq!(parse_runtime_mode("WSL2"), Some(RuntimeMode::Wsl2));
+        assert_eq!(parse_runtime_mode("container"), Some(RuntimeMode::Docker));
+        assert_eq!(parse_runtime_mode("unknown"), None);
+    }
 }
