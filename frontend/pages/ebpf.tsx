@@ -8,80 +8,16 @@ import { analyzeCCode } from "../src/utils/cAnalyzer";
 import { registerEbpfIntelligence } from "../src/utils/cEbpfIntelligence";
 import { loadPageState, savePageState } from "../src/utils/pageState";
 import { sanitizeForDisplay } from "../src/utils/security";
-
+import { MAX_UPLOAD_BYTES, SAMPLE_EBPF } from "../src/features/ebpf/models";
+import type {
+  EbpfAttachmentDetail, EbpfAttachmentDetailListResponse, EbpfDetachResponse,
+  EbpfRunResponse, EbpfRuntimeBackend, EbpfTemplate, HeaderSelectionMetadata,
+  SelectedHeaderMetadata, UserScript,
+} from "../src/features/ebpf/models";
+import { applyMarkers, toIncludePath } from "../src/features/ebpf/editorUtils";
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
 });
-
-type EbpfRunResponse = {
-  success: boolean;
-  stage: string;
-  message: string;
-  compile_stdout: string;
-  compile_stderr: string;
-  load_stdout: string;
-  load_stderr: string;
-  pin_path?: string | null;
-};
-
-type EbpfRuntimeBackend = "bpftool" | "aya";
-
-type EbpfDetachResponse = {
-  ok: boolean;
-  message: string;
-  detached: string[];
-  clean?: boolean;
-  safety_notes?: string[];
-};
-
-type EbpfAttachmentDetail = {
-  pin_path: string;
-  source: string;
-  program_name: string;
-};
-
-type EbpfAttachmentDetailListResponse = {
-  attachments: EbpfAttachmentDetail[];
-};
-
-type EbpfTemplate = {
-  id: string;
-  name: string;
-  description: string;
-  capability: string;
-  code: string;
-};
-
-type UserScript = {
-  id: string;
-  username: string;
-  title: string;
-  script: string;
-  created_at: string;
-  updated_at: string;
-};
-
-type SelectedHeaderMetadata = {
-  id: string;
-  include_hint: string;
-  local_path: string;
-};
-
-type HeaderSelectionMetadata = {
-  selected_headers: SelectedHeaderMetadata[];
-};
-
-const SAMPLE_EBPF = `#include <linux/bpf.h>
-#include <bpf/bpf_helpers.h>
-
-SEC("xdp")
-int xdp_pass(struct xdp_md *ctx) {
-  return XDP_PASS;
-}
-
-char _license[] SEC("license") = "GPL";`;
-
-const MAX_UPLOAD_BYTES = 256 * 1024;
 
 export default function EbpfPage() {
   const { t } = useI18n();
@@ -661,30 +597,4 @@ export default function EbpfPage() {
       </section>
     </SidebarLayout>
   );
-}
-
-function applyMarkers(editor: any, monaco: any, diagnostics: ReturnType<typeof analyzeCCode>["diagnostics"]) {
-  const model = editor.getModel?.();
-  if (!model) return;
-
-  const markers = diagnostics.map((d) => ({
-    startLineNumber: d.line,
-    startColumn: d.column,
-    endLineNumber: d.line,
-    endColumn: d.endColumn,
-    message: d.message,
-    severity:
-      d.severity === "error"
-        ? monaco.MarkerSeverity.Error
-        : d.severity === "warning"
-          ? monaco.MarkerSeverity.Warning
-          : monaco.MarkerSeverity.Info,
-  }));
-
-  monaco.editor.setModelMarkers(model, "cyanrex-c-analyzer", markers);
-}
-
-function toIncludePath(includeHint: string): string {
-  const match = includeHint.match(/[<"]([^>"]+)[>"]/);
-  return match ? match[1] : includeHint;
 }

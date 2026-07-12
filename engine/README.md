@@ -1,16 +1,18 @@
 # cyanrex-engine
 
-Axum backend skeleton for Cyanrex.
+Axum backend for authentication, module orchestration, event streaming, and eBPF experiments.
 
-## Planned modules
+## Implemented services
 
-- `auth`
-- `module-manager`
-- `event-bus`
-- `command-dispatcher`
-- `ebpf-loader`
+- Cookie sessions, account management, and TOTP verification
+- PostgreSQL persistence with an in-memory availability fallback
+- Module lifecycle and command dispatch
+- Persistent user-scoped event storage and WebSocket streaming
+- eBPF compilation, loading, attachment inspection, event collection, and detach
+- `bpftool` and Aya runtime backends
+- User script storage and C header management
 
-## Initial API
+## API
 
 - `GET /`
 - `GET /health`
@@ -27,7 +29,17 @@ Axum backend skeleton for Cyanrex.
 - `GET /events`
 - `POST /command`
 - `POST /ebpf/run`
+- `GET /ebpf/templates`
+- `GET /ebpf/attachments`
+- `GET /ebpf/attachments/details`
+- `POST /ebpf/detach`
 - `GET /helper/environment`
+- `GET /scripts`
+- `POST /scripts/save`
+- `POST /scripts/delete`
+- `GET /settings/events`
+- `POST /settings/events`
+- `GET /ws/events`
 
 ## Dev Auth Defaults
 
@@ -45,3 +57,12 @@ Axum backend skeleton for Cyanrex.
 - `users`
 - `sessions`
 - SQL migration template: `engine/migrations/0001_auth_users_sessions.sql`
+
+## Verification
+
+Run the engine checks on Linux because Aya targets Linux kernel APIs:
+
+```bash
+cargo fmt --manifest-path engine/Cargo.toml -- --check
+cargo test --manifest-path engine/Cargo.toml --locked
+```

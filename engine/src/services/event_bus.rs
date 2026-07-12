@@ -97,10 +97,12 @@ impl EventBus {
         if let Some(pool) = self.active_pool() {
             if self.ensure_schema().await.is_ok() {
                 if user_settings.overflow_policy == EventOverflowPolicy::DropNew {
-                    match sqlx::query("SELECT COUNT(*) AS count FROM event_records WHERE username = $1")
-                        .bind(&event.username)
-                        .fetch_one(pool)
-                        .await
+                    match sqlx::query(
+                        "SELECT COUNT(*) AS count FROM event_records WHERE username = $1",
+                    )
+                    .bind(&event.username)
+                    .fetch_one(pool)
+                    .await
                     {
                         Ok(row) => {
                             let count: i64 = row.get("count");
@@ -402,7 +404,9 @@ impl EventBus {
                 .bind(settings.max_records as i64)
                 .execute(pool)
                 .await
-                .map_err(|error| format!("trim event records after settings update failed: {error}"))?;
+                .map_err(|error| {
+                    format!("trim event records after settings update failed: {error}")
+                })?;
             }
         }
 

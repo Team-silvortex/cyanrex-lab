@@ -163,4 +163,15 @@ You can override with environment variables:
 - This repo is TDD-first.
 - Flow: `Red -> Green -> Refactor`.
 - For backend route changes, update tests in `engine/tests/` first.
+- Maintained source files are limited to 600 lines; documentation files are limited to 2000 lines.
 - See `TDD.md` for team conventions.
+
+Run the same checks used by CI before submitting changes:
+
+```bash
+./scripts/check-file-lengths.sh
+cargo fmt --manifest-path engine/Cargo.toml -- --check
+cargo test --manifest-path engine/Cargo.toml --locked
+npm --prefix frontend ci
+npm --prefix frontend run build
+```
