@@ -11,6 +11,35 @@ export type EbpfRunResponse = {
 
 export type EbpfRuntimeBackend = "bpftool" | "aya";
 
+export type EbpfCompilerDiagnostic = {
+  line: number;
+  column: number;
+  end_column: number;
+  severity: "error" | "warning" | "note";
+  message: string;
+};
+
+export type EbpfCheckResponse = {
+  ok: boolean;
+  message: string;
+  diagnostics: EbpfCompilerDiagnostic[];
+  stdout: string;
+  stderr: string;
+};
+
+export type EbpfCompletionItem = {
+  label: string;
+  insert_text: string;
+  detail: string;
+  kind: "function" | "type" | "constant" | "field";
+};
+
+export type EbpfCompletionResponse = {
+  ok: boolean;
+  items: EbpfCompletionItem[];
+  message: string;
+};
+
 export type EbpfDetachResponse = {
   ok: boolean;
   message: string;

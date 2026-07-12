@@ -122,6 +122,11 @@ pub fn build_router(state: Arc<AppState>) -> Router {
             axum::routing::post(routes::command::dispatch_command),
         )
         .route("/ebpf/run", axum::routing::post(routes::ebpf::run_ebpf))
+        .route("/ebpf/check", axum::routing::post(routes::ebpf::check_ebpf))
+        .route(
+            "/ebpf/complete",
+            axum::routing::post(routes::ebpf::complete_ebpf),
+        )
         .route(
             "/ebpf/detach",
             axum::routing::post(routes::ebpf::detach_ebpf),

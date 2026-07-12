@@ -18,8 +18,8 @@ use crate::{
     models::{
         ebpf::{
             EbpfAttachmentDetail, EbpfAttachmentDetailListResponse, EbpfAttachmentListResponse,
-            EbpfDetachRequest, EbpfDetachResponse, EbpfRunRequest, EbpfRunResponse,
-            EbpfRuntimeBackend, EbpfTemplate,
+            EbpfCheckResponse, EbpfCompletionRequest, EbpfCompletionResponse, EbpfDetachRequest,
+            EbpfDetachResponse, EbpfRunRequest, EbpfRunResponse, EbpfRuntimeBackend, EbpfTemplate,
         },
         event::{Event, EventCategory, EventSeverity},
     },
@@ -31,6 +31,8 @@ const EBPF_EXECUTION_TIMEOUT: Duration = Duration::from_secs(45);
 static EBPF_RUN_SLOTS: OnceLock<Semaphore> = OnceLock::new();
 
 include!("ebpf/handlers.inc.rs");
+include!("ebpf/check.inc.rs");
+include!("ebpf/completion.inc.rs");
 include!("ebpf/stream.inc.rs");
 include!("ebpf/ringbuf.inc.rs");
 include!("ebpf/templates.inc.rs");

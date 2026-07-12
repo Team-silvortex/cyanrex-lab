@@ -25,6 +25,46 @@ pub struct EbpfRunRequest {
 }
 
 #[derive(Debug, Clone, Serialize)]
+pub struct EbpfCompilerDiagnostic {
+    pub line: usize,
+    pub column: usize,
+    pub end_column: usize,
+    pub severity: String,
+    pub message: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct EbpfCheckResponse {
+    pub ok: bool,
+    pub message: String,
+    pub diagnostics: Vec<EbpfCompilerDiagnostic>,
+    pub stdout: String,
+    pub stderr: String,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct EbpfCompletionRequest {
+    pub code: String,
+    pub line: usize,
+    pub column: usize,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct EbpfCompletionItem {
+    pub label: String,
+    pub insert_text: String,
+    pub detail: String,
+    pub kind: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct EbpfCompletionResponse {
+    pub ok: bool,
+    pub items: Vec<EbpfCompletionItem>,
+    pub message: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
 pub struct EbpfRunResponse {
     pub success: bool,
     pub stage: String,

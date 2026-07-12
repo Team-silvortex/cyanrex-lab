@@ -107,6 +107,44 @@ export function analyzeCCode(
     });
   }
 
+  for (const reserve of code.matchAll(/([A-Za-z_]\w*)\s*=\s*bpf_ringbuf_reserve\s*\([^;]+;/g)) {
+    const variable = reserve[1];
+    const tail = code.slice((reserve.index ?? 0) + reserve[0].length);
+    if (!new RegExp(`if\\s*\\(\\s*!${variable}\\s*\\)`).test(tail.slice(0, 500))) {
+      const position = positionAt(code, reserve.index ?? 0);
+      diagnostics.push({
+        ...position,
+        endColumn: position.column + variable.length,
+        severity: "error",
+        message: `Ringbuf reservation '${variable}' must be checked for NULL before use`,
+      });
+    }
+  }
+
+  if (/SEC\("xdp"\)/.test(code) && /\bdata_end\b/.test(code)) {
+    const packetAccess = code.match(/\bdata\s*\+\s*(?:sizeof|\d+)/);
+    const boundsCheck = /(?:>|<=)\s*data_end|data_end\s*(?:<|>=)/.test(code);
+    if (packetAccess && !boundsCheck) {
+      const position = positionAt(code, packetAccess.index ?? 0);
+      diagnostics.push({
+        ...position,
+        endColumn: position.column + packetAccess[0].length,
+        severity: "error",
+        message: "Packet access needs an explicit data_end bounds check for the verifier",
+      });
+    }
+  }
+
+  for (const loop of code.matchAll(/\b(?:for|while)\s*\(/g)) {
+    const position = positionAt(code, loop.index ?? 0);
+    diagnostics.push({
+      ...position,
+      endColumn: position.column + loop[0].trim().length,
+      severity: "info",
+      message: "Ensure the verifier can prove this loop has a small bounded iteration count",
+    });
+  }
+
   if (sections.length === 0) {
     diagnostics.push({
       line: 1,
@@ -184,4 +222,9 @@ function countBraceBalance(code: string): number {
     if (char === "}") balance -= 1;
   }
   return balance;
+}
+
+function positionAt(code: string, offset: number): { line: number; column: number } {
+  const before = code.slice(0, offset).split(/\r?\n/);
+  return { line: before.length, column: before[before.length - 1].length + 1 };
 }

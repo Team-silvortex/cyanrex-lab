@@ -7,9 +7,13 @@ use std::{
 };
 
 use aya::{maps::RingBuf, programs::TracePoint, Ebpf};
-use tokio::{fs, process::Command, sync::RwLock};
+use tokio::{fs, process::Command, sync::RwLock, time::Duration};
+use uuid::Uuid;
 
-use crate::models::ebpf::{EbpfRunResponse, EbpfRuntimeBackend};
+use crate::models::ebpf::{
+    EbpfCheckResponse, EbpfCompilerDiagnostic, EbpfCompletionItem, EbpfCompletionResponse,
+    EbpfRunResponse, EbpfRuntimeBackend,
+};
 
 #[derive(Clone, Default)]
 pub struct EbpfLoader {
@@ -29,5 +33,7 @@ struct AyaSession {
 }
 
 include!("ebpf_loader/core.inc.rs");
+include!("ebpf_loader/check.inc.rs");
+include!("ebpf_loader/completion.inc.rs");
 include!("ebpf_loader/aya.inc.rs");
 include!("ebpf_loader/attach.inc.rs");

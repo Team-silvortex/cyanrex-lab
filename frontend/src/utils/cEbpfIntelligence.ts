@@ -1,4 +1,5 @@
 import type * as Monaco from "monaco-editor";
+import type { EbpfCompletionResponse } from "../features/ebpf/models";
 
 type HoverDoc = {
   title: string;
@@ -42,6 +43,26 @@ const HOVER_DOCS: Record<string, HoverDoc> = {
     title: "bpf_get_smp_processor_id()",
     detail: "Return current CPU id.",
   },
+  bpf_get_current_pid_tgid: {
+    title: "bpf_get_current_pid_tgid()",
+    detail: "Returns TGID in the upper 32 bits and PID in the lower 32 bits.",
+  },
+  bpf_get_current_comm: {
+    title: "bpf_get_current_comm(buf, size)",
+    detail: "Copies the current task command name into a verifier-visible buffer.",
+  },
+  bpf_probe_read_kernel: {
+    title: "bpf_probe_read_kernel(dst, size, src)",
+    detail: "Safely reads kernel memory into an eBPF stack or map buffer.",
+  },
+  BPF_MAP_TYPE_HASH: {
+    title: "BPF_MAP_TYPE_HASH",
+    detail: "General key/value hash map shared by eBPF and user space.",
+  },
+  BPF_MAP_TYPE_RINGBUF: {
+    title: "BPF_MAP_TYPE_RINGBUF",
+    detail: "Ordered variable-length event transport from eBPF to user space.",
+  },
   trace_event_raw_sched_switch: {
     title: "struct trace_event_raw_sched_switch",
     detail: "Tracepoint context from vmlinux.h; includes next_pid/prev_pid fields.",
@@ -69,6 +90,27 @@ const HOVER_DOCS: Record<string, HoverDoc> = {
 };
 
 const COMPLETIONS = [
+  {
+    label: "hash map declaration",
+    insertText:
+      'struct {\n  __uint(type, BPF_MAP_TYPE_HASH);\n  __uint(max_entries, ${1:1024});\n  __type(key, ${2:__u32});\n  __type(value, ${3:__u64});\n} ${4:counts} SEC(".maps");',
+    detail: "BTF-style hash map declaration",
+    kind: "snippet",
+  },
+  {
+    label: "ring buffer declaration",
+    insertText:
+      'struct {\n  __uint(type, BPF_MAP_TYPE_RINGBUF);\n  __uint(max_entries, ${1:256 * 1024});\n} ${2:events} SEC(".maps");',
+    detail: "BTF-style ring buffer map declaration",
+    kind: "snippet",
+  },
+  {
+    label: "per-cpu array declaration",
+    insertText:
+      'struct {\n  __uint(type, BPF_MAP_TYPE_PERCPU_ARRAY);\n  __uint(max_entries, ${1:1});\n  __type(key, __u32);\n  __type(value, ${2:__u64});\n} ${3:stats} SEC(".maps");',
+    detail: "Low-contention per-CPU array map",
+    kind: "snippet",
+  },
   {
     label: "SEC xdp",
     insertText: 'SEC("xdp")\\nint ${1:xdp_handler}(struct xdp_md *ctx) {\\n  return XDP_PASS;\\n}',
@@ -131,6 +173,24 @@ const COMPLETIONS = [
     kind: "function",
   },
   {
+    label: "bpf_get_current_pid_tgid",
+    insertText: "bpf_get_current_pid_tgid()",
+    detail: "Current TGID in high 32 bits and PID in low 32 bits",
+    kind: "function",
+  },
+  {
+    label: "bpf_get_current_comm",
+    insertText: "bpf_get_current_comm(&${1:comm}, sizeof(${1:comm}))",
+    detail: "Copy current task command name",
+    kind: "function",
+  },
+  {
+    label: "bpf_probe_read_kernel",
+    insertText: "bpf_probe_read_kernel(&${1:dst}, sizeof(${1:dst}), ${2:src})",
+    detail: "Verifier-safe kernel memory read",
+    kind: "function",
+  },
+  {
     label: "XDP_PASS",
     insertText: "XDP_PASS",
     detail: "XDP action: pass",
@@ -162,10 +222,13 @@ function toCompletionKind(monaco: typeof Monaco, kind: (typeof COMPLETIONS)[numb
   return monaco.languages.CompletionItemKind.Snippet;
 }
 
-export function registerEbpfIntelligence(monaco: typeof Monaco): Monaco.IDisposable {
+export function registerEbpfIntelligence(
+  monaco: typeof Monaco,
+  engineUrl: string,
+): Monaco.IDisposable {
   const completion = monaco.languages.registerCompletionItemProvider("c", {
-    triggerCharacters: ["#", "_", "b", "X"],
-    provideCompletionItems(model, position) {
+    triggerCharacters: ["#", "_", "b", "X", ".", ">"],
+    async provideCompletionItems(model, position, _context, token) {
       const word = model.getWordUntilPosition(position);
       const range = {
         startLineNumber: position.lineNumber,
@@ -174,7 +237,7 @@ export function registerEbpfIntelligence(monaco: typeof Monaco): Monaco.IDisposa
         endColumn: word.endColumn,
       };
 
-      const suggestions = COMPLETIONS.map((item) => ({
+      const suggestions: Monaco.languages.CompletionItem[] = COMPLETIONS.map((item) => ({
         label: item.label,
         kind: toCompletionKind(monaco, item.kind),
         insertText: item.insertText,
@@ -183,6 +246,32 @@ export function registerEbpfIntelligence(monaco: typeof Monaco): Monaco.IDisposa
         range,
       }));
 
+      try {
+        const response = await fetch(`${engineUrl}/ebpf/complete`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            code: model.getValue(),
+            line: position.lineNumber,
+            column: position.column,
+          }),
+        });
+        if (!response.ok || token.isCancellationRequested) return { suggestions };
+        const semantic = (await response.json()) as EbpfCompletionResponse;
+        for (const item of semantic.items) {
+          suggestions.push({
+            label: item.label,
+            kind: toSemanticCompletionKind(monaco, item.kind),
+            insertText: item.insert_text || item.label,
+            detail: `clang · ${item.detail}`,
+            sortText: `0-${item.label}`,
+            range,
+          });
+        }
+      } catch {
+        // Local snippets remain available when semantic completion is offline.
+      }
       return { suggestions };
     },
   });
@@ -264,11 +353,131 @@ export function registerEbpfIntelligence(monaco: typeof Monaco): Monaco.IDisposa
     },
   });
 
+  const symbols = monaco.languages.registerDocumentSymbolProvider("c", {
+    provideDocumentSymbols(model) {
+      const source = model.getValue();
+      const items: Monaco.languages.DocumentSymbol[] = [];
+      for (const match of source.matchAll(/SEC\("([^"]+)"\)\s*\n?[^\n{]*?\b([A-Za-z_]\w*)\s*\(/g)) {
+        const start = model.getPositionAt(match.index ?? 0);
+        const end = model.getPositionAt((match.index ?? 0) + match[0].length);
+        items.push({
+          name: match[2],
+          detail: `eBPF hook: ${match[1]}`,
+          kind: monaco.languages.SymbolKind.Function,
+          range: new monaco.Range(start.lineNumber, start.column, end.lineNumber, end.column),
+          selectionRange: new monaco.Range(end.lineNumber, Math.max(1, end.column - match[2].length - 1), end.lineNumber, end.column - 1),
+          children: [],
+          tags: [],
+        });
+      }
+      for (const match of source.matchAll(/}\s*([A-Za-z_]\w*)\s+SEC\("\.maps"\)/g)) {
+        const start = model.getPositionAt(match.index ?? 0);
+        const end = model.getPositionAt((match.index ?? 0) + match[0].length);
+        items.push({
+          name: match[1],
+          detail: "eBPF map",
+          kind: monaco.languages.SymbolKind.Object,
+          range: new monaco.Range(start.lineNumber, start.column, end.lineNumber, end.column),
+          selectionRange: new monaco.Range(end.lineNumber, Math.max(1, end.column - match[1].length - 13), end.lineNumber, end.column),
+          children: [],
+          tags: [],
+        });
+      }
+      return items;
+    },
+  });
+
+  const definitions = monaco.languages.registerDefinitionProvider("c", {
+    provideDefinition(model, position) {
+      const word = model.getWordAtPosition(position)?.word;
+      if (!word) return null;
+      const pattern = new RegExp(`(?:^|\\n)[^;\\n]*\\b${escapeRegex(word)}\\s*\\([^;]*\\)\\s*\\{`, "m");
+      const match = pattern.exec(model.getValue());
+      if (!match) return null;
+      const offset = (match.index ?? 0) + match[0].lastIndexOf(word);
+      const start = model.getPositionAt(offset);
+      return {
+        uri: model.uri,
+        range: new monaco.Range(start.lineNumber, start.column, start.lineNumber, start.column + word.length),
+      };
+    },
+  });
+
+  const actions = monaco.languages.registerCodeActionProvider("c", {
+    provideCodeActions(model, _range, context) {
+      const actions: Monaco.languages.CodeAction[] = [];
+      for (const marker of context.markers) {
+        const include = marker.message.match(/^Missing #include <([^>]+)>/);
+        if (include) {
+          actions.push(insertAtTopAction(monaco, model, `#include <${include[1]}>\n`, `Add #include <${include[1]}>`, marker));
+        }
+        if (marker.message === "Missing GPL license declaration") {
+          actions.push({
+            title: "Add GPL license declaration",
+            kind: "quickfix",
+            diagnostics: [marker],
+            isPreferred: true,
+            edit: {
+              edits: [{
+                resource: model.uri,
+                textEdit: {
+                  range: new monaco.Range(model.getLineCount() + 1, 1, model.getLineCount() + 1, 1),
+                  text: '\nchar _license[] SEC("license") = "GPL";\n',
+                },
+                versionId: model.getVersionId(),
+              }],
+            },
+          });
+        }
+      }
+      return { actions, dispose: () => undefined };
+    },
+  });
+
   return {
     dispose() {
       completion.dispose();
       hover.dispose();
       signature.dispose();
+      symbols.dispose();
+      definitions.dispose();
+      actions.dispose();
     },
   };
+}
+
+function insertAtTopAction(
+  monaco: typeof Monaco,
+  model: Monaco.editor.ITextModel,
+  text: string,
+  title: string,
+  marker: Monaco.editor.IMarkerData,
+): Monaco.languages.CodeAction {
+  return {
+    title,
+    kind: "quickfix",
+    diagnostics: [marker],
+    isPreferred: true,
+    edit: {
+      edits: [{
+        resource: model.uri,
+        textEdit: { range: new monaco.Range(1, 1, 1, 1), text },
+        versionId: model.getVersionId(),
+      }],
+    },
+  };
+}
+
+function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function toSemanticCompletionKind(
+  monaco: typeof Monaco,
+  kind: "function" | "type" | "constant" | "field",
+) {
+  if (kind === "function") return monaco.languages.CompletionItemKind.Function;
+  if (kind === "type") return monaco.languages.CompletionItemKind.Struct;
+  if (kind === "constant") return monaco.languages.CompletionItemKind.Constant;
+  return monaco.languages.CompletionItemKind.Field;
 }
