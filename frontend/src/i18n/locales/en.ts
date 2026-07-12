@@ -9,6 +9,7 @@ export const en: TranslationDict = {
       nav: {
         dashboard: "Dashboard",
         ebpf: "eBPF Runner",
+        learn: "Learn",
         helper: "Helper",
         modules: "Modules",
         events: "Events",
@@ -94,6 +95,9 @@ export const en: TranslationDict = {
       saving: "Saving...",
       saved: "Settings saved",
       loading: "Loading...",
+      residentCompiler: "Clang resident acceleration",
+      residentCompilerEnabledHint: "Keep diagnostics and semantic completion caches for active teaching sessions.",
+      residentCompilerDisabledHint: "Use short-lived caches and invoke Clang on demand to reduce idle memory.",
     },
     account: {
       title: "Account Security",

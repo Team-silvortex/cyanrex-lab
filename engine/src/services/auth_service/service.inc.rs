@@ -76,7 +76,7 @@ impl AuthService {
                 AuthError::InvalidCredentials
             })?;
 
-        if !verify_password(password, &user.password_salt, &user.password_hash) {
+        if !verify_password_async(password, &user.password_salt, &user.password_hash).await {
             self.record_login_failure(&attempt_key);
             return Err(AuthError::InvalidCredentials);
         }
@@ -230,7 +230,7 @@ impl AuthService {
             .await
             .ok_or(AuthError::InvalidCredentials)?;
 
-        if !verify_password(password, &user.password_salt, &user.password_hash) {
+        if !verify_password_async(password, &user.password_salt, &user.password_hash).await {
             return Err(AuthError::InvalidCredentials);
         }
 
@@ -260,7 +260,9 @@ impl AuthService {
 
         let totp_secret = generate_totp_secret();
         let password_salt = generate_password_salt();
-        let password_hash = derive_password_hash(password, &password_salt);
+        let password_hash = derive_password_hash_async(password, &password_salt)
+            .await
+            .ok_or(AuthError::InvalidInput)?;
         let issuer = std::env::var("CYANREX_TOTP_ISSUER")
             .ok()
             .filter(|value| !value.trim().is_empty())
@@ -344,7 +346,7 @@ impl AuthService {
             .await
             .ok_or(AuthError::InvalidCredentials)?;
 
-        if !verify_password(current_password, &user.password_salt, &user.password_hash) {
+        if !verify_password_async(current_password, &user.password_salt, &user.password_hash).await {
             return Err(AuthError::InvalidCredentials);
         }
         if !verify_totp(&user.totp_secret, otp) {
@@ -352,7 +354,9 @@ impl AuthService {
         }
 
         let new_salt = generate_password_salt();
-        let new_hash = derive_password_hash(new_password, &new_salt);
+        let new_hash = derive_password_hash_async(new_password, &new_salt)
+            .await
+            .ok_or(AuthError::InvalidInput)?;
 
         if let Some(pool) = self.active_pool() {
             if self.ensure_schema_and_seed().await.is_ok() {
@@ -390,7 +394,7 @@ impl AuthService {
             .await
             .ok_or(AuthError::InvalidCredentials)?;
 
-        if !verify_password(password, &user.password_salt, &user.password_hash) {
+        if !verify_password_async(password, &user.password_salt, &user.password_hash).await {
             return Err(AuthError::InvalidCredentials);
         }
         if !verify_totp(&user.totp_secret, otp) {

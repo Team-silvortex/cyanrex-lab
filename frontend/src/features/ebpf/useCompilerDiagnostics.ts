@@ -18,6 +18,7 @@ export function useCompilerDiagnostics(code: string, engineUrl: string) {
     }
 
     const controller = new AbortController();
+    const delay = code.length > 20_000 ? 1200 : 700;
     const timer = window.setTimeout(async () => {
       setStatus("checking");
       try {
@@ -44,7 +45,7 @@ export function useCompilerDiagnostics(code: string, engineUrl: string) {
           setStatus("unavailable");
         }
       }
-    }, 700);
+    }, delay);
 
     return () => {
       window.clearTimeout(timer);

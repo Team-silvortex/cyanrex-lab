@@ -17,6 +17,17 @@ type UpdateEventSettingsResponse = {
   settings?: EventSettingsResponse;
 };
 
+type CompilerSettingsResponse = {
+  resident: boolean;
+  strategy: "resident_cache" | "on_demand";
+};
+
+type UpdateCompilerSettingsResponse = {
+  ok: boolean;
+  message: string;
+  settings: CompilerSettingsResponse;
+};
+
 export default function SettingsPage() {
   const { t } = useI18n();
   const [maxRecords, setMaxRecords] = useState(
@@ -25,6 +36,8 @@ export default function SettingsPage() {
   const [overflowPolicy, setOverflowPolicy] = useState<EventOverflowPolicy>(
     () => loadPageState<EventOverflowPolicy>("settings_event_overflow_policy_v1") ?? "drop_oldest",
   );
+  const [residentCompiler, setResidentCompiler] = useState(false);
+  const [compilerSettingsAvailable, setCompilerSettingsAvailable] = useState(false);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -46,16 +59,20 @@ export default function SettingsPage() {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(`${engineUrl}/settings/events`, {
-          credentials: "include",
-        });
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-        const json = (await response.json()) as EventSettingsResponse;
+        const [eventsResponse, compilerResponse] = await Promise.all([
+          fetch(`${engineUrl}/settings/events`, { credentials: "include" }),
+          fetch(`${engineUrl}/settings/compiler`, { credentials: "include" }),
+        ]);
+        if (!eventsResponse.ok) throw new Error(`HTTP ${eventsResponse.status}`);
+        const json = (await eventsResponse.json()) as EventSettingsResponse;
         if (!active) return;
         setMaxRecords(json.max_records);
         setOverflowPolicy(json.overflow_policy);
+        if (compilerResponse.ok) {
+          const compiler = (await compilerResponse.json()) as CompilerSettingsResponse;
+          setResidentCompiler(compiler.resident);
+          setCompilerSettingsAvailable(true);
+        }
       } catch (err) {
         if (!active) return;
         setError((err as Error).message);
@@ -90,6 +107,19 @@ export default function SettingsPage() {
       if (json.settings) {
         setMaxRecords(json.settings.max_records);
         setOverflowPolicy(json.settings.overflow_policy);
+      }
+      if (compilerSettingsAvailable) {
+        const compilerResponse = await fetch(`${engineUrl}/settings/compiler`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ resident: residentCompiler }),
+        });
+        const compilerJson = (await compilerResponse.json()) as UpdateCompilerSettingsResponse;
+        if (!compilerResponse.ok || !compilerJson.ok) {
+          throw new Error(compilerJson.message || `HTTP ${compilerResponse.status}`);
+        }
+        setResidentCompiler(compilerJson.settings.resident);
       }
       setMessage(t("settings.saved"));
     } catch (err) {
@@ -134,6 +164,23 @@ export default function SettingsPage() {
         <p className="meta" style={{ marginTop: 10 }}>
           {overflowPolicy === "drop_oldest" ? t("settings.dropOldestHint") : t("settings.dropNewHint")}
         </p>
+
+        {compilerSettingsAvailable && <label className="row" style={{ marginTop: 16, alignItems: "flex-start" }}>
+          <input
+            type="checkbox"
+            checked={residentCompiler}
+            onChange={(event) => setResidentCompiler(event.target.checked)}
+            style={{ marginTop: 3 }}
+          />
+          <span>
+            <strong>{t("settings.residentCompiler")}</strong>
+            <span className="meta" style={{ display: "block", marginTop: 4 }}>
+              {residentCompiler
+                ? t("settings.residentCompilerEnabledHint")
+                : t("settings.residentCompilerDisabledHint")}
+            </span>
+          </span>
+        </label>}
 
         <div className="row" style={{ marginTop: 12 }}>
           <button type="button" onClick={save} disabled={saving || loading}>

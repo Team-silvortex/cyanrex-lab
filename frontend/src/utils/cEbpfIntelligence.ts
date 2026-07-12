@@ -228,7 +228,7 @@ export function registerEbpfIntelligence(
 ): Monaco.IDisposable {
   const completion = monaco.languages.registerCompletionItemProvider("c", {
     triggerCharacters: ["#", "_", "b", "X", ".", ">"],
-    async provideCompletionItems(model, position, _context, token) {
+    async provideCompletionItems(model, position, context, token) {
       const word = model.getWordUntilPosition(position);
       const range = {
         startLineNumber: position.lineNumber,
@@ -246,11 +246,18 @@ export function registerEbpfIntelligence(
         range,
       }));
 
+      const semanticTrigger = context.triggerKind === monaco.languages.CompletionTriggerKind.Invoke
+        || context.triggerCharacter === "." || context.triggerCharacter === ">";
+      if (!semanticTrigger) return { suggestions };
+
+      const controller = new AbortController();
+      const cancellation = token.onCancellationRequested(() => controller.abort());
       try {
         const response = await fetch(`${engineUrl}/ebpf/complete`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
+          signal: controller.signal,
           body: JSON.stringify({
             code: model.getValue(),
             line: position.lineNumber,
@@ -271,6 +278,8 @@ export function registerEbpfIntelligence(
         }
       } catch {
         // Local snippets remain available when semantic completion is offline.
+      } finally {
+        cancellation.dispose();
       }
       return { suggestions };
     },

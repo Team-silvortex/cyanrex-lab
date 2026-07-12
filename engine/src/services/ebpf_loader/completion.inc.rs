@@ -4,12 +4,27 @@ impl EbpfLoader {
             return completion_failure("source and one-based cursor position are required");
         }
 
+        let cache_key = format!("{}:{line}:{column}", source_cache_key(code));
+        if let Some((created, response)) = self.completion_cache.read().await.get(&cache_key) {
+            if self.resident_compiler_enabled() || created.elapsed() < Duration::from_secs(30) {
+                return response.clone();
+            }
+        }
+
         let temp_dir = std::env::temp_dir().join(format!("cyanrex-complete-{}", Uuid::new_v4()));
         if let Err(error) = fs::create_dir(&temp_dir).await {
             return completion_failure(&format!("failed to create completion directory: {error}"));
         }
         let response = self.complete_in_directory(code, line, column, &temp_dir).await;
         let _ = fs::remove_dir_all(&temp_dir).await;
+        let mut cache = self.completion_cache.write().await;
+        let cache_limit = if self.resident_compiler_enabled() { 1024 } else { 128 };
+        if cache.len() >= cache_limit {
+            if let Some(oldest) = cache.iter().min_by_key(|(_, value)| value.0).map(|(key, _)| key.clone()) {
+                cache.remove(&oldest);
+            }
+        }
+        cache.insert(cache_key, (Instant::now(), response.clone()));
         response
     }
 

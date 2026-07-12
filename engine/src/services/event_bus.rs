@@ -80,8 +80,8 @@ impl EventBus {
                 return;
             }
             bucket.push(event.clone());
-            while bucket.len() > max_records {
-                bucket.remove(0);
+            if bucket.len() > max_records {
+                bucket.drain(..bucket.len() - max_records);
             }
         }
         let _ = self.sender.send(event.clone());
@@ -361,8 +361,8 @@ impl EventBus {
         {
             let mut history = self.history.write().await;
             if let Some(bucket) = history.get_mut(username) {
-                while bucket.len() > settings.max_records {
-                    bucket.remove(0);
+                if bucket.len() > settings.max_records {
+                    bucket.drain(..bucket.len() - settings.max_records);
                 }
             }
         }

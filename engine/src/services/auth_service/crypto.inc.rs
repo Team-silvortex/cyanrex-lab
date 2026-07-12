@@ -29,6 +29,23 @@ fn verify_password(password: &str, salt: &str, expected_hash: &str) -> bool {
     derive_legacy_password_hash(password, salt) == expected_hash
 }
 
+async fn verify_password_async(password: &str, salt: &str, expected_hash: &str) -> bool {
+    let password = password.to_string();
+    let salt = salt.to_string();
+    let expected_hash = expected_hash.to_string();
+    tokio::task::spawn_blocking(move || verify_password(&password, &salt, &expected_hash))
+        .await
+        .unwrap_or(false)
+}
+
+async fn derive_password_hash_async(password: &str, salt: &str) -> Option<String> {
+    let password = password.to_string();
+    let salt = salt.to_string();
+    tokio::task::spawn_blocking(move || derive_password_hash(&password, &salt))
+        .await
+        .ok()
+}
+
 fn generate_password_salt() -> String {
     Uuid::new_v4().to_string()
 }

@@ -108,6 +108,11 @@ pub fn build_router(state: Arc<AppState>) -> Router {
         ));
 
     let admin_only = Router::new()
+        .route(
+            "/settings/compiler",
+            get(routes::settings::get_compiler_settings)
+                .post(routes::settings::update_compiler_settings),
+        )
         .route("/modules", get(routes::modules::list_modules))
         .route(
             "/modules/start",

@@ -233,33 +233,49 @@ impl EbpfLoader {
     }
 
     async fn ensure_vmlinux_header(temp_dir: &Path) -> Result<(), String> {
-        let btf_path = Path::new("/sys/kernel/btf/vmlinux");
-        if !btf_path.exists() {
-            return Err("kernel BTF file /sys/kernel/btf/vmlinux not found".to_string());
-        }
-
-        let output = Command::new("bpftool")
-            .arg("btf")
-            .arg("dump")
-            .arg("file")
-            .arg(btf_path)
-            .arg("format")
-            .arg("c")
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
-            .output()
-            .await
-            .map_err(|err| format!("failed to execute bpftool btf dump: {err}"))?;
-
-        if !output.status.success() {
-            let stderr = String::from_utf8_lossy(&output.stderr).to_string();
-            return Err(format!("bpftool btf dump failed: {stderr}"));
-        }
-
+        let cached = VMLINUX_HEADER_CACHE
+            .get_or_try_init(|| async {
+                let btf_path = Path::new("/sys/kernel/btf/vmlinux");
+                if !btf_path.exists() {
+                    return Err("kernel BTF file /sys/kernel/btf/vmlinux not found".to_string());
+                }
+                let output = Command::new("bpftool")
+                    .arg("btf")
+                    .arg("dump")
+                    .arg("file")
+                    .arg(btf_path)
+                    .arg("format")
+                    .arg("c")
+                    .stdout(Stdio::piped())
+                    .stderr(Stdio::piped())
+                    .output()
+                    .await
+                    .map_err(|err| format!("failed to execute bpftool btf dump: {err}"))?;
+                if !output.status.success() {
+                    return Err(format!(
+                        "bpftool btf dump failed: {}",
+                        String::from_utf8_lossy(&output.stderr)
+                    ));
+                }
+                let cache_path = std::env::temp_dir().join(format!(
+                    "cyanrex-vmlinux-{}-{}.h",
+                    std::process::id(),
+                    Uuid::new_v4()
+                ));
+                fs::write(&cache_path, output.stdout)
+                    .await
+                    .map_err(|err| format!("failed to cache generated vmlinux.h: {err}"))?;
+                Ok(cache_path)
+            })
+            .await?;
         let header_path = temp_dir.join("vmlinux.h");
-        fs::write(&header_path, output.stdout)
+        #[cfg(unix)]
+        std::os::unix::fs::symlink(cached, &header_path)
+            .map_err(|err| format!("failed to link cached vmlinux.h: {err}"))?;
+        #[cfg(not(unix))]
+        fs::copy(cached, &header_path)
             .await
-            .map_err(|err| format!("failed to write generated vmlinux.h: {err}"))?;
+            .map_err(|err| format!("failed to copy cached vmlinux.h: {err}"))?;
 
         Ok(())
     }

@@ -28,6 +28,8 @@ Axum backend for authentication, module orchestration, event streaming, and eBPF
 - `POST /modules/stop`
 - `GET /events`
 - `POST /command`
+- `POST /ebpf/check`
+- `POST /ebpf/complete`
 - `POST /ebpf/run`
 - `GET /ebpf/templates`
 - `GET /ebpf/attachments`
@@ -41,16 +43,18 @@ Axum backend for authentication, module orchestration, event streaming, and eBPF
 - `POST /settings/events`
 - `GET /ws/events`
 
-## Dev Auth Defaults
+## Development Credentials
 
 - username: `admin`
-- password: `cyanrex-admin` (override with `CYANREX_ADMIN_PASSWORD`)
-- TOTP secret (Base32): `JBSWY3DPEHPK3PXP` (override with `CYANREX_ADMIN_TOTP_SECRET`)
+- password and TOTP secret are generated on first start in `docker/.env`
+- use `CYANREX_ADMIN_PASSWORD` and `CYANREX_ADMIN_TOTP_SECRET` to provide explicit values
+- never commit or publish `docker/.env`
 
 ## Password Storage
 
 - Passwords are never stored in plaintext.
-- Engine uses per-user random salt + multi-round SHA-256 derivation.
+- Engine uses Argon2 password hashes and can verify legacy hashes during migration.
+- Persisted session tokens are stored as SHA-256 digests.
 
 ## Persistent Auth Tables
 

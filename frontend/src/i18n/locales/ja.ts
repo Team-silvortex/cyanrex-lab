@@ -9,6 +9,7 @@ export const ja: TranslationDict = {
       nav: {
         dashboard: "ダッシュボード",
         ebpf: "eBPF ランナー",
+        learn: "学習センター",
         helper: "ヘルパー",
         modules: "モジュール",
         events: "イベント",
@@ -94,6 +95,9 @@ export const ja: TranslationDict = {
       saving: "保存中...",
       saved: "設定を保存しました",
       loading: "読み込み中...",
+      residentCompiler: "Clang 常駐アクセラレーション",
+      residentCompilerEnabledHint: "授業中の診断と意味補完キャッシュを長時間保持します。",
+      residentCompilerDisabledHint: "短期キャッシュとオンデマンド実行で待機時のメモリを抑えます。",
     },
     account: {
       title: "アカウントセキュリティ",

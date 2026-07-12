@@ -14,6 +14,7 @@ type NavItem = {
 const navItems: NavItem[] = [
   { href: "/dashboard", key: "layout.nav.dashboard" },
   { href: "/ebpf", key: "layout.nav.ebpf" },
+  { href: "/learn", key: "layout.nav.learn" },
   { href: "/helper", key: "layout.nav.helper" },
   { href: "/modules", key: "layout.nav.modules" },
   { href: "/events", key: "layout.nav.events" },
@@ -150,7 +151,9 @@ export default function SidebarLayout({ title, children }: SidebarLayoutProps) {
           </div>
           <nav className="nav-list">
             {navItems.map((item) => {
-              const active = router.pathname === item.href || (item.href === "/dashboard" && router.pathname === "/");
+              const active = router.pathname === item.href
+                || router.asPath.startsWith(`${item.href}/`)
+                || (item.href === "/dashboard" && router.pathname === "/");
               return (
                 <Link
                   key={item.href}

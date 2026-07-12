@@ -3,11 +3,21 @@ use std::{
     convert::TryFrom,
     path::{Path, PathBuf},
     process::Stdio,
-    sync::Arc,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    },
+    time::Instant,
 };
 
 use aya::{maps::RingBuf, programs::TracePoint, Ebpf};
-use tokio::{fs, process::Command, sync::RwLock, time::Duration};
+use sha2::{Digest, Sha256};
+use tokio::{
+    fs,
+    process::Command,
+    sync::{OnceCell, RwLock},
+    time::Duration,
+};
 use uuid::Uuid;
 
 use crate::models::ebpf::{
@@ -19,6 +29,9 @@ use crate::models::ebpf::{
 pub struct EbpfLoader {
     attachments: Arc<RwLock<BTreeMap<String, AttachmentRecord>>>,
     aya_sessions: Arc<RwLock<BTreeMap<String, AyaSession>>>,
+    check_cache: Arc<RwLock<BTreeMap<String, (Instant, EbpfCheckResponse)>>>,
+    completion_cache: Arc<RwLock<BTreeMap<String, (Instant, EbpfCompletionResponse)>>>,
+    resident_compiler: Arc<AtomicBool>,
 }
 
 #[derive(Clone, Debug)]
@@ -30,6 +43,26 @@ struct AttachmentRecord {
 
 struct AyaSession {
     _ebpf: Ebpf,
+}
+
+static VMLINUX_HEADER_CACHE: OnceCell<PathBuf> = OnceCell::const_new();
+
+fn source_cache_key(code: &str) -> String {
+    format!("{:x}", Sha256::digest(code.as_bytes()))
+}
+
+impl EbpfLoader {
+    pub fn resident_compiler_enabled(&self) -> bool {
+        self.resident_compiler.load(Ordering::Relaxed)
+    }
+
+    pub async fn set_resident_compiler(&self, enabled: bool) {
+        self.resident_compiler.store(enabled, Ordering::Relaxed);
+        if !enabled {
+            self.check_cache.write().await.clear();
+            self.completion_cache.write().await.clear();
+        }
+    }
 }
 
 include!("ebpf_loader/core.inc.rs");

@@ -4,6 +4,13 @@ impl EbpfLoader {
             return check_failure("eBPF source code is empty", String::new());
         }
 
+        let cache_key = source_cache_key(code);
+        if let Some((created, response)) = self.check_cache.read().await.get(&cache_key) {
+            if self.resident_compiler_enabled() || created.elapsed() < Duration::from_secs(60) {
+                return response.clone();
+            }
+        }
+
         let temp_dir = std::env::temp_dir().join(format!("cyanrex-check-{}", Uuid::new_v4()));
         if let Err(error) = fs::create_dir(&temp_dir).await {
             return check_failure(&format!("failed to create check directory: {error}"), String::new());
@@ -11,6 +18,14 @@ impl EbpfLoader {
 
         let response = self.check_in_directory(code, &temp_dir).await;
         let _ = fs::remove_dir_all(&temp_dir).await;
+        let mut cache = self.check_cache.write().await;
+        let cache_limit = if self.resident_compiler_enabled() { 512 } else { 64 };
+        if cache.len() >= cache_limit {
+            if let Some(oldest) = cache.iter().min_by_key(|(_, value)| value.0).map(|(key, _)| key.clone()) {
+                cache.remove(&oldest);
+            }
+        }
+        cache.insert(cache_key, (Instant::now(), response.clone()));
         response
     }
 

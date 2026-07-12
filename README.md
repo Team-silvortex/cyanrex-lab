@@ -1,6 +1,6 @@
 # cyanrex-lab
 
-Version: `0.06`
+Version: `0.1.0`
 
 Cyanrex monorepo for eBPF experiments: Axum engine + Next.js dashboard + module utilities.
 
@@ -16,6 +16,7 @@ cyanrex-lab/
 │  ├ module-network
 │  └ module-protocol
 ├ scripts/         # saved experiment scripts
+├ docs/zh-CN/      # Chinese course and lab manual
 ├ docker/          # compose and container assets
 └ start.sh         # unified launcher
 ```
@@ -26,6 +27,8 @@ cyanrex-lab/
 - Axum API server with:
   - module control endpoints
   - eBPF run pipeline endpoint (`/ebpf/run`)
+  - compile-only clang diagnostics (`/ebpf/check`)
+  - semantic C/eBPF completion (`/ebpf/complete`)
   - eBPF template catalog (`/ebpf/templates`)
   - eBPF attachment endpoints (`/ebpf/attachments`, `/ebpf/attachments/details`, `/ebpf/detach`)
   - eBPF kernel trace stream (`/ws/events`, plus `/events` snapshot)
@@ -42,7 +45,8 @@ cyanrex-lab/
   - account deletion via `password + otp`
 - Password security:
   - no plaintext storage
-  - per-user random salt + multi-round SHA-256 derivation
+  - Argon2 password hashing with legacy-hash verification compatibility
+  - persisted session tokens are stored as SHA-256 digests
 - Auth persistence:
   - PostgreSQL-backed `users` + `sessions`
   - fallback to in-memory if DB temporarily unavailable
@@ -69,6 +73,10 @@ cyanrex-lab/
   - eBPF editor and runtime controls
 
 ## Quick Start
+
+中文教程入口：[Cyanrex eBPF 教学手册](docs/zh-CN/README.md)。教师建议先阅读
+[教师快速开始](docs/zh-CN/teacher-guide.md)，学生从
+[学生快速开始](docs/zh-CN/student-guide.md)进入课程。
 
 ### 1) Start services
 
@@ -130,6 +138,12 @@ APIs require the configured administrator account even when registration is enab
 
 ## eBPF APIs (Implemented)
 
+- `POST /ebpf/check`
+  - compile-only clang syntax check; never loads code into the kernel
+  - returns structured line/column diagnostics
+- `POST /ebpf/complete`
+  - clang semantic completion at a one-based cursor position
+  - returns header symbols, macros, types, functions, and structure fields
 - `POST /ebpf/run`
   - accepts optional `program_name` and `template_id`
   - accepts optional `runtime_backend` (`bpftool` | `aya`)

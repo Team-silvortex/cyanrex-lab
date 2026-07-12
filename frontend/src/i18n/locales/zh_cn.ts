@@ -9,6 +9,7 @@ export const zhCN: TranslationDict = {
       nav: {
         dashboard: "仪表盘",
         ebpf: "eBPF 运行器",
+        learn: "学习中心",
         helper: "环境助手",
         modules: "模块中心",
         events: "事件中心",
@@ -94,6 +95,9 @@ export const zhCN: TranslationDict = {
       saving: "保存中...",
       saved: "设置已保存",
       loading: "加载中...",
+      residentCompiler: "Clang 常驻加速模式",
+      residentCompilerEnabledHint: "长期保留诊断与语义补全缓存，适合持续教学和反复编辑。",
+      residentCompilerDisabledHint: "使用短时缓存并按需执行 Clang，空闲时占用更少内存。",
     },
     account: {
       title: "账号安全",

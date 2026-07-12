@@ -11,6 +11,46 @@
   --danger: #ff5f6d;
 }
 
+.markdown-document {
+  max-width: 920px;
+  margin: 24px auto 0;
+  line-height: 1.75;
+}
+
+.markdown-document h1,
+.markdown-document h2,
+.markdown-document h3 {
+  scroll-margin-top: 20px;
+  margin-top: 1.5em;
+}
+
+.markdown-document pre {
+  overflow-x: auto;
+  padding: 14px;
+  border: 1px solid #243b67;
+  border-radius: 10px;
+  background: #07101e;
+}
+
+.markdown-document :not(pre) > code {
+  padding: 2px 5px;
+  border-radius: 5px;
+  background: #172744;
+}
+
+.markdown-document table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 14px 0;
+}
+
+.markdown-document th,
+.markdown-document td {
+  padding: 8px 10px;
+  border: 1px solid #29436f;
+  text-align: left;
+}
+
 * {
   box-sizing: border-box;
 }

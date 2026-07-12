@@ -8,12 +8,46 @@ use axum::{
 
 use crate::{
     models::settings::{
-        EventOverflowPolicyDto, EventSettingsResponse, UpdateEventSettingsRequest,
+        CompilerSettingsResponse, EventOverflowPolicyDto, EventSettingsResponse,
+        UpdateCompilerSettingsRequest, UpdateCompilerSettingsResponse, UpdateEventSettingsRequest,
         UpdateEventSettingsResponse,
     },
     services::event_bus::EventOverflowPolicy,
     AppState,
 };
+
+pub async fn get_compiler_settings(
+    State(state): State<Arc<AppState>>,
+) -> Json<CompilerSettingsResponse> {
+    Json(compiler_settings(&state))
+}
+
+pub async fn update_compiler_settings(
+    State(state): State<Arc<AppState>>,
+    Json(payload): Json<UpdateCompilerSettingsRequest>,
+) -> Json<UpdateCompilerSettingsResponse> {
+    state
+        .ebpf_loader
+        .set_resident_compiler(payload.resident)
+        .await;
+    Json(UpdateCompilerSettingsResponse {
+        ok: true,
+        message: "compiler mode updated".to_string(),
+        settings: compiler_settings(&state),
+    })
+}
+
+fn compiler_settings(state: &AppState) -> CompilerSettingsResponse {
+    let resident = state.ebpf_loader.resident_compiler_enabled();
+    CompilerSettingsResponse {
+        resident,
+        strategy: if resident {
+            "resident_cache"
+        } else {
+            "on_demand"
+        },
+    }
+}
 
 pub async fn get_event_settings(
     State(state): State<Arc<AppState>>,

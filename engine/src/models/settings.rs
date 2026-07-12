@@ -25,3 +25,21 @@ pub struct UpdateEventSettingsResponse {
     pub message: String,
     pub settings: Option<EventSettingsResponse>,
 }
+
+#[derive(Debug, Deserialize)]
+pub struct UpdateCompilerSettingsRequest {
+    pub resident: bool,
+}
+
+#[derive(Debug, Serialize)]
+pub struct CompilerSettingsResponse {
+    pub resident: bool,
+    pub strategy: &'static str,
+}
+
+#[derive(Debug, Serialize)]
+pub struct UpdateCompilerSettingsResponse {
+    pub ok: bool,
+    pub message: String,
+    pub settings: CompilerSettingsResponse,
+}
