@@ -4,9 +4,15 @@ Run the full Cyanrex stack with Docker Compose.
 
 ## Services
 
-- `postgres` on `127.0.0.1:15432`
-- `engine` on `127.0.0.1:8080`
-- `frontend` on `127.0.0.1:3000`
+ - `postgres` on `127.0.0.1:15432` by default (`CYANREX_POSTGRES_PORT`)
+ - `engine` on `127.0.0.1:8080` by default (`CYANREX_ENGINE_PORT`)
+ - `frontend` on `127.0.0.1:3000` by default (`CYANREX_FRONTEND_PORT`)
+- Multiple instances can run simultaneously by setting distinct IDs and ports:
+  - `--instance-id room-a` and `--instance-id room-b`
+  - `--engine-port`, `--frontend-port`, and `--postgres-port`
+- Example quick assignment (avoid collisions):
+  - room-a: `--instance-id room-a --engine-port 18080 --frontend-port 13000 --postgres-port 25433`
+  - room-b: `--instance-id room-b --engine-port 18081 --frontend-port 13001 --postgres-port 25434`
 
 ## eBPF Notes
 
@@ -20,10 +26,15 @@ Run the full Cyanrex stack with Docker Compose.
 
 ```bash
 ./start.sh start
+# optional pre-flight check before classroom launch:
+./scripts/check-instance-conflicts.sh --instance-id room-c --engine-port 18100 --frontend-port 13100 --postgres-port 25435
 # explicit Docker backend:
 ./start.sh start --mode docker
 # force rebuild when Dockerfile/dependencies changed:
 ./start.sh start --rebuild
+./start.sh start --instance-id room-a --engine-port 18080 --frontend-port 13000 --postgres-port 15433
+./start.sh status --instance-id room-a
+./start.sh stop --instance-id room-a
 ```
 
 The launcher creates `docker/.env` with random database, administrator, and TOTP secrets on the

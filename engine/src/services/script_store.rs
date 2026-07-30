@@ -12,6 +12,7 @@ use sqlx::{postgres::PgPoolOptions, PgPool, Row};
 use tokio::sync::{OnceCell, RwLock};
 use uuid::Uuid;
 
+use crate::config::runtime_instance_id;
 use crate::models::script::UserScript;
 
 #[derive(Clone)]
@@ -28,6 +29,12 @@ impl Default for ScriptStore {
         let root = std::env::var("CYANREX_DATA_DIR")
             .map(PathBuf::from)
             .unwrap_or_else(|_| PathBuf::from("./data"));
+        let instance_id = runtime_instance_id();
+        let data_dir = if instance_id == "default" {
+            root.join("scripts")
+        } else {
+            root.join("scripts").join(instance_id)
+        };
         let db_pool = std::env::var("DATABASE_URL")
             .ok()
             .filter(|value| !value.trim().is_empty())
@@ -40,7 +47,7 @@ impl Default for ScriptStore {
 
         Self {
             in_memory: Arc::new(RwLock::new(HashMap::new())),
-            data_dir: root.join("scripts"),
+            data_dir,
             db_pool,
             schema_ready: Arc::new(OnceCell::new()),
             db_disabled: Arc::new(AtomicBool::new(false)),
@@ -174,6 +181,9 @@ impl ScriptStore {
     }
 
     fn active_pool(&self) -> Option<&PgPool> {
+        if !crate::config::db_fallback_enabled() {
+            return None;
+        }
         if self.db_disabled.load(Ordering::Relaxed) {
             return None;
         }

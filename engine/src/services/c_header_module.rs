@@ -3,6 +3,7 @@ use std::{collections::HashSet, path::PathBuf};
 use tokio::fs;
 use tokio::process::Command;
 
+use crate::config::runtime_instance_id;
 use crate::models::c_headers::{
     HeaderModuleItem, HeaderModuleState, HeaderSelectionMetadata, SelectedHeaderMetadata,
 };
@@ -68,13 +69,17 @@ pub struct CHeaderModule {
 
 impl Default for CHeaderModule {
     fn default() -> Self {
+        let instance_id = runtime_instance_id();
         let root = std::env::var("CYANREX_DATA_DIR")
             .map(PathBuf::from)
             .unwrap_or_else(|_| PathBuf::from("./data"));
+        let data_dir = if instance_id == "default" {
+            root.join("c_headers")
+        } else {
+            root.join("c_headers").join(instance_id)
+        };
 
-        Self {
-            data_dir: root.join("c_headers"),
-        }
+        Self { data_dir }
     }
 }
 

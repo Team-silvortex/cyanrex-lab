@@ -1,5 +1,5 @@
 import type * as Monaco from "monaco-editor";
-import type { EbpfCompletionResponse } from "../features/ebpf/models";
+import type { EbpfCompletionItem, EbpfCompletionResponse } from "../features/ebpf/models";
 
 type HoverDoc = {
   title: string;
@@ -216,6 +216,16 @@ const COMPLETIONS = [
   },
 ] as const;
 
+type CompletionCacheEntry = {
+  createdAt: number;
+  items: EbpfCompletionItem[];
+};
+
+const COMPLETION_CACHE_TTL_MS = 5_000;
+const COMPLETION_CACHE_MAX_ENTRIES = 18;
+const completionCache = new Map<string, CompletionCacheEntry>();
+const inFlightCompletions = new Map<string, Promise<EbpfCompletionResponse>>();
+
 function toCompletionKind(monaco: typeof Monaco, kind: (typeof COMPLETIONS)[number]["kind"]) {
   if (kind === "function") return monaco.languages.CompletionItemKind.Function;
   if (kind === "constant") return monaco.languages.CompletionItemKind.Constant;
@@ -251,21 +261,34 @@ export function registerEbpfIntelligence(
       if (!semanticTrigger) return { suggestions };
 
       const controller = new AbortController();
+      const code = model.getValue();
+      const cacheKey = createCompletionCacheKey(engineUrl, code, position.lineNumber, position.column);
+      const now = Date.now();
+      const cached = completionCache.get(cacheKey);
+      if (cached && now < cached.createdAt + COMPLETION_CACHE_TTL_MS) {
+        for (const item of cached.items) {
+          suggestions.push({
+            label: item.label,
+            kind: toSemanticCompletionKind(monaco, item.kind),
+            insertText: item.insert_text || item.label,
+            detail: `clang · ${item.detail}`,
+            sortText: `0-${item.label}`,
+            range,
+          });
+        }
+        return { suggestions };
+      }
+
       const cancellation = token.onCancellationRequested(() => controller.abort());
       try {
-        const response = await fetch(`${engineUrl}/ebpf/complete`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          signal: controller.signal,
-          body: JSON.stringify({
-            code: model.getValue(),
-            line: position.lineNumber,
-            column: position.column,
-          }),
-        });
-        if (!response.ok || token.isCancellationRequested) return { suggestions };
-        const semantic = (await response.json()) as EbpfCompletionResponse;
+        const semantic = await requestCompletion(
+          cacheKey,
+          code,
+          position,
+          engineUrl,
+          controller.signal,
+        );
+        if (token.isCancellationRequested || !semantic.ok) return { suggestions };
         for (const item of semantic.items) {
           suggestions.push({
             label: item.label,
@@ -275,6 +298,13 @@ export function registerEbpfIntelligence(
             sortText: `0-${item.label}`,
             range,
           });
+        }
+        if (semantic.items.length > 0) {
+          completionCache.set(cacheKey, {
+            createdAt: Date.now(),
+            items: semantic.items,
+          });
+          pruneCompletionCache();
         }
       } catch {
         // Local snippets remain available when semantic completion is offline.
@@ -452,6 +482,81 @@ export function registerEbpfIntelligence(
       definitions.dispose();
       actions.dispose();
     },
+  };
+}
+
+function requestCompletion(
+  cacheKey: string,
+  code: string,
+  position: Monaco.Position,
+  engineUrl: string,
+  signal: AbortSignal,
+): Promise<EbpfCompletionResponse> {
+  const inFlight = inFlightCompletions.get(cacheKey);
+  if (inFlight) return inFlight;
+
+  const request = (async () => {
+    const response = await fetch(`${engineUrl}/ebpf/complete`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      signal,
+      body: JSON.stringify({
+        code,
+        line: position.lineNumber,
+        column: position.column,
+      }),
+    });
+    if (!response.ok) {
+      return completionFailure(`HTTP ${response.status}`);
+    }
+    return (await response.json()) as EbpfCompletionResponse;
+  })();
+
+  inFlightCompletions.set(cacheKey, request);
+  request.finally(() => {
+    inFlightCompletions.delete(cacheKey);
+  });
+  return request;
+}
+
+function pruneCompletionCache() {
+  const now = Date.now();
+  for (const [key, item] of completionCache) {
+    if (item.createdAt + COMPLETION_CACHE_TTL_MS <= now) {
+      completionCache.delete(key);
+    }
+  }
+  while (completionCache.size > COMPLETION_CACHE_MAX_ENTRIES) {
+    const key = completionCache.keys().next().value;
+    if (key === undefined) break;
+    completionCache.delete(key);
+  }
+}
+
+function createCompletionCacheKey(
+  engineUrl: string,
+  code: string,
+  line: number,
+  column: number,
+): string {
+  return `${engineUrl}|${line}:${column}|${hashCode(code)}`;
+}
+
+function hashCode(value: string): string {
+  let hash = 0x811c9dc5;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 0x01000193) >>> 0;
+  }
+  return `${hash.toString(16)}-${value.length}`;
+}
+
+function completionFailure(message: string): EbpfCompletionResponse {
+  return {
+    ok: false,
+    items: [],
+    message,
   };
 }
 

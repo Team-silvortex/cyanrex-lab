@@ -1,13 +1,17 @@
 impl EbpfLoader {
     pub async fn check(&self, code: &str) -> EbpfCheckResponse {
+        self.check_with_cache_status(code).await.0
+    }
+
+    pub async fn check_with_cache_status(&self, code: &str) -> (EbpfCheckResponse, bool) {
         if code.trim().is_empty() {
-            return check_failure("eBPF source code is empty", String::new());
+            return (check_failure("eBPF source code is empty", String::new()), false);
         }
 
         let cache_key = source_cache_key(code);
         if let Some((created, response)) = self.check_cache.read().await.get(&cache_key) {
             if self.resident_compiler_enabled() || created.elapsed() < Duration::from_secs(60) {
-                return response.clone();
+                return (response.clone(), true);
             }
         }
 
@@ -20,13 +24,13 @@ impl EbpfLoader {
         let _ = fs::remove_dir_all(&temp_dir).await;
         let mut cache = self.check_cache.write().await;
         let cache_limit = if self.resident_compiler_enabled() { 512 } else { 64 };
-        if cache.len() >= cache_limit {
-            if let Some(oldest) = cache.iter().min_by_key(|(_, value)| value.0).map(|(key, _)| key.clone()) {
-                cache.remove(&oldest);
+        if cache.len() >= cache_limit && cache_limit > 0 {
+            if let Some(oldest_key) = cache.keys().next().cloned() {
+                cache.remove(&oldest_key);
             }
         }
         cache.insert(cache_key, (Instant::now(), response.clone()));
-        response
+        (response, false)
     }
 
     async fn check_in_directory(&self, code: &str, temp_dir: &Path) -> EbpfCheckResponse {

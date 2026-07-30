@@ -72,12 +72,12 @@ export default function HelperPage() {
         {error && <p className="error" style={{ marginTop: 12 }}>{error}</p>}
 
         {report && (
-          <div style={{ marginTop: 16 }}>
+            <div style={{ marginTop: 16 }}>
             <p>
               <strong>{t("helper.overall")}:</strong> {report.overall_ok ? t("helper.ok") : t("helper.notReady")}
             </p>
             <p>
-              <strong>Backend:</strong> <code>{report.runtime_mode}</code>
+              <strong>{t("helper.backend")}:</strong> <code>{report.runtime_mode}</code>
             </p>
             <p className="meta">{report.runtime_guidance}</p>
             <p className="meta">
@@ -88,7 +88,7 @@ export default function HelperPage() {
               {report.checks.map((check) => (
                 <article key={check.name} className="panel" style={{ background: "#0b1425" }}>
                   <p>
-                    <strong>{check.name}</strong>: {check.ok ? t("helper.ok") : "FAIL"}
+                    <strong>{check.name}</strong>: {check.ok ? t("helper.ok") : t("helper.fail")}
                   </p>
                   <p className="meta" style={{ margin: 0 }}>{check.detail}</p>
                 </article>

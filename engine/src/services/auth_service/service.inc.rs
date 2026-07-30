@@ -454,6 +454,9 @@ impl AuthService {
     }
 
     fn active_pool(&self) -> Option<&PgPool> {
+        if !crate::config::db_fallback_enabled() {
+            return None;
+        }
         if self.db_disabled.load(Ordering::Relaxed) {
             return None;
         }

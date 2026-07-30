@@ -1,11 +1,11 @@
 use std::{
-    collections::BTreeMap,
+    collections::HashMap,
     convert::TryFrom,
     path::{Path, PathBuf},
     process::Stdio,
     sync::{
         atomic::{AtomicBool, Ordering},
-        Arc,
+        Arc, OnceLock,
     },
     time::Instant,
 };
@@ -27,10 +27,10 @@ use crate::models::ebpf::{
 
 #[derive(Clone, Default)]
 pub struct EbpfLoader {
-    attachments: Arc<RwLock<BTreeMap<String, AttachmentRecord>>>,
-    aya_sessions: Arc<RwLock<BTreeMap<String, AyaSession>>>,
-    check_cache: Arc<RwLock<BTreeMap<String, (Instant, EbpfCheckResponse)>>>,
-    completion_cache: Arc<RwLock<BTreeMap<String, (Instant, EbpfCompletionResponse)>>>,
+    attachments: Arc<RwLock<HashMap<String, AttachmentRecord>>>,
+    aya_sessions: Arc<RwLock<HashMap<String, AyaSession>>>,
+    check_cache: Arc<RwLock<HashMap<String, (Instant, EbpfCheckResponse)>>>,
+    completion_cache: Arc<RwLock<HashMap<String, (Instant, EbpfCompletionResponse)>>>,
     resident_compiler: Arc<AtomicBool>,
 }
 
@@ -46,6 +46,7 @@ struct AyaSession {
 }
 
 static VMLINUX_HEADER_CACHE: OnceCell<PathBuf> = OnceCell::const_new();
+static MULTIARCH_INCLUDE_CACHE: OnceLock<Option<PathBuf>> = OnceLock::new();
 
 fn source_cache_key(code: &str) -> String {
     format!("{:x}", Sha256::digest(code.as_bytes()))

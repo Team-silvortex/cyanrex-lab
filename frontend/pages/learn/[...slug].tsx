@@ -4,8 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 
 import MarkdownDocument from "../../src/components/MarkdownDocument";
 import SidebarLayout from "../../src/components/SidebarLayout";
+import { useI18n } from "../../src/i18n/context";
 
 export default function CourseDocumentPage() {
+  const { locale, t } = useI18n();
   const router = useRouter();
   const slug = useMemo(() => {
     const value = router.query.slug;
@@ -14,32 +16,57 @@ export default function CourseDocumentPage() {
   }, [router.query.slug]);
   const [markdown, setMarkdown] = useState("");
   const [error, setError] = useState("");
+  const [usedFallback, setUsedFallback] = useState(false);
+  const [fallbackLocale, setFallbackLocale] = useState<string>("");
+
+  const fallbackLocaleName: Record<string, string> = {
+    "zh-CN": "简体中文",
+    en: "English",
+    es: "Español",
+    ja: "日本語",
+  };
 
   useEffect(() => {
     if (!slug) return;
+
     const controller = new AbortController();
     setError("");
-    fetch(`/course/zh-CN/${slug}.md`, { signal: controller.signal })
-      .then((response) => {
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        return response.text();
-      })
-      .then(setMarkdown)
-      .catch((reason) => {
-        if (reason.name !== "AbortError") setError("教程文档加载失败，请返回课程目录重试。");
-      });
+    setMarkdown("");
+    setUsedFallback(false);
+
+    const candidates = locale === "zh-CN" ? ["zh-CN", "en"] : [locale, "en", "zh-CN"];
+    const loadMarkdown = async () => {
+      for (const candidate of candidates) {
+        try {
+          const response = await fetch(`/course/${candidate}/${slug}.md`, { signal: controller.signal });
+          if (!response.ok) continue;
+          setMarkdown(await response.text());
+          const isFallback = candidate !== locale;
+          setUsedFallback(isFallback);
+          setFallbackLocale(isFallback ? (fallbackLocaleName[candidate] ?? candidate) : "");
+          setError("");
+          return;
+        } catch (error) {
+          if ((error as Error).name === "AbortError") return;
+        }
+      }
+      setError(t("learn.loadFailed"));
+    };
+
+    void loadMarkdown();
     return () => controller.abort();
-  }, [slug]);
+  }, [slug, locale, t]);
 
   return (
-    <SidebarLayout title="教程">
+    <SidebarLayout title={t("learn.slugTitle")}>
       <section className="panel">
         <div className="row" style={{ justifyContent: "space-between" }}>
-          <Link href="/learn">← 返回学习中心</Link>
-          <span className="meta">{slug || "loading"}</span>
+          <Link href="/learn">{t("learn.backToCenter")}</Link>
+          <span className="meta">{slug || t("learn.slugLoading")}</span>
         </div>
         {error && <p className="error">{error}</p>}
-        {!error && !markdown && <p className="meta">正在加载教程…</p>}
+        {usedFallback && <p className="meta">{t("learn.documentFallback", { language: fallbackLocale })}</p>}
+        {!error && !markdown && <p className="meta">{t("learn.slugLoading")}</p>}
         {markdown && <MarkdownDocument markdown={markdown} currentSlug={`${slug}.md`} />}
       </section>
     </SidebarLayout>

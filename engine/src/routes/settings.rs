@@ -9,8 +9,8 @@ use axum::{
 use crate::{
     models::settings::{
         CompilerSettingsResponse, EventOverflowPolicyDto, EventSettingsResponse,
-        UpdateCompilerSettingsRequest, UpdateCompilerSettingsResponse, UpdateEventSettingsRequest,
-        UpdateEventSettingsResponse,
+        PerformanceMetricsResponse, UpdateCompilerSettingsRequest, UpdateCompilerSettingsResponse,
+        UpdateEventSettingsRequest, UpdateEventSettingsResponse,
     },
     services::event_bus::EventOverflowPolicy,
     AppState,
@@ -20,6 +20,12 @@ pub async fn get_compiler_settings(
     State(state): State<Arc<AppState>>,
 ) -> Json<CompilerSettingsResponse> {
     Json(compiler_settings(&state))
+}
+
+pub async fn get_performance_metrics(
+    State(state): State<Arc<AppState>>,
+) -> Json<PerformanceMetricsResponse> {
+    Json(state.performance_snapshot())
 }
 
 pub async fn update_compiler_settings(

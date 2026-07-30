@@ -90,7 +90,7 @@ export default function EventsPage() {
 
       ws.onerror = () => {
         if (!alive) return;
-        setError("WebSocket error");
+        setError(t("events.websocketError"));
       };
 
       ws.onclose = () => {
@@ -234,7 +234,7 @@ export default function EventsPage() {
       <section className="panel">
         <h2>{t("events.title")}</h2>
         <p className="meta">
-          {t("events.status")}: {connection} | {t("events.total")}: {events.length} | {t("events.filtered")}: {filteredEvents.length} | {t("events.activeFilters", { count: activeFilterCount })}
+          {t("events.status")}: {connection === "connecting" ? t("events.connectionConnecting") : connection === "open" ? t("events.connectionOpen") : t("events.connectionClosed")} | {t("events.total")}: {events.length} | {t("events.filtered")}: {filteredEvents.length} | {t("events.activeFilters", { count: activeFilterCount })}
         </p>
         <div className="row" style={{ marginTop: 10 }}>
           <label className="meta">
@@ -281,12 +281,12 @@ export default function EventsPage() {
               </label>
             </>
           )}
-          <label className="meta">
+            <label className="meta">
             {t("events.export")}:
             {" "}
             <select value={exportFormat} onChange={(event) => setExportFormat(event.target.value as typeof exportFormat)}>
-              <option value="json">json</option>
-              <option value="csv">csv</option>
+              <option value="json">{t("events.exportJson")}</option>
+              <option value="csv">{t("events.exportCsv")}</option>
             </select>
           </label>
           <button type="button" onClick={exportEvents}>{t("events.exportDownload")}</button>
@@ -301,14 +301,14 @@ export default function EventsPage() {
           .slice()
           .reverse()
           .map((event, idx) => {
-            const safetyBadges = extractSafetyBadges(event);
+            const safetyBadges = extractSafetyBadges(event, t);
             return (
               <article key={`${event.timestamp}-${idx}`} className="panel" style={{ marginBottom: 10, background: "#0b1425" }}>
                 <p style={{ margin: 0 }}>
                   <strong>{event.event_type}</strong>
                 </p>
                 <p className="meta" style={{ margin: "6px 0" }}>
-                  {new Date(event.timestamp).toLocaleString()} | source: {event.source} | category: {event.category}
+                  {new Date(event.timestamp).toLocaleString()} | {t("events.sourceField")}: {event.source} | {t("events.categoryField")}: {event.category}
                 </p>
                 <p className={`event-tag ${event.color}`} style={{ margin: "0 0 8px 0" }}>
                   {event.severity.toUpperCase()}
@@ -375,15 +375,18 @@ function timeFilterPass(
   return true;
 }
 
-function extractSafetyBadges(event: EngineEvent): Array<{ text: string; tone: SafetyTone }> {
+function extractSafetyBadges(
+  event: EngineEvent,
+  t: (key: string, vars?: Record<string, string | number>) => string,
+): Array<{ text: string; tone: SafetyTone }> {
   if (event.event_type !== "ebpf.detached") return [];
 
   const badges: Array<{ text: string; tone: SafetyTone }> = [];
   const clean = typeof event.payload.clean === "boolean" ? event.payload.clean : undefined;
   if (clean === true) {
-    badges.push({ text: "Detach Clean", tone: "ok" });
+    badges.push({ text: t("events.detachClean"), tone: "ok" });
   } else if (clean === false) {
-    badges.push({ text: "Detach With Risk", tone: "warn" });
+    badges.push({ text: t("events.detachWithRisk"), tone: "warn" });
   }
 
   const notes = Array.isArray(event.payload.safety_notes)
@@ -392,7 +395,7 @@ function extractSafetyBadges(event: EngineEvent): Array<{ text: string; tone: Sa
 
   for (const note of notes) {
     badges.push({
-      text: mapSafetyNoteToLabel(note),
+      text: mapSafetyNoteToLabel(note, t),
       tone: "warn",
     });
   }
@@ -400,10 +403,13 @@ function extractSafetyBadges(event: EngineEvent): Array<{ text: string; tone: Sa
   return badges;
 }
 
-function mapSafetyNoteToLabel(note: string): string {
-  if (note.includes("still exists after detach")) return "Residual Pin Path";
-  if (note.includes("still tracked in attachment set")) return "Attachment Tracking Residue";
-  if (note.includes("detach all requested but")) return "Detach-All Incomplete";
+function mapSafetyNoteToLabel(
+  note: string,
+  t: (key: string, vars?: Record<string, string | number>) => string,
+): string {
+  if (note.includes("still exists after detach")) return t("events.residualPinPath");
+  if (note.includes("still tracked in attachment set")) return t("events.attachmentTrackingResidue");
+  if (note.includes("detach all requested but")) return t("events.detachAllIncomplete");
   return note;
 }
 

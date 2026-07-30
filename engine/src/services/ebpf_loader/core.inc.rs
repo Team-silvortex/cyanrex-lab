@@ -117,6 +117,21 @@ impl EbpfLoader {
         }
 
         let bpffs_pin = Self::pin_path();
+        if runtime_backend != EbpfRuntimeBackend::Aya {
+            if let Err(error) = fs::create_dir_all(&bpffs_pin).await {
+                return EbpfRunResponse {
+                    success: false,
+                    stage: "setup".to_string(),
+                    message: format!("failed to prepare pin directory: {error}"),
+                    compile_stdout,
+                    compile_stderr,
+                    load_stdout: String::new(),
+                    load_stderr: String::new(),
+                    pin_path: Some(bpffs_pin.display().to_string()),
+                };
+            }
+        }
+
         if runtime_backend == EbpfRuntimeBackend::Aya {
             return self
                 .run_with_aya(
@@ -414,16 +429,23 @@ impl EbpfLoader {
     }
 
     fn pin_path() -> PathBuf {
-        let name = format!(
-            "/sys/fs/bpf/cyanrex_{}_{}",
-            std::process::id(),
-            chrono::Utc::now().timestamp_millis()
-        );
-        PathBuf::from(name)
+        let namespace = crate::config::runtime_instance_id();
+        let name = format!("{}_{}", std::process::id(), chrono::Utc::now().timestamp_millis());
+        PathBuf::from("/sys/fs/bpf/cyanrex")
+            .join(namespace)
+            .join(name)
     }
 
     fn validate_pin_path(path: &str) -> Result<(), String> {
-        if !path.starts_with("/sys/fs/bpf/cyanrex_") {
+        if Path::new(path)
+            .components()
+            .any(|component| component == std::path::Component::ParentDir)
+        {
+            return Err("pin path contains parent directory traversal".to_string());
+        }
+
+        let namespace = Path::new("/sys/fs/bpf/cyanrex").join(crate::config::runtime_instance_id());
+        if !Path::new(path).starts_with(namespace) {
             return Err("pin path is outside cyanrex managed namespace".to_string());
         }
         Ok(())

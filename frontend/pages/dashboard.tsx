@@ -13,12 +13,12 @@ export default function DashboardPage() {
       <section className="grid cols-2" style={{ marginTop: 16 }}>
         <article className="panel">
           <h3>{t("dashboard.systemHealth")}</h3>
-          <p className="meta">Engine API: <code>/health</code></p>
-          <p>Use the sidebar to run eBPF programs and inspect responses.</p>
+          <p className="meta">{t("dashboard.engineHealthApi")}: <code>/health</code></p>
+          <p>{t("dashboard.quickstartHint")}</p>
         </article>
         <article className="panel">
           <h3>{t("dashboard.quickActions")}</h3>
-          <p className="meta">Open <code>eBPF Runner</code> to upload C code and execute loader pipeline.</p>
+          <p className="meta">{t("dashboard.runnerHint")}</p>
         </article>
       </section>
     </SidebarLayout>

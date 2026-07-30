@@ -1,13 +1,22 @@
 impl EbpfLoader {
     pub async fn complete(&self, code: &str, line: usize, column: usize) -> EbpfCompletionResponse {
+        self.complete_with_cache_status(code, line, column).await.0
+    }
+
+    pub async fn complete_with_cache_status(
+        &self,
+        code: &str,
+        line: usize,
+        column: usize,
+    ) -> (EbpfCompletionResponse, bool) {
         if code.trim().is_empty() || line == 0 || column == 0 {
-            return completion_failure("source and one-based cursor position are required");
+            return (completion_failure("source and one-based cursor position are required"), false);
         }
 
         let cache_key = format!("{}:{line}:{column}", source_cache_key(code));
         if let Some((created, response)) = self.completion_cache.read().await.get(&cache_key) {
             if self.resident_compiler_enabled() || created.elapsed() < Duration::from_secs(30) {
-                return response.clone();
+                return (response.clone(), true);
             }
         }
 
@@ -19,13 +28,13 @@ impl EbpfLoader {
         let _ = fs::remove_dir_all(&temp_dir).await;
         let mut cache = self.completion_cache.write().await;
         let cache_limit = if self.resident_compiler_enabled() { 1024 } else { 128 };
-        if cache.len() >= cache_limit {
-            if let Some(oldest) = cache.iter().min_by_key(|(_, value)| value.0).map(|(key, _)| key.clone()) {
-                cache.remove(&oldest);
+        if cache.len() >= cache_limit && cache_limit > 0 {
+            if let Some(oldest_key) = cache.keys().next().cloned() {
+                cache.remove(&oldest_key);
             }
         }
         cache.insert(cache_key, (Instant::now(), response.clone()));
-        response
+        (response, false)
     }
 
     async fn complete_in_directory(

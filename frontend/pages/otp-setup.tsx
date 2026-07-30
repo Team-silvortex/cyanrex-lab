@@ -77,7 +77,7 @@ export default function OtpSetupPage() {
               type="text"
               value={username}
               onChange={(event) => setUsername(event.target.value)}
-              placeholder="username"
+              placeholder={t("auth.usernamePlaceholder")}
               aria-label={t("auth.username")}
               required
             />
@@ -85,7 +85,7 @@ export default function OtpSetupPage() {
               type="password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              placeholder="password"
+              placeholder={t("auth.passwordPlaceholder")}
               aria-label={t("auth.password")}
               required
             />
@@ -97,23 +97,23 @@ export default function OtpSetupPage() {
 
         {error && <p className="error" style={{ marginTop: 12 }}>{sanitizeForDisplay(error)}</p>}
 
-        {payload && (
+            {payload && (
           <div className="panel" style={{ marginTop: 14, background: "#0b1425" }}>
             <p className="meta" style={{ marginTop: 0 }}>
-              issuer: {payload.issuer} | account: {payload.account_name}
+              {t("auth.issuerLabel")}: {payload.issuer} | {t("auth.accountLabel")}: {payload.account_name}
             </p>
             {qrDataUrl && (
               <img
                 src={qrDataUrl}
-                alt="TOTP QR code"
+                alt={t("auth.totpQrCode")}
                 style={{ width: 240, height: 240, borderRadius: 10, border: "1px solid #1d2f4f" }}
               />
             )}
             <p className="meta" style={{ marginTop: 10 }}>
-              secret: <code>{payload.secret}</code>
+              {t("auth.secretLabel")}: <code>{payload.secret}</code>
             </p>
             <p className="meta" style={{ overflowWrap: "anywhere" }}>
-              otpauth: <code>{payload.otpauth_uri}</code>
+              {t("auth.otpauthLabel")}: <code>{payload.otpauth_uri}</code>
             </p>
           </div>
         )}

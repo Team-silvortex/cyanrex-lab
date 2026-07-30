@@ -202,17 +202,19 @@ impl EbpfLoader {
     }
 
     fn resolve_multiarch_include() -> Option<PathBuf> {
-        let candidates = [
-            "/usr/include/x86_64-linux-gnu",
-            "/usr/include/aarch64-linux-gnu",
-            "/usr/include/arm-linux-gnueabihf",
-            "/usr/include/riscv64-linux-gnu",
-        ];
-
-        candidates
-            .iter()
-            .map(PathBuf::from)
-            .find(|dir| dir.join("asm/types.h").exists())
+        MULTIARCH_INCLUDE_CACHE
+            .get_or_init(|| {
+                [
+                    "/usr/include/x86_64-linux-gnu",
+                    "/usr/include/aarch64-linux-gnu",
+                    "/usr/include/arm-linux-gnueabihf",
+                    "/usr/include/riscv64-linux-gnu",
+                ]
+                .iter()
+                .map(PathBuf::from)
+                .find(|dir| dir.join("asm/types.h").exists())
+            })
+            .clone()
     }
 
     fn autoattach_unsupported(stderr: &str) -> bool {

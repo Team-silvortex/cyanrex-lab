@@ -36,7 +36,7 @@ export default function RegisterPage() {
     setQrDataUrl(null);
 
     if (password !== confirmPassword) {
-      setError("password confirmation mismatch");
+      setError(t("auth.passwordMismatch"));
       return;
     }
 
@@ -83,7 +83,7 @@ export default function RegisterPage() {
               type="text"
               value={username}
               onChange={(event) => setUsername(event.target.value)}
-              placeholder="username (>=3)"
+              placeholder={t("auth.usernamePlaceholderCreate")}
               aria-label={t("auth.username")}
               required
             />
@@ -91,7 +91,7 @@ export default function RegisterPage() {
               type="password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              placeholder="password (>=8)"
+              placeholder={t("auth.passwordPlaceholderCreate")}
               aria-label={t("auth.password")}
               required
             />
@@ -113,17 +113,17 @@ export default function RegisterPage() {
         {payload && (
           <div className="panel" style={{ marginTop: 14, background: "#0b1425" }}>
             <p className="meta" style={{ marginTop: 0 }}>
-              账号创建成功：{payload.account_name}
+              {t("auth.accountCreated", { account: payload.account_name ?? "" })}
             </p>
             {qrDataUrl && (
               <img
                 src={qrDataUrl}
-                alt="OTP QR code"
+                alt={t("auth.totpQrCode")}
                 style={{ width: 240, height: 240, borderRadius: 10, border: "1px solid #1d2f4f" }}
               />
             )}
             <p className="meta" style={{ marginTop: 10 }}>
-              secret: <code>{payload.secret}</code>
+              {t("auth.secretLabel")}: <code>{payload.secret}</code>
             </p>
           </div>
         )}

@@ -7,9 +7,9 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in docker/.env}
       POSTGRES_DB: cyanrex
     ports:
-      - "127.0.0.1:15432:5432"
+      - "${CYANREX_BIND_ADDRESS:-127.0.0.1}:${CYANREX_POSTGRES_PORT:-15432}:5432"
     volumes:
-      - cyanrex-postgres-data:/var/lib/postgresql/data
+      - cyanrex-postgres-data-${CYANREX_INSTANCE_ID:-default}:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d cyanrex"]
       interval: 5s
@@ -25,7 +25,6 @@ services:
         DEBIAN_IMAGE: ${ENGINE_DEBIAN_IMAGE:-debian:bookworm}
         APT_MIRROR: ${ENGINE_APT_MIRROR:-deb.debian.org}
         CARGO_SOURCE_MIRROR: ${ENGINE_CARGO_REGISTRY_INDEX:-}
-    container_name: cyanrex-engine
     restart: unless-stopped
     # This is an intentionally privileged teaching sandbox. Never expose it to untrusted users.
     privileged: true
@@ -44,29 +43,32 @@ services:
         hard: -1
     environment:
       ENGINE_HOST: 0.0.0.0
-      ENGINE_PORT: 8080
+      ENGINE_PORT: ${CYANREX_ENGINE_PORT:-8080}
       DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/cyanrex
       RUST_LOG: info
       CYANREX_RUNTIME_MODE: docker
       CYANREX_ADMIN_USERNAME: admin
+      CYANREX_INSTANCE_ID: ${CYANREX_INSTANCE_ID:-default}
       CYANREX_ADMIN_PASSWORD: ${CYANREX_ADMIN_PASSWORD:?set CYANREX_ADMIN_PASSWORD in docker/.env}
       CYANREX_ADMIN_TOTP_SECRET: ${CYANREX_ADMIN_TOTP_SECRET:?set CYANREX_ADMIN_TOTP_SECRET in docker/.env}
       CYANREX_ALLOW_REGISTRATION: ${CYANREX_ALLOW_REGISTRATION:-false}
       CYANREX_ALLOW_TOTP_BOOTSTRAP: ${CYANREX_ALLOW_TOTP_BOOTSTRAP:-false}
       CYANREX_SECURE_COOKIES: ${CYANREX_SECURE_COOKIES:-false}
       CYANREX_ROTATE_ADMIN_CREDENTIALS: ${CYANREX_ROTATE_ADMIN_CREDENTIALS:-false}
+      CYANREX_FRONTEND_PORT: ${CYANREX_FRONTEND_PORT:-3000}
+      CYANREX_BIND_ADDRESS: ${CYANREX_BIND_ADDRESS:-127.0.0.1}
     depends_on:
       postgres:
         condition: service_healthy
     ports:
-      - "${CYANREX_BIND_ADDRESS:-127.0.0.1}:8080:8080"
+      - "${CYANREX_BIND_ADDRESS:-127.0.0.1}:${CYANREX_ENGINE_PORT:-8080}:8080"
     volumes:
       - /sys/fs/bpf:/sys/fs/bpf
       - /sys/kernel/tracing:/sys/kernel/tracing:ro
       - /sys/kernel/debug:/sys/kernel/debug:ro
       - /lib/modules:/lib/modules:ro
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/health"]
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:${CYANREX_ENGINE_PORT:-8080}/health"]
       interval: 5s
       timeout: 5s
       retries: 20
@@ -78,16 +80,15 @@ services:
       args:
         NODE_IMAGE: ${FRONTEND_NODE_IMAGE:-node:20}
         NPM_REGISTRY: ${FRONTEND_NPM_REGISTRY:-https://registry.npmjs.org}
-    container_name: cyanrex-frontend
     restart: unless-stopped
     environment:
       NODE_ENV: production
-      NEXT_PUBLIC_ENGINE_URL: http://localhost:8080
+      NEXT_PUBLIC_ENGINE_URL: http://localhost:${CYANREX_ENGINE_PORT:-8080}
     depends_on:
       engine:
         condition: service_healthy
     ports:
-      - "${CYANREX_BIND_ADDRESS:-127.0.0.1}:3000:3000"
+      - "${CYANREX_BIND_ADDRESS:-127.0.0.1}:${CYANREX_FRONTEND_PORT:-3000}:3000"
 
 volumes:
-  cyanrex-postgres-data:
+  cyanrex-postgres-data-${CYANREX_INSTANCE_ID:-default}:

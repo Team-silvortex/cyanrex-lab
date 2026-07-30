@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 COMPOSE_FILE="$ROOT_DIR/docker/docker-compose.yml"
 ENV_FILE="$ROOT_DIR/docker/.env"
+source "$ROOT_DIR/scripts/start-lock.sh"
 
 ensure_runtime_secrets() {
   if [ ! -f "$ENV_FILE" ]; then
@@ -34,17 +35,133 @@ ensure_runtime_secrets() {
   # shellcheck disable=SC1090
   source "$ENV_FILE"
   set +a
-  LOCAL_DATABASE_URL="postgres://postgres:${POSTGRES_PASSWORD}@localhost:15432/cyanrex"
+  : "${CYANREX_INSTANCE_ID:=default}"
+  : "${CYANREX_ENGINE_PORT:=8080}"
+  : "${CYANREX_FRONTEND_PORT:=3000}"
+  : "${CYANREX_POSTGRES_PORT:=15432}"
+  : "${CYANREX_BIND_ADDRESS:=127.0.0.1}"
+  : "${CYANREX_COMPOSE_PROJECT:=cyanrex-${CYANREX_INSTANCE_ID}}"
+  LOCAL_DATABASE_URL="postgres://postgres:${POSTGRES_PASSWORD}@localhost:${CYANREX_POSTGRES_PORT}/cyanrex"
+}
+
+sanitize_instance_id() {
+  local value="${1:-default}"
+  value="${value//[^a-zA-Z0-9_-]/}"
+  if [ -z "$value" ]; then
+    value="default"
+  fi
+  printf "%s" "$value"
+}
+
+validate_port() {
+  local name="$1"
+  local value="$2"
+  if ! [[ "$value" =~ ^[0-9]+$ ]]; then
+    echo "Error: --${name} must be numeric. Got: ${value}" >&2
+    exit 1
+  fi
+  if [ "$value" -lt 1 ] || [ "$value" -gt 65535 ]; then
+    echo "Error: --${name} must be in range 1..65535. Got: ${value}" >&2
+    exit 1
+  fi
+}
+
+normalize_and_apply_runtime_env() {
+  CYANREX_INSTANCE_ID="$(sanitize_instance_id "${CYANREX_INSTANCE_ID}")"
+  validate_port engine "$CYANREX_ENGINE_PORT"
+  validate_port frontend "$CYANREX_FRONTEND_PORT"
+  validate_port postgres "$CYANREX_POSTGRES_PORT"
+  CYANREX_COMPOSE_PROJECT="cyanrex-${CYANREX_INSTANCE_ID}"
+  export CYANREX_INSTANCE_ID
+  export CYANREX_ENGINE_PORT
+  export CYANREX_FRONTEND_PORT
+  export CYANREX_POSTGRES_PORT
+  export CYANREX_BIND_ADDRESS
+  export CYANREX_COMPOSE_PROJECT
+}
+
+parse_runtime_overrides() {
+  RUNTIME_ARGS=()
+  PARSED_OPTIONS=""
+  local runtime_arg_count=0
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --instance-id)
+        if [ $# -lt 2 ]; then
+          echo "Error: --instance-id requires a value." >&2
+          exit 1
+        fi
+        CYANREX_INSTANCE_ID="$2"
+        PARSED_OPTIONS+=" --instance-id"
+        shift 2
+        ;;
+      --engine-port)
+        if [ $# -lt 2 ]; then
+          echo "Error: --engine-port requires a port number." >&2
+          exit 1
+        fi
+        CYANREX_ENGINE_PORT="$2"
+        PARSED_OPTIONS+=" --engine-port"
+        shift 2
+        ;;
+      --frontend-port)
+        if [ $# -lt 2 ]; then
+          echo "Error: --frontend-port requires a port number." >&2
+          exit 1
+        fi
+        CYANREX_FRONTEND_PORT="$2"
+        PARSED_OPTIONS+=" --frontend-port"
+        shift 2
+        ;;
+      --postgres-port)
+        if [ $# -lt 2 ]; then
+          echo "Error: --postgres-port requires a port number." >&2
+          exit 1
+        fi
+        CYANREX_POSTGRES_PORT="$2"
+        PARSED_OPTIONS+=" --postgres-port"
+        shift 2
+        ;;
+      --bind-address)
+        if [ $# -lt 2 ]; then
+          echo "Error: --bind-address requires an IP address." >&2
+          exit 1
+        fi
+        CYANREX_BIND_ADDRESS="$2"
+        PARSED_OPTIONS+=" --bind-address"
+        shift 2
+        ;;
+      --skip-conflict-check)
+        SKIP_CONFLICT_CHECK=1
+        PARSED_OPTIONS+=" --skip-conflict-check"
+        shift
+        ;;
+      --skip-start-lock)
+        SKIP_START_LOCK=1
+        PARSED_OPTIONS+=" --skip-start-lock"
+        shift
+        ;;
+      *)
+        RUNTIME_ARGS[runtime_arg_count]="$1"
+        runtime_arg_count=$((runtime_arg_count + 1))
+        shift
+        ;;
+    esac
+  done
 }
 
 usage() {
   cat <<'USAGE'
 Usage:
-  ./start.sh start [--mode auto|docker|wsl|native] [--rebuild] [--pull] [--no-fallback]
+  ./start.sh start [--mode auto|docker|wsl|native] [--instance-id <id>] [--engine-port <port>] [--frontend-port <port>]
+                             [--postgres-port <port>] [--bind-address <addr>] [--rebuild] [--pull] [--no-fallback]
                               Start stack (default: docker fast-start)
-  ./start.sh stop              Stop docker stack
-  ./start.sh status            Show docker stack status
-  ./start.sh logs [service]    Follow docker logs (optional service)
+  ./start.sh stop [--instance-id <id>] [--skip-start-lock]
+                             Stop docker stack
+  ./start.sh status [--instance-id <id>] [--skip-start-lock]
+                               Show docker stack status
+  ./start.sh logs [--instance-id <id>] [--skip-start-lock] [service]
+                              Follow docker logs (optional service)
 
 Compatible shortcuts:
   ./start.sh                   Same as: ./start.sh start
@@ -56,9 +173,23 @@ Start options:
   --mode wsl     Run engine/frontend natively inside WSL2; PostgreSQL uses Docker
   --mode native  Run engine/frontend on native Linux; PostgreSQL uses Docker
   --local        Compatibility alias for --mode native
+  --instance-id   Override cyanrex runtime instance ID (for multi-instance coexistence)
+  --engine-port   Override engine listening/published port
+  --frontend-port Override frontend published port
+  --postgres-port Override postgres published port
+  --bind-address  Host IP used for published ports
+  --skip-conflict-check
+                 Skip runtime conflict precheck (for debug)
+  --skip-start-lock
+                 Bypass per-instance startup lock (unsafe, debug only)
   --rebuild      Force docker compose build (slower, for Dockerfile/deps changes)
   --pull         Pull latest base images before start (can be slow on poor network)
   --no-fallback  Disable fallback registry retry path
+
+Notes:
+  Operations that touch compose state (start/stop/status/logs) are serialized per
+  instance ID via a local start lock at:
+  .run/start-locks/${CYANREX_COMPOSE_PROJECT}.lock
 USAGE
 }
 
@@ -70,14 +201,14 @@ require_cmd() {
 }
 
 compose() {
-  docker compose -f "$COMPOSE_FILE" "$@"
+  docker compose -p "${CYANREX_COMPOSE_PROJECT}" -f "$COMPOSE_FILE" "$@"
 }
 
 print_endpoints() {
   echo "[cyanrex] Ready:"
-  echo "  frontend: http://localhost:3000"
-  echo "  engine:   http://localhost:8080/health"
-  echo "  postgres: 127.0.0.1:15432"
+  echo "  frontend: http://localhost:${CYANREX_FRONTEND_PORT}"
+  echo "  engine:   http://localhost:${CYANREX_ENGINE_PORT}/health"
+  echo "  postgres: ${CYANREX_BIND_ADDRESS}:${CYANREX_POSTGRES_PORT}"
   echo "  login:    admin (credentials are stored in docker/.env)"
 }
 
@@ -162,6 +293,33 @@ check_registry_mirrors() {
   fi
 }
 
+run_instance_conflict_check() {
+  local runtime_mode="${1:-docker}"
+  local -a check_args=(--allow-existing-running)
+
+  if [ "${SKIP_CONFLICT_CHECK:-0}" -eq 1 ]; then
+    echo "[cyanrex] Skipping instance conflict check (--skip-conflict-check)."
+    return
+  fi
+
+  if [ ! -x "$ROOT_DIR/scripts/check-instance-conflicts.sh" ]; then
+    echo "[cyanrex] Conflict checker not found; skipping."
+    return
+  fi
+
+  if [ "$runtime_mode" != "local" ]; then
+    check_args+=(--skip-port-checks-if-running)
+  fi
+
+  "$ROOT_DIR/scripts/check-instance-conflicts.sh" \
+    --instance-id "$CYANREX_INSTANCE_ID" \
+    --engine-port "$CYANREX_ENGINE_PORT" \
+    --frontend-port "$CYANREX_FRONTEND_PORT" \
+    --postgres-port "$CYANREX_POSTGRES_PORT" \
+    --bind-address "$CYANREX_BIND_ADDRESS" \
+    "${check_args[@]}"
+}
+
 start_docker_stack() {
   local force_rebuild="${1:-0}"
   local do_pull="${2:-0}"
@@ -169,6 +327,8 @@ start_docker_stack() {
 
   require_cmd docker
   ensure_runtime_secrets
+  normalize_and_apply_runtime_env
+  run_instance_conflict_check docker
   run_host_preflight
   check_registry_mirrors
   if [ "$do_pull" -eq 1 ]; then
@@ -213,6 +373,9 @@ start_local_stack() {
   require_cmd npm
   require_cmd sudo
   ensure_runtime_secrets
+  normalize_and_apply_runtime_env
+  run_instance_conflict_check local
+  RUNNING_LOCAL_STACK=1
   run_host_preflight
   check_registry_mirrors
 
@@ -226,7 +389,10 @@ start_local_stack() {
   (
     sudo env \
     ENGINE_HOST=0.0.0.0 \
-    ENGINE_PORT=8080 \
+    ENGINE_PORT="${CYANREX_ENGINE_PORT}" \
+    CYANREX_INSTANCE_ID="${CYANREX_INSTANCE_ID}" \
+    CYANREX_FRONTEND_PORT="${CYANREX_FRONTEND_PORT}" \
+    CYANREX_BIND_ADDRESS="${CYANREX_BIND_ADDRESS}" \
     DATABASE_URL="$LOCAL_DATABASE_URL" \
     CYANREX_ADMIN_USERNAME=admin \
     CYANREX_ADMIN_PASSWORD="$CYANREX_ADMIN_PASSWORD" \
@@ -244,11 +410,10 @@ start_local_stack() {
     if [ ! -d node_modules ]; then
       npm install
     fi
-    NEXT_PUBLIC_ENGINE_URL=http://localhost:8080 npm run dev
+    NEXT_PUBLIC_ENGINE_URL="http://localhost:${CYANREX_ENGINE_PORT}" \
+    PORT="${CYANREX_FRONTEND_PORT}" npm run dev
   ) &
   FRONTEND_PID=$!
-
-  trap 'echo "[cyanrex] Stopping local services..."; kill "$ENGINE_PID" "$FRONTEND_PID" 2>/dev/null || true' INT TERM EXIT
 
   print_endpoints
   wait
@@ -274,6 +439,45 @@ logs_stack() {
   fi
 }
 
+assert_supported_options() {
+  local command_name="$1"
+  shift
+  local supported_options=" $* "
+  local used_option
+  for used_option in ${PARSED_OPTIONS}; do
+    case "$supported_options" in
+      *" $used_option "*) ;;
+      *)
+        echo "Error: ${command_name} does not support option: ${used_option}" >&2
+        usage
+        exit 1
+        ;;
+    esac
+  done
+}
+
+with_instance_lock() {
+  trap cleanup_on_exit INT TERM EXIT
+  if [ "${SKIP_START_LOCK:-0}" -ne 1 ]; then
+    acquire_start_lock
+  else
+    echo "[cyanrex] start-lock bypassed by --skip-start-lock."
+  fi
+}
+
+extract_log_service_arg() {
+  LOG_SERVICE=""
+  if [ "${#RUNTIME_ARGS[@]}" -eq 0 ]; then
+    return
+  fi
+  if [ "${#RUNTIME_ARGS[@]}" -gt 1 ]; then
+    echo "Unknown arguments for logs: ${RUNTIME_ARGS[*]}" >&2
+    usage
+    exit 1
+  fi
+  LOG_SERVICE="${RUNTIME_ARGS[0]}"
+}
+
 action="${1:-start}"
 
 if [ "$action" = "--local" ]; then
@@ -281,45 +485,60 @@ if [ "$action" = "--local" ]; then
   set -- "start" "--local"
 fi
 
+CYANREX_INSTANCE_ID="${CYANREX_INSTANCE_ID:-default}"
+CYANREX_ENGINE_PORT="${CYANREX_ENGINE_PORT:-8080}"
+CYANREX_FRONTEND_PORT="${CYANREX_FRONTEND_PORT:-3000}"
+CYANREX_POSTGRES_PORT="${CYANREX_POSTGRES_PORT:-15432}"
+CYANREX_BIND_ADDRESS="${CYANREX_BIND_ADDRESS:-127.0.0.1}"
+SKIP_CONFLICT_CHECK="${SKIP_CONFLICT_CHECK:-0}"
+SKIP_START_LOCK="${SKIP_START_LOCK:-0}"
+RUNTIME_ARGS=()
+if [ "$#" -gt 0 ]; then
+  shift
+fi
+parse_runtime_overrides "$@"
+normalize_and_apply_runtime_env
+
 case "$action" in
   start)
     runtime_mode="docker"
     force_rebuild=0
     do_pull=0
     allow_fallback=1
+    with_instance_lock
 
-    if [ $# -gt 0 ]; then
-      shift
-    fi
-    while [ $# -gt 0 ]; do
-      case "$1" in
+    while [ "${#RUNTIME_ARGS[@]}" -gt 0 ]; do
+      case "${RUNTIME_ARGS[0]}" in
         --local)
           runtime_mode="native"
+          RUNTIME_ARGS=("${RUNTIME_ARGS[@]:1}")
           ;;
         --mode)
-          if [ $# -lt 2 ]; then
+          if [ "${#RUNTIME_ARGS[@]}" -lt 2 ]; then
             echo "Error: --mode requires auto, docker, wsl, or native." >&2
             exit 1
           fi
-          runtime_mode="$2"
-          shift
+          runtime_mode="${RUNTIME_ARGS[1]}"
+          RUNTIME_ARGS=("${RUNTIME_ARGS[@]:2}")
           ;;
         --rebuild)
           force_rebuild=1
+          RUNTIME_ARGS=("${RUNTIME_ARGS[@]:1}")
           ;;
         --pull)
           do_pull=1
+          RUNTIME_ARGS=("${RUNTIME_ARGS[@]:1}")
           ;;
         --no-fallback)
           allow_fallback=0
+          RUNTIME_ARGS=("${RUNTIME_ARGS[@]:1}")
           ;;
         *)
-          echo "Unknown option for start: $1" >&2
+          echo "Unknown option for start: ${RUNTIME_ARGS[0]}" >&2
           usage
           exit 1
           ;;
       esac
-      shift
     done
 
     if [ "$runtime_mode" = "auto" ]; then
@@ -341,15 +560,32 @@ case "$action" in
         exit 1
         ;;
     esac
-    ;;
+  ;;
   stop)
+    assert_supported_options "stop" --instance-id --skip-start-lock
+    with_instance_lock
+    if [ "${#RUNTIME_ARGS[@]}" -gt 0 ]; then
+      echo "Unknown argument(s) for stop: ${RUNTIME_ARGS[*]}" >&2
+      usage
+      exit 1
+    fi
     stop_stack
     ;;
   status)
+    assert_supported_options "status" --instance-id --skip-start-lock
+    with_instance_lock
+    if [ "${#RUNTIME_ARGS[@]}" -gt 0 ]; then
+      echo "Unknown argument(s) for status: ${RUNTIME_ARGS[*]}" >&2
+      usage
+      exit 1
+    fi
     status_stack
     ;;
   logs)
-    logs_stack "${2:-}"
+    assert_supported_options "logs" --instance-id --skip-start-lock
+    with_instance_lock
+    extract_log_service_arg
+    logs_stack "$LOG_SERVICE"
     ;;
   -h|--help|help)
     usage

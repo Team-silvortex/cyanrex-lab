@@ -1,0 +1,48 @@
+# Cyanrex eBPF Learning Handbook
+
+Cyanrex is an eBPF teaching system for beginners. It brings source editing, clang diagnostics,
+semantic completion, kernel loading, event observation, and program detach into one Web interface.
+
+## Recommended Reading Order
+
+### Teacher
+
+1. [Teacher Quick Start](teacher-guide.md)
+2. [Concept Map](concepts.md)
+3. [Security and Classroom Deployment](security.md)
+4. Browse all labs and perform a dry run first
+
+### Student
+
+1. [Student Quick Start](student-guide.md)
+2. [Concept Map](concepts.md)
+3. Complete labs in order:
+   - [Lab 1: The Execution Pipeline](labs/01-first-program.md)
+   - [Lab 2: Observing `execve`](labs/02-trace-execve.md)
+   - [Lab 3: Counting with Maps](labs/03-map-counter.md)
+   - [Lab 4: Passing Events via Ring Buffer](labs/04-ring-buffer.md)
+   - [Lab 5: Verifier and Debugging](labs/05-verifier-debugging.md)
+4. Read [Troubleshooting](troubleshooting.md) when needed
+
+## Learning Objectives
+
+After finishing this curriculum, learners should be able to:
+
+- Explain the relationship among userspace, eBPF programs, kernel hooks, and verifier
+- Choose hooks such as XDP and tracepoint according to scenario
+- Use Maps to keep state and Ring Buffer to report events
+- Understand why boundary checks, null checks, and bounded loops are required
+- Locate common errors from clang and verifier output
+- Safely detach programs and verify the environment is clean
+
+## Run Modes
+
+| Mode | Actual Kernel | Recommended Scene |
+|---|---|---|
+| WSL2 | WSL2 Linux kernel | Personal learning on Windows |
+| Docker | Host Linux kernel or Docker Desktop VM kernel | Fast start, unified classroom environment |
+| Native Linux | Local Linux kernel | Advanced labs, best compatibility |
+
+eBPF always runs on a Linux kernel. In Docker on Windows/macOS, you observe the VM/host kernel,
+not the desktop OS itself.
+

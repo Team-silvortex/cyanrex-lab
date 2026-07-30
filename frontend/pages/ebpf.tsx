@@ -193,7 +193,7 @@ export default function EbpfPage() {
     if (!file) return;
 
     if (file.size > MAX_UPLOAD_BYTES) {
-      setError(`Upload blocked: file is larger than ${MAX_UPLOAD_BYTES} bytes.`);
+      setError(t("ebpf.uploadBlocked", { limit: MAX_UPLOAD_BYTES }));
       return;
     }
 
@@ -204,12 +204,13 @@ export default function EbpfPage() {
 
   const runEbpf = async () => {
     if (code.length > MAX_UPLOAD_BYTES) {
-      setError(`Upload blocked: code is larger than ${MAX_UPLOAD_BYTES} bytes.`);
+      setError(t("ebpf.uploadBlocked", { limit: MAX_UPLOAD_BYTES }));
       return;
     }
 
     const selectedTemplateDef = templates.find((item) => item.id === selectedTemplate);
-    const resolvedProgramName = selectedTemplateDef?.name || scriptTitle.trim() || "custom";
+    const resolvedProgramName =
+      selectedTemplateDef?.name || scriptTitle.trim() || t("ebpf.customProgramName");
 
     setRunning(true);
     setError(null);
@@ -300,15 +301,15 @@ export default function EbpfPage() {
         throw new Error(json.message || `HTTP ${response.status}`);
       }
       if (json.clean === false && (json.safety_notes?.length ?? 0) > 0) {
-        setError(`Detach warning: ${json.safety_notes?.join(" | ")}`);
+        setError(t("ebpf.detachWarning", { notes: (json.safety_notes ?? []).join(" | ") }));
       }
       setResult((prev) =>
         prev
           ? {
               ...prev,
-              message: `${prev.message} | detached: ${json.detached.length} | clean: ${
-                json.clean === false ? "no" : "yes"
-              }`,
+              message: `${prev.message} | ${t("ebpf.detachedCount", { count: json.detached.length })} | ${t("ebpf.detachState", {
+                state: json.clean === false ? t("ebpf.detachUnclean") : t("ebpf.detachClean"),
+              })}`,
             }
           : prev,
       );
@@ -398,7 +399,7 @@ export default function EbpfPage() {
 
         <div className="grid cols-2" style={{ marginTop: 12 }}>
           <div>
-            <p className="meta" style={{ marginTop: 0 }}>Template</p>
+            <p className="meta" style={{ marginTop: 0 }}>{t("ebpf.templateLabel")}</p>
             <select
               value={selectedTemplate}
               onChange={(event) => {
@@ -494,14 +495,14 @@ export default function EbpfPage() {
         </div>
 
         <p className="meta">{t("ebpf.codeSize")}: {analysis.metadata.lines} lines | {analysis.metadata.bytes} bytes | clang: {compiler.status}</p>
-        <p className="meta">{t("ebpf.includes")}: {analysis.metadata.includes.join(", ") || "(none)"}</p>
-        <p className="meta">{t("ebpf.injectedIncludes")}: {analysis.metadata.injectedIncludes.join(", ") || "(none)"}</p>
+        <p className="meta">{t("ebpf.includes")}: {analysis.metadata.includes.join(", ") || t("ebpf.noData")}</p>
+        <p className="meta">{t("ebpf.injectedIncludes")}: {analysis.metadata.injectedIncludes.join(", ") || t("ebpf.noData")}</p>
         <p className="meta">
-          {t("ebpf.hookSections")}: {analysis.metadata.sections.map((s) => `${s.name}@L${s.line}`).join(", ") || "(none)"}
+          {t("ebpf.hookSections")}: {analysis.metadata.sections.map((s) => `${s.name}@L${s.line}`).join(", ") || t("ebpf.noData")}
         </p>
         <p className="meta">{t("ebpf.hookSectionsMeaning")}</p>
         <p className="meta">
-          {t("ebpf.cFunctions")}: {analysis.metadata.functions.map((f) => `${f.name}@L${f.line}`).join(", ") || "(none)"}
+          {t("ebpf.cFunctions")}: {analysis.metadata.functions.map((f) => `${f.name}@L${f.line}`).join(", ") || t("ebpf.noData")}
         </p>
         <p className="meta">{t("ebpf.cFunctionsMeaning")}</p>
       </section>
@@ -533,7 +534,7 @@ export default function EbpfPage() {
           <details key={item.pin_path} className="panel" style={{ marginBottom: 10, background: "#0b1425" }}>
             <summary className="row" style={{ cursor: "pointer", listStyle: "none" }}>
               <code style={{ flex: 1 }}>{item.pin_path}</code>
-              <span className="event-tag green">{item.program_name || "custom"}</span>
+              <span className="event-tag green">{item.program_name || t("ebpf.customProgramName")}</span>
               <button
                 type="button"
                 onClick={(event) => {

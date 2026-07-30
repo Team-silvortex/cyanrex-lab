@@ -14,18 +14,18 @@ export default function EbpfResultPanel({ result, error, t }: Props) {
       {!result && !error && <p className="meta">{t("ebpf.noRunResult")}</p>}
       {error && <p className="error">{sanitizeForDisplay(error)}</p>}
       {result && <>
-        <p><strong>success:</strong> {String(result.success)}</p>
-        <p><strong>stage:</strong> {sanitizeForDisplay(result.stage)}</p>
-        <p><strong>message:</strong> {sanitizeForDisplay(result.message)}</p>
-        <p><strong>pin_path:</strong> {sanitizeForDisplay(result.pin_path || "(none)")}</p>
+        <p><strong>{t("ebpf.resultSuccess")}</strong> {String(result.success)}</p>
+        <p><strong>{t("ebpf.resultStage")}</strong> {sanitizeForDisplay(result.stage)}</p>
+        <p><strong>{t("ebpf.resultMessage")}</strong> {sanitizeForDisplay(result.message)}</p>
+        <p><strong>{t("ebpf.resultPinPath")}</strong> {sanitizeForDisplay(result.pin_path || t("ebpf.noData"))}</p>
         <h4>{t("ebpf.compileStdout")}</h4>
-        <pre>{sanitizeForDisplay(result.compile_stdout || "(empty)")}</pre>
+        <pre>{sanitizeForDisplay(result.compile_stdout || t("ebpf.outputEmpty"))}</pre>
         <h4>{t("ebpf.compileStderr")}</h4>
-        <pre>{sanitizeForDisplay(result.compile_stderr || "(empty)")}</pre>
+        <pre>{sanitizeForDisplay(result.compile_stderr || t("ebpf.outputEmpty"))}</pre>
         <h4>{t("ebpf.loadStdout")}</h4>
-        <pre>{sanitizeForDisplay(result.load_stdout || "(empty)")}</pre>
+        <pre>{sanitizeForDisplay(result.load_stdout || t("ebpf.outputEmpty"))}</pre>
         <h4>{t("ebpf.loadStderr")}</h4>
-        <pre>{sanitizeForDisplay(result.load_stderr || "(empty)")}</pre>
+        <pre>{sanitizeForDisplay(result.load_stderr || t("ebpf.outputEmpty"))}</pre>
       </>}
     </section>
   );

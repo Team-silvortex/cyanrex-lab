@@ -29,6 +29,8 @@ use crate::{
 const MAX_EBPF_SOURCE_BYTES: usize = 256 * 1024;
 const EBPF_EXECUTION_TIMEOUT: Duration = Duration::from_secs(45);
 static EBPF_RUN_SLOTS: OnceLock<Semaphore> = OnceLock::new();
+static EBPF_CHECK_SLOTS: OnceLock<Semaphore> = OnceLock::new();
+static EBPF_COMPLETION_SLOTS: OnceLock<Semaphore> = OnceLock::new();
 
 include!("ebpf/handlers.inc.rs");
 include!("ebpf/check.inc.rs");

@@ -95,6 +95,9 @@ Useful commands:
 ./start.sh start              # fast-start (default, no forced rebuild)
 ./start.sh start --rebuild    # force rebuild when deps/Dockerfile changed
 ./start.sh start --pull       # pull base images before start
+./start.sh start --skip-conflict-check  # skip preflight port/project conflict check
+./start.sh start --instance-id room-a    # same instance starts are auto-locked by instance ID
+./start.sh start --skip-start-lock       # bypass start-lock when debugging only
 ./start.sh status
 ./start.sh logs
 ./start.sh stop

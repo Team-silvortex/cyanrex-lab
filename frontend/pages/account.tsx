@@ -101,21 +101,21 @@ export default function AccountPage() {
               type="password"
               value={currentPassword}
               onChange={(event) => setCurrentPassword(event.target.value)}
-              placeholder="当前密码"
+              placeholder={t("account.currentPasswordPlaceholder")}
               required
             />
             <input
               type="password"
               value={newPassword}
               onChange={(event) => setNewPassword(event.target.value)}
-              placeholder="新密码（>=8）"
+              placeholder={t("account.newPasswordPlaceholder")}
               required
             />
             <input
               type="text"
               value={otpForPassword}
               onChange={(event) => setOtpForPassword(event.target.value.replace(/\D/g, "").slice(0, 6))}
-              placeholder="6位 OTP"
+              placeholder={t("auth.otp6")}
               required
             />
             <button type="submit">{t("account.updatePassword")}</button>
@@ -134,14 +134,14 @@ export default function AccountPage() {
               type="password"
               value={deletePassword}
               onChange={(event) => setDeletePassword(event.target.value)}
-              placeholder="账号密码"
+              placeholder={t("account.accountPasswordPlaceholder")}
               required
             />
             <input
               type="text"
               value={deleteOtp}
               onChange={(event) => setDeleteOtp(event.target.value.replace(/\D/g, "").slice(0, 6))}
-              placeholder="6位 OTP"
+              placeholder={t("auth.otp6")}
               required
             />
             <input

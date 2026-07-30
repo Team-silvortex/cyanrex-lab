@@ -69,7 +69,7 @@ export default function LoginPage() {
               autoComplete="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="username"
+              placeholder={t("auth.usernamePlaceholder")}
               aria-label={t("auth.username")}
               required
             />
@@ -78,7 +78,7 @@ export default function LoginPage() {
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="password"
+              placeholder={t("auth.passwordPlaceholder")}
               aria-label={t("auth.password")}
               required
             />
@@ -100,12 +100,11 @@ export default function LoginPage() {
         {error && <p className="error" style={{ marginTop: 12 }}>{sanitizeForDisplay(error)}</p>}
 
         <p className="meta" style={{ marginTop: 12 }}>
-          默认账号: <code>admin</code>，密码默认值见后端环境变量
-          <code>CYANREX_ADMIN_PASSWORD</code>。
+          {t("auth.defaultAdminHint", { account: "admin", envVar: "CYANREX_ADMIN_PASSWORD" })}
         </p>
         <div className="auth-otp-cta-wrap">
           <Link href="/otp-setup" className="auth-otp-cta">
-            <span className="auth-otp-cta-kicker">OTP Setup</span>
+            <span className="auth-otp-cta-kicker">{t("auth.otpSetupCta")}</span>
             <strong>{t("auth.noOtpBound")}</strong>
           </Link>
         </div>

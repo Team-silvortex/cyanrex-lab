@@ -37,11 +37,7 @@ export function I18nProvider({ children }: PropsWithChildren) {
       return;
     }
 
-    const browser = window.navigator.language;
-    if (browser.startsWith("zh")) setLocaleState("zh-CN");
-    else if (browser.startsWith("es")) setLocaleState("es");
-    else if (browser.startsWith("ja")) setLocaleState("ja");
-    else setLocaleState("en");
+    setLocaleState(DEFAULT_LOCALE);
   }, []);
 
   const setLocale = useCallback((next: Locale) => {
