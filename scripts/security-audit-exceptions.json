@@ -1,0 +1,15 @@
+{
+  "version": "1",
+  "ignore": [
+    {
+      "id": "RUSTSEC-2023-0071",
+      "package": "rsa",
+      "reason": "Transitive via sqlx-mysql in Cargo.lock; backend code does not use RSA operations and advisory has no release fix yet.",
+      "impact": "Low for this lab scope because admin API controls remain token/cookie-authenticated and no RSA signing endpoints are exposed.",
+      "accepted_by": "engine maintainers",
+      "accepted_at": "2026-07-30",
+      "review_by": "2026-10-30",
+      "status": "accepted-risk"
+    }
+  ]
+}

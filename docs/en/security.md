@@ -76,6 +76,15 @@ After class:
 - Check for stale files under bpffs.
 - Prefer destroying and recreating VMs in shared environments instead of reusing unknown states.
 
+## Dependency Audit Policy
+
+- We run `cargo audit` for Rust backend dependencies and track accepted exceptions in
+  `scripts/security-audit-exceptions.json`.
+- Current accepted exception:
+  - `RUSTSEC-2023-0071` (`rsa`) — transitive via `sqlx-mysql` in `Cargo.lock`.
+    The backend does not currently use RSA operations directly, and the advisory currently has no patched release.
+- Each accepted advisory has a review deadline and must be re-evaluated before it expires.
+
 ## Security Incident Response
 
 If you suspect credential leakage or unknown programs:
@@ -87,4 +96,3 @@ If you suspect credential leakage or unknown programs:
 5. Destroy single-use VM and rebuild.
 6. Rotate DB, admin, TOTP, and SSH credentials.
 7. Check host workloads for secondary impact.
-

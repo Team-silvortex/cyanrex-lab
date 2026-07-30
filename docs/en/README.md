@@ -50,3 +50,9 @@ After finishing this curriculum, learners should be able to:
 
 eBPF always runs on a Linux kernel. In Docker on Windows/macOS, you observe the VM/host kernel,
 not the desktop OS itself.
+
+## CI and Merge Gate
+
+- CI workflow now includes an aggregate gate job `ci-gate` in `.github/workflows/ci.yml`.
+- `ci-gate` requires `security-audit`, `file-lengths`, `engine`, and `frontend` and fails if any required job fails.
+- For branch protection, enable required status check for **`CI gate`** on your main branch.

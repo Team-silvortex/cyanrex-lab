@@ -14,7 +14,12 @@ Utility scripts for Cyanrex local operation.
   - `--backend-only`: run file-length + backend checks
   - `--frontend-only`: run file-length + frontend checks
   - `--format-only`: run file-length + Rust format check
+  - `--security`: run file-length + security audit check in addition to backend/frontend checks
+  - `--security-only`: run only security audit check
   - `--no-npm-install`: skip `npm ci` during frontend checks
+- `check-security-audit.sh`: audit Rust dependencies against a tracked exception registry.
+  - reads `scripts/security-audit-exceptions.json`
+  - reports explicit exceptions and fails on unapproved advisories
 
 Run it explicitly for a quick classroom readiness check:
 
@@ -32,5 +37,13 @@ Run quality checks before commit/PR:
 ./scripts/quality-gate.sh --format-only   # lightweight format + file-length check
 ./scripts/quality-gate.sh --backend-only   # backend + file-length check
 ./scripts/quality-gate.sh --frontend-only --no-npm-install   # frontend + file-length check
+./scripts/quality-gate.sh --security-only  # security audit only
+./scripts/quality-gate.sh --security       # adds security audit to full checks
 ./scripts/quality-gate.sh                  # full checks
+
+Run security audit directly:
+
+```bash
+./scripts/check-security-audit.sh
+```
 ```

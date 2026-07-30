@@ -200,3 +200,18 @@ Run the same checks used by CI before submitting changes:
 ```bash
 ./scripts/quality-gate.sh --format-only
 ```
+
+### CI Gate (`ci-gate`)
+
+- Workflow `CI` now runs checks in parallel and then uses a final `ci-gate` job to aggregate results:
+  - `security-audit`
+  - `file-lengths`
+  - `engine`
+  - `frontend`
+- Set branch protection to require only `ci-gate` (instead of each matrix-like job), then any failed job will fail the required gate.
+- Recommended GitHub branch rule (GitHub UI):
+  - Settings → Branches → Branch protection rules
+  - Add rule for default branch (for example, `main`)
+  - Enable **Require status checks to pass before merging**
+  - Add required status check: `CI gate`
+  - (Optional) keep each sub-job unchecked to reduce noise; `ci-gate` already aggregates failures.

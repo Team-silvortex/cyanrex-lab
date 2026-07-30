@@ -4,10 +4,11 @@ set -euo pipefail
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 MODE="all"
 SKIP_NPM_INSTALL=0
+RUN_SECURITY_AUDIT=0
 
 print_help() {
   cat <<'EOF'
-Usage: ./scripts/quality-gate.sh [--backend-only|--frontend-only|--format-only|--no-npm-install]
+Usage: ./scripts/quality-gate.sh [--backend-only|--frontend-only|--format-only|--security|--security-only|--no-npm-install]
 
 Runs project quality checks used before commit/CI.
 
@@ -16,6 +17,8 @@ Modes:
   --backend-only Run file-length and backend checks.
   --frontend-only Run file-length and frontend checks.
   --format-only  Run file-length and Rust formatting check only.
+  --security     Run file-length and security audit check.
+  --security-only Run only security audit check.
 
 Flags:
   --no-npm-install Skip npm install step in frontend checks.
@@ -32,6 +35,12 @@ while [[ $# -gt 0 ]]; do
       ;;
     --format-only)
       MODE="format-only"
+      ;;
+    --security)
+      RUN_SECURITY_AUDIT=1
+      ;;
+    --security-only)
+      MODE="security-only"
       ;;
     --no-npm-install)
       SKIP_NPM_INSTALL=1
@@ -58,6 +67,10 @@ run_backend_checks() {
   cargo test --manifest-path "$PROJECT_ROOT/engine/Cargo.toml" --locked
 }
 
+run_security_check() {
+  "$PROJECT_ROOT/scripts/check-security-audit.sh"
+}
+
 run_frontend_checks() {
   if [[ "$SKIP_NPM_INSTALL" == "1" ]]; then
     echo "Skipping npm install for frontend checks."
@@ -79,6 +92,9 @@ case "$MODE" in
   backend)
     run_backend_checks
     ;;
+  security-only)
+    run_security_check
+    ;;
   frontend)
     run_frontend_checks
     ;;
@@ -86,8 +102,10 @@ case "$MODE" in
     run_format_only
     ;;
   all)
+    if [[ "$RUN_SECURITY_AUDIT" == "1" ]]; then
+      run_security_check
+    fi
     run_backend_checks
     run_frontend_checks
     ;;
 esac
-
