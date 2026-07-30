@@ -160,6 +160,7 @@ impl EbpfLoader {
         sections
     }
 
+    #[cfg(target_os = "linux")]
     fn extract_function_names(code: &str) -> Vec<String> {
         let mut names = Vec::new();
         for line in code.lines() {

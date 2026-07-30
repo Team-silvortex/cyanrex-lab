@@ -1,4 +1,157 @@
 impl EbpfLoader {
+    fn resolve_selected_include_path(
+        include_hint: &str,
+        local_path: &str,
+        header_id: &str,
+    ) -> Result<String, String> {
+        let trimmed_hint = include_hint.trim();
+        if let Some(start) = trimmed_hint.find('<') {
+            let suffix = &trimmed_hint[start + 1..];
+            if let Some(end) = suffix.find('>') {
+                let include_path = suffix[..end].trim();
+                if !include_path.is_empty() {
+                    return Ok(include_path.to_string());
+                }
+            }
+        }
+
+        if let Some(start) = trimmed_hint.find('"') {
+            let suffix = &trimmed_hint[start + 1..];
+            if let Some(end) = suffix.find('"') {
+                let include_path = suffix[..end].trim();
+                if !include_path.is_empty() {
+                    return Ok(include_path.to_string());
+                }
+            }
+        }
+
+        let fallback = Path::new(local_path)
+            .file_name()
+            .map(|value| value.to_string_lossy().to_string());
+        if let Some(value) = fallback {
+            if !value.is_empty() {
+                return Ok(value);
+            }
+        }
+
+        Err(format!(
+            "header '{header_id}' has no valid include hint ('{include_hint}') and no filename could be inferred from local_path",
+        ))
+    }
+
+    async fn inject_selected_headers(
+        temp_dir: &Path,
+        selected_headers: &[SelectedHeaderMetadata],
+    ) -> Result<(), String> {
+        for selected in selected_headers {
+            let include_path = Self::resolve_selected_include_path(
+                &selected.include_hint,
+                &selected.local_path,
+                &selected.id,
+            )?;
+
+            if selected.local_path.trim().is_empty() {
+                return Err(format!(
+                    "selected header '{}' has empty local_path, cannot inject include '{}'",
+                    selected.id, include_path
+                ));
+            }
+
+            let source_path = Path::new(&selected.local_path);
+            if !source_path.exists() {
+                return Err(format!(
+                    "selected header '{}' is not available at {}. Download it in C Header Module first, then retry selecting it.",
+                    selected.id, selected.local_path
+                ));
+            }
+            match source_path.is_file() {
+                true => {}
+                false => {
+                    return Err(format!(
+                        "selected header '{}' resolves to {} but this path is not a regular file (expected the downloaded header file).",
+                        selected.id,
+                        source_path.display()
+                    ));
+                }
+            }
+
+            let target_path = temp_dir.join(include_path);
+            if let Some(parent) = target_path.parent() {
+                if let Err(error) = fs::create_dir_all(parent).await {
+                    return Err(format!(
+                        "failed to create compiler workspace directory for header '{}': {} (target: {}, source: {})",
+                        selected.id,
+                        error,
+                        target_path.display(),
+                        source_path.display()
+                    ));
+                }
+            }
+
+            if target_path.exists() {
+                let existing_metadata = match fs::metadata(&target_path).await {
+                    Ok(value) => Some(value),
+                    Err(error) => {
+                        if error.kind() == std::io::ErrorKind::NotFound {
+                            None
+                        } else {
+                            return Err(format!(
+                                "failed to inspect existing injected header path '{}' for '{}': {error}",
+                                target_path.display(),
+                                selected.id
+                            ));
+                        }
+                    }
+                };
+                if let Some(existing_metadata) = existing_metadata {
+                    if existing_metadata.is_dir() {
+                        if let Err(error) = fs::remove_dir_all(&target_path).await {
+                            return Err(format!(
+                                "failed to clear existing injected header directory '{}' for '{}': {error}",
+                                target_path.display(),
+                                selected.id
+                            ));
+                        }
+                    } else if let Err(error) = fs::remove_file(&target_path).await {
+                        return Err(format!(
+                            "failed to clear existing injected header file '{}' for '{}': {error}",
+                            target_path.display(),
+                            selected.id
+                        ));
+                    }
+                }
+            }
+
+            #[cfg(unix)]
+            match std::os::unix::fs::symlink(source_path, &target_path) {
+                Ok(()) => {}
+                Err(error) => {
+                    let fallback = fs::copy(&source_path, &target_path).await;
+                    if let Err(fallback_error) = fallback {
+                        return Err(format!(
+                            "failed to inject header '{}' ({}) into compiler workspace. symlink error: {error}, fallback copy error: {fallback_error}.",
+                            selected.id,
+                            source_path.display()
+                        ));
+                    }
+                }
+            }
+
+            #[cfg(not(unix))]
+            if let Err(error) = fs::copy(source_path, &target_path).await {
+                return Err(format!(
+                    "failed to copy selected header '{}' ({}) into compiler workspace: {error}",
+                    selected.id,
+                    source_path.display()
+                ));
+            }
+        }
+
+        Ok(())
+    }
+
+    #[cfg(target_os = "linux")]
+    #[allow(clippy::too_many_arguments)]
     async fn run_with_aya(
         &self,
         owner_username: &str,
@@ -198,6 +351,30 @@ impl EbpfLoader {
                 .collect::<Vec<_>>()
                 .join("\n"),
             pin_path: Some(pin_path),
+        }
+    }
+
+    #[cfg(not(target_os = "linux"))]
+    #[allow(clippy::too_many_arguments)]
+    async fn run_with_aya(
+        &self,
+        _owner_username: &str,
+        _code: &str,
+        _program_name: Option<&str>,
+        _object_path: &Path,
+        _bpffs_pin: &Path,
+        compile_stdout: String,
+        compile_stderr: String,
+    ) -> EbpfRunResponse {
+        EbpfRunResponse {
+            success: false,
+            stage: "load".to_string(),
+            message: "aya runtime backend is supported only on Linux".to_string(),
+            compile_stdout,
+            compile_stderr,
+            load_stdout: String::new(),
+            load_stderr: "aya backend requires Linux kernel and aya crate bindings".to_string(),
+            pin_path: None,
         }
     }
 

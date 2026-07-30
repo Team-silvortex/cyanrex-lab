@@ -1,16 +1,11 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Copy, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum EbpfRuntimeBackend {
+    #[default]
     Bpftool,
     Aya,
-}
-
-impl Default for EbpfRuntimeBackend {
-    fn default() -> Self {
-        Self::Bpftool
-    }
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -97,6 +92,8 @@ pub struct EbpfTemplate {
     pub name: String,
     pub description: String,
     pub capability: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub category: Option<String>,
     pub code: String,
 }
 

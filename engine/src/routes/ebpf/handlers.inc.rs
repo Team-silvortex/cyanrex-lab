@@ -20,6 +20,11 @@ pub async fn run_ebpf(
     let stream_seconds = payload.stream_seconds.unwrap_or(10).clamp(1, 120);
     let enable_kernel_stream = payload.enable_kernel_stream.unwrap_or(true);
     let runtime_backend = payload.runtime_backend.unwrap_or(EbpfRuntimeBackend::Bpftool);
+    let selected_headers = state
+        .c_header_module
+        .selected_metadata()
+        .await
+        .selected_headers;
 
     if let Some(validation_error) = validate_ebpf_source(&payload.code) {
         state
@@ -72,7 +77,13 @@ pub async fn run_ebpf(
         EBPF_EXECUTION_TIMEOUT,
         state
             .ebpf_loader
-            .run(&username, &payload.code, Some(program_name), runtime_backend),
+            .run(
+                &username,
+                &payload.code,
+                Some(program_name),
+                runtime_backend,
+                &selected_headers,
+            ),
     )
     .await
     {

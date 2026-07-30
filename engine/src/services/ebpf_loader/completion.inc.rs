@@ -1,6 +1,6 @@
 impl EbpfLoader {
     pub async fn complete(&self, code: &str, line: usize, column: usize) -> EbpfCompletionResponse {
-        self.complete_with_cache_status(code, line, column).await.0
+        self.complete_with_cache_status(code, line, column, &[]).await.0
     }
 
     pub async fn complete_with_cache_status(
@@ -8,12 +8,17 @@ impl EbpfLoader {
         code: &str,
         line: usize,
         column: usize,
+        selected_headers: &[SelectedHeaderMetadata],
     ) -> (EbpfCompletionResponse, bool) {
         if code.trim().is_empty() || line == 0 || column == 0 {
             return (completion_failure("source and one-based cursor position are required"), false);
         }
 
-        let cache_key = format!("{}:{line}:{column}", source_cache_key(code));
+        let cache_key = format!(
+            "{}:{line}:{column}:{}",
+            source_cache_key(code),
+            selected_headers_cache_key(selected_headers)
+        );
         if let Some((created, response)) = self.completion_cache.read().await.get(&cache_key) {
             if self.resident_compiler_enabled() || created.elapsed() < Duration::from_secs(30) {
                 return (response.clone(), true);
@@ -22,9 +27,13 @@ impl EbpfLoader {
 
         let temp_dir = std::env::temp_dir().join(format!("cyanrex-complete-{}", Uuid::new_v4()));
         if let Err(error) = fs::create_dir(&temp_dir).await {
-            return completion_failure(&format!("failed to create completion directory: {error}"));
+            return (
+                completion_failure(&format!("failed to create completion directory: {error}")),
+                false,
+            );
         }
-        let response = self.complete_in_directory(code, line, column, &temp_dir).await;
+        let response =
+            self.complete_in_directory(code, line, column, selected_headers, &temp_dir).await;
         let _ = fs::remove_dir_all(&temp_dir).await;
         let mut cache = self.completion_cache.write().await;
         let cache_limit = if self.resident_compiler_enabled() { 1024 } else { 128 };
@@ -42,6 +51,7 @@ impl EbpfLoader {
         code: &str,
         line: usize,
         column: usize,
+        selected_headers: &[SelectedHeaderMetadata],
         temp_dir: &Path,
     ) -> EbpfCompletionResponse {
         let source_path = temp_dir.join("program.c");
@@ -52,6 +62,9 @@ impl EbpfLoader {
             if let Err(error) = Self::ensure_vmlinux_header(temp_dir).await {
                 return completion_failure(&format!("failed to prepare vmlinux.h: {error}"));
             }
+        }
+        if let Err(error) = Self::inject_selected_headers(temp_dir, selected_headers).await {
+            return completion_failure(&format!("failed to prepare selected headers: {error}"));
         }
 
         let completion_at = format!("{}:{line}:{column}", source_path.display());

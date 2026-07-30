@@ -1,6 +1,5 @@
 use std::{
     collections::HashMap,
-    convert::TryFrom,
     path::{Path, PathBuf},
     process::Stdio,
     sync::{
@@ -10,7 +9,9 @@ use std::{
     time::Instant,
 };
 
+#[cfg(target_os = "linux")]
 use aya::{maps::RingBuf, programs::TracePoint, Ebpf};
+
 use sha2::{Digest, Sha256};
 use tokio::{
     fs,
@@ -20,6 +21,7 @@ use tokio::{
 };
 use uuid::Uuid;
 
+use crate::models::c_headers::SelectedHeaderMetadata;
 use crate::models::ebpf::{
     EbpfCheckResponse, EbpfCompilerDiagnostic, EbpfCompletionItem, EbpfCompletionResponse,
     EbpfRunResponse, EbpfRuntimeBackend,
@@ -41,9 +43,13 @@ struct AttachmentRecord {
     program_name: String,
 }
 
+#[cfg(target_os = "linux")]
 struct AyaSession {
     _ebpf: Ebpf,
 }
+
+#[cfg(not(target_os = "linux"))]
+struct AyaSession;
 
 static VMLINUX_HEADER_CACHE: OnceCell<PathBuf> = OnceCell::const_new();
 static MULTIARCH_INCLUDE_CACHE: OnceLock<Option<PathBuf>> = OnceLock::new();

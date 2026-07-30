@@ -27,6 +27,7 @@ pub struct SelectedHeaderMetadata {
     pub id: String,
     pub include_hint: String,
     pub local_path: String,
+    pub downloaded: bool,
 }
 
 #[derive(Debug, Clone, Serialize)]

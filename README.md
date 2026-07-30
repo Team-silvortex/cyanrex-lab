@@ -198,9 +198,5 @@ APIs require the configured administrator account even when registration is enab
 Run the same checks used by CI before submitting changes:
 
 ```bash
-./scripts/check-file-lengths.sh
-cargo fmt --manifest-path engine/Cargo.toml -- --check
-cargo test --manifest-path engine/Cargo.toml --locked
-npm --prefix frontend ci
-npm --prefix frontend run build
+./scripts/quality-gate.sh --format-only
 ```

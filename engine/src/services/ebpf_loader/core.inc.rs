@@ -5,6 +5,7 @@ impl EbpfLoader {
         code: &str,
         program_name: Option<&str>,
         runtime_backend: EbpfRuntimeBackend,
+        selected_headers: &[SelectedHeaderMetadata],
     ) -> EbpfRunResponse {
         if code.trim().is_empty() {
             return EbpfRunResponse::validation_error("eBPF source code is empty");
@@ -58,6 +59,19 @@ impl EbpfLoader {
                     pin_path: None,
                 };
             }
+        }
+
+        if let Err(err) = Self::inject_selected_headers(&temp_dir, selected_headers).await {
+            return EbpfRunResponse {
+                success: false,
+                stage: "compile".to_string(),
+                message: format!("failed to prepare selected headers: {err}"),
+                compile_stdout: String::new(),
+                compile_stderr: String::new(),
+                load_stdout: String::new(),
+                load_stderr: String::new(),
+                pin_path: None,
+            };
         }
 
         let clang_bin = Self::resolve_clang_binary();
@@ -212,11 +226,11 @@ impl EbpfLoader {
             attach_enabled = false;
             load_stdout = format!(
                 "{load_stdout}\n{}",
-                String::from_utf8_lossy(&fallback.stdout).to_string()
+                String::from_utf8_lossy(&fallback.stdout)
             );
             load_stderr = format!(
                 "{load_stderr}\n{}",
-                String::from_utf8_lossy(&fallback.stderr).to_string()
+                String::from_utf8_lossy(&fallback.stderr)
             );
 
             if !fallback.status.success() {
@@ -385,6 +399,7 @@ impl EbpfLoader {
             .collect()
     }
 
+    #[cfg(target_os = "linux")]
     pub async fn poll_aya_ringbuf(
         &self,
         pin_path: &str,
@@ -426,6 +441,16 @@ impl EbpfLoader {
         }
 
         Ok(out)
+    }
+
+    #[cfg(not(target_os = "linux"))]
+    pub async fn poll_aya_ringbuf(
+        &self,
+        _pin_path: &str,
+        _preferred_map_name: &str,
+        _max_items: usize,
+    ) -> Result<Vec<Vec<u8>>, String> {
+        Err("aya runtime backend is supported only on Linux".to_string())
     }
 
     fn pin_path() -> PathBuf {

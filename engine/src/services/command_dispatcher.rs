@@ -1,20 +1,16 @@
 use crate::{
     models::command::{CommandRequest, CommandType},
-    services::{event_bus::EventBus, module_manager::ModuleManager},
+    services::module_manager::ModuleManager,
 };
 
 #[derive(Clone)]
 pub struct CommandDispatcher {
     module_manager: ModuleManager,
-    event_bus: EventBus,
 }
 
 impl CommandDispatcher {
-    pub fn new(module_manager: ModuleManager, event_bus: EventBus) -> Self {
-        Self {
-            module_manager,
-            event_bus,
-        }
+    pub fn new(module_manager: ModuleManager) -> Self {
+        Self { module_manager }
     }
 
     pub async fn dispatch(&self, command: CommandRequest) -> bool {

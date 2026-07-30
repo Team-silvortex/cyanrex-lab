@@ -45,8 +45,16 @@ pub async fn check_ebpf(
             Json(response),
         );
     };
+    let selected_headers = state
+        .c_header_module
+        .selected_metadata()
+        .await
+        .selected_headers;
 
-    let (response, cache_hit) = state.ebpf_loader.check_with_cache_status(&payload.code).await;
+    let (response, cache_hit) = state
+        .ebpf_loader
+        .check_with_cache_status(&payload.code, &selected_headers)
+        .await;
     state.finish_check_request(
         start.elapsed().as_nanos() as u64,
         Some(cache_hit),

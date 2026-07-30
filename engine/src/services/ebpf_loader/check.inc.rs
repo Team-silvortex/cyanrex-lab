@@ -1,14 +1,22 @@
 impl EbpfLoader {
     pub async fn check(&self, code: &str) -> EbpfCheckResponse {
-        self.check_with_cache_status(code).await.0
+        self.check_with_cache_status(code, &[]).await.0
     }
 
-    pub async fn check_with_cache_status(&self, code: &str) -> (EbpfCheckResponse, bool) {
+    pub async fn check_with_cache_status(
+        &self,
+        code: &str,
+        selected_headers: &[SelectedHeaderMetadata],
+    ) -> (EbpfCheckResponse, bool) {
         if code.trim().is_empty() {
             return (check_failure("eBPF source code is empty", String::new()), false);
         }
 
-        let cache_key = source_cache_key(code);
+        let cache_key = format!(
+            "{}:{}",
+            source_cache_key(code),
+            selected_headers_cache_key(selected_headers)
+        );
         if let Some((created, response)) = self.check_cache.read().await.get(&cache_key) {
             if self.resident_compiler_enabled() || created.elapsed() < Duration::from_secs(60) {
                 return (response.clone(), true);
@@ -17,10 +25,13 @@ impl EbpfLoader {
 
         let temp_dir = std::env::temp_dir().join(format!("cyanrex-check-{}", Uuid::new_v4()));
         if let Err(error) = fs::create_dir(&temp_dir).await {
-            return check_failure(&format!("failed to create check directory: {error}"), String::new());
+            return (
+                check_failure(&format!("failed to create check directory: {error}"), String::new()),
+                false,
+            );
         }
 
-        let response = self.check_in_directory(code, &temp_dir).await;
+        let response = self.check_in_directory(code, selected_headers, &temp_dir).await;
         let _ = fs::remove_dir_all(&temp_dir).await;
         let mut cache = self.check_cache.write().await;
         let cache_limit = if self.resident_compiler_enabled() { 512 } else { 64 };
@@ -33,7 +44,12 @@ impl EbpfLoader {
         (response, false)
     }
 
-    async fn check_in_directory(&self, code: &str, temp_dir: &Path) -> EbpfCheckResponse {
+    async fn check_in_directory(
+        &self,
+        code: &str,
+        selected_headers: &[SelectedHeaderMetadata],
+        temp_dir: &Path,
+    ) -> EbpfCheckResponse {
         let source_path = temp_dir.join("program.c");
         if let Err(error) = fs::write(&source_path, code).await {
             return check_failure(&format!("failed to write source: {error}"), String::new());
@@ -43,6 +59,12 @@ impl EbpfLoader {
             if let Err(error) = Self::ensure_vmlinux_header(temp_dir).await {
                 return check_failure(&format!("failed to prepare vmlinux.h: {error}"), String::new());
             }
+        }
+        if let Err(error) = Self::inject_selected_headers(temp_dir, selected_headers).await {
+            return check_failure(
+                &format!("failed to prepare selected headers: {error}"),
+                String::new(),
+            );
         }
 
         let mut command = Command::new(Self::resolve_clang_binary());
@@ -87,6 +109,15 @@ impl EbpfLoader {
             stderr,
         }
     }
+}
+
+fn selected_headers_cache_key(selected_headers: &[SelectedHeaderMetadata]) -> String {
+    let mut signature = selected_headers
+        .iter()
+        .map(|header| format!("{}::{}::{}", header.id, header.include_hint, header.local_path))
+        .collect::<Vec<_>>();
+    signature.sort_unstable();
+    source_cache_key(&signature.join("|"))
 }
 
 fn parse_clang_diagnostics(stderr: &str) -> Vec<EbpfCompilerDiagnostic> {

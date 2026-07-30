@@ -63,6 +63,7 @@ export type EbpfTemplate = {
   name: string;
   description: string;
   capability: string;
+  category?: string;
   code: string;
 };
 
@@ -79,6 +80,7 @@ export type SelectedHeaderMetadata = {
   id: string;
   include_hint: string;
   local_path: string;
+  downloaded: boolean;
 };
 
 export type HeaderSelectionMetadata = {

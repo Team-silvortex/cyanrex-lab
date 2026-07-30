@@ -60,6 +60,7 @@ fn validate_ebpf_source(code: &str) -> Option<EbpfRunResponse> {
     None
 }
 
+#[allow(clippy::too_many_arguments)]
 async fn stream_kernel_events(
     ebpf_loader: crate::services::ebpf_loader::EbpfLoader,
     event_bus: crate::services::event_bus::EventBus,
@@ -144,6 +145,7 @@ async fn stream_kernel_events(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 async fn stream_aya_ringbuf_events(
     ebpf_loader: crate::services::ebpf_loader::EbpfLoader,
     event_bus: crate::services::event_bus::EventBus,
@@ -232,4 +234,3 @@ fn spawn_sched_switch_stimulus(stream_seconds: u32) {
         });
     }
 }
-

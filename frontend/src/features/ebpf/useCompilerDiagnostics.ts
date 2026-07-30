@@ -17,7 +17,11 @@ const DIAGNOSTIC_CACHE_MAX_ENTRIES = 24;
 const inFlightChecks = new Map<string, Promise<EbpfCheckResponse>>();
 const diagnosticCache = new Map<string, CachedDiagnostics>();
 
-export function useCompilerDiagnostics(code: string, engineUrl: string) {
+export function useCompilerDiagnostics(
+  code: string,
+  engineUrl: string,
+  headerContextKey = "",
+) {
   const [diagnostics, setDiagnostics] = useState<CDiagnostic[]>([]);
   const [status, setStatus] = useState<CompilerStatus>("idle");
 
@@ -28,7 +32,7 @@ export function useCompilerDiagnostics(code: string, engineUrl: string) {
       return;
     }
 
-    const cacheKey = hashCode(code);
+    const cacheKey = hashCode(`${code}//${headerContextKey}`);
     const now = Date.now();
     const cached = diagnosticCache.get(cacheKey);
     if (cached && cached.expiresAt > now) {
@@ -80,7 +84,7 @@ export function useCompilerDiagnostics(code: string, engineUrl: string) {
       controller.abort();
       inFlightChecks.delete(cacheKey);
     };
-  }, [code, engineUrl]);
+  }, [code, engineUrl, headerContextKey]);
 
   return { diagnostics, status };
 }

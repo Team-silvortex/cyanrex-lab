@@ -172,6 +172,7 @@ impl CHeaderModule {
                 id: source.id.to_string(),
                 include_hint: source.include_hint.to_string(),
                 local_path: self.header_path(source.file_name).display().to_string(),
+                downloaded: self.header_path(source.file_name).exists(),
             })
             .collect();
 

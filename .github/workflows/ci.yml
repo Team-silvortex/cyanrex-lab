@@ -17,7 +17,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - run: ./scripts/check-file-lengths.sh
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - run: ./scripts/quality-gate.sh --format-only
 
   engine:
     name: Rust engine

@@ -58,10 +58,20 @@ pub async fn complete_ebpf(
             Json(response),
         );
     };
+    let selected_headers = state
+        .c_header_module
+        .selected_metadata()
+        .await
+        .selected_headers;
 
     let (response, cache_hit) = state
         .ebpf_loader
-        .complete_with_cache_status(&payload.code, payload.line, payload.column)
+        .complete_with_cache_status(
+            &payload.code,
+            payload.line,
+            payload.column,
+            &selected_headers,
+        )
         .await;
     state.finish_completion_request(
         start.elapsed().as_nanos() as u64,

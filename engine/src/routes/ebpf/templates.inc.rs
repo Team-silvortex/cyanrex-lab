@@ -5,6 +5,7 @@ fn base_templates() -> Vec<EbpfTemplate> {
             name: "XDP Pass".to_string(),
             description: "最小 XDP 程序，适合验证编译/加载链路".to_string(),
             capability: "xdp".to_string(),
+            category: None,
             code: r#"#include <linux/bpf.h>
 #include <bpf/bpf_helpers.h>
 
@@ -21,6 +22,7 @@ char _license[] SEC("license") = "GPL";"#
             name: "Tracepoint Sys Enter".to_string(),
             description: "tracepoint 事件，输出内核日志（可在 events 查看采样流）".to_string(),
             capability: "tracepoint".to_string(),
+            category: None,
             code: r#"#include <linux/bpf.h>
 #include <bpf/bpf_helpers.h>
 
@@ -39,6 +41,7 @@ char _license[] SEC("license") = "GPL";"#
             description:
                 "按 PID 统计 execve 调用次数（展示 Hash Map + 空指针检查 + 原子更新思路）".to_string(),
             capability: "tracepoint".to_string(),
+            category: None,
             code: r#"#include <linux/bpf.h>
 #include <bpf/bpf_helpers.h>
 
@@ -72,6 +75,7 @@ char _license[] SEC("license") = "GPL";"#
             description:
                 "kprobe 入口示例：统计每个进程 openat 系统调用次数（演示 pt_regs 钩子与哈希统计）".to_string(),
             capability: "kprobe".to_string(),
+            category: None,
             code: r#"#include <linux/bpf.h>
 #include <bpf/bpf_helpers.h>
 
@@ -105,6 +109,7 @@ char _license[] SEC("license") = "GPL";"#
             description:
                 "kprobe 获取 openat 调用参数：读取 pathname 指针并展示参数读法（只读，不阻塞流程）".to_string(),
             capability: "kprobe".to_string(),
+            category: None,
             code: r#"#include <linux/bpf.h>
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_tracing.h>
@@ -145,6 +150,7 @@ char _license[] SEC("license") = "GPL";"#
             name: "Kretprobe Openat Return".to_string(),
             description: "kretprobe 返还值示例：区分 openat 成功/失败返回并统计".to_string(),
             capability: "kretprobe".to_string(),
+            category: None,
             code: r#"#include <linux/bpf.h>
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_tracing.h>
@@ -180,6 +186,7 @@ char _license[] SEC("license") = "GPL";"#
             description:
                 "kprobe 示例：统计 connect 系统调用的调用次数（适合讲网络调试中的系统调用入侵面）".to_string(),
             capability: "kprobe".to_string(),
+            category: None,
             code: r#"#include <linux/bpf.h>
 #include <bpf/bpf_helpers.h>
 
@@ -213,6 +220,7 @@ char _license[] SEC("license") = "GPL";"#
             description:
                 "kretprobe 返还值示例：区分 connect 成功/失败，并做基础错误码计数".to_string(),
             capability: "kretprobe".to_string(),
+            category: None,
             code: r#"#include <linux/bpf.h>
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_tracing.h>
@@ -244,6 +252,7 @@ char _license[] SEC("license") = "GPL";"#
             name: "Ringbuf Skeleton".to_string(),
             description: "ringbuf 结构模板（用户态 reader 可按此 map 进行消费）".to_string(),
             capability: "ringbuf".to_string(),
+            category: None,
             code: r#"#include <linux/bpf.h>
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_tracing.h>
@@ -278,6 +287,7 @@ char _license[] SEC("license") = "GPL";"#
             name: "XDP Packet Counter".to_string(),
             description: "XDP 教学版：统计每 CPU 收到的数据包数（使用 per-cpu 数组，便于性能分析和速率看板）".to_string(),
             capability: "xdp".to_string(),
+            category: None,
             code: r#"#include <linux/bpf.h>
 #include <bpf/bpf_helpers.h>
 
@@ -306,6 +316,7 @@ char _license[] SEC("license") = "GPL";"#
             name: "XDP TCPv4 Counter".to_string(),
             description: "XDP 过滤版：仅统计 IPv4 + TCP 报文数量（教学：解析 L2/L3 字段 + 过滤条件）".to_string(),
             capability: "xdp".to_string(),
+            category: None,
             code: r#"#include <vmlinux.h>
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_endian.h>
@@ -361,6 +372,7 @@ char _license[] SEC("license") = "GPL";"#
             description:
                 "XDP 解析样例：识别 ICMP 报文并统计，其他报文仍放行（示例：最小协议解析）".to_string(),
             capability: "xdp".to_string(),
+            category: None,
             code: r#"#include <vmlinux.h>
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_endian.h>
@@ -415,6 +427,7 @@ char _license[] SEC("license") = "GPL";"#
             description:
                 "高频 tracepoint 切面 + 内核侧采样节流（默认每 64 次上报 1 次），用于展示事件流能力且不干扰系统".to_string(),
             capability: "ringbuf".to_string(),
+            category: None,
             code: r#"#include <vmlinux.h>
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_tracing.h>
@@ -473,6 +486,7 @@ char _license[] SEC("license") = "GPL";"#
             description:
                 "轻量采样模板：每 32 次 execve 事件上报一次，附带当前 PID 和采样计数".to_string(),
             capability: "ringbuf".to_string(),
+            category: None,
             code: r#"#include <linux/bpf.h>
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_tracing.h>
@@ -529,6 +543,7 @@ char _license[] SEC("license") = "GPL";"#
             description:
                 "进程级事件模板：每次 sched_process_exit 上报一次事件，带 pid/uid/进程名与时间戳".to_string(),
             capability: "ringbuf".to_string(),
+            category: None,
             code: r#"#include <linux/bpf.h>
 #include <bpf/bpf_helpers.h>
 
@@ -566,9 +581,9 @@ char _license[] SEC("license") = "GPL";"#
 }
 
 include!("templates_more.inc.rs");
-
-fn default_templates() -> Vec<EbpfTemplate> {
-    let mut templates = base_templates();
-    templates.extend(extra_templates());
-    templates
-}
+include!("templates_learning.inc.rs");
+include!("templates_learning_plus.inc.rs");
+include!("templates_learning_plus2.inc.rs");
+include!("templates_learning_plus3.inc.rs");
+include!("template_utils.inc.rs");
+include!("template_catalog.inc.rs");

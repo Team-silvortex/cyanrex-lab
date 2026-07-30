@@ -11,6 +11,11 @@ semantic completion, kernel loading, event observation, and program detach into 
 2. [Concept Map](concepts.md)
 3. [Security and Classroom Deployment](security.md)
 4. Browse all labs and perform a dry run first
+   - Template path in the eBPF page:
+     - `learning/foundations/beginner/fundamentals`
+     - `learning/foundations/intermediate/protocols`
+     - `learning-plus/cases/advanced/forensics`
+     - `learning-plus/track/practice/operators`
 
 ### Student
 
@@ -45,4 +50,3 @@ After finishing this curriculum, learners should be able to:
 
 eBPF always runs on a Linux kernel. In Docker on Windows/macOS, you observe the VM/host kernel,
 not the desktop OS itself.
-

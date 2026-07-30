@@ -82,6 +82,7 @@ async fn stream_kernel_trace_events(
     received_any
 }
 
+#[allow(clippy::too_many_arguments)]
 async fn stream_ringbuf_events(
     event_bus: crate::services::event_bus::EventBus,
     username: String,
@@ -486,4 +487,3 @@ fn extract_numeric_field_ids(bytes: &[u8], field: &str) -> Vec<i64> {
     }
     out
 }
-

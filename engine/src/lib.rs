@@ -316,7 +316,7 @@ pub fn build_state() -> Arc<AppState> {
     let auth_service = AuthService::new_with_default_admin();
     let event_bus = EventBus::new(1024);
     let module_manager = ModuleManager::default();
-    let command_dispatcher = CommandDispatcher::new(module_manager.clone(), event_bus.clone());
+    let command_dispatcher = CommandDispatcher::new(module_manager.clone());
     let ebpf_loader = EbpfLoader::default();
     let script_store = ScriptStore::default();
     let environment_checker = EnvironmentChecker;

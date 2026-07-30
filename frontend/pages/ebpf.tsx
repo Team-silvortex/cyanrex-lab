@@ -1,363 +1,204 @@
+import { useMemo } from "react";
 import dynamic from "next/dynamic";
-import { loader } from "@monaco-editor/react";
-import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 
 import SidebarLayout from "../src/components/SidebarLayout";
 import { useI18n } from "../src/i18n/context";
-import { analyzeCCode } from "../src/utils/cAnalyzer";
-import { registerEbpfIntelligence } from "../src/utils/cEbpfIntelligence";
-import { loadPageState, savePageState } from "../src/utils/pageState";
 import { sanitizeForDisplay } from "../src/utils/security";
-import { MAX_UPLOAD_BYTES, SAMPLE_EBPF } from "../src/features/ebpf/models";
-import type {
-  EbpfAttachmentDetail, EbpfAttachmentDetailListResponse, EbpfDetachResponse,
-  EbpfRunResponse, EbpfRuntimeBackend, EbpfTemplate, HeaderSelectionMetadata,
-  SelectedHeaderMetadata, UserScript,
-} from "../src/features/ebpf/models";
-import { applyMarkers, toIncludePath } from "../src/features/ebpf/editorUtils";
 import EbpfResultPanel from "../src/features/ebpf/EbpfResultPanel";
-import { useCompilerDiagnostics } from "../src/features/ebpf/useCompilerDiagnostics";
+import { useEbpfPageController } from "../src/features/ebpf/useEbpfPageController";
+
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
 });
 
 export default function EbpfPage() {
   const { t } = useI18n();
-  const [code, setCode] = useState(() => loadPageState<string>("ebpf_code_v1") ?? SAMPLE_EBPF);
-  const [result, setResult] = useState<EbpfRunResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [running, setRunning] = useState(false);
-  const [injectedMetadata, setInjectedMetadata] = useState<SelectedHeaderMetadata[]>([]);
-  const [attachmentDetails, setAttachmentDetails] = useState<EbpfAttachmentDetail[]>([]);
-  const [templates, setTemplates] = useState<EbpfTemplate[]>([]);
-  const [selectedTemplate, setSelectedTemplate] = useState(
-    () => loadPageState<string>("ebpf_selected_template_v1") ?? "",
-  );
-  const [scriptTitle, setScriptTitle] = useState(
-    () => loadPageState<string>("ebpf_script_title_v1") ?? "untitled-ebpf",
-  );
-  const [savedScripts, setSavedScripts] = useState<UserScript[]>([]);
-  const [samplingPerSec, setSamplingPerSec] = useState(
-    () => loadPageState<number>("ebpf_sampling_v1") ?? 20,
-  );
-  const [streamSeconds, setStreamSeconds] = useState(
-    () => loadPageState<number>("ebpf_stream_seconds_v1") ?? 10,
-  );
-  const [enableKernelStream, setEnableKernelStream] = useState(
-    () => loadPageState<boolean>("ebpf_kernel_stream_v1") ?? true,
-  );
-  const [runtimeBackend, setRuntimeBackend] = useState<EbpfRuntimeBackend>(
-    () => (loadPageState<EbpfRuntimeBackend>("ebpf_runtime_backend_v1") ?? "bpftool"),
-  );
-  const monacoRef = useRef<any>(null);
-  const intelligenceRef = useRef<{ dispose: () => void } | null>(null);
-
-  const engineUrl = useMemo(
-    () => process.env.NEXT_PUBLIC_ENGINE_URL ?? "http://localhost:8080",
-    [],
-  );
-
-  const injectedIncludes = useMemo(
-    () => injectedMetadata.map((item) => toIncludePath(item.include_hint)),
-    [injectedMetadata],
-  );
-  const attachments = useMemo(
-    () => attachmentDetails.map((item) => item.pin_path),
-    [attachmentDetails],
-  );
-
-  const analysis = useMemo(
-    () => analyzeCCode(code, injectedIncludes),
-    [code, injectedIncludes],
-  );
-  const compiler = useCompilerDiagnostics(code, engineUrl);
-  const diagnostics = useMemo(
-    () => [...analysis.diagnostics, ...compiler.diagnostics],
-    [analysis.diagnostics, compiler.diagnostics],
-  );
-
-  useEffect(() => {
-    loader.config({
-      paths: {
-        vs: "/monaco/vs",
-      },
-    });
-
-    return () => {
-      intelligenceRef.current?.dispose();
-      intelligenceRef.current = null;
-    };
-  }, []);
-
-  useEffect(() => {
-    savePageState("ebpf_code_v1", code);
-    savePageState("ebpf_selected_template_v1", selectedTemplate);
-    savePageState("ebpf_script_title_v1", scriptTitle);
-    savePageState("ebpf_sampling_v1", samplingPerSec);
-    savePageState("ebpf_stream_seconds_v1", streamSeconds);
-    savePageState("ebpf_kernel_stream_v1", enableKernelStream);
-    savePageState("ebpf_runtime_backend_v1", runtimeBackend);
-  }, [
+  const {
+    analysis,
+    attachments,
+    injectedMetadata,
+    attachmentDetails,
     code,
-    selectedTemplate,
-    scriptTitle,
-    samplingPerSec,
-    streamSeconds,
+    compiler,
+    headerInjectionCheck,
+    runHeaderInjectionSelfCheck,
+    deleteScript,
+    detach,
+    diagnostics,
     enableKernelStream,
+    error,
+    onEditorChange,
+    onEditorMount,
+    onUpload,
+    result,
+    runEbpf,
+    refreshInjectedMetadata,
     runtimeBackend,
-  ]);
+    saveCurrentScript,
+    samplingPerSec,
+    scriptTitle,
+    savedScripts,
+    selectedTemplate,
+    setCode,
+    setEnableKernelStream,
+    setRuntimeBackend,
+    setScriptTitle,
+    setSamplingPerSec,
+    setSelectedTemplate,
+    running,
+    setStreamSeconds,
+    streamSeconds,
+    templates,
+  } = useEbpfPageController(t);
 
-  const refreshInjectedMetadata = async () => {
-    try {
-      const response = await fetch(`${engineUrl}/modules/c-headers/selected-metadata`, {
-        credentials: "include",
-      });
-      if (!response.ok) return;
-
-      const json = (await response.json()) as HeaderSelectionMetadata;
-      setInjectedMetadata(json.selected_headers ?? []);
-    } catch {
-      // ignore metadata refresh errors for now
+  const onTemplateChange = (nextId: string) => {
+    setSelectedTemplate(nextId);
+    const template = templates.find((item) => item.id === nextId);
+    if (template) {
+      setCode(template.code);
     }
   };
 
-  useEffect(() => {
-    refreshInjectedMetadata();
-  }, []);
-
-  const refreshAttachments = async () => {
-    try {
-      const response = await fetch(`${engineUrl}/ebpf/attachments/details`, {
-        credentials: "include",
-      });
-      if (!response.ok) return;
-      const json = (await response.json()) as EbpfAttachmentDetailListResponse;
-      setAttachmentDetails(json.attachments ?? []);
-    } catch {
-      // ignore attachment refresh errors
-    }
-  };
-
-  useEffect(() => {
-    refreshAttachments();
-  }, []);
-
-  const refreshScripts = async () => {
-    try {
-      const response = await fetch(`${engineUrl}/scripts`, {
-        credentials: "include",
-      });
-      if (!response.ok) return;
-      const json = (await response.json()) as UserScript[];
-      setSavedScripts(json ?? []);
-    } catch {
-      // ignore script list refresh errors
-    }
-  };
-
-  useEffect(() => {
-    refreshScripts();
-  }, [engineUrl]);
-
-  useEffect(() => {
-    const loadTemplates = async () => {
-      try {
-        const response = await fetch(`${engineUrl}/ebpf/templates`, {
-          credentials: "include",
-        });
-        if (!response.ok) return;
-        const json = (await response.json()) as EbpfTemplate[];
-        setTemplates(json);
-      } catch {
-        // ignore template fetch errors for now
+  const categorizedTemplates = useMemo(() => {
+    const groups: Record<string, typeof templates> = {};
+    for (const template of templates) {
+      const key = (template.category || template.capability || "other").trim().toLowerCase();
+      if (!groups[key]) {
+        groups[key] = [];
       }
+      groups[key].push(template);
+    }
+    for (const key of Object.keys(groups)) {
+      groups[key].sort((a, b) => a.name.localeCompare(b.name, "en"));
+    }
+    return groups;
+  }, [templates]);
+
+  const categoryOrder = useMemo(() => {
+    const keys = Object.keys(categorizedTemplates);
+
+    const topPriority = [
+      "learning",
+      "learning-plus",
+      "xdp",
+      "tracepoint",
+      "kprobe",
+      "kretprobe",
+      "ringbuf",
+      "other",
+    ];
+    const levelPriority: Record<string, string[]> = {
+      learning: ["foundations", "intermediate", "advanced", "practice", "lab", "core"],
+      "learning-plus": ["cases", "track", "advanced", "practice", "beginner", "intermediate", "lab", "core"],
+      "learning/foundations/beginner": ["fundamentals", "protocols", "forensics", "operators"],
+      "learning/foundations/intermediate": ["protocols", "fundamentals", "forensics", "operators"],
+      "learning-plus/cases/advanced": ["forensics", "fundamentals", "protocols", "operators"],
+      "learning-plus/track/practice": ["operators", "fundamentals", "protocols", "forensics"],
+      "learning/foundations": ["beginner", "intermediate", "advanced", "practice", "lab", "core"],
+      "learning-plus/cases": ["advanced", "intermediate", "beginner", "practice", "lab", "core"],
+      "learning-plus/track": ["practice", "lab", "advanced", "intermediate", "beginner", "core"],
+    };
+    const leafPriority: Record<string, string[]> = {
+      foundations: ["beginner", "intermediate", "advanced", "practice", "lab", "core"],
+      cases: ["advanced", "intermediate", "beginner", "practice", "lab", "core"],
+      track: ["practice", "lab", "advanced", "intermediate", "beginner", "core"],
+      beginner: ["fundamentals", "protocols", "forensics", "operators"],
+      intermediate: ["protocols", "fundamentals", "forensics", "operators"],
+      advanced: ["forensics", "fundamentals", "protocols", "operators"],
+      practice: ["operators", "fundamentals", "protocols", "forensics"],
     };
 
-    loadTemplates();
-  }, [engineUrl]);
+    const parseCategory = (value: string) => {
+      const normalized = value.toLowerCase().trim();
+      const parts = normalized.split("/").map((item) => item.trim()).filter(Boolean);
+      return parts;
+    };
 
-  useEffect(() => {
-    if (!monacoRef.current) return;
-    const model = monacoRef.current.editor.getModels()[0];
-    if (!model) return;
+    return keys.sort((a, b) => {
+      const leftParts = parseCategory(a);
+      const rightParts = parseCategory(b);
+      const leftNormalized = leftParts.map((item) => item.trim().toLowerCase());
+      const rightNormalized = rightParts.map((item) => item.trim().toLowerCase());
+      const maxDepth = Math.max(leftNormalized.length, rightNormalized.length);
 
-    applyMarkers(
-      { getModel: () => model },
-      monacoRef.current,
-      diagnostics,
-    );
-  }, [diagnostics]);
+      for (let depth = 0; depth < maxDepth; depth += 1) {
+        const leftNode = leftNormalized[depth] || "";
+        const rightNode = rightNormalized[depth] || "";
+        if (!leftNode || !rightNode) {
+          if (!leftNode && !rightNode) continue;
+          if (!leftNode) return -1;
+          return 1;
+        }
+        if (leftNode === rightNode) {
+          continue;
+        }
 
-  const onUpload = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+        const leftParent = depth === 0 ? "" : leftNormalized.slice(0, depth).join("/");
+        const rightParent = depth === 0 ? "" : rightNormalized.slice(0, depth).join("/");
+        const leftPriority = depth === 0 ? topPriority : (levelPriority[leftParent] ?? leafPriority[leftParent.split("/")[depth - 1]] ?? []);
+        const rightPriority = depth === 0 ? topPriority : (levelPriority[rightParent] ?? leafPriority[rightParent.split("/")[depth - 1]] ?? []);
 
-    if (file.size > MAX_UPLOAD_BYTES) {
-      setError(t("ebpf.uploadBlocked", { limit: MAX_UPLOAD_BYTES }));
-      return;
-    }
+        const leftIndex = leftPriority.indexOf(leftNode);
+        const rightIndex = rightPriority.indexOf(rightNode);
 
-    const text = await file.text();
-    setCode(text);
-    setError(null);
-  };
-
-  const runEbpf = async () => {
-    if (code.length > MAX_UPLOAD_BYTES) {
-      setError(t("ebpf.uploadBlocked", { limit: MAX_UPLOAD_BYTES }));
-      return;
-    }
-
-    const selectedTemplateDef = templates.find((item) => item.id === selectedTemplate);
-    const resolvedProgramName =
-      selectedTemplateDef?.name || scriptTitle.trim() || t("ebpf.customProgramName");
-
-    setRunning(true);
-    setError(null);
-    setResult(null);
-
-    try {
-      const response = await fetch(`${engineUrl}/ebpf/run`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          code,
-          template_id: selectedTemplate || null,
-          program_name: resolvedProgramName,
-          sampling_per_sec: samplingPerSec,
-          stream_seconds: streamSeconds,
-          enable_kernel_stream: enableKernelStream,
-          runtime_backend: runtimeBackend,
-        }),
-      });
-
-      const json = (await response.json()) as EbpfRunResponse;
-      setResult(json);
-      await refreshAttachments();
-
-      if (!response.ok) {
-        setError(`HTTP ${response.status}: ${json.message}`);
+        if (leftIndex !== -1 || rightIndex !== -1) {
+          if (leftIndex === -1) return 1;
+          if (rightIndex === -1) return -1;
+          if (leftIndex !== rightIndex) return leftIndex - rightIndex;
+        }
       }
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setRunning(false);
-    }
-  };
 
-  const saveCurrentScript = async () => {
-    setError(null);
-    try {
-      const response = await fetch(`${engineUrl}/scripts/save`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          title: scriptTitle.trim() || "untitled-ebpf",
-          script: code,
-        }),
-      });
-      const json = (await response.json()) as { ok: boolean; message: string };
-      if (!response.ok || !json.ok) {
-        throw new Error(json.message || `HTTP ${response.status}`);
-      }
-      await refreshScripts();
-    } catch (err) {
-      setError((err as Error).message);
-    }
-  };
-
-  const deleteScript = async (id: string) => {
-    setError(null);
-    try {
-      const response = await fetch(`${engineUrl}/scripts/delete`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ id }),
-      });
-      const json = (await response.json()) as { ok: boolean; message: string };
-      if (!response.ok || !json.ok) {
-        throw new Error(json.message || `HTTP ${response.status}`);
-      }
-      await refreshScripts();
-    } catch (err) {
-      setError((err as Error).message);
-    }
-  };
-
-  const detach = async (pinPath?: string) => {
-    setError(null);
-    try {
-      const response = await fetch(`${engineUrl}/ebpf/detach`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ pin_path: pinPath ?? null }),
-      });
-      const json = (await response.json()) as EbpfDetachResponse;
-      if (!response.ok || !json.ok) {
-        throw new Error(json.message || `HTTP ${response.status}`);
-      }
-      if (json.clean === false && (json.safety_notes?.length ?? 0) > 0) {
-        setError(t("ebpf.detachWarning", { notes: (json.safety_notes ?? []).join(" | ") }));
-      }
-      setResult((prev) =>
-        prev
-          ? {
-              ...prev,
-              message: `${prev.message} | ${t("ebpf.detachedCount", { count: json.detached.length })} | ${t("ebpf.detachState", {
-                state: json.clean === false ? t("ebpf.detachUnclean") : t("ebpf.detachClean"),
-              })}`,
-            }
-          : prev,
-      );
-      await refreshAttachments();
-    } catch (err) {
-      setError((err as Error).message);
-    }
-  };
-
-  const onEditorMount = (editor: any, monaco: any) => {
-    monacoRef.current = monaco;
-
-    monaco.editor.defineTheme("cyanrex-c", {
-      base: "vs-dark",
-      inherit: true,
-      rules: [
-        { token: "keyword", foreground: "7aa2ff" },
-        { token: "string", foreground: "9cd67a" },
-        { token: "comment", foreground: "6f86b7" },
-      ],
-      colors: {
-        "editor.background": "#0b1425",
-        "editorLineNumber.foreground": "#5d7bb1",
-        "editorCursor.foreground": "#9ec0ff",
-      },
+      return a.localeCompare(b, "en");
     });
+  }, [categorizedTemplates]);
 
-    monaco.editor.setTheme("cyanrex-c");
-    if (!intelligenceRef.current) {
-      intelligenceRef.current = registerEbpfIntelligence(monaco, engineUrl);
+  const formatCategoryLabel = (category: string) => {
+    const normalized = category.toLowerCase().trim();
+    const parts = normalized.split("/").map((item) => item.trim()).filter(Boolean);
+
+    const labels: Record<string, string> = {
+      xdp: t("ebpf.templateCategoryXdp"),
+      tracepoint: t("ebpf.templateCategoryTracepoint"),
+      kprobe: t("ebpf.templateCategoryKprobe"),
+      kretprobe: t("ebpf.templateCategoryKretprobe"),
+      ringbuf: t("ebpf.templateCategoryRingbuf"),
+      learning: t("ebpf.templateCategoryLearning"),
+      "learning-plus": t("ebpf.templateCategoryLearningPlus"),
+      other: t("ebpf.templateCategoryOther"),
+      foundations: t("ebpf.templateCategoryFoundations"),
+      cases: t("ebpf.templateCategoryCases"),
+      track: t("ebpf.templateCategoryTrack"),
+      beginner: t("ebpf.templateCategoryBeginner"),
+      intermediate: t("ebpf.templateCategoryIntermediate"),
+      advanced: t("ebpf.templateCategoryAdvanced"),
+      practice: t("ebpf.templateCategoryPractice"),
+      lab: t("ebpf.templateCategoryLab"),
+      core: t("ebpf.templateCategoryCore"),
+      fundamentals: t("ebpf.templateCategoryFundamentals"),
+      protocols: t("ebpf.templateCategoryProtocols"),
+      forensics: t("ebpf.templateCategoryForensics"),
+      operators: t("ebpf.templateCategoryOperators"),
+    };
+    if (parts.length === 0) {
+      return t("ebpf.templateCategoryOther");
     }
-    applyMarkers(editor, monaco, analysis.diagnostics);
-  };
 
-  const onEditorChange = (value: string | undefined) => {
-    const next = value ?? "";
-    setCode(next);
-
-    if (monacoRef.current) {
-      const model = monacoRef.current.editor.getModels()[0];
-      if (model) {
-        applyMarkers(
-          { getModel: () => model },
-          monacoRef.current,
-          analyzeCCode(next, injectedIncludes).diagnostics,
-        );
-      }
-    }
+    const toLabel = (part: string) => labels[part] ?? t(`ebpf.templateCategoryUnknown`, { category: part });
+    return parts
+      .map((part, index) => {
+        const label = toLabel(part);
+        if (index === 0) {
+          return label;
+        }
+        if (index === 1) {
+          return `${t("ebpf.templateCategoryLabelModule")}: ${label}`;
+        }
+        if (index === 2) {
+          return `${t("ebpf.templateCategoryLabelStage")}: ${label}`;
+        }
+        return `${t("ebpf.templateCategoryLabelTopic")}: ${label}`;
+      })
+      .join(" / ");
   };
 
   return (
@@ -402,19 +243,21 @@ export default function EbpfPage() {
             <p className="meta" style={{ marginTop: 0 }}>{t("ebpf.templateLabel")}</p>
             <select
               value={selectedTemplate}
-              onChange={(event) => {
-                const nextId = event.target.value;
-                setSelectedTemplate(nextId);
-                const template = templates.find((item) => item.id === nextId);
-                if (template) setCode(template.code);
-              }}
+              onChange={(event) => onTemplateChange(event.target.value)}
               style={{ width: "100%", padding: 10, borderRadius: 10 }}
             >
               <option value="">{t("ebpf.selectTemplate")}</option>
-              {templates.map((template) => (
-                <option key={template.id} value={template.id}>
-                  {template.name} ({template.capability})
-                </option>
+              {categoryOrder.map((category) => (
+                <optgroup
+                  key={category}
+                  label={formatCategoryLabel(category)}
+                >
+                  {categorizedTemplates[category]?.map((template) => (
+                    <option key={template.id} value={template.id}>
+                      {template.name} ({template.capability})
+                    </option>
+                  ))}
+                </optgroup>
               ))}
             </select>
           </div>
@@ -426,7 +269,8 @@ export default function EbpfPage() {
                 {" "}
                 <select
                   value={runtimeBackend}
-                  onChange={(event) => setRuntimeBackend(event.target.value as EbpfRuntimeBackend)}
+                  onChange={(event) =>
+                    setRuntimeBackend(event.target.value as "bpftool" | "aya")}
                   style={{ marginLeft: 6 }}
                 >
                   <option value="bpftool">{t("ebpf.runtimeBpftool")}</option>
@@ -490,31 +334,90 @@ export default function EbpfPage() {
 
       <section className="panel" style={{ marginTop: 16 }}>
         <h3 style={{ marginTop: 0 }}>{t("ebpf.inlineMetadata")}</h3>
-        <div className="row" style={{ marginBottom: 8 }}>
-          <button type="button" onClick={refreshInjectedMetadata}>{t("ebpf.refreshInjectedHeaders")}</button>
-        </div>
-
         <p className="meta">{t("ebpf.codeSize")}: {analysis.metadata.lines} lines | {analysis.metadata.bytes} bytes | clang: {compiler.status}</p>
         <p className="meta">{t("ebpf.includes")}: {analysis.metadata.includes.join(", ") || t("ebpf.noData")}</p>
         <p className="meta">{t("ebpf.injectedIncludes")}: {analysis.metadata.injectedIncludes.join(", ") || t("ebpf.noData")}</p>
         <p className="meta">
-          {t("ebpf.hookSections")}: {analysis.metadata.sections.map((s) => `${s.name}@L${s.line}`).join(", ") || t("ebpf.noData")}
+          {t("ebpf.hookSections")}: {analysis.metadata.sections.map((s: { name: string; line: number }) => `${s.name}@L${s.line}`).join(", ") || t("ebpf.noData")}
         </p>
         <p className="meta">{t("ebpf.hookSectionsMeaning")}</p>
         <p className="meta">
-          {t("ebpf.cFunctions")}: {analysis.metadata.functions.map((f) => `${f.name}@L${f.line}`).join(", ") || t("ebpf.noData")}
+          {t("ebpf.cFunctions")}: {analysis.metadata.functions.map((f: { name: string; line: number }) => `${f.name}@L${f.line}`).join(", ") || t("ebpf.noData")}
         </p>
         <p className="meta">{t("ebpf.cFunctionsMeaning")}</p>
       </section>
 
       <section className="panel" style={{ marginTop: 16 }}>
         <h3 style={{ marginTop: 0 }}>{t("ebpf.injectedHeaders")}</h3>
+        <div className="row" style={{ marginBottom: 8 }}>
+          <button type="button" onClick={refreshInjectedMetadata}>
+            {t("ebpf.refreshInjectedHeaders")}
+          </button>
+          <button
+            type="button"
+            onClick={runHeaderInjectionSelfCheck}
+            disabled={headerInjectionCheck.status === "checking"}
+          >
+            {t("ebpf.headerInjectionDryRun")}
+          </button>
+        </div>
         {injectedMetadata.length === 0 && <p className="meta">{t("ebpf.noInjectedMetadata")}</p>}
         {injectedMetadata.map((item) => (
           <p key={item.id} className="meta">
-            {item.include_hint} - {item.local_path}
+            <span style={{ fontWeight: 700, marginRight: 8 }}>{item.id}</span>
+            {item.include_hint}
+            {" -> "}
+            {sanitizeForDisplay(item.local_path)}
+            <span
+              className={`event-tag ${item.downloaded ? "green" : "red"}`}
+              style={{ marginLeft: 8 }}
+            >
+              {item.downloaded ? t("modules.downloaded") : t("ebpf.headerMissing")}
+            </span>
           </p>
         ))}
+        {headerInjectionCheck.status !== "idle" && (
+          <details className="panel" style={{ marginTop: 10, background: "#0b1425" }}>
+            <summary className="row" style={{ cursor: "pointer", listStyle: "none" }}>
+              <span className="meta" style={{ flex: 1 }}>
+                {headerInjectionCheck.status === "checking"
+                  ? t("common.checking")
+                  : headerInjectionCheck.status === "passed"
+                    ? t("ebpf.headerInjectionCheckPassed")
+                    : t("ebpf.headerInjectionCheckFailed")}
+              </span>
+              <span
+                className={`event-tag ${
+                  headerInjectionCheck.status === "passed"
+                    ? "green"
+                    : headerInjectionCheck.status === "checking"
+                    ? "yellow"
+                    : "red"
+                }`}
+              >
+                {headerInjectionCheck.status}
+              </span>
+            </summary>
+            <p className="meta" style={{ marginTop: 8 }}>
+              {sanitizeForDisplay(headerInjectionCheck.message || t("ebpf.noData"))}
+            </p>
+            <p className="meta">
+              {t("ebpf.diagnosticCount")}: {headerInjectionCheck.diagnostics}
+            </p>
+            <p className="meta" style={{ marginBottom: 4 }}>
+              {t("ebpf.compileStdout")}:
+            </p>
+            <pre style={{ margin: "0 0 10px 0" }}>
+              {sanitizeForDisplay(headerInjectionCheck.stdout || t("ebpf.outputEmpty"))}
+            </pre>
+            <p className="meta" style={{ marginBottom: 4 }}>
+              {t("ebpf.compileStderr")}:
+            </p>
+            <pre style={{ margin: 0 }}>
+              {sanitizeForDisplay(headerInjectionCheck.stderr || t("ebpf.outputEmpty"))}
+            </pre>
+          </details>
+        )}
       </section>
 
       <section className="panel" style={{ marginTop: 16 }}>

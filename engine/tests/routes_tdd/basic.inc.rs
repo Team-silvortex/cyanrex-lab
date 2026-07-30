@@ -127,6 +127,127 @@ async fn options_ebpf_run_should_allow_cors_preflight() {
     assert_eq!(allow_origin, Some("http://localhost:3000"));
 }
 
+
+#[tokio::test]
+async fn get_ebpf_templates_should_include_categorized_learning_paths() {
+    let state = test_state();
+    let app = build_router(state.clone());
+    let otp = state
+        .auth_service
+        .generate_current_totp_for_user("admin")
+        .expect("default admin otp should be available");
+    let session_cookie = login_and_get_session_cookie(&app, &otp).await;
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/ebpf/templates")
+                .header(header::COOKIE, session_cookie)
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let payload = response.into_body().collect().await.unwrap().to_bytes();
+    let json: Value = serde_json::from_slice(&payload).unwrap();
+    let templates = json.as_array().expect("templates should be array");
+    assert!(!templates.is_empty());
+
+    let mut has_learning_category = false;
+    let mut has_learning_plus_category = false;
+
+    for template in templates {
+        let category = template["category"].as_str();
+        if let Some(path) = category {
+            assert!(!path.trim().is_empty());
+            assert!(!path.ends_with('/'));
+            assert!(!path.starts_with('/'));
+            assert!(!path.contains("//"));
+            let parts: Vec<_> = path.split('/').collect();
+            assert!(parts.len() >= 2);
+            if path.starts_with("learning/") {
+                has_learning_category = true;
+            }
+            if path.starts_with("learning-plus/") {
+                has_learning_plus_category = true;
+            }
+        }
+    }
+
+    assert!(has_learning_category);
+    assert!(has_learning_plus_category);
+}
+
+#[tokio::test]
+async fn post_ebpf_check_empty_code_should_return_validation_error() {
+    let state = test_state();
+    let app = build_router(state.clone());
+    let otp = state
+        .auth_service
+        .generate_current_totp_for_user("admin")
+        .expect("default admin otp should be available");
+    let session_cookie = login_and_get_session_cookie(&app, &otp).await;
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/ebpf/check")
+                .header("content-type", "application/json")
+                .header(header::COOKIE, session_cookie)
+                .body(Body::from(r#"{"code": ""}"#))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let payload = response.into_body().collect().await.unwrap().to_bytes();
+    let json: Value = serde_json::from_slice(&payload).unwrap();
+
+    assert_eq!(json["ok"], false);
+    assert!(json["message"]
+        .as_str()
+        .unwrap_or("")
+        .to_ascii_lowercase()
+        .contains("empty"));
+}
+
+#[tokio::test]
+async fn post_ebpf_check_with_oversized_code_should_return_payload_too_large() {
+    let state = test_state();
+    let app = build_router(state.clone());
+    let otp = state
+        .auth_service
+        .generate_current_totp_for_user("admin")
+        .expect("default admin otp should be available");
+    let session_cookie = login_and_get_session_cookie(&app, &otp).await;
+
+    let oversized = "a".repeat(262_145);
+    let body = serde_json::json!({ "code": oversized }).to_string();
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/ebpf/check")
+                .header("content-type", "application/json")
+                .header(header::COOKIE, session_cookie)
+                .body(Body::from(body))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::PAYLOAD_TOO_LARGE);
+    let payload = response.into_body().collect().await.unwrap().to_bytes();
+    let json: Value = serde_json::from_slice(&payload).unwrap();
+
+    assert_eq!(json["ok"], false);
+}
+
 #[tokio::test]
 async fn post_ebpf_run_with_oversized_code_should_fail_validation() {
     let state = test_state();
