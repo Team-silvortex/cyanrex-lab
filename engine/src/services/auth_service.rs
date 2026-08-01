@@ -29,6 +29,8 @@ const SESSION_HOURS: i64 = 12;
 const TOTP_DIGITS: u32 = 6;
 const TOTP_STEP_SECONDS: i64 = 30;
 const LEGACY_PASSWORD_HASH_ROUNDS: usize = 120_000;
+const USERNAME_MAX_LEN: usize = 64;
+const USERNAME_MIN_LEN: usize = 3;
 
 #[derive(Clone)]
 pub struct AuthService {
@@ -131,4 +133,20 @@ fn parse_role_usernames(name: &str) -> HashSet<String> {
 
 fn normalize_role_username(username: &str) -> String {
     username.trim().to_ascii_lowercase()
+}
+
+fn sanitize_username(username: &str) -> Result<String, ()> {
+    let normalized = username.trim().to_ascii_lowercase();
+    if normalized.len() < USERNAME_MIN_LEN || normalized.len() > USERNAME_MAX_LEN {
+        return Err(());
+    }
+
+    if !normalized
+        .chars()
+        .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-' || c == '.')
+    {
+        return Err(());
+    }
+
+    Ok(normalized)
 }

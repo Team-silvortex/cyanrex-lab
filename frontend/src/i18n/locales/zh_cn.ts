@@ -38,7 +38,7 @@ export const zhCN: TranslationDict = {
       usernamePlaceholder: "用户名",
       passwordPlaceholder: "密码",
       otpSetupCta: "OTP 绑定",
-      defaultAdminHint: "默认账号：admin，默认密码请查看环境变量",
+      loginHintDefault: "默认账号与默认密码请在自建环境变量中配置。",
       confirmPassword: "确认密码",
       otp6: "6位 OTP",
       usernamePlaceholderCreate: "用户名（>=3）",

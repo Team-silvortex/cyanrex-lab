@@ -113,6 +113,28 @@ privileged and must not be exposed to untrusted users.
 - Engine health: `http://localhost:8080/health`
 - Postgres: `127.0.0.1:15432` (not exposed to the LAN)
 
+### 2.5) Build a distribution package
+
+For classroom deployment or offline distribution, create a packaged artifact with prebuilt Docker images:
+
+```bash
+./scripts/package-distribution.sh --version 0.1.0
+```
+
+This produces:
+- `dist/cyanrex-lab-0.1.0-<timestamp>.tar.gz`
+- `dist/cyanrex-lab-0.1.0-<timestamp>.tar.gz.sha256`
+
+Usage on target machine:
+
+```bash
+tar -xzf cyanrex-lab-*.tar.gz
+cd cyanrex-lab-*
+cp .env.example .env   # update credentials/bind settings as needed
+./run.sh               # start
+./stop.sh              # stop
+```
+
 ### 3) Private development account
 
 - username: `admin`
@@ -126,6 +148,7 @@ You can override with environment variables before the first start:
 - `CYANREX_ADMIN_TOTP_SECRET`
 - `CYANREX_ADMIN_USERNAMES` (optional, comma/space-separated; defaults to `CYANREX_ADMIN_USERNAME`)
 - `CYANREX_TEACHER_USERNAMES` (optional, comma/space-separated)
+- `CYANREX_ALLOW_MISSING_ORIGIN` (optional, default: disabled) — allow CSRF-protected state-changing routes without `Origin`/`Referer`
 - Event persistence tuning (optional):
   - `CYANREX_EVENT_PERSIST_QUEUE_WARNING_ENABLED` (default `true`)
   - `CYANREX_EVENT_PERSIST_QUEUE_WARNING_RATIO_PCT` (default `80`)
@@ -219,6 +242,7 @@ Run the same checks used by CI before submitting changes:
   - `file-lengths`
   - `engine`
   - `frontend`
+  - `permissions`
 - Set branch protection to require only `ci-gate` (instead of each matrix-like job), then any failed job will fail the required gate.
 - Recommended GitHub branch rule (GitHub UI):
   - Settings → Branches → Branch protection rules

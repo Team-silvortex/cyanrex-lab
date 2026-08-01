@@ -57,6 +57,10 @@ impl Default for ScriptStore {
 
 impl ScriptStore {
     pub async fn list_for_user(&self, username: &str) -> Vec<UserScript> {
+        let Some(username) = Self::sanitize_script_username(username) else {
+            return Vec::new();
+        };
+
         if let Some(pool) = self.active_pool() {
             if self.ensure_schema().await.is_ok() {
                 match sqlx::query(
@@ -65,7 +69,7 @@ impl ScriptStore {
                      WHERE username = $1
                      ORDER BY updated_at DESC",
                 )
-                .bind(username)
+                .bind(&username)
                 .fetch_all(pool)
                 .await
                 {
@@ -89,9 +93,9 @@ impl ScriptStore {
             }
         }
 
-        let _ = self.load_memory_user(username).await;
+        let _ = self.load_memory_user(&username).await;
         let cache = self.in_memory.read().await;
-        cache.get(username).cloned().unwrap_or_default()
+        cache.get(&username).cloned().unwrap_or_default()
     }
 
     pub async fn save_for_user(
@@ -100,6 +104,9 @@ impl ScriptStore {
         title: &str,
         script: &str,
     ) -> Result<UserScript, String> {
+        let username = Self::sanitize_script_username(username)
+            .ok_or_else(|| "invalid username".to_string())?;
+
         let clean_title = title.trim();
         if clean_title.is_empty() {
             return Err("title is required".to_string());
@@ -142,23 +149,26 @@ impl ScriptStore {
         }
 
         self.ensure_data_dir().await?;
-        let _ = self.load_memory_user(username).await;
+        let _ = self.load_memory_user(&username).await;
         {
             let mut cache = self.in_memory.write().await;
             let bucket = cache.entry(username.to_string()).or_default();
             bucket.insert(0, record.clone());
         }
-        self.persist_memory_user(username).await?;
+        self.persist_memory_user(&username).await?;
         Ok(record)
     }
 
     pub async fn delete_for_user(&self, username: &str, id: &str) -> Result<(), String> {
+        let username = Self::sanitize_script_username(username)
+            .ok_or_else(|| "invalid username".to_string())?;
+
         if let Some(pool) = self.active_pool() {
             if self.ensure_schema().await.is_ok() {
                 if let Err(error) =
                     sqlx::query("DELETE FROM user_scripts WHERE id = $1 AND username = $2")
                         .bind(id)
-                        .bind(username)
+                        .bind(&username)
                         .execute(pool)
                         .await
                 {
@@ -170,14 +180,14 @@ impl ScriptStore {
         }
 
         self.ensure_data_dir().await?;
-        let _ = self.load_memory_user(username).await;
+        let _ = self.load_memory_user(&username).await;
         {
             let mut cache = self.in_memory.write().await;
-            if let Some(bucket) = cache.get_mut(username) {
+            if let Some(bucket) = cache.get_mut(&username) {
                 bucket.retain(|script| script.id != id);
             }
         }
-        self.persist_memory_user(username).await
+        self.persist_memory_user(&username).await
     }
 
     fn active_pool(&self) -> Option<&PgPool> {
@@ -270,5 +280,21 @@ impl ScriptStore {
         let mut cache = self.in_memory.write().await;
         cache.insert(username.to_string(), records);
         Ok(())
+    }
+
+    fn sanitize_script_username(username: &str) -> Option<String> {
+        let sanitized = username
+            .chars()
+            .filter(|c| c.is_ascii_alphanumeric() || *c == '_' || *c == '-' || *c == '.')
+            .collect::<String>();
+        if sanitized.is_empty() {
+            return None;
+        }
+
+        if sanitized.len() != username.len() || sanitized.len() > 64 {
+            None
+        } else {
+            Some(sanitized)
+        }
     }
 }

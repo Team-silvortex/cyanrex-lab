@@ -3,6 +3,7 @@ impl AuthService {
         let username = std::env::var("CYANREX_ADMIN_USERNAME")
             .ok()
             .filter(|v| !v.trim().is_empty())
+            .and_then(|value| sanitize_username(&value).ok())
             .unwrap_or_else(|| DEFAULT_ADMIN_USERNAME.to_string());
 
         let password = std::env::var("CYANREX_ADMIN_PASSWORD")
@@ -53,7 +54,8 @@ impl AuthService {
         password: &str,
         otp: &str,
     ) -> Result<LoginOk, AuthError> {
-        let attempt_key = username.trim().to_ascii_lowercase();
+        let normalized_username = sanitize_username(username).map_err(|_| AuthError::InvalidCredentials)?;
+        let attempt_key = normalized_username.clone();
         {
             let attempts = self
                 .login_attempts
@@ -69,7 +71,7 @@ impl AuthService {
         }
 
         let user = self
-            .get_user(username)
+            .get_user(&normalized_username)
             .await
             .ok_or_else(|| {
                 self.record_login_failure(&attempt_key);
@@ -221,8 +223,9 @@ impl AuthService {
         username: &str,
         password: &str,
     ) -> Result<TotpBootstrap, AuthError> {
+        let username = sanitize_username(username).map_err(|_| AuthError::InvalidCredentials)?;
         let user = self
-            .get_user(username)
+            .get_user(&username)
             .await
             .ok_or(AuthError::InvalidCredentials)?;
 
@@ -246,12 +249,12 @@ impl AuthService {
     }
 
     pub async fn register(&self, username: &str, password: &str) -> Result<RegisterOk, AuthError> {
-        let normalized_username = username.trim();
-        if normalized_username.len() < 3 {
-            return Err(AuthError::InvalidInput);
-        }
+        let normalized_username = match sanitize_username(username) {
+            Ok(name) => name,
+            Err(_) => return Err(AuthError::InvalidInput),
+        };
         if password.len() < 8 {
-            return Err(AuthError::WeakPassword);
+            return Err(AuthError::InvalidInput);
         }
 
         let totp_secret = generate_totp_secret();
@@ -361,7 +364,7 @@ impl AuthService {
                 )
                 .bind(&new_salt)
                 .bind(&new_hash)
-                .bind(username)
+            .bind(&username)
                 .execute(pool)
                 .await
                 {
@@ -555,12 +558,13 @@ impl AuthService {
     }
 
     async fn get_user(&self, username: &str) -> Option<UserRecord> {
+        let username = sanitize_username(username).ok()?;
         if let Some(pool) = self.active_pool() {
             if self.ensure_schema_and_seed().await.is_ok() {
                 match sqlx::query(
                     "SELECT username, password_salt, password_hash, totp_secret FROM users WHERE username = $1",
                 )
-                .bind(username)
+                .bind(&username)
                 .fetch_optional(pool)
                 .await
                 {
@@ -582,6 +586,6 @@ impl AuthService {
         }
 
         let users = self.users.read().expect("auth users lock poisoned");
-        users.get(username).cloned()
+        users.get(&username).cloned()
     }
 }

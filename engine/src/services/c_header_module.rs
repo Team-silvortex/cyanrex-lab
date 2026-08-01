@@ -1,5 +1,6 @@
 use std::{collections::HashSet, path::PathBuf};
 
+use sha2::{Digest, Sha256};
 use tokio::fs;
 use tokio::process::Command;
 
@@ -14,6 +15,7 @@ struct HeaderSource {
     name: &'static str,
     description: &'static str,
     source_url: &'static str,
+    source_sha256: &'static str,
     include_hint: &'static str,
     file_name: &'static str,
 }
@@ -24,6 +26,7 @@ const HEADER_SOURCES: [HeaderSource; 5] = [
         name: "bpf_helpers.h",
         description: "Core helper macros (SEC, map definitions, helper wrappers).",
         source_url: "https://raw.githubusercontent.com/libbpf/libbpf/master/src/bpf_helpers.h",
+        source_sha256: "04575f99655917175eef6f44ecc50c081f4e4bfe9b1242d5ecc82f2a57cb3865",
         include_hint: "#include <bpf/bpf_helpers.h>",
         file_name: "bpf_helpers.h",
     },
@@ -32,6 +35,7 @@ const HEADER_SOURCES: [HeaderSource; 5] = [
         name: "bpf_helper_defs.h",
         description: "Helper function definitions for verifier-known helpers.",
         source_url: "https://raw.githubusercontent.com/libbpf/libbpf/master/src/bpf_helper_defs.h",
+        source_sha256: "fe3c6efceb92676c227d3a285bfb3e3dd7f0d147187522ab02842c2f55ab7405",
         include_hint: "#include <bpf/bpf_helper_defs.h>",
         file_name: "bpf_helper_defs.h",
     },
@@ -40,6 +44,7 @@ const HEADER_SOURCES: [HeaderSource; 5] = [
         name: "bpf_endian.h",
         description: "Endian conversion helpers for eBPF programs.",
         source_url: "https://raw.githubusercontent.com/libbpf/libbpf/master/src/bpf_endian.h",
+        source_sha256: "64b77c97b089ca06203d0451407844fe93933b4e36e7315a294745fa29d058fb",
         include_hint: "#include <bpf/bpf_endian.h>",
         file_name: "bpf_endian.h",
     },
@@ -48,6 +53,7 @@ const HEADER_SOURCES: [HeaderSource; 5] = [
         name: "bpf_tracing.h",
         description: "Tracing utility macros for tracepoint/kprobe programs.",
         source_url: "https://raw.githubusercontent.com/libbpf/libbpf/master/src/bpf_tracing.h",
+        source_sha256: "84f497bcc97544189255ded585b11f82442fc4f518cf56f6adc4b9d1575756d7",
         include_hint: "#include <bpf/bpf_tracing.h>",
         file_name: "bpf_tracing.h",
     },
@@ -57,6 +63,7 @@ const HEADER_SOURCES: [HeaderSource; 5] = [
         description: "Linux UAPI BPF definitions used by many eBPF program types.",
         source_url:
             "https://raw.githubusercontent.com/torvalds/linux/master/include/uapi/linux/bpf.h",
+        source_sha256: "ae0668c3b99d9ce2372f9227a462d189ad9ce7c886adaf29cbe65eb76f456c43",
         include_hint: "#include <linux/bpf.h>",
         file_name: "linux_bpf.h",
     },
@@ -130,6 +137,9 @@ impl CHeaderModule {
         }
 
         let bytes = output.stdout;
+        if !verify_download(bytes.as_slice(), source.source_sha256) {
+            return Err("download signature mismatch for header source".to_string());
+        }
 
         let path = self.header_path(source.file_name);
         fs::write(&path, bytes)
@@ -245,4 +255,10 @@ impl CHeaderModule {
             .await
             .map_err(|err| format!("failed to write selection file: {err}"))
     }
+}
+
+fn verify_download(bytes: &[u8], expected_hex: &str) -> bool {
+    let actual = Sha256::digest(bytes);
+    let hex = format!("{:x}", actual);
+    hex == expected_hex
 }

@@ -38,7 +38,7 @@ export const ja: TranslationDict = {
       usernamePlaceholder: "ユーザー名",
       passwordPlaceholder: "パスワード",
       otpSetupCta: "OTP セットアップ",
-      defaultAdminHint: "デフォルトアカウント: {account}、デフォルトパスワードは環境変数 {envVar} で設定されています。",
+      loginHintDefault: "デフォルトアカウントとパスワードは、自己ホスティング環境変数で設定します。",
       confirmPassword: "パスワード確認",
       otp6: "6桁 OTP",
       usernamePlaceholderCreate: "ユーザー名（>=3）",

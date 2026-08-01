@@ -8,7 +8,7 @@ RUN_SECURITY_AUDIT=0
 
 print_help() {
   cat <<'EOF'
-Usage: ./scripts/quality-gate.sh [--backend-only|--frontend-only|--format-only|--security|--security-only|--no-npm-install]
+Usage: ./scripts/quality-gate.sh [--backend-only|--frontend-only|--format-only|--security|--security-only|--permissions-only|--no-npm-install]
 
 Runs project quality checks used before commit/CI.
 
@@ -19,6 +19,7 @@ Modes:
   --format-only  Run file-length and Rust formatting check only.
   --security     Run file-length and security audit check.
   --security-only Run only security audit check.
+  --permissions-only Run file-length and permission regression checks (backend route_tdd + frontend permission tests).
 
 Flags:
   --no-npm-install Skip npm install step in frontend checks.
@@ -41,6 +42,9 @@ while [[ $# -gt 0 ]]; do
       ;;
     --security-only)
       MODE="security-only"
+      ;;
+    --permissions-only)
+      MODE="permissions"
       ;;
     --no-npm-install)
       SKIP_NPM_INSTALL=1
@@ -72,18 +76,36 @@ run_security_check() {
 }
 
 run_frontend_checks() {
-  if [[ "$SKIP_NPM_INSTALL" == "1" ]]; then
-    echo "Skipping npm install for frontend checks."
-  else
-    npm ci --prefix "$PROJECT_ROOT/frontend"
-  fi
+  run_frontend_dependencies
 
   npm --prefix "$PROJECT_ROOT/frontend" run build
   (cd "$PROJECT_ROOT/frontend" && npx --yes tsc --noEmit)
 }
 
+run_frontend_dependencies() {
+  if [[ "$SKIP_NPM_INSTALL" == "1" ]]; then
+    echo "Skipping npm install for frontend checks."
+  else
+    npm ci --prefix "$PROJECT_ROOT/frontend"
+  fi
+}
+
 run_format_only() {
   cargo fmt --manifest-path "$PROJECT_ROOT/engine/Cargo.toml" -- --check
+}
+
+run_permissions_backend_check() {
+  cargo test --manifest-path "$PROJECT_ROOT/engine/Cargo.toml" --test routes_tdd -- --nocapture
+}
+
+run_permissions_frontend_check() {
+  run_frontend_dependencies
+  npm --prefix "$PROJECT_ROOT/frontend" run test:ui-permissions
+}
+
+run_permissions_checks() {
+  run_permissions_backend_check
+  run_permissions_frontend_check
 }
 
 run_file_length_check
@@ -97,6 +119,9 @@ case "$MODE" in
     ;;
   frontend)
     run_frontend_checks
+    ;;
+  permissions)
+    run_permissions_checks
     ;;
   format-only)
     run_format_only

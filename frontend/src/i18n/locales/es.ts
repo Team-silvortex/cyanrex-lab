@@ -38,7 +38,7 @@ export const es: TranslationDict = {
       usernamePlaceholder: "Usuario",
       passwordPlaceholder: "Contraseña",
       otpSetupCta: "Configurar OTP",
-      defaultAdminHint: "Cuenta predeterminada: {account}, contraseña por defecto configurada en la variable de entorno {envVar}.",
+      loginHintDefault: "Las credenciales predeterminadas se configuran en las variables de entorno del despliegue autohospedado.",
       confirmPassword: "Confirmar contraseña",
       otp6: "OTP de 6 dígitos",
       usernamePlaceholderCreate: "nombre de usuario (>=3)",

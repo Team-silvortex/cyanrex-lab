@@ -17,14 +17,7 @@ services:
       retries: 20
 
   engine:
-    build:
-      context: ../engine
-      dockerfile: Dockerfile
-      args:
-        RUST_IMAGE: ${ENGINE_RUST_IMAGE:-rust:bookworm}
-        DEBIAN_IMAGE: ${ENGINE_DEBIAN_IMAGE:-debian:bookworm}
-        APT_MIRROR: ${ENGINE_APT_MIRROR:-deb.debian.org}
-        CARGO_SOURCE_MIRROR: ${ENGINE_CARGO_REGISTRY_INDEX:-}
+    image: ${CYANREX_ENGINE_IMAGE:-cyanrex/cyanrex-engine:${CYANREX_IMAGE_TAG:-latest}}
     restart: unless-stopped
     # This is an intentionally privileged teaching sandbox. Never expose it to untrusted users.
     privileged: true
@@ -74,12 +67,7 @@ services:
       retries: 20
 
   frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
-      args:
-        NODE_IMAGE: ${FRONTEND_NODE_IMAGE:-node:20}
-        NPM_REGISTRY: ${FRONTEND_NPM_REGISTRY:-https://registry.npmjs.org}
+    image: ${CYANREX_FRONTEND_IMAGE:-cyanrex/cyanrex-frontend:${CYANREX_IMAGE_TAG:-latest}}
     restart: unless-stopped
     environment:
       NODE_ENV: production

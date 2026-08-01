@@ -4,6 +4,14 @@ import { useRouter } from "next/router";
 import { PropsWithChildren, useEffect, useMemo, useState } from "react";
 
 import { useI18n } from "../i18n/context";
+import {
+  filterNavItemsByRole,
+  getRequiredRolesForRoute,
+  isRoleAllowed,
+  normalizeAuthRole,
+  type AuthRole,
+} from "../utils/sidebarPermissions";
+import { parseSafeRedirectPath } from "../utils/security";
 import LanguageSwitcher from "./LanguageSwitcher";
 
 type NavItem = {
@@ -27,28 +35,6 @@ const navItems: NavItem[] = [
   { href: "/terminal", key: "layout.nav.terminal" },
   { href: "/account", key: "layout.nav.account" },
 ];
-
-type AuthRole = "admin" | "teacher" | "student" | null;
-
-const isRoleAllowed = (roles: readonly AuthRole[] | undefined, userRole: AuthRole) => {
-  if (roles === undefined || roles.length === 0) {
-    return true;
-  }
-  if (userRole === null) {
-    return false;
-  }
-  return roles.includes(userRole);
-};
-
-const getRequiredRolesForRoute = (pathname: string): AuthRole[] | null => {
-  if (pathname.startsWith("/settings")) {
-    return ["admin"];
-  }
-  if (pathname.startsWith("/modules")) {
-    return ["admin", "teacher"];
-  }
-  return null;
-};
 
 type SidebarLayoutProps = PropsWithChildren<{
   title: string;
@@ -78,18 +64,14 @@ export default function SidebarLayout({ title, children }: SidebarLayoutProps) {
         const json = (await response.json()) as { authenticated?: boolean };
         if (!json.authenticated) {
           if (active) {
-            const next = encodeURIComponent(router.asPath || "/dashboard");
+            const next = encodeURIComponent(
+              parseSafeRedirectPath(router.asPath || "/dashboard"),
+            );
             router.replace(`/login?next=${next}`);
           }
           return;
         }
-        const role = (() => {
-          const raw = (json as { role?: string }).role;
-          if (raw === "admin" || raw === "teacher" || raw === "student") {
-            return raw as AuthRole;
-          }
-          return "student";
-        })();
+        const role = normalizeAuthRole((json as { role?: unknown }).role);
         if (active) {
           setAuthReady(true);
           setUserRole(role);
@@ -97,8 +79,10 @@ export default function SidebarLayout({ title, children }: SidebarLayoutProps) {
         }
       } catch {
         if (active) {
-          const next = encodeURIComponent(router.asPath || "/dashboard");
-          router.replace(`/login?next=${next}`);
+            const next = encodeURIComponent(
+              parseSafeRedirectPath(router.asPath || "/dashboard"),
+            );
+            router.replace(`/login?next=${next}`);
         }
       } finally {
         if (active) {
@@ -163,9 +147,7 @@ export default function SidebarLayout({ title, children }: SidebarLayoutProps) {
     router.replace("/login");
   };
 
-  const visibleNavItems = useMemo(() => {
-    return navItems.filter((item) => isRoleAllowed(item.allowedRoles, userRole));
-  }, [userRole]);
+  const visibleNavItems = useMemo(() => filterNavItemsByRole(navItems, userRole), [userRole]);
 
   if (!currentRouteAllowed) {
     return (

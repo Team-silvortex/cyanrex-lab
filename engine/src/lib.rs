@@ -29,7 +29,7 @@ fn parse_frontend_port() -> u16 {
         .unwrap_or(3000)
 }
 
-fn build_cors_origins() -> Vec<HeaderValue> {
+pub fn build_allowed_origins() -> Vec<String> {
     let mut origins: Vec<HeaderValue> = Vec::new();
     let port = parse_frontend_port();
     let bind_address =
@@ -51,13 +51,16 @@ fn build_cors_origins() -> Vec<HeaderValue> {
     if origins.is_empty() {
         let localhost = format!("http://localhost:{port}");
         let bind = format!("http://{bind_address}:{port}");
-        if let Ok(origin) = localhost.parse::<HeaderValue>() {
-            origins.push(origin);
-        }
+        origins.push(
+            localhost
+                .parse::<HeaderValue>()
+                .expect("generated localhost origin should parse"),
+        );
         if bind_address != "localhost" {
-            if let Ok(origin) = bind.parse::<HeaderValue>() {
-                origins.push(origin);
-            }
+            origins.push(
+                bind.parse::<HeaderValue>()
+                    .expect("generated bind origin should parse"),
+            );
         }
     }
 
@@ -66,6 +69,35 @@ fn build_cors_origins() -> Vec<HeaderValue> {
     }
 
     origins
+        .into_iter()
+        .filter_map(|value| {
+            let value = value
+                .to_str()
+                .ok()?
+                .trim()
+                .trim_end_matches('/')
+                .to_string();
+            if value.is_empty() {
+                None
+            } else {
+                Some(value)
+            }
+        })
+        .collect()
+}
+
+fn build_cors_origins() -> Vec<HeaderValue> {
+    build_allowed_origins()
+        .into_iter()
+        .filter_map(|origin| {
+            let origin = origin.trim();
+            if origin.is_empty() {
+                None
+            } else {
+                origin.parse::<HeaderValue>().ok()
+            }
+        })
+        .collect()
 }
 
 #[derive(Clone)]
@@ -406,7 +438,7 @@ pub fn build_router(state: Arc<AppState>) -> Router {
         )
         .layer(middleware::from_fn_with_state(
             state.clone(),
-            routes::auth::auth_guard,
+            routes::auth::auth_and_csrf_guard,
         ));
 
     let module_read_only = Router::new()
@@ -417,7 +449,7 @@ pub fn build_router(state: Arc<AppState>) -> Router {
         )
         .layer(middleware::from_fn_with_state(
             state.clone(),
-            routes::auth::teacher_or_admin_guard,
+            routes::auth::teacher_or_admin_and_csrf_guard,
         ));
 
     let admin_only = Router::new()
@@ -456,7 +488,14 @@ pub fn build_router(state: Arc<AppState>) -> Router {
         )
         .layer(middleware::from_fn_with_state(
             state.clone(),
-            routes::auth::admin_guard,
+            routes::auth::admin_and_csrf_guard,
+        ));
+
+    let public_actions = Router::new()
+        .route("/auth/logout", axum::routing::post(routes::auth::logout))
+        .layer(middleware::from_fn_with_state(
+            state.clone(),
+            routes::auth::csrf_guard,
         ));
 
     Router::new()
@@ -472,7 +511,7 @@ pub fn build_router(state: Arc<AppState>) -> Router {
             axum::routing::post(routes::auth::register),
         )
         .route("/auth/me", get(routes::auth::me))
-        .route("/auth/logout", axum::routing::post(routes::auth::logout))
+        .merge(public_actions)
         .merge(protected)
         .merge(module_read_only)
         .merge(admin_only)

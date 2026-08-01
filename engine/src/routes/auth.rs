@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use axum::{
     extract::{Request, State},
-    http::{header, HeaderMap, HeaderValue, StatusCode},
+    http::{header, HeaderMap, HeaderValue, Method, StatusCode},
     middleware::Next,
     response::{IntoResponse, Response},
     Json,
@@ -10,15 +10,17 @@ use axum::{
 
 use crate::{
     models::auth::{
-        AuthRole, ChangePasswordRequest, DeleteAccountRequest, LoginRequest, LoginResponse,
-        RegisterRequest, RegisterResponse, SessionResponse, TotpBootstrapRequest,
-        TotpBootstrapResponse,
+        ChangePasswordRequest, DeleteAccountRequest, LoginRequest, LoginResponse, RegisterRequest,
+        RegisterResponse, SessionResponse, TotpBootstrapRequest, TotpBootstrapResponse,
     },
     services::auth_service::AuthError,
     AppState,
 };
 
+include!("auth_session.rs");
+
 pub const SESSION_COOKIE_NAME: &str = "cyanrex_session";
+const SESSION_MAX_AGE_SECONDS: i64 = 12 * 60 * 60;
 
 pub async fn login(
     State(state): State<Arc<AppState>>,
@@ -31,7 +33,7 @@ pub async fn login(
     {
         Ok(ok) => {
             let role_username = ok.username.clone();
-            let cookie_value = build_session_cookie(&ok.token, 12 * 60 * 60);
+            let cookie_value = build_session_cookie(&ok.token, SESSION_MAX_AGE_SECONDS);
             let mut response = Json(LoginResponse {
                 ok: true,
                 message: "login success".to_string(),
@@ -296,7 +298,8 @@ pub async fn logout(State(state): State<Arc<AppState>>, headers: HeaderMap) -> R
         Json(serde_json::json!({"ok": true, "message": "logged out"})).into_response();
     response.headers_mut().insert(
         header::SET_COOKIE,
-        HeaderValue::from_static("cyanrex_session=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0"),
+        HeaderValue::from_str(&clear_session_cookie())
+            .expect("generated clear cookie should always be valid"),
     );
 
     response
@@ -381,9 +384,8 @@ pub async fn delete_account(
                 Json(serde_json::json!({"ok": true, "message": "account deleted"})).into_response();
             response.headers_mut().insert(
                 header::SET_COOKIE,
-                HeaderValue::from_static(
-                    "cyanrex_session=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0",
-                ),
+                HeaderValue::from_str(&clear_session_cookie())
+                    .expect("generated clear cookie should always be valid"),
             );
             response
         }
@@ -413,137 +415,4 @@ pub async fn delete_account(
         )
             .into_response(),
     }
-}
-
-pub async fn require_authenticated(
-    state: &AppState,
-    headers: &HeaderMap,
-) -> Result<(), (StatusCode, Json<serde_json::Value>)> {
-    let token = extract_session_token(headers).ok_or_else(|| {
-        (
-            StatusCode::UNAUTHORIZED,
-            Json(serde_json::json!({"ok": false, "message": "missing auth session"})),
-        )
-    })?;
-
-    if state.auth_service.validate_session(&token).await.is_none() {
-        return Err((
-            StatusCode::UNAUTHORIZED,
-            Json(serde_json::json!({"ok": false, "message": "invalid or expired auth session"})),
-        ));
-    }
-
-    Ok(())
-}
-
-pub async fn current_session_from_headers(
-    state: &AppState,
-    headers: &HeaderMap,
-) -> Option<crate::services::auth_service::SessionRecord> {
-    let token = extract_session_token(headers)?;
-    state.auth_service.validate_session(&token).await
-}
-
-pub async fn auth_guard(
-    State(state): State<Arc<AppState>>,
-    request: Request,
-    next: Next,
-) -> Response {
-    if let Err((status, payload)) = require_authenticated(state.as_ref(), request.headers()).await {
-        return (status, payload).into_response();
-    }
-
-    next.run(request).await
-}
-
-pub async fn admin_guard(
-    State(state): State<Arc<AppState>>,
-    request: Request,
-    next: Next,
-) -> Response {
-    let Some(session) = current_session_from_headers(state.as_ref(), request.headers()).await
-    else {
-        return (
-            StatusCode::UNAUTHORIZED,
-            Json(serde_json::json!({"ok": false, "message": "invalid auth session"})),
-        )
-            .into_response();
-    };
-    if !matches!(
-        state.auth_service.role_for_username(&session.username),
-        AuthRole::Admin
-    ) {
-        return (
-            StatusCode::FORBIDDEN,
-            Json(serde_json::json!({"ok": false, "message": "administrator access required"})),
-        )
-            .into_response();
-    }
-    next.run(request).await
-}
-
-pub async fn teacher_or_admin_guard(
-    State(state): State<Arc<AppState>>,
-    request: Request,
-    next: Next,
-) -> Response {
-    let Some(session) = current_session_from_headers(state.as_ref(), request.headers()).await
-    else {
-        return (
-            StatusCode::UNAUTHORIZED,
-            Json(serde_json::json!({"ok": false, "message": "invalid auth session"})),
-        )
-            .into_response();
-    };
-
-    if !matches!(
-        state.auth_service.role_for_username(&session.username),
-        AuthRole::Admin | AuthRole::Teacher
-    ) {
-        return (
-            StatusCode::FORBIDDEN,
-            Json(serde_json::json!({"ok": false, "message": "insufficient module privileges"})),
-        )
-            .into_response();
-    }
-
-    next.run(request).await
-}
-
-fn build_session_cookie(token: &str, max_age_seconds: i64) -> String {
-    let secure = if env_flag("CYANREX_SECURE_COOKIES") {
-        "; Secure"
-    } else {
-        ""
-    };
-    format!(
-        "{SESSION_COOKIE_NAME}={token}; HttpOnly; Path=/; SameSite=Lax; Max-Age={max_age_seconds}{secure}"
-    )
-}
-
-fn env_flag(name: &str) -> bool {
-    std::env::var(name).ok().is_some_and(|value| {
-        matches!(
-            value.trim().to_ascii_lowercase().as_str(),
-            "1" | "true" | "yes" | "on"
-        )
-    })
-}
-
-pub fn extract_session_token(headers: &HeaderMap) -> Option<String> {
-    let cookie_header = headers.get(header::COOKIE)?.to_str().ok()?;
-
-    cookie_header
-        .split(';')
-        .filter_map(|part| {
-            let mut pair = part.trim().splitn(2, '=');
-            let key = pair.next()?.trim();
-            let value = pair.next()?.trim();
-            if key == SESSION_COOKIE_NAME {
-                Some(value.to_string())
-            } else {
-                None
-            }
-        })
-        .next()
 }

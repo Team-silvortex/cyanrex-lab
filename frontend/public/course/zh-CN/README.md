@@ -63,5 +63,5 @@ eBPF 永远运行在 Linux 内核中。Windows 和 macOS 的 Docker 模式观察
 ## CI 与合并门禁
 
 - CI 流程已加入聚合任务 `CI gate`（位于 `.github/workflows/ci.yml`）。
-- `CI gate` 会依赖 `security-audit`、`file-lengths`、`engine` 和 `frontend`，并在任一任务失败时直接失败。
+- `CI gate` 会依赖 `security-audit`、`file-lengths`、`engine`、`frontend` 和 `permissions`，并在任一任务失败时直接失败。
 - 建议在分支保护中只配置必需检查项为 **`CI gate`**，这样合并统一受该门禁控制。

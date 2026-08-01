@@ -63,5 +63,5 @@ For high event traffic classes, you can tune persistence queue alerting in `dock
 ## CI and Merge Gate
 
 - CI workflow now includes an aggregate gate job `ci-gate` in `.github/workflows/ci.yml`.
-- `ci-gate` requires `security-audit`, `file-lengths`, `engine`, and `frontend` and fails if any required job fails.
+- `ci-gate` requires `security-audit`, `file-lengths`, `engine`, `frontend`, and `permissions` and fails if any required job fails.
 - For branch protection, enable required status check for **`CI gate`** on your main branch.

@@ -38,7 +38,7 @@ export const en: TranslationDict = {
       usernamePlaceholder: "Username",
       passwordPlaceholder: "Password",
       otpSetupCta: "OTP Setup",
-      defaultAdminHint: "Default account: {account}; default password is configured with environment variable {envVar}.",
+      loginHintDefault: "Default credentials are set in environment variables in self-hosted deployments.",
       confirmPassword: "Confirm password",
       otp6: "6-digit OTP",
       usernamePlaceholderCreate: "username (>=3)",

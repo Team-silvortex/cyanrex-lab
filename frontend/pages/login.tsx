@@ -4,7 +4,7 @@ import Link from "next/link";
 
 import LanguageSwitcher from "../src/components/LanguageSwitcher";
 import { useI18n } from "../src/i18n/context";
-import { sanitizeForDisplay } from "../src/utils/security";
+import { parseSafeRedirectPath, sanitizeForDisplay } from "../src/utils/security";
 
 type LoginResponse = {
   ok: boolean;
@@ -43,7 +43,9 @@ export default function LoginPage() {
         throw new Error(json.message || `HTTP ${response.status}`);
       }
 
-      const next = typeof router.query.next === "string" ? router.query.next : "/dashboard";
+      const next = parseSafeRedirectPath(
+        typeof router.query.next === "string" ? router.query.next : undefined,
+      );
       router.replace(next);
     } catch (err) {
       setError((err as Error).message);
@@ -100,7 +102,7 @@ export default function LoginPage() {
         {error && <p className="error" style={{ marginTop: 12 }}>{sanitizeForDisplay(error)}</p>}
 
         <p className="meta" style={{ marginTop: 12 }}>
-          {t("auth.defaultAdminHint", { account: "admin", envVar: "CYANREX_ADMIN_PASSWORD" })}
+          {t("auth.loginHintDefault")}
         </p>
         <div className="auth-otp-cta-wrap">
           <Link href="/otp-setup" className="auth-otp-cta">
