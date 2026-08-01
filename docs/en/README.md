@@ -51,6 +51,15 @@ After finishing this curriculum, learners should be able to:
 eBPF always runs on a Linux kernel. In Docker on Windows/macOS, you observe the VM/host kernel,
 not the desktop OS itself.
 
+## Optional Runtime Tuning
+
+For high event traffic classes, you can tune persistence queue alerting in `docker/.env` to control noise and debugging sensitivity:
+
+- `CYANREX_EVENT_PERSIST_QUEUE_WARNING_ENABLED` (default: `true`)
+- `CYANREX_EVENT_PERSIST_QUEUE_WARNING_RATIO_PCT` (default: `80`)
+- `CYANREX_EVENT_PERSIST_QUEUE_CLEAR_RATIO_PCT` (default: `40`)
+- `CYANREX_EVENT_PERSIST_QUEUE_WARNING_INTERVAL_MS` (default: `10000`)
+
 ## CI and Merge Gate
 
 - CI workflow now includes an aggregate gate job `ci-gate` in `.github/workflows/ci.yml`.

@@ -384,34 +384,6 @@ pub fn build_router(state: Arc<AppState>) -> Router {
             "/scripts/delete",
             axum::routing::post(routes::scripts::delete_script),
         )
-        .layer(middleware::from_fn_with_state(
-            state.clone(),
-            routes::auth::auth_guard,
-        ));
-
-    let admin_only = Router::new()
-        .route(
-            "/settings/compiler",
-            get(routes::settings::get_compiler_settings)
-                .post(routes::settings::update_compiler_settings),
-        )
-        .route(
-            "/settings/performance",
-            get(routes::settings::get_performance_metrics),
-        )
-        .route("/modules", get(routes::modules::list_modules))
-        .route(
-            "/modules/start",
-            axum::routing::post(routes::modules::start_module),
-        )
-        .route(
-            "/modules/stop",
-            axum::routing::post(routes::modules::stop_module),
-        )
-        .route(
-            "/command",
-            axum::routing::post(routes::command::dispatch_command),
-        )
         .route("/ebpf/run", axum::routing::post(routes::ebpf::run_ebpf))
         .route("/ebpf/check", axum::routing::post(routes::ebpf::check_ebpf))
         .route(
@@ -429,8 +401,46 @@ pub fn build_router(state: Arc<AppState>) -> Router {
         )
         .route("/ebpf/templates", get(routes::ebpf::list_templates))
         .route(
+            "/modules/c-headers/selected-metadata",
+            get(routes::c_headers::selected_metadata),
+        )
+        .layer(middleware::from_fn_with_state(
+            state.clone(),
+            routes::auth::auth_guard,
+        ));
+
+    let module_read_only = Router::new()
+        .route("/modules", get(routes::modules::list_modules))
+        .route(
             "/modules/c-headers/catalog",
             get(routes::c_headers::list_headers),
+        )
+        .layer(middleware::from_fn_with_state(
+            state.clone(),
+            routes::auth::teacher_or_admin_guard,
+        ));
+
+    let admin_only = Router::new()
+        .route(
+            "/settings/compiler",
+            get(routes::settings::get_compiler_settings)
+                .post(routes::settings::update_compiler_settings),
+        )
+        .route(
+            "/settings/performance",
+            get(routes::settings::get_performance_metrics),
+        )
+        .route(
+            "/modules/start",
+            axum::routing::post(routes::modules::start_module),
+        )
+        .route(
+            "/modules/stop",
+            axum::routing::post(routes::modules::stop_module),
+        )
+        .route(
+            "/command",
+            axum::routing::post(routes::command::dispatch_command),
         )
         .route(
             "/modules/c-headers/download",
@@ -443,10 +453,6 @@ pub fn build_router(state: Arc<AppState>) -> Router {
         .route(
             "/modules/c-headers/select",
             axum::routing::post(routes::c_headers::select_header),
-        )
-        .route(
-            "/modules/c-headers/selected-metadata",
-            get(routes::c_headers::selected_metadata),
         )
         .layer(middleware::from_fn_with_state(
             state.clone(),
@@ -468,6 +474,7 @@ pub fn build_router(state: Arc<AppState>) -> Router {
         .route("/auth/me", get(routes::auth::me))
         .route("/auth/logout", axum::routing::post(routes::auth::logout))
         .merge(protected)
+        .merge(module_read_only)
         .merge(admin_only)
         .layer(cors)
         .with_state(state)

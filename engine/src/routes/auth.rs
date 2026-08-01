@@ -10,8 +10,9 @@ use axum::{
 
 use crate::{
     models::auth::{
-        ChangePasswordRequest, DeleteAccountRequest, LoginRequest, LoginResponse, RegisterRequest,
-        RegisterResponse, SessionResponse, TotpBootstrapRequest, TotpBootstrapResponse,
+        AuthRole, ChangePasswordRequest, DeleteAccountRequest, LoginRequest, LoginResponse,
+        RegisterRequest, RegisterResponse, SessionResponse, TotpBootstrapRequest,
+        TotpBootstrapResponse,
     },
     services::auth_service::AuthError,
     AppState,
@@ -29,11 +30,13 @@ pub async fn login(
         .await
     {
         Ok(ok) => {
+            let role_username = ok.username.clone();
             let cookie_value = build_session_cookie(&ok.token, 12 * 60 * 60);
             let mut response = Json(LoginResponse {
                 ok: true,
                 message: "login success".to_string(),
-                username: Some(ok.username),
+                username: Some(role_username.clone()),
+                role: Some(state.auth_service.role_for_username(&role_username)),
                 expires_at: Some(ok.expires_at),
             })
             .into_response();
@@ -52,6 +55,7 @@ pub async fn login(
                 ok: false,
                 message: "invalid username or password".to_string(),
                 username: None,
+                role: None,
                 expires_at: None,
             }),
         )
@@ -62,6 +66,7 @@ pub async fn login(
                 ok: false,
                 message: "invalid otp".to_string(),
                 username: None,
+                role: None,
                 expires_at: None,
             }),
         )
@@ -72,6 +77,7 @@ pub async fn login(
                 ok: false,
                 message: "too many login failures; try again later".to_string(),
                 username: None,
+                role: None,
                 expires_at: None,
             }),
         )
@@ -87,6 +93,7 @@ pub async fn login(
                 ok: false,
                 message: "login failed".to_string(),
                 username: None,
+                role: None,
                 expires_at: None,
             }),
         )
@@ -98,7 +105,8 @@ pub async fn me(State(state): State<Arc<AppState>>, headers: HeaderMap) -> Json<
     if let Some(session) = current_session_from_headers(&state, &headers).await {
         return Json(SessionResponse {
             authenticated: true,
-            username: Some(session.username),
+            username: Some(session.username.clone()),
+            role: Some(state.auth_service.role_for_username(&session.username)),
             expires_at: Some(session.expires_at),
         });
     }
@@ -106,6 +114,7 @@ pub async fn me(State(state): State<Arc<AppState>>, headers: HeaderMap) -> Json<
     Json(SessionResponse {
         authenticated: false,
         username: None,
+        role: None,
         expires_at: None,
     })
 }
@@ -460,13 +469,44 @@ pub async fn admin_guard(
         )
             .into_response();
     };
-    if !state.auth_service.is_admin_username(&session.username) {
+    if !matches!(
+        state.auth_service.role_for_username(&session.username),
+        AuthRole::Admin
+    ) {
         return (
             StatusCode::FORBIDDEN,
             Json(serde_json::json!({"ok": false, "message": "administrator access required"})),
         )
             .into_response();
     }
+    next.run(request).await
+}
+
+pub async fn teacher_or_admin_guard(
+    State(state): State<Arc<AppState>>,
+    request: Request,
+    next: Next,
+) -> Response {
+    let Some(session) = current_session_from_headers(state.as_ref(), request.headers()).await
+    else {
+        return (
+            StatusCode::UNAUTHORIZED,
+            Json(serde_json::json!({"ok": false, "message": "invalid auth session"})),
+        )
+            .into_response();
+    };
+
+    if !matches!(
+        state.auth_service.role_for_username(&session.username),
+        AuthRole::Admin | AuthRole::Teacher
+    ) {
+        return (
+            StatusCode::FORBIDDEN,
+            Json(serde_json::json!({"ok": false, "message": "insufficient module privileges"})),
+        )
+            .into_response();
+    }
+
     next.run(request).await
 }
 

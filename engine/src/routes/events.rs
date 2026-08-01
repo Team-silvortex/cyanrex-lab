@@ -13,6 +13,9 @@ use serde::Deserialize;
 
 use crate::{models::event::Event, AppState};
 
+const DEFAULT_EVENT_LIMIT: usize = 200;
+const MAX_EVENT_LIMIT: usize = 500;
+
 #[derive(Debug, Deserialize)]
 pub struct EventsQuery {
     pub category: Option<String>,
@@ -39,16 +42,24 @@ pub async fn list_events(
     Query(query): Query<EventsQuery>,
 ) -> Json<Vec<Event>> {
     let username = current_username_from_headers(&state, &headers).await;
-    let events = state.event_bus.snapshot_for_user(&username).await;
-    Json(apply_filters(
-        events,
-        &query.category,
-        &query.severity,
-        query.limit,
-        query.since_minutes,
-        &query.start,
-        &query.end,
-    ))
+    let category_filter = sanitize_category(&query.category);
+    let severity_filter = sanitize_severity(&query.severity);
+    let limit = resolve_event_limit(query.limit);
+
+    let events = state
+        .event_bus
+        .snapshot_for_user_filtered(
+            &username,
+            category_filter.as_deref(),
+            severity_filter.as_deref(),
+            Some(limit),
+            query.since_minutes,
+            parse_rfc3339(query.start.as_deref()),
+            parse_rfc3339(query.end.as_deref()),
+        )
+        .await;
+
+    Json(events)
 }
 
 pub async fn export_events(
@@ -57,16 +68,20 @@ pub async fn export_events(
     Query(query): Query<EventsExportQuery>,
 ) -> Response {
     let username = current_username_from_headers(&state, &headers).await;
-    let events = state.event_bus.snapshot_for_user(&username).await;
-    let filtered = apply_filters(
-        events,
-        &query.category,
-        &query.severity,
-        None,
-        query.since_minutes,
-        &query.start,
-        &query.end,
-    );
+    let category_filter = sanitize_category(&query.category);
+    let severity_filter = sanitize_severity(&query.severity);
+    let events = state
+        .event_bus
+        .snapshot_for_user_filtered(
+            &username,
+            category_filter.as_deref(),
+            severity_filter.as_deref(),
+            None,
+            query.since_minutes,
+            parse_rfc3339(query.start.as_deref()),
+            parse_rfc3339(query.end.as_deref()),
+        )
+        .await;
     let format = query
         .format
         .as_deref()
@@ -77,11 +92,11 @@ pub async fn export_events(
     let filename = format!("cyanrex-events-{timestamp}.{format}");
 
     if format == "csv" {
-        let body = to_csv(&filtered);
+        let body = to_csv(&events);
         return build_download_response("text/csv; charset=utf-8", &filename, body);
     }
 
-    match serde_json::to_string_pretty(&filtered) {
+    match serde_json::to_string(&events) {
         Ok(body) => build_download_response("application/json; charset=utf-8", &filename, body),
         Err(error) => (
             StatusCode::INTERNAL_SERVER_ERROR,
@@ -97,27 +112,18 @@ pub async fn delete_events(
     Query(query): Query<EventsExportQuery>,
 ) -> Json<serde_json::Value> {
     let username = current_username_from_headers(&state, &headers).await;
-    let events = state.event_bus.snapshot_for_user(&username).await;
-    let filtered = apply_filters(
-        events.clone(),
-        &query.category,
-        &query.severity,
-        None,
-        query.since_minutes,
-        &query.start,
-        &query.end,
-    );
-
-    let to_delete = build_event_key_set(&filtered);
-    let retained = events
-        .into_iter()
-        .filter(|event| !to_delete.contains(&event_key(event)))
-        .collect::<Vec<_>>();
-
-    let deleted_count = filtered.len();
-    state
+    let category_filter = sanitize_category(&query.category);
+    let severity_filter = sanitize_severity(&query.severity);
+    let deleted_count = state
         .event_bus
-        .replace_user_events(&username, retained)
+        .delete_user_events_filtered(
+            &username,
+            category_filter.as_deref(),
+            severity_filter.as_deref(),
+            query.since_minutes,
+            parse_rfc3339(query.start.as_deref()),
+            parse_rfc3339(query.end.as_deref()),
+        )
         .await;
 
     Json(serde_json::json!({
@@ -196,56 +202,6 @@ async fn current_username_from_headers(state: &Arc<AppState>, headers: &HeaderMa
         .unwrap_or_else(|| "unknown".to_string())
 }
 
-fn apply_filters(
-    mut events: Vec<Event>,
-    category: &Option<String>,
-    severity: &Option<String>,
-    limit: Option<usize>,
-    since_minutes: Option<i64>,
-    start: &Option<String>,
-    end: &Option<String>,
-) -> Vec<Event> {
-    let since_cutoff = since_minutes
-        .filter(|minutes| *minutes > 0)
-        .map(|minutes| chrono::Utc::now() - chrono::Duration::minutes(minutes));
-    if let Some(cutoff) = since_cutoff {
-        events.retain(|event| event.timestamp >= cutoff);
-    }
-
-    if let Some(start_time) = parse_rfc3339(start.as_deref()) {
-        events.retain(|event| event.timestamp >= start_time);
-    }
-
-    if let Some(end_time) = parse_rfc3339(end.as_deref()) {
-        events.retain(|event| event.timestamp <= end_time);
-    }
-
-    if let Some(category_filter) = category.as_deref().filter(|value| !value.is_empty()) {
-        events.retain(|event| match category_filter {
-            "kernel" => event.category == crate::models::event::EventCategory::Kernel,
-            "platform" => event.category == crate::models::event::EventCategory::Platform,
-            _ => true,
-        });
-    }
-
-    if let Some(severity_filter) = severity.as_deref().filter(|value| !value.is_empty()) {
-        events.retain(|event| match severity_filter {
-            "success" => event.severity == crate::models::event::EventSeverity::Success,
-            "warning" => event.severity == crate::models::event::EventSeverity::Warning,
-            "error" => event.severity == crate::models::event::EventSeverity::Error,
-            _ => true,
-        });
-    }
-
-    if let Some(max) = limit {
-        if events.len() > max {
-            events = events.split_off(events.len() - max);
-        }
-    }
-
-    events
-}
-
 fn parse_rfc3339(value: Option<&str>) -> Option<chrono::DateTime<chrono::Utc>> {
     let raw = value?.trim();
     if raw.is_empty() {
@@ -254,6 +210,26 @@ fn parse_rfc3339(value: Option<&str>) -> Option<chrono::DateTime<chrono::Utc>> {
     chrono::DateTime::parse_from_rfc3339(raw)
         .ok()
         .map(|datetime| datetime.with_timezone(&chrono::Utc))
+}
+
+fn sanitize_category(value: &Option<String>) -> Option<String> {
+    value
+        .as_ref()
+        .map(|raw| raw.trim().to_ascii_lowercase())
+        .filter(|value| matches!(value.as_str(), "kernel" | "platform"))
+}
+
+fn sanitize_severity(value: &Option<String>) -> Option<String> {
+    value
+        .as_ref()
+        .map(|raw| raw.trim().to_ascii_lowercase())
+        .filter(|value| matches!(value.as_str(), "success" | "warning" | "error"))
+}
+
+fn resolve_event_limit(raw: Option<usize>) -> usize {
+    raw.filter(|value| *value > 0)
+        .map(|value| value.min(MAX_EVENT_LIMIT))
+        .unwrap_or(DEFAULT_EVENT_LIMIT)
 }
 
 fn to_csv(events: &[Event]) -> String {
@@ -306,22 +282,4 @@ fn build_download_response(content_type: &str, filename: &str, body: String) -> 
             .unwrap_or_else(|_| HeaderValue::from_static("attachment")),
     );
     response
-}
-
-fn event_key(event: &Event) -> String {
-    format!(
-        "{}|{}|{}|{}|{}",
-        event.timestamp.to_rfc3339(),
-        event.source,
-        event.event_type,
-        match event.category {
-            crate::models::event::EventCategory::Kernel => "kernel",
-            crate::models::event::EventCategory::Platform => "platform",
-        },
-        serde_json::to_string(&event.payload).unwrap_or_else(|_| "{}".to_string()),
-    )
-}
-
-fn build_event_key_set(events: &[Event]) -> std::collections::HashSet<String> {
-    events.iter().map(event_key).collect()
 }

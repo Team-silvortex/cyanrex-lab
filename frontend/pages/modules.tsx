@@ -31,6 +31,8 @@ export default function ModulesPage() {
   const [message, setMessage] = useState<string | null>(() =>
     loadPageState<string>("modules_message_v1"),
   );
+  const [canManageModules, setCanManageModules] = useState(false);
+  const [roleReady, setRoleReady] = useState(false);
   const [progress, setProgress] = useState<{
     label: string;
     total: number;
@@ -55,8 +57,25 @@ export default function ModulesPage() {
     }
   };
 
+  const refreshRole = async () => {
+    try {
+      const response = await fetch(`${engineUrl}/auth/me`, {
+        credentials: "include",
+      });
+      if (!response.ok) {
+        setCanManageModules(false);
+        return;
+      }
+      const json = (await response.json()) as { role?: string };
+      setCanManageModules(json.role === "admin");
+    } finally {
+      setRoleReady(true);
+    }
+  };
+
   useEffect(() => {
     refresh();
+    refreshRole();
   }, []);
 
   useEffect(() => {
@@ -64,6 +83,9 @@ export default function ModulesPage() {
   }, [message]);
 
   const download = async (id: string) => {
+    if (!canManageModules) {
+      return;
+    }
     setMessage(null);
     const response = await fetch(`${engineUrl}/modules/c-headers/download`, {
       method: "POST",
@@ -78,6 +100,9 @@ export default function ModulesPage() {
   };
 
   const toggle = async (id: string, selected: boolean) => {
+    if (!canManageModules) {
+      return;
+    }
     setMessage(null);
     const response = await fetch(`${engineUrl}/modules/c-headers/select`, {
       method: "POST",
@@ -92,6 +117,9 @@ export default function ModulesPage() {
   };
 
   const deleteOne = async (id: string) => {
+    if (!canManageModules) {
+      return;
+    }
     setMessage(null);
     const response = await fetch(`${engineUrl}/modules/c-headers/delete`, {
       method: "POST",
@@ -106,6 +134,9 @@ export default function ModulesPage() {
   };
 
   const batchToggle = async (selected: boolean, onlyDownloaded: boolean) => {
+    if (!canManageModules) {
+      return;
+    }
     if (!state?.headers?.length) return;
 
     setBatching(true);
@@ -167,6 +198,9 @@ export default function ModulesPage() {
   };
 
   const batchDownloadSelected = async () => {
+    if (!canManageModules) {
+      return;
+    }
     if (!state?.headers?.length) return;
     setBatching(true);
     setMessage(null);
@@ -205,6 +239,9 @@ export default function ModulesPage() {
   };
 
   const batchDeleteSelected = async () => {
+    if (!canManageModules) {
+      return;
+    }
     if (!state?.headers?.length) return;
     setBatching(true);
     setMessage(null);
@@ -251,45 +288,51 @@ export default function ModulesPage() {
         </p>
 
         <div className="row" style={{ marginTop: 12 }}>
-          <button type="button" onClick={refresh} disabled={loading}>
+          <button type="button" onClick={refresh} disabled={loading || !roleReady}>
             {loading ? t("modules.refreshing") : t("modules.refreshCatalog")}
           </button>
           <button
             type="button"
             onClick={() => batchToggle(true, false)}
-            disabled={batching || loading}
+            disabled={batching || loading || !canManageModules}
           >
             {t("modules.selectAll")}
           </button>
           <button
             type="button"
             onClick={() => batchToggle(true, true)}
-            disabled={batching || loading}
+            disabled={batching || loading || !canManageModules}
           >
             {t("modules.selectDownloaded")}
           </button>
           <button
             type="button"
             onClick={() => batchToggle(false, false)}
-            disabled={batching || loading}
+            disabled={batching || loading || !canManageModules}
           >
             {t("modules.unselectAll")}
           </button>
           <button
             type="button"
             onClick={batchDownloadSelected}
-            disabled={batching || loading}
+            disabled={batching || loading || !canManageModules}
           >
             {t("modules.downloadSelected")}
           </button>
           <button
             type="button"
             onClick={batchDeleteSelected}
-            disabled={batching || loading}
+            disabled={batching || loading || !canManageModules}
           >
             {t("modules.deleteSelected")}
           </button>
         </div>
+
+        {!roleReady ? null : canManageModules ? null : (
+          <p className="meta" style={{ marginTop: 10 }}>
+            {t("modules.teacherReadonlyTip")}
+          </p>
+        )}
 
         {message && <p className="meta" style={{ marginTop: 10 }}>{message}</p>}
         {progress && (
@@ -330,10 +373,18 @@ export default function ModulesPage() {
             <p className="meta">{t("modules.local")}: {header.local_path}</p>
 
             <div className="row" style={{ marginTop: 8 }}>
-              <button type="button" onClick={() => download(header.id)}>
+              <button
+                type="button"
+                onClick={() => download(header.id)}
+                disabled={!canManageModules}
+              >
                 {t("modules.download")}
               </button>
-              <button type="button" onClick={() => deleteOne(header.id)}>
+              <button
+                type="button"
+                onClick={() => deleteOne(header.id)}
+                disabled={!canManageModules}
+              >
                 {t("modules.delete")}
               </button>
               <label className="meta" style={{ display: "flex", gap: 8, alignItems: "center" }}>
@@ -341,6 +392,7 @@ export default function ModulesPage() {
                   type="checkbox"
                   checked={header.selected}
                   onChange={(event) => toggle(header.id, event.target.checked)}
+                  disabled={!canManageModules}
                 />
                 {t("modules.injectMetadata")}
               </label>

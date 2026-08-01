@@ -9,6 +9,7 @@ import LanguageSwitcher from "./LanguageSwitcher";
 type NavItem = {
   href: string;
   key: string;
+  allowedRoles?: readonly AuthRole[];
 };
 
 const navItems: NavItem[] = [
@@ -16,12 +17,38 @@ const navItems: NavItem[] = [
   { href: "/ebpf", key: "layout.nav.ebpf" },
   { href: "/learn", key: "layout.nav.learn" },
   { href: "/helper", key: "layout.nav.helper" },
-  { href: "/modules", key: "layout.nav.modules" },
+  {
+    href: "/modules",
+    key: "layout.nav.modules",
+    allowedRoles: ["admin", "teacher"] as const,
+  },
   { href: "/events", key: "layout.nav.events" },
-  { href: "/settings", key: "layout.nav.settings" },
+  { href: "/settings", key: "layout.nav.settings", allowedRoles: ["admin"] as const },
   { href: "/terminal", key: "layout.nav.terminal" },
   { href: "/account", key: "layout.nav.account" },
 ];
+
+type AuthRole = "admin" | "teacher" | "student" | null;
+
+const isRoleAllowed = (roles: readonly AuthRole[] | undefined, userRole: AuthRole) => {
+  if (roles === undefined || roles.length === 0) {
+    return true;
+  }
+  if (userRole === null) {
+    return false;
+  }
+  return roles.includes(userRole);
+};
+
+const getRequiredRolesForRoute = (pathname: string): AuthRole[] | null => {
+  if (pathname.startsWith("/settings")) {
+    return ["admin"];
+  }
+  if (pathname.startsWith("/modules")) {
+    return ["admin", "teacher"];
+  }
+  return null;
+};
 
 type SidebarLayoutProps = PropsWithChildren<{
   title: string;
@@ -33,6 +60,7 @@ export default function SidebarLayout({ title, children }: SidebarLayoutProps) {
   const [authReady, setAuthReady] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [unreadEvents, setUnreadEvents] = useState(0);
+  const [userRole, setUserRole] = useState<AuthRole>(null);
   const engineUrl = useMemo(
     () => process.env.NEXT_PUBLIC_ENGINE_URL ?? "http://localhost:8080",
     [],
@@ -55,9 +83,17 @@ export default function SidebarLayout({ title, children }: SidebarLayoutProps) {
           }
           return;
         }
-
+        const role = (() => {
+          const raw = (json as { role?: string }).role;
+          if (raw === "admin" || raw === "teacher" || raw === "student") {
+            return raw as AuthRole;
+          }
+          return "student";
+        })();
         if (active) {
           setAuthReady(true);
+          setUserRole(role);
+          return;
         }
       } catch {
         if (active) {
@@ -76,6 +112,21 @@ export default function SidebarLayout({ title, children }: SidebarLayoutProps) {
       active = false;
     };
   }, [engineUrl, router.asPath]);
+
+  const routeRequiredRoles = useMemo(() => getRequiredRolesForRoute(router.pathname), [router.pathname]);
+  const currentRouteAllowed = useMemo(
+    () => isRoleAllowed(routeRequiredRoles ?? undefined, userRole),
+    [routeRequiredRoles, userRole],
+  );
+
+  useEffect(() => {
+    if (!authReady || checkingAuth || currentRouteAllowed) {
+      return;
+    }
+    if (routeRequiredRoles && !currentRouteAllowed) {
+      router.replace("/dashboard");
+    }
+  }, [authReady, checkingAuth, currentRouteAllowed, routeRequiredRoles, router]);
 
   useEffect(() => {
     if (!authReady) return;
@@ -111,6 +162,27 @@ export default function SidebarLayout({ title, children }: SidebarLayoutProps) {
     });
     router.replace("/login");
   };
+
+  const visibleNavItems = useMemo(() => {
+    return navItems.filter((item) => isRoleAllowed(item.allowedRoles, userRole));
+  }, [userRole]);
+
+  if (!currentRouteAllowed) {
+    return (
+      <>
+        <Head>
+          <title>{title}</title>
+        </Head>
+        <div className="app-shell">
+          <main className="content">
+            <section className="panel">
+              <p className="meta">{t("layout.checkingSession")}</p>
+            </section>
+          </main>
+        </div>
+      </>
+    );
+  }
 
   if (checkingAuth || !authReady) {
     return (
@@ -150,7 +222,7 @@ export default function SidebarLayout({ title, children }: SidebarLayoutProps) {
             <LanguageSwitcher />
           </div>
           <nav className="nav-list">
-            {navItems.map((item) => {
+            {visibleNavItems.map((item) => {
               const active = router.pathname === item.href
                 || router.asPath.startsWith(`${item.href}/`)
                 || (item.href === "/dashboard" && router.pathname === "/");

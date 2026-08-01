@@ -50,3 +50,18 @@ Cyanrex 是一个面向 eBPF 入门教学的实验系统。它把源码编辑、
 
 eBPF 永远运行在 Linux 内核中。Windows 和 macOS 的 Docker 模式观察的是虚拟机内核，
 不是桌面操作系统本身。
+
+## 可选运行参数（高级）
+
+事件量很大时，可在 `docker/.env` 调整持久化告警行为，减少教学现场告警噪音并便于排障：
+
+- `CYANREX_EVENT_PERSIST_QUEUE_WARNING_ENABLED`（默认：`true`）
+- `CYANREX_EVENT_PERSIST_QUEUE_WARNING_RATIO_PCT`（默认：`80`）
+- `CYANREX_EVENT_PERSIST_QUEUE_CLEAR_RATIO_PCT`（默认：`40`）
+- `CYANREX_EVENT_PERSIST_QUEUE_WARNING_INTERVAL_MS`（默认：`10000`）
+
+## CI 与合并门禁
+
+- CI 流程已加入聚合任务 `CI gate`（位于 `.github/workflows/ci.yml`）。
+- `CI gate` 会依赖 `security-audit`、`file-lengths`、`engine` 和 `frontend`，并在任一任务失败时直接失败。
+- 建议在分支保护中只配置必需检查项为 **`CI gate`**，这样合并统一受该门禁控制。

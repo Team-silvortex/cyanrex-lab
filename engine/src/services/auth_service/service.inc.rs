@@ -146,10 +146,6 @@ impl AuthService {
         }
     }
 
-    pub fn is_admin_username(&self, username: &str) -> bool {
-        username == self.default_admin.username
-    }
-
     pub async fn validate_session(&self, token: &str) -> Option<SessionRecord> {
         let token_hash = hash_session_token(token);
         if let Some(pool) = self.active_pool() {

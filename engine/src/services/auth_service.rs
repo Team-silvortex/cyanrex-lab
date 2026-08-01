@@ -1,11 +1,12 @@
 use std::{
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     sync::{
         atomic::{AtomicBool, Ordering},
         Arc, RwLock,
     },
 };
 
+use crate::models::auth::AuthRole;
 use argon2::{
     password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
     Argon2,
@@ -94,3 +95,40 @@ pub enum AuthError {
 
 include!("auth_service/service.inc.rs");
 include!("auth_service/crypto.inc.rs");
+
+impl AuthService {
+    pub fn role_for_username(&self, username: &str) -> AuthRole {
+        let normalized = normalize_role_username(username);
+        let mut admin_users = parse_role_usernames("CYANREX_ADMIN_USERNAMES");
+        admin_users.insert(self.default_admin.username.to_ascii_lowercase());
+        if admin_users.contains(&normalized) {
+            return AuthRole::Admin;
+        }
+
+        if parse_role_usernames("CYANREX_TEACHER_USERNAMES").contains(&normalized) {
+            return AuthRole::Teacher;
+        }
+
+        AuthRole::Student
+    }
+
+    pub fn is_admin_username(&self, username: &str) -> bool {
+        matches!(self.role_for_username(username), AuthRole::Admin)
+    }
+}
+
+fn parse_role_usernames(name: &str) -> HashSet<String> {
+    std::env::var(name)
+        .ok()
+        .map(|raw| {
+            raw.split([',', ';', ' '].as_ref())
+                .map(normalize_role_username)
+                .filter(|item| !item.is_empty())
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+fn normalize_role_username(username: &str) -> String {
+    username.trim().to_ascii_lowercase()
+}

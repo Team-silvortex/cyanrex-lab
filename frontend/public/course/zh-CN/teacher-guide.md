@@ -54,6 +54,15 @@ ssh -L 3000:127.0.0.1:3000 \
 
 部分旧版 bpftool 不支持 `autoattach`，系统会使用手动 tracepoint attach 回退。这不是阻塞项。
 
+### 事件持久化告警（可选）
+
+若课堂出现大量事件并发、导致 Event 持久化队列积压，可在 `docker/.env` 调节如下参数：
+
+- `CYANREX_EVENT_PERSIST_QUEUE_WARNING_ENABLED`（默认 `true`）
+- `CYANREX_EVENT_PERSIST_QUEUE_WARNING_RATIO_PCT`（默认 `80`）
+- `CYANREX_EVENT_PERSIST_QUEUE_CLEAR_RATIO_PCT`（默认 `40`）
+- `CYANREX_EVENT_PERSIST_QUEUE_WARNING_INTERVAL_MS`（默认 `10000`）
+
 ## 5. 建议课时
 
 | 课时 | 内容 | 实验 |

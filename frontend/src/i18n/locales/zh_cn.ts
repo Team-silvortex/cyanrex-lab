@@ -322,6 +322,7 @@ export const zhCN: TranslationDict = {
     modules: {
       title: "C 头文件模块",
       subtitle: "下载常用 C/eBPF 头文件到本地，并勾选注入编辑器元数据与诊断。",
+      teacherReadonlyTip: "只读模式：头文件模块的下载/删除/选择仅管理员可操作。",
       refreshCatalog: "刷新目录",
       refreshing: "刷新中...",
       selectAll: "全选（全部）",

@@ -160,6 +160,187 @@ async fn post_auth_delete_should_remove_user_and_invalidate_login() {
     assert_eq!(login_after_delete.status(), StatusCode::UNAUTHORIZED);
 }
 
+#[tokio::test]
+async fn post_auth_login_returns_admin_role_for_admin_user() {
+    let state = test_state();
+    let app = build_router(state.clone());
+    let otp = state
+        .auth_service
+        .generate_current_totp_for_user("admin")
+        .expect("default admin otp should be available");
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/auth/login")
+                .header("content-type", "application/json")
+                .body(Body::from(
+                    serde_json::json!({
+                        "username": "admin",
+                        "password": "cyanrex-admin",
+                        "otp": otp,
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = response.into_body().collect().await.unwrap().to_bytes();
+    let json: Value = serde_json::from_slice(&body).unwrap();
+    assert_eq!(json["role"], "admin");
+}
+
+#[tokio::test]
+async fn post_auth_login_returns_teacher_role_for_teacher_user() {
+    let state = test_state();
+    let app = build_router(state.clone());
+    register_user(&app, "teacher", "teacher-pass-123").await;
+    let teacher_otp = state
+        .auth_service
+        .generate_current_totp_for_user("teacher")
+        .expect("teacher otp should exist");
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/auth/login")
+                .header("content-type", "application/json")
+                .body(Body::from(
+                    serde_json::json!({
+                        "username": "teacher",
+                        "password": "teacher-pass-123",
+                        "otp": teacher_otp,
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = response.into_body().collect().await.unwrap().to_bytes();
+    let json: Value = serde_json::from_slice(&body).unwrap();
+    assert_eq!(json["role"], "teacher");
+}
+
+#[tokio::test]
+async fn get_auth_me_returns_role_for_student_user() {
+    let state = test_state();
+    let app = build_router(state.clone());
+
+    register_user(&app, "alice", "alice-pass-123").await;
+    let alice_otp = state
+        .auth_service
+        .generate_current_totp_for_user("alice")
+        .expect("alice otp should exist");
+    let session_cookie = login_for_user(&app, "alice", "alice-pass-123", &alice_otp).await;
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method("GET")
+                .uri("/auth/me")
+                .header(header::COOKIE, session_cookie)
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = response.into_body().collect().await.unwrap().to_bytes();
+    let json: Value = serde_json::from_slice(&body).unwrap();
+    assert_eq!(json["role"], "student");
+}
+
+#[tokio::test]
+async fn post_auth_student_can_access_ebpf_endpoints() {
+    let state = test_state();
+    let app = build_router(state.clone());
+
+    register_user(&app, "alice", "alice-pass-123").await;
+    let alice_otp = state
+        .auth_service
+        .generate_current_totp_for_user("alice")
+        .expect("alice otp should exist");
+    let session_cookie = login_for_user(&app, "alice", "alice-pass-123", &alice_otp).await;
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/ebpf/check")
+                .header("content-type", "application/json")
+                .header(header::COOKIE, session_cookie)
+                .body(Body::from(r#"{"code": "int main() { return 0; }"}"#))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_ne!(response.status(), StatusCode::FORBIDDEN);
+    assert_ne!(response.status(), StatusCode::UNAUTHORIZED);
+}
+
+#[tokio::test]
+async fn post_auth_student_is_forbidden_from_admin_settings_route() {
+    let state = test_state();
+    let app = build_router(state.clone());
+
+    register_user(&app, "alice", "alice-pass-123").await;
+    let alice_otp = state
+        .auth_service
+        .generate_current_totp_for_user("alice")
+        .expect("alice otp should exist");
+    let session_cookie = login_for_user(&app, "alice", "alice-pass-123", &alice_otp).await;
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method("GET")
+                .uri("/settings/performance")
+                .header(header::COOKIE, session_cookie)
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::FORBIDDEN);
+}
+
+#[tokio::test]
+async fn post_auth_teacher_is_forbidden_from_admin_settings_route() {
+    let state = test_state();
+    let app = build_router(state.clone());
+    register_user(&app, "teacher", "teacher-pass-123").await;
+    let teacher_otp = state
+        .auth_service
+        .generate_current_totp_for_user("teacher")
+        .expect("teacher otp should exist");
+    let session_cookie = login_for_user(&app, "teacher", "teacher-pass-123", &teacher_otp).await;
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method("GET")
+                .uri("/settings/performance")
+                .header(header::COOKIE, session_cookie)
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::FORBIDDEN);
+}
+
 async fn login_and_get_session_cookie(app: &Router, otp: &str) -> String {
     let response = app
         .clone()

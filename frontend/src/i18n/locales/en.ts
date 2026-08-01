@@ -326,6 +326,7 @@ export const en: TranslationDict = {
     modules: {
       title: "C Header Module",
       subtitle: "Download common C/eBPF headers and inject selected ones into editor metadata/diagnostics.",
+      teacherReadonlyTip: "Read-only mode: module edits/downloads are admin-only.",
       refreshCatalog: "Refresh Catalog",
       refreshing: "Refreshing...",
       selectAll: "Select All (All)",

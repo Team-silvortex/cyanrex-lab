@@ -1,6 +1,14 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum AuthRole {
+    Admin,
+    Teacher,
+    Student,
+}
+
 #[derive(Debug, Deserialize)]
 pub struct LoginRequest {
     pub username: String,
@@ -13,6 +21,7 @@ pub struct LoginResponse {
     pub ok: bool,
     pub message: String,
     pub username: Option<String>,
+    pub role: Option<AuthRole>,
     pub expires_at: Option<DateTime<Utc>>,
 }
 
@@ -20,6 +29,7 @@ pub struct LoginResponse {
 pub struct SessionResponse {
     pub authenticated: bool,
     pub username: Option<String>,
+    pub role: Option<AuthRole>,
     pub expires_at: Option<DateTime<Utc>>,
 }
 

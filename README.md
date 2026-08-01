@@ -124,17 +124,28 @@ You can override with environment variables before the first start:
 - `CYANREX_ADMIN_USERNAME`
 - `CYANREX_ADMIN_PASSWORD`
 - `CYANREX_ADMIN_TOTP_SECRET`
+- `CYANREX_ADMIN_USERNAMES` (optional, comma/space-separated; defaults to `CYANREX_ADMIN_USERNAME`)
+- `CYANREX_TEACHER_USERNAMES` (optional, comma/space-separated)
+- Event persistence tuning (optional):
+  - `CYANREX_EVENT_PERSIST_QUEUE_WARNING_ENABLED` (default `true`)
+  - `CYANREX_EVENT_PERSIST_QUEUE_WARNING_RATIO_PCT` (default `80`)
+  - `CYANREX_EVENT_PERSIST_QUEUE_CLEAR_RATIO_PCT` (default `40`)
+  - `CYANREX_EVENT_PERSIST_QUEUE_WARNING_INTERVAL_MS` (default `10000`)
 
 Registration and password-only TOTP bootstrap are disabled by default. Set
-`CYANREX_ALLOW_REGISTRATION=true` only for a supervised lab. Kernel/eBPF and module-management
-APIs require the configured administrator account even when registration is enabled.
+`CYANREX_ALLOW_REGISTRATION=true` only for a supervised lab. Core eBPF and
+user scripts are available to authenticated users. Module browsing is available
+to admin/teacher roles, while module modification and system settings remain
+administrator-only.
 
 ## Auth API (Implemented)
 
 - `POST /auth/register`
 - `POST /auth/login`
+  - response includes `role` (`admin` / `teacher` / `student`) in addition to username/session fields
 - `POST /auth/totp/bootstrap`
 - `GET /auth/me`
+  - response includes current authenticated `role`
 - `POST /auth/logout`
 - `POST /auth/password/change` (requires auth session + OTP)
 - `POST /auth/delete` (requires auth session + OTP)

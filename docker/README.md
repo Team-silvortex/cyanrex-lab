@@ -14,6 +14,13 @@ Run the full Cyanrex stack with Docker Compose.
   - room-a: `--instance-id room-a --engine-port 18080 --frontend-port 13000 --postgres-port 25433`
   - room-b: `--instance-id room-b --engine-port 18081 --frontend-port 13001 --postgres-port 25434`
 
+You can also tune event persistence behavior in `docker/.env` if needed:
+
+- `CYANREX_EVENT_PERSIST_QUEUE_WARNING_ENABLED` (default: `true`)
+- `CYANREX_EVENT_PERSIST_QUEUE_WARNING_RATIO_PCT` (default: `80`)
+- `CYANREX_EVENT_PERSIST_QUEUE_CLEAR_RATIO_PCT` (default: `40`)
+- `CYANREX_EVENT_PERSIST_QUEUE_WARNING_INTERVAL_MS` (default: `10000`)
+
 ## eBPF Notes
 
 - `engine` is an intentionally privileged teaching sandbox with host PID visibility.

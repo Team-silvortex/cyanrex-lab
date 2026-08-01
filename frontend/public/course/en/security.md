@@ -13,7 +13,8 @@ they can perform privileged kernel observation and loading. Do not expose Engine
 - First startup generates random DB, admin, and TOTP secrets.
 - `.env` permissions are `0600` and ignored by git.
 - User registration and OTP bootstrap are disabled by default.
-- eBPF, clang checks, semantic completion, and module control are admin-only.
+- eBPF checks, semantic completion, script list/save/delete, and session-bound operations are available to authenticated users.
+- Module browsing is available to admin/teacher roles; module modification and system-level settings remain administrator-only.
 - Temporary lockout after repeated login failures.
 - Concurrency, source size, and execution time limits are enforced for eBPF tasks.
 - DB stores session token hashes, not raw usable tokens.
@@ -57,6 +58,15 @@ ssh -L 3000:127.0.0.1:3000 \
 
 Long-running services should use TLS reverse proxy, source restrictions, and host firewall, and set
 `CYANREX_SECURE_COOKIES=true`. Enable Secure Cookie only when browser access is HTTPS.
+
+### Optional persistence warning tuning
+
+The following variables are optional and only affect diagnostics tuning for high-throughput event classes:
+
+- `CYANREX_EVENT_PERSIST_QUEUE_WARNING_ENABLED` (default: `true`)
+- `CYANREX_EVENT_PERSIST_QUEUE_WARNING_RATIO_PCT` (default: `80`)
+- `CYANREX_EVENT_PERSIST_QUEUE_CLEAR_RATIO_PCT` (default: `40`)
+- `CYANREX_EVENT_PERSIST_QUEUE_WARNING_INTERVAL_MS` (default: `10000`)
 
 ## Pre/Post-Class Checklist
 

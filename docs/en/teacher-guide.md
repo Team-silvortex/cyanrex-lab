@@ -54,6 +54,15 @@ In Environment Helper, verify:
 
 Some old bpftool versions do not support `autoattach`; Cyanrex will fall back to manual tracepoint attach. This is non-blocking.
 
+### Optional persistence warning tuning
+
+If a lesson produces high event throughput and the event persistence queue grows quickly, you can tune these variables in `docker/.env`:
+
+- `CYANREX_EVENT_PERSIST_QUEUE_WARNING_ENABLED` (default `true`)
+- `CYANREX_EVENT_PERSIST_QUEUE_WARNING_RATIO_PCT` (default `80`)
+- `CYANREX_EVENT_PERSIST_QUEUE_CLEAR_RATIO_PCT` (default `40`)
+- `CYANREX_EVENT_PERSIST_QUEUE_WARNING_INTERVAL_MS` (default `10000`)
+
 ## 5. Suggested Lesson Plan
 
 | Session | Topic | Lab |
@@ -86,4 +95,3 @@ Click “Detach All” in eBPF page and verify attached list is empty, then stop
 
 To clear course data, remove Docker volumes after shutdown. Removing volumes permanently deletes accounts,
 scripts, and events; ensure you no longer need this data before doing so.
-
