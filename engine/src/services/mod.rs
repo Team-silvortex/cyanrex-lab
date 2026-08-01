@@ -7,6 +7,7 @@ pub mod event_bus;
 mod event_bus_codec;
 mod event_bus_db;
 mod event_bus_db_config;
+mod event_bus_db_parser;
 mod event_bus_filter;
 mod event_bus_policy;
 pub mod module_manager;

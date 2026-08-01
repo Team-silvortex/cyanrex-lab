@@ -2,6 +2,7 @@ use crate::services::event_bus_codec::{to_category_str, to_color_str, to_severit
 use crate::services::event_bus_db;
 use crate::services::event_bus_filter::filter_events;
 use crate::services::event_bus_policy::{parse_policy, policy_to_str};
+use crate::sqlx_compat::{PgPool, PgPoolOptions, Postgres, QueryBuilder, Row};
 use chrono::{DateTime, Utc};
 use std::{
     collections::HashMap,
@@ -12,10 +13,12 @@ use std::{
     time::{Duration as StdDuration, Instant},
 };
 
-use sqlx::{postgres::PgPoolOptions, PgPool, Row};
+use crate::sqlx_compat as sqlx;
 use tokio::sync::{broadcast, mpsc, OnceCell, RwLock};
 
 use crate::models::event::Event;
+
+mod event_bus_schema;
 
 pub(crate) const DB_PERSIST_QUEUE_CAPACITY: usize = 2_048;
 const DB_PERSIST_DROP_NEW_COUNT_TTL: StdDuration = StdDuration::from_secs(1);
@@ -43,6 +46,30 @@ pub enum EventOverflowPolicy {
 pub struct UserEventSettings {
     pub max_records: usize,
     pub overflow_policy: EventOverflowPolicy,
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+pub struct EventQueryFilters<'a> {
+    pub category: Option<&'a str>,
+    pub severity: Option<&'a str>,
+    pub limit: Option<usize>,
+    pub since_minutes: Option<i64>,
+    pub start: Option<DateTime<Utc>>,
+    pub end: Option<DateTime<Utc>>,
+}
+
+impl<'a> EventQueryFilters<'a> {
+    pub(crate) fn to_db_query(self, username: &'a str) -> event_bus_db::EventQueryFilter<'a> {
+        event_bus_db::EventQueryFilter {
+            username,
+            category: self.category,
+            severity: self.severity,
+            limit: self.limit,
+            since_minutes: self.since_minutes,
+            start: self.start,
+            end: self.end,
+        }
+    }
 }
 
 impl Default for UserEventSettings {
@@ -166,31 +193,36 @@ impl EventBus {
     }
 
     pub async fn snapshot_for_user(&self, username: &str) -> Vec<Event> {
-        self.snapshot_for_user_filtered(username, None, None, None, None, None, None)
+        self.snapshot_for_user_filtered(username, EventQueryFilters::default())
             .await
     }
 
-    pub async fn snapshot_for_user_filtered(
+    pub(crate) async fn snapshot_for_user_filtered(
         &self,
         username: &str,
-        category: Option<&str>,
-        severity: Option<&str>,
-        limit: Option<usize>,
-        since_minutes: Option<i64>,
-        start: Option<DateTime<Utc>>,
-        end: Option<DateTime<Utc>>,
+        filters: EventQueryFilters<'_>,
     ) -> Vec<Event> {
+        let EventQueryFilters {
+            category,
+            severity,
+            limit,
+            since_minutes,
+            start,
+            end,
+        } = filters;
         if let Some(pool) = self.active_pool() {
             if self.ensure_schema().await.is_ok() {
-                match event_bus_db::snapshot_from_db_with_filters(
-                    pool,
-                    username,
+                let filters = EventQueryFilters {
                     category,
                     severity,
                     limit,
                     since_minutes,
                     start,
                     end,
+                };
+                match event_bus_db::snapshot_from_db_with_filters(
+                    pool,
+                    filters.to_db_query(username),
                 )
                 .await
                 {
@@ -260,14 +292,17 @@ impl EventBus {
 
         if let Some(pool) = self.active_pool() {
             if self.ensure_schema().await.is_ok() {
-                match event_bus_db::delete_events_from_db_with_filters(
-                    pool,
-                    username,
+                let filters = EventQueryFilters {
                     category,
                     severity,
+                    limit: None,
                     since_minutes,
                     start,
                     end,
+                };
+                match event_bus_db::delete_events_from_db_with_filters(
+                    pool,
+                    filters.to_db_query(username),
                 )
                 .await
                 {
@@ -399,25 +434,33 @@ impl EventBus {
                     return;
                 }
 
-                for event in truncated {
-                    if let Err(error) = sqlx::query(
-                        "INSERT INTO event_records (username, timestamp, source, event_type, category, severity, color, payload, is_read)
-                         VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, true)",
+                if !truncated.is_empty() {
+                    let _ = event_bus_db::execute_sql_with_retry(
+                        self,
+                        &format!("replace events insert for user {username}"),
+                        || async {
+                            let mut query = QueryBuilder::<Postgres>::new(
+                                "INSERT INTO event_records (
+                                    username, timestamp, source, event_type, category, severity, color, payload, is_read
+                                )",
+                            );
+                            query.push(" VALUES ");
+                            query.push_values(truncated.iter(), |mut builder, event| {
+                                builder
+                                    .push_bind(&event.username)
+                                    .push_bind(event.timestamp)
+                                    .push_bind(&event.source)
+                                    .push_bind(&event.event_type)
+                                    .push_bind(to_category_str(event.category))
+                                    .push_bind(to_severity_str(event.severity))
+                                    .push_bind(to_color_str(event.color))
+                                    .push_bind(event.payload.to_string())
+                                    .push_bind(true);
+                            });
+                            query.build().execute(pool).await
+                        },
                     )
-                    .bind(&event.username)
-                    .bind(event.timestamp)
-                    .bind(&event.source)
-                    .bind(&event.event_type)
-                    .bind(to_category_str(event.category))
-                    .bind(to_severity_str(event.severity))
-                    .bind(to_color_str(event.color))
-                    .bind(event.payload.to_string())
-                    .execute(pool)
-                    .await
-                    {
-                        self.disable_db(&format!("replace events insert failed: {error}"));
-                        return;
-                    }
+                    .await;
                 }
             }
         }
@@ -545,56 +588,5 @@ impl EventBus {
     pub(crate) fn disable_db(&self, reason: &str) {
         tracing::warn!("disabling event db persistence: {reason}");
         self.db_disabled.store(true, Ordering::Relaxed);
-    }
-
-    pub(crate) async fn ensure_schema(&self) -> Result<(), sqlx::Error> {
-        let Some(pool) = self.active_pool() else {
-            return Ok(());
-        };
-
-        self.schema_ready
-            .get_or_try_init(|| async {
-                sqlx::query(
-                    "CREATE TABLE IF NOT EXISTS event_records (
-                        id BIGSERIAL PRIMARY KEY,
-                        username TEXT NOT NULL,
-                        timestamp TIMESTAMPTZ NOT NULL,
-                        source TEXT NOT NULL,
-                        event_type TEXT NOT NULL,
-                        category TEXT NOT NULL,
-                        severity TEXT NOT NULL,
-                        color TEXT NOT NULL,
-                        payload JSONB NOT NULL,
-                        is_read BOOLEAN NOT NULL DEFAULT false
-                    )",
-                )
-                .execute(pool)
-                .await?;
-
-                sqlx::query("CREATE INDEX IF NOT EXISTS idx_event_records_user_time ON event_records(username, timestamp)")
-                    .execute(pool)
-                    .await?;
-                sqlx::query("CREATE INDEX IF NOT EXISTS idx_event_records_user_unread ON event_records(username, is_read)")
-                    .execute(pool)
-                    .await?;
-                sqlx::query("CREATE INDEX IF NOT EXISTS idx_event_records_user_category_time ON event_records(username, category, timestamp)")
-                    .execute(pool)
-                    .await?;
-                sqlx::query("CREATE INDEX IF NOT EXISTS idx_event_records_user_severity_time ON event_records(username, severity, timestamp)")
-                    .execute(pool)
-                    .await?;
-                sqlx::query(
-                    "CREATE TABLE IF NOT EXISTS event_user_settings (
-                        username TEXT PRIMARY KEY,
-                        max_records BIGINT NOT NULL,
-                        overflow_policy TEXT NOT NULL
-                    )",
-                )
-                .execute(pool)
-                .await?;
-                Ok(())
-            })
-            .await
-            .map(|_| ())
     }
 }

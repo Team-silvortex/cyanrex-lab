@@ -1,11 +1,13 @@
+use crate::sqlx_compat as sqlx;
+use crate::sqlx_compat::{types::Json, PgPool, Postgres, QueryBuilder, Row};
 use chrono::{DateTime, Duration, Utc};
-use sqlx::{types::Json, PgPool, Postgres, QueryBuilder, Row};
 use tokio::sync::mpsc;
 use tokio::time::{sleep, Duration as TokioDuration};
 
 use super::event_bus::{EventBus, EventOverflowPolicy, DB_PERSIST_QUEUE_CAPACITY};
 use super::event_bus_codec::{to_category_str, to_color_str, to_severity_str};
 use super::event_bus_db_config::PersistQueuePressureConfig;
+use super::event_bus_db_parser::{parse_category, parse_color, parse_severity};
 use crate::models::event::Event;
 use std::{collections::HashMap, time::Instant as StdInstant};
 use tracing::warn;
@@ -13,12 +15,26 @@ use tracing::warn;
 const DB_PERSIST_QUERY_LIMIT: usize = 5000;
 const DB_PERSIST_BATCH_SIZE: usize = 64;
 const DB_PERSIST_BATCH_WAIT_MS: u64 = 5;
+const DB_PERSIST_RETRY_ATTEMPTS: usize = 3;
+const DB_PERSIST_RETRY_BASE_DELAY_MS: u64 = 25;
+const DB_PERSIST_WRITE_CHUNK_SIZE: usize = 256;
 
 #[derive(Debug, Clone)]
 pub(crate) struct PersistRequest {
     pub(crate) event: Event,
     pub(crate) max_records: usize,
     pub(crate) overflow_policy: EventOverflowPolicy,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct EventQueryFilter<'a> {
+    pub username: &'a str,
+    pub category: Option<&'a str>,
+    pub severity: Option<&'a str>,
+    pub limit: Option<usize>,
+    pub since_minutes: Option<i64>,
+    pub start: Option<DateTime<Utc>>,
+    pub end: Option<DateTime<Utc>>,
 }
 
 pub(crate) fn new_persist_request(
@@ -30,6 +46,40 @@ pub(crate) fn new_persist_request(
         event,
         max_records,
         overflow_policy,
+    }
+}
+
+pub(crate) async fn execute_sql_with_retry<T, F, Fut>(
+    bus: &EventBus,
+    operation: &str,
+    mut operation_fn: F,
+) -> Result<T, sqlx::Error>
+where
+    F: FnMut() -> Fut,
+    Fut: std::future::Future<Output = Result<T, sqlx::Error>>,
+{
+    let mut attempts = 0usize;
+    loop {
+        attempts += 1;
+
+        match operation_fn().await {
+            Ok(result) => return Ok(result),
+            Err(error) if attempts >= DB_PERSIST_RETRY_ATTEMPTS => {
+                bus.disable_db(&format!(
+                    "{operation} failed after {attempts} attempts: {error}"
+                ));
+                return Err(error);
+            }
+            Err(error) => {
+                let delay_ms =
+                    DB_PERSIST_RETRY_BASE_DELAY_MS.saturating_mul(1u64 << (attempts - 1));
+                warn!(
+                    "temporary db failure in {operation}: {error} (attempt {attempts}/{}), retrying in {delay_ms}ms",
+                    DB_PERSIST_RETRY_ATTEMPTS,
+                );
+                sleep(TokioDuration::from_millis(delay_ms)).await;
+            }
+        }
     }
 }
 
@@ -116,7 +166,7 @@ async fn persist_event_batch(
     }
 
     let mut grouped: HashMap<(String, usize, EventOverflowPolicy), Vec<PersistRequest>> =
-        HashMap::new();
+        HashMap::with_capacity(batch.len());
 
     for request in batch {
         let key = (
@@ -154,34 +204,85 @@ async fn persist_event_batch(
     Ok(())
 }
 
-async fn persist_drop_new_batch(
+async fn persist_event_insert_batch(
     bus: &EventBus,
     pool: &PgPool,
-    requests: &mut Vec<PersistRequest>,
+    username: &str,
+    requests: &[PersistRequest],
+    is_read: bool,
+    operation: &str,
 ) -> Result<(), ()> {
     if requests.is_empty() {
         return Ok(());
     }
-    requests.sort_by(|left, right| {
-        left.event
-            .timestamp
-            .cmp(&right.event.timestamp)
-            .then_with(|| left.event.event_type.cmp(&right.event.event_type))
-    });
 
-    let first_request = requests
-        .first()
-        .cloned()
-        .expect("non-empty after empty check");
-    let username = first_request.event.username.clone();
+    let mut offset = 0usize;
+    while offset < requests.len() {
+        let end = (offset + DB_PERSIST_WRITE_CHUNK_SIZE).min(requests.len());
+        let chunk = &requests[offset..end];
+        if execute_sql_with_retry(
+            bus,
+            &format!("{operation} for user {username} (records {offset}-{end})"),
+            || async move {
+                let mut query = QueryBuilder::<Postgres>::new(
+                    "INSERT INTO event_records (
+                        username, timestamp, source, event_type, category, severity, color, payload, is_read
+                    )",
+                );
+                query.push(" VALUES ");
+                query.push_values(chunk.iter(), |mut b, request| {
+                    let event = &request.event;
+                    b.push_bind(&event.username)
+                        .push_bind(event.timestamp)
+                        .push_bind(&event.source)
+                        .push_bind(&event.event_type)
+                        .push_bind(to_category_str(event.category))
+                        .push_bind(to_severity_str(event.severity))
+                        .push_bind(to_color_str(event.color))
+                        .push_bind(event.payload.to_string())
+                        .push_bind(is_read);
+                });
+                query.build().execute(pool).await
+            },
+        )
+        .await
+        .is_err()
+        {
+            return Err(());
+        }
+        offset = end;
+    }
+
+    Ok(())
+}
+
+async fn persist_drop_new_batch(
+    bus: &EventBus,
+    pool: &PgPool,
+    requests: &mut [PersistRequest],
+) -> Result<(), ()> {
+    if requests.is_empty() {
+        return Ok(());
+    }
+    if requests.len() > 1 {
+        requests.sort_unstable_by(|left, right| {
+            left.event
+                .timestamp
+                .cmp(&right.event.timestamp)
+                .then_with(|| left.event.event_type.cmp(&right.event.event_type))
+        });
+    }
+
+    let first_request = requests.first().expect("non-empty after empty check");
+    let username = first_request.event.username.as_str();
     let max_records = first_request.max_records;
 
-    let current_count = match bus.cached_drop_new_count(&username).await {
+    let current_count = match bus.cached_drop_new_count(username).await {
         Some(cached_count) => cached_count,
         None => {
             let row =
                 sqlx::query("SELECT COUNT(*) AS count FROM event_records WHERE username = $1")
-                    .bind(&username)
+                    .bind(username)
                     .fetch_one(pool)
                     .await;
 
@@ -189,7 +290,7 @@ async fn persist_drop_new_batch(
                 Ok(row) => {
                     let value: i64 = row.get("count");
                     let count = value.max(0) as usize;
-                    bus.update_drop_new_count(&username, count).await;
+                    bus.update_drop_new_count(username, count).await;
                     count
                 }
                 Err(error) => {
@@ -206,32 +307,22 @@ async fn persist_drop_new_batch(
         return Ok(());
     }
 
-    let mut query = QueryBuilder::<Postgres>::new(
-        "INSERT INTO event_records (
-            username, timestamp, source, event_type, category, severity, color, payload, is_read
-        )",
-    );
-    query.push(" VALUES ");
-    query.push_values(requests.iter().take(inserted_count), |mut b, request| {
-        let event = &request.event;
-        b.push_bind(&event.username)
-            .push_bind(event.timestamp)
-            .push_bind(&event.source)
-            .push_bind(&event.event_type)
-            .push_bind(to_category_str(event.category))
-            .push_bind(to_severity_str(event.severity))
-            .push_bind(to_color_str(event.color))
-            .push_bind(event.payload.to_string())
-            .push_bind(false);
-    });
-
-    if let Err(error) = query.build().execute(pool).await {
-        bus.disable_db(&format!("batch insert failed for user {username}: {error}"));
+    if persist_event_insert_batch(
+        bus,
+        pool,
+        username,
+        &requests[..inserted_count],
+        false,
+        "batch insert",
+    )
+    .await
+    .is_err()
+    {
         return Err(());
     }
 
     bus.update_drop_new_count(
-        &username,
+        username,
         current_count
             .saturating_add(inserted_count)
             .min(max_records),
@@ -246,57 +337,47 @@ async fn persist_oldest_batch(
     pool: &PgPool,
     username: &str,
     max_records: usize,
-    requests: &mut Vec<PersistRequest>,
+    requests: &mut [PersistRequest],
 ) -> Result<(), ()> {
-    requests.sort_by(|left, right| {
-        left.event
-            .timestamp
-            .cmp(&right.event.timestamp)
-            .then_with(|| left.event.event_type.cmp(&right.event.event_type))
-    });
+    if requests.len() > 1 {
+        requests.sort_unstable_by(|left, right| {
+            left.event
+                .timestamp
+                .cmp(&right.event.timestamp)
+                .then_with(|| left.event.event_type.cmp(&right.event.event_type))
+        });
+    }
 
-    let mut query = QueryBuilder::<Postgres>::new(
-        "INSERT INTO event_records (
-            username, timestamp, source, event_type, category, severity, color, payload, is_read
-        )",
-    );
-    query.push(" VALUES ");
-    query.push_values(requests.iter(), |mut b, request| {
-        let event = &request.event;
-        b.push_bind(&event.username)
-            .push_bind(event.timestamp)
-            .push_bind(&event.source)
-            .push_bind(&event.event_type)
-            .push_bind(to_category_str(event.category))
-            .push_bind(to_severity_str(event.severity))
-            .push_bind(to_color_str(event.color))
-            .push_bind(event.payload.to_string())
-            .push_bind(false);
-    });
-
-    if let Err(error) = query.build().execute(pool).await {
-        bus.disable_db(&format!("batch insert failed for user {username}: {error}"));
+    if persist_event_insert_batch(bus, pool, username, requests, false, "batch insert")
+        .await
+        .is_err()
+    {
         return Err(());
     }
 
-    if let Err(error) = sqlx::query(
-        "DELETE FROM event_records
-         WHERE id IN (
-             SELECT id
-             FROM event_records
-             WHERE username = $1
-             ORDER BY timestamp DESC, id DESC
-             OFFSET $2
-         )",
+    if execute_sql_with_retry(
+        bus,
+        &format!("trim events in batch for user {username}"),
+        || async {
+            sqlx::query(
+                "DELETE FROM event_records
+                 WHERE id IN (
+                     SELECT id
+                     FROM event_records
+                     WHERE username = $1
+                     ORDER BY timestamp DESC, id DESC
+                     OFFSET $2
+                 )",
+            )
+            .bind(username)
+            .bind(max_records as i64)
+            .execute(pool)
+            .await
+        },
     )
-    .bind(username)
-    .bind(max_records as i64)
-    .execute(pool)
     .await
+    .is_err()
     {
-        bus.disable_db(&format!(
-            "trim events in batch failed for user {username}: {error}"
-        ));
         return Err(());
     }
 
@@ -323,14 +404,17 @@ pub(crate) async fn persist_event_to_db(
 
 pub(crate) async fn snapshot_from_db_with_filters(
     pool: &PgPool,
-    username: &str,
-    category: Option<&str>,
-    severity: Option<&str>,
-    limit: Option<usize>,
-    since_minutes: Option<i64>,
-    start: Option<DateTime<Utc>>,
-    end: Option<DateTime<Utc>>,
+    query: EventQueryFilter<'_>,
 ) -> Result<Vec<Event>, sqlx::Error> {
+    let EventQueryFilter {
+        username,
+        category,
+        severity,
+        limit,
+        since_minutes,
+        start,
+        end,
+    } = query;
     let mut query = String::from(
         "SELECT username, timestamp, source, event_type, category, severity, color, payload FROM event_records WHERE username = $1",
     );
@@ -430,13 +514,17 @@ pub(crate) async fn snapshot_from_db_with_filters(
 
 pub(crate) async fn delete_events_from_db_with_filters(
     pool: &PgPool,
-    username: &str,
-    category: Option<&str>,
-    severity: Option<&str>,
-    since_minutes: Option<i64>,
-    start: Option<DateTime<Utc>>,
-    end: Option<DateTime<Utc>>,
+    query: EventQueryFilter<'_>,
 ) -> Result<u64, sqlx::Error> {
+    let EventQueryFilter {
+        username,
+        category,
+        severity,
+        limit: _,
+        since_minutes,
+        start,
+        end,
+    } = query;
     let mut query = String::from("DELETE FROM event_records WHERE username = $1");
 
     let category_filter = category
@@ -507,27 +595,4 @@ pub(crate) async fn delete_all_events_for_user(
         .execute(pool)
         .await?;
     Ok(result.rows_affected())
-}
-
-fn parse_category(raw: &str) -> crate::models::event::EventCategory {
-    match raw {
-        "kernel" => crate::models::event::EventCategory::Kernel,
-        _ => crate::models::event::EventCategory::Platform,
-    }
-}
-
-fn parse_severity(raw: &str) -> crate::models::event::EventSeverity {
-    match raw {
-        "success" => crate::models::event::EventSeverity::Success,
-        "warning" => crate::models::event::EventSeverity::Warning,
-        _ => crate::models::event::EventSeverity::Error,
-    }
-}
-
-fn parse_color(raw: &str) -> crate::models::event::EventColor {
-    match raw {
-        "green" => crate::models::event::EventColor::Green,
-        "yellow" => crate::models::event::EventColor::Yellow,
-        _ => crate::models::event::EventColor::Red,
-    }
 }

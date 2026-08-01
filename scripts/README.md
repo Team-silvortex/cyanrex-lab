@@ -21,6 +21,19 @@ Utility scripts for Cyanrex local operation.
 - `check-security-audit.sh`: audit Rust dependencies against a tracked exception registry.
   - reads `scripts/security-audit-exceptions.json`
   - reports explicit exceptions and fails on unapproved advisories
+
+- `bench-event-bus.sh`: run the local event-bus throughput benchmark.
+  - configurable through environment variables:
+    - `CYANREX_BENCH_EVENTS`
+    - `CYANREX_BENCH_USERS`
+    - `CYANREX_BENCH_CONCURRENCY`
+    - `CYANREX_BENCH_PAYLOAD_SIZE`
+    - `CYANREX_BENCH_MAX_RECORDS`
+    - `CYANREX_BENCH_POLICY=drop_oldest|drop_new`
+    - `CYANREX_BENCH_BROADCAST_BUFFER`
+    - `CYANREX_BENCH_VERIFY` (`1` enables)
+    - `CYANREX_BENCH_VERIFY_TIMEOUT`
+    - `CYANREX_BENCH_DATABASE_URL`
 - `package-distribution.sh`: build and package distributable artifacts for air-gapped deployment.
   - builds and exports engine/frontend Docker images
   - generates one-command `run.sh` and `stop.sh`

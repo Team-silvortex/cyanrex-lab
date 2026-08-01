@@ -7,8 +7,9 @@ use std::{
     },
 };
 
+use crate::sqlx_compat as sqlx;
+use crate::sqlx_compat::{PgPool, PgPoolOptions, Row};
 use chrono::Utc;
-use sqlx::{postgres::PgPoolOptions, PgPool, Row};
 use tokio::sync::{OnceCell, RwLock};
 use uuid::Uuid;
 

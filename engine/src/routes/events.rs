@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use crate::services::event_bus::EventQueryFilters;
 use axum::{
     extract::{
         ws::{Message, WebSocket, WebSocketUpgrade},
@@ -46,17 +47,17 @@ pub async fn list_events(
     let severity_filter = sanitize_severity(&query.severity);
     let limit = resolve_event_limit(query.limit);
 
+    let filters = EventQueryFilters {
+        category: category_filter.as_deref(),
+        severity: severity_filter.as_deref(),
+        limit: Some(limit),
+        since_minutes: query.since_minutes,
+        start: parse_rfc3339(query.start.as_deref()),
+        end: parse_rfc3339(query.end.as_deref()),
+    };
     let events = state
         .event_bus
-        .snapshot_for_user_filtered(
-            &username,
-            category_filter.as_deref(),
-            severity_filter.as_deref(),
-            Some(limit),
-            query.since_minutes,
-            parse_rfc3339(query.start.as_deref()),
-            parse_rfc3339(query.end.as_deref()),
-        )
+        .snapshot_for_user_filtered(&username, filters)
         .await;
 
     Json(events)
@@ -70,17 +71,17 @@ pub async fn export_events(
     let username = current_username_from_headers(&state, &headers).await;
     let category_filter = sanitize_category(&query.category);
     let severity_filter = sanitize_severity(&query.severity);
+    let filters = EventQueryFilters {
+        category: category_filter.as_deref(),
+        severity: severity_filter.as_deref(),
+        limit: None,
+        since_minutes: query.since_minutes,
+        start: parse_rfc3339(query.start.as_deref()),
+        end: parse_rfc3339(query.end.as_deref()),
+    };
     let events = state
         .event_bus
-        .snapshot_for_user_filtered(
-            &username,
-            category_filter.as_deref(),
-            severity_filter.as_deref(),
-            None,
-            query.since_minutes,
-            parse_rfc3339(query.start.as_deref()),
-            parse_rfc3339(query.end.as_deref()),
-        )
+        .snapshot_for_user_filtered(&username, filters)
         .await;
     let format = query
         .format

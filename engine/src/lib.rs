@@ -2,6 +2,7 @@ pub mod config;
 pub mod models;
 pub mod routes;
 pub mod services;
+mod sqlx_compat;
 
 use std::sync::{
     atomic::{AtomicU64, AtomicUsize, Ordering},

@@ -12,7 +12,8 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 thiserror = "2"
 chrono = { version = "0.4", features = ["serde"] }
-sqlx = { version = "0.8", default-features = false, features = ["runtime-tokio-rustls", "postgres", "chrono", "uuid"] }
+sqlx-core = { version = "0.8", default-features = false, features = ["_rt-tokio", "_tls-native-tls"] }
+sqlx-postgres = { version = "0.8", default-features = false, features = ["chrono", "uuid"] }
 tower-http = { version = "0.6", features = ["cors"] }
 hmac = "0.12"
 sha1 = "0.10"

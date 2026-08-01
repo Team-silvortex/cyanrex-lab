@@ -7,6 +7,8 @@ use std::{
 };
 
 use crate::models::auth::AuthRole;
+use crate::sqlx_compat as sqlx;
+use crate::sqlx_compat::{PgPool, PgPoolOptions, Row};
 use argon2::{
     password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
     Argon2,
@@ -16,7 +18,6 @@ use data_encoding::BASE32;
 use hmac::{Hmac, Mac};
 use sha1::Sha1;
 use sha2::{Digest, Sha256};
-use sqlx::{postgres::PgPoolOptions, PgPool, Row};
 use tokio::sync::OnceCell;
 use uuid::Uuid;
 

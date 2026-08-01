@@ -364,7 +364,7 @@ impl AuthService {
                 )
                 .bind(&new_salt)
                 .bind(&new_hash)
-            .bind(&username)
+                .bind(username)
                 .execute(pool)
                 .await
                 {
