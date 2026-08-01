@@ -1,0 +1,133 @@
+name: Performance Regression
+
+on:
+  workflow_dispatch:
+    inputs:
+      events:
+        description: "events per benchmark run"
+        required: false
+        default: "200000"
+      users:
+        description: "number of users"
+        required: false
+        default: "8"
+      concurrency:
+        description: "publisher worker count"
+        required: false
+        default: "32"
+      payload_size:
+        description: "payload bytes per event"
+        required: false
+        default: "128"
+      baseline_json:
+        description: "path to baseline JSON file inside repository (optional)"
+        required: false
+        default: ""
+      min_throughput_delta_pct:
+        description: "minimum allowed throughput delta percentage (negative means allowed drop)"
+        required: false
+        default: "-5"
+      max_p50_increase_pct:
+        description: "maximum allowed p50 latency increase percentage"
+        required: false
+        default: "15"
+      max_p95_increase_pct:
+        description: "maximum allowed p95 latency increase percentage"
+        required: false
+        default: "20"
+      max_p99_increase_pct:
+        description: "maximum allowed p99 latency increase percentage"
+        required: false
+        default: "30"
+  schedule:
+    - cron: "0 4 * * 1"
+
+jobs:
+  performance:
+    name: Event bus performance regression
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Run benchmark and check regression
+        env:
+          CYANREX_BENCH_EVENTS: ${{ github.event.inputs.events || '200000' }}
+          CYANREX_BENCH_USERS: ${{ github.event.inputs.users || '8' }}
+          CYANREX_BENCH_CONCURRENCY: ${{ github.event.inputs.concurrency || '32' }}
+          CYANREX_BENCH_PAYLOAD_SIZE: ${{ github.event.inputs.payload_size || '128' }}
+          CYANREX_BENCH_OUTPUT_FILE: ${{ github.workspace }}/.run/perf/event-bus-bench-${{ github.run_id }}.jsonl
+        run: |
+          if [ -f scripts/perf-baseline/perf-thresholds.env ]; then
+            # shellcheck disable=SC1091
+            source scripts/perf-baseline/perf-thresholds.env
+            export CYANREX_BENCH_BASELINE_JSON
+            export CYANREX_BENCH_BASELINE_LABEL
+            export CYANREX_BENCH_REGRESSION_LABEL
+            export CYANREX_BENCH_MIN_THROUGHPUT_DELTA_PCT
+            export CYANREX_BENCH_MAX_P50_INCREASE_PCT
+            export CYANREX_BENCH_MAX_P95_INCREASE_PCT
+            export CYANREX_BENCH_MAX_P99_INCREASE_PCT
+          else
+            export CYANREX_BENCH_BASELINE_LABEL="baseline"
+            export CYANREX_BENCH_REGRESSION_LABEL="current"
+            export CYANREX_BENCH_MIN_THROUGHPUT_DELTA_PCT="-5"
+            export CYANREX_BENCH_MAX_P50_INCREASE_PCT="15"
+            export CYANREX_BENCH_MAX_P95_INCREASE_PCT="20"
+            export CYANREX_BENCH_MAX_P99_INCREASE_PCT="30"
+          fi
+
+          if [ -n "${{ github.event.inputs.baseline_json }}" ]; then
+            export CYANREX_BENCH_BASELINE_JSON="${{ github.event.inputs.baseline_json }}"
+          fi
+          if [ -z "${CYANREX_BENCH_BASELINE_JSON:-}" ] && [ -f "scripts/perf-baseline/event-bus-baseline.json" ]; then
+            export CYANREX_BENCH_BASELINE_JSON="scripts/perf-baseline/event-bus-baseline.json"
+          fi
+
+          if [ -n "${{ github.event.inputs.min_throughput_delta_pct }}" ]; then
+            export CYANREX_BENCH_MIN_THROUGHPUT_DELTA_PCT="${{ github.event.inputs.min_throughput_delta_pct }}"
+          elif [ -z "${CYANREX_BENCH_MIN_THROUGHPUT_DELTA_PCT:-}" ]; then
+            export CYANREX_BENCH_MIN_THROUGHPUT_DELTA_PCT="-5"
+          fi
+          if [ -n "${{ github.event.inputs.max_p50_increase_pct }}" ]; then
+            export CYANREX_BENCH_MAX_P50_INCREASE_PCT="${{ github.event.inputs.max_p50_increase_pct }}"
+          elif [ -z "${CYANREX_BENCH_MAX_P50_INCREASE_PCT:-}" ]; then
+            export CYANREX_BENCH_MAX_P50_INCREASE_PCT="15"
+          fi
+          if [ -n "${{ github.event.inputs.max_p95_increase_pct }}" ]; then
+            export CYANREX_BENCH_MAX_P95_INCREASE_PCT="${{ github.event.inputs.max_p95_increase_pct }}"
+          elif [ -z "${CYANREX_BENCH_MAX_P95_INCREASE_PCT:-}" ]; then
+            export CYANREX_BENCH_MAX_P95_INCREASE_PCT="20"
+          fi
+          if [ -n "${{ github.event.inputs.max_p99_increase_pct }}" ]; then
+            export CYANREX_BENCH_MAX_P99_INCREASE_PCT="${{ github.event.inputs.max_p99_increase_pct }}"
+          elif [ -z "${CYANREX_BENCH_MAX_P99_INCREASE_PCT:-}" ]; then
+            export CYANREX_BENCH_MAX_P99_INCREASE_PCT="30"
+          fi
+          if [ -z "${CYANREX_BENCH_BASELINE_LABEL:-}" ]; then
+            export CYANREX_BENCH_BASELINE_LABEL="baseline"
+          fi
+          if [ -z "${CYANREX_BENCH_REGRESSION_LABEL:-}" ]; then
+            export CYANREX_BENCH_REGRESSION_LABEL="current"
+          fi
+
+          if [ -n "${CYANREX_BENCH_BASELINE_JSON:-}" ]; then
+            echo "Using baseline: ${CYANREX_BENCH_BASELINE_JSON}"
+            if [ ! -f "${CYANREX_BENCH_BASELINE_JSON}" ]; then
+              echo "Baseline not found: ${CYANREX_BENCH_BASELINE_JSON}"
+              exit 1
+            fi
+          else
+            echo "No baseline configured. Workflow will only save current result."
+          fi
+
+          ./scripts/perf-regression-check.sh
+      - name: Upload benchmark run artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: event-bus-bench-regression-${{ github.run_id }}
+          path: .run/perf/*.jsonl
+          retention-days: 30

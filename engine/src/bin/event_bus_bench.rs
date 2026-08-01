@@ -4,10 +4,7 @@ use chrono::Utc;
 use cyanrex_engine::models::event::{Event, EventCategory, EventColor, EventSeverity};
 use cyanrex_engine::services::event_bus::{EventBus, EventOverflowPolicy};
 use std::env;
-use std::sync::{
-    atomic::{AtomicU64, Ordering},
-    Arc,
-};
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tokio::time::sleep;
 
@@ -25,6 +22,8 @@ struct BenchConfig {
     broadcast_buffer: usize,
     verify: bool,
     verify_timeout_secs: u64,
+    output_json: bool,
+    label: Option<String>,
 }
 
 impl BenchConfig {
@@ -48,6 +47,8 @@ impl BenchConfig {
             broadcast_buffer: parse_arg(&mut args, "--broadcast-buffer").unwrap_or(1024),
             verify: parse_optional_bool_arg(&mut args, "--verify"),
             verify_timeout_secs: parse_arg(&mut args, "--verify-timeout").unwrap_or(30),
+            output_json: parse_optional_bool_arg(&mut args, "--json"),
+            label: parse_optional_str_arg(&mut args, "--label"),
         }
     }
 
@@ -59,13 +60,15 @@ impl BenchConfig {
              --users <number>           number of users (default: 8)\n\
              --concurrency <number>     publishing task count (default: 32)\n\
              --payload-size <number>    payload length in bytes (default: 128)\n\
-             --max-records <number>     per-user history cap (default: 20000)\n\
-             --policy <drop_oldest|drop_new>  overflow strategy (default: drop_oldest)\n\
-             --broadcast-buffer <number> channel size for in-memory event stream (default: 1024)\n\
-             --database-url <url>       override DATABASE_URL\n\
-             --verify                   wait for persisted rows after publish\n\
-             --verify-timeout <secs>    seconds to wait in verify mode (default: 30)\n\
-             --help"
+                    --max-records <number>     per-user history cap (default: 20000)\n\
+                    --policy <drop_oldest|drop_new>  overflow strategy (default: drop_oldest)\n\
+                    --broadcast-buffer <number> channel size for in-memory event stream (default: 1024)\n\
+                    --database-url <url>       override DATABASE_URL\n\
+                    --label <text>             label for benchmark output\n\
+                    --json                     emit JSON payload after text report\n\
+                    --verify                   wait for persisted rows after publish\n\
+                    --verify-timeout <secs>    seconds to wait in verify mode (default: 30)\n\
+                    --help"
         );
     }
 }
@@ -110,6 +113,31 @@ fn parse_policy_arg(raw: String) -> EventOverflowPolicy {
     }
 }
 
+#[derive(Default)]
+struct WorkerResult {
+    published: u64,
+    total_latency_nanos: u64,
+    max_latency_nanos: u64,
+    latencies: Vec<u64>,
+}
+
+fn percentile_ms(samples: &mut [u64], quantile: f64) -> f64 {
+    if samples.is_empty() {
+        return 0.0;
+    }
+
+    if quantile <= 0.0 {
+        return samples[0] as f64 / 1_000_000.0;
+    }
+    if quantile >= 1.0 {
+        return samples[samples.len() - 1] as f64 / 1_000_000.0;
+    }
+
+    samples.sort_unstable();
+    let index = ((samples.len() as f64 - 1.0) * quantile).round() as usize;
+    samples[index] as f64 / 1_000_000.0
+}
+
 #[tokio::main]
 async fn main() {
     let config = BenchConfig::from_args();
@@ -137,21 +165,20 @@ async fn main() {
 
     let payload = "x".repeat(config.payload_size);
 
-    let published_count = Arc::new(AtomicU64::new(0));
-    let latency_total_nanos = Arc::new(AtomicU64::new(0));
-    let latency_max_nanos = Arc::new(AtomicU64::new(0));
     let start = Instant::now();
+    let concurrency = config.concurrency.max(1);
 
-    let mut handles = Vec::with_capacity(config.concurrency.max(1));
-    for worker in 0..config.concurrency.max(1) {
+    let mut handles = Vec::with_capacity(concurrency);
+    for worker in 0..concurrency {
         let bus = bus.clone();
         let usernames = usernames.clone();
         let payload = payload.clone();
-        let published_count = published_count.clone();
-        let latency_total_nanos = latency_total_nanos.clone();
-        let latency_max_nanos = latency_max_nanos.clone();
 
         let handle = tokio::spawn(async move {
+            let mut result = WorkerResult {
+                latencies: Vec::with_capacity(config.total_events / concurrency + 1),
+                ..WorkerResult::default()
+            };
             let mut seq = worker;
             while seq < config.total_events {
                 let username = &usernames[seq % usernames.len()];
@@ -173,36 +200,42 @@ async fn main() {
                 let op_start = Instant::now();
                 bus.publish(event).await;
                 let duration = op_start.elapsed();
-                published_count.fetch_add(1, Ordering::Relaxed);
-                latency_total_nanos.fetch_add(duration.as_nanos() as u64, Ordering::Relaxed);
                 let current = duration.as_nanos() as u64;
-                loop {
-                    let observed = latency_max_nanos.load(Ordering::Relaxed);
-                    if current <= observed {
-                        break;
-                    }
-                    if latency_max_nanos
-                        .compare_exchange(observed, current, Ordering::Relaxed, Ordering::Relaxed)
-                        .is_ok()
-                    {
-                        break;
-                    }
+                result.published += 1;
+                result.total_latency_nanos += current;
+                if current > result.max_latency_nanos {
+                    result.max_latency_nanos = current;
                 }
+                result.latencies.push(current);
 
                 seq += config.concurrency.max(1);
             }
+            result
         });
         handles.push(handle);
     }
 
+    let mut total_published = 0u64;
+    let mut total_latency_nanos = 0u64;
+    let mut max_latency_nanos = 0u64;
+    let mut all_latencies = Vec::with_capacity(config.total_events.max(1));
     for handle in handles {
-        if let Err(error) = handle.await {
-            eprintln!("worker failed: {error}");
+        match handle.await {
+            Ok(result) => {
+                total_published += result.published;
+                total_latency_nanos += result.total_latency_nanos;
+                if result.max_latency_nanos > max_latency_nanos {
+                    max_latency_nanos = result.max_latency_nanos;
+                }
+                all_latencies.extend(result.latencies);
+            }
+            Err(error) => {
+                eprintln!("worker failed: {error}");
+            }
         }
     }
 
     let elapsed = start.elapsed();
-    let total_published = published_count.load(Ordering::Relaxed);
     let throughput = if elapsed.is_zero() {
         0.0
     } else {
@@ -211,9 +244,12 @@ async fn main() {
     let avg_latency_ms = if total_published == 0 {
         0.0
     } else {
-        latency_total_nanos.load(Ordering::Relaxed) as f64 / total_published as f64 / 1_000_000.0
+        total_latency_nanos as f64 / total_published as f64 / 1_000_000.0
     };
-    let max_latency_ms = latency_max_nanos.load(Ordering::Relaxed) as f64 / 1_000_000.0;
+    let max_latency_ms = max_latency_nanos as f64 / 1_000_000.0;
+    let p50_latency_ms = percentile_ms(&mut all_latencies, 0.50);
+    let p95_latency_ms = percentile_ms(&mut all_latencies, 0.95);
+    let p99_latency_ms = percentile_ms(&mut all_latencies, 0.99);
 
     println!("bench result");
     println!("  total events: {total_published}");
@@ -221,6 +257,35 @@ async fn main() {
     println!("  throughput: {throughput:.2} events/s");
     println!("  avg publish latency: {avg_latency_ms:.3} ms");
     println!("  max publish latency: {max_latency_ms:.3} ms");
+    println!("  p50 publish latency: {p50_latency_ms:.3} ms");
+    println!("  p95 publish latency: {p95_latency_ms:.3} ms");
+    println!("  p99 publish latency: {p99_latency_ms:.3} ms");
+
+    if config.output_json {
+        let result = serde_json::json!({
+            "label": config.label.unwrap_or_else(|| "default".to_string()),
+            "total_events": total_published,
+            "elapsed_ms": elapsed.as_millis(),
+            "elapsed_seconds": elapsed.as_secs_f64(),
+            "throughput": throughput,
+            "avg_publish_latency_ms": avg_latency_ms,
+            "max_publish_latency_ms": max_latency_ms,
+            "p50_publish_latency_ms": p50_latency_ms,
+            "p95_publish_latency_ms": p95_latency_ms,
+            "p99_publish_latency_ms": p99_latency_ms,
+            "users": config.users,
+            "concurrency": config.concurrency,
+            "payload_size": config.payload_size,
+            "max_records": config.max_records,
+            "verify": config.verify,
+            "policy": match config.overflow_policy {
+                EventOverflowPolicy::DropOldest => "drop_oldest",
+                EventOverflowPolicy::DropNew => "drop_new",
+            },
+            "broadcast_buffer": config.broadcast_buffer,
+        });
+        println!("{}", result);
+    }
 
     if config.verify {
         verify_persistence(
