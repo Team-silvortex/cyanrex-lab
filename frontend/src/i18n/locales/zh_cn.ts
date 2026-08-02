@@ -180,6 +180,8 @@ export const zhCN: TranslationDict = {
       documentFallback: "当前语言教程暂未提供，已回退为 {language} 版本。",
       sectionTeacherGuideTitle: "教师快速开始",
       sectionTeacherGuideDetail: "课堂拓扑、课时安排、验收与清理流程",
+      sectionArchitectureTitle: "系统架构",
+      sectionArchitectureDetail: "前端、Engine、持久化、内核边界与扩展规则",
       sectionStudentGuideTitle: "学生快速开始",
       sectionStudentGuideDetail: "登录、界面、编辑器能力和实验纪律",
       sectionConceptsTitle: "eBPF 知识地图",

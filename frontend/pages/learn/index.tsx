@@ -5,6 +5,7 @@ import SidebarLayout from "../../src/components/SidebarLayout";
 
 const sections = [
   { href: "/learn/teacher-guide", titleKey: "learn.sectionTeacherGuideTitle", detailKey: "learn.sectionTeacherGuideDetail" },
+  { href: "/learn/architecture", titleKey: "learn.sectionArchitectureTitle", detailKey: "learn.sectionArchitectureDetail" },
   { href: "/learn/student-guide", titleKey: "learn.sectionStudentGuideTitle", detailKey: "learn.sectionStudentGuideDetail" },
   { href: "/learn/concepts", titleKey: "learn.sectionConceptsTitle", detailKey: "learn.sectionConceptsDetail" },
   { href: "/learn/labs/01-first-program", titleKey: "learn.sectionLab01Title", detailKey: "learn.sectionLab01Detail" },

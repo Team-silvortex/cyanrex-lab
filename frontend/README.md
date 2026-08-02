@@ -2,6 +2,10 @@
 
 Next.js control plane for Cyanrex eBPF experiments.
 
+Pages compose shared components and feature controllers; runtime endpoints live under `src/config/`,
+and privileged behavior remains in the Engine. See the [system architecture](../docs/en/architecture.md)
+for the complete frontend/Engine boundary.
+
 ## Implemented pages
 
 - `/dashboard`: service overview and quick actions

@@ -8,6 +8,7 @@ import {
 import Link from "next/link";
 
 import { DOCS_LINK_STYLE, DOCS_QUICK_LINKS } from "../src/config/settings";
+import { getEngineUrl } from "../src/config/runtime";
 import SidebarLayout from "../src/components/SidebarLayout";
 import { useI18n } from "../src/i18n/context";
 import { loadPageState, savePageState } from "../src/utils/pageState";
@@ -64,10 +65,7 @@ export default function SettingsPage() {
   const isMounted = useRef(true);
   const performancePollTimer = useRef<number | null>(null);
 
-  const engineUrl = useMemo(
-    () => process.env.NEXT_PUBLIC_ENGINE_URL ?? "http://localhost:8080",
-    [],
-  );
+  const engineUrl = useMemo(getEngineUrl, []);
 
   const formatPercent = (value: number, digits = 1) => `${(value * 100).toFixed(digits)}%`;
 

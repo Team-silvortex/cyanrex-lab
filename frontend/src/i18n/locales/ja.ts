@@ -180,6 +180,8 @@ export const ja: TranslationDict = {
       documentFallback: "このチュートリアルは現在選択されている言語で利用できません。{language} を表示します。",
       sectionTeacherGuideTitle: "教師向けクイックスタート",
       sectionTeacherGuideDetail: "授業の流れ、時間割、受け入れ、クリーンアップ。",
+      sectionArchitectureTitle: "システムアーキテクチャ",
+      sectionArchitectureDetail: "フロントエンド、Engine、永続化、カーネル境界、拡張ルール。",
       sectionStudentGuideTitle: "学生向けクイックスタート",
       sectionStudentGuideDetail: "ログイン、画面、エディタ機能、実習手順の基礎。",
       sectionConceptsTitle: "eBPF 知識マップ",

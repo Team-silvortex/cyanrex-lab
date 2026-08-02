@@ -2,6 +2,10 @@
 
 Axum backend for authentication, module orchestration, event streaming, and eBPF experiments.
 
+The composition root is split by responsibility: `application.rs` owns HTTP and access tiers,
+`state.rs` wires services, and route handlers call the domain services under `services/`. See the
+[system architecture](../docs/en/architecture.md) for dependency and deployment boundaries.
+
 ## Implemented services
 
 - Cookie sessions, account management, and TOTP verification

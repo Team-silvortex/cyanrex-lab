@@ -180,6 +180,8 @@ export const en: TranslationDict = {
       documentFallback: "This tutorial is not available in your selected language yet. Showing {language}.",
       sectionTeacherGuideTitle: "Teacher Quick Start",
       sectionTeacherGuideDetail: "Lesson flow, schedule, acceptance, and cleanup process.",
+      sectionArchitectureTitle: "System Architecture",
+      sectionArchitectureDetail: "Frontend, Engine, persistence, kernel boundary, and extension rules.",
       sectionStudentGuideTitle: "Student Quick Start",
       sectionStudentGuideDetail: "Login, interface overview, editor capabilities, and experiment discipline.",
       sectionConceptsTitle: "eBPF Knowledge Map",

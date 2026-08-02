@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import SidebarLayout from "../src/components/SidebarLayout";
+import { getEngineUrl, toWebSocketUrl } from "../src/config/runtime";
 import { useI18n } from "../src/i18n/context";
 import { loadPageState, savePageState } from "../src/utils/pageState";
 
@@ -55,10 +56,7 @@ export default function EventsPage() {
     endTime: "",
   });
 
-  const engineUrl = useMemo(
-    () => process.env.NEXT_PUBLIC_ENGINE_URL ?? "http://localhost:8080",
-    [],
-  );
+  const engineUrl = useMemo(getEngineUrl, []);
   const markReadTimer = useRef<number | null>(null);
 
   useEffect(() => {
@@ -368,15 +366,6 @@ export default function EventsPage() {
       </section>
     </SidebarLayout>
   );
-}
-
-function toWebSocketUrl(baseHttpUrl: string, path: string): string {
-  const url = new URL(baseHttpUrl);
-  url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
-  url.pathname = path;
-  url.search = "";
-  url.hash = "";
-  return url.toString();
 }
 
 function presetToMinutes(preset: "all" | "10m" | "1h" | "24h" | "custom"): number | null {

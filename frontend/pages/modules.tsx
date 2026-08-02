@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import SidebarLayout from "../src/components/SidebarLayout";
+import { getEngineUrl } from "../src/config/runtime";
 import { useI18n } from "../src/i18n/context";
 import { loadPageState, savePageState } from "../src/utils/pageState";
 
@@ -39,10 +40,7 @@ export default function ModulesPage() {
     done: number;
   } | null>(null);
 
-  const engineUrl = useMemo(
-    () => process.env.NEXT_PUBLIC_ENGINE_URL ?? "http://localhost:8080",
-    [],
-  );
+  const engineUrl = getEngineUrl();
 
   const refresh = async () => {
     setLoading(true);

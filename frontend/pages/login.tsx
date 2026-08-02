@@ -1,8 +1,9 @@
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 
 import LanguageSwitcher from "../src/components/LanguageSwitcher";
+import { getEngineUrl } from "../src/config/runtime";
 import { useI18n } from "../src/i18n/context";
 import { parseSafeRedirectPath, sanitizeForDisplay } from "../src/utils/security";
 
@@ -20,10 +21,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const engineUrl = useMemo(
-    () => process.env.NEXT_PUBLIC_ENGINE_URL ?? "http://localhost:8080",
-    [],
-  );
+  const engineUrl = getEngineUrl();
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();

@@ -4,6 +4,8 @@ Version: `0.1.0`
 
 Cyanrex monorepo for eBPF experiments: Axum engine + Next.js dashboard + module utilities.
 
+Architecture: [English](docs/en/architecture.md) · [简体中文](docs/zh-CN/architecture.md)
+
 ## Repository Layout
 
 ```text
@@ -20,6 +22,10 @@ cyanrex-lab/
 ├ docker/          # compose and container assets
 └ start.sh         # unified launcher
 ```
+
+The browser is the control plane, while the privileged Rust Engine is the execution plane. The
+Engine owns authentication, authorization, persistence, compilation, eBPF loading, and event
+streaming. See the architecture document before adding a service, route, or deployment mode.
 
 ## Current Capabilities
 

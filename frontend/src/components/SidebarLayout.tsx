@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { PropsWithChildren, useEffect, useMemo, useState } from "react";
 
 import { useI18n } from "../i18n/context";
+import { getEngineUrl } from "../config/runtime";
 import {
   filterNavItemsByRole,
   getRequiredRolesForRoute,
@@ -47,10 +48,7 @@ export default function SidebarLayout({ title, children }: SidebarLayoutProps) {
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [unreadEvents, setUnreadEvents] = useState(0);
   const [userRole, setUserRole] = useState<AuthRole>(null);
-  const engineUrl = useMemo(
-    () => process.env.NEXT_PUBLIC_ENGINE_URL ?? "http://localhost:8080",
-    [],
-  );
+  const engineUrl = useMemo(getEngineUrl, []);
 
   useEffect(() => {
     let active = true;

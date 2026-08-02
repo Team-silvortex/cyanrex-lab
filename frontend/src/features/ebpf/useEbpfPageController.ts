@@ -1,6 +1,7 @@
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import { loader } from "@monaco-editor/react";
 
+import { getEngineUrl } from "../../config/runtime";
 import { analyzeCCode } from "../../utils/cAnalyzer";
 import { registerEbpfIntelligence } from "../../utils/cEbpfIntelligence";
 import { loadPageState, savePageState } from "../../utils/pageState";
@@ -101,7 +102,7 @@ export function useEbpfPageController(t: (key: string, vars?: Record<string, str
   );
   const monacoRef = useRef<any>(null);
   const intelligenceRef = useRef<{ dispose: () => void } | null>(null);
-  const engineUrl = process.env.NEXT_PUBLIC_ENGINE_URL ?? "http://localhost:8080";
+  const engineUrl = getEngineUrl();
 
   const injectedIncludes = useMemo(
     () => injectedMetadata.map((item) => toIncludePath(item.include_hint)),

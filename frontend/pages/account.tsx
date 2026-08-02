@@ -1,17 +1,15 @@
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useState } from "react";
 import { useRouter } from "next/router";
 
 import SidebarLayout from "../src/components/SidebarLayout";
+import { getEngineUrl } from "../src/config/runtime";
 import { useI18n } from "../src/i18n/context";
 import { sanitizeForDisplay } from "../src/utils/security";
 
 export default function AccountPage() {
   const { t } = useI18n();
   const router = useRouter();
-  const engineUrl = useMemo(
-    () => process.env.NEXT_PUBLIC_ENGINE_URL ?? "http://localhost:8080",
-    [],
-  );
+  const engineUrl = getEngineUrl();
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
