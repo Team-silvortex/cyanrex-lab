@@ -49,6 +49,20 @@ first run. All published ports bind to loopback by default. For remote use, pref
 a TLS reverse proxy. Do not set `CYANREX_BIND_ADDRESS=0.0.0.0` without a firewall and trusted-user
 access controls.
 
+For packaged deployments produced by `scripts/package-distribution.sh`, use the generated helpers:
+
+```bash
+cd /path/to/cyanrex-lab-<version>-<build-id>
+cp .env.example .env   # fill secure credentials first
+./run.sh               # same as ./deploy.sh up
+./deploy.sh status     # show running services
+./deploy.sh logs       # follow logs
+./deploy.sh down       # stop services
+```
+
+The packaged deploy helper validates secrets, docker daemon readiness, and engine startup health by
+default.
+
 For an existing installation that used the old development credentials, set
 `CYANREX_ROTATE_ADMIN_CREDENTIALS=true` in `docker/.env`, start the Engine once, then immediately
 set it back to `false`. This invalidates existing administrator sessions.
@@ -78,12 +92,12 @@ advanced exercises.
 ## Check
 
 ```bash
-docker compose -f docker/docker-compose.yml ps
+docker compose -f docker/docker-compose.yml ps   # or: docker-compose -f docker/docker-compose.yml ps
 curl http://localhost:8080/health
 ```
 
 ## Stop
 
 ```bash
-docker compose -f docker/docker-compose.yml down
+docker compose -f docker/docker-compose.yml down   # or: docker-compose -f docker/docker-compose.yml down
 ```

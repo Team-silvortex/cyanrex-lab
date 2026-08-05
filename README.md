@@ -141,6 +141,20 @@ cp .env.example .env   # update credentials/bind settings as needed
 ./stop.sh              # stop
 ```
 
+The package now includes a richer `deploy.sh` helper:
+
+```bash
+./deploy.sh up     # start (default behavior)
+./deploy.sh status # show service status
+./deploy.sh logs   # follow logs
+./deploy.sh down   # stop services
+```
+
+`run.sh` and `stop.sh` remain compatibility wrappers.
+
+If `.env` is missing or still contains placeholder values, startup will fail with an explicit
+prompt to initialize secrets first.
+
 ### 3) Private development account
 
 - username: `admin`

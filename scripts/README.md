@@ -86,7 +86,7 @@ CYANREX_BENCH_MAX_P99_INCREASE_PCT=40 \
 In CI, workflow `Performance Regression` can also consume a baseline by passing `baseline_json`.
 - `package-distribution.sh`: build and package distributable artifacts for air-gapped deployment.
   - builds and exports engine/frontend Docker images
-  - generates one-command `run.sh` and `stop.sh`
+  - generates `deploy.sh`, `run.sh`, and `stop.sh` for deployed package
   - outputs `dist/cyanrex-lab-<version>-<timestamp>.tar.gz` by default
 
 Run it explicitly for a quick classroom readiness check:
@@ -121,11 +121,22 @@ Build a distribution package:
 
 ```bash
 ./scripts/package-distribution.sh --version 0.1.0
+./scripts/package-distribution.sh --version 0.1.0 --compose-template docker/docker-compose.yml   # custom compose if needed
 ```
 
 If you already have local images (for example CI or private registry preloads), package without rebuilding:
 
 ```bash
 ./scripts/package-distribution.sh --skip-build --engine-image myrepo/cyanrex-engine:0.1.0 --frontend-image myrepo/cyanrex-frontend:0.1.0
+```
+
+Distributed package entry points:
+
+```bash
+./deploy.sh up     # start services
+./deploy.sh status # check status
+./deploy.sh logs   # tail logs
+./deploy.sh down   # stop services
+# `run.sh` and `stop.sh` remain compatibility shortcuts.
 ```
 ```

@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
-
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 COMPOSE_FILE="$ROOT_DIR/docker/docker-compose.yml"
 ENV_FILE="$ROOT_DIR/docker/.env"
+COMPOSE_CMD=()
 source "$ROOT_DIR/scripts/start-lock.sh"
-
 ensure_runtime_secrets() {
   if [ ! -f "$ENV_FILE" ]; then
     require_cmd openssl
@@ -30,7 +29,6 @@ ensure_runtime_secrets() {
       "CYANREX_ROTATE_ADMIN_CREDENTIALS=false" > "$ENV_FILE"
     echo "[cyanrex] Generated private runtime credentials in docker/.env (mode 0600)."
   fi
-
   set -a
   # shellcheck disable=SC1090
   source "$ENV_FILE"
@@ -43,7 +41,6 @@ ensure_runtime_secrets() {
   : "${CYANREX_COMPOSE_PROJECT:=cyanrex-${CYANREX_INSTANCE_ID}}"
   LOCAL_DATABASE_URL="postgres://postgres:${POSTGRES_PASSWORD}@localhost:${CYANREX_POSTGRES_PORT}/cyanrex"
 }
-
 sanitize_instance_id() {
   local value="${1:-default}"
   value="${value//[^a-zA-Z0-9_-]/}"
@@ -52,7 +49,6 @@ sanitize_instance_id() {
   fi
   printf "%s" "$value"
 }
-
 validate_port() {
   local name="$1"
   local value="$2"
@@ -65,7 +61,6 @@ validate_port() {
     exit 1
   fi
 }
-
 normalize_and_apply_runtime_env() {
   CYANREX_INSTANCE_ID="$(sanitize_instance_id "${CYANREX_INSTANCE_ID}")"
   validate_port engine "$CYANREX_ENGINE_PORT"
@@ -79,7 +74,6 @@ normalize_and_apply_runtime_env() {
   export CYANREX_BIND_ADDRESS
   export CYANREX_COMPOSE_PROJECT
 }
-
 parse_runtime_overrides() {
   RUNTIME_ARGS=()
   PARSED_OPTIONS=""
@@ -153,55 +147,64 @@ parse_runtime_overrides() {
 usage() {
   cat <<'USAGE'
 Usage:
-  ./start.sh start [--mode auto|docker|wsl|native] [--instance-id <id>] [--engine-port <port>] [--frontend-port <port>]
-                             [--postgres-port <port>] [--bind-address <addr>] [--rebuild] [--pull] [--no-fallback]
-                              Start stack (default: docker fast-start)
-  ./start.sh stop [--instance-id <id>] [--skip-start-lock]
-                             Stop docker stack
-  ./start.sh status [--instance-id <id>] [--skip-start-lock]
-                               Show docker stack status
-  ./start.sh logs [--instance-id <id>] [--skip-start-lock] [service]
-                              Follow docker logs (optional service)
+  ./start.sh start [--mode auto|docker|wsl|native] [options]
+  ./start.sh stop|status [--instance-id <id>]
+  ./start.sh logs [service]
 
-Compatible shortcuts:
-  ./start.sh                   Same as: ./start.sh start
-  ./start.sh --local           Same as: ./start.sh start --local
+Modes:
+  --mode docker  Full stack in Docker (default).
+  --mode wsl     Native engine/frontend inside WSL2.
+  --mode native  Native engine/frontend on Linux only.
+  --mode auto    Auto-detect (wsl2 => wsl, otherwise docker).
 
-Start options:
-  --mode auto    Docker by default; selects WSL when executed inside WSL2
-  --mode docker  Run the full stack in Docker
-  --mode wsl     Run engine/frontend natively inside WSL2; PostgreSQL uses Docker
-  --mode native  Run engine/frontend on native Linux; PostgreSQL uses Docker
-  --local        Compatibility alias for --mode native
-  --instance-id   Override cyanrex runtime instance ID (for multi-instance coexistence)
-  --engine-port   Override engine listening/published port
-  --frontend-port Override frontend published port
-  --postgres-port Override postgres published port
-  --bind-address  Host IP used for published ports
-  --skip-conflict-check
-                 Skip runtime conflict precheck (for debug)
-  --skip-start-lock
-                 Bypass per-instance startup lock (unsafe, debug only)
-  --rebuild      Force docker compose build (slower, for Dockerfile/deps changes)
-  --pull         Pull latest base images before start (can be slow on poor network)
-  --no-fallback  Disable fallback registry retry path
+Useful options:
+  --instance-id, --engine-port, --frontend-port, --postgres-port, --bind-address
+  --rebuild, --pull, --no-fallback, --local (same as --mode native)
+  --skip-conflict-check, --skip-start-lock
 
-Notes:
-  Operations that touch compose state (start/stop/status/logs) are serialized per
-  instance ID via a local start lock at:
-  .run/start-locks/${CYANREX_COMPOSE_PROJECT}.lock
+Examples:
+  ./start.sh
+  ./start.sh start --mode docker --instance-id room-a
+  ./start.sh start --mode wsl --instance-id room-b
+  ./start.sh stop --instance-id room-a
+  ./start.sh logs
 USAGE
 }
-
 require_cmd() {
   if ! command -v "$1" >/dev/null 2>&1; then
     echo "Error: '$1' is required but not installed." >&2
     exit 1
   fi
 }
+resolve_compose_command() {
+  if [ "${#COMPOSE_CMD[@]}" -gt 0 ]; then
+    return
+  fi
 
+  if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
+    COMPOSE_CMD=(docker compose)
+    return
+  fi
+
+  if command -v docker-compose >/dev/null 2>&1; then
+    COMPOSE_CMD=(docker-compose)
+    return
+  fi
+
+  echo "Error: neither 'docker compose' nor legacy 'docker-compose' is available." >&2
+  echo "Install Docker Compose (compose plugin or docker-compose v1)." >&2
+  exit 1
+}
 compose() {
-  docker compose -p "${CYANREX_COMPOSE_PROJECT}" -f "$COMPOSE_FILE" "$@"
+  resolve_compose_command
+  "${COMPOSE_CMD[@]}" -p "${CYANREX_COMPOSE_PROJECT}" -f "$COMPOSE_FILE" "$@"
+}
+require_native_linux_host() {
+  if [ "$1" = "native-linux" ] && [ "$(uname -s 2>/dev/null)" != "Linux" ]; then
+    echo "Error: --mode native is only supported on Linux hosts." >&2
+    echo "Use --mode docker for macOS/Windows (Docker Desktop) and --mode wsl in WSL2." >&2
+    exit 1
+  fi
 }
 
 print_endpoints() {
@@ -243,7 +246,6 @@ detect_host_mode() {
     echo "docker"
   fi
 }
-
 require_wsl2() {
   if [ "$(detect_host_mode)" != "wsl" ]; then
     echo "Error: --mode wsl must be run inside a WSL2 distribution." >&2
@@ -254,7 +256,6 @@ require_wsl2() {
     exit 1
   fi
 }
-
 check_registry_mirrors() {
   if ! command -v docker >/dev/null 2>&1; then
     return
@@ -368,6 +369,7 @@ start_docker_stack() {
 
 start_local_stack() {
   local runtime_mode="${1:-native}"
+  require_native_linux_host "$runtime_mode"
   require_cmd docker
   require_cmd cargo
   require_cmd npm
@@ -541,9 +543,7 @@ case "$action" in
       esac
     done
 
-    if [ "$runtime_mode" = "auto" ]; then
-      runtime_mode="$(detect_host_mode)"
-    fi
+    if [ "$runtime_mode" = "auto" ]; then runtime_mode="$(detect_host_mode)"; if [ "$runtime_mode" = "wsl" ]; then printf "[cyanrex] Auto mode detected: WSL2 -> wsl (native engine/frontend + Docker Postgres).\\n[cyanrex] Tip: force with --mode wsl or --mode native (Linux host).\\n"; else printf "[cyanrex] Auto mode detected: non-WSL -> docker-compose mode.\\n[cyanrex] Tip: force with --mode docker or --mode native/--local on Linux.\\n"; fi; fi
     case "$runtime_mode" in
       docker)
         start_docker_stack "$force_rebuild" "$do_pull" "$allow_fallback"
