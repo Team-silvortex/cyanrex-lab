@@ -99,11 +99,13 @@ Useful commands:
 ./start.sh start --mode native # Engine targets the native Linux kernel
 ./start.sh start --local
 ./start.sh start              # fast-start (default, no forced rebuild)
+./start.sh start --debug      # enable detailed startup tracing
 ./start.sh start --rebuild    # force rebuild when deps/Dockerfile changed
 ./start.sh start --pull       # pull base images before start
 ./start.sh start --skip-conflict-check  # skip preflight port/project conflict check
 ./start.sh start --instance-id room-a    # same instance starts are auto-locked by instance ID
 ./start.sh start --skip-start-lock       # bypass start-lock when debugging only
+./start.sh diagnose          # run system-level diagnostic checks
 ./start.sh status
 ./start.sh logs
 ./start.sh stop

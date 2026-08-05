@@ -135,6 +135,11 @@ parse_runtime_overrides() {
         PARSED_OPTIONS+=" --skip-start-lock"
         shift
         ;;
+      --debug)
+        CYANREX_DEBUG=1
+        PARSED_OPTIONS+=" --debug"
+        shift
+        ;;
       *)
         RUNTIME_ARGS[runtime_arg_count]="$1"
         runtime_arg_count=$((runtime_arg_count + 1))
@@ -143,25 +148,22 @@ parse_runtime_overrides() {
     esac
   done
 }
-
 usage() {
   cat <<'USAGE'
 Usage:
   ./start.sh start [--mode auto|docker|wsl|native] [options]
+  ./start.sh diagnose
   ./start.sh stop|status [--instance-id <id>]
   ./start.sh logs [service]
-
 Modes:
   --mode docker  Full stack in Docker (default).
   --mode wsl     Native engine/frontend inside WSL2.
   --mode native  Native engine/frontend on Linux only.
   --mode auto    Auto-detect (wsl2 => wsl, otherwise docker).
-
 Useful options:
   --instance-id, --engine-port, --frontend-port, --postgres-port, --bind-address
-  --rebuild, --pull, --no-fallback, --local (same as --mode native)
+  --rebuild, --pull, --no-fallback, --debug, --local (same as --mode native)
   --skip-conflict-check, --skip-start-lock
-
 Examples:
   ./start.sh
   ./start.sh start --mode docker --instance-id room-a
@@ -180,17 +182,14 @@ resolve_compose_command() {
   if [ "${#COMPOSE_CMD[@]}" -gt 0 ]; then
     return
   fi
-
   if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
     COMPOSE_CMD=(docker compose)
     return
   fi
-
   if command -v docker-compose >/dev/null 2>&1; then
     COMPOSE_CMD=(docker-compose)
     return
   fi
-
   echo "Error: neither 'docker compose' nor legacy 'docker-compose' is available." >&2
   echo "Install Docker Compose (compose plugin or docker-compose v1)." >&2
   exit 1
@@ -206,7 +205,6 @@ require_native_linux_host() {
     exit 1
   fi
 }
-
 print_endpoints() {
   echo "[cyanrex] Ready:"
   echo "  frontend: http://localhost:${CYANREX_FRONTEND_PORT}"
@@ -214,7 +212,6 @@ print_endpoints() {
   echo "  postgres: ${CYANREX_BIND_ADDRESS}:${CYANREX_POSTGRES_PORT}"
   echo "  login:    admin (credentials are stored in docker/.env)"
 }
-
 run_host_preflight() {
   echo "[cyanrex] Host preflight:"
   if command -v uname >/dev/null 2>&1; then
@@ -236,7 +233,6 @@ run_host_preflight() {
     echo "  btf:    /sys/kernel/btf/vmlinux missing"
   fi
 }
-
 detect_host_mode() {
   local release
   release="$(uname -r 2>/dev/null | tr '[:upper:]' '[:lower:]')"
@@ -260,13 +256,11 @@ check_registry_mirrors() {
   if ! command -v docker >/dev/null 2>&1; then
     return
   fi
-
   local mirrors
   mirrors="$(docker info --format '{{range .RegistryConfig.Mirrors}}{{println .}}{{end}}' 2>/dev/null || true)"
   if [ -z "$mirrors" ]; then
     return
   fi
-
   echo "[cyanrex] Docker registry mirror check:"
   local mirror host
   local available=0
@@ -494,12 +488,14 @@ CYANREX_POSTGRES_PORT="${CYANREX_POSTGRES_PORT:-15432}"
 CYANREX_BIND_ADDRESS="${CYANREX_BIND_ADDRESS:-127.0.0.1}"
 SKIP_CONFLICT_CHECK="${SKIP_CONFLICT_CHECK:-0}"
 SKIP_START_LOCK="${SKIP_START_LOCK:-0}"
+CYANREX_DEBUG="${CYANREX_DEBUG:-0}"
 RUNTIME_ARGS=()
 if [ "$#" -gt 0 ]; then
   shift
 fi
 parse_runtime_overrides "$@"
 normalize_and_apply_runtime_env
+if [ "${CYANREX_DEBUG:-0}" = "1" ]; then CYANREX_DEBUG=1; set -x; fi
 
 case "$action" in
   start)
@@ -562,7 +558,7 @@ case "$action" in
     esac
   ;;
   stop)
-    assert_supported_options "stop" --instance-id --skip-start-lock
+    assert_supported_options "stop" --instance-id --skip-start-lock --debug
     with_instance_lock
     if [ "${#RUNTIME_ARGS[@]}" -gt 0 ]; then
       echo "Unknown argument(s) for stop: ${RUNTIME_ARGS[*]}" >&2
@@ -572,7 +568,7 @@ case "$action" in
     stop_stack
     ;;
   status)
-    assert_supported_options "status" --instance-id --skip-start-lock
+    assert_supported_options "status" --instance-id --skip-start-lock --debug
     with_instance_lock
     if [ "${#RUNTIME_ARGS[@]}" -gt 0 ]; then
       echo "Unknown argument(s) for status: ${RUNTIME_ARGS[*]}" >&2
@@ -581,8 +577,12 @@ case "$action" in
     fi
     status_stack
     ;;
+  diagnose)
+    assert_supported_options "diagnose" --debug
+    "$ROOT_DIR/scripts/debug-system.sh"
+    ;;
   logs)
-    assert_supported_options "logs" --instance-id --skip-start-lock
+    assert_supported_options "logs" --instance-id --skip-start-lock --debug
     with_instance_lock
     extract_log_service_arg
     logs_stack "$LOG_SERVICE"

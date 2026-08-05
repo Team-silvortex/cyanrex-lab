@@ -21,6 +21,9 @@ Utility scripts for Cyanrex local operation.
 - `check-security-audit.sh`: audit Rust dependencies against a tracked exception registry.
   - reads `scripts/security-audit-exceptions.json`
   - reports explicit exceptions and fails on unapproved advisories
+- `debug-system.sh`: collect environment/runtime diagnostics for local troubleshooting.
+  - prints toolchain versions, kernel capability status, compose backend status, and port checks
+  - intended for `./start.sh diagnose`
 
 - `bench-event-bus.sh`: run the local event-bus throughput benchmark.
   - configurable through environment variables:

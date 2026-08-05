@@ -83,6 +83,7 @@ pub async fn run_ebpf(
                 Some(program_name),
                 runtime_backend,
                 &selected_headers,
+                payload.debug_breakpoints.as_deref(),
             ),
     )
     .await

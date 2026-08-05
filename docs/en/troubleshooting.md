@@ -17,6 +17,7 @@
 
 ```bash
 ./start.sh status
+./start.sh diagnose
 ./start.sh logs engine
 ./start.sh logs frontend
 docker compose -f docker/docker-compose.yml ps
@@ -98,4 +99,3 @@ Check in order:
 
 Run “Detach All” first in UI, then if Engine crashed, restart Engine and inspect attachment/bpffs state.
 Do not recursively remove `/sys/fs/bpf`; other software may have programs/maps there.
-

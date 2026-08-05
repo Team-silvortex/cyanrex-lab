@@ -35,6 +35,8 @@ export default function EbpfPage() {
     refreshInjectedMetadata,
     runtimeBackend,
     saveCurrentScript,
+    debugBreakpoints,
+    clearDebugBreakpoints,
     samplingPerSec,
     scriptTitle,
     savedScripts,
@@ -236,6 +238,18 @@ export default function EbpfPage() {
           >
             {t("ebpf.detachAll")}
           </button>
+        </div>
+
+        <div className="row" style={{ marginTop: 12, alignItems: "center", flexWrap: "wrap" }}>
+          <p className="meta" style={{ margin: 0 }}>
+            {t("ebpf.debugBreakpoints")}: {debugBreakpoints.length > 0 ? debugBreakpoints.join(", ") : t("ebpf.noBreakpoints")}
+          </p>
+          <button type="button" onClick={clearDebugBreakpoints} disabled={debugBreakpoints.length === 0}>
+            {t("ebpf.clearBreakpoints")}
+          </button>
+          <p className="meta" style={{ margin: 0 }}>
+            {t("ebpf.debugBreakpointHint")}
+          </p>
         </div>
 
         <div className="grid cols-2" style={{ marginTop: 12 }}>

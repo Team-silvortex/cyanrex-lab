@@ -17,6 +17,7 @@ pub struct EbpfRunRequest {
     pub sampling_per_sec: Option<u32>,
     pub stream_seconds: Option<u32>,
     pub enable_kernel_stream: Option<bool>,
+    pub debug_breakpoints: Option<Vec<u32>>,
 }
 
 #[derive(Debug, Clone, Serialize)]

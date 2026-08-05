@@ -239,6 +239,24 @@ pre {
   white-space: pre !important;
 }
 
+.editor-shell .cyanrex-breakpoint-glyph::before {
+  content: "";
+  position: relative;
+  top: 0.15rem;
+  left: 0;
+  display: block;
+  width: 10px;
+  height: 10px;
+  margin-left: 5px;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35);
+}
+
+.editor-shell .cyanrex-breakpoint-line {
+  background: rgba(239, 68, 68, 0.16);
+}
+
 .auth-shell {
   min-height: 100vh;
   display: grid;

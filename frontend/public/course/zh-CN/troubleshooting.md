@@ -17,6 +17,7 @@
 
 ```bash
 ./start.sh status
+./start.sh diagnose
 ./start.sh logs engine
 ./start.sh logs frontend
 docker compose -f docker/docker-compose.yml ps

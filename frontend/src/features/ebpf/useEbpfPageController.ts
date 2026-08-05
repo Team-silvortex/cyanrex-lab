@@ -20,6 +20,7 @@ import type {
 } from "./models";
 import { applyMarkers, toIncludePath } from "./editorUtils";
 import { useCompilerDiagnostics } from "./useCompilerDiagnostics";
+import { useEbpfEditorBreakpoints } from "./useEditorBreakpoints";
 
 export const buildAyaBackendHint = (
   message: string,
@@ -101,8 +102,11 @@ export function useEbpfPageController(t: (key: string, vars?: Record<string, str
     () => (loadPageState<EbpfRuntimeBackend>("ebpf_runtime_backend_v1") ?? "bpftool"),
   );
   const monacoRef = useRef<any>(null);
+  const editorRef = useRef<any>(null);
   const intelligenceRef = useRef<{ dispose: () => void } | null>(null);
   const engineUrl = getEngineUrl();
+  const { debugBreakpoints, clearDebugBreakpoints, onEditorReadyForDebug } =
+    useEbpfEditorBreakpoints({ code, editorRef, monacoRef });
 
   const injectedIncludes = useMemo(
     () => injectedMetadata.map((item) => toIncludePath(item.include_hint)),
@@ -324,6 +328,7 @@ export function useEbpfPageController(t: (key: string, vars?: Record<string, str
           stream_seconds: streamSeconds,
           enable_kernel_stream: enableKernelStream,
           runtime_backend: runtimeBackend,
+          debug_breakpoints: debugBreakpoints,
         }),
       });
 
@@ -420,6 +425,8 @@ export function useEbpfPageController(t: (key: string, vars?: Record<string, str
 
   const onEditorMount = (editor: any, monaco: any) => {
     monacoRef.current = monaco;
+    editorRef.current = editor;
+
     monaco.editor.defineTheme("cyanrex-c", {
       base: "vs-dark",
       inherit: true,
@@ -438,6 +445,7 @@ export function useEbpfPageController(t: (key: string, vars?: Record<string, str
     if (!intelligenceRef.current) {
       intelligenceRef.current = registerEbpfIntelligence(monaco, engineUrl);
     }
+    onEditorReadyForDebug(editor, monaco);
     applyMarkers(editor, monaco, analysis.diagnostics);
   };
 
@@ -473,6 +481,8 @@ export function useEbpfPageController(t: (key: string, vars?: Record<string, str
     setCode,
     setScriptTitle,
     savedScripts,
+    debugBreakpoints,
+    clearDebugBreakpoints,
     selectedTemplate,
     setSelectedTemplate,
     runtimeBackend,

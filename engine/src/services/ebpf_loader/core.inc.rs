@@ -6,6 +6,7 @@ impl EbpfLoader {
         program_name: Option<&str>,
         runtime_backend: EbpfRuntimeBackend,
         selected_headers: &[SelectedHeaderMetadata],
+        _debug_breakpoints: Option<&[u32]>,
     ) -> EbpfRunResponse {
         if code.trim().is_empty() {
             return EbpfRunResponse::validation_error("eBPF source code is empty");
