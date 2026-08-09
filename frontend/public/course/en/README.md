@@ -9,9 +9,10 @@ semantic completion, kernel loading, event observation, and program detach into 
 
 1. [Teacher Quick Start](teacher-guide.md)
 2. [System Architecture](architecture.md)
-3. [Concept Map](concepts.md)
-4. [Security and Classroom Deployment](security.md)
-5. Browse all labs and perform a dry run first
+3. [Runner Agent Guide](runner-agent.md)
+4. [Concept Map](concepts.md)
+5. [Security and Classroom Deployment](security.md)
+6. Browse all labs and perform a dry run first
    - Template path in the eBPF page:
      - `learning/foundations/beginner/fundamentals`
      - `learning/foundations/intermediate/protocols`

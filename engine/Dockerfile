@@ -14,7 +14,7 @@ RUN if [ -n "${CARGO_SOURCE_MIRROR}" ]; then \
       printf '[source.crates-io]\nreplace-with = "mirror"\n[source.mirror]\nregistry = "%s"\n' \
         "${CARGO_SOURCE_MIRROR}" > .cargo/config.toml; \
     fi \
-    && cargo build --release
+    && cargo build --release --bins
 
 FROM ${DEBIAN_IMAGE} AS runtime
 ARG APT_MIRROR=deb.debian.org
@@ -26,6 +26,7 @@ RUN sed -i "s|deb.debian.org|${APT_MIRROR}|g" /etc/apt/sources.list.d/debian.sou
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /app/target/release/cyanrex-engine /usr/local/bin/cyanrex-engine
+COPY --from=builder /app/target/release/cyanrex-runner-agent /usr/local/bin/cyanrex-runner-agent
 
 ENV ENGINE_HOST=0.0.0.0
 ENV ENGINE_PORT=8080

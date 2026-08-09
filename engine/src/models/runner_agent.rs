@@ -21,7 +21,7 @@ pub enum RunnerAgentState {
     Offline,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct RunnerAgentRegisterRequest {
     pub agent_id: String,
     pub protocol_version: u16,
@@ -34,7 +34,7 @@ pub struct RunnerAgentRegisterRequest {
     pub labels: BTreeMap<String, String>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct RunnerAgentHeartbeatRequest {
     pub agent_id: String,
     pub state: RunnerAgentState,
@@ -44,7 +44,7 @@ pub struct RunnerAgentHeartbeatRequest {
     pub message: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct RunnerAgentView {
     pub agent_id: String,
     pub protocol_version: u16,
@@ -63,7 +63,7 @@ pub struct RunnerAgentView {
     pub expires_at: DateTime<Utc>,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct RunnerAgentInventory {
     pub generated_at: DateTime<Utc>,
     pub total_agents: usize,
@@ -71,10 +71,10 @@ pub struct RunnerAgentInventory {
     pub agents: Vec<RunnerAgentView>,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct RunnerAgentRegistrationResponse {
     #[serde(flatten)]
     pub agent: RunnerAgentView,
     pub credential: String,
-    pub signature_scheme: &'static str,
+    pub signature_scheme: String,
 }

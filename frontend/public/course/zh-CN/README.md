@@ -9,9 +9,10 @@ Cyanrex 是一个面向 eBPF 入门教学的实验系统。它把源码编辑、
 
 1. [教师快速开始](teacher-guide.md)
 2. [系统架构](architecture.md)
-3. [课程知识地图](concepts.md)
-4. [安全与课堂部署](security.md)
-5. 浏览全部实验并提前试跑
+3. [Runner Agent 使用指南](runner-agent.md)
+4. [课程知识地图](concepts.md)
+5. [安全与课堂部署](security.md)
+6. 浏览全部实验并提前试跑
    - eBPF 页面中的课程路径：
      - `learning/foundations/beginner/fundamentals`
      - `learning/foundations/intermediate/protocols`

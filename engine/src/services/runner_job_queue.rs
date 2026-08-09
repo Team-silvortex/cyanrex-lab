@@ -138,7 +138,7 @@ impl RunnerJobQueue {
         job.deadline = Some(deadline);
         Ok(Some(RunnerJobClaim {
             job_id,
-            kind: JOB_KIND,
+            kind: JOB_KIND.to_string(),
             message: job.message.clone(),
             lease_token,
             claimed_at: now,
@@ -315,7 +315,7 @@ fn reap(jobs: &mut HashMap<String, JobRecord>, now: DateTime<Utc>) {
 fn view(job: &JobRecord) -> RunnerJobView {
     RunnerJobView {
         job_id: job.job_id.clone(),
-        kind: JOB_KIND,
+        kind: JOB_KIND.to_string(),
         state: job.state,
         target_agent_id: job.target_agent_id.clone(),
         assigned_agent_id: job.assigned_agent_id.clone(),

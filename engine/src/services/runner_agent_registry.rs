@@ -271,9 +271,9 @@ fn validate_registration(
     if !request
         .capabilities
         .iter()
-        .any(|value| matches!(value.as_str(), "bpftool" | "aya"))
+        .any(|value| matches!(value.as_str(), "control_probe" | "bpftool" | "aya"))
     {
-        return invalid("agent must advertise `bpftool` or `aya`");
+        return invalid("agent must advertise `control_probe`, `bpftool`, or `aya`");
     }
     if request.labels.len() > 16 {
         return invalid("labels must contain at most 16 entries");

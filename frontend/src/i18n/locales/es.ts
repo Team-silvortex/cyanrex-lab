@@ -204,6 +204,8 @@ export const es: TranslationDict = {
       sectionTeacherGuideDetail: "Flujo de clase, cronograma, aceptación y limpieza.",
       sectionArchitectureTitle: "Arquitectura del sistema",
       sectionArchitectureDetail: "Frontend, Engine, persistencia, límite del kernel y reglas de extensión.",
+      sectionRunnerAgentTitle: "Runner Agent",
+      sectionRunnerAgentDetail: "Conecta nodos Linux, WSL2 o contenedores de confianza mediante el protocolo firmado.",
       sectionStudentGuideTitle: "Guía rápida para estudiantes",
       sectionStudentGuideDetail: "Inicio de sesión, interfaz, editor y disciplina del laboratorio.",
       sectionConceptsTitle: "Mapa de conocimientos de eBPF",

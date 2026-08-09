@@ -478,7 +478,6 @@ exec "$SCRIPT_DIR/deploy.sh" down "$@"
 EOF
 chmod +x "$stop_script"
 }
-
 generate_package_readme() {
   local package_dir="$1"
   local readme_file="$package_dir/README-DEPLOY.md"
@@ -491,6 +490,7 @@ Built at (UTC): ${PACKAGE_TAG}
 Package contents:
 - docker-compose.yml
 - .env.example
+- runner-agent.env.example
 - deploy.sh
 - run.sh (wrapper for deploy.sh up)
 - stop.sh (wrapper for deploy.sh down)
@@ -520,7 +520,7 @@ EOF
 generate_checksums() {
   local package_dir="$1"
   resolve_checksum_command
-  (cd "$package_dir" && "${CHECKSUM_CMD[@]}" docker-compose.yml .env.example LICENSE README.md README-en.md README-zh-CN.md README-docker.md README-DEPLOY.md manifest.env deploy.sh run.sh stop.sh cyanrex-images.tar > checksums.sha256)
+  (cd "$package_dir" && "${CHECKSUM_CMD[@]}" docker-compose.yml .env.example runner-agent.env.example LICENSE README.md README-en.md README-zh-CN.md README-docker.md README-DEPLOY.md manifest.env deploy.sh run.sh stop.sh cyanrex-images.tar > checksums.sha256)
 }
 
 resolve_version
@@ -561,6 +561,7 @@ assert_images "$ENGINE_IMAGE" "$FRONTEND_IMAGE"
 
 cp "$COMPOSE_TEMPLATE" "$PACKAGE_DIR/docker-compose.yml"
 cp "$ROOT_DIR/docker/.env.example" "$PACKAGE_DIR/.env.example"
+cp "$ROOT_DIR/docker/runner-agent.env.example" "$PACKAGE_DIR/runner-agent.env.example"
 cp "$ROOT_DIR/LICENSE" "$PACKAGE_DIR/LICENSE"
 cp "$ROOT_DIR/README.md" "$PACKAGE_DIR/README.md"
 cp "$ROOT_DIR/docs/en/README.md" "$PACKAGE_DIR/README-en.md"

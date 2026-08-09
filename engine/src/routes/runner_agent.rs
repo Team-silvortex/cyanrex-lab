@@ -46,7 +46,10 @@ pub async fn register(
                     let mut response = Json(RunnerAgentRegistrationResponse {
                         agent,
                         credential,
-                        signature_scheme: state.runner_agent_authenticator.signature_scheme(),
+                        signature_scheme: state
+                            .runner_agent_authenticator
+                            .signature_scheme()
+                            .to_string(),
                     })
                     .into_response();
                     response

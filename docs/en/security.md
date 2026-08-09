@@ -41,6 +41,11 @@ and `/ebpf/run` remains local. Signed transport proves which registered credenti
 does not prove that a remote kernel executed honestly. Mutual TLS or node-bound keys and attestation
 should be considered before using remote results across a stronger trust boundary.
 
+The bundled standalone Agent fails closed on non-loopback plain HTTP unless an explicit insecure-lab
+override is set. It disables HTTP redirects and environment proxies, caps response bodies, and can
+read the bootstrap secret from a mounted file. The control-probe process should run as an
+unprivileged account without host PID mode, kernel mounts, Docker socket, or Linux capabilities.
+
 ## Recommended Isolation
 
 ### Personal Computer

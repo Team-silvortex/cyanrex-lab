@@ -248,6 +248,7 @@ administrator-only.
 - `shared_kernel` is reported explicitly; quotas do not replace per-student VM isolation
 - Agent control probes use per-node HMAC credentials, replay protection, leases, cancellation, and bounded results
 - `/ebpf/run` remote dispatch remains disabled; probe jobs never contain or execute eBPF source
+- `cyanrex-runner-agent` connects trusted Linux, WSL2, and unprivileged container nodes to this probe protocol
 
 ## Scripts APIs (Implemented)
 

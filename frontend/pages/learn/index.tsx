@@ -9,6 +9,7 @@ import { LabProgress, labTitleKey } from "../../src/features/learning/models";
 const sections = [
   { href: "/learn/teacher-guide", titleKey: "learn.sectionTeacherGuideTitle", detailKey: "learn.sectionTeacherGuideDetail" },
   { href: "/learn/architecture", titleKey: "learn.sectionArchitectureTitle", detailKey: "learn.sectionArchitectureDetail" },
+  { href: "/learn/runner-agent", titleKey: "learn.sectionRunnerAgentTitle", detailKey: "learn.sectionRunnerAgentDetail" },
   { href: "/learn/student-guide", titleKey: "learn.sectionStudentGuideTitle", detailKey: "learn.sectionStudentGuideDetail" },
   { href: "/learn/concepts", titleKey: "learn.sectionConceptsTitle", detailKey: "learn.sectionConceptsDetail" },
   { href: "/learn/troubleshooting", titleKey: "learn.sectionTroubleshootingTitle", detailKey: "learn.sectionTroubleshootingDetail" },

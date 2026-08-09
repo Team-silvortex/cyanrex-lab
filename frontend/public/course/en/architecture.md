@@ -260,6 +260,12 @@ one according to its advertised free capacity, receives a 256-bit job lease and 
 jobs and retains terminal records for 15 minutes. These jobs are always `control_probe`: they never
 contain source code or execute eBPF. `/ebpf/run` continues to use the configured local driver.
 
+The standalone `cyanrex-runner-agent` binary implements this protocol for Linux, WSL2, and
+unprivileged containers. It uses a Rustls HTTPS client, disables redirects and environment proxies,
+keeps the issued credential in memory, and automatically re-registers after Engine state loss. Its
+only probe reads `/proc/sys/kernel/osrelease` and returns bounded JSON; it never invokes a shell or
+external command. See the [Runner Agent Guide](runner-agent.md) for deployment details.
+
 An Agent must register again after Engine restart or after its record is removed. Registration with
 the same ID replaces the old record. The endpoints return `401` for bad credentials, `503` when the
 control plane is disabled, `400` for invalid metadata/capacity, `404` for an unknown heartbeat, and

@@ -138,6 +138,35 @@ impl RunnerAgentAuthenticator {
     }
 }
 
+pub fn sign_runner_agent_request(
+    credential: &str,
+    agent_id: &str,
+    method: &str,
+    path: &str,
+    timestamp: &str,
+    nonce: &str,
+    body: &[u8],
+) -> Result<String, RunnerAgentSignatureError> {
+    if !(32..=512).contains(&credential.len()) {
+        return Err(RunnerAgentSignatureError::Invalid);
+    }
+    let request = RunnerAgentSignedRequest {
+        agent_id,
+        method,
+        path,
+        timestamp,
+        nonce,
+        signature: "0000000000000000000000000000000000000000000000000000000000000000",
+        body,
+    };
+    validate_signed_fields(&request)?;
+    let canonical = canonical_request(&request);
+    let mut mac = Hmac::<Sha256>::new_from_slice(credential.as_bytes())
+        .expect("HMAC accepts arbitrary key lengths");
+    mac.update(canonical.as_bytes());
+    Ok(HEXLOWER.encode(&mac.finalize().into_bytes()))
+}
+
 fn validate_signed_fields(
     request: &RunnerAgentSignedRequest<'_>,
 ) -> Result<(), RunnerAgentSignatureError> {

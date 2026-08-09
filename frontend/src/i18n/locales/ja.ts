@@ -204,6 +204,8 @@ export const ja: TranslationDict = {
       sectionTeacherGuideDetail: "授業の流れ、時間割、受け入れ、クリーンアップ。",
       sectionArchitectureTitle: "システムアーキテクチャ",
       sectionArchitectureDetail: "フロントエンド、Engine、永続化、カーネル境界、拡張ルール。",
+      sectionRunnerAgentTitle: "Runner Agent",
+      sectionRunnerAgentDetail: "署名付き制御プロトコルで信頼済み Linux、WSL2、コンテナノードを接続します。",
       sectionStudentGuideTitle: "学生向けクイックスタート",
       sectionStudentGuideDetail: "ログイン、画面、エディタ機能、実習手順の基礎。",
       sectionConceptsTitle: "eBPF 知識マップ",

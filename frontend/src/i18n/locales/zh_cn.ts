@@ -204,6 +204,8 @@ export const zhCN: TranslationDict = {
       sectionTeacherGuideDetail: "课堂拓扑、课时安排、验收与清理流程",
       sectionArchitectureTitle: "系统架构",
       sectionArchitectureDetail: "前端、Engine、持久化、内核边界与扩展规则",
+      sectionRunnerAgentTitle: "Runner Agent",
+      sectionRunnerAgentDetail: "通过签名控制协议接入可信 Linux、WSL2 或容器节点",
       sectionStudentGuideTitle: "学生快速开始",
       sectionStudentGuideDetail: "登录、界面、编辑器能力和实验纪律",
       sectionConceptsTitle: "eBPF 知识地图",

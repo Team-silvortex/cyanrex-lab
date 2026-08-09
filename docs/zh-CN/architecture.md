@@ -238,6 +238,11 @@ lab-vm-01\n
 结果。内存队列最多保留 512 个作业，终态记录保留 15 分钟。这些作业固定为 `control_probe`，不会
 携带源码或执行 eBPF；`/ebpf/run` 仍使用已配置的本地驱动。
 
+独立的 `cyanrex-runner-agent` 二进制为 Linux、WSL2 和无特权容器实现了这套协议。它使用 Rustls
+HTTPS 客户端，禁用重定向和环境代理，只在内存保存签发凭据，并在 Engine 状态丢失后自动重新注册。
+当前唯一探针只读取 `/proc/sys/kernel/osrelease` 并返回有上限的 JSON，不会调用 Shell 或外部命令。
+部署方式见 [Runner Agent 使用指南](runner-agent.md)。
+
 Engine 重启或记录被回收后，Agent 必须重新注册；使用相同 ID 注册会替换旧记录。凭据错误返回
 `401`，控制面未启用返回 `503`，元数据或容量无效返回 `400`，未注册节点的心跳返回 `404`，请求体
 过大返回 `413`。

@@ -42,6 +42,26 @@ control probes; it does not dispatch `/ebpf/run` or eBPF source. Treat the regis
 issued credentials as secrets, use TLS or a private management network, and rotate by re-registering
 a node if it is lost or compromised.
 
+### Standalone Runner Agent
+
+The Engine image includes `cyanrex-runner-agent`. Copy `runner-agent.env.example`, mount the
+bootstrap token as a read-only file, and override the image entrypoint:
+
+```bash
+cp docker/runner-agent.env.example runner-agent.env
+chmod 600 runner-agent.env agent-token
+docker run --rm --name cyanrex-runner-agent \
+  --user "$(id -u):$(id -g)" \
+  --entrypoint cyanrex-runner-agent \
+  --env-file runner-agent.env \
+  --mount type=bind,src="$PWD/agent-token",dst=/run/secrets/cyanrex-agent-bootstrap-token,ro \
+  cyanrex/cyanrex-engine:0.2.0
+```
+
+The current Agent executes only built-in control probes and must run without `--privileged`, host
+PID mode, kernel mounts, or extra capabilities. See the Runner Agent guide in the frontend learning
+center for Linux and WSL2 instructions.
+
 ## eBPF Notes
 
 - `engine` is an intentionally privileged teaching sandbox with host PID visibility.
