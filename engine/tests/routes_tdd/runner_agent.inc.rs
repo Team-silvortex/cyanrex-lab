@@ -1,3 +1,7 @@
+use data_encoding::HEXLOWER;
+use hmac::{Hmac, Mac};
+use sha2::{Digest, Sha256};
+
 const TEST_AGENT_TOKEN: &str = "test-runner-agent-token-32-bytes-minimum";
 
 fn agent_registration_body() -> String {
@@ -11,6 +15,24 @@ fn agent_registration_body() -> String {
         "labels": {"room": "a", "arch": "x86_64"}
     })
     .to_string()
+}
+
+fn agent_signature(
+    credential: &str,
+    method: &str,
+    path: &str,
+    agent_id: &str,
+    timestamp: &str,
+    nonce: &str,
+    body: &[u8],
+) -> String {
+    let body_hash = HEXLOWER.encode(&Sha256::digest(body));
+    let canonical = format!(
+        "CYANREX-RUNNER-V1\n{method}\n{path}\n{agent_id}\n{timestamp}\n{nonce}\n{body_hash}"
+    );
+    let mut mac = Hmac::<Sha256>::new_from_slice(credential.as_bytes()).unwrap();
+    mac.update(canonical.as_bytes());
+    HEXLOWER.encode(&mac.finalize().into_bytes())
 }
 
 #[tokio::test]
@@ -93,12 +115,39 @@ async fn runner_agent_can_register_heartbeat_and_appear_in_admin_inventory() {
         .await
         .unwrap();
     assert_eq!(registered.status(), StatusCode::OK);
+    assert_eq!(
+        registered.headers().get(header::CACHE_CONTROL).unwrap(),
+        "no-store"
+    );
     let body = registered.into_body().collect().await.unwrap().to_bytes();
     let json: Value = serde_json::from_slice(&body).unwrap();
     assert_eq!(json["agent_id"], "lab-vm-01");
     assert_eq!(json["state"], "healthy");
     assert_eq!(json["isolation"], "virtual_machine");
+    assert_eq!(json["signature_scheme"], "hmac-sha256-v1");
+    let credential = json["credential"].as_str().unwrap().to_string();
+    assert_eq!(credential.len(), 64);
 
+    let heartbeat_body = serde_json::json!({
+        "agent_id": "lab-vm-01",
+        "state": "degraded",
+        "active_jobs": 1,
+        "available_slots": 1,
+        "kernel_release": "6.8.0-lab",
+        "message": "classroom warmup"
+    })
+    .to_string();
+    let timestamp = chrono::Utc::now().timestamp().to_string();
+    let nonce = format!("nonce-{}", uuid::Uuid::new_v4().simple());
+    let signature = agent_signature(
+        &credential,
+        "POST",
+        "/runner/agent/heartbeat",
+        "lab-vm-01",
+        &timestamp,
+        &nonce,
+        heartbeat_body.as_bytes(),
+    );
     let heartbeat = app
         .clone()
         .oneshot(
@@ -106,18 +155,11 @@ async fn runner_agent_can_register_heartbeat_and_appear_in_admin_inventory() {
                 .method("POST")
                 .uri("/runner/agent/heartbeat")
                 .header(header::CONTENT_TYPE, "application/json")
-                .header(header::AUTHORIZATION, authorization)
-                .body(Body::from(
-                    serde_json::json!({
-                        "agent_id": "lab-vm-01",
-                        "state": "degraded",
-                        "active_jobs": 1,
-                        "available_slots": 1,
-                        "kernel_release": "6.8.0-lab",
-                        "message": "classroom warmup"
-                    })
-                    .to_string(),
-                ))
+                .header("x-cyanrex-agent-id", "lab-vm-01")
+                .header("x-cyanrex-agent-timestamp", timestamp)
+                .header("x-cyanrex-agent-nonce", nonce)
+                .header("x-cyanrex-agent-signature", signature)
+                .body(Body::from(heartbeat_body))
                 .unwrap(),
         )
         .await

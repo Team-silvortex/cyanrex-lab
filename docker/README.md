@@ -30,14 +30,17 @@ Local Runner capacity is configurable in the same file:
 - `CYANREX_RUNNER_AGENT_TOKEN` (optional, empty/absent disables Agent registration; minimum 32 characters)
 - `CYANREX_RUNNER_AGENT_TTL_SECS` (default: `30`; node becomes offline after this interval)
 - `CYANREX_RUNNER_AGENT_RETENTION_SECS` (default: `300`; stale in-memory record retention)
+- `CYANREX_RUNNER_AGENT_SIGNATURE_WINDOW_SECS` (default: `60`, range: `15`–`300`)
 
 These are fairness and resource limits. The Docker Engine still reports `shared_kernel` and is not
 a multi-tenant isolation boundary. An unsupported mode fails Engine startup instead of silently
 falling back to local execution.
 
-The Agent endpoints currently provide registration, heartbeat, and administrator inventory only.
-They do not dispatch `/ebpf/run` jobs. Treat the shared Agent token as a secret, use TLS or a private
-management network, and rotate it if any node is lost or compromised.
+The Agent protocol issues a distinct credential at registration, then requires HMAC-SHA256 request
+signatures with timestamp and one-use nonce. Its job queue currently carries only non-privileged
+control probes; it does not dispatch `/ebpf/run` or eBPF source. Treat the registration token and
+issued credentials as secrets, use TLS or a private management network, and rotate by re-registering
+a node if it is lost or compromised.
 
 ## eBPF Notes
 

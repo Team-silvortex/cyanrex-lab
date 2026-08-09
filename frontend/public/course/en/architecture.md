@@ -205,11 +205,11 @@ ephemeral and is rebuilt after an Engine restart. Registration bodies are capped
 registry holds at most 256 nodes.
 
 The endpoints are disabled unless `CYANREX_RUNNER_AGENT_TOKEN` contains at least 32 characters.
-Agents send it as a Bearer token. TTL defaults to 30 seconds and retention to 300 seconds through
-`CYANREX_RUNNER_AGENT_TTL_SECS` and `CYANREX_RUNNER_AGENT_RETENTION_SECS`. Protocol v1 does not
-dispatch, cancel, or return jobs, so `/ebpf/run` continues to use the configured local driver. A
-later execution protocol must add scoped job identity, cancellation, result validation, and replay
-protection before remote privileged execution can be enabled.
+Agents send it as a Bearer token only when registering. Registration returns a distinct 256-bit
+credential once and re-registering rotates it. TTL defaults to 30 seconds, retention to 300 seconds,
+and signed-request freshness to 60 seconds through `CYANREX_RUNNER_AGENT_TTL_SECS`,
+`CYANREX_RUNNER_AGENT_RETENTION_SECS`, and
+`CYANREX_RUNNER_AGENT_SIGNATURE_WINDOW_SECS`.
 
 Registration example:
 
@@ -228,21 +228,37 @@ curl -sS -X POST http://127.0.0.1:8080/runner/agent/register \
   }'
 ```
 
-Heartbeat example:
+The registration response includes `credential` and `signature_scheme=hmac-sha256-v1`; it is sent
+with `Cache-Control: no-store`. All later Agent requests carry these headers:
 
-```bash
-curl -sS -X POST http://127.0.0.1:8080/runner/agent/heartbeat \
-  -H "Authorization: Bearer $CYANREX_RUNNER_AGENT_TOKEN" \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "agent_id":"lab-vm-01",
-    "state":"healthy",
-    "active_jobs":0,
-    "available_slots":2,
-    "kernel_release":"6.8.0-lab",
-    "message":null
-  }'
+- `X-Cyanrex-Agent-Id`
+- `X-Cyanrex-Agent-Timestamp` — current Unix seconds
+- `X-Cyanrex-Agent-Nonce` — a fresh 16–64 character identifier
+- `X-Cyanrex-Agent-Signature` — lowercase hexadecimal HMAC-SHA256
+
+The HMAC key is the issued credential string. Its canonical UTF-8 input is:
+
+```text
+CYANREX-RUNNER-V1\n
+POST\n
+/runner/agent/heartbeat\n
+lab-vm-01\n
+<unix-seconds>\n
+<nonce>\n
+<lowercase-hex-sha256-of-exact-body>
 ```
+
+The same signature format protects `POST /runner/agent/heartbeat`,
+`POST /runner/agent/jobs/claim`, `POST /runner/agent/jobs/sync`, and
+`POST /runner/agent/jobs/result`. The body bytes used for hashing must exactly match the transmitted
+body. A signature outside the freshness window, a changed body, or a reused nonce returns `401`.
+
+Administrators can submit a bounded non-privileged probe with `POST /runner/jobs/probe`, request
+cancellation with `POST /runner/jobs/cancel`, and inspect `GET /runner/jobs`. A healthy Agent claims
+one according to its advertised free capacity, receives a 256-bit job lease and deadline, polls
+`/sync` for cancellation, then posts a size-limited result. The in-memory queue holds at most 512
+jobs and retains terminal records for 15 minutes. These jobs are always `control_probe`: they never
+contain source code or execute eBPF. `/ebpf/run` continues to use the configured local driver.
 
 An Agent must register again after Engine restart or after its record is removed. Registration with
 the same ID replaces the old record. The endpoints return `401` for bad credentials, `503` when the

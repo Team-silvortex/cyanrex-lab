@@ -240,10 +240,14 @@ administrator-only.
 - `POST /runner/agent/register` — optional token-authenticated remote node registration
 - `POST /runner/agent/heartbeat` — health and capacity heartbeat for a registered node
 - `GET /runner/agents` — administrator-only remote node inventory
+- `POST /runner/jobs/probe`, `/runner/jobs/cancel` — administrator-only control-probe lifecycle
+- `POST /runner/agent/jobs/claim`, `/sync`, `/result` — signed Agent job protocol
+- `GET /runner/jobs` — administrator-only job inventory
 - `/ebpf/run` executes through the replaceable `RunnerDriver` boundary
 - Local Runner defaults to two global jobs, one job per user, and a 45-second execution timeout
 - `shared_kernel` is reported explicitly; quotas do not replace per-student VM isolation
-- Agent control-plane v1 is discovery-only: remote job dispatch is not enabled yet
+- Agent control probes use per-node HMAC credentials, replay protection, leases, cancellation, and bounded results
+- `/ebpf/run` remote dispatch remains disabled; probe jobs never contain or execute eBPF source
 
 ## Scripts APIs (Implemented)
 

@@ -196,6 +196,20 @@ impl RunnerAgentRegistry {
         }
     }
 
+    pub fn active_agent_ids(&self) -> Vec<String> {
+        let now = Utc::now();
+        let mut agents = self.agents();
+        self.prune(&mut agents, now);
+        agents.keys().cloned().collect()
+    }
+
+    pub fn agent(&self, agent_id: &str) -> Option<RunnerAgentView> {
+        let now = Utc::now();
+        let mut agents = self.agents();
+        self.prune(&mut agents, now);
+        agents.get(agent_id).map(|record| self.view(record, now))
+    }
+
     fn view(&self, record: &AgentRecord, now: DateTime<Utc>) -> RunnerAgentView {
         let expires_at = record.last_seen_at
             + chrono::Duration::from_std(self.inner.heartbeat_ttl)

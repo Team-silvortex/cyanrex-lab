@@ -10,5 +10,6 @@ pub mod learning;
 pub mod modules;
 pub mod runner;
 pub mod runner_agent;
+pub mod runner_job;
 pub mod scripts;
 pub mod settings;

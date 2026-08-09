@@ -71,6 +71,12 @@ fn runner_agent_routes() -> Router<Arc<AppState>> {
             "/runner/agent/heartbeat",
             post(routes::runner_agent::heartbeat),
         )
+        .route("/runner/agent/jobs/claim", post(routes::runner_job::claim))
+        .route("/runner/agent/jobs/sync", post(routes::runner_job::sync))
+        .route(
+            "/runner/agent/jobs/result",
+            post(routes::runner_job::result),
+        )
         .layer(DefaultBodyLimit::max(64 * 1024))
 }
 
@@ -170,6 +176,9 @@ fn admin_routes(state: Arc<AppState>) -> Router<Arc<AppState>> {
         .route("/command", post(routes::command::dispatch_command))
         .route("/runner/overview", get(routes::runner::overview))
         .route("/runner/agents", get(routes::runner_agent::inventory))
+        .route("/runner/jobs", get(routes::runner_job::inventory))
+        .route("/runner/jobs/probe", post(routes::runner_job::submit_probe))
+        .route("/runner/jobs/cancel", post(routes::runner_job::cancel))
         .route(
             "/modules/c-headers/download",
             post(routes::c_headers::download_header),

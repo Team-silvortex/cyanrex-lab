@@ -186,11 +186,10 @@ Runner 模式由 `CYANREX_RUNNER_MODE` 配置（当前为 `local_process`）；�
 后自动删除。`GET /runner/agents` 仅允许管理员读取节点清单。注册表不会持久化，Engine 重启后需要
 Agent 重新注册。注册请求体上限为 64 KiB，注册表最多保存 256 个节点。
 
-只有配置至少 32 个字符的 `CYANREX_RUNNER_AGENT_TOKEN` 后才会启用 Agent 接口，Agent 通过 Bearer
-Token 发送凭据。`CYANREX_RUNNER_AGENT_TTL_SECS` 默认 30 秒，
-`CYANREX_RUNNER_AGENT_RETENTION_SECS` 默认 300 秒。v1 尚不分发、取消或返回作业，因此
-`/ebpf/run` 仍使用已配置的本地驱动。后续远程执行协议必须先补齐作业身份、取消语义、结果校验和
-重放防护，才能开放特权远程执行。
+只有配置至少 32 个字符的 `CYANREX_RUNNER_AGENT_TOKEN` 后才会启用 Agent 接口；Bearer Token
+仅在注册时使用。注册会一次性返回每节点独立的 256-bit 凭据，重新注册会轮换凭据。
+`CYANREX_RUNNER_AGENT_TTL_SECS` 默认 30 秒，`CYANREX_RUNNER_AGENT_RETENTION_SECS` 默认 300 秒，
+`CYANREX_RUNNER_AGENT_SIGNATURE_WINDOW_SECS` 默认 60 秒。
 
 注册示例：
 
@@ -209,21 +208,35 @@ curl -sS -X POST http://127.0.0.1:8080/runner/agent/register \
   }'
 ```
 
-心跳示例：
+注册响应包含 `credential` 和 `signature_scheme=hmac-sha256-v1`，并设置
+`Cache-Control: no-store`。后续所有 Agent 请求都携带以下 Header：
 
-```bash
-curl -sS -X POST http://127.0.0.1:8080/runner/agent/heartbeat \
-  -H "Authorization: Bearer $CYANREX_RUNNER_AGENT_TOKEN" \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "agent_id":"lab-vm-01",
-    "state":"healthy",
-    "active_jobs":0,
-    "available_slots":2,
-    "kernel_release":"6.8.0-lab",
-    "message":null
-  }'
+- `X-Cyanrex-Agent-Id`；
+- `X-Cyanrex-Agent-Timestamp`：当前 Unix 秒；
+- `X-Cyanrex-Agent-Nonce`：每次新生成的 16～64 字符标识；
+- `X-Cyanrex-Agent-Signature`：小写十六进制 HMAC-SHA256。
+
+HMAC Key 是注册返回的凭据字符串，规范化 UTF-8 输入为：
+
+```text
+CYANREX-RUNNER-V1\n
+POST\n
+/runner/agent/heartbeat\n
+lab-vm-01\n
+<unix-seconds>\n
+<nonce>\n
+<exact-body-sha256-lowercase-hex>
 ```
+
+`POST /runner/agent/heartbeat`、`POST /runner/agent/jobs/claim`、
+`POST /runner/agent/jobs/sync` 和 `POST /runner/agent/jobs/result` 都使用相同签名格式。计算摘要的
+正文必须与实际发送字节完全一致。签名超过时效、正文被修改或 Nonce 被重复使用都会返回 `401`。
+
+管理员可以通过 `POST /runner/jobs/probe` 投递有上限的无特权探针，通过
+`POST /runner/jobs/cancel` 请求取消，并用 `GET /runner/jobs` 查看队列。健康 Agent 按上报空闲容量
+领取作业，取得 256-bit Job Lease 和截止时间，通过 `/sync` 获取取消请求，最后回传有大小限制的
+结果。内存队列最多保留 512 个作业，终态记录保留 15 分钟。这些作业固定为 `control_probe`，不会
+携带源码或执行 eBPF；`/ebpf/run` 仍使用已配置的本地驱动。
 
 Engine 重启或记录被回收后，Agent 必须重新注册；使用相同 ID 注册会替换旧记录。凭据错误返回
 `401`，控制面未启用返回 `503`，元数据或容量无效返回 `400`，未注册节点的心跳返回 `404`，请求体

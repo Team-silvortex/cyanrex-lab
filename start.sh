@@ -286,7 +286,6 @@ check_registry_mirrors() {
     return 1
   fi
 }
-
 run_instance_conflict_check() {
   local runtime_mode="${1:-docker}"
   local -a check_args=(--allow-existing-running)
@@ -397,6 +396,7 @@ start_local_stack() {
     CYANREX_RUNNER_AGENT_TOKEN="${CYANREX_RUNNER_AGENT_TOKEN:-}" \
     CYANREX_RUNNER_AGENT_TTL_SECS="${CYANREX_RUNNER_AGENT_TTL_SECS:-30}" \
     CYANREX_RUNNER_AGENT_RETENTION_SECS="${CYANREX_RUNNER_AGENT_RETENTION_SECS:-300}" \
+    CYANREX_RUNNER_AGENT_SIGNATURE_WINDOW_SECS="${CYANREX_RUNNER_AGENT_SIGNATURE_WINDOW_SECS:-60}" \
     CYANREX_RUNTIME_MODE="$runtime_mode" \
     "$ROOT_DIR/engine/target/debug/cyanrex-engine"
   ) &

@@ -29,10 +29,17 @@ Remote Agent registration is disabled by default. Enabling it requires a secret
 network or behind TLS and source restrictions; never place the token in frontend code, logs, or a
 repository. Rotate it when a node is lost or compromised.
 
-Control-plane v1 uses one pre-shared Bearer token. A holder can register or impersonate any Agent ID,
-and Bearer requests do not provide replay protection. It is suitable only for trusted lab nodes and
-does not authorize remote eBPF job execution. Per-node credentials, signed requests with freshness,
-job-scoped authorization, cancellation, and verified results are required before dispatch is enabled.
+The pre-shared Bearer token is accepted only for registration. Registration returns a distinct
+256-bit Agent credential once with `Cache-Control: no-store`; re-registering the ID rotates it.
+Heartbeat and job endpoints require HMAC-SHA256 over method, path, Agent ID, Unix timestamp, nonce,
+and body hash. The timestamp has a bounded freshness window and each nonce is accepted once.
+
+A holder of the bootstrap token can still re-register and impersonate an Agent ID, so it remains a
+high-value secret. Current jobs are bounded `control_probe` messages with per-claim lease tokens,
+deadlines, cancellation acknowledgement, and size-limited results. They never contain eBPF source
+and `/ebpf/run` remains local. Signed transport proves which registered credential sent a result; it
+does not prove that a remote kernel executed honestly. Mutual TLS or node-bound keys and attestation
+should be considered before using remote results across a stronger trust boundary.
 
 ## Recommended Isolation
 

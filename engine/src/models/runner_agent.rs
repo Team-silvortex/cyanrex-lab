@@ -70,3 +70,11 @@ pub struct RunnerAgentInventory {
     pub online_agents: usize,
     pub agents: Vec<RunnerAgentView>,
 }
+
+#[derive(Debug, Clone, Serialize)]
+pub struct RunnerAgentRegistrationResponse {
+    #[serde(flatten)]
+    pub agent: RunnerAgentView,
+    pub credential: String,
+    pub signature_scheme: &'static str,
+}
