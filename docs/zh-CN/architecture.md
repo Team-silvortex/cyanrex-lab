@@ -96,8 +96,8 @@ flowchart LR
 |---|---|---|
 | 公共 | `/health`、`/auth/login`、`/auth/me` | 无需 Session |
 | 公共状态修改 | `/auth/logout` | CSRF 来源检查 |
-| 已登录 | `/ebpf/*`、`/events*`、`/scripts*` | Session，写操作附加 CSRF |
-| 教师或管理员 | 模块与头文件目录读取 | 角色守卫 |
+| 已登录 | `/ebpf/*`、`/events*`、`/scripts*`、`/learning/labs` | Session，写操作附加 CSRF |
+| 教师或管理员 | 模块/头文件读取、`/learning/teacher/overview` | 角色守卫 |
 | 管理员 | 模块修改、编译设置、命令分发 | 管理员守卫 |
 
 新增端点必须准确放入其中一层。隐藏前端菜单不能替代 Engine 权限检查。
@@ -110,6 +110,7 @@ flowchart LR
 | `EbpfLoader` | clang 检查/补全、缓存、加载、挂载记录和 Aya Session |
 | `EventBus` | 用户事件缓冲、未读数、广播、保留策略和异步落库 |
 | `ScriptStore` | 用户脚本 CRUD 及数据库/文件降级 |
+| `LearningStore` | 实验尝试、自动验收、进度聚合及数据库/文件降级 |
 | `CHeaderModule` | 可信头文件目录、摘要校验和选中元数据 |
 | `EnvironmentChecker` | 内核、工具链和运行环境检查 |
 | `ModuleManager` | 内存中的教学模块生命周期 |
@@ -168,12 +169,13 @@ bpftool 能加载却不能挂载程序，系统会清理未激活的 pin 并通�
 
 ### 持久化与降级
 
-PostgreSQL 优先保存用户、Session、事件、事件设置和脚本。启用 `CYANREX_DB_FALLBACK` 后，
+PostgreSQL 优先保存用户、Session、事件、事件设置、脚本和学习尝试。启用 `CYANREX_DB_FALLBACK` 后，
 各服务可以独立降级：
 
 - 身份降级到进程内存；
 - 事件降级到有上限的用户内存缓冲；
 - 脚本降级到 `CYANREX_DATA_DIR` 下按实例隔离的 JSON；
+- 学习尝试降级到 `CYANREX_DATA_DIR` 下按实例隔离的 JSON；
 - 已下载头文件及选择状态始终使用文件系统。
 
 降级可保证课堂在数据库短暂故障时继续运行，但内存用户、Session 和事件在 Engine 重启后会丢失。

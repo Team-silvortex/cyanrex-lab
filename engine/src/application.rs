@@ -99,6 +99,8 @@ fn authenticated_routes(state: Arc<AppState>) -> Router<Arc<AppState>> {
         .route("/scripts", get(routes::scripts::list_scripts))
         .route("/scripts/save", post(routes::scripts::save_script))
         .route("/scripts/delete", post(routes::scripts::delete_script))
+        .route("/learning/labs", get(routes::learning::list_labs))
+        .route("/learning/attempts", get(routes::learning::list_attempts))
         .route("/ebpf/run", post(routes::ebpf::run_ebpf))
         .route("/ebpf/check", post(routes::ebpf::check_ebpf))
         .route("/ebpf/complete", post(routes::ebpf::complete_ebpf))
@@ -121,6 +123,10 @@ fn authenticated_routes(state: Arc<AppState>) -> Router<Arc<AppState>> {
 
 fn staff_routes(state: Arc<AppState>) -> Router<Arc<AppState>> {
     Router::new()
+        .route(
+            "/learning/teacher/overview",
+            get(routes::learning::teacher_overview),
+        )
         .route("/modules", get(routes::modules::list_modules))
         .route(
             "/modules/c-headers/catalog",

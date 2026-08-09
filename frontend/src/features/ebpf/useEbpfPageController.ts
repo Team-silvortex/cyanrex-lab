@@ -5,6 +5,7 @@ import { getEngineUrl } from "../../config/runtime";
 import { analyzeCCode } from "../../utils/cAnalyzer";
 import { registerEbpfIntelligence } from "../../utils/cEbpfIntelligence";
 import { loadPageState, savePageState } from "../../utils/pageState";
+import type { LabProgress } from "../learning/models";
 import { MAX_UPLOAD_BYTES, SAMPLE_EBPF } from "./models";
 import type {
   EbpfAttachmentDetail,
@@ -73,7 +74,10 @@ const INITIAL_HEADER_CHECK_STATE: HeaderInjectionCheckState = {
   diagnostics: 0,
 };
 
-export function useEbpfPageController(t: (key: string, vars?: Record<string, string | number>) => string) {
+export function useEbpfPageController(
+  t: (key: string, vars?: Record<string, string | number>) => string,
+  activeLabId = "",
+) {
   const [code, setCode] = useState(() => loadPageState<string>("ebpf_code_v1") ?? SAMPLE_EBPF);
   const [result, setResult] = useState<EbpfRunResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -102,9 +106,11 @@ export function useEbpfPageController(t: (key: string, vars?: Record<string, str
   const [runtimeBackend, setRuntimeBackend] = useState<EbpfRuntimeBackend>(
     () => (loadPageState<EbpfRuntimeBackend>("ebpf_runtime_backend_v1") ?? "bpftool"),
   );
+  const [activeLabProgress, setActiveLabProgress] = useState<LabProgress | null>(null);
   const monacoRef = useRef<any>(null);
   const editorRef = useRef<any>(null);
   const intelligenceRef = useRef<{ dispose: () => void } | null>(null);
+  const bootstrappedLabRef = useRef("");
   const engineUrl = getEngineUrl();
   const breakpointHits = useBreakpointHitStream(
     engineUrl,
@@ -234,6 +240,25 @@ export function useEbpfPageController(t: (key: string, vars?: Record<string, str
     refreshInjectedMetadata();
   }, [engineUrl]);
 
+  const refreshLearningProgress = async () => {
+    if (!activeLabId) {
+      setActiveLabProgress(null);
+      return;
+    }
+    try {
+      const response = await fetch(`${engineUrl}/learning/labs`, { credentials: "include" });
+      if (!response.ok) return;
+      const progress = (await response.json()) as LabProgress[];
+      setActiveLabProgress(progress.find((item) => item.lab.id === activeLabId) ?? null);
+    } catch {
+      // Learning progress is supplementary to the editor runtime.
+    }
+  };
+
+  useEffect(() => {
+    void refreshLearningProgress();
+  }, [activeLabId, engineUrl]);
+
   const refreshAttachments = async () => {
     try {
       const response = await fetch(`${engineUrl}/ebpf/attachments/details`, {
@@ -250,6 +275,17 @@ export function useEbpfPageController(t: (key: string, vars?: Record<string, str
   useEffect(() => {
     refreshAttachments();
   }, [engineUrl]);
+
+  useEffect(() => {
+    const templateId = activeLabProgress?.lab.template_id;
+    if (!activeLabId || !templateId || bootstrappedLabRef.current === activeLabId) return;
+    const template = templates.find((item) => item.id === templateId);
+    if (!template) return;
+    bootstrappedLabRef.current = activeLabId;
+    setSelectedTemplate(template.id);
+    setCode(template.code);
+    setScriptTitle(`lab-${activeLabId}`);
+  }, [activeLabId, activeLabProgress, templates]);
 
   const refreshScripts = async () => {
     try {
@@ -333,6 +369,7 @@ export function useEbpfPageController(t: (key: string, vars?: Record<string, str
         credentials: "include",
         body: JSON.stringify({
           code,
+          lab_id: activeLabId || null,
           template_id: selectedTemplate || null,
           program_name: resolvedProgramName,
           sampling_per_sec: samplingPerSec,
@@ -345,7 +382,7 @@ export function useEbpfPageController(t: (key: string, vars?: Record<string, str
 
       const json = (await response.json()) as EbpfRunResponse;
       setResult(json);
-      await refreshAttachments();
+      await Promise.all([refreshAttachments(), refreshLearningProgress()]);
 
       const ayaHint = runtimeBackend === "aya" ? buildAyaBackendHint(json.message, t) : null;
       const friendlyError = response.ok ? json.message : `HTTP ${response.status}: ${json.message}`;
@@ -495,6 +532,7 @@ export function useEbpfPageController(t: (key: string, vars?: Record<string, str
     debugBreakpoints,
     breakpointHits,
     lastBreakpointHit,
+    activeLabProgress,
     clearDebugBreakpoints,
     selectedTemplate,
     setSelectedTemplate,

@@ -25,6 +25,11 @@ const navItems: NavItem[] = [
   { href: "/dashboard", key: "layout.nav.dashboard" },
   { href: "/ebpf", key: "layout.nav.ebpf" },
   { href: "/learn", key: "layout.nav.learn" },
+  {
+    href: "/teaching",
+    key: "layout.nav.teaching",
+    allowedRoles: ["admin", "teacher"] as const,
+  },
   { href: "/helper", key: "layout.nav.helper" },
   {
     href: "/modules",

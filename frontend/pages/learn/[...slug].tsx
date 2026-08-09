@@ -18,6 +18,7 @@ export default function CourseDocumentPage() {
   const [error, setError] = useState("");
   const [usedFallback, setUsedFallback] = useState(false);
   const [fallbackLocale, setFallbackLocale] = useState<string>("");
+  const labId = slug.startsWith("labs/") ? slug.slice("labs/".length) : "";
 
   const fallbackLocaleName: Record<string, string> = {
     "zh-CN": "简体中文",
@@ -68,6 +69,13 @@ export default function CourseDocumentPage() {
         {usedFallback && <p className="meta">{t("learn.documentFallback", { language: fallbackLocale })}</p>}
         {!error && !markdown && <p className="meta">{t("learn.slugLoading")}</p>}
         {markdown && <MarkdownDocument markdown={markdown} currentSlug={`${slug}.md`} />}
+        {labId && (
+          <div className="row" style={{ marginTop: 20 }}>
+            <Link href={`/ebpf?lab=${encodeURIComponent(labId)}`} className="button-link">
+              {t("learn.openEditor")}
+            </Link>
+          </div>
+        )}
       </section>
     </SidebarLayout>
   );

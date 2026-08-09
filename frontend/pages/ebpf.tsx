@@ -1,5 +1,7 @@
 import { useMemo } from "react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
+import { useRouter } from "next/router";
 
 import SidebarLayout from "../src/components/SidebarLayout";
 import { useI18n } from "../src/i18n/context";
@@ -13,6 +15,11 @@ const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
 
 export default function EbpfPage() {
   const { t } = useI18n();
+  const router = useRouter();
+  const activeLabId = useMemo(() => {
+    const value = router.query.lab;
+    return typeof value === "string" && /^\d{2}-[a-z0-9-]+$/.test(value) ? value : "";
+  }, [router.query.lab]);
   const {
     analysis,
     attachments,
@@ -38,6 +45,7 @@ export default function EbpfPage() {
     debugBreakpoints,
     breakpointHits,
     lastBreakpointHit,
+    activeLabProgress,
     clearDebugBreakpoints,
     samplingPerSec,
     scriptTitle,
@@ -53,7 +61,7 @@ export default function EbpfPage() {
     setStreamSeconds,
     streamSeconds,
     templates,
-  } = useEbpfPageController(t);
+  } = useEbpfPageController(t, activeLabId);
 
   const onTemplateChange = (nextId: string) => {
     setSelectedTemplate(nextId);
@@ -210,6 +218,20 @@ export default function EbpfPage() {
       <section className="panel">
         <h2>{t("ebpf.title")}</h2>
         <p className="meta">{t("ebpf.subtitle")}</p>
+
+        {activeLabProgress && (
+          <div className="learning-context">
+            <div>
+              <strong>{t("learn.activeLab")}: {activeLabProgress.lab.title}</strong>
+              <p className="meta" style={{ margin: "4px 0 0" }}>
+                {t(`learn.status.${activeLabProgress.status}`)} · {t("learn.attemptCount", {
+                  count: activeLabProgress.attempts,
+                })}
+              </p>
+            </div>
+            <Link href={`/learn/${activeLabProgress.lab.doc_slug}`}>{t("learn.openLab")}</Link>
+          </div>
+        )}
 
         <div className="row" style={{ marginTop: 12 }}>
           <input

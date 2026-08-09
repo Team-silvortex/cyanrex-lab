@@ -43,6 +43,7 @@ streaming. See the architecture document before adding a service, route, or depl
   - user script endpoints (`/scripts`, `/scripts/save`, `/scripts/delete`)
   - event settings endpoint (`/settings/events`)
   - C header module endpoints (catalog/download/delete/select/inject metadata)
+  - learning progress endpoints for student labs and teacher overview
 - Auth system:
   - register/login/logout/session (`HTTP cookie`)
   - OTP/TOTP verification
@@ -57,7 +58,7 @@ streaming. See the architecture document before adding a service, route, or depl
   - PostgreSQL-backed `users` + `sessions`
   - fallback to in-memory if DB temporarily unavailable
 - Frontend pages:
-  - `/dashboard`, `/ebpf`, `/helper`, `/modules`, `/events`, `/terminal`
+  - `/dashboard`, `/ebpf`, `/learn`, `/teaching`, `/helper`, `/modules`, `/events`, `/terminal`
   - `/login`, `/register`, `/otp-setup`, `/account`
 - Frontend i18n:
   - supported languages: Simplified Chinese (`zh-CN`), English (`en`), Spanish (`es`), Japanese (`ja`)
@@ -204,7 +205,7 @@ administrator-only.
   - clang semantic completion at a one-based cursor position
   - returns header symbols, macros, types, functions, and structure fields
 - `POST /ebpf/run`
-  - accepts optional `program_name` and `template_id`
+  - accepts optional `program_name`, `template_id`, and `lab_id`
   - accepts optional `runtime_backend` (`bpftool` | `aya`)
   - supports `sampling_per_sec` to control kernel event sampling rate
   - supports `stream_seconds` to control stream duration
@@ -233,6 +234,14 @@ administrator-only.
 - `POST /scripts/save` (user-scoped create)
 - `POST /scripts/delete` (user-scoped delete)
 
+## Learning APIs (Implemented)
+
+- `GET /learning/labs` — current user's five-lab catalog and progress
+- `GET /learning/attempts` — current user's backend-recorded run attempts
+- `GET /learning/teacher/overview` — teacher/admin classroom progress summary
+- `/ebpf/run` records an attempt only when a known `lab_id` is supplied; completion is calculated
+  from the real run, required template/source patterns, and attachment verification.
+
 ## Auth Persistence
 
 - Tables: `users`, `sessions`
@@ -242,6 +251,8 @@ administrator-only.
 
 - `event_records` for event center (`engine/migrations/0002_event_records.sql`)
 - `user_scripts` for script storage (`engine/migrations/0003_user_scripts.sql`)
+- `learning_attempts` for source snapshots, automated feedback, and lab progress
+  (`engine/migrations/0004_learning_attempts.sql`)
 
 ## Engineering Rule
 

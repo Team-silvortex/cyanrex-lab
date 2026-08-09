@@ -63,15 +63,17 @@ often than the UI reports, and an unattached or untriggered program produces no 
 
 ## 4. A Complete Lab Run
 
-1. Open Environment Helper and run check.
-2. Select a template in eBPF page.
-3. Read the code and predict output.
-4. Wait for clang status to become `passed`.
-5. Click **Compile and Run**.
-6. Check compile/load/attach result stages separately.
-7. Watch events in Events page.
-8. Return to eBPF page and detach.
-9. Ensure attached programs list is empty.
+1. Open Learning Center and choose a lab. Its card shows `not started`, `in progress`, or `completed`.
+2. Use **Open in editor** so the editor carries the lab context and loads its required template.
+3. Open Environment Helper and run check, then return to the eBPF editor.
+4. Read the code and predict output.
+5. Wait for clang status to become `passed`, then click **Compile and Run**.
+6. Check compile/load/attach result stages separately and read automated learning feedback.
+7. Watch events in Events page, return to eBPF page, and detach.
+8. Ensure attached programs list is empty, then revisit Learning Center to confirm progress.
+
+Failed runs are also retained as attempts so you and the teacher can see improvement over time.
+Automated completion validates the runtime portion; explanation questions still require discussion.
 
 ## 5. Lab Discipline
 

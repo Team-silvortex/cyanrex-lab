@@ -107,8 +107,8 @@ input and output; reusable behavior belongs in services.
 |---|---|---|
 | Public | `/health`, `/auth/login`, `/auth/me` | No session required |
 | Public state change | `/auth/logout` | CSRF origin check |
-| Authenticated | `/ebpf/*`, `/events*`, `/scripts*` | Session plus CSRF for state changes |
-| Teacher or admin | module and header catalog reads | Role guard |
+| Authenticated | `/ebpf/*`, `/events*`, `/scripts*`, `/learning/labs` | Session plus CSRF for state changes |
+| Teacher or admin | module/header reads, `/learning/teacher/overview` | Role guard |
 | Admin | module changes, compiler settings, command dispatch | Admin role guard |
 
 When adding an endpoint, place it in exactly one tier. UI visibility is never a substitute for the
@@ -122,6 +122,7 @@ corresponding Engine guard.
 | `EbpfLoader` | clang checks/completion, caches, loading, attachment tracking, Aya sessions |
 | `EventBus` | Per-user event buffers, unread counters, broadcast, retention, async persistence |
 | `ScriptStore` | Per-user script CRUD and database/file fallback |
+| `LearningStore` | Lab attempts, automated acceptance, progress aggregation, database/file fallback |
 | `CHeaderModule` | Trusted header catalog, checksum validation, selection metadata |
 | `EnvironmentChecker` | Runtime/kernel/toolchain readiness report |
 | `ModuleManager` | In-memory teaching module lifecycle state |
@@ -184,12 +185,13 @@ program, the run removes the inactive pin and retries through Aya.
 
 ### Persistence and fallback
 
-PostgreSQL is the preferred durable store for users, sessions, events, event settings, and scripts.
+PostgreSQL is the preferred durable store for users, sessions, events, event settings, scripts, and learning attempts.
 If enabled with `CYANREX_DB_FALLBACK`, individual services can degrade independently:
 
 - authentication falls back to process memory;
 - events fall back to bounded per-user memory;
 - scripts fall back to per-instance JSON files under `CYANREX_DATA_DIR`;
+- learning attempts fall back to per-instance JSON files under `CYANREX_DATA_DIR`;
 - downloaded C headers and their selection metadata remain filesystem-backed.
 
 Fallback keeps a lab usable during a database outage, but memory-backed users, sessions, and events

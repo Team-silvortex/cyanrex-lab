@@ -12,6 +12,7 @@ import {
 const sampleNavItems = [
   { href: "/dashboard", key: "layout.nav.dashboard" },
   { href: "/modules", key: "layout.nav.modules", allowedRoles: ["admin", "teacher"] },
+  { href: "/teaching", key: "layout.nav.teaching", allowedRoles: ["admin", "teacher"] },
   { href: "/settings", key: "layout.nav.settings", allowedRoles: ["admin"] },
 ];
 
@@ -27,6 +28,7 @@ test("getRequiredRolesForRoute returns route-specific role policies", () => {
   assert.deepEqual(getRequiredRolesForRoute("/dashboard"), null);
   assert.deepEqual(getRequiredRolesForRoute("/modules"), ["admin", "teacher"]);
   assert.deepEqual(getRequiredRolesForRoute("/modules/"), ["admin", "teacher"]);
+  assert.deepEqual(getRequiredRolesForRoute("/teaching"), ["admin", "teacher"]);
   assert.deepEqual(getRequiredRolesForRoute("/settings"), ["admin"]);
   assert.deepEqual(getRequiredRolesForRoute("/settings/compiler"), ["admin"]);
 });
@@ -43,13 +45,15 @@ test("isRouteAllowed enforces route policy end-to-end", () => {
   assert.equal(isRouteAllowed("/modules", "admin"), true);
   assert.equal(isRouteAllowed("/modules", "teacher"), true);
   assert.equal(isRouteAllowed("/modules", "student"), false);
+  assert.equal(isRouteAllowed("/teaching", "teacher"), true);
+  assert.equal(isRouteAllowed("/teaching", "student"), false);
   assert.equal(isRouteAllowed("/settings", "admin"), true);
   assert.equal(isRouteAllowed("/settings", "teacher"), false);
 });
 
 test("filterNavItemsByRole only shows modules/settings per role", () => {
-  assert.equal(filterNavItemsByRole(sampleNavItems, "admin").length, 3);
-  assert.equal(filterNavItemsByRole(sampleNavItems, "teacher").length, 2);
+  assert.equal(filterNavItemsByRole(sampleNavItems, "admin").length, 4);
+  assert.equal(filterNavItemsByRole(sampleNavItems, "teacher").length, 3);
   assert.equal(filterNavItemsByRole(sampleNavItems, "student").length, 1);
   assert.equal(filterNavItemsByRole(sampleNavItems, "teacher")[1].href, "/modules");
   assert.equal(filterNavItemsByRole(sampleNavItems, "student")[0].href, "/dashboard");

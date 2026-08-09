@@ -59,6 +59,7 @@ async fn post_auth_student_can_blocked_by_csrf_origin_restriction() {
 
 #[tokio::test]
 async fn post_auth_student_is_blocked_when_csrf_origin_is_missing() {
+    let _env_guard = CSRF_ENV_LOCK.lock().await;
     let state = test_state();
     let app = build_router(state.clone());
 
@@ -87,6 +88,7 @@ async fn post_auth_student_is_blocked_when_csrf_origin_is_missing() {
 
 #[tokio::test]
 async fn post_auth_student_is_allowed_when_csrf_origin_is_missing_with_override() {
+    let _env_guard = CSRF_ENV_LOCK.lock().await;
     let previous = std::env::var("CYANREX_ALLOW_MISSING_ORIGIN").ok();
     std::env::set_var("CYANREX_ALLOW_MISSING_ORIGIN", "true");
 

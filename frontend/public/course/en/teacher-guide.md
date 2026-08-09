@@ -77,6 +77,15 @@ For each lab, use cycle: predict → run → explain → modify. Ask students to
 
 ## 6. Checkpoints
 
+Open **Classroom** as a teacher or administrator to review active students, attempt counts, and the
+five lab states. A student attempt is recorded only when the eBPF editor was opened with a lab
+context and `/ebpf/run` reached the Engine. Completion therefore cannot be set by a browser-only
+checkbox.
+
+Automated checks cover the required template/source patterns, compile/load success, and attachment
+verification where the lab requires it. They do not grade explanations. Treat `completed` as
+"runtime acceptance passed", then review the reasoning questions below.
+
 Do not only grade `success` state. Ask students to explain:
 
 1. Which hook is attached.

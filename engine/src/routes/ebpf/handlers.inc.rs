@@ -15,6 +15,7 @@ pub async fn run_ebpf(
         .filter(|value| !value.is_empty())
         .unwrap_or("custom");
     let template_id = payload.template_id.clone();
+    let lab_id = payload.lab_id.clone();
 
     let sample_per_sec = payload.sampling_per_sec.unwrap_or(20).clamp(1, 200);
     let stream_seconds = payload.stream_seconds.unwrap_or(10).clamp(1, 120);
@@ -59,6 +60,7 @@ pub async fn run_ebpf(
                 "source_bytes": payload.code.len(),
                 "program_name": program_name,
                 "template_id": template_id.clone(),
+                "lab_id": lab_id.clone(),
                 "runtime_backend": runtime_backend,
                 "debug_breakpoints": payload.debug_breakpoints.clone().unwrap_or_default(),
             }),
@@ -311,6 +313,18 @@ pub async fn run_ebpf(
             .await;
     }
 
+    record_learning_run(
+        state.as_ref(),
+        &username,
+        lab_id.as_deref(),
+        template_id.as_deref(),
+        &payload.code,
+        &result,
+        attach_expected,
+        attach_verified,
+    )
+    .await;
+
     state
         .event_bus
         .publish(Event {
@@ -339,6 +353,7 @@ pub async fn run_ebpf(
                 "message": result.message.clone(),
                 "program_name": program_name,
                 "template_id": template_id,
+                "lab_id": lab_id,
                 "runtime_backend": runtime_backend,
                 "debug": result.debug.clone(),
             }),

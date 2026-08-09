@@ -7,7 +7,7 @@ use crate::{
         auth_service::AuthService, c_header_module::CHeaderModule,
         command_dispatcher::CommandDispatcher, ebpf_loader::EbpfLoader,
         environment_checker::EnvironmentChecker, event_bus::EventBus,
-        module_manager::ModuleManager, script_store::ScriptStore,
+        learning_store::LearningStore, module_manager::ModuleManager, script_store::ScriptStore,
     },
 };
 
@@ -19,6 +19,7 @@ pub struct AppState {
     pub command_dispatcher: CommandDispatcher,
     pub ebpf_loader: EbpfLoader,
     pub script_store: ScriptStore,
+    pub learning_store: LearningStore,
     pub environment_checker: EnvironmentChecker,
     pub c_header_module: CHeaderModule,
     performance_metrics: Arc<PerformanceMetrics>,
@@ -34,6 +35,7 @@ pub fn build_state() -> Arc<AppState> {
         event_bus: EventBus::new(1024),
         ebpf_loader: EbpfLoader::default(),
         script_store: ScriptStore::default(),
+        learning_store: LearningStore::default(),
         environment_checker: EnvironmentChecker,
         c_header_module: CHeaderModule::default(),
         performance_metrics: Arc::new(PerformanceMetrics::default()),

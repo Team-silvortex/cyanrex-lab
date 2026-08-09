@@ -10,5 +10,7 @@ mod event_bus_db_config;
 mod event_bus_db_parser;
 mod event_bus_filter;
 mod event_bus_policy;
+pub mod learning_catalog;
+pub mod learning_store;
 pub mod module_manager;
 pub mod script_store;

@@ -12,6 +12,7 @@ pub enum EbpfRuntimeBackend {
 pub struct EbpfRunRequest {
     pub code: String,
     pub template_id: Option<String>,
+    pub lab_id: Option<String>,
     pub program_name: Option<String>,
     pub runtime_backend: Option<EbpfRuntimeBackend>,
     pub sampling_per_sec: Option<u32>,

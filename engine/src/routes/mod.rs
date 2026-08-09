@@ -6,6 +6,7 @@ pub mod events;
 pub mod health;
 pub mod helper;
 pub mod index;
+pub mod learning;
 pub mod modules;
 pub mod scripts;
 pub mod settings;

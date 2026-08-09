@@ -33,6 +33,7 @@ static EBPF_CHECK_SLOTS: OnceLock<Semaphore> = OnceLock::new();
 static EBPF_COMPLETION_SLOTS: OnceLock<Semaphore> = OnceLock::new();
 
 include!("ebpf/handlers.inc.rs");
+include!("ebpf/learning.inc.rs");
 include!("ebpf/check.inc.rs");
 include!("ebpf/completion.inc.rs");
 include!("ebpf/stream.inc.rs");

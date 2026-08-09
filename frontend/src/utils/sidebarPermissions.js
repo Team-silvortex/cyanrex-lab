@@ -43,7 +43,7 @@ export const getRequiredRolesForRoute = (pathname) => {
   if (pathname.startsWith("/settings")) {
     return ["admin"];
   }
-  if (pathname.startsWith("/modules")) {
+  if (pathname.startsWith("/modules") || pathname.startsWith("/teaching")) {
     return ["admin", "teacher"];
   }
   return null;
@@ -68,4 +68,3 @@ export const isRouteAllowed = (pathname, userRole) =>
  */
 export const filterNavItemsByRole = (items, userRole) =>
   items.filter((item) => isRoleAllowed(item.allowedRoles, userRole));
-

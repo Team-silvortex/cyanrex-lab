@@ -404,6 +404,65 @@ input[type="datetime-local"] {
   min-width: 180px;
 }
 
+.learning-context {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1px solid rgba(88, 166, 255, 0.45);
+  border-radius: 10px;
+  background: rgba(30, 79, 135, 0.2);
+}
+
+.learning-status-row {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.learning-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #b7c5df;
+  background: rgba(94, 112, 143, 0.26);
+  border: 1px solid rgba(130, 151, 187, 0.28);
+}
+
+.learning-status.in_progress {
+  color: #ffe8ad;
+  background: rgba(125, 90, 17, 0.3);
+  border-color: rgba(255, 208, 94, 0.42);
+}
+
+.learning-status.completed {
+  color: #c7ffdd;
+  background: rgba(43, 127, 79, 0.32);
+  border-color: rgba(128, 255, 184, 0.38);
+}
+
+.metric-value {
+  display: block;
+  margin-top: 6px;
+  font-size: 32px;
+}
+
+.button-link {
+  display: inline-flex;
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: #fff;
+  background: var(--accent);
+  text-decoration: none;
+}
+
 @media (max-width: 980px) {
   .app-shell {
     grid-template-columns: 1fr;
