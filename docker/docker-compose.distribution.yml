@@ -36,7 +36,7 @@ services:
         hard: -1
     environment:
       ENGINE_HOST: 0.0.0.0
-      ENGINE_PORT: ${CYANREX_ENGINE_PORT:-8080}
+      ENGINE_PORT: 8080
       DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/cyanrex
       RUST_LOG: info
       CYANREX_RUNTIME_MODE: docker
@@ -61,7 +61,7 @@ services:
       - /sys/kernel/debug:/sys/kernel/debug:ro
       - /lib/modules:/lib/modules:ro
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:${CYANREX_ENGINE_PORT:-8080}/health"]
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/health"]
       interval: 5s
       timeout: 5s
       retries: 20

@@ -5,6 +5,7 @@ async fn stream_kernel_trace_events(
     template_id: Option<String>,
     sample_per_sec: u32,
     stream_seconds: u32,
+    debug_session_id: Option<String>,
 ) -> bool {
     let mut child = match Command::new("bpftool")
         .arg("prog")
@@ -50,6 +51,36 @@ async fn stream_kernel_trace_events(
             maybe_line = lines.next_line() => {
                 match maybe_line {
                     Ok(Some(line)) => {
+                        if let Some(session_id) = debug_session_id.as_deref() {
+                            let Some(breakpoint_line) = parse_debug_breakpoint_hit(&line, session_id) else {
+                                continue;
+                            };
+                            if Instant::now() < next_allowed {
+                                continue;
+                            }
+                            next_allowed = Instant::now() + sample_interval;
+                            received_any = true;
+                            event_bus.publish(Event {
+                                username: username.clone(),
+                                timestamp: Utc::now(),
+                                source: "module-ebpf".to_string(),
+                                event_type: "ebpf.debug_breakpoint_hit".to_string(),
+                                category: EventCategory::Kernel,
+                                severity: EventSeverity::Success,
+                                color: EventSeverity::Success.color(),
+                                payload: json!({
+                                    "line": breakpoint_line,
+                                    "debug_session_id": session_id,
+                                    "program_name": program_name,
+                                    "template_id": template_id,
+                                    "sampling_per_sec": sample_per_sec,
+                                }),
+                            }).await;
+                            continue;
+                        }
+                        if line.contains("cyanrex_bp:") {
+                            continue;
+                        }
                         if Instant::now() < next_allowed {
                             continue;
                         }
@@ -80,6 +111,31 @@ async fn stream_kernel_trace_events(
 
     let _ = child.kill().await;
     received_any
+}
+
+fn parse_debug_breakpoint_hit(line: &str, session_id: &str) -> Option<u32> {
+    let marker = format!("cyanrex_bp:{session_id}:");
+    let suffix = line.split_once(&marker)?.1;
+    let digits = suffix
+        .chars()
+        .take_while(|character| character.is_ascii_digit())
+        .collect::<String>();
+    if digits.is_empty() {
+        return None;
+    }
+    digits.parse().ok()
+}
+
+#[cfg(test)]
+mod breakpoint_trace_tests {
+    use super::parse_debug_breakpoint_hit;
+
+    #[test]
+    fn parses_only_the_requested_debug_session() {
+        let line = "worker-12 [001] bpf_trace_printk: cyanrex_bp:abc123:47";
+        assert_eq!(parse_debug_breakpoint_hit(line, "abc123"), Some(47));
+        assert_eq!(parse_debug_breakpoint_hit(line, "other"), None);
+    }
 }
 
 #[allow(clippy::too_many_arguments)]

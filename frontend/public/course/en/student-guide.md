@@ -45,6 +45,22 @@ clang status:
 - `issues`: compile errors found
 - `unavailable`: backend unavailable or account lacks permission
 
+### Source Breakpoints
+
+Click the editor gutter or press `F9` to toggle a breakpoint, then click **Compile and Run**.
+Cyanrex implements eBPF breakpoints as non-blocking `bpf_printk` trace probes because a kernel eBPF
+program cannot be safely paused like a userspace process. A red dot is requested, and a yellow dot
+marks the latest hit received from the event stream.
+
+The result panel lists instrumented lines and rejected positions. Comments, preprocessor directives,
+global declarations, and unsafe multi-line expression positions are rejected. A maximum of 16 probes
+is installed per run. The source must expose `bpf_printk`, normally through
+`#include <bpf/bpf_helpers.h>`. If instrumentation itself fails to compile, Cyanrex retries the
+original source and reports that the breakpoints were not installed.
+
+Breakpoints are sampled trace events, not a correctness guarantee: a very hot line may execute more
+often than the UI reports, and an unattached or untriggered program produces no hit.
+
 ## 4. A Complete Lab Run
 
 1. Open Environment Helper and run check.
@@ -66,4 +82,3 @@ clang status:
 - Always detach at the end of each lab.
 
 The verifier blocks many illegal memory accesses, but it is not permission for running any arbitrary kernel code.
-

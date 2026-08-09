@@ -72,9 +72,36 @@ async fn stream_kernel_events(
     runtime_backend: EbpfRuntimeBackend,
     sample_per_sec: u32,
     stream_seconds: u32,
+    debug_session_id: Option<String>,
 ) {
     if code.contains("tracepoint/sched/sched_switch") {
         spawn_sched_switch_stimulus(stream_seconds);
+    }
+
+    if debug_session_id.is_some() {
+        if !stream_kernel_trace_events(
+            event_bus.clone(),
+            username.clone(),
+            program_name.clone(),
+            template_id.clone(),
+            sample_per_sec,
+            stream_seconds,
+            debug_session_id,
+        )
+        .await
+        {
+            publish_empty_kernel_stream(
+                event_bus,
+                username,
+                program_name,
+                template_id,
+                sample_per_sec,
+                stream_seconds,
+                "No breakpoint was hit in the sampling window.",
+            )
+            .await;
+        }
+        return;
     }
 
     if is_ringbuf_program(&code) {
@@ -121,28 +148,51 @@ async fn stream_kernel_events(
         template_id.clone(),
         sample_per_sec,
         stream_seconds,
+        None,
     )
     .await
     {
-        event_bus
-            .publish(Event {
-                username,
-                timestamp: Utc::now(),
-                source: "module-ebpf".to_string(),
-                event_type: "ebpf.kernel_stream_empty".to_string(),
-                category: EventCategory::Kernel,
-                severity: EventSeverity::Warning,
-                color: EventSeverity::Warning.color(),
-                payload: json!({
-                    "message": "No kernel events captured in sampling window. Program may not be attached or trigger conditions were not met.",
-                    "program_name": program_name,
-                    "template_id": template_id,
-                    "sampling_per_sec": sample_per_sec,
-                    "stream_seconds": stream_seconds,
-                }),
-            })
-            .await;
+        publish_empty_kernel_stream(
+            event_bus,
+            username,
+            program_name,
+            template_id,
+            sample_per_sec,
+            stream_seconds,
+            "No kernel events captured in sampling window. Program may not be attached or trigger conditions were not met.",
+        )
+        .await;
     }
+}
+
+#[allow(clippy::too_many_arguments)]
+async fn publish_empty_kernel_stream(
+    event_bus: crate::services::event_bus::EventBus,
+    username: String,
+    program_name: String,
+    template_id: Option<String>,
+    sample_per_sec: u32,
+    stream_seconds: u32,
+    message: &str,
+) {
+    event_bus
+        .publish(Event {
+            username,
+            timestamp: Utc::now(),
+            source: "module-ebpf".to_string(),
+            event_type: "ebpf.kernel_stream_empty".to_string(),
+            category: EventCategory::Kernel,
+            severity: EventSeverity::Warning,
+            color: EventSeverity::Warning.color(),
+            payload: json!({
+                "message": message,
+                "program_name": program_name,
+                "template_id": template_id,
+                "sampling_per_sec": sample_per_sec,
+                "stream_seconds": stream_seconds,
+            }),
+        })
+        .await;
 }
 
 #[allow(clippy::too_many_arguments)]

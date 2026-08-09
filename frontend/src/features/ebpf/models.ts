@@ -7,6 +7,25 @@ export type EbpfRunResponse = {
   load_stdout: string;
   load_stderr: string;
   pin_path?: string | null;
+  debug?: EbpfDebugInfo | null;
+};
+
+export type EbpfDebugRejectedBreakpoint = {
+  line: number;
+  reason: string;
+};
+
+export type EbpfDebugInfo = {
+  mode: "kernel-trace" | string;
+  session_id?: string | null;
+  requested_lines: number[];
+  instrumented_lines: number[];
+  rejected: EbpfDebugRejectedBreakpoint[];
+};
+
+export type EbpfBreakpointHit = {
+  line: number;
+  timestamp: string;
 };
 
 export type EbpfRuntimeBackend = "bpftool" | "aya";

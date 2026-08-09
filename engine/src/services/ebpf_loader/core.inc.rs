@@ -1,12 +1,11 @@
 impl EbpfLoader {
-    pub async fn run(
+    async fn run_once(
         &self,
         owner_username: &str,
         code: &str,
         program_name: Option<&str>,
         runtime_backend: EbpfRuntimeBackend,
         selected_headers: &[SelectedHeaderMetadata],
-        _debug_breakpoints: Option<&[u32]>,
     ) -> EbpfRunResponse {
         if code.trim().is_empty() {
             return EbpfRunResponse::validation_error("eBPF source code is empty");
@@ -15,7 +14,7 @@ impl EbpfLoader {
         let temp_dir = std::env::temp_dir().join(format!(
             "cyanrex-ebpf-{}-{}",
             std::process::id(),
-            chrono::Utc::now().timestamp_millis()
+            Uuid::new_v4().simple()
         ));
 
         if let Err(err) = fs::create_dir_all(&temp_dir).await {
@@ -28,6 +27,7 @@ impl EbpfLoader {
                 load_stdout: String::new(),
                 load_stderr: String::new(),
                 pin_path: None,
+                debug: None,
             };
         }
 
@@ -44,6 +44,7 @@ impl EbpfLoader {
                 load_stdout: String::new(),
                 load_stderr: String::new(),
                 pin_path: None,
+                debug: None,
             };
         }
 
@@ -58,6 +59,7 @@ impl EbpfLoader {
                     load_stdout: String::new(),
                     load_stderr: String::new(),
                     pin_path: None,
+                    debug: None,
                 };
             }
         }
@@ -72,6 +74,7 @@ impl EbpfLoader {
                 load_stdout: String::new(),
                 load_stderr: String::new(),
                 pin_path: None,
+                debug: None,
             };
         }
 
@@ -111,6 +114,7 @@ impl EbpfLoader {
                     load_stdout: String::new(),
                     load_stderr: String::new(),
                     pin_path: None,
+                    debug: None,
                 }
             }
         };
@@ -128,6 +132,7 @@ impl EbpfLoader {
                 load_stdout: String::new(),
                 load_stderr: String::new(),
                 pin_path: None,
+                debug: None,
             };
         }
 
@@ -143,6 +148,7 @@ impl EbpfLoader {
                     load_stdout: String::new(),
                     load_stderr: String::new(),
                     pin_path: Some(bpffs_pin.display().to_string()),
+                    debug: None,
                 };
             }
         }
@@ -184,6 +190,7 @@ impl EbpfLoader {
                     load_stdout: String::new(),
                     load_stderr: String::new(),
                     pin_path: Some(bpffs_pin.display().to_string()),
+                    debug: None,
                 }
             }
         };
@@ -220,6 +227,7 @@ impl EbpfLoader {
                         load_stdout,
                         load_stderr,
                         pin_path: Some(bpffs_pin.display().to_string()),
+                        debug: None,
                     };
                 }
             };
@@ -244,6 +252,7 @@ impl EbpfLoader {
                     load_stdout,
                     load_stderr,
                     pin_path: Some(bpffs_pin.display().to_string()),
+                    debug: None,
                 };
             }
 
@@ -268,6 +277,7 @@ impl EbpfLoader {
                 load_stdout,
                 load_stderr,
                 pin_path: Some(bpffs_pin.display().to_string()),
+                debug: None,
             };
         }
 
@@ -304,6 +314,7 @@ impl EbpfLoader {
             load_stdout,
             load_stderr,
             pin_path: Some(pin_path),
+            debug: None,
         }
     }
 
@@ -456,7 +467,7 @@ impl EbpfLoader {
 
     fn pin_path() -> PathBuf {
         let namespace = crate::config::runtime_instance_id();
-        let name = format!("{}_{}", std::process::id(), chrono::Utc::now().timestamp_millis());
+        let name = format!("{}_{}", std::process::id(), Uuid::new_v4().simple());
         PathBuf::from("/sys/fs/bpf/cyanrex")
             .join(namespace)
             .join(name)

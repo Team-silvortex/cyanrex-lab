@@ -19,6 +19,7 @@ import type {
   UserScript,
 } from "./models";
 import { applyMarkers, toIncludePath } from "./editorUtils";
+import { useBreakpointHitStream } from "./useBreakpointHitStream";
 import { useCompilerDiagnostics } from "./useCompilerDiagnostics";
 import { useEbpfEditorBreakpoints } from "./useEditorBreakpoints";
 
@@ -105,8 +106,18 @@ export function useEbpfPageController(t: (key: string, vars?: Record<string, str
   const editorRef = useRef<any>(null);
   const intelligenceRef = useRef<{ dispose: () => void } | null>(null);
   const engineUrl = getEngineUrl();
+  const breakpointHits = useBreakpointHitStream(
+    engineUrl,
+    result?.debug?.session_id ?? null,
+  );
+  const lastBreakpointHit = breakpointHits.at(-1) ?? null;
   const { debugBreakpoints, clearDebugBreakpoints, onEditorReadyForDebug } =
-    useEbpfEditorBreakpoints({ code, editorRef, monacoRef });
+    useEbpfEditorBreakpoints({
+      code,
+      editorRef,
+      monacoRef,
+      hitLine: lastBreakpointHit?.line,
+    });
 
   const injectedIncludes = useMemo(
     () => injectedMetadata.map((item) => toIncludePath(item.include_hint)),
@@ -482,6 +493,8 @@ export function useEbpfPageController(t: (key: string, vars?: Record<string, str
     setScriptTitle,
     savedScripts,
     debugBreakpoints,
+    breakpointHits,
+    lastBreakpointHit,
     clearDebugBreakpoints,
     selectedTemplate,
     setSelectedTemplate,

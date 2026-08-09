@@ -160,6 +160,12 @@ flowchart LR
 仅检查请求不会加载程序；运行请求必须通过身份和输入校验后才会编译、加载。`bpftool` 是兼容性
 最广的路径，Aya 当前负责已支持的 tracepoint 路径。
 
+源码断点会在编译前加入不改变行号的 `bpf_printk` 探针。API 返回每次运行独立的调试会话标识，
+以及已插桩和被拒绝的源码行。匹配的 Trace Log 会转换成 `ebpf.debug_breakpoint_hit` 事件，其他
+调试会话的标记会被丢弃。如果插桩后的源码无法编译，加载器会使用未改写源码重试，避免调试功能
+让原本可编译的实验直接失败。这类探针只观察执行，不会暂停内核程序。调试 tracepoint 时，如果
+bpftool 能加载却不能挂载程序，系统会清理未激活的 pin 并通过 Aya 自动重试。
+
 ### 持久化与降级
 
 PostgreSQL 优先保存用户、Session、事件、事件设置和脚本。启用 `CYANREX_DB_FALLBACK` 后，

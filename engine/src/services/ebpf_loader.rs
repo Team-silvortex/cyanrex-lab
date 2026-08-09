@@ -24,7 +24,7 @@ use uuid::Uuid;
 use crate::models::c_headers::SelectedHeaderMetadata;
 use crate::models::ebpf::{
     EbpfCheckResponse, EbpfCompilerDiagnostic, EbpfCompletionItem, EbpfCompletionResponse,
-    EbpfRunResponse, EbpfRuntimeBackend,
+    EbpfDebugInfo, EbpfDebugRejectedBreakpoint, EbpfRunResponse, EbpfRuntimeBackend,
 };
 
 #[derive(Clone, Default)]
@@ -73,6 +73,7 @@ impl EbpfLoader {
 }
 
 include!("ebpf_loader/core.inc.rs");
+include!("ebpf_loader/debug.inc.rs");
 include!("ebpf_loader/check.inc.rs");
 include!("ebpf_loader/completion.inc.rs");
 include!("ebpf_loader/aya.inc.rs");

@@ -173,6 +173,7 @@ impl EbpfLoader {
                 load_stdout: String::new(),
                 load_stderr: "no tracepoint SEC(\"tracepoint/... \") found".to_string(),
                 pin_path: None,
+                debug: None,
             };
         }
 
@@ -193,6 +194,7 @@ impl EbpfLoader {
                     trace_id_path
                 ),
                 pin_path: None,
+                debug: None,
             };
         }
 
@@ -208,6 +210,7 @@ impl EbpfLoader {
                     load_stdout: String::new(),
                     load_stderr: format!("aya load_file error: {err}"),
                     pin_path: None,
+                    debug: None,
                 };
             }
         };
@@ -272,6 +275,7 @@ impl EbpfLoader {
                 load_stdout: String::new(),
                 load_stderr: load_logs.join("\n"),
                 pin_path: None,
+                debug: None,
             };
         }
 
@@ -285,6 +289,7 @@ impl EbpfLoader {
                 load_stdout: String::new(),
                 load_stderr: load_logs.join("\n"),
                 pin_path: None,
+                debug: None,
             };
         }
         let maps_dir = bpffs_pin.join("maps");
@@ -298,6 +303,7 @@ impl EbpfLoader {
                 load_stdout: String::new(),
                 load_stderr: load_logs.join("\n"),
                 pin_path: None,
+                debug: None,
             };
         }
 
@@ -351,6 +357,7 @@ impl EbpfLoader {
                 .collect::<Vec<_>>()
                 .join("\n"),
             pin_path: Some(pin_path),
+            debug: None,
         }
     }
 
@@ -375,6 +382,7 @@ impl EbpfLoader {
             load_stdout: String::new(),
             load_stderr: "aya backend requires Linux kernel and aya crate bindings".to_string(),
             pin_path: None,
+            debug: None,
         }
     }
 

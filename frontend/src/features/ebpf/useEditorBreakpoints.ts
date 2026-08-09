@@ -12,11 +12,17 @@ type UseEbpfEditorBreakpointsArgs = {
   code: string;
   editorRef: DebugEditorRefs["editorRef"];
   monacoRef: DebugEditorRefs["monacoRef"];
+  hitLine?: number | null;
 };
 
 const BREAKPOINT_STORAGE_KEY = "ebpf_debug_breakpoints_v1";
 
-export function useEbpfEditorBreakpoints({ code, editorRef, monacoRef }: UseEbpfEditorBreakpointsArgs) {
+export function useEbpfEditorBreakpoints({
+  code,
+  editorRef,
+  monacoRef,
+  hitLine,
+}: UseEbpfEditorBreakpointsArgs) {
   const [debugBreakpoints, setDebugBreakpoints] = useState<number[]>(() =>
     parseStoredBreakpoints(loadPageState<unknown>(BREAKPOINT_STORAGE_KEY)),
   );
@@ -55,13 +61,19 @@ export function useEbpfEditorBreakpoints({ code, editorRef, monacoRef }: UseEbpf
       return;
     }
 
-    const decorations = debugBreakpoints.map((line) => ({
+    const decorationLines = Array.from(new Set([
+      ...debugBreakpoints,
+      ...(typeof hitLine === "number" ? [hitLine] : []),
+    ]));
+    const decorations = decorationLines.map((line) => ({
       range: new monaco.Range(line, 1, line, 1),
       options: {
         isWholeLine: true,
-        className: "cyanrex-breakpoint-line",
-        glyphMarginClassName: "cyanrex-breakpoint-glyph",
-        glyphMarginHoverMessage: { value: "Breakpoint" },
+        className: line === hitLine ? "cyanrex-breakpoint-hit-line" : "cyanrex-breakpoint-line",
+        glyphMarginClassName: line === hitLine
+          ? "cyanrex-breakpoint-hit-glyph"
+          : "cyanrex-breakpoint-glyph",
+        glyphMarginHoverMessage: { value: line === hitLine ? "Breakpoint hit" : "Breakpoint" },
       },
     }));
 
@@ -69,7 +81,7 @@ export function useEbpfEditorBreakpoints({ code, editorRef, monacoRef }: UseEbpf
       decorationIdsRef.current,
       decorations,
     );
-  }, [debugBreakpoints, editorRef, monacoRef]);
+  }, [debugBreakpoints, editorRef, hitLine, monacoRef]);
 
   useEffect(() => {
     applyBreakpointDecorations();

@@ -29,6 +29,11 @@ coverage/
 scripts/bench-event-bus-compare-*.jsonl
 .run/perf/*.jsonl
 
+# macOS filesystem metadata (invalid as source files on Linux)
+.DS_Store
+._*
+**/._*
+
 # Env files
 .env
 .env.local

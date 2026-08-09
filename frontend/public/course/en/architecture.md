@@ -174,6 +174,14 @@ Compilation-only checks never load code. Run requests compile and load only afte
 and validation. The `bpftool` backend provides the broad compatibility path; Aya currently covers
 the supported tracepoint path.
 
+Source breakpoints add line-preserving `bpf_printk` probes before compilation. The API returns a
+per-run debug session identifier plus instrumented and rejected source lines. Matching trace-log
+records become `ebpf.debug_breakpoint_hit` events; markers from other debug sessions are discarded.
+If the instrumented source fails compilation, the loader retries the untouched source so debugging
+cannot turn an otherwise compilable lab into a hard failure. These probes observe execution but do
+not pause the kernel program. For tracepoint debugging, if bpftool can load but cannot attach the
+program, the run removes the inactive pin and retries through Aya.
+
 ### Persistence and fallback
 
 PostgreSQL is the preferred durable store for users, sessions, events, event settings, and scripts.

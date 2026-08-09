@@ -36,6 +36,8 @@ export default function EbpfPage() {
     runtimeBackend,
     saveCurrentScript,
     debugBreakpoints,
+    breakpointHits,
+    lastBreakpointHit,
     clearDebugBreakpoints,
     samplingPerSec,
     scriptTitle,
@@ -250,6 +252,11 @@ export default function EbpfPage() {
           <p className="meta" style={{ margin: 0 }}>
             {t("ebpf.debugBreakpointHint")}
           </p>
+          {lastBreakpointHit && (
+            <p className="meta" style={{ margin: 0, color: "#ffd166" }}>
+              {t("ebpf.debugLastHit")}: L{lastBreakpointHit.line} · {t("ebpf.debugHitCount")}: {breakpointHits.length}
+            </p>
+          )}
         </div>
 
         <div className="grid cols-2" style={{ marginTop: 12 }}>

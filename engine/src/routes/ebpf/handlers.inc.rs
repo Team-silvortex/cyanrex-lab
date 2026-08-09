@@ -19,7 +19,7 @@ pub async fn run_ebpf(
     let sample_per_sec = payload.sampling_per_sec.unwrap_or(20).clamp(1, 200);
     let stream_seconds = payload.stream_seconds.unwrap_or(10).clamp(1, 120);
     let enable_kernel_stream = payload.enable_kernel_stream.unwrap_or(true);
-    let runtime_backend = payload.runtime_backend.unwrap_or(EbpfRuntimeBackend::Bpftool);
+    let mut runtime_backend = payload.runtime_backend.unwrap_or(EbpfRuntimeBackend::Bpftool);
     let selected_headers = state
         .c_header_module
         .selected_metadata()
@@ -60,6 +60,7 @@ pub async fn run_ebpf(
                 "program_name": program_name,
                 "template_id": template_id.clone(),
                 "runtime_backend": runtime_backend,
+                "debug_breakpoints": payload.debug_breakpoints.clone().unwrap_or_default(),
             }),
         })
         .await;
@@ -73,7 +74,7 @@ pub async fn run_ebpf(
             )),
         );
     };
-    let result = match tokio::time::timeout(
+    let mut result = match tokio::time::timeout(
         EBPF_EXECUTION_TIMEOUT,
         state
             .ebpf_loader
@@ -99,8 +100,96 @@ pub async fn run_ebpf(
         }
     };
 
+    if should_attempt_aya_debug_fallback(&payload.code, runtime_backend, &result) {
+        let bpftool_attach = verify_attach_state(
+            result.pin_path.as_deref(),
+            &payload.code,
+            &format!("{}\n{}", result.load_stdout, result.load_stderr),
+            &result.message,
+            runtime_backend,
+        )
+        .await;
+        let tooling_unavailable = bpftool_attach
+            .reason
+            .contains("both autoattach and manual tracepoint attach are unsupported");
+
+        if !bpftool_attach.attached && tooling_unavailable {
+            let previous_pin = result.pin_path.clone();
+            let detached = state
+                .ebpf_loader
+                .detach_for_user(&username, previous_pin.as_deref())
+                .await;
+
+            if detached.is_ok() {
+                runtime_backend = EbpfRuntimeBackend::Aya;
+                result = match tokio::time::timeout(
+                    EBPF_EXECUTION_TIMEOUT,
+                    state.ebpf_loader.run(
+                        &username,
+                        &payload.code,
+                        Some(program_name),
+                        runtime_backend,
+                        &selected_headers,
+                        payload.debug_breakpoints.as_deref(),
+                    ),
+                )
+                .await
+                {
+                    Ok(aya_result) => aya_result,
+                    Err(_) => EbpfRunResponse {
+                        success: false,
+                        stage: "load".to_string(),
+                        message: "Aya debug fallback exceeded the execution limit".to_string(),
+                        compile_stdout: result.compile_stdout.clone(),
+                        compile_stderr: result.compile_stderr.clone(),
+                        load_stdout: String::new(),
+                        load_stderr: String::new(),
+                        pin_path: None,
+                        debug: result.debug.clone(),
+                    },
+                };
+
+                state
+                    .event_bus
+                    .publish(Event {
+                        username: username.clone(),
+                        timestamp: Utc::now(),
+                        source: "module-ebpf".to_string(),
+                        event_type: "ebpf.debug_backend_fallback".to_string(),
+                        category: EventCategory::Platform,
+                        severity: if result.success {
+                            EventSeverity::Success
+                        } else {
+                            EventSeverity::Warning
+                        },
+                        color: if result.success {
+                            EventSeverity::Success.color()
+                        } else {
+                            EventSeverity::Warning.color()
+                        },
+                        payload: json!({
+                            "message": "bpftool tracepoint attach is unavailable; retried debug run with Aya",
+                            "success": result.success,
+                            "previous_pin_path": previous_pin,
+                            "program_name": program_name,
+                            "template_id": template_id.clone(),
+                        }),
+                    })
+                    .await;
+            }
+        }
+    }
+
     let mut attach_verified = false;
     let mut attach_expected = false;
+    let debug_session_id = result
+        .debug
+        .as_ref()
+        .and_then(|debug| debug.session_id.clone());
+    let debug_trace_enabled = result
+        .debug
+        .as_ref()
+        .is_some_and(|debug| !debug.instrumented_lines.is_empty());
 
     if result.success {
         let attach_check = verify_attach_state(
@@ -170,7 +259,7 @@ pub async fn run_ebpf(
             .await;
     }
 
-    if result.success && enable_kernel_stream && attach_verified {
+    if result.success && (enable_kernel_stream || debug_trace_enabled) && attach_verified {
         let event_bus = state.event_bus.clone();
         let ebpf_loader = state.ebpf_loader.clone();
         let username_for_stream = username.clone();
@@ -179,6 +268,7 @@ pub async fn run_ebpf(
         let pin_path = result.pin_path.clone();
         let code = payload.code.clone();
         let runtime_backend_for_stream = runtime_backend;
+        let debug_session_id_for_stream = debug_session_id.clone();
         tokio::spawn(async move {
             stream_kernel_events(
                 ebpf_loader,
@@ -191,10 +281,15 @@ pub async fn run_ebpf(
                 runtime_backend_for_stream,
                 sample_per_sec,
                 stream_seconds,
+                debug_session_id_for_stream,
             )
             .await;
         });
-    } else if result.success && enable_kernel_stream && attach_expected && !attach_verified {
+    } else if result.success
+        && (enable_kernel_stream || debug_trace_enabled)
+        && attach_expected
+        && !attach_verified
+    {
         state
             .event_bus
             .publish(Event {
@@ -210,6 +305,7 @@ pub async fn run_ebpf(
                     "program_name": program_name,
                     "template_id": template_id.clone(),
                     "runtime_backend": runtime_backend,
+                    "debug_session_id": debug_session_id,
                 }),
             })
             .await;
@@ -244,6 +340,7 @@ pub async fn run_ebpf(
                 "program_name": program_name,
                 "template_id": template_id,
                 "runtime_backend": runtime_backend,
+                "debug": result.debug.clone(),
             }),
         })
         .await;
@@ -255,6 +352,79 @@ pub async fn run_ebpf(
     };
 
     (status, Json(result))
+}
+
+fn should_attempt_aya_debug_fallback(
+    code: &str,
+    runtime_backend: EbpfRuntimeBackend,
+    result: &EbpfRunResponse,
+) -> bool {
+    runtime_backend == EbpfRuntimeBackend::Bpftool
+        && result.success
+        && result.pin_path.is_some()
+        && code.contains("SEC(\"tracepoint/")
+        && result
+            .debug
+            .as_ref()
+            .is_some_and(|debug| !debug.instrumented_lines.is_empty())
+}
+
+#[cfg(test)]
+mod debug_backend_fallback_tests {
+    use super::should_attempt_aya_debug_fallback;
+    use crate::models::ebpf::{EbpfDebugInfo, EbpfRunResponse, EbpfRuntimeBackend};
+
+    fn successful_result(lines: Vec<u32>) -> EbpfRunResponse {
+        EbpfRunResponse {
+            success: true,
+            stage: "run".to_string(),
+            message: String::new(),
+            compile_stdout: String::new(),
+            compile_stderr: String::new(),
+            load_stdout: String::new(),
+            load_stderr: String::new(),
+            pin_path: Some("/sys/fs/bpf/cyanrex/test".to_string()),
+            debug: Some(EbpfDebugInfo {
+                mode: "kernel-trace".to_string(),
+                session_id: Some("session".to_string()),
+                requested_lines: lines.clone(),
+                instrumented_lines: lines,
+                rejected: Vec::new(),
+            }),
+        }
+    }
+
+    #[test]
+    fn fallback_requires_bpftool_tracepoint_and_active_debug_probe() {
+        let tracepoint = "SEC(\"tracepoint/syscalls/sys_enter_execve\")";
+        assert!(should_attempt_aya_debug_fallback(
+            tracepoint,
+            EbpfRuntimeBackend::Bpftool,
+            &successful_result(vec![3]),
+        ));
+        assert!(!should_attempt_aya_debug_fallback(
+            tracepoint,
+            EbpfRuntimeBackend::Aya,
+            &successful_result(vec![3]),
+        ));
+        assert!(!should_attempt_aya_debug_fallback(
+            "SEC(\"xdp\")",
+            EbpfRuntimeBackend::Bpftool,
+            &successful_result(vec![3]),
+        ));
+        assert!(!should_attempt_aya_debug_fallback(
+            tracepoint,
+            EbpfRuntimeBackend::Bpftool,
+            &successful_result(Vec::new()),
+        ));
+        let mut missing_pin = successful_result(vec![3]);
+        missing_pin.pin_path = None;
+        assert!(!should_attempt_aya_debug_fallback(
+            tracepoint,
+            EbpfRuntimeBackend::Bpftool,
+            &missing_pin,
+        ));
+    }
 }
 
 pub async fn list_templates() -> Json<Vec<EbpfTemplate>> {

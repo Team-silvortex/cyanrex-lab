@@ -257,6 +257,25 @@ pre {
   background: rgba(239, 68, 68, 0.16);
 }
 
+.editor-shell .cyanrex-breakpoint-hit-glyph::before {
+  content: "";
+  position: relative;
+  top: 0.15rem;
+  left: 0;
+  display: block;
+  width: 10px;
+  height: 10px;
+  margin-left: 5px;
+  border: 2px solid #fff4c2;
+  border-radius: 50%;
+  background: #ffd166;
+  box-shadow: 0 0 0 2px rgba(255, 209, 102, 0.3);
+}
+
+.editor-shell .cyanrex-breakpoint-hit-line {
+  background: rgba(255, 209, 102, 0.2);
+}
+
 .auth-shell {
   min-height: 100vh;
   display: grid;

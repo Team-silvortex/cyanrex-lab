@@ -70,6 +70,23 @@ pub struct EbpfRunResponse {
     pub load_stdout: String,
     pub load_stderr: String,
     pub pin_path: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub debug: Option<EbpfDebugInfo>,
+}
+
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+pub struct EbpfDebugRejectedBreakpoint {
+    pub line: u32,
+    pub reason: String,
+}
+
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+pub struct EbpfDebugInfo {
+    pub mode: String,
+    pub session_id: Option<String>,
+    pub requested_lines: Vec<u32>,
+    pub instrumented_lines: Vec<u32>,
+    pub rejected: Vec<EbpfDebugRejectedBreakpoint>,
 }
 
 impl EbpfRunResponse {
@@ -83,6 +100,7 @@ impl EbpfRunResponse {
             load_stdout: String::new(),
             load_stderr: String::new(),
             pin_path: None,
+            debug: None,
         }
     }
 }
