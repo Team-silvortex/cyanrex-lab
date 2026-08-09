@@ -14,6 +14,10 @@ fn test_state() -> std::sync::Arc<cyanrex_engine::AppState> {
     std::env::set_var("CYANREX_ALLOW_REGISTRATION", "true");
     std::env::set_var("CYANREX_ALLOW_TOTP_BOOTSTRAP", "true");
     std::env::set_var("CYANREX_TEACHER_USERNAMES", "teacher");
+    std::env::set_var(
+        "CYANREX_RUNNER_AGENT_TOKEN",
+        "test-runner-agent-token-32-bytes-minimum",
+    );
     build_state()
 }
 
@@ -23,3 +27,4 @@ include!("routes_tdd/auth.inc.rs");
 include!("routes_tdd/auth_csrf.inc.rs");
 include!("routes_tdd/learning.inc.rs");
 include!("routes_tdd/runner.inc.rs");
+include!("routes_tdd/runner_agent.inc.rs");

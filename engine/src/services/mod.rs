@@ -14,6 +14,7 @@ pub mod learning_catalog;
 pub(crate) mod learning_source;
 pub mod learning_store;
 pub mod module_manager;
+pub mod runner_agent_registry;
 pub mod runner_driver;
 pub mod runner_manager;
 pub mod script_store;

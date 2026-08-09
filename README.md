@@ -237,9 +237,13 @@ administrator-only.
 
 - `GET /runner/status` — authenticated capacity and explicit isolation level
 - `GET /runner/overview` — administrator-only active lease owners and deadlines
+- `POST /runner/agent/register` — optional token-authenticated remote node registration
+- `POST /runner/agent/heartbeat` — health and capacity heartbeat for a registered node
+- `GET /runner/agents` — administrator-only remote node inventory
 - `/ebpf/run` executes through the replaceable `RunnerDriver` boundary
 - Local Runner defaults to two global jobs, one job per user, and a 45-second execution timeout
 - `shared_kernel` is reported explicitly; quotas do not replace per-student VM isolation
+- Agent control-plane v1 is discovery-only: remote job dispatch is not enabled yet
 
 ## Scripts APIs (Implemented)
 

@@ -22,6 +22,18 @@ they can perform privileged kernel observation and loading. Do not expose Engine
 
 These measures reduce accidental exposure, but they do not make the privileged Engine a shared safe runtime.
 
+### Runner Agent credential boundary
+
+Remote Agent registration is disabled by default. Enabling it requires a secret
+`CYANREX_RUNNER_AGENT_TOKEN` of at least 32 characters. Keep the endpoints on a private management
+network or behind TLS and source restrictions; never place the token in frontend code, logs, or a
+repository. Rotate it when a node is lost or compromised.
+
+Control-plane v1 uses one pre-shared Bearer token. A holder can register or impersonate any Agent ID,
+and Bearer requests do not provide replay protection. It is suitable only for trusted lab nodes and
+does not authorize remote eBPF job execution. Per-node credentials, signed requests with freshness,
+job-scoped authorization, cancellation, and verified results are required before dispatch is enabled.
+
 ## Recommended Isolation
 
 ### Personal Computer

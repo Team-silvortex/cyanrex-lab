@@ -278,7 +278,6 @@ check_registry_mirrors() {
       unavailable=$((unavailable + 1))
     fi
   done <<< "$mirrors"
-
   if [ "$unavailable" -gt 0 ]; then
     echo "  Hint: remove or replace unresolved mirrors in /etc/docker/daemon.json."
   fi
@@ -395,6 +394,9 @@ start_local_stack() {
     CYANREX_ADMIN_TOTP_SECRET="$CYANREX_ADMIN_TOTP_SECRET" \
     CYANREX_ALLOW_REGISTRATION="${CYANREX_ALLOW_REGISTRATION:-false}" \
     CYANREX_ALLOW_TOTP_BOOTSTRAP="${CYANREX_ALLOW_TOTP_BOOTSTRAP:-false}" \
+    CYANREX_RUNNER_AGENT_TOKEN="${CYANREX_RUNNER_AGENT_TOKEN:-}" \
+    CYANREX_RUNNER_AGENT_TTL_SECS="${CYANREX_RUNNER_AGENT_TTL_SECS:-30}" \
+    CYANREX_RUNNER_AGENT_RETENTION_SECS="${CYANREX_RUNNER_AGENT_RETENTION_SECS:-300}" \
     CYANREX_RUNTIME_MODE="$runtime_mode" \
     "$ROOT_DIR/engine/target/debug/cyanrex-engine"
   ) &

@@ -7,5 +7,6 @@ pub mod event;
 pub mod learning;
 pub mod module;
 pub mod runner;
+pub mod runner_agent;
 pub mod script;
 pub mod settings;

@@ -9,5 +9,6 @@ pub mod index;
 pub mod learning;
 pub mod modules;
 pub mod runner;
+pub mod runner_agent;
 pub mod scripts;
 pub mod settings;

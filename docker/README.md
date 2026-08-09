@@ -27,10 +27,17 @@ Local Runner capacity is configurable in the same file:
 - `CYANREX_RUNNER_MAX_CONCURRENT` (default: `2`, range: `1`–`32`)
 - `CYANREX_RUNNER_MAX_PER_USER` (default: `1`, never above the global limit)
 - `CYANREX_RUNNER_TIMEOUT_SECS` (default: `45`, range: `5`–`300`)
+- `CYANREX_RUNNER_AGENT_TOKEN` (optional, empty/absent disables Agent registration; minimum 32 characters)
+- `CYANREX_RUNNER_AGENT_TTL_SECS` (default: `30`; node becomes offline after this interval)
+- `CYANREX_RUNNER_AGENT_RETENTION_SECS` (default: `300`; stale in-memory record retention)
 
 These are fairness and resource limits. The Docker Engine still reports `shared_kernel` and is not
 a multi-tenant isolation boundary. An unsupported mode fails Engine startup instead of silently
 falling back to local execution.
+
+The Agent endpoints currently provide registration, heartbeat, and administrator inventory only.
+They do not dispatch `/ebpf/run` jobs. Treat the shared Agent token as a secret, use TLS or a private
+management network, and rotate it if any node is lost or compromised.
 
 ## eBPF Notes
 

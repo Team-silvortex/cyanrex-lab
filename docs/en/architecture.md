@@ -194,6 +194,61 @@ Runner mode is configured with `CYANREX_RUNNER_MODE` (currently `local_process`)
 `CYANREX_RUNNER_MAX_PER_USER` (default `1`), and `CYANREX_RUNNER_TIMEOUT_SECS` (default `45`, allowed
 range `5`–`300`). Changing the mode label alone must never imply stronger isolation.
 
+### Runner Agent control plane v1
+
+An optional in-memory Agent registry prepares remote VM or container nodes without changing the
+execution path. `POST /runner/agent/register` records protocol version, truthful isolation type,
+capacity, capabilities, and labels. `POST /runner/agent/heartbeat` updates health and free capacity;
+after the configured TTL a node is reported as `offline`, then removed after the retention window.
+`GET /runner/agents` exposes the inventory to administrators only. Registry state is intentionally
+ephemeral and is rebuilt after an Engine restart. Registration bodies are capped at 64 KiB and the
+registry holds at most 256 nodes.
+
+The endpoints are disabled unless `CYANREX_RUNNER_AGENT_TOKEN` contains at least 32 characters.
+Agents send it as a Bearer token. TTL defaults to 30 seconds and retention to 300 seconds through
+`CYANREX_RUNNER_AGENT_TTL_SECS` and `CYANREX_RUNNER_AGENT_RETENTION_SECS`. Protocol v1 does not
+dispatch, cancel, or return jobs, so `/ebpf/run` continues to use the configured local driver. A
+later execution protocol must add scoped job identity, cancellation, result validation, and replay
+protection before remote privileged execution can be enabled.
+
+Registration example:
+
+```bash
+curl -sS -X POST http://127.0.0.1:8080/runner/agent/register \
+  -H "Authorization: Bearer $CYANREX_RUNNER_AGENT_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "agent_id":"lab-vm-01",
+    "protocol_version":1,
+    "agent_version":"0.2.0",
+    "isolation":"virtual_machine",
+    "max_concurrent":2,
+    "capabilities":["bpftool","btf","ringbuf"],
+    "labels":{"room":"a","arch":"x86_64"}
+  }'
+```
+
+Heartbeat example:
+
+```bash
+curl -sS -X POST http://127.0.0.1:8080/runner/agent/heartbeat \
+  -H "Authorization: Bearer $CYANREX_RUNNER_AGENT_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "agent_id":"lab-vm-01",
+    "state":"healthy",
+    "active_jobs":0,
+    "available_slots":2,
+    "kernel_release":"6.8.0-lab",
+    "message":null
+  }'
+```
+
+An Agent must register again after Engine restart or after its record is removed. Registration with
+the same ID replaces the old record. The endpoints return `401` for bad credentials, `503` when the
+control plane is disabled, `400` for invalid metadata/capacity, `404` for an unknown heartbeat, and
+`413` for an oversized body.
+
 Source breakpoints add line-preserving `bpf_printk` probes before compilation. The API returns a
 per-run debug session identifier plus instrumented and rejected source lines. Matching trace-log
 records become `ebpf.debug_breakpoint_hit` events; markers from other debug sessions are discarded.

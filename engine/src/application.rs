@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use axum::{
+    extract::DefaultBodyLimit,
     http::{header, HeaderValue, Method},
     middleware,
     routing::{get, post},
@@ -51,12 +52,26 @@ pub fn build_allowed_origins() -> Vec<String> {
 pub fn build_router(state: Arc<AppState>) -> Router {
     Router::new()
         .merge(public_routes())
+        .merge(runner_agent_routes())
         .merge(csrf_protected_public_routes(state.clone()))
         .merge(authenticated_routes(state.clone()))
         .merge(staff_routes(state.clone()))
         .merge(admin_routes(state.clone()))
         .layer(cors_layer())
         .with_state(state)
+}
+
+fn runner_agent_routes() -> Router<Arc<AppState>> {
+    Router::new()
+        .route(
+            "/runner/agent/register",
+            post(routes::runner_agent::register),
+        )
+        .route(
+            "/runner/agent/heartbeat",
+            post(routes::runner_agent::heartbeat),
+        )
+        .layer(DefaultBodyLimit::max(64 * 1024))
 }
 
 fn public_routes() -> Router<Arc<AppState>> {
@@ -154,6 +169,7 @@ fn admin_routes(state: Arc<AppState>) -> Router<Arc<AppState>> {
         .route("/modules/stop", post(routes::modules::stop_module))
         .route("/command", post(routes::command::dispatch_command))
         .route("/runner/overview", get(routes::runner::overview))
+        .route("/runner/agents", get(routes::runner_agent::inventory))
         .route(
             "/modules/c-headers/download",
             post(routes::c_headers::download_header),

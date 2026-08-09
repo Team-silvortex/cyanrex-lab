@@ -178,6 +178,57 @@ Runner 模式由 `CYANREX_RUNNER_MODE` 配置（当前为 `local_process`）；�
 `CYANREX_RUNNER_MAX_PER_USER`（默认 `1`）和 `CYANREX_RUNNER_TIMEOUT_SECS`（默认 `45`，范围
 `5`～`300`）配置。不能只修改模式名称来暗示更强的隔离能力。
 
+### Runner Agent 控制面 v1
+
+可选的内存 Agent 注册表用于为远程 VM 或容器节点铺设控制面，但不会改变当前执行路径。
+`POST /runner/agent/register` 登记协议版本、真实隔离类型、容量、能力和标签；
+`POST /runner/agent/heartbeat` 更新健康状态与空闲容量。节点超过 TTL 后显示为 `offline`，超过保留期
+后自动删除。`GET /runner/agents` 仅允许管理员读取节点清单。注册表不会持久化，Engine 重启后需要
+Agent 重新注册。注册请求体上限为 64 KiB，注册表最多保存 256 个节点。
+
+只有配置至少 32 个字符的 `CYANREX_RUNNER_AGENT_TOKEN` 后才会启用 Agent 接口，Agent 通过 Bearer
+Token 发送凭据。`CYANREX_RUNNER_AGENT_TTL_SECS` 默认 30 秒，
+`CYANREX_RUNNER_AGENT_RETENTION_SECS` 默认 300 秒。v1 尚不分发、取消或返回作业，因此
+`/ebpf/run` 仍使用已配置的本地驱动。后续远程执行协议必须先补齐作业身份、取消语义、结果校验和
+重放防护，才能开放特权远程执行。
+
+注册示例：
+
+```bash
+curl -sS -X POST http://127.0.0.1:8080/runner/agent/register \
+  -H "Authorization: Bearer $CYANREX_RUNNER_AGENT_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "agent_id":"lab-vm-01",
+    "protocol_version":1,
+    "agent_version":"0.2.0",
+    "isolation":"virtual_machine",
+    "max_concurrent":2,
+    "capabilities":["bpftool","btf","ringbuf"],
+    "labels":{"room":"a","arch":"x86_64"}
+  }'
+```
+
+心跳示例：
+
+```bash
+curl -sS -X POST http://127.0.0.1:8080/runner/agent/heartbeat \
+  -H "Authorization: Bearer $CYANREX_RUNNER_AGENT_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "agent_id":"lab-vm-01",
+    "state":"healthy",
+    "active_jobs":0,
+    "available_slots":2,
+    "kernel_release":"6.8.0-lab",
+    "message":null
+  }'
+```
+
+Engine 重启或记录被回收后，Agent 必须重新注册；使用相同 ID 注册会替换旧记录。凭据错误返回
+`401`，控制面未启用返回 `503`，元数据或容量无效返回 `400`，未注册节点的心跳返回 `404`，请求体
+过大返回 `413`。
+
 源码断点会在编译前加入不改变行号的 `bpf_printk` 探针。API 返回每次运行独立的调试会话标识，
 以及已插桩和被拒绝的源码行。匹配的 Trace Log 会转换成 `ebpf.debug_breakpoint_hit` 事件，其他
 调试会话的标记会被丢弃。如果插桩后的源码无法编译，加载器会使用未改写源码重试，避免调试功能
