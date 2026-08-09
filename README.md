@@ -240,15 +240,15 @@ administrator-only.
 - `POST /runner/agent/register` — optional token-authenticated remote node registration
 - `POST /runner/agent/heartbeat` — health and capacity heartbeat for a registered node
 - `GET /runner/agents` — administrator-only remote node inventory
-- `POST /runner/jobs/probe`, `/runner/jobs/cancel` — administrator-only control-probe lifecycle
+- `POST /runner/jobs/probe`, `/runner/jobs/compile-check`, `/runner/jobs/cancel` — administrator-only remote job lifecycle
 - `POST /runner/agent/jobs/claim`, `/sync`, `/result` — signed Agent job protocol
 - `GET /runner/jobs` — administrator-only job inventory
 - `/ebpf/run` executes through the replaceable `RunnerDriver` boundary
 - Local Runner defaults to two global jobs, one job per user, and a 45-second execution timeout
 - `shared_kernel` is reported explicitly; quotas do not replace per-student VM isolation
-- Agent control probes use per-node HMAC credentials, replay protection, leases, cancellation, and bounded results
-- `/ebpf/run` remote dispatch remains disabled; probe jobs never contain or execute eBPF source
-- `cyanrex-runner-agent` connects trusted Linux, WSL2, and unprivileged container nodes to this probe protocol
+- Agent jobs use per-node HMAC credentials, replay protection, leases, capability matching, cancellation, and bounded results
+- Optional compile jobs use restricted Clang and never load or return eBPF objects; `/ebpf/run` remote dispatch remains disabled
+- `cyanrex-runner-agent` connects trusted Linux, WSL2, and unprivileged container nodes to this protocol
 
 ## Scripts APIs (Implemented)
 

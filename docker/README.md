@@ -37,10 +37,10 @@ a multi-tenant isolation boundary. An unsupported mode fails Engine startup inst
 falling back to local execution.
 
 The Agent protocol issues a distinct credential at registration, then requires HMAC-SHA256 request
-signatures with timestamp and one-use nonce. Its job queue currently carries only non-privileged
-control probes; it does not dispatch `/ebpf/run` or eBPF source. Treat the registration token and
-issued credentials as secrets, use TLS or a private management network, and rotate by re-registering
-a node if it is lost or compromised.
+signatures with timestamp and one-use nonce. Its queue carries built-in probes and explicitly
+submitted compile-only checks; it does not dispatch `/ebpf/run`, load eBPF, or return object files.
+Treat registration and issued credentials as secrets, use TLS or a private management network, and
+rotate by re-registering a node if it is lost or compromised.
 
 ### Standalone Runner Agent
 
@@ -52,15 +52,18 @@ cp docker/runner-agent.env.example runner-agent.env
 chmod 600 runner-agent.env agent-token
 docker run --rm --name cyanrex-runner-agent \
   --user "$(id -u):$(id -g)" \
+  --read-only --security-opt no-new-privileges \
+  --pids-limit 64 --memory 1536m --cpus 1 \
+  --tmpfs /tmp:rw,noexec,nosuid,nodev,size=128m \
   --entrypoint cyanrex-runner-agent \
   --env-file runner-agent.env \
   --mount type=bind,src="$PWD/agent-token",dst=/run/secrets/cyanrex-agent-bootstrap-token,ro \
   cyanrex/cyanrex-engine:0.2.0
 ```
 
-The current Agent executes only built-in control probes and must run without `--privileged`, host
-PID mode, kernel mounts, or extra capabilities. See the Runner Agent guide in the frontend learning
-center for Linux and WSL2 instructions.
+Compile checking is disabled by default and forbidden with `shared_kernel`. Even when enabled, the
+Agent must run without `--privileged`, host PID mode, kernel mounts, or extra capabilities. See the
+Runner Agent guide in the frontend learning center for Linux and WSL2 instructions.
 
 ## eBPF Notes
 

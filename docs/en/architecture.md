@@ -253,18 +253,19 @@ The same signature format protects `POST /runner/agent/heartbeat`,
 `POST /runner/agent/jobs/result`. The body bytes used for hashing must exactly match the transmitted
 body. A signature outside the freshness window, a changed body, or a reused nonce returns `401`.
 
-Administrators can submit a bounded non-privileged probe with `POST /runner/jobs/probe`, request
-cancellation with `POST /runner/jobs/cancel`, and inspect `GET /runner/jobs`. A healthy Agent claims
-one according to its advertised free capacity, receives a 256-bit job lease and deadline, polls
-`/sync` for cancellation, then posts a size-limited result. The in-memory queue holds at most 512
-jobs and retains terminal records for 15 minutes. These jobs are always `control_probe`: they never
-contain source code or execute eBPF. `/ebpf/run` continues to use the configured local driver.
+Administrators can submit a bounded probe with `POST /runner/jobs/probe`, an explicit compile-only
+job with `POST /runner/jobs/compile-check`, request cancellation, and inspect `GET /runner/jobs`.
+A healthy Agent claims work according to capacity and capability, receives a 256-bit lease and
+deadline, checks cancellation, then posts a bounded result. The in-memory queue holds at most 512
+jobs and retains terminal records for 15 minutes. Compile source is delivered only in the signed
+claim response and is represented only by byte count in inventory. `/ebpf/run` stays local.
 
 The standalone `cyanrex-runner-agent` binary implements this protocol for Linux, WSL2, and
 unprivileged containers. It uses a Rustls HTTPS client, disables redirects and environment proxies,
-keeps the issued credential in memory, and automatically re-registers after Engine state loss. Its
-only probe reads `/proc/sys/kernel/osrelease` and returns bounded JSON; it never invokes a shell or
-external command. See the [Runner Agent Guide](runner-agent.md) for deployment details.
+keeps the issued credential in memory, and automatically re-registers after Engine state loss. The
+probe reads `/proc/sys/kernel/osrelease`. Optional compile mode invokes only Clang with fixed
+arguments and resource limits; it never uses a shell, loads eBPF, or returns an object. Both client
+and server reject compile capability on `shared_kernel`. See the [Runner Agent Guide](runner-agent.md).
 
 An Agent must register again after Engine restart or after its record is removed. Registration with
 the same ID replaces the old record. The endpoints return `401` for bad credentials, `503` when the

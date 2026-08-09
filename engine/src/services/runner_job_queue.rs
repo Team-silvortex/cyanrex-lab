@@ -11,8 +11,11 @@ use crate::models::runner_job::{
     RunnerJobClaim, RunnerJobInventory, RunnerJobLeaseReference, RunnerJobResultRequest,
     RunnerJobResultState, RunnerJobState, RunnerJobSyncResponse, RunnerJobView,
 };
+use crate::services::runner_agent_executor::validate_compile_source;
 
-const JOB_KIND: &str = "control_probe";
+const PROBE_JOB_KIND: &str = "control_probe";
+const COMPILE_JOB_KIND: &str = "ebpf_compile_check";
+const COMPILE_CAPABILITY: &str = "clang_check";
 const MAX_JOBS: usize = 512;
 const TERMINAL_RETENTION: Duration = Duration::from_secs(15 * 60);
 
@@ -23,10 +26,14 @@ pub struct RunnerJobQueue {
 
 struct JobRecord {
     job_id: String,
+    kind: &'static str,
     state: RunnerJobState,
     target_agent_id: Option<String>,
     assigned_agent_id: Option<String>,
     message: String,
+    source: Option<String>,
+    source_bytes: Option<usize>,
+    program_name: Option<String>,
     timeout_seconds: u64,
     lease_token: Option<String>,
     result_message: Option<String>,
@@ -72,10 +79,71 @@ impl RunnerJobQueue {
         let job_id = format!("job-{}", Uuid::new_v4().simple());
         let record = JobRecord {
             job_id: job_id.clone(),
+            kind: PROBE_JOB_KIND,
             state: RunnerJobState::Queued,
             target_agent_id,
             assigned_agent_id: None,
             message,
+            source: None,
+            source_bytes: None,
+            program_name: None,
+            timeout_seconds,
+            lease_token: None,
+            result_message: None,
+            output: None,
+            created_at: now,
+            claimed_at: None,
+            deadline: None,
+            completed_at: None,
+        };
+        let view = view(&record);
+        jobs.insert(job_id, record);
+        Ok(view)
+    }
+
+    pub fn submit_compile_check(
+        &self,
+        target_agent_id: Option<String>,
+        source: String,
+        program_name: Option<String>,
+        timeout_seconds: Option<u64>,
+    ) -> Result<RunnerJobView, RunnerJobQueueError> {
+        if let Err(message) = validate_compile_source(&source) {
+            return invalid(message);
+        }
+        let program_name = program_name.unwrap_or_else(|| "program".to_string());
+        if !(1..=64).contains(&program_name.len())
+            || !program_name
+                .chars()
+                .all(|character| character.is_ascii_alphanumeric() || "_-.".contains(character))
+        {
+            return invalid("program name must be a 1-64 character safe identifier");
+        }
+        if target_agent_id
+            .as_ref()
+            .is_some_and(|value| value.is_empty())
+        {
+            return invalid("target agent id cannot be empty");
+        }
+        let timeout_seconds = timeout_seconds.unwrap_or(20).clamp(5, 60);
+        let now = Utc::now();
+        let mut jobs = self.jobs();
+        reap(&mut jobs, now);
+        if jobs.len() >= MAX_JOBS {
+            return Err(RunnerJobQueueError::Capacity);
+        }
+        let job_id = format!("job-{}", Uuid::new_v4().simple());
+        let source_bytes = source.len();
+        let record = JobRecord {
+            job_id: job_id.clone(),
+            kind: COMPILE_JOB_KIND,
+            state: RunnerJobState::Queued,
+            target_agent_id,
+            assigned_agent_id: None,
+            message: format!("compile check: {program_name}"),
+            source: Some(source),
+            source_bytes: Some(source_bytes),
+            program_name: Some(program_name),
             timeout_seconds,
             lease_token: None,
             result_message: None,
@@ -94,6 +162,7 @@ impl RunnerJobQueue {
         &self,
         agent_id: &str,
         max_active_jobs: usize,
+        capabilities: &[String],
     ) -> Result<Option<RunnerJobClaim>, RunnerJobQueueError> {
         if max_active_jobs == 0 || max_active_jobs > 32 {
             return invalid("runner agent claim capacity must be between 1 and 32");
@@ -122,6 +191,7 @@ impl RunnerJobQueue {
                         .target_agent_id
                         .as_deref()
                         .is_none_or(|target| target == agent_id)
+                    && job_supported(job, capabilities)
             })
             .min_by_key(|job| job.created_at)
             .map(|job| job.job_id.clone());
@@ -138,8 +208,10 @@ impl RunnerJobQueue {
         job.deadline = Some(deadline);
         Ok(Some(RunnerJobClaim {
             job_id,
-            kind: JOB_KIND.to_string(),
+            kind: job.kind.to_string(),
             message: job.message.clone(),
+            source: job.source.take(),
+            program_name: job.program_name.clone(),
             lease_token,
             claimed_at: now,
             deadline,
@@ -154,6 +226,7 @@ impl RunnerJobQueue {
         match job.state {
             RunnerJobState::Queued => {
                 job.state = RunnerJobState::Cancelled;
+                job.source = None;
                 job.completed_at = Some(now);
             }
             RunnerJobState::Claimed => job.state = RunnerJobState::CancelRequested,
@@ -302,6 +375,7 @@ fn reap(jobs: &mut HashMap<String, JobRecord>, now: DateTime<Utc>) {
         ) && job.deadline.is_some_and(|deadline| now > deadline)
         {
             job.state = RunnerJobState::Expired;
+            job.source = None;
             job.completed_at = Some(now);
         }
     }
@@ -315,11 +389,13 @@ fn reap(jobs: &mut HashMap<String, JobRecord>, now: DateTime<Utc>) {
 fn view(job: &JobRecord) -> RunnerJobView {
     RunnerJobView {
         job_id: job.job_id.clone(),
-        kind: JOB_KIND.to_string(),
+        kind: job.kind.to_string(),
         state: job.state,
         target_agent_id: job.target_agent_id.clone(),
         assigned_agent_id: job.assigned_agent_id.clone(),
         message: job.message.clone(),
+        source_bytes: job.source_bytes,
+        program_name: job.program_name.clone(),
         timeout_seconds: job.timeout_seconds,
         result_message: job.result_message.clone(),
         output: job.output.clone(),
@@ -328,6 +404,13 @@ fn view(job: &JobRecord) -> RunnerJobView {
         deadline: job.deadline,
         completed_at: job.completed_at,
     }
+}
+
+fn job_supported(job: &JobRecord, capabilities: &[String]) -> bool {
+    job.kind != COMPILE_JOB_KIND
+        || capabilities
+            .iter()
+            .any(|capability| capability == COMPILE_CAPABILITY)
 }
 
 fn trim_optional(value: Option<String>) -> Option<String> {
@@ -351,7 +434,10 @@ mod tests {
         let submitted = queue
             .submit_probe(None, "ping".to_string(), Some(30))
             .unwrap();
-        let claim = queue.claim("lab-vm-01", 1).unwrap().unwrap();
+        let claim = queue
+            .claim("lab-vm-01", 1, &["control_probe".to_string()])
+            .unwrap()
+            .unwrap();
         assert_eq!(claim.job_id, submitted.job_id);
         let completed = queue
             .complete(RunnerJobResultRequest {
@@ -376,8 +462,14 @@ mod tests {
         queue
             .submit_probe(Some("lab-vm-01".to_string()), "ping".to_string(), None)
             .unwrap();
-        assert!(queue.claim("other-agent", 1).unwrap().is_none());
-        let claim = queue.claim("lab-vm-01", 1).unwrap().unwrap();
+        assert!(queue
+            .claim("other-agent", 1, &["control_probe".to_string()])
+            .unwrap()
+            .is_none());
+        let claim = queue
+            .claim("lab-vm-01", 1, &["control_probe".to_string()])
+            .unwrap()
+            .unwrap();
         let cancelled = queue.cancel(&claim.job_id).unwrap();
         assert_eq!(cancelled.state, RunnerJobState::CancelRequested);
         let sync = queue
@@ -408,7 +500,42 @@ mod tests {
         queue
             .submit_probe(None, "second".to_string(), None)
             .unwrap();
-        assert!(queue.claim("lab-vm-01", 1).unwrap().is_some());
-        assert!(queue.claim("lab-vm-01", 1).unwrap().is_none());
+        let capabilities = vec!["control_probe".to_string()];
+        assert!(queue
+            .claim("lab-vm-01", 1, &capabilities)
+            .unwrap()
+            .is_some());
+        assert!(queue
+            .claim("lab-vm-01", 1, &capabilities)
+            .unwrap()
+            .is_none());
+    }
+
+    #[test]
+    fn compile_checks_require_the_clang_capability_and_hide_source_from_inventory() {
+        let queue = RunnerJobQueue::default();
+        let submitted = queue
+            .submit_compile_check(
+                None,
+                "int x(void) { return 0; }".to_string(),
+                Some("lesson".to_string()),
+                None,
+            )
+            .unwrap();
+        assert_eq!(submitted.source_bytes, Some(25));
+        assert!(queue
+            .claim("probe-only", 1, &["control_probe".to_string()])
+            .unwrap()
+            .is_none());
+        let claim = queue
+            .claim("compiler", 1, &[COMPILE_CAPABILITY.to_string()])
+            .unwrap()
+            .unwrap();
+        assert_eq!(claim.kind, COMPILE_JOB_KIND);
+        assert_eq!(claim.program_name.as_deref(), Some("lesson"));
+        assert!(claim
+            .source
+            .as_deref()
+            .is_some_and(|source| source.contains("return")));
     }
 }

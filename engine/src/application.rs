@@ -178,6 +178,10 @@ fn admin_routes(state: Arc<AppState>) -> Router<Arc<AppState>> {
         .route("/runner/agents", get(routes::runner_agent::inventory))
         .route("/runner/jobs", get(routes::runner_job::inventory))
         .route("/runner/jobs/probe", post(routes::runner_job::submit_probe))
+        .route(
+            "/runner/jobs/compile-check",
+            post(routes::runner_job::submit_compile_check),
+        )
         .route("/runner/jobs/cancel", post(routes::runner_job::cancel))
         .route(
             "/modules/c-headers/download",

@@ -241,3 +241,92 @@ async fn runner_agent_signed_requests_cannot_be_replayed() {
         assert_eq!(response.status(), expected);
     }
 }
+
+#[tokio::test]
+async fn admin_can_submit_a_capability_matched_compile_check_without_inventory_source_leak() {
+    let state = test_state();
+    let app = build_router(state.clone());
+    let credential = register_runner_agent(&app).await;
+    mark_runner_agent_healthy(&app, &credential).await;
+    let otp = state
+        .auth_service
+        .generate_current_totp_for_user("admin")
+        .unwrap();
+    let cookie = login_and_get_session_cookie(&app, &otp).await;
+    let source = "#define VALUE 7\nint lesson(void) { return VALUE; }\n";
+    let submitted = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/runner/jobs/compile-check")
+                .header(header::CONTENT_TYPE, "application/json")
+                .header(header::ORIGIN, "http://localhost:3000")
+                .header(header::COOKIE, &cookie)
+                .body(Body::from(
+                    serde_json::json!({
+                        "agent_id": "lab-vm-01",
+                        "source": source,
+                        "program_name": "lesson",
+                        "timeout_seconds": 20
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(submitted.status(), StatusCode::CREATED);
+    let bytes = submitted.into_body().collect().await.unwrap().to_bytes();
+    let submitted_json: Value = serde_json::from_slice(&bytes).unwrap();
+    let job_id = submitted_json["job_id"].as_str().unwrap().to_string();
+    assert_eq!(submitted_json["kind"], "ebpf_compile_check");
+    assert_eq!(submitted_json["source_bytes"], source.len());
+    assert!(submitted_json.get("source").is_none());
+
+    let claim_body = serde_json::json!({"agent_id": "lab-vm-01"}).to_string();
+    let claimed = signed_agent_post(
+        &app,
+        &credential,
+        "/runner/agent/jobs/claim",
+        &claim_body,
+    )
+    .await;
+    assert_eq!(claimed.status(), StatusCode::OK);
+    let bytes = claimed.into_body().collect().await.unwrap().to_bytes();
+    let claimed_json: Value = serde_json::from_slice(&bytes).unwrap();
+    assert_eq!(claimed_json["job"]["source"], source);
+    let lease_token = claimed_json["job"]["lease_token"].as_str().unwrap();
+    let result_body = serde_json::json!({
+        "agent_id": "lab-vm-01",
+        "job_id": job_id,
+        "lease_token": lease_token,
+        "state": "succeeded",
+        "message": "remote eBPF compile check passed",
+        "output": "{\"success\":true,\"object_bytes\":512}"
+    })
+    .to_string();
+    let result = signed_agent_post(
+        &app,
+        &credential,
+        "/runner/agent/jobs/result",
+        &result_body,
+    )
+    .await;
+    assert_eq!(result.status(), StatusCode::OK);
+
+    let inventory = app
+        .oneshot(
+            Request::builder()
+                .uri("/runner/jobs")
+                .header(header::COOKIE, cookie)
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    let bytes = inventory.into_body().collect().await.unwrap().to_bytes();
+    let inventory_json: Value = serde_json::from_slice(&bytes).unwrap();
+    assert!(inventory_json["jobs"][0].get("source").is_none());
+    assert_eq!(inventory_json["jobs"][0]["source_bytes"], source.len());
+}

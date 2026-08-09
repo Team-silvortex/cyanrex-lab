@@ -1,9 +1,10 @@
 # Runner Agent Guide
 
 The standalone `cyanrex-runner-agent` connects a trusted Linux, WSL2, or container node to the
-Engine control plane. Version 0.2.0 executes only built-in `control_probe` jobs. It does not accept
-shell commands, scripts, eBPF source, or arbitrary executable payloads, and it needs no root or
-Linux capabilities for this mode.
+Engine control plane. Version 0.2.0 executes built-in `control_probe` jobs and can optionally run
+compile-only `ebpf_compile_check` jobs. Compile checking is disabled by default. Neither mode
+accepts shell commands or arbitrary executable payloads, and neither needs root or Linux
+capabilities. A compile job never loads eBPF or returns its object file.
 
 ## Engine Preparation
 
@@ -50,18 +51,30 @@ CYANREX_AGENT_ISOLATION=virtual_machine \
 ./engine/target/release/cyanrex-runner-agent
 ```
 
+To enable compile-only checks on an isolated node, install Clang with a BPF target and add:
+
+```bash
+CYANREX_AGENT_ENABLE_COMPILE_CHECK=true \
+CYANREX_AGENT_CLANG_PATH=/usr/bin/clang \
+CYANREX_AGENT_ISOLATION=virtual_machine \
+./engine/target/release/cyanrex-runner-agent
+```
+
 Use `shared_kernel`, `container`, `virtual_machine`, or `dedicated_host` only when that value
 truthfully describes the node boundary. The label is displayed to administrators; it does not
 create isolation.
 
 ## Container
 
-The Engine image also contains `/usr/local/bin/cyanrex-runner-agent`. Run the Agent without
+The Engine image also contains `/usr/local/bin/cyanrex-runner-agent` and Clang. Run it without
 `--privileged`, host PID mode, kernel mounts, or added capabilities:
 
 ```bash
 docker run --rm --name cyanrex-runner-agent \
   --user "$(id -u):$(id -g)" \
+  --read-only --security-opt no-new-privileges \
+  --pids-limit 64 --memory 1536m --cpus 1 \
+  --tmpfs /tmp:rw,noexec,nosuid,nodev,size=128m \
   --entrypoint cyanrex-runner-agent \
   --env-file ./runner-agent.env \
   --mount type=bind,src="$PWD/agent-token",dst=/run/secrets/cyanrex-agent-token,ro \
@@ -69,8 +82,9 @@ docker run --rm --name cyanrex-runner-agent \
 ```
 
 Start from [`docker/runner-agent.env.example`](../../docker/runner-agent.env.example). Rebuild the
-Engine image after updating the source. The control-probe Agent remains unprivileged even though the
-same image can run the privileged Engine service.
+Engine image after updating the source. The Agent remains unprivileged even though the same image
+can run the privileged Engine service. Set `CYANREX_AGENT_ISOLATION=container` when this container
+is the real boundary. Compile checking is rejected when the Agent reports `shared_kernel`.
 
 ## Configuration
 
@@ -83,6 +97,9 @@ same image can run the privileged Engine service.
 | `CYANREX_AGENT_ISOLATION` | `shared_kernel` | Truthful isolation descriptor |
 | `CYANREX_AGENT_MAX_CONCURRENT` | `1` | Advertised capacity, range 1–32 |
 | `CYANREX_AGENT_CAPABILITIES` | `control_probe` | Comma-separated capabilities; probe support is required |
+| `CYANREX_AGENT_ENABLE_COMPILE_CHECK` | `false` | Opt in to bounded compile-only jobs; adds `clang_check` |
+| `CYANREX_AGENT_CLANG_PATH` | `/usr/bin/clang` | Absolute Clang executable used without a shell |
+| `CYANREX_AGENT_COMPILE_WORK_DIR` | system temp + `cyanrex-runner-agent` | Private disposable compiler work root |
 | `CYANREX_AGENT_POLL_SECS` | `5` | Heartbeat and claim interval, range 1–30 |
 | `CYANREX_AGENT_REQUEST_TIMEOUT_SECS` | `10` | HTTP timeout, range 2–60 |
 | `CYANREX_AGENT_ALLOW_INSECURE_HTTP` | `false` | Permit non-loopback HTTP on an explicitly trusted lab network |
@@ -97,12 +114,17 @@ so registration credentials cannot be forwarded to another endpoint accidentally
 2. Send signed health/capacity heartbeat.
 3. Claim at most the advertised free capacity.
 4. Synchronize the job lease to observe cancellation.
-5. Read the kernel release from `/proc`, build a bounded JSON probe result, and return it.
-6. Re-register automatically when the Engine loses in-memory Agent state.
-7. Send a best-effort `draining` heartbeat on Ctrl-C.
+5. Execute a built-in probe, or invoke Clang with fixed arguments for an enabled compile check.
+6. For compilation, enforce resource and output limits, hash the object, then delete the workspace
+   without loading or returning the object.
+7. Re-register automatically when the Engine loses in-memory Agent state.
+8. Send a best-effort `draining` heartbeat on Ctrl-C.
 
-Administrators use `GET /runner/agents` and `GET /runner/jobs` to inspect the state. Remote
-`/ebpf/run` execution remains disabled.
+Administrators submit an explicit compile-only job with `POST /runner/jobs/compile-check` and use
+`GET /runner/agents` or `GET /runner/jobs` to inspect state. Normal `/ebpf/check` and `/ebpf/run`
+requests are not redirected to an Agent; remote loading remains disabled. Inventory records source
+size, not source text. This first protocol accepts only literal safe system-header includes; quoted,
+macro-generated, parent-relative, `include_next`, `embed`, and include-probing forms are rejected.
 
 ## Troubleshooting
 
@@ -112,3 +134,7 @@ Administrators use `GET /runner/agents` and `GET /runner/jobs` to inspect the st
 - non-loopback HTTP rejected: configure HTTPS, or set the insecure override only on a trusted,
   firewalled lab network.
 - repeated signature failures: synchronize clocks before rotating credentials.
+- compile jobs remain queued: enable compile checking on an isolated Agent and confirm its
+  inventory includes `clang_check`.
+- compile configuration rejected: use `container`, `virtual_machine`, or `dedicated_host`, an
+  existing absolute Clang path, and a private disposable work directory.

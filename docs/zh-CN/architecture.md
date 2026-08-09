@@ -232,16 +232,16 @@ lab-vm-01\n
 `POST /runner/agent/jobs/sync` 和 `POST /runner/agent/jobs/result` 都使用相同签名格式。计算摘要的
 正文必须与实际发送字节完全一致。签名超过时效、正文被修改或 Nonce 被重复使用都会返回 `401`。
 
-管理员可以通过 `POST /runner/jobs/probe` 投递有上限的无特权探针，通过
-`POST /runner/jobs/cancel` 请求取消，并用 `GET /runner/jobs` 查看队列。健康 Agent 按上报空闲容量
-领取作业，取得 256-bit Job Lease 和截止时间，通过 `/sync` 获取取消请求，最后回传有大小限制的
-结果。内存队列最多保留 512 个作业，终态记录保留 15 分钟。这些作业固定为 `control_probe`，不会
-携带源码或执行 eBPF；`/ebpf/run` 仍使用已配置的本地驱动。
+管理员可以通过 `POST /runner/jobs/probe` 投递探针，通过 `POST /runner/jobs/compile-check` 显式投递
+只编译作业，还可请求取消并查看队列。健康 Agent 按容量和能力领取作业，取得 256-bit Lease 和截止
+时间，通过 `/sync` 获取取消请求，最后回传有大小限制的结果。内存队列最多保留 512 个作业，终态
+保留 15 分钟。编译源码只出现在带签名的领取响应中，清单只记录字节数；`/ebpf/run` 仍在本地执行。
 
 独立的 `cyanrex-runner-agent` 二进制为 Linux、WSL2 和无特权容器实现了这套协议。它使用 Rustls
 HTTPS 客户端，禁用重定向和环境代理，只在内存保存签发凭据，并在 Engine 状态丢失后自动重新注册。
-当前唯一探针只读取 `/proc/sys/kernel/osrelease` 并返回有上限的 JSON，不会调用 Shell 或外部命令。
-部署方式见 [Runner Agent 使用指南](runner-agent.md)。
+探针只读取 `/proc/sys/kernel/osrelease`；可选编译模式以固定参数和资源限制调用 Clang，不经过 Shell、
+不加载 eBPF、不返回目标文件。客户端和服务端都会拒绝 `shared_kernel` 的编译能力。部署方式见
+[Runner Agent 使用指南](runner-agent.md)。
 
 Engine 重启或记录被回收后，Agent 必须重新注册；使用相同 ID 注册会替换旧记录。凭据错误返回
 `401`，控制面未启用返回 `503`，元数据或容量无效返回 `400`，未注册节点的心跳返回 `404`，请求体

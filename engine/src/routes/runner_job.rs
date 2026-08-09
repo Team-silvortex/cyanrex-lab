@@ -12,8 +12,9 @@ use crate::{
     models::{
         runner_agent::RunnerAgentState,
         runner_job::{
-            RunnerJobCancelRequest, RunnerJobClaimRequest, RunnerJobClaimResponse,
-            RunnerJobResultRequest, RunnerJobSyncRequest, RunnerProbeSubmitRequest,
+            RunnerCompileCheckSubmitRequest, RunnerJobCancelRequest, RunnerJobClaimRequest,
+            RunnerJobClaimResponse, RunnerJobResultRequest, RunnerJobSyncRequest,
+            RunnerProbeSubmitRequest,
         },
     },
     services::runner_job_queue::RunnerJobQueueError,
@@ -32,6 +33,36 @@ pub async fn submit_probe(
     match state.runner_job_queue.submit_probe(
         request.agent_id,
         request.message,
+        request.timeout_seconds,
+    ) {
+        Ok(job) => (StatusCode::CREATED, Json(job)).into_response(),
+        Err(error) => queue_error(error),
+    }
+}
+
+pub async fn submit_compile_check(
+    State(state): State<Arc<AppState>>,
+    Json(request): Json<RunnerCompileCheckSubmitRequest>,
+) -> Response {
+    if let Some(agent_id) = request.agent_id.as_deref() {
+        let Some(agent) = state.runner_agent_registry.agent(agent_id) else {
+            return error_response(StatusCode::BAD_REQUEST, "target runner agent is unknown");
+        };
+        if !agent
+            .capabilities
+            .iter()
+            .any(|capability| capability == "clang_check")
+        {
+            return error_response(
+                StatusCode::BAD_REQUEST,
+                "target runner agent does not advertise clang_check",
+            );
+        }
+    }
+    match state.runner_job_queue.submit_compile_check(
+        request.agent_id,
+        request.source,
+        request.program_name,
         request.timeout_seconds,
     ) {
         Ok(job) => (StatusCode::CREATED, Json(job)).into_response(),
@@ -79,10 +110,11 @@ pub async fn claim(
             "runner agent is not healthy or has no available capacity",
         );
     }
-    match state
-        .runner_job_queue
-        .claim(agent_id, agent.available_slots as usize)
-    {
+    match state.runner_job_queue.claim(
+        agent_id,
+        agent.available_slots as usize,
+        &agent.capabilities,
+    ) {
         Ok(job) => {
             let mut response = Json(RunnerJobClaimResponse { job }).into_response();
             response

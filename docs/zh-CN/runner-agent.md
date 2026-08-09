@@ -1,8 +1,9 @@
 # Runner Agent 使用指南
 
-独立的 `cyanrex-runner-agent` 用于把可信 Linux、WSL2 或容器节点接入 Engine 控制面。0.2.0 版本只
-执行内置 `control_probe`，不接受 Shell 命令、脚本、eBPF 源码或任意可执行载荷；此模式无需 root
-和 Linux Capability。
+独立的 `cyanrex-runner-agent` 用于把可信 Linux、WSL2 或容器节点接入 Engine 控制面。0.2.0 版本
+执行内置 `control_probe`，并可选择开启只编译的 `ebpf_compile_check`。编译检查默认关闭；两种模式
+都不接受 Shell 命令或任意可执行载荷，也不需要 root 和 Linux Capability。编译作业不会加载 eBPF，
+也不会返回目标文件。
 
 ## 准备 Engine
 
@@ -47,17 +48,29 @@ CYANREX_AGENT_ISOLATION=virtual_machine \
 ./engine/target/release/cyanrex-runner-agent
 ```
 
+若要在隔离节点开启只编译检查，请安装支持 BPF Target 的 Clang，并增加：
+
+```bash
+CYANREX_AGENT_ENABLE_COMPILE_CHECK=true \
+CYANREX_AGENT_CLANG_PATH=/usr/bin/clang \
+CYANREX_AGENT_ISOLATION=virtual_machine \
+./engine/target/release/cyanrex-runner-agent
+```
+
 `shared_kernel`、`container`、`virtual_machine`、`dedicated_host` 必须如实描述节点边界。该字段只用于
 管理员观察，不会凭空创建隔离。
 
 ## 容器
 
-Engine 镜像也包含 `/usr/local/bin/cyanrex-runner-agent`。运行控制探针 Agent 时不要添加
+Engine 镜像也包含 `/usr/local/bin/cyanrex-runner-agent` 和 Clang。运行 Agent 时不要添加
 `--privileged`、宿主 PID、内核目录挂载或额外 Capability：
 
 ```bash
 docker run --rm --name cyanrex-runner-agent \
   --user "$(id -u):$(id -g)" \
+  --read-only --security-opt no-new-privileges \
+  --pids-limit 64 --memory 1536m --cpus 1 \
+  --tmpfs /tmp:rw,noexec,nosuid,nodev,size=128m \
   --entrypoint cyanrex-runner-agent \
   --env-file ./runner-agent.env \
   --mount type=bind,src="$PWD/agent-token",dst=/run/secrets/cyanrex-agent-token,ro \
@@ -65,7 +78,8 @@ docker run --rm --name cyanrex-runner-agent \
 ```
 
 配置可以从 [`docker/runner-agent.env.example`](../../docker/runner-agent.env.example) 开始。源码更新后
-需要重建 Engine 镜像。虽然同一镜像也能运行特权 Engine 服务，但控制探针 Agent 本身保持无特权。
+需要重建 Engine 镜像。虽然同一镜像也能运行特权 Engine 服务，但 Agent 本身保持无特权。容器是
+实际边界时应设置 `CYANREX_AGENT_ISOLATION=container`；报告 `shared_kernel` 的 Agent 会被拒绝开启编译。
 
 ## 配置
 
@@ -78,6 +92,9 @@ docker run --rm --name cyanrex-runner-agent \
 | `CYANREX_AGENT_ISOLATION` | `shared_kernel` | 真实隔离描述 |
 | `CYANREX_AGENT_MAX_CONCURRENT` | `1` | 上报容量，范围 1～32 |
 | `CYANREX_AGENT_CAPABILITIES` | `control_probe` | 逗号分隔能力；必须支持探针 |
+| `CYANREX_AGENT_ENABLE_COMPILE_CHECK` | `false` | 显式开启有上限的只编译作业，并加入 `clang_check` |
+| `CYANREX_AGENT_CLANG_PATH` | `/usr/bin/clang` | 不经过 Shell 调用的 Clang 绝对路径 |
+| `CYANREX_AGENT_COMPILE_WORK_DIR` | 系统临时目录下的 `cyanrex-runner-agent` | 私有、用后删除的编译根目录 |
 | `CYANREX_AGENT_POLL_SECS` | `5` | 心跳和领取间隔，范围 1～30 秒 |
 | `CYANREX_AGENT_REQUEST_TIMEOUT_SECS` | `10` | HTTP 超时，范围 2～60 秒 |
 | `CYANREX_AGENT_ALLOW_INSECURE_HTTP` | `false` | 在明确受信实验网允许非回环 HTTP |
@@ -92,11 +109,15 @@ docker run --rm --name cyanrex-runner-agent \
 2. 发送带签名的健康与容量心跳；
 3. 领取数量不超过已上报空闲容量；
 4. 同步 Job Lease，检查取消请求；
-5. 从 `/proc` 读取内核版本，生成有上限的 JSON 探针结果并回传；
-6. Engine 丢失内存注册状态后自动重新注册；
-7. 收到 Ctrl-C 时尽力发送 `draining` 心跳。
+5. 执行内置探针，或在显式开启时用固定参数调用 Clang 做编译检查；
+6. 编译检查限制资源与输出，只返回目标摘要并删除工作区，不加载或返回目标文件；
+7. Engine 丢失内存注册状态后自动重新注册；
+8. 收到 Ctrl-C 时尽力发送 `draining` 心跳。
 
-管理员通过 `GET /runner/agents` 和 `GET /runner/jobs` 查看状态。远程 `/ebpf/run` 仍未启用。
+管理员通过 `POST /runner/jobs/compile-check` 显式提交只编译作业，并用 `GET /runner/agents` 和
+`GET /runner/jobs` 查看状态。常规 `/ebpf/check`、`/ebpf/run` 不会自动改走 Agent，远程加载仍未
+启用；作业清单只记录源码大小，不记录源码正文。第一版协议只允许字面量安全系统头文件；引号、
+宏生成、父目录相对路径、`include_next`、`embed` 和头文件探测写法都会被拒绝。
 
 ## 故障排查
 
@@ -105,3 +126,6 @@ docker run --rm --name cyanrex-runner-agent \
 - `503`：Agent 控制面未启用，或有上限的注册表/队列已满；
 - 非回环 HTTP 被拒绝：应配置 HTTPS；只有受信且有防火墙的实验网才打开明文例外；
 - 签名持续失败：先同步系统时间，再考虑轮换凭据。
+- 编译作业一直排队：在隔离 Agent 上开启编译检查，并确认清单包含 `clang_check`；
+- 编译配置被拒绝：使用 `container`、`virtual_machine` 或 `dedicated_host`，提供存在的 Clang 绝对
+  路径，并把工作目录放在私有、可丢弃的存储中。

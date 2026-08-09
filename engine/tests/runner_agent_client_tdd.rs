@@ -31,6 +31,7 @@ async fn runner_agent_client_completes_a_signed_control_probe_over_http() {
         isolation: RunnerAgentIsolation::SharedKernel,
         max_concurrent: 1,
         capabilities: vec!["control_probe".to_string()],
+        compile_check: None,
         labels,
         poll_interval: Duration::from_millis(10),
         request_timeout: Duration::from_secs(5),

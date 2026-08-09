@@ -16,3 +16,10 @@ fn engine_url_rejects_redirectable_or_ambiguous_components() {
     assert!(validate_engine_url("https://engine.lab.example?next=other", false).is_err());
     assert!(validate_engine_url("file:///tmp/engine.sock", false).is_err());
 }
+
+#[test]
+fn compile_check_requires_a_real_isolation_boundary() {
+    assert!(validate_compile_policy(RunnerAgentIsolation::SharedKernel, true).is_err());
+    assert!(validate_compile_policy(RunnerAgentIsolation::Container, true).is_ok());
+    assert!(validate_compile_policy(RunnerAgentIsolation::VirtualMachine, true).is_ok());
+}

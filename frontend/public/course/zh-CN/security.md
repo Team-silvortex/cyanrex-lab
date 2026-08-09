@@ -33,14 +33,17 @@ Docker 配置需要访问宿主机或虚拟机的 eBPF、tracefs、BTF 和 bpffs
 覆盖方法、路径、Agent ID、Unix 时间戳、Nonce 和正文摘要。时间戳有固定时效窗口，每个 Nonce 只能
 使用一次。
 
-Bootstrap Token 的持有者仍能重新注册并冒充 Agent ID，因此它依旧是高价值密钥。当前队列只承载
-有上限的 `control_probe` 消息，具备领取 Lease、截止时间、取消确认和结果大小限制；不会包含 eBPF
-源码，`/ebpf/run` 仍在本地执行。签名只能证明结果来自某个已注册凭据，不能证明远端内核诚实执行；
-跨越更强信任边界前仍应考虑双向 TLS、节点绑定密钥或远程证明。
+Bootstrap Token 的持有者仍能重新注册并冒充 Agent ID，因此它依旧是高价值密钥。作业具备领取
+Lease、截止时间、取消确认和结果大小限制。可选的 `ebpf_compile_check` 会把源码发送给能力匹配的
+Agent，但不会加载或返回目标文件；`/ebpf/check`、`/ebpf/run` 仍在本地执行。签名只能证明结果来自
+某个已注册凭据，不能证明编译结果诚实；跨越更强信任边界前仍应考虑双向 TLS、节点绑定密钥或证明。
 
 内置独立 Agent 默认拒绝非回环明文 HTTP，只有显式设置实验网例外才会放行；同时禁用 HTTP 重定向
-和环境代理、限制响应体大小，并支持从挂载文件读取 Bootstrap Secret。控制探针进程应使用无特权
-账户运行，不使用宿主 PID、内核目录挂载、Docker Socket 或 Linux Capability。
+和环境代理、限制响应体大小，并支持从挂载文件读取 Bootstrap Secret。编译模式必须显式开启，且
+`shared_kernel` 会被拒绝；执行器只以固定参数调用绝对路径 Clang，清空环境，使用私有临时工作区，
+限制进程资源和输出，在摘要后删除目标文件，并预先拒绝非字面量或可越界的 Include 写法。Agent 应
+使用无特权账户，不使用宿主 PID、内核挂载、Docker Socket 或 Linux Capability。Clang 会处理不受信
+输入，因此仍需容器或虚拟机边界。
 
 ## 推荐部署级别
 

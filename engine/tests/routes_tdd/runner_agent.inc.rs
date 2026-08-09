@@ -11,7 +11,7 @@ fn agent_registration_body() -> String {
         "agent_version": "0.2.0",
         "isolation": "virtual_machine",
         "max_concurrent": 2,
-        "capabilities": ["bpftool", "btf", "ringbuf"],
+        "capabilities": ["bpftool", "btf", "clang_check", "ringbuf"],
         "labels": {"room": "a", "arch": "x86_64"}
     })
     .to_string()

@@ -268,12 +268,21 @@ fn validate_registration(
     for capability in &request.capabilities {
         validate_name("capability", capability, 32)?;
     }
-    if !request
-        .capabilities
-        .iter()
-        .any(|value| matches!(value.as_str(), "control_probe" | "bpftool" | "aya"))
+    if !request.capabilities.iter().any(|value| {
+        matches!(
+            value.as_str(),
+            "control_probe" | "clang_check" | "bpftool" | "aya"
+        )
+    }) {
+        return invalid("agent must advertise a supported execution capability");
+    }
+    if request.isolation == RunnerAgentIsolation::SharedKernel
+        && request
+            .capabilities
+            .iter()
+            .any(|value| value == "clang_check")
     {
-        return invalid("agent must advertise `control_probe`, `bpftool`, or `aya`");
+        return invalid("shared_kernel agents cannot advertise clang_check");
     }
     if request.labels.len() > 16 {
         return invalid("labels must contain at most 16 entries");
@@ -473,6 +482,17 @@ mod tests {
     fn identifiers_cannot_contain_whitespace() {
         let mut request = registration();
         request.agent_id = "lab vm 01".to_string();
+        assert!(matches!(
+            validate_registration(&request),
+            Err(RunnerAgentRegistryError::Invalid(_))
+        ));
+    }
+
+    #[test]
+    fn shared_kernel_agents_cannot_advertise_the_compiler() {
+        let mut request = registration();
+        request.isolation = RunnerAgentIsolation::SharedKernel;
+        request.capabilities = vec!["control_probe".to_string(), "clang_check".to_string()];
         assert!(matches!(
             validate_registration(&request),
             Err(RunnerAgentRegistryError::Invalid(_))

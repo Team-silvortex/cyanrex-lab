@@ -29,6 +29,14 @@ pub struct RunnerProbeSubmitRequest {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+pub struct RunnerCompileCheckSubmitRequest {
+    pub agent_id: Option<String>,
+    pub source: String,
+    pub program_name: Option<String>,
+    pub timeout_seconds: Option<u64>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
 pub struct RunnerJobCancelRequest {
     pub job_id: String,
 }
@@ -66,6 +74,8 @@ pub struct RunnerJobClaim {
     pub job_id: String,
     pub kind: String,
     pub message: String,
+    pub source: Option<String>,
+    pub program_name: Option<String>,
     pub lease_token: String,
     pub claimed_at: DateTime<Utc>,
     pub deadline: DateTime<Utc>,
@@ -90,6 +100,8 @@ pub struct RunnerJobView {
     pub target_agent_id: Option<String>,
     pub assigned_agent_id: Option<String>,
     pub message: String,
+    pub source_bytes: Option<usize>,
+    pub program_name: Option<String>,
     pub timeout_seconds: u64,
     pub result_message: Option<String>,
     pub output: Option<String>,

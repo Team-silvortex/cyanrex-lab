@@ -3,7 +3,6 @@ use std::{collections::BTreeMap, fs, time::Duration};
 use chrono::Utc;
 use reqwest::{redirect::Policy, StatusCode, Url};
 use serde::{de::DeserializeOwned, Serialize};
-use serde_json::json;
 use tokio::time::sleep;
 use uuid::Uuid;
 
@@ -19,10 +18,13 @@ use crate::{
             RunnerJobSyncResponse, RunnerJobView,
         },
     },
-    services::runner_agent_authenticator::sign_runner_agent_request,
+    services::{
+        runner_agent_authenticator::sign_runner_agent_request,
+        runner_agent_executor::{execute_runner_job, kernel_release, RunnerCompileExecutorConfig},
+    },
 };
 
-const MAX_RESPONSE_BYTES: u64 = 256 * 1024;
+const MAX_RESPONSE_BYTES: u64 = 640 * 1024;
 
 #[derive(Clone)]
 pub struct RunnerAgentClientConfig {
@@ -32,6 +34,7 @@ pub struct RunnerAgentClientConfig {
     pub isolation: RunnerAgentIsolation,
     pub max_concurrent: u16,
     pub capabilities: Vec<String>,
+    pub compile_check: Option<RunnerCompileExecutorConfig>,
     pub labels: BTreeMap<String, String>,
     pub poll_interval: Duration,
     pub request_timeout: Duration,
@@ -85,7 +88,14 @@ impl RunnerAgentClientConfig {
         if !(2..=60).contains(&timeout_seconds) {
             return config_error("CYANREX_AGENT_REQUEST_TIMEOUT_SECS must be between 2 and 60");
         }
-        let capabilities = parse_capabilities()?;
+        let compile_check_enabled = env_bool("CYANREX_AGENT_ENABLE_COMPILE_CHECK", false);
+        validate_compile_policy(isolation, compile_check_enabled)?;
+        let capabilities = parse_capabilities(compile_check_enabled)?;
+        let compile_check = if compile_check_enabled {
+            Some(RunnerCompileExecutorConfig::from_env().map_err(RunnerAgentClientError::Config)?)
+        } else {
+            None
+        };
         let mut labels = BTreeMap::new();
         labels.insert("arch".to_string(), std::env::consts::ARCH.to_string());
         labels.insert("os".to_string(), std::env::consts::OS.to_string());
@@ -96,6 +106,7 @@ impl RunnerAgentClientConfig {
             isolation,
             max_concurrent: max_concurrent as u16,
             capabilities,
+            compile_check,
             labels,
             poll_interval: Duration::from_secs(poll_seconds),
             request_timeout: Duration::from_secs(timeout_seconds),
@@ -106,6 +117,14 @@ impl RunnerAgentClientConfig {
 
 impl RunnerAgentClient {
     pub fn new(config: RunnerAgentClientConfig) -> Result<Self, RunnerAgentClientError> {
+        validate_compile_policy(config.isolation, config.compile_check.is_some())?;
+        let advertises_compile = config
+            .capabilities
+            .iter()
+            .any(|capability| capability == "clang_check");
+        if advertises_compile != config.compile_check.is_some() {
+            return config_error("clang_check capability and executor setting must match");
+        }
         let http = reqwest::Client::builder()
             .redirect(Policy::none())
             .no_proxy()
@@ -191,45 +210,32 @@ impl RunnerAgentClient {
             return Ok(None);
         };
         self.heartbeat(RunnerAgentState::Healthy, 1).await?;
-        let result = self.process_probe(&job).await;
+        let result = self.process_job(&job).await;
         let _ = self.heartbeat(RunnerAgentState::Healthy, 0).await;
         result.map(Some)
     }
 
-    async fn process_probe(
+    async fn process_job(
         &self,
         job: &RunnerJobClaim,
     ) -> Result<RunnerJobView, RunnerAgentClientError> {
         let sync = self.sync(job).await?;
         let cancelled = sync.cancel_job_ids.iter().any(|id| id == &job.job_id);
-        let (state, message, output) = if cancelled {
-            (
-                RunnerJobResultState::Cancelled,
-                "cancel acknowledged".to_string(),
-                None,
-            )
-        } else if job.kind != "control_probe" {
-            (
-                RunnerJobResultState::Failed,
-                "unsupported Runner job kind".to_string(),
-                None,
-            )
+        let execution = if cancelled {
+            crate::services::runner_agent_executor::RunnerJobExecution {
+                state: RunnerJobResultState::Cancelled,
+                message: "cancel acknowledged".to_string(),
+                output: None,
+            }
         } else {
-            (
-                RunnerJobResultState::Succeeded,
-                "control probe completed".to_string(),
-                Some(
-                    json!({
-                        "agent_id": self.config.agent_id,
-                        "echo": job.message,
-                        "kernel_release": kernel_release(),
-                        "arch": std::env::consts::ARCH,
-                        "observed_at": Utc::now(),
-                    })
-                    .to_string(),
-                ),
+            execute_runner_job(
+                &self.config.agent_id,
+                job,
+                self.config.compile_check.as_ref(),
             )
+            .await
         };
+        let (state, message, output) = (execution.state, execution.message, execution.output);
         let request = RunnerJobResultRequest {
             agent_id: self.config.agent_id.clone(),
             job_id: job.job_id.clone(),
@@ -386,13 +392,13 @@ async fn decode_response<T: DeserializeOwned>(
         .is_some_and(|size| size > MAX_RESPONSE_BYTES)
     {
         return Err(RunnerAgentClientError::Protocol(
-            "server response exceeds 256 KiB".to_string(),
+            "server response exceeds 640 KiB".to_string(),
         ));
     }
     let bytes = response.bytes().await?;
     if bytes.len() as u64 > MAX_RESPONSE_BYTES {
         return Err(RunnerAgentClientError::Protocol(
-            "server response exceeds 256 KiB".to_string(),
+            "server response exceeds 640 KiB".to_string(),
         ));
     }
     if !status.is_success() {
@@ -492,7 +498,17 @@ fn parse_isolation(raw: &str) -> Result<RunnerAgentIsolation, RunnerAgentClientE
     }
 }
 
-fn parse_capabilities() -> Result<Vec<String>, RunnerAgentClientError> {
+fn validate_compile_policy(
+    isolation: RunnerAgentIsolation,
+    enabled: bool,
+) -> Result<(), RunnerAgentClientError> {
+    if enabled && isolation == RunnerAgentIsolation::SharedKernel {
+        return config_error("compile checking cannot run with shared_kernel isolation");
+    }
+    Ok(())
+}
+
+fn parse_capabilities(compile_check_enabled: bool) -> Result<Vec<String>, RunnerAgentClientError> {
     let raw =
         std::env::var("CYANREX_AGENT_CAPABILITIES").unwrap_or_else(|_| "control_probe".to_string());
     let mut values = raw
@@ -503,6 +519,13 @@ fn parse_capabilities() -> Result<Vec<String>, RunnerAgentClientError> {
         .collect::<Vec<_>>();
     values.sort();
     values.dedup();
+    let advertises_compile = values.iter().any(|value| value == "clang_check");
+    if compile_check_enabled && !advertises_compile {
+        values.push("clang_check".to_string());
+        values.sort();
+    } else if !compile_check_enabled && advertises_compile {
+        return config_error("clang_check requires CYANREX_AGENT_ENABLE_COMPILE_CHECK=true");
+    }
     if values.is_empty()
         || values.len() > 32
         || !values.iter().any(|value| value == "control_probe")
@@ -512,13 +535,6 @@ fn parse_capabilities() -> Result<Vec<String>, RunnerAgentClientError> {
         );
     }
     Ok(values)
-}
-
-fn kernel_release() -> Option<String> {
-    fs::read_to_string("/proc/sys/kernel/osrelease")
-        .ok()
-        .map(|value| value.trim().chars().take(128).collect())
-        .filter(|value: &String| !value.is_empty())
 }
 
 fn is_loopback_host(host: Option<&str>) -> bool {

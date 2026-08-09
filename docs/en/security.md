@@ -35,16 +35,20 @@ Heartbeat and job endpoints require HMAC-SHA256 over method, path, Agent ID, Uni
 and body hash. The timestamp has a bounded freshness window and each nonce is accepted once.
 
 A holder of the bootstrap token can still re-register and impersonate an Agent ID, so it remains a
-high-value secret. Current jobs are bounded `control_probe` messages with per-claim lease tokens,
-deadlines, cancellation acknowledgement, and size-limited results. They never contain eBPF source
-and `/ebpf/run` remains local. Signed transport proves which registered credential sent a result; it
-does not prove that a remote kernel executed honestly. Mutual TLS or node-bound keys and attestation
-should be considered before using remote results across a stronger trust boundary.
+high-value secret. Jobs have per-claim lease tokens, deadlines, cancellation acknowledgement, and
+size-limited results. The optional `ebpf_compile_check` carries source to a capability-matched Agent,
+but never loads or returns the object. `/ebpf/check` and `/ebpf/run` remain local. Signed transport
+proves which registered credential sent a result; it does not prove that compilation was honest.
+Consider mutual TLS, node-bound keys, and attestation across a stronger trust boundary.
 
 The bundled standalone Agent fails closed on non-loopback plain HTTP unless an explicit insecure-lab
 override is set. It disables HTTP redirects and environment proxies, caps response bodies, and can
-read the bootstrap secret from a mounted file. The control-probe process should run as an
-unprivileged account without host PID mode, kernel mounts, Docker socket, or Linux capabilities.
+read the bootstrap secret from a mounted file. Compile mode is opt-in and rejected for
+`shared_kernel`; it invokes only an absolute Clang path with fixed arguments, clears the environment,
+uses private disposable workspaces, bounds process resources and captured output, and deletes the
+object after hashing it. Source preflight also rejects non-literal or path-escaping include forms.
+Run the Agent unprivileged without host PID mode, kernel mounts, Docker socket, or Linux
+capabilities. Clang processes untrusted input, so retain a container or VM boundary.
 
 ## Recommended Isolation
 
