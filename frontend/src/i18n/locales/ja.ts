@@ -327,6 +327,13 @@ export const ja: TranslationDict = {
       runtimeBackend: "実行バックエンド",
       runtimeBpftool: "bpftool（デフォルト）",
       runtimeAya: "aya（実験）",
+      compilerBackend: "インライン診断バックエンド",
+      compilerBackendLocal: "ローカル Engine（デフォルト）",
+      compilerBackendMissing: "{agent}（利用不可）",
+      compilerBackendLocalHint: "自動 Clang 診断は選択済みヘッダーを使ってローカル Engine で実行されます。",
+      compilerBackendRemoteHint: "診断は選択した隔離 Agent で実行されます。eBPF のロードやカスタムヘッダー注入は行いません。",
+      compilerBackendUnavailableHint: "選択した Agent は利用できません。自動フォールバックは行わないため、別のバックエンドを選択してください。",
+      compilerBackendDiscoveryFailed: "コンパイラ Agent を更新できませんでした: {error}",
       runtimeAyaOnlyOnLinux:
         "aya バックエンドは現在 Linux 環境（aya runtime）でのみ利用可能です。Linux 以外では bpftool に切り替えるか、Linux のエンジンで実行してください。",
       runtimeAyaTracefsHint:

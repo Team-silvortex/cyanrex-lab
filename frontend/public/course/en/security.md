@@ -36,10 +36,12 @@ and body hash. The timestamp has a bounded freshness window and each nonce is ac
 
 A holder of the bootstrap token can still re-register and impersonate an Agent ID, so it remains a
 high-value secret. Jobs have per-claim lease tokens, deadlines, cancellation acknowledgement, and
-size-limited results. The optional `ebpf_compile_check` carries source to a capability-matched Agent,
-but never loads or returns the object. `/ebpf/check` and `/ebpf/run` remain local. Signed transport
-proves which registered credential sent a result; it does not prove that compilation was honest.
-Consider mutual TLS, node-bound keys, and attestation across a stronger trust boundary.
+size-limited results. The editor's local compiler remains the default; explicitly selected remote
+checks carry source to a capability-matched Agent but never load or return the object. The public
+backend inventory omits labels and kernel details, remote jobs are bound to the authenticated user,
+and each user is limited to two active checks. `/ebpf/run` remains local. Signed transport proves
+which registered credential sent a result; it does not prove that compilation was honest. Consider
+mutual TLS, node-bound keys, and attestation across a stronger trust boundary.
 
 The bundled standalone Agent fails closed on non-loopback plain HTTP unless an explicit insecure-lab
 override is set. It disables HTTP redirects and environment proxies, caps response bodies, and can

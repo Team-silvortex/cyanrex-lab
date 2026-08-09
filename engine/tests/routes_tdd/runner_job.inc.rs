@@ -330,3 +330,171 @@ async fn admin_can_submit_a_capability_matched_compile_check_without_inventory_s
     assert!(inventory_json["jobs"][0].get("source").is_none());
     assert_eq!(inventory_json["jobs"][0]["source_bytes"], source.len());
 }
+
+#[tokio::test]
+async fn authenticated_remote_check_is_user_scoped_and_normalizes_agent_diagnostics() {
+    let state = test_state();
+    let app = build_router(state.clone());
+    let credential = register_runner_agent(&app).await;
+    mark_runner_agent_healthy(&app, &credential).await;
+    let otp = state
+        .auth_service
+        .generate_current_totp_for_user("admin")
+        .unwrap();
+    let cookie = login_and_get_session_cookie(&app, &otp).await;
+
+    let backends = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .uri("/ebpf/check/backends")
+                .header(header::COOKIE, &cookie)
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(backends.status(), StatusCode::OK);
+    let body = backends.into_body().collect().await.unwrap().to_bytes();
+    let backends_json: Value = serde_json::from_slice(&body).unwrap();
+    assert_eq!(backends_json["agents"][0]["agent_id"], "lab-vm-01");
+
+    let submit = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/ebpf/check/remote")
+                .header(header::CONTENT_TYPE, "application/json")
+                .header(header::ORIGIN, "http://localhost:3000")
+                .header(header::COOKIE, &cookie)
+                .body(Body::from(
+                    serde_json::json!({
+                        "code": "int lesson(void) { return missing; }",
+                        "agent_id": "lab-vm-01",
+                        "program_name": "inline-check"
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(submit.status(), StatusCode::ACCEPTED);
+    let body = submit.into_body().collect().await.unwrap().to_bytes();
+    let submit_json: Value = serde_json::from_slice(&body).unwrap();
+    let job_id = submit_json["job_id"].as_str().unwrap().to_string();
+    assert_eq!(submit_json["state"], "queued");
+
+    let claim_body = serde_json::json!({"agent_id": "lab-vm-01"}).to_string();
+    let claim = signed_agent_post(
+        &app,
+        &credential,
+        "/runner/agent/jobs/claim",
+        &claim_body,
+    )
+    .await;
+    let body = claim.into_body().collect().await.unwrap().to_bytes();
+    let claim_json: Value = serde_json::from_slice(&body).unwrap();
+    let lease = claim_json["job"]["lease_token"].as_str().unwrap();
+    let report = serde_json::json!({
+        "success": false,
+        "exit_code": 1,
+        "timed_out": false,
+        "stdout": "",
+        "stdout_truncated": false,
+        "stderr": "program.c:1:27: error: use of undeclared identifier 'missing'\n",
+        "stderr_truncated": false,
+        "object_bytes": null,
+        "object_sha256": null,
+        "duration_ms": 12
+    })
+    .to_string();
+    let result_body = serde_json::json!({
+        "agent_id": "lab-vm-01",
+        "job_id": job_id,
+        "lease_token": lease,
+        "state": "failed",
+        "message": "remote eBPF compile check failed",
+        "output": report
+    })
+    .to_string();
+    let result = signed_agent_post(
+        &app,
+        &credential,
+        "/runner/agent/jobs/result",
+        &result_body,
+    )
+    .await;
+    assert_eq!(result.status(), StatusCode::OK);
+
+    let status = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .uri(format!("/ebpf/check/remote?job_id={job_id}"))
+                .header(header::COOKIE, &cookie)
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(status.status(), StatusCode::OK);
+    let body = status.into_body().collect().await.unwrap().to_bytes();
+    let status_json: Value = serde_json::from_slice(&body).unwrap();
+    assert_eq!(status_json["state"], "failed");
+    assert_eq!(status_json["result"]["diagnostics"][0]["line"], 1);
+
+    let cancellable = state
+        .runner_job_queue
+        .submit_user_compile_check(
+            "admin".to_string(),
+            "lab-vm-01".to_string(),
+            "int cancelled(void) { return 0; }".to_string(),
+            None,
+            None,
+        )
+        .unwrap();
+    let cancelled = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/ebpf/check/remote/cancel")
+                .header(header::CONTENT_TYPE, "application/json")
+                .header(header::ORIGIN, "http://localhost:3000")
+                .header(header::COOKIE, &cookie)
+                .body(Body::from(
+                    serde_json::json!({"job_id": cancellable.job_id}).to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(cancelled.status(), StatusCode::OK);
+    let body = cancelled.into_body().collect().await.unwrap().to_bytes();
+    let cancelled_json: Value = serde_json::from_slice(&body).unwrap();
+    assert_eq!(cancelled_json["state"], "cancelled");
+
+    let hidden = state
+        .runner_job_queue
+        .submit_user_compile_check(
+            "another-user".to_string(),
+            "lab-vm-01".to_string(),
+            "int hidden(void) { return 0; }".to_string(),
+            None,
+            None,
+        )
+        .unwrap();
+    let forbidden_lookup = app
+        .oneshot(
+            Request::builder()
+                .uri(format!("/ebpf/check/remote?job_id={}", hidden.job_id))
+                .header(header::COOKIE, cookie)
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(forbidden_lookup.status(), StatusCode::NOT_FOUND);
+}

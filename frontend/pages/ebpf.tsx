@@ -7,6 +7,7 @@ import SidebarLayout from "../src/components/SidebarLayout";
 import { useI18n } from "../src/i18n/context";
 import { sanitizeForDisplay } from "../src/utils/security";
 import EbpfResultPanel from "../src/features/ebpf/EbpfResultPanel";
+import CompileBackendSelector from "../src/features/ebpf/CompileBackendSelector";
 import { useEbpfPageController } from "../src/features/ebpf/useEbpfPageController";
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
@@ -27,6 +28,7 @@ export default function EbpfPage() {
     attachmentDetails,
     code,
     compiler,
+    compileBackends,
     headerInjectionCheck,
     runHeaderInjectionSelfCheck,
     deleteScript,
@@ -353,6 +355,7 @@ export default function EbpfPage() {
                 {t("ebpf.kernelStream")}
               </label>
             </div>
+            <CompileBackendSelector {...compileBackends} t={t} />
           </div>
         </div>
 

@@ -22,6 +22,7 @@ import type {
 import { applyMarkers, toIncludePath } from "./editorUtils";
 import { useBreakpointHitStream } from "./useBreakpointHitStream";
 import { useCompilerDiagnostics } from "./useCompilerDiagnostics";
+import { useCompileBackends } from "./useCompileBackends";
 import { useEbpfEditorBreakpoints } from "./useEditorBreakpoints";
 
 export const buildAyaBackendHint = (
@@ -112,6 +113,7 @@ export function useEbpfPageController(
   const intelligenceRef = useRef<{ dispose: () => void } | null>(null);
   const bootstrappedLabRef = useRef("");
   const engineUrl = getEngineUrl();
+  const compileBackends = useCompileBackends(engineUrl);
   const breakpointHits = useBreakpointHitStream(
     engineUrl,
     result?.debug?.session_id ?? null,
@@ -142,7 +144,12 @@ export function useEbpfPageController(
         .join("|"),
     [injectedMetadata],
   );
-  const compiler = useCompilerDiagnostics(code, engineUrl, injectedHeaderContext);
+  const compiler = useCompilerDiagnostics(
+    code,
+    engineUrl,
+    injectedHeaderContext,
+    compileBackends.target,
+  );
   const diagnostics = useMemo(
     () => [...analysis.diagnostics, ...compiler.diagnostics],
     [analysis.diagnostics, compiler.diagnostics],
@@ -522,6 +529,7 @@ export function useEbpfPageController(
     attachments,
     attachmentDetails,
     compiler,
+    compileBackends,
     diagnostics,
     headerInjectionCheck,
     injectedMetadata,

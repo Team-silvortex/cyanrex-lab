@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 
 import type { CDiagnostic } from "../../utils/cAnalyzer";
-import type { EbpfCheckResponse } from "./models";
+import type {
+  EbpfCheckResponse,
+  EbpfCompilerTarget,
+  EbpfRemoteCheckResponse,
+} from "./models";
 import { MAX_UPLOAD_BYTES } from "./models";
 
 export type CompilerStatus = "idle" | "checking" | "passed" | "issues" | "unavailable";
@@ -21,6 +25,7 @@ export function useCompilerDiagnostics(
   code: string,
   engineUrl: string,
   headerContextKey = "",
+  target: EbpfCompilerTarget = "local",
 ) {
   const [diagnostics, setDiagnostics] = useState<CDiagnostic[]>([]);
   const [status, setStatus] = useState<CompilerStatus>("idle");
@@ -32,7 +37,7 @@ export function useCompilerDiagnostics(
       return;
     }
 
-    const cacheKey = hashCode(`${code}//${headerContextKey}`);
+    const cacheKey = hashCode(`${target}//${code}//${headerContextKey}`);
     const now = Date.now();
     const cached = diagnosticCache.get(cacheKey);
     if (cached && cached.expiresAt > now) {
@@ -46,7 +51,7 @@ export function useCompilerDiagnostics(
     const timer = window.setTimeout(async () => {
       setStatus("checking");
       try {
-        const request = runCompilerCheck(cacheKey, code, engineUrl, controller.signal);
+        const request = runCompilerCheck(cacheKey, code, engineUrl, target, controller.signal);
         inFlightChecks.set(cacheKey, request);
         const response = await request;
         const result = response;
@@ -84,7 +89,7 @@ export function useCompilerDiagnostics(
       controller.abort();
       inFlightChecks.delete(cacheKey);
     };
-  }, [code, engineUrl, headerContextKey]);
+  }, [code, engineUrl, headerContextKey, target]);
 
   return { diagnostics, status };
 }
@@ -93,10 +98,15 @@ async function runCompilerCheck(
   cacheKey: string,
   code: string,
   engineUrl: string,
+  target: EbpfCompilerTarget,
   signal: AbortSignal,
 ): Promise<EbpfCheckResponse> {
   const inFlight = inFlightChecks.get(cacheKey);
   if (inFlight) return inFlight;
+
+  if (target.startsWith("agent:")) {
+    return runRemoteCompilerCheck(code, engineUrl, target.slice(6), signal);
+  }
 
   return (async () => {
     const response = await fetch(`${engineUrl}/ebpf/check`, {
@@ -111,6 +121,83 @@ async function runCompilerCheck(
     }
     return (await response.json()) as EbpfCheckResponse;
   })();
+}
+
+async function runRemoteCompilerCheck(
+  code: string,
+  engineUrl: string,
+  agentId: string,
+  signal: AbortSignal,
+): Promise<EbpfCheckResponse> {
+  let jobId = "";
+  let completed = false;
+  try {
+    const submitted = await fetchJson<EbpfRemoteCheckResponse>(`${engineUrl}/ebpf/check/remote`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      signal,
+      body: JSON.stringify({ code, agent_id: agentId, program_name: "inline-check" }),
+    });
+    jobId = submitted.job_id;
+    const deadline = Date.now() + 35_000;
+    while (Date.now() < deadline) {
+      const status = await fetchJson<EbpfRemoteCheckResponse>(
+        `${engineUrl}/ebpf/check/remote?job_id=${encodeURIComponent(jobId)}`,
+        { credentials: "include", signal },
+      );
+      if (status.result) {
+        completed = true;
+        return status.result;
+      }
+      if (["succeeded", "failed", "cancelled", "expired"].includes(status.state)) {
+        throw new Error(status.message || `remote check ended as ${status.state}`);
+      }
+      await abortableDelay(500, signal);
+    }
+    throw new Error("remote compiler check exceeded 35 seconds");
+  } finally {
+    if (jobId && !completed) {
+      void cancelRemoteCheck(engineUrl, jobId);
+    }
+  }
+}
+
+async function fetchJson<T>(url: string, init: RequestInit): Promise<T> {
+  const response = await fetch(url, init);
+  if (!response.ok) {
+    const payload = await response.json().catch(() => ({})) as { message?: string };
+    throw new Error(payload.message || `HTTP ${response.status}`);
+  }
+  return (await response.json()) as T;
+}
+
+async function cancelRemoteCheck(engineUrl: string, jobId: string) {
+  try {
+    await fetch(`${engineUrl}/ebpf/check/remote/cancel`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      keepalive: true,
+      body: JSON.stringify({ job_id: jobId }),
+    });
+  } catch {
+    // The server-side lease deadline remains the final cleanup boundary.
+  }
+}
+
+function abortableDelay(milliseconds: number, signal: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const timer = window.setTimeout(() => {
+      signal.removeEventListener("abort", onAbort);
+      resolve();
+    }, milliseconds);
+    const onAbort = () => {
+      window.clearTimeout(timer);
+      reject(new DOMException("Aborted", "AbortError"));
+    };
+    signal.addEventListener("abort", onAbort, { once: true });
+  });
 }
 
 function hashCode(value: string): string {

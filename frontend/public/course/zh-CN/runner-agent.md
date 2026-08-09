@@ -115,9 +115,14 @@ docker run --rm --name cyanrex-runner-agent \
 8. 收到 Ctrl-C 时尽力发送 `draining` 心跳。
 
 管理员通过 `POST /runner/jobs/compile-check` 显式提交只编译作业，并用 `GET /runner/agents` 和
-`GET /runner/jobs` 查看状态。常规 `/ebpf/check`、`/ebpf/run` 不会自动改走 Agent，远程加载仍未
-启用；作业清单只记录源码大小，不记录源码正文。第一版协议只允许字面量安全系统头文件；引号、
-宏生成、父目录相对路径、`include_next`、`embed` 和头文件探测写法都会被拒绝。
+`GET /runner/jobs` 查看状态。已登录的编辑器用户通过 `GET /ebpf/check/backends` 获取脱敏后的编译
+后端清单；显式选择 Agent 后，编辑器用 `POST /ebpf/check/remote` 提交、用带 `job_id` 的同名 GET
+接口轮询，并通过 `POST /ebpf/check/remote/cancel` 取消过期请求。作业绑定当前用户，每个用户最多
+同时保留两个未终结的远程检查。
+
+编辑器默认使用本地检查；所选 Agent 不可用时会明确失败，不会静默回退。`/ebpf/run` 仍在本地执行，
+远程加载仍未启用。作业清单只记录源码大小，不记录源码正文。协议只允许字面量安全系统头文件；
+引号、宏生成、父目录相对路径、`include_next`、`embed` 和头文件探测写法都会被拒绝。
 
 ## 故障排查
 

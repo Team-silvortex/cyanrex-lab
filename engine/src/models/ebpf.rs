@@ -1,5 +1,10 @@
 use serde::{Deserialize, Serialize};
 
+use super::{
+    runner_agent::{RunnerAgentIsolation, RunnerAgentState},
+    runner_job::RunnerJobState,
+};
+
 #[derive(Debug, Default, Clone, Copy, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum EbpfRuntimeBackend {
@@ -37,6 +42,47 @@ pub struct EbpfCheckResponse {
     pub diagnostics: Vec<EbpfCompilerDiagnostic>,
     pub stdout: String,
     pub stderr: String,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct EbpfRemoteCheckSubmitRequest {
+    pub code: String,
+    pub agent_id: String,
+    pub program_name: Option<String>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct EbpfRemoteCheckStatusQuery {
+    pub job_id: String,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct EbpfRemoteCheckCancelRequest {
+    pub job_id: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct EbpfRemoteCheckResponse {
+    pub job_id: String,
+    pub state: RunnerJobState,
+    pub agent_id: Option<String>,
+    pub message: String,
+    pub result: Option<EbpfCheckResponse>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct EbpfCheckBackend {
+    pub agent_id: String,
+    pub isolation: RunnerAgentIsolation,
+    pub state: RunnerAgentState,
+    pub available_slots: u16,
+    pub max_concurrent: u16,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct EbpfCheckBackendInventory {
+    pub local_available: bool,
+    pub agents: Vec<EbpfCheckBackend>,
 }
 
 #[derive(Debug, Clone, Deserialize)]

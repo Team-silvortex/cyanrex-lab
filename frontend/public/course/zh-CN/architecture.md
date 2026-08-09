@@ -180,7 +180,7 @@ Runner 模式由 `CYANREX_RUNNER_MODE` 配置（当前为 `local_process`）；�
 
 ### Runner Agent 控制面 v1
 
-可选的内存 Agent 注册表用于为远程 VM 或容器节点铺设控制面，但不会改变当前执行路径。
+可选的内存 Agent 注册表连接远程 VM 或容器编译节点，但不会让远程执行变成隐式行为。
 `POST /runner/agent/register` 登记协议版本、真实隔离类型、容量、能力和标签；
 `POST /runner/agent/heartbeat` 更新健康状态与空闲容量。节点超过 TTL 后显示为 `offline`，超过保留期
 后自动删除。`GET /runner/agents` 仅允许管理员读取节点清单。注册表不会持久化，Engine 重启后需要
@@ -235,7 +235,12 @@ lab-vm-01\n
 管理员可以通过 `POST /runner/jobs/probe` 投递探针，通过 `POST /runner/jobs/compile-check` 显式投递
 只编译作业，还可请求取消并查看队列。健康 Agent 按容量和能力领取作业，取得 256-bit Lease 和截止
 时间，通过 `/sync` 获取取消请求，最后回传有大小限制的结果。内存队列最多保留 512 个作业，终态
-保留 15 分钟。编译源码只出现在带签名的领取响应中，清单只记录字节数；`/ebpf/run` 仍在本地执行。
+保留 15 分钟。编译源码只出现在带签名的领取响应中，清单只记录字节数。
+
+已登录的编辑器用户可通过 `GET /ebpf/check/backends` 获取脱敏后的合格节点子集。显式选择 Agent 后，
+编辑器使用异步的 `POST /ebpf/check/remote`、同名状态 GET 和取消接口。队列按 Session 用户名绑定
+作业，对其他用户隐藏，每个用户最多同时进行两个远程检查。检查默认留在本地；所选 Agent 不可用时
+明确报错，不会静默回退。`/ebpf/run` 仍在本地执行。
 
 独立的 `cyanrex-runner-agent` 二进制为 Linux、WSL2 和无特权容器实现了这套协议。它使用 Rustls
 HTTPS 客户端，禁用重定向和环境代理，只在内存保存签发凭据，并在 Engine 状态丢失后自动重新注册。

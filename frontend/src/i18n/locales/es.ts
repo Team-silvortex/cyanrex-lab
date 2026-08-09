@@ -327,6 +327,13 @@ export const es: TranslationDict = {
       runtimeBackend: "Backend de ejecución",
       runtimeBpftool: "bpftool (predeterminado)",
       runtimeAya: "aya (experimental)",
+      compilerBackend: "Backend de diagnóstico en línea",
+      compilerBackendLocal: "Engine local (predeterminado)",
+      compilerBackendMissing: "{agent} (no disponible)",
+      compilerBackendLocalHint: "Los diagnósticos Clang automáticos se ejecutan en el Engine local con los headers seleccionados.",
+      compilerBackendRemoteHint: "Los diagnósticos se ejecutan en el Agent aislado; no cargan eBPF ni inyectan headers personalizados.",
+      compilerBackendUnavailableHint: "El Agent seleccionado no está disponible. Elige otro backend; no habrá fallback silencioso.",
+      compilerBackendDiscoveryFailed: "No se pudieron actualizar los Agents de compilación: {error}",
       runtimeAyaOnlyOnLinux:
         "El backend aya solo funciona en Linux (incluye enlace runtime/kernel). En hosts no Linux, cambia a bpftool o ejecuta en contenedor Linux.",
       runtimeAyaTracefsHint:

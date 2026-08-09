@@ -327,6 +327,13 @@ export const en: TranslationDict = {
       runtimeBackend: "Runtime Backend",
       runtimeBpftool: "bpftool (default)",
       runtimeAya: "aya (experimental)",
+      compilerBackend: "Inline Diagnostic Backend",
+      compilerBackendLocal: "Local Engine (default)",
+      compilerBackendMissing: "{agent} (unavailable)",
+      compilerBackendLocalHint: "Automatic Clang diagnostics run on the local Engine with selected header injection.",
+      compilerBackendRemoteHint: "Diagnostics run on the selected isolated Agent. Remote checks do not load eBPF or inject custom headers.",
+      compilerBackendUnavailableHint: "The selected Agent is unavailable. Choose another backend; Cyanrex will not silently fall back.",
+      compilerBackendDiscoveryFailed: "Could not refresh compiler Agents: {error}",
       runtimeAyaOnlyOnLinux:
         "aya backend currently requires Linux build/runtime. On non-Linux hosts, choose bpftool or run from a Linux engine container.",
       runtimeAyaTracefsHint:

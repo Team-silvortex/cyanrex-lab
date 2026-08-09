@@ -196,8 +196,8 @@ range `5`–`300`). Changing the mode label alone must never imply stronger isol
 
 ### Runner Agent control plane v1
 
-An optional in-memory Agent registry prepares remote VM or container nodes without changing the
-execution path. `POST /runner/agent/register` records protocol version, truthful isolation type,
+An optional in-memory Agent registry connects remote VM or container compiler nodes without making
+remote execution implicit. `POST /runner/agent/register` records protocol version, truthful isolation type,
 capacity, capabilities, and labels. `POST /runner/agent/heartbeat` updates health and free capacity;
 after the configured TTL a node is reported as `offline`, then removed after the retention window.
 `GET /runner/agents` exposes the inventory to administrators only. Registry state is intentionally
@@ -258,7 +258,14 @@ job with `POST /runner/jobs/compile-check`, request cancellation, and inspect `G
 A healthy Agent claims work according to capacity and capability, receives a 256-bit lease and
 deadline, checks cancellation, then posts a bounded result. The in-memory queue holds at most 512
 jobs and retains terminal records for 15 minutes. Compile source is delivered only in the signed
-claim response and is represented only by byte count in inventory. `/ebpf/run` stays local.
+claim response and is represented only by byte count in inventory.
+
+Authenticated editor users can discover a sanitized eligible subset through
+`GET /ebpf/check/backends`. An explicitly selected Agent uses the asynchronous
+`POST /ebpf/check/remote`, status GET, and cancellation endpoints. The queue binds these jobs to the
+session username, hides them from other users, and permits two active remote checks per user. Local
+checking is the default; an unavailable selected Agent produces an error instead of silently falling
+back. `/ebpf/run` stays local.
 
 The standalone `cyanrex-runner-agent` binary implements this protocol for Linux, WSL2, and
 unprivileged containers. It uses a Rustls HTTPS client, disables redirects and environment proxies,

@@ -243,10 +243,13 @@ administrator-only.
 - `POST /runner/jobs/probe`, `/runner/jobs/compile-check`, `/runner/jobs/cancel` — administrator-only remote job lifecycle
 - `POST /runner/agent/jobs/claim`, `/sync`, `/result` — signed Agent job protocol
 - `GET /runner/jobs` — administrator-only job inventory
+- `GET /ebpf/check/backends` — authenticated, sanitized local and eligible Agent compiler inventory
+- `POST`, `GET /ebpf/check/remote` and `POST /ebpf/check/remote/cancel` — user-scoped asynchronous remote diagnostics
 - `/ebpf/run` executes through the replaceable `RunnerDriver` boundary
 - Local Runner defaults to two global jobs, one job per user, and a 45-second execution timeout
 - `shared_kernel` is reported explicitly; quotas do not replace per-student VM isolation
 - Agent jobs use per-node HMAC credentials, replay protection, leases, capability matching, cancellation, and bounded results
+- Remote diagnostics require an explicit editor selection and never silently fall back; local checking remains the default
 - Optional compile jobs use restricted Clang and never load or return eBPF objects; `/ebpf/run` remote dispatch remains disabled
 - `cyanrex-runner-agent` connects trusted Linux, WSL2, and unprivileged container nodes to this protocol
 

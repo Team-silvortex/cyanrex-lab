@@ -7,7 +7,6 @@ use std::{
 };
 
 use chrono::Utc;
-use serde::Serialize;
 use sha2::{Digest, Sha256};
 use tokio::{
     io::{AsyncRead, AsyncReadExt},
@@ -16,7 +15,7 @@ use tokio::{
 };
 use uuid::Uuid;
 
-use crate::models::runner_job::{RunnerJobClaim, RunnerJobResultState};
+use crate::models::runner_job::{RunnerCompileReport, RunnerJobClaim, RunnerJobResultState};
 
 const MAX_SOURCE_BYTES: usize = 256 * 1024;
 const MAX_OBJECT_BYTES: u64 = 8 * 1024 * 1024;
@@ -32,20 +31,6 @@ pub struct RunnerJobExecution {
     pub state: RunnerJobResultState,
     pub message: String,
     pub output: Option<String>,
-}
-
-#[derive(Serialize)]
-struct CompileReport {
-    success: bool,
-    exit_code: Option<i32>,
-    timed_out: bool,
-    stdout: String,
-    stdout_truncated: bool,
-    stderr: String,
-    stderr_truncated: bool,
-    object_bytes: Option<u64>,
-    object_sha256: Option<String>,
-    duration_ms: u128,
 }
 
 struct CapturedStream {
@@ -244,7 +229,7 @@ async fn compile_source(
     config: &RunnerCompileExecutorConfig,
     source: &str,
     available: Duration,
-) -> Result<CompileReport, String> {
+) -> Result<RunnerCompileReport, String> {
     let workspace = CompileWorkspace::create(&config.work_root)?;
     let source_path = workspace.path.join("program.c");
     let object_path = workspace.path.join("program.o");
@@ -310,7 +295,7 @@ async fn compile_source(
     } else {
         (None, None)
     };
-    Ok(CompileReport {
+    Ok(RunnerCompileReport {
         success,
         exit_code: status.and_then(|value| value.code()),
         timed_out,

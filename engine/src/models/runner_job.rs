@@ -36,6 +36,20 @@ pub struct RunnerCompileCheckSubmitRequest {
     pub timeout_seconds: Option<u64>,
 }
 
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct RunnerCompileReport {
+    pub success: bool,
+    pub exit_code: Option<i32>,
+    pub timed_out: bool,
+    pub stdout: String,
+    pub stdout_truncated: bool,
+    pub stderr: String,
+    pub stderr_truncated: bool,
+    pub object_bytes: Option<u64>,
+    pub object_sha256: Option<String>,
+    pub duration_ms: u128,
+}
+
 #[derive(Debug, Clone, Deserialize)]
 pub struct RunnerJobCancelRequest {
     pub job_id: String,
@@ -99,6 +113,7 @@ pub struct RunnerJobView {
     pub state: RunnerJobState,
     pub target_agent_id: Option<String>,
     pub assigned_agent_id: Option<String>,
+    pub owner_username: Option<String>,
     pub message: String,
     pub source_bytes: Option<usize>,
     pub program_name: Option<String>,

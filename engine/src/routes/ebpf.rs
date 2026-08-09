@@ -3,7 +3,13 @@ use std::{
     sync::{Arc, OnceLock},
 };
 
-use axum::{extract::State, http::HeaderMap, http::StatusCode, Json};
+use axum::{
+    extract::{Query, State},
+    http::HeaderMap,
+    http::StatusCode,
+    response::{IntoResponse, Response},
+    Json,
+};
 use chrono::Utc;
 use serde_json::{json, Value};
 use tokio::{
@@ -18,12 +24,20 @@ use crate::{
     models::{
         ebpf::{
             EbpfAttachmentDetail, EbpfAttachmentDetailListResponse, EbpfAttachmentListResponse,
-            EbpfCheckResponse, EbpfCompletionRequest, EbpfCompletionResponse, EbpfDetachRequest,
-            EbpfDetachResponse, EbpfRunRequest, EbpfRunResponse, EbpfRuntimeBackend, EbpfTemplate,
+            EbpfCheckBackend, EbpfCheckBackendInventory, EbpfCheckResponse, EbpfCompletionRequest,
+            EbpfCompletionResponse, EbpfDetachRequest, EbpfDetachResponse,
+            EbpfRemoteCheckCancelRequest, EbpfRemoteCheckResponse, EbpfRemoteCheckStatusQuery,
+            EbpfRemoteCheckSubmitRequest, EbpfRunRequest, EbpfRunResponse, EbpfRuntimeBackend,
+            EbpfTemplate,
         },
         event::{Event, EventCategory, EventSeverity},
+        runner_agent::{RunnerAgentIsolation, RunnerAgentState},
+        runner_job::{RunnerCompileReport, RunnerJobState, RunnerJobView},
     },
-    services::{runner_driver::RunnerExecutionRequest, runner_manager::RunnerExecutionError},
+    services::{
+        runner_driver::RunnerExecutionRequest, runner_job_queue::RunnerJobQueueError,
+        runner_manager::RunnerExecutionError,
+    },
     AppState,
 };
 
@@ -34,6 +48,7 @@ static EBPF_COMPLETION_SLOTS: OnceLock<Semaphore> = OnceLock::new();
 include!("ebpf/handlers.inc.rs");
 include!("ebpf/learning.inc.rs");
 include!("ebpf/check.inc.rs");
+include!("ebpf/remote_check.inc.rs");
 include!("ebpf/completion.inc.rs");
 include!("ebpf/stream.inc.rs");
 include!("ebpf/ringbuf.inc.rs");

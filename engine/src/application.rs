@@ -125,6 +125,15 @@ fn authenticated_routes(state: Arc<AppState>) -> Router<Arc<AppState>> {
         .route("/runner/status", get(routes::runner::status))
         .route("/ebpf/run", post(routes::ebpf::run_ebpf))
         .route("/ebpf/check", post(routes::ebpf::check_ebpf))
+        .route("/ebpf/check/backends", get(routes::ebpf::check_backends))
+        .route(
+            "/ebpf/check/remote",
+            get(routes::ebpf::remote_check_status).post(routes::ebpf::submit_remote_check),
+        )
+        .route(
+            "/ebpf/check/remote/cancel",
+            post(routes::ebpf::cancel_remote_check),
+        )
         .route("/ebpf/complete", post(routes::ebpf::complete_ebpf))
         .route("/ebpf/detach", post(routes::ebpf::detach_ebpf))
         .route("/ebpf/attachments", get(routes::ebpf::list_attachments))

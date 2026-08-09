@@ -46,6 +46,29 @@ export type EbpfCheckResponse = {
   stderr: string;
 };
 
+export type EbpfCheckBackend = {
+  agent_id: string;
+  isolation: "container" | "virtual_machine" | "dedicated_host" | "shared_kernel";
+  state: "healthy" | "degraded" | "draining" | "offline";
+  available_slots: number;
+  max_concurrent: number;
+};
+
+export type EbpfCheckBackendInventory = {
+  local_available: boolean;
+  agents: EbpfCheckBackend[];
+};
+
+export type EbpfRemoteCheckResponse = {
+  job_id: string;
+  state: "queued" | "claimed" | "cancel_requested" | "succeeded" | "failed" | "cancelled" | "expired";
+  agent_id?: string | null;
+  message: string;
+  result?: EbpfCheckResponse | null;
+};
+
+export type EbpfCompilerTarget = "local" | `agent:${string}`;
+
 export type EbpfCompletionItem = {
   label: string;
   insert_text: string;

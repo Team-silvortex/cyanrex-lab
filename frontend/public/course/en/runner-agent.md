@@ -120,10 +120,16 @@ so registration credentials cannot be forwarded to another endpoint accidentally
 7. Re-register automatically when the Engine loses in-memory Agent state.
 8. Send a best-effort `draining` heartbeat on Ctrl-C.
 
-Administrators submit an explicit compile-only job with `POST /runner/jobs/compile-check` and use
-`GET /runner/agents` or `GET /runner/jobs` to inspect state. Normal `/ebpf/check` and `/ebpf/run`
-requests are not redirected to an Agent; remote loading remains disabled. Inventory records source
-size, not source text. This first protocol accepts only literal safe system-header includes; quoted,
+Administrators submit explicit compile-only jobs with `POST /runner/jobs/compile-check` and inspect
+them through `GET /runner/agents` or `GET /runner/jobs`. Authenticated editor users see a sanitized
+compiler inventory at `GET /ebpf/check/backends`. After explicitly selecting an Agent, the editor
+submits `POST /ebpf/check/remote`, polls `GET /ebpf/check/remote?job_id=...`, and cancels stale work
+through `POST /ebpf/check/remote/cancel`. Jobs are bound to the current user, and each user may have
+at most two non-terminal remote checks.
+
+The editor defaults to local checking and never silently falls back when the selected Agent is
+unavailable. `/ebpf/run` remains local, so remote loading is still disabled. Inventory records source
+size, not source text. This protocol accepts only literal safe system-header includes; quoted,
 macro-generated, parent-relative, `include_next`, `embed`, and include-probing forms are rejected.
 
 ## Troubleshooting

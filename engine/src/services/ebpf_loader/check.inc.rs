@@ -120,7 +120,7 @@ fn selected_headers_cache_key(selected_headers: &[SelectedHeaderMetadata]) -> St
     source_cache_key(&signature.join("|"))
 }
 
-fn parse_clang_diagnostics(stderr: &str) -> Vec<EbpfCompilerDiagnostic> {
+pub(crate) fn parse_clang_diagnostics(stderr: &str) -> Vec<EbpfCompilerDiagnostic> {
     stderr
         .lines()
         .filter_map(|line| {
