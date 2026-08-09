@@ -82,9 +82,12 @@ five lab states. A student attempt is recorded only when the eBPF editor was ope
 context and `/ebpf/run` reached the Engine. Completion therefore cannot be set by a browser-only
 checkbox.
 
-Automated checks cover the required template/source patterns, compile/load success, and attachment
-verification where the lab requires it. They do not grade explanations. Treat `completed` as
-"runtime acceptance passed", then review the reasoning questions below.
+Automated checks require the expected template, a successful `run` stage, structured source
+evidence, and attachment verification where the lab requires it. Source evidence uses C tokens:
+comments, string literals, helper-name substrings, and preprocessor definitions do not count.
+Equivalent null guards such as `if (!counter)` and `if (counter == NULL)` are accepted. These
+checks do not grade explanations. Treat `completed` as "runtime acceptance passed", then review
+the reasoning questions below.
 
 Do not only grade `success` state. Ask students to explain:
 

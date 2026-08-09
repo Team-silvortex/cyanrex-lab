@@ -123,14 +123,14 @@ Run security audit directly:
 Build a distribution package:
 
 ```bash
-./scripts/package-distribution.sh --version 0.1.0
-./scripts/package-distribution.sh --version 0.1.0 --compose-template docker/docker-compose.yml   # custom compose if needed
+./scripts/package-distribution.sh --version 0.2.0
+./scripts/package-distribution.sh --version 0.2.0 --compose-template docker/docker-compose.yml   # custom compose if needed
 ```
 
 If you already have local images (for example CI or private registry preloads), package without rebuilding:
 
 ```bash
-./scripts/package-distribution.sh --skip-build --engine-image myrepo/cyanrex-engine:0.1.0 --frontend-image myrepo/cyanrex-frontend:0.1.0
+./scripts/package-distribution.sh --skip-build --engine-image myrepo/cyanrex-engine:0.2.0 --frontend-image myrepo/cyanrex-frontend:0.2.0
 ```
 
 Distributed package entry points:

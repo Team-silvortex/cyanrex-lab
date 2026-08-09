@@ -1,10 +1,15 @@
 # cyanrex-lab
 
-Version: `0.1.0`
+Version: `0.2.0`
 
 Cyanrex monorepo for eBPF experiments: Axum engine + Next.js dashboard + module utilities.
 
 Architecture: [English](docs/en/architecture.md) · [简体中文](docs/zh-CN/architecture.md)
+
+cyanrex-lab is free and open source under the [Apache License 2.0](LICENSE).
+Contributions are welcome; start with [CONTRIBUTING.md](CONTRIBUTING.md), follow the
+[community code of conduct](CODE_OF_CONDUCT.md), and report vulnerabilities through the
+private process in [SECURITY.md](SECURITY.md).
 
 ## Repository Layout
 
@@ -127,12 +132,12 @@ privileged and must not be exposed to untrusted users.
 For classroom deployment or offline distribution, create a packaged artifact with prebuilt Docker images:
 
 ```bash
-./scripts/package-distribution.sh --version 0.1.0
+./scripts/package-distribution.sh --version 0.2.0
 ```
 
 This produces:
-- `dist/cyanrex-lab-0.1.0-<timestamp>.tar.gz`
-- `dist/cyanrex-lab-0.1.0-<timestamp>.tar.gz.sha256`
+- `dist/cyanrex-lab-0.2.0-<timestamp>.tar.gz`
+- `dist/cyanrex-lab-0.2.0-<timestamp>.tar.gz.sha256`
 
 Usage on target machine:
 

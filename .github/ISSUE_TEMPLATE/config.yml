@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/Team-silvortex/cyanrex-lab/security/advisories/new
+    about: Report unpatched vulnerabilities privately.
+  - name: Troubleshooting guide
+    url: https://github.com/Team-silvortex/cyanrex-lab/blob/main/docs/en/troubleshooting.md
+    about: Check common Docker, WSL2, native Linux, kernel, and browser issues first.

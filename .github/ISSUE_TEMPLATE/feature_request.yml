@@ -1,0 +1,49 @@
+name: Feature request
+description: Propose an improvement for teaching, learning, or self-hosting
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Teaching or operational problem
+      description: Describe the learner, educator, contributor, or operator need before proposing a solution.
+    validations:
+      required: true
+  - type: dropdown
+    id: audience
+    attributes:
+      label: Primary audience
+      options:
+        - Student
+        - Teacher
+        - Self-hosting operator
+        - Course author
+        - Contributor
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: What should a user be able to do? Include a small example or workflow if useful.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Describe current workarounds or smaller approaches you considered.
+  - type: textarea
+    id: compatibility
+    attributes:
+      label: Environment and compatibility impact
+      description: Note affected kernels, architectures, Docker/WSL/native modes, permissions, or migrations.
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      options:
+        - label: I am willing to help implement or document this proposal.
