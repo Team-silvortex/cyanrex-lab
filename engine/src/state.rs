@@ -7,7 +7,8 @@ use crate::{
         auth_service::AuthService, c_header_module::CHeaderModule,
         command_dispatcher::CommandDispatcher, ebpf_loader::EbpfLoader,
         environment_checker::EnvironmentChecker, event_bus::EventBus,
-        learning_store::LearningStore, module_manager::ModuleManager, script_store::ScriptStore,
+        learning_store::LearningStore, module_manager::ModuleManager,
+        runner_manager::RunnerManager, script_store::ScriptStore,
     },
 };
 
@@ -20,6 +21,7 @@ pub struct AppState {
     pub ebpf_loader: EbpfLoader,
     pub script_store: ScriptStore,
     pub learning_store: LearningStore,
+    pub runner_manager: RunnerManager,
     pub environment_checker: EnvironmentChecker,
     pub c_header_module: CHeaderModule,
     performance_metrics: Arc<PerformanceMetrics>,
@@ -27,15 +29,19 @@ pub struct AppState {
 
 pub fn build_state() -> Arc<AppState> {
     let module_manager = ModuleManager::default();
+    let ebpf_loader = EbpfLoader::default();
+    let runner_manager = RunnerManager::from_env(ebpf_loader.clone())
+        .unwrap_or_else(|error| panic!("invalid Runner configuration: {error}"));
 
     Arc::new(AppState {
         auth_service: AuthService::new_with_default_admin(),
         command_dispatcher: CommandDispatcher::new(module_manager.clone()),
         module_manager,
         event_bus: EventBus::new(1024),
-        ebpf_loader: EbpfLoader::default(),
+        ebpf_loader,
         script_store: ScriptStore::default(),
         learning_store: LearningStore::default(),
+        runner_manager,
         environment_checker: EnvironmentChecker,
         c_header_module: CHeaderModule::default(),
         performance_metrics: Arc::new(PerformanceMetrics::default()),

@@ -233,6 +233,14 @@ administrator-only.
 - `GET /helper/environment`
   - runtime checks include `bpftool_autoattach`, `bpftool_link_show`, `btf_dump`, `bpffs_mount_type`, `runtime_context`
 
+## Runner APIs (Implemented)
+
+- `GET /runner/status` — authenticated capacity and explicit isolation level
+- `GET /runner/overview` — administrator-only active lease owners and deadlines
+- `/ebpf/run` executes through the replaceable `RunnerDriver` boundary
+- Local Runner defaults to two global jobs, one job per user, and a 45-second execution timeout
+- `shared_kernel` is reported explicitly; quotas do not replace per-student VM isolation
+
 ## Scripts APIs (Implemented)
 
 - `GET /scripts` (user-scoped list)

@@ -16,7 +16,8 @@ they can perform privileged kernel observation and loading. Do not expose Engine
 - eBPF checks, semantic completion, script list/save/delete, and session-bound operations are available to authenticated users.
 - Module browsing is available to admin/teacher roles; module modification and system-level settings remain administrator-only.
 - Temporary lockout after repeated login failures.
-- Concurrency, source size, and execution time limits are enforced for eBPF tasks.
+- Global and per-user Runner capacity, source size, and execution time limits are enforced for eBPF tasks.
+- Runner status reports `shared_kernel`; local quotas do not claim tenant isolation.
 - DB stores session token hashes, not raw usable tokens.
 
 These measures reduce accidental exposure, but they do not make the privileged Engine a shared safe runtime.

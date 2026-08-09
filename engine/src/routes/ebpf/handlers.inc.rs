@@ -46,6 +46,21 @@ pub async fn run_ebpf(
         return (StatusCode::BAD_REQUEST, Json(validation_error));
     }
 
+    let runner_lease = match state
+        .runner_manager
+        .try_acquire(&username, runtime_backend)
+    {
+        Ok(lease) => lease,
+        Err(error) => {
+            return (
+                StatusCode::TOO_MANY_REQUESTS,
+                Json(EbpfRunResponse::validation_error(error.message())),
+            )
+        }
+    };
+    let runner_id = runner_lease.runner_id().to_string();
+    let execution_timeout = state.runner_manager.execution_timeout();
+
     state
         .event_bus
         .publish(Event {
@@ -62,42 +77,41 @@ pub async fn run_ebpf(
                 "template_id": template_id.clone(),
                 "lab_id": lab_id.clone(),
                 "runtime_backend": runtime_backend,
+                "runner_id": runner_id.clone(),
                 "debug_breakpoints": payload.debug_breakpoints.clone().unwrap_or_default(),
             }),
         })
         .await;
 
-    let slots = EBPF_RUN_SLOTS.get_or_init(|| Semaphore::new(2));
-    let Ok(_permit) = slots.try_acquire() else {
-        return (
-            StatusCode::TOO_MANY_REQUESTS,
-            Json(EbpfRunResponse::validation_error(
-                "too many eBPF jobs are already running",
-            )),
-        );
-    };
-    let mut result = match tokio::time::timeout(
-        EBPF_EXECUTION_TIMEOUT,
-        state
-            .ebpf_loader
-            .run(
-                &username,
-                &payload.code,
-                Some(program_name),
+    let mut result = match state
+        .runner_manager
+        .execute(
+            &runner_lease,
+            RunnerExecutionRequest {
+                owner_username: &username,
+                code: &payload.code,
+                program_name: Some(program_name),
                 runtime_backend,
-                &selected_headers,
-                payload.debug_breakpoints.as_deref(),
-            ),
-    )
-    .await
+                selected_headers: &selected_headers,
+                debug_breakpoints: payload.debug_breakpoints.as_deref(),
+            },
+        )
+        .await
     {
         Ok(result) => result,
-        Err(_) => {
+        Err(RunnerExecutionError::Timeout) => {
             return (
                 StatusCode::REQUEST_TIMEOUT,
-                Json(EbpfRunResponse::validation_error(
-                    "eBPF job exceeded the 45 second execution limit",
-                )),
+                Json(EbpfRunResponse::validation_error(format!(
+                    "eBPF job exceeded the {} second execution limit",
+                    execution_timeout.as_secs()
+                ))),
+            )
+        }
+        Err(error) => {
+            return (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(EbpfRunResponse::validation_error(error.message())),
             )
         }
     };
@@ -124,24 +138,26 @@ pub async fn run_ebpf(
 
             if detached.is_ok() {
                 runtime_backend = EbpfRuntimeBackend::Aya;
-                result = match tokio::time::timeout(
-                    EBPF_EXECUTION_TIMEOUT,
-                    state.ebpf_loader.run(
-                        &username,
-                        &payload.code,
-                        Some(program_name),
-                        runtime_backend,
-                        &selected_headers,
-                        payload.debug_breakpoints.as_deref(),
-                    ),
-                )
-                .await
+                result = match state
+                    .runner_manager
+                    .execute(
+                        &runner_lease,
+                        RunnerExecutionRequest {
+                            owner_username: &username,
+                            code: &payload.code,
+                            program_name: Some(program_name),
+                            runtime_backend,
+                            selected_headers: &selected_headers,
+                            debug_breakpoints: payload.debug_breakpoints.as_deref(),
+                        },
+                    )
+                    .await
                 {
                     Ok(aya_result) => aya_result,
-                    Err(_) => EbpfRunResponse {
+                    Err(error) => EbpfRunResponse {
                         success: false,
                         stage: "load".to_string(),
-                        message: "Aya debug fallback exceeded the execution limit".to_string(),
+                        message: format!("Aya debug fallback failed: {}", error.message()),
                         compile_stdout: result.compile_stdout.clone(),
                         compile_stderr: result.compile_stderr.clone(),
                         load_stdout: String::new(),
@@ -175,6 +191,7 @@ pub async fn run_ebpf(
                             "previous_pin_path": previous_pin,
                             "program_name": program_name,
                             "template_id": template_id.clone(),
+                            "runner_id": runner_id.clone(),
                         }),
                     })
                     .await;
@@ -251,6 +268,7 @@ pub async fn run_ebpf(
                     "program_name": program_name,
                     "template_id": template_id.clone(),
                     "runtime_backend": runtime_backend,
+                    "runner_id": runner_id.clone(),
                     "expected_autoattach": expect_attach,
                     "attached": attach_check.attached,
                     "reason": attach_check.reason,
@@ -307,6 +325,7 @@ pub async fn run_ebpf(
                     "program_name": program_name,
                     "template_id": template_id.clone(),
                     "runtime_backend": runtime_backend,
+                    "runner_id": runner_id.clone(),
                     "debug_session_id": debug_session_id,
                 }),
             })
@@ -355,6 +374,7 @@ pub async fn run_ebpf(
                 "template_id": template_id,
                 "lab_id": lab_id,
                 "runtime_backend": runtime_backend,
+                "runner_id": runner_id,
                 "debug": result.debug.clone(),
             }),
         })

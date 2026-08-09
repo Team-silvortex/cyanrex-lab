@@ -19,10 +19,25 @@ type EnvironmentReport = {
   checks: EnvironmentCheckItem[];
 };
 
+type RunnerStatus = {
+  mode: string;
+  isolation: string;
+  instance_id: string;
+  max_concurrent: number;
+  max_per_user: number;
+  active_total: number;
+  active_for_current_user: number;
+  available_slots: number;
+  execution_timeout_seconds: number;
+};
+
 export default function HelperPage() {
   const { t } = useI18n();
   const [report, setReport] = useState<EnvironmentReport | null>(() =>
     loadPageState<EnvironmentReport>("helper_report_v1"),
+  );
+  const [runner, setRunner] = useState<RunnerStatus | null>(() =>
+    loadPageState<RunnerStatus>("helper_runner_status_v1"),
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(() =>
@@ -36,15 +51,19 @@ export default function HelperPage() {
     setError(null);
 
     try {
-      const response = await fetch(`${engineUrl}/helper/environment`, {
-        credentials: "include",
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
+      const [environmentResponse, runnerResponse] = await Promise.all([
+        fetch(`${engineUrl}/helper/environment`, { credentials: "include" }),
+        fetch(`${engineUrl}/runner/status`, { credentials: "include" }),
+      ]);
+      if (!environmentResponse.ok || !runnerResponse.ok) {
+        throw new Error(`HTTP ${environmentResponse.status}/${runnerResponse.status}`);
       }
-      const json = (await response.json()) as EnvironmentReport;
-      setReport(json);
-      savePageState("helper_report_v1", json);
+      const environmentJson = (await environmentResponse.json()) as EnvironmentReport;
+      const runnerJson = (await runnerResponse.json()) as RunnerStatus;
+      setReport(environmentJson);
+      setRunner(runnerJson);
+      savePageState("helper_report_v1", environmentJson);
+      savePageState("helper_runner_status_v1", runnerJson);
       savePageState("helper_error_v1", "");
     } catch (err) {
       const msg = (err as Error).message;
@@ -95,6 +114,34 @@ export default function HelperPage() {
           </div>
         )}
       </section>
+
+      {runner && (
+        <section className="panel">
+          <h2>{t("helper.runnerStatus")}</h2>
+          <div className="grid" style={{ marginTop: 10 }}>
+            <article className="panel" style={{ background: "#0b1425" }}>
+              <strong>{t("helper.runnerMode")}</strong>
+              <p><code>{runner.mode}</code></p>
+              <p className="meta">{runner.instance_id}</p>
+            </article>
+            <article className="panel" style={{ background: "#0b1425" }}>
+              <strong>{t("helper.runnerCapacity")}</strong>
+              <p>{runner.active_total}/{runner.max_concurrent}</p>
+              <p className="meta">{t("helper.runnerAvailable")}: {runner.available_slots}</p>
+            </article>
+            <article className="panel" style={{ background: "#0b1425" }}>
+              <strong>{t("helper.runnerUserCapacity")}</strong>
+              <p>{runner.active_for_current_user}/{runner.max_per_user}</p>
+              <p className="meta">
+                {t("helper.runnerTimeout")}: {runner.execution_timeout_seconds}s
+              </p>
+            </article>
+          </div>
+          <p className="error" style={{ marginTop: 12 }}>
+            {t("helper.runnerIsolation")}: <code>{runner.isolation}</code> — {t("helper.runnerSharedKernelWarning")}
+          </p>
+        </section>
+      )}
     </SidebarLayout>
   );
 }

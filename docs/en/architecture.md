@@ -162,7 +162,8 @@ flowchart LR
     C --> R["POST /ebpf/run"]
     V --> CL["clang diagnostics"]
     X --> CL
-    R --> CL
+    R --> RM["RunnerManager lease"]
+    RM --> CL
     CL --> L["bpftool or Aya backend"]
     L --> K["Verifier + kernel hook"]
     K --> O["ringbuf event_pipe or trace log"]
@@ -174,6 +175,24 @@ flowchart LR
 Compilation-only checks never load code. Run requests compile and load only after authentication
 and validation. The `bpftool` backend provides the broad compatibility path; Aya currently covers
 the supported tracepoint path.
+
+`RunnerManager` gives every run a unique lease, enforces global and per-user capacity, and releases
+the lease on success, failure, timeout, or task cancellation. `GET /runner/status` shows a user the
+current capacity; the admin-only `GET /runner/overview` also lists active lease owners and deadlines.
+The local runner reports `isolation=shared_kernel` deliberately: its quotas are resource controls,
+not a security boundary. Workspaces and bpffs pins are separated by instance plus a hashed user
+namespace, and transient compile files are removed when a run scope ends.
+
+Routes submit a `RunnerExecutionRequest` through the `RunnerDriver` interface instead of calling the
+loader directly. `LocalProcessRunnerDriver` owns the existing `EbpfLoader` path. A future VM or
+remote-container driver must implement the same execution contract and provide truthful mode and
+isolation descriptors. Unknown `CYANREX_RUNNER_MODE` values fail Engine startup; there is no implicit
+fallback to privileged local execution.
+
+Runner mode is configured with `CYANREX_RUNNER_MODE` (currently `local_process`). Limits use
+`CYANREX_RUNNER_MAX_CONCURRENT` (default `2`),
+`CYANREX_RUNNER_MAX_PER_USER` (default `1`), and `CYANREX_RUNNER_TIMEOUT_SECS` (default `45`, allowed
+range `5`–`300`). Changing the mode label alone must never imply stronger isolation.
 
 Source breakpoints add line-preserving `bpf_printk` probes before compilation. The API returns a
 per-run debug session identifier plus instrumented and rejected source lines. Matching trace-log

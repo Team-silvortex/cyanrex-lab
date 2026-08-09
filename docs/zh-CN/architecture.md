@@ -149,7 +149,8 @@ flowchart LR
     C --> R["POST /ebpf/run"]
     V --> CL["clang 诊断"]
     X --> CL
-    R --> CL
+    R --> RM["RunnerManager 租约"]
+    RM --> CL
     CL --> L["bpftool 或 Aya"]
     L --> K["Verifier + 内核 Hook"]
     K --> O["Ring Buffer 或 Trace Log"]
@@ -160,6 +161,22 @@ flowchart LR
 
 仅检查请求不会加载程序；运行请求必须通过身份和输入校验后才会编译、加载。`bpftool` 是兼容性
 最广的路径，Aya 当前负责已支持的 tracepoint 路径。
+
+`RunnerManager` 为每次运行创建唯一租约，执行全局和单用户容量限制，并在成功、失败、超时或
+任务取消时释放租约。用户可通过 `GET /runner/status` 查看当前容量；管理员专用的
+`GET /runner/overview` 还会列出活动租约的所有者和截止时间。本地 Runner 会明确报告
+`isolation=shared_kernel`：配额属于资源控制，不是安全隔离边界。临时工作区和 bpffs pin 按实例
+及匿名化用户命名空间分开，运行作用域结束后会删除临时编译文件。
+
+路由不再直接调用 loader，而是把 `RunnerExecutionRequest` 交给 `RunnerDriver` 接口。
+`LocalProcessRunnerDriver` 承载现有 `EbpfLoader` 路径；未来的 VM 或远程容器驱动必须实现相同
+执行契约，并如实提供模式和隔离级别。未知 `CYANREX_RUNNER_MODE` 会让 Engine 启动失败，系统
+不会静默降级到特权本地执行。
+
+Runner 模式由 `CYANREX_RUNNER_MODE` 配置（当前为 `local_process`）；配额由
+`CYANREX_RUNNER_MAX_CONCURRENT`（默认 `2`）、
+`CYANREX_RUNNER_MAX_PER_USER`（默认 `1`）和 `CYANREX_RUNNER_TIMEOUT_SECS`（默认 `45`，范围
+`5`～`300`）配置。不能只修改模式名称来暗示更强的隔离能力。
 
 源码断点会在编译前加入不改变行号的 `bpf_printk` 探针。API 返回每次运行独立的调试会话标识，
 以及已插桩和被拒绝的源码行。匹配的 Trace Log 会转换成 `ebpf.debug_breakpoint_hit` 事件，其他

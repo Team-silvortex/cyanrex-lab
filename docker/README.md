@@ -21,6 +21,17 @@ You can also tune event persistence behavior in `docker/.env` if needed:
 - `CYANREX_EVENT_PERSIST_QUEUE_CLEAR_RATIO_PCT` (default: `40`)
 - `CYANREX_EVENT_PERSIST_QUEUE_WARNING_INTERVAL_MS` (default: `10000`)
 
+Local Runner capacity is configurable in the same file:
+
+- `CYANREX_RUNNER_MODE` (currently supported: `local_process`)
+- `CYANREX_RUNNER_MAX_CONCURRENT` (default: `2`, range: `1`–`32`)
+- `CYANREX_RUNNER_MAX_PER_USER` (default: `1`, never above the global limit)
+- `CYANREX_RUNNER_TIMEOUT_SECS` (default: `45`, range: `5`–`300`)
+
+These are fairness and resource limits. The Docker Engine still reports `shared_kernel` and is not
+a multi-tenant isolation boundary. An unsupported mode fails Engine startup instead of silently
+falling back to local execution.
+
 ## eBPF Notes
 
 - `engine` is an intentionally privileged teaching sandbox with host PID visibility.

@@ -11,11 +11,8 @@ impl EbpfLoader {
             return EbpfRunResponse::validation_error("eBPF source code is empty");
         }
 
-        let temp_dir = std::env::temp_dir().join(format!(
-            "cyanrex-ebpf-{}-{}",
-            std::process::id(),
-            Uuid::new_v4().simple()
-        ));
+        let workspace = RunWorkspace::new(owner_username);
+        let temp_dir = workspace.path().to_path_buf();
 
         if let Err(err) = fs::create_dir_all(&temp_dir).await {
             return EbpfRunResponse {
@@ -79,7 +76,7 @@ impl EbpfLoader {
         }
 
         let clang_bin = Self::resolve_clang_binary();
-        let mut compile_cmd = Command::new(clang_bin);
+        let mut compile_cmd = child_command(clang_bin);
         compile_cmd
             .arg("-O2")
             .arg("-g")
@@ -136,7 +133,7 @@ impl EbpfLoader {
             };
         }
 
-        let bpffs_pin = Self::pin_path();
+        let bpffs_pin = Self::pin_path(owner_username);
         if runtime_backend != EbpfRuntimeBackend::Aya {
             if let Err(error) = fs::create_dir_all(&bpffs_pin).await {
                 return EbpfRunResponse {
@@ -167,7 +164,7 @@ impl EbpfLoader {
                 .await;
         }
 
-        let load_with_attach = Command::new("bpftool")
+        let load_with_attach = child_command("bpftool")
             .arg("prog")
             .arg("loadall")
             .arg(&object_path)
@@ -205,7 +202,7 @@ impl EbpfLoader {
         };
 
         if !load_with_attach.status.success() && Self::autoattach_unsupported(&load_stderr) {
-            let fallback = Command::new("bpftool")
+            let fallback = child_command("bpftool")
                 .arg("prog")
                 .arg("loadall")
                 .arg(&object_path)
@@ -465,11 +462,12 @@ impl EbpfLoader {
         Err("aya runtime backend is supported only on Linux".to_string())
     }
 
-    fn pin_path() -> PathBuf {
+    fn pin_path(owner_username: &str) -> PathBuf {
         let namespace = crate::config::runtime_instance_id();
         let name = format!("{}_{}", std::process::id(), Uuid::new_v4().simple());
         PathBuf::from("/sys/fs/bpf/cyanrex")
             .join(namespace)
+            .join(owner_namespace(owner_username))
             .join(name)
     }
 

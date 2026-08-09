@@ -101,6 +101,7 @@ fn authenticated_routes(state: Arc<AppState>) -> Router<Arc<AppState>> {
         .route("/scripts/delete", post(routes::scripts::delete_script))
         .route("/learning/labs", get(routes::learning::list_labs))
         .route("/learning/attempts", get(routes::learning::list_attempts))
+        .route("/runner/status", get(routes::runner::status))
         .route("/ebpf/run", post(routes::ebpf::run_ebpf))
         .route("/ebpf/check", post(routes::ebpf::check_ebpf))
         .route("/ebpf/complete", post(routes::ebpf::complete_ebpf))
@@ -152,6 +153,7 @@ fn admin_routes(state: Arc<AppState>) -> Router<Arc<AppState>> {
         .route("/modules/start", post(routes::modules::start_module))
         .route("/modules/stop", post(routes::modules::stop_module))
         .route("/command", post(routes::command::dispatch_command))
+        .route("/runner/overview", get(routes::runner::overview))
         .route(
             "/modules/c-headers/download",
             post(routes::c_headers::download_header),

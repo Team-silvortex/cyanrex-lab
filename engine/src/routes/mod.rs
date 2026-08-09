@@ -8,5 +8,6 @@ pub mod helper;
 pub mod index;
 pub mod learning;
 pub mod modules;
+pub mod runner;
 pub mod scripts;
 pub mod settings;

@@ -22,3 +22,4 @@ include!("routes_tdd/modules.inc.rs");
 include!("routes_tdd/auth.inc.rs");
 include!("routes_tdd/auth_csrf.inc.rs");
 include!("routes_tdd/learning.inc.rs");
+include!("routes_tdd/runner.inc.rs");

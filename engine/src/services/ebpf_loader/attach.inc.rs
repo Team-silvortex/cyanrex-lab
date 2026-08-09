@@ -54,7 +54,7 @@ impl EbpfLoader {
                 ];
 
                 for args in attempts {
-                    let output = Command::new("bpftool")
+                    let output = child_command("bpftool")
                         .args(args.iter().map(String::as_str))
                         .stdout(Stdio::piped())
                         .stderr(Stdio::piped())
@@ -95,7 +95,7 @@ impl EbpfLoader {
     }
 
     async fn supports_tracepoint_prog_attach() -> bool {
-        let output = match Command::new("bpftool")
+        let output = match child_command("bpftool")
             .arg("prog")
             .arg("help")
             .stdout(Stdio::piped())

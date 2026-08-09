@@ -426,7 +426,7 @@ impl EbpfLoader {
                 if !btf_path.exists() {
                     return Err("kernel BTF file /sys/kernel/btf/vmlinux not found".to_string());
                 }
-                let output = Command::new("bpftool")
+                let output = child_command("bpftool")
                     .arg("btf")
                     .arg("dump")
                     .arg("file")

@@ -68,7 +68,7 @@ impl EbpfLoader {
         }
 
         let completion_at = format!("{}:{line}:{column}", source_path.display());
-        let mut command = Command::new(Self::resolve_clang_binary());
+        let mut command = child_command(Self::resolve_clang_binary());
         command
             .kill_on_drop(true)
             .arg("-target")
