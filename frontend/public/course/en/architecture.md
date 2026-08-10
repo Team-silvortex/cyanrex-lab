@@ -46,6 +46,8 @@ The frontend follows four practical layers:
 pages/                    Route-level screens and orchestration
 src/components/           Shared visual and navigation components
 src/features/ebpf/        eBPF editor feature state and workflows
+src/features/runner/      Runner Agent inventory and administrator operations
+src/features/settings/    Settings metrics polling, hotspot analysis, and panels
 src/config/               Runtime endpoints and product-level settings
 src/i18n/                 Locale catalogs and language context
 src/utils/                Pure analyzers, security helpers, and page-state helpers
@@ -63,6 +65,8 @@ Important rules:
 - `SidebarLayout` is the client-side navigation and route visibility gate. It improves the user
   experience, but the Engine remains the authoritative authorization boundary.
 - eBPF editing behavior belongs in `src/features/ebpf/`; route markup belongs in `pages/ebpf.tsx`.
+- Settings metrics and Agent operations stay in their feature modules; `pages/settings.tsx` only
+  coordinates event/compiler settings and composes the administrator panels.
 - `docs/` is authoritative. `frontend/public/course/` is synchronized for builds whose Docker
   context cannot access the repository-level documentation directory.
 
@@ -348,7 +352,8 @@ Use these ownership rules when adding functionality:
 
 Maintained source files must stay within 600 lines and documentation files within 2000 lines. Split
 by responsibility before reaching the limit. The CI gate verifies file length, Rust formatting and
-tests, frontend builds, permission regressions, and the security audit.
+tests, frontend builds, permission regressions, the security audit, and a real installation smoke
+test performed from a newly built and extracted offline distribution archive.
 
 ## 8. Intentional Limitations
 

@@ -81,7 +81,7 @@ load_configuration() {
     source "$ROOT_DIR/manifest.env"
     CYANREX_ENGINE_IMAGE="${CYANREX_ENGINE_IMAGE:-${ENGINE_IMAGE:-}}"
     CYANREX_IMAGE_TAG="${CYANREX_IMAGE_TAG:-${PACKAGE_VERSION:-latest}}"
-    export CYANREX_ENGINE_IMAGE CYANREX_IMAGE_TAG
+    export CYANREX_ENGINE_IMAGE CYANREX_IMAGE_TAG POSTGRES_IMAGE
   fi
   if [ "$SOURCE_TREE" -eq 1 ]; then
     COMPOSE_PROJECT_ARGS=(-p "cyanrex-${CYANREX_INSTANCE_ID:-default}")
@@ -117,6 +117,10 @@ replace_env_value() {
 prepare_token() {
   local token="${CYANREX_RUNNER_AGENT_TOKEN:-}"
   local temp_token_file
+  CYANREX_AGENT_RUNTIME_UID="$(id -u)"
+  CYANREX_AGENT_RUNTIME_GID="$(id -g)"
+  replace_env_value CYANREX_AGENT_RUNTIME_UID "$CYANREX_AGENT_RUNTIME_UID"
+  replace_env_value CYANREX_AGENT_RUNTIME_GID "$CYANREX_AGENT_RUNTIME_GID"
   if [ -n "$CLI_AGENT_ID" ]; then
     replace_env_value CYANREX_AGENT_ID "$CYANREX_AGENT_ID"
   fi
@@ -140,6 +144,7 @@ prepare_token() {
   CYANREX_RUNNER_AGENT_TOKEN="$token"
   CYANREX_RUNNER_AGENT_TOKEN_FILE="$TOKEN_FILE"
   export CYANREX_RUNNER_AGENT_TOKEN CYANREX_RUNNER_AGENT_TOKEN_FILE CYANREX_AGENT_ID
+  export CYANREX_AGENT_RUNTIME_UID CYANREX_AGENT_RUNTIME_GID
 }
 
 action="${1:-start}"

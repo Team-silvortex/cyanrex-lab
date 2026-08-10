@@ -91,6 +91,28 @@ jobs:
         working-directory: frontend
         run: npm run build
 
+  distribution:
+    name: Distribution install smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v6
+      - name: Build offline distribution
+        run: ./scripts/package-distribution.sh --skip-checks --output "$RUNNER_TEMP/cyanrex-dist"
+      - name: Verify and extract archive
+        run: |
+          cd "$RUNNER_TEMP/cyanrex-dist"
+          sha256sum -c ./*.tar.gz.sha256
+          mkdir -p "$RUNNER_TEMP/cyanrex-install"
+          tar -xzf ./*.tar.gz -C "$RUNNER_TEMP/cyanrex-install"
+      - name: Install and smoke test extracted package
+        run: |
+          package_dir="$(find "$RUNNER_TEMP/cyanrex-install" -mindepth 1 -maxdepth 1 -type d -name 'cyanrex-lab-*' -print -quit)"
+          test -n "$package_dir"
+          source "$package_dir/manifest.env"
+          docker image rm "$ENGINE_IMAGE" "$FRONTEND_IMAGE" "$POSTGRES_IMAGE"
+          "$package_dir/install-smoke.sh"
+
   ci-gate:
     name: CI gate
     runs-on: ubuntu-latest
@@ -101,6 +123,7 @@ jobs:
       - engine
       - frontend
       - permissions
+      - distribution
     steps:
       - name: Validate all required jobs passed
         if: |
@@ -124,6 +147,10 @@ jobs:
           fi
           if [[ "${{ needs.permissions.result }}" != "success" ]]; then
             echo "permissions failed"
+            exit 1
+          fi
+          if [[ "${{ needs.distribution.result }}" != "success" ]]; then
+            echo "distribution failed"
             exit 1
           fi
           echo "All checks passed."

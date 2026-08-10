@@ -70,6 +70,10 @@ run_runner_agent_tool_checks() {
   "$PROJECT_ROOT/scripts/test-runner-agent-tools.sh"
 }
 
+run_distribution_tool_checks() {
+  "$PROJECT_ROOT/scripts/test-distribution-tools.sh"
+}
+
 run_backend_checks() {
   cargo fmt --manifest-path "$PROJECT_ROOT/engine/Cargo.toml" -- --check
   cargo test --manifest-path "$PROJECT_ROOT/engine/Cargo.toml" --locked
@@ -84,6 +88,7 @@ run_frontend_checks() {
 
   npm --prefix "$PROJECT_ROOT/frontend" run build
   (cd "$PROJECT_ROOT/frontend" && npx --yes tsc --noEmit)
+  npm --prefix "$PROJECT_ROOT/frontend" run test:performance-hotspots
   npm --prefix "$PROJECT_ROOT/frontend" run test:security-headers
 }
 
@@ -115,6 +120,7 @@ run_permissions_checks() {
 
 run_file_length_check
 run_runner_agent_tool_checks
+run_distribution_tool_checks
 
 case "$MODE" in
   backend)

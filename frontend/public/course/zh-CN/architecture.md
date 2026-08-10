@@ -41,6 +41,8 @@ flowchart LR
 pages/                    页面路由与流程编排
 src/components/           共享界面和导航组件
 src/features/ebpf/        eBPF 编辑器状态与工作流
+src/features/runner/      Runner Agent 清单与管理员运维
+src/features/settings/    设置页指标轮询、热点分析与面板
 src/config/               运行端点和产品级设置
 src/i18n/                 翻译目录与语言上下文
 src/utils/                分析器、安全与页面状态工具
@@ -56,6 +58,8 @@ src/utils/                分析器、安全与页面状态工具
 - 身份使用 HTTP-only Session Cookie，需要身份的请求必须带 `credentials: "include"`。
 - `SidebarLayout` 只负责前端导航可见性；最终权限始终由 Engine 判断。
 - eBPF 编辑器行为放进 `src/features/ebpf/`，页面结构放在 `pages/ebpf.tsx`。
+- 设置页指标与 Agent 运维逻辑放在各自 feature 中，`pages/settings.tsx` 只协调事件/编译器设置并组合
+  管理员面板。
 - `docs/` 是文档源；`frontend/public/course/` 是为 Docker 构建保留的同步副本。
 
 ## 4. Engine 架构
@@ -309,7 +313,7 @@ Engine 容器需要内核能力、宿主 PID、bpffs、tracefs 和内核模块�
 8. 信任边界或部署拓扑变化时，同步修改架构和运维文档。
 
 维护源码不得超过 600 行，文档不得超过 2000 行。CI 会检查文件长度、Rust 格式与测试、
-前端构建、权限回归和安全审计。
+前端构建、权限回归和安全审计，并从新构建、新解压的离线发行包执行真实安装冒烟测试。
 
 ## 8. 当前有意保留的限制
 

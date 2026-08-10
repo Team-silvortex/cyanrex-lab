@@ -139,6 +139,12 @@ This produces:
 - `dist/cyanrex-lab-0.2.0-<timestamp>.tar.gz`
 - `dist/cyanrex-lab-0.2.0-<timestamp>.tar.gz.sha256`
 
+The archive contains the PostgreSQL, Engine, and frontend images. On a disposable Docker host,
+verify the freshly extracted package end to end with `./install-smoke.sh`. It checks the package
+manifest, loads the offline images with registry pulls disabled, generates temporary secrets, starts
+every required service and the optional compiler Agent, runs authenticated probes, then removes its
+temporary stack and volume. It refuses to overwrite an existing `.env`.
+
 Usage on target machine:
 
 ```bash

@@ -27,6 +27,11 @@ if ! grep -qx 'CYANREX_AGENT_ID=fixture-compiler' "$WORK_DIR/.env"; then
   echo "Runner Agent tool test failed: explicit Agent ID was not persisted." >&2
   exit 1
 fi
+if ! grep -qx "CYANREX_AGENT_RUNTIME_UID=$(id -u)" "$WORK_DIR/.env" ||
+  ! grep -qx "CYANREX_AGENT_RUNTIME_GID=$(id -g)" "$WORK_DIR/.env"; then
+  echo "Runner Agent tool test failed: token owner UID/GID was not persisted." >&2
+  exit 1
+fi
 if [ "$(<"$WORK_DIR/.runner-agent-token")" != "$token" ]; then
   echo "Runner Agent tool test failed: Docker Secret does not match runtime configuration." >&2
   exit 1

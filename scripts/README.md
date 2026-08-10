@@ -95,9 +95,13 @@ CYANREX_BENCH_MAX_P99_INCREASE_PCT=40 \
 
 In CI, workflow `Performance Regression` can also consume a baseline by passing `baseline_json`.
 - `package-distribution.sh`: build and package distributable artifacts for air-gapped deployment.
-  - builds and exports engine/frontend Docker images
-  - generates `deploy.sh`, `run.sh`, and `stop.sh` for deployed package
+  - builds or pulls and exports PostgreSQL, Engine, and frontend Docker images
+  - generates `deploy.sh`, `run.sh`, `stop.sh`, and a disposable `install-smoke.sh`
   - outputs `dist/cyanrex-lab-<version>-<timestamp>.tar.gz` by default
+- `distribution-install-smoke.sh`: packaged as `install-smoke.sh`; validates a freshly extracted
+  release, including checksums, service health, frontend CSP, login, and remote Agent compilation.
+- `test-distribution-tools.sh`: static regression checks for packaging helpers and Compose runtime
+  environment forwarding; included in every quality-gate mode.
 
 Run it explicitly for a quick classroom readiness check:
 
@@ -140,6 +144,10 @@ If you already have local images (for example CI or private registry preloads), 
 ./scripts/package-distribution.sh --skip-build --engine-image myrepo/cyanrex-engine:0.2.0 --frontend-image myrepo/cyanrex-frontend:0.2.0
 ```
 
+Packaging also honors `ENGINE_RUST_IMAGE`, `ENGINE_DEBIAN_IMAGE`, `ENGINE_APT_MIRROR`,
+`ENGINE_CARGO_REGISTRY_INDEX`, `FRONTEND_NODE_IMAGE`, and `FRONTEND_NPM_REGISTRY`, matching the
+source Compose build controls for restricted or mirrored networks.
+
 Distributed package entry points:
 
 ```bash
@@ -149,6 +157,6 @@ Distributed package entry points:
 ./deploy.sh down   # stop services
 ./runner-agent.sh start  # optional unprivileged compiler Agent
 ./runner-agent-smoke.sh  # authenticated remote compile smoke test
+./install-smoke.sh       # destructive disposable-host installation acceptance
 # `run.sh` and `stop.sh` remain compatibility shortcuts.
-```
 ```

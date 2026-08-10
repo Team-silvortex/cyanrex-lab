@@ -6,6 +6,7 @@ PACKAGE_TAG="$(date -u +%Y%m%d-%H%M%S)"
 VERSION=""
 ENGINE_IMAGE=""
 FRONTEND_IMAGE=""
+POSTGRES_IMAGE="${POSTGRES_IMAGE:-postgres:16}"
 SKIP_CHECKS=0
 SKIP_BUILD=0
 NO_COMPRESS=0
@@ -16,7 +17,7 @@ print_help() {
 Usage: ./scripts/package-distribution.sh [--version <version>] [--engine-image <image>] [--frontend-image <image>] [--compose-template <path>] [--output <dir>] [--skip-checks] [--skip-build] [--no-compress]
 
 Build and package distributable artifacts for offline or air-gapped classroom deployment:
-  - Build and export engine/frontend Docker images.
+  - Build or pull and export PostgreSQL, Engine, and frontend Docker images.
   - Create a reusable distribution directory with compose templates and docs.
   - Export a tarball containing image layers and deployment scripts.
 
@@ -29,6 +30,15 @@ Options:
   --skip-checks          Skip quality-gate checks before packaging
   --skip-build           Skip Docker rebuild (use prebuilt images already available locally)
   --no-compress          Keep package directory instead of creating tar.gz archive
+
+Environment:
+  POSTGRES_IMAGE         PostgreSQL image bundled for offline startup (default: postgres:16)
+  ENGINE_RUST_IMAGE      Engine builder base image (default: rust:bookworm)
+  ENGINE_DEBIAN_IMAGE    Engine runtime base image (default: debian:bookworm)
+  ENGINE_APT_MIRROR      Debian package mirror (default: deb.debian.org)
+  ENGINE_CARGO_REGISTRY_INDEX Cargo registry mirror (default: crates.io sparse index)
+  FRONTEND_NODE_IMAGE    Frontend base image (default: node:20)
+  FRONTEND_NPM_REGISTRY  Frontend package registry (default: registry.npmjs.org)
 EOF
 }
 
@@ -164,32 +174,42 @@ validate_compose_template() {
 build_artifacts() {
   local engine_image="$1"
   local frontend_image="$2"
+  local postgres_image="$3"
 
   echo "[cyanrex] Building Docker images for distribution..."
-  docker build -t "$engine_image" -f "$ROOT_DIR/engine/Dockerfile" "$ROOT_DIR/engine"
-  docker build -t "$frontend_image" -f "$ROOT_DIR/frontend/Dockerfile" "$ROOT_DIR/frontend"
+  docker build -t "$engine_image" -f "$ROOT_DIR/engine/Dockerfile" \
+    --build-arg RUST_IMAGE="${ENGINE_RUST_IMAGE:-rust:bookworm}" \
+    --build-arg DEBIAN_IMAGE="${ENGINE_DEBIAN_IMAGE:-debian:bookworm}" \
+    --build-arg APT_MIRROR="${ENGINE_APT_MIRROR:-deb.debian.org}" \
+    --build-arg CARGO_SOURCE_MIRROR="${ENGINE_CARGO_REGISTRY_INDEX:-}" "$ROOT_DIR/engine"
+  docker build -t "$frontend_image" -f "$ROOT_DIR/frontend/Dockerfile" \
+    --build-arg NODE_IMAGE="${FRONTEND_NODE_IMAGE:-node:20}" \
+    --build-arg NPM_REGISTRY="${FRONTEND_NPM_REGISTRY:-https://registry.npmjs.org}" \
+    "$ROOT_DIR/frontend"
+  if ! docker image inspect "$postgres_image" >/dev/null 2>&1; then
+    docker pull "$postgres_image"
+  fi
 }
 assert_images() {
   local engine_image="$1"
   local frontend_image="$2"
-
-  if ! docker image inspect "$engine_image" >/dev/null 2>&1; then
-    echo "Error: engine image '${engine_image}' is missing locally." >&2
-    echo "Hint: build it first or pass --engine-image with an existing image." >&2
-    exit 1
-  fi
-  if ! docker image inspect "$frontend_image" >/dev/null 2>&1; then
-    echo "Error: frontend image '${frontend_image}' is missing locally." >&2
-    echo "Hint: build it first or pass --frontend-image with an existing image." >&2
-    exit 1
-  fi
+  local postgres_image="$3"
+  local image
+  for image in "$engine_image" "$frontend_image" "$postgres_image"; do
+    if ! docker image inspect "$image" >/dev/null 2>&1; then
+      echo "Error: required distribution image '${image}' is missing locally." >&2
+      echo "Hint: build/pull it first or omit --skip-build." >&2
+      exit 1
+    fi
+  done
 }
 export_images() {
   local engine_image="$1"
   local frontend_image="$2"
-  local output_image_archive="$3"
+  local postgres_image="$3"
+  local output_image_archive="$4"
 
-  docker save "$engine_image" "$frontend_image" -o "$output_image_archive"
+  docker save "$engine_image" "$frontend_image" "$postgres_image" -o "$output_image_archive"
 }
 
 generate_deploy_script() {
@@ -210,6 +230,7 @@ COMPOSE_CMD=()
 
 ENGINE_IMAGE_DEFAULT="${ENGINE_IMAGE}"
 FRONTEND_IMAGE_DEFAULT="${FRONTEND_IMAGE}"
+POSTGRES_IMAGE_DEFAULT="${POSTGRES_IMAGE}"
 IMAGE_TAG="${VERSION}"
 
 require_cmd() {
@@ -252,7 +273,7 @@ validate_required_secrets() {
 }
 
 resolve_compose_command() {
-  if [ "${#COMPOSE_CMD[@]}" -gt 0 ]; then
+  if [ "\${#COMPOSE_CMD[@]}" -gt 0 ]; then
     return
   fi
 
@@ -272,12 +293,12 @@ resolve_compose_command() {
 
 compose() {
   resolve_compose_command
-  "${COMPOSE_CMD[@]}" -f "\$COMPOSE_FILE" "\$@"
+  "\${COMPOSE_CMD[@]}" -f "\$COMPOSE_FILE" "\$@"
 }
 
 compose_has_project() {
   resolve_compose_command
-  "${COMPOSE_CMD[@]}" -f "\$COMPOSE_FILE" config --services >/dev/null 2>&1
+  "\${COMPOSE_CMD[@]}" -f "\$COMPOSE_FILE" config --services >/dev/null 2>&1
 }
 
 load_images_if_missing() {
@@ -286,8 +307,8 @@ load_images_if_missing() {
     return
   fi
 
-  if docker image inspect "\$CYANREX_ENGINE_IMAGE" >/dev/null 2>&1 && docker image inspect "\$CYANREX_FRONTEND_IMAGE" >/dev/null 2>&1; then
-    echo "[cyanrex] Engine and frontend images already present locally; skipping docker load."
+  if docker image inspect "\$CYANREX_ENGINE_IMAGE" >/dev/null 2>&1 && docker image inspect "\$CYANREX_FRONTEND_IMAGE" >/dev/null 2>&1 && docker image inspect "\$POSTGRES_IMAGE" >/dev/null 2>&1; then
+    echo "[cyanrex] All packaged images already present locally; skipping docker load."
     return
   fi
 
@@ -377,8 +398,9 @@ deploy_up() {
   CYANREX_IMAGE_TAG="\${CYANREX_IMAGE_TAG:-\$IMAGE_TAG}"
   CYANREX_ENGINE_IMAGE="\${CYANREX_ENGINE_IMAGE:-\$ENGINE_IMAGE_DEFAULT}"
   CYANREX_FRONTEND_IMAGE="\${CYANREX_FRONTEND_IMAGE:-\$FRONTEND_IMAGE_DEFAULT}"
+  POSTGRES_IMAGE="\${POSTGRES_IMAGE:-\$POSTGRES_IMAGE_DEFAULT}"
 
-  export CYANREX_IMAGE_TAG CYANREX_ENGINE_IMAGE CYANREX_FRONTEND_IMAGE
+  export CYANREX_IMAGE_TAG CYANREX_ENGINE_IMAGE CYANREX_FRONTEND_IMAGE POSTGRES_IMAGE
 
   validate_required_secrets
   check_runtime
@@ -393,7 +415,7 @@ deploy_up() {
 }
 
 deploy_down() {
-  compose down "\$@"
+  compose --profile runner-agent down "\$@"
 }
 
 deploy_status() {
@@ -473,70 +495,23 @@ exec "$SCRIPT_DIR/deploy.sh" down "$@"
 EOF
 chmod +x "$stop_script"
 }
-generate_package_readme() {
-  local package_dir="$1"
-  local readme_file="$package_dir/README-DEPLOY.md"
-
-cat > "$readme_file" <<EOF
-Release package: ${PACKAGE_NAME}
-Version: ${VERSION}
-Built at (UTC): ${PACKAGE_TAG}
-
-Package contents:
-- docker-compose.yml
-- .env.example
-- runner-agent.env.example
-- runner-agent.sh and runner-agent-smoke.sh
-- deploy.sh
-- run.sh (wrapper for deploy.sh up)
-- stop.sh (wrapper for deploy.sh down)
-- cyanrex-images.tar (engine + frontend docker images)
-- LICENSE and quick-readme docs
-
-Usage:
-1) Copy or move this directory to your target machine.
-2) Copy .env.example -> .env and edit secrets immediately:
-   cp .env.example .env
-3) Start:
-   ./run.sh
-   # same as ./deploy.sh up
-4) Status:
-   ./deploy.sh status
-5) Logs:
-   ./deploy.sh logs
-6) Stop:
-   ./stop.sh
-   # same as ./deploy.sh down
-7) Optional compiler Agent:
-   ./runner-agent.sh start
-   ./runner-agent-smoke.sh
-
-The package defaults to local-loopback publishing. Edit .env before exposing ports.
-Set CYANREX_DEPLOY_WAIT_FOR_HEALTH=0 to skip startup health checks.
-EOF
-}
-
 generate_checksums() {
   local package_dir="$1"
   resolve_checksum_command
-  (cd "$package_dir" && "${CHECKSUM_CMD[@]}" docker-compose.yml .env.example runner-agent.env.example runner-agent.sh runner-agent-smoke.sh LICENSE README.md README-en.md README-zh-CN.md README-docker.md README-DEPLOY.md manifest.env deploy.sh run.sh stop.sh cyanrex-images.tar > checksums.sha256)
+  (cd "$package_dir" && "${CHECKSUM_CMD[@]}" docker-compose.yml .env.example runner-agent.env.example runner-agent.sh runner-agent-smoke.sh install-smoke.sh LICENSE README.md README-en.md README-zh-CN.md README-docker.md README-DEPLOY.md manifest.env deploy.sh run.sh stop.sh cyanrex-images.tar > checksums.sha256)
 }
 resolve_version
-
 require_cmd tar
 resolve_checksum_command
 require_cmd docker
 validate_compose_template
-
 if ! docker info >/dev/null 2>&1; then
   echo "Error: docker daemon is not running or not reachable." >&2
   exit 1
 fi
-
 if [[ "$SKIP_CHECKS" == "0" ]]; then
   "$ROOT_DIR/scripts/quality-gate.sh" --format-only
 fi
-
 resolve_images
 validate_compose_template
 PACKAGE_NAME="cyanrex-lab-${VERSION}-${PACKAGE_TAG}"
@@ -552,37 +527,39 @@ fi
 mkdir -p "$PACKAGE_DIR"
 
 if [[ "$SKIP_BUILD" == "0" ]]; then
-  build_artifacts "$ENGINE_IMAGE" "$FRONTEND_IMAGE"
+  build_artifacts "$ENGINE_IMAGE" "$FRONTEND_IMAGE" "$POSTGRES_IMAGE"
 fi
 
-assert_images "$ENGINE_IMAGE" "$FRONTEND_IMAGE"
+assert_images "$ENGINE_IMAGE" "$FRONTEND_IMAGE" "$POSTGRES_IMAGE"
 
 cp "$COMPOSE_TEMPLATE" "$PACKAGE_DIR/docker-compose.yml"
 cp "$ROOT_DIR/docker/.env.example" "$PACKAGE_DIR/.env.example"
 cp "$ROOT_DIR/docker/runner-agent.env.example" "$PACKAGE_DIR/runner-agent.env.example"
 cp "$ROOT_DIR/scripts/runner-agent.sh" "$PACKAGE_DIR/runner-agent.sh"
 cp "$ROOT_DIR/scripts/runner-agent-smoke.sh" "$PACKAGE_DIR/runner-agent-smoke.sh"
+cp "$ROOT_DIR/scripts/distribution-install-smoke.sh" "$PACKAGE_DIR/install-smoke.sh"
 cp "$ROOT_DIR/LICENSE" "$PACKAGE_DIR/LICENSE"
 cp "$ROOT_DIR/README.md" "$PACKAGE_DIR/README.md"
 cp "$ROOT_DIR/docs/en/README.md" "$PACKAGE_DIR/README-en.md"
 cp "$ROOT_DIR/docs/zh-CN/README.md" "$PACKAGE_DIR/README-zh-CN.md"
 cp "$ROOT_DIR/docker/README.md" "$PACKAGE_DIR/README-docker.md"
+cp "$ROOT_DIR/docker/README-DEPLOY.md" "$PACKAGE_DIR/README-DEPLOY.md"
 
-cat > "$PACKAGE_DIR/manifest.env" <<EOF
-PACKAGE_NAME="${PACKAGE_NAME}"
-PACKAGE_VERSION="${VERSION}"
-PACKAGE_TIMESTAMP_UTC="${PACKAGE_TAG}"
-ENGINE_IMAGE="${ENGINE_IMAGE}"
-FRONTEND_IMAGE="${FRONTEND_IMAGE}"
-COMPOSE_TEMPLATE="${COMPOSE_TEMPLATE}"
-EOF
+{
+  printf 'PACKAGE_NAME=%q\n' "$PACKAGE_NAME"
+  printf 'PACKAGE_VERSION=%q\n' "$VERSION"
+  printf 'PACKAGE_TIMESTAMP_UTC=%q\n' "$PACKAGE_TAG"
+  printf 'ENGINE_IMAGE=%q\n' "$ENGINE_IMAGE"
+  printf 'FRONTEND_IMAGE=%q\n' "$FRONTEND_IMAGE"
+  printf 'POSTGRES_IMAGE=%q\n' "$POSTGRES_IMAGE"
+  printf 'COMPOSE_TEMPLATE=%q\n' "$COMPOSE_TEMPLATE"
+} > "$PACKAGE_DIR/manifest.env"
 
 echo "[cyanrex] Exporting Docker images..."
-export_images "$ENGINE_IMAGE" "$FRONTEND_IMAGE" "$IMAGE_ARCHIVE"
+export_images "$ENGINE_IMAGE" "$FRONTEND_IMAGE" "$POSTGRES_IMAGE" "$IMAGE_ARCHIVE"
 echo "[cyanrex] Exported image archive: $IMAGE_ARCHIVE"
 
 generate_deploy_script "$PACKAGE_DIR"
-generate_package_readme "$PACKAGE_DIR"
 generate_checksums "$PACKAGE_DIR"
 
 if [[ "$NO_COMPRESS" == "1" ]]; then
@@ -592,7 +569,7 @@ if [[ "$NO_COMPRESS" == "1" ]]; then
 else
   echo "[cyanrex] Creating archive..."
   tar -czf "$ARCHIVE_PATH" -C "$OUTPUT_DIR" "$PACKAGE_NAME"
-  "${CHECKSUM_CMD[@]}" "$ARCHIVE_PATH" > "${ARCHIVE_PATH}.sha256"
+  (cd "$OUTPUT_DIR" && "${CHECKSUM_CMD[@]}" "$(basename "$ARCHIVE_PATH")" > "$(basename "${ARCHIVE_PATH}.sha256")")
   rm -rf "$PACKAGE_DIR"
   echo "[cyanrex] Package created:"
   echo "  $ARCHIVE_PATH"

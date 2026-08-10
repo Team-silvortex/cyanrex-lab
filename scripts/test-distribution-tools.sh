@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PACKAGE_SCRIPT="$ROOT_DIR/scripts/package-distribution.sh"
+SMOKE_SCRIPT="$ROOT_DIR/scripts/distribution-install-smoke.sh"
+WORK_DIR="$(mktemp -d)"
+trap 'rm -rf "$WORK_DIR"' EXIT
+
+bash -n "$PACKAGE_SCRIPT" "$SMOKE_SCRIPT"
+"$SMOKE_SCRIPT" --help >/dev/null
+
+assert_contains() {
+  local file="$1"
+  local pattern="$2"
+  if ! grep -Fq "$pattern" "$file"; then
+    echo "Distribution tool test failed: '$pattern' missing from $file." >&2
+    exit 1
+  fi
+}
+
+assert_contains "$PACKAGE_SCRIPT" 'distribution-install-smoke.sh'
+assert_contains "$PACKAGE_SCRIPT" 'install-smoke.sh'
+assert_contains "$PACKAGE_SCRIPT" 'POSTGRES_IMAGE="${POSTGRES_IMAGE:-postgres:16}"'
+assert_contains "$PACKAGE_SCRIPT" 'docker save "$engine_image" "$frontend_image" "$postgres_image"'
+assert_contains "$PACKAGE_SCRIPT" 'ENGINE_RUST_IMAGE:-rust:bookworm'
+assert_contains "$PACKAGE_SCRIPT" 'FRONTEND_NPM_REGISTRY:-https://registry.npmjs.org'
+assert_contains "$PACKAGE_SCRIPT" 'basename "$ARCHIVE_PATH"'
+assert_contains "$PACKAGE_SCRIPT" "printf 'POSTGRES_IMAGE=%q"
+assert_contains "$PACKAGE_SCRIPT" 'compose --profile runner-agent down'
+assert_contains "$SMOKE_SCRIPT" 'up --pull never'
+assert_contains "$SMOKE_SCRIPT" 'CYANREX_SMOKE_BIND_ADDRESS'
+assert_contains "$SMOKE_SCRIPT" 'frontend_ready'
+assert_contains "$ROOT_DIR/scripts/runner-agent.sh" 'export CYANREX_ENGINE_IMAGE CYANREX_IMAGE_TAG POSTGRES_IMAGE'
+for compose_file in docker/docker-compose.yml docker/docker-compose.distribution.yml; do
+  assert_contains "$ROOT_DIR/$compose_file" 'CYANREX_ALLOW_MISSING_ORIGIN:'
+  assert_contains "$ROOT_DIR/$compose_file" 'CYANREX_EVENT_PERSIST_QUEUE_WARNING_ENABLED:'
+  assert_contains "$ROOT_DIR/$compose_file" 'CYANREX_EVENT_PERSIST_QUEUE_WARNING_RATIO_PCT:'
+  assert_contains "$ROOT_DIR/$compose_file" 'CYANREX_EVENT_PERSIST_QUEUE_CLEAR_RATIO_PCT:'
+  assert_contains "$ROOT_DIR/$compose_file" 'CYANREX_EVENT_PERSIST_QUEUE_WARNING_INTERVAL_MS:'
+done
+
+mkdir -p "$WORK_DIR/bin" "$WORK_DIR/output" "$WORK_DIR/extracted"
+cat > "$WORK_DIR/bin/docker" <<'MOCK'
+#!/usr/bin/env bash
+set -euo pipefail
+case "${1:-}:${2:-}" in
+  info:|image:inspect) exit 0 ;;
+  save:*)
+    output=""
+    shift
+    while [ "$#" -gt 0 ]; do
+      if [ "$1" = "-o" ]; then output="$2"; shift 2; else shift; fi
+    done
+    [ -n "$output" ] || exit 2
+    printf 'mock offline image archive\n' > "$output"
+    ;;
+  *) echo "Unexpected mock docker call: $*" >&2; exit 2 ;;
+esac
+MOCK
+chmod +x "$WORK_DIR/bin/docker"
+PATH="$WORK_DIR/bin:$PATH" "$PACKAGE_SCRIPT" --version 0.2.0 --skip-checks --skip-build \
+  --output "$WORK_DIR/output" >/dev/null
+
+archive_checksum="$(find "$WORK_DIR/output" -maxdepth 1 -type f -name '*.tar.gz.sha256' -print -quit)"
+[ -n "$archive_checksum" ]
+checksum_target="$(awk '{print $2}' "$archive_checksum")"
+if [[ "$checksum_target" == */* ]]; then
+  echo "Distribution tool test failed: outer checksum contains a build-host path." >&2
+  exit 1
+fi
+if command -v sha256sum >/dev/null 2>&1; then
+  (cd "$WORK_DIR/output" && sha256sum -c "$(basename "$archive_checksum")" >/dev/null)
+else
+  (cd "$WORK_DIR/output" && shasum -a 256 -c "$(basename "$archive_checksum")" >/dev/null)
+fi
+archive_path="${archive_checksum%.sha256}"
+tar -xzf "$archive_path" -C "$WORK_DIR/extracted"
+package_dir="$(find "$WORK_DIR/extracted" -mindepth 1 -maxdepth 1 -type d -print -quit)"
+[ -x "$package_dir/install-smoke.sh" ]
+assert_contains "$package_dir/manifest.env" 'POSTGRES_IMAGE=postgres:16'
+bash -n "$package_dir/deploy.sh" "$package_dir/run.sh" "$package_dir/stop.sh"
+"$package_dir/deploy.sh" --help >/dev/null
+if command -v sha256sum >/dev/null 2>&1; then
+  (cd "$package_dir" && sha256sum -c checksums.sha256 >/dev/null)
+else
+  (cd "$package_dir" && shasum -a 256 -c checksums.sha256 >/dev/null)
+fi
+
+echo "Distribution management tool checks passed."

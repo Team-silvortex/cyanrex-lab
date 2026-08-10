@@ -54,9 +54,10 @@ enable it and verify the complete authenticated editor path with:
 
 The manager creates a missing bootstrap token without printing it, writes the matching mode-0600
 Docker Secret, and recreates Engine only when the control plane was previously disabled. The Agent
-profile has no published ports, runs as UID/GID 65532 on a read-only filesystem, drops every Linux
-capability, enables `no-new-privileges`, applies PID/CPU/memory limits, and uses an internal network
-that reaches Engine but not the default database/frontend network or external networks. Manage it with:
+profile has no published ports and runs with the UID/GID that owns its mode-0600 token on a read-only
+filesystem. It drops every Linux capability, enables `no-new-privileges`, applies PID/CPU/memory
+limits, and uses an internal network that reaches Engine but not the default database/frontend network
+or external networks. Manage it with:
 
 ```bash
 ./scripts/runner-agent.sh status
@@ -130,6 +131,12 @@ cp .env.example .env   # fill secure credentials first
 
 The packaged deploy helper validates secrets, docker daemon readiness, and engine startup health by
 default.
+
+For release acceptance on a disposable Docker host, run `./install-smoke.sh` immediately after
+extracting the archive. The script verifies all packaged checksums, loads the bundled images, starts
+the complete stack, validates the frontend and Engine, runs the authenticated Runner Agent compile
+probe, and removes its generated configuration and Docker volume. It refuses to run when `.env`
+already exists; set `CYANREX_SMOKE_KEEP=1` only when retaining a failed smoke stack for diagnosis.
 
 For an existing installation that used the old development credentials, set
 `CYANREX_ROTATE_ADMIN_CREDENTIALS=true` in `docker/.env`, start the Engine once, then immediately
