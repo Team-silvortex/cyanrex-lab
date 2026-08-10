@@ -52,6 +52,13 @@ object after hashing it. Source preflight also rejects non-literal or path-escap
 Run the Agent unprivileged without host PID mode, kernel mounts, Docker socket, or Linux
 capabilities. Clang processes untrusted input, so retain a container or VM boundary.
 
+The optional managed Compose profile applies that baseline automatically: numeric unprivileged UID,
+read-only root filesystem, no published ports, all capabilities dropped, `no-new-privileges`, a
+`noexec` temporary workspace, and PID/CPU/memory caps. Its manager writes the bootstrap value to a
+mode-0600 host file mounted as a Docker Secret and never prints it. The profile remains disabled
+until an administrator explicitly starts it. A dedicated internal network permits Engine control
+traffic but blocks direct access to the default database/frontend network and external networks.
+
 ## Recommended Isolation
 
 ### Personal Computer

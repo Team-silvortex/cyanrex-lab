@@ -46,6 +46,15 @@ jobs:
         with:
           components: rustfmt
       - run: ./scripts/quality-gate.sh --format-only
+      - name: Validate optional Agent Compose profiles
+        env:
+          POSTGRES_PASSWORD: compose-validation
+          CYANREX_ADMIN_PASSWORD: compose-validation
+          CYANREX_ADMIN_TOTP_SECRET: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+          CYANREX_RUNNER_AGENT_TOKEN_FILE: /tmp/cyanrex-agent-compose-token
+        run: |
+          docker compose -f docker/docker-compose.yml --profile runner-agent config >/dev/null
+          docker compose -f docker/docker-compose.distribution.yml --profile runner-agent config >/dev/null
 
   engine:
     name: Rust engine
@@ -62,6 +71,8 @@ jobs:
         run: cargo fmt --manifest-path engine/Cargo.toml -- --check
       - name: Run tests
         run: cargo test --manifest-path engine/Cargo.toml --locked
+      - name: Run real Runner Agent compile integration
+        run: cargo test --manifest-path engine/Cargo.toml --locked --test runner_agent_client_tdd -- --ignored --nocapture
 
   frontend:
     name: Next.js frontend

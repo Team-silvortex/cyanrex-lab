@@ -17,6 +17,7 @@ services:
       retries: 20
 
   engine:
+    image: ${CYANREX_ENGINE_IMAGE:-cyanrex/cyanrex-engine:${CYANREX_IMAGE_TAG:-latest}}
     build:
       context: ../engine
       dockerfile: Dockerfile
@@ -75,6 +76,9 @@ services:
       - /sys/kernel/tracing:/sys/kernel/tracing:ro
       - /sys/kernel/debug:/sys/kernel/debug:ro
       - /lib/modules:/lib/modules:ro
+    networks:
+      - default
+      - runner-agent-control
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/health"]
       interval: 5s
@@ -97,6 +101,54 @@ services:
         condition: service_healthy
     ports:
       - "${CYANREX_BIND_ADDRESS:-127.0.0.1}:${CYANREX_FRONTEND_PORT:-3000}:3000"
+
+  runner-agent:
+    image: ${CYANREX_ENGINE_IMAGE:-cyanrex/cyanrex-engine:${CYANREX_IMAGE_TAG:-latest}}
+    profiles: ["runner-agent"]
+    restart: unless-stopped
+    entrypoint: ["/usr/local/bin/cyanrex-runner-agent"]
+    user: "65532:65532"
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    pids_limit: 64
+    mem_limit: 1536m
+    cpus: 1.0
+    stop_grace_period: 15s
+    environment:
+      RUST_LOG: info
+      CYANREX_AGENT_ENGINE_URL: http://engine:8080
+      CYANREX_AGENT_BOOTSTRAP_TOKEN_FILE: /run/secrets/cyanrex-agent-bootstrap-token
+      CYANREX_AGENT_ID: ${CYANREX_AGENT_ID:-cyanrex-docker-compiler}
+      CYANREX_AGENT_ISOLATION: container
+      CYANREX_AGENT_MAX_CONCURRENT: ${CYANREX_AGENT_MAX_CONCURRENT:-1}
+      CYANREX_AGENT_CAPABILITIES: control_probe
+      CYANREX_AGENT_ENABLE_COMPILE_CHECK: "true"
+      CYANREX_AGENT_CLANG_PATH: /usr/bin/clang
+      CYANREX_AGENT_COMPILE_WORK_DIR: /tmp/cyanrex-runner-agent
+      CYANREX_AGENT_POLL_SECS: ${CYANREX_AGENT_POLL_SECS:-2}
+      CYANREX_AGENT_REQUEST_TIMEOUT_SECS: ${CYANREX_AGENT_REQUEST_TIMEOUT_SECS:-10}
+      CYANREX_AGENT_ALLOW_INSECURE_HTTP: "true"
+    depends_on:
+      engine:
+        condition: service_healthy
+    secrets:
+      - source: runner_agent_bootstrap
+        target: cyanrex-agent-bootstrap-token
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=134217728,mode=1777
+    networks:
+      - runner-agent-control
+
+secrets:
+  runner_agent_bootstrap:
+    file: ${CYANREX_RUNNER_AGENT_TOKEN_FILE:-./.runner-agent-token}
+
+networks:
+  runner-agent-control:
+    internal: true
 
 volumes:
   cyanrex-postgres-data:

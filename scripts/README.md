@@ -24,6 +24,13 @@ Utility scripts for Cyanrex local operation.
 - `debug-system.sh`: collect environment/runtime diagnostics for local troubleshooting.
   - prints toolchain versions, kernel capability status, compose backend status, and port checks
   - intended for `./start.sh diagnose`
+- `runner-agent.sh`: prepare and manage the optional unprivileged Compose compiler Agent.
+  - `start`, `stop`, `status`, `logs`, and secret-only `prepare` actions
+  - creates a missing bootstrap token without printing it and mounts a mode-0600 Docker Secret
+- `runner-agent-smoke.sh`: authenticate, discover the managed Agent, submit a real compile check,
+  poll its user-scoped result, and fail if the end-to-end remote diagnostics path is unhealthy.
+- `test-runner-agent-tools.sh`: verify secret generation, mode 0600, stable reuse, non-disclosure,
+  safe Agent IDs, and shell syntax without starting Docker.
 
 - `bench-event-bus.sh`: run the local event-bus throughput benchmark.
   - configurable through environment variables:
@@ -140,6 +147,8 @@ Distributed package entry points:
 ./deploy.sh status # check status
 ./deploy.sh logs   # tail logs
 ./deploy.sh down   # stop services
+./runner-agent.sh start  # optional unprivileged compiler Agent
+./runner-agent-smoke.sh  # authenticated remote compile smoke test
 # `run.sh` and `stop.sh` remain compatibility shortcuts.
 ```
 ```

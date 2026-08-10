@@ -42,6 +42,30 @@ submitted compile-only checks; it does not dispatch `/ebpf/run`, load eBPF, or r
 Treat registration and issued credentials as secrets, use TLS or a private management network, and
 rotate by re-registering a node if it is lost or compromised.
 
+### Managed Compile Agent
+
+The optional Compose Agent is disabled by default. Once the main stack has created `docker/.env`,
+enable it and verify the complete authenticated editor path with:
+
+```bash
+./scripts/runner-agent.sh start
+./scripts/runner-agent-smoke.sh
+```
+
+The manager creates a missing bootstrap token without printing it, writes the matching mode-0600
+Docker Secret, and recreates Engine only when the control plane was previously disabled. The Agent
+profile has no published ports, runs as UID/GID 65532 on a read-only filesystem, drops every Linux
+capability, enables `no-new-privileges`, applies PID/CPU/memory limits, and uses an internal network
+that reaches Engine but not the default database/frontend network or external networks. Manage it with:
+
+```bash
+./scripts/runner-agent.sh status
+./scripts/runner-agent.sh logs
+./scripts/runner-agent.sh stop
+```
+
+Distribution packages provide the same two scripts at the package root.
+
 ### Standalone Runner Agent
 
 The Engine image includes `cyanrex-runner-agent`. Copy `runner-agent.env.example`, mount the

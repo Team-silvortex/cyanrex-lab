@@ -9,6 +9,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "test:security-headers": "node --test tests/securityHeaders.test.mjs",
     "test:ui-permissions": "node --test tests/sidebarPermissions.test.mjs",
     "lint": "next lint"
   },

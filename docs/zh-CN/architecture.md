@@ -51,6 +51,8 @@ src/utils/                分析器、安全与页面状态工具
 - 页面只编排交互和请求，内核相关逻辑必须留在 Engine。
 - Engine 默认地址和 WebSocket 地址转换统一放在 `src/config/runtime.ts`，新页面不要直接读取
   `NEXT_PUBLIC_ENGINE_URL`。
+- 前端 CSP 会从同一个 `NEXT_PUBLIC_ENGINE_URL` 提取并校验 HTTP(S) Origin，写入 `connect-src`，
+  因而自部署时使用非默认 Engine 地址也不会被浏览器拦截。
 - 身份使用 HTTP-only Session Cookie，需要身份的请求必须带 `credentials: "include"`。
 - `SidebarLayout` 只负责前端导航可见性；最终权限始终由 Engine 判断。
 - eBPF 编辑器行为放进 `src/features/ebpf/`，页面结构放在 `pages/ebpf.tsx`。
@@ -183,8 +185,9 @@ Runner 模式由 `CYANREX_RUNNER_MODE` 配置（当前为 `local_process`）；�
 可选的内存 Agent 注册表连接远程 VM 或容器编译节点，但不会让远程执行变成隐式行为。
 `POST /runner/agent/register` 登记协议版本、真实隔离类型、容量、能力和标签；
 `POST /runner/agent/heartbeat` 更新健康状态与空闲容量。节点超过 TTL 后显示为 `offline`，超过保留期
-后自动删除。`GET /runner/agents` 仅允许管理员读取节点清单。注册表不会持久化，Engine 重启后需要
-Agent 重新注册。注册请求体上限为 64 KiB，注册表最多保存 256 个节点。
+后自动删除。`GET /runner/agents` 仅允许管理员读取节点清单，并明确返回控制面是否启用。设置页将它
+与 `GET /runner/jobs` 组合为每 10 秒刷新的运维面板，且不展示源码或作业输出。注册表不会持久化，
+Engine 重启后需要 Agent 重新注册。注册请求体上限为 64 KiB，注册表最多保存 256 个节点。
 
 只有配置至少 32 个字符的 `CYANREX_RUNNER_AGENT_TOKEN` 后才会启用 Agent 接口；Bearer Token
 仅在注册时使用。注册会一次性返回每节点独立的 256-bit 凭据，重新注册会轮换凭据。
@@ -247,6 +250,10 @@ HTTPS 客户端，禁用重定向和环境代理，只在内存保存签发凭�
 探针只读取 `/proc/sys/kernel/osrelease`；可选编译模式以固定参数和资源限制调用 Clang，不经过 Shell、
 不加载 eBPF、不返回目标文件。客户端和服务端都会拒绝 `shared_kernel` 的编译能力。部署方式见
 [Runner Agent 使用指南](runner-agent.md)。
+
+打包产物包含相同 Agent 二进制和显式启用的 `runner-agent` Compose Profile。独立管理脚本准备私有
+Bootstrap Secret，并启动加固后的无特权编译容器；配套冒烟测试使用已配置管理员身份登录、发现脱敏
+后端、提交用户私有编译作业、轮询并验证归一化结果。
 
 Engine 重启或记录被回收后，Agent 必须重新注册；使用相同 ID 注册会替换旧记录。凭据错误返回
 `401`，控制面未启用返回 `503`，元数据或容量无效返回 `400`，未注册节点的心跳返回 `404`，请求体

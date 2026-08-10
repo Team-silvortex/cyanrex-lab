@@ -184,6 +184,7 @@ async fn runner_agent_can_register_heartbeat_and_appear_in_admin_inventory() {
     assert_eq!(inventory.status(), StatusCode::OK);
     let body = inventory.into_body().collect().await.unwrap().to_bytes();
     let json: Value = serde_json::from_slice(&body).unwrap();
+    assert_eq!(json["enabled"], true);
     assert_eq!(json["total_agents"], 1);
     assert_eq!(json["online_agents"], 1);
     assert_eq!(json["agents"][0]["state"], "degraded");

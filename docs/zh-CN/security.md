@@ -47,6 +47,12 @@ Lease、截止时间、取消确认和结果大小限制。编辑器默认使用
 使用无特权账户，不使用宿主 PID、内核挂载、Docker Socket 或 Linux Capability。Clang 会处理不受信
 输入，因此仍需容器或虚拟机边界。
 
+可选的托管 Compose Profile 会自动应用这套基线：使用无特权数字 UID、只读根文件系统、不发布端口、
+丢弃全部 Capability、启用 `no-new-privileges`、使用 `noexec` 临时工作区，并限制 PID、CPU 和内存。
+管理脚本把 Bootstrap 值写入权限为 0600 的宿主文件并作为 Docker Secret 挂载，不会输出该值；只有
+管理员显式启动后 Profile 才会启用。独立内部网络仅允许 Engine 控制流量，阻断到默认数据库/前端
+网络和外部网络的直接访问。
+
 ## 推荐部署级别
 
 ### 个人电脑

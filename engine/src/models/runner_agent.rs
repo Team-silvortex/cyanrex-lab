@@ -66,6 +66,7 @@ pub struct RunnerAgentView {
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct RunnerAgentInventory {
     pub generated_at: DateTime<Utc>,
+    pub enabled: bool,
     pub total_agents: usize,
     pub online_agents: usize,
     pub agents: Vec<RunnerAgentView>,

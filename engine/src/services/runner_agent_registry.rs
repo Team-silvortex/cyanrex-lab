@@ -187,6 +187,7 @@ impl RunnerAgentRegistry {
         views.sort_by(|left, right| left.agent_id.cmp(&right.agent_id));
         RunnerAgentInventory {
             generated_at: now,
+            enabled: self.inner.token.is_some(),
             total_agents: views.len(),
             online_agents: views
                 .iter()
@@ -396,6 +397,7 @@ mod tests {
             disabled.authorize(Some(TOKEN)),
             Err(RunnerAgentAccessError::Disabled)
         );
+        assert!(!disabled.inventory().enabled);
 
         let enabled = RunnerAgentRegistry::new(
             Some(TOKEN.to_string()),
@@ -403,6 +405,7 @@ mod tests {
             Duration::from_secs(20),
         )
         .expect("enabled registry should be valid");
+        assert!(enabled.inventory().enabled);
         assert_eq!(enabled.authorize(Some(TOKEN)), Ok(()));
         assert_eq!(
             enabled.authorize(Some("wrong-token")),

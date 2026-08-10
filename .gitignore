@@ -38,3 +38,5 @@ scripts/bench-event-bus-compare-*.jsonl
 .env
 .env.local
 .env.*.local
+.runner-agent-token
+docker/.runner-agent-token

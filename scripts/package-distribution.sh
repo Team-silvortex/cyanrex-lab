@@ -11,7 +11,6 @@ SKIP_BUILD=0
 NO_COMPRESS=0
 COMPOSE_TEMPLATE="$ROOT_DIR/docker/docker-compose.distribution.yml"
 CHECKSUM_CMD=()
-
 print_help() {
   cat <<'EOF'
 Usage: ./scripts/package-distribution.sh [--version <version>] [--engine-image <image>] [--frontend-image <image>] [--compose-template <path>] [--output <dir>] [--skip-checks] [--skip-build] [--no-compress]
@@ -108,17 +107,14 @@ resolve_checksum_command() {
   if [ "${#CHECKSUM_CMD[@]}" -gt 0 ]; then
     return
   fi
-
   if command -v sha256sum >/dev/null 2>&1; then
     CHECKSUM_CMD=(sha256sum)
     return
   fi
-
   if command -v shasum >/dev/null 2>&1; then
     CHECKSUM_CMD=(shasum -a 256)
     return
   fi
-
   echo "Error: neither sha256sum nor shasum is available." >&2
   exit 1
 }
@@ -128,7 +124,6 @@ resolve_version() {
     echo "$VERSION"
     return
   fi
-
   if [[ ! -f "$ROOT_DIR/engine/Cargo.toml" ]]; then
     echo "Error: cannot find engine/Cargo.toml." >&2
     exit 1
@@ -491,6 +486,7 @@ Package contents:
 - docker-compose.yml
 - .env.example
 - runner-agent.env.example
+- runner-agent.sh and runner-agent-smoke.sh
 - deploy.sh
 - run.sh (wrapper for deploy.sh up)
 - stop.sh (wrapper for deploy.sh down)
@@ -511,6 +507,9 @@ Usage:
 6) Stop:
    ./stop.sh
    # same as ./deploy.sh down
+7) Optional compiler Agent:
+   ./runner-agent.sh start
+   ./runner-agent-smoke.sh
 
 The package defaults to local-loopback publishing. Edit .env before exposing ports.
 Set CYANREX_DEPLOY_WAIT_FOR_HEALTH=0 to skip startup health checks.
@@ -520,9 +519,8 @@ EOF
 generate_checksums() {
   local package_dir="$1"
   resolve_checksum_command
-  (cd "$package_dir" && "${CHECKSUM_CMD[@]}" docker-compose.yml .env.example runner-agent.env.example LICENSE README.md README-en.md README-zh-CN.md README-docker.md README-DEPLOY.md manifest.env deploy.sh run.sh stop.sh cyanrex-images.tar > checksums.sha256)
+  (cd "$package_dir" && "${CHECKSUM_CMD[@]}" docker-compose.yml .env.example runner-agent.env.example runner-agent.sh runner-agent-smoke.sh LICENSE README.md README-en.md README-zh-CN.md README-docker.md README-DEPLOY.md manifest.env deploy.sh run.sh stop.sh cyanrex-images.tar > checksums.sha256)
 }
-
 resolve_version
 
 require_cmd tar
@@ -562,6 +560,8 @@ assert_images "$ENGINE_IMAGE" "$FRONTEND_IMAGE"
 cp "$COMPOSE_TEMPLATE" "$PACKAGE_DIR/docker-compose.yml"
 cp "$ROOT_DIR/docker/.env.example" "$PACKAGE_DIR/.env.example"
 cp "$ROOT_DIR/docker/runner-agent.env.example" "$PACKAGE_DIR/runner-agent.env.example"
+cp "$ROOT_DIR/scripts/runner-agent.sh" "$PACKAGE_DIR/runner-agent.sh"
+cp "$ROOT_DIR/scripts/runner-agent-smoke.sh" "$PACKAGE_DIR/runner-agent-smoke.sh"
 cp "$ROOT_DIR/LICENSE" "$PACKAGE_DIR/LICENSE"
 cp "$ROOT_DIR/README.md" "$PACKAGE_DIR/README.md"
 cp "$ROOT_DIR/docs/en/README.md" "$PACKAGE_DIR/README-en.md"

@@ -55,18 +55,20 @@ async fn runner_overview_is_admin_only() {
         .expect("default admin otp should be available");
     let admin_cookie = login_and_get_session_cookie(&app, &otp).await;
 
-    let allowed = app
-        .clone()
-        .oneshot(
-            Request::builder()
-                .uri("/runner/overview")
-                .header(header::COOKIE, admin_cookie)
-                .body(Body::empty())
-                .unwrap(),
-        )
-        .await
-        .unwrap();
-    assert_eq!(allowed.status(), StatusCode::OK);
+    for path in ["/runner/overview", "/runner/agents", "/runner/jobs"] {
+        let allowed = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .uri(path)
+                    .header(header::COOKIE, &admin_cookie)
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(allowed.status(), StatusCode::OK, "admin path: {path}");
+    }
 
     register_user(&app, "runner-student", "student-pass-123").await;
     let student_otp = state
@@ -80,15 +82,18 @@ async fn runner_overview_is_admin_only() {
         &student_otp,
     )
     .await;
-    let forbidden = app
-        .oneshot(
-            Request::builder()
-                .uri("/runner/overview")
-                .header(header::COOKIE, student_cookie)
-                .body(Body::empty())
-                .unwrap(),
-        )
-        .await
-        .unwrap();
-    assert_eq!(forbidden.status(), StatusCode::FORBIDDEN);
+    for path in ["/runner/overview", "/runner/agents", "/runner/jobs"] {
+        let forbidden = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .uri(path)
+                    .header(header::COOKIE, &student_cookie)
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(forbidden.status(), StatusCode::FORBIDDEN, "student path: {path}");
+    }
 }

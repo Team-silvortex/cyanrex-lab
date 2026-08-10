@@ -56,6 +56,8 @@ Important rules:
 - Route pages compose features and issue user-triggered requests; kernel logic stays in the Engine.
 - `src/config/runtime.ts` is the only place that defines the default Engine URL and HTTP-to-WebSocket
   conversion. New pages must use it instead of reading `NEXT_PUBLIC_ENGINE_URL` directly.
+- The frontend Content Security Policy derives its validated HTTP(S) `connect-src` origin from the
+  same `NEXT_PUBLIC_ENGINE_URL`, so non-default self-hosted Engine addresses remain reachable.
 - Authentication uses an HTTP-only session cookie. Browser requests that need a session use
   `credentials: "include"`.
 - `SidebarLayout` is the client-side navigation and route visibility gate. It improves the user
@@ -200,7 +202,9 @@ An optional in-memory Agent registry connects remote VM or container compiler no
 remote execution implicit. `POST /runner/agent/register` records protocol version, truthful isolation type,
 capacity, capabilities, and labels. `POST /runner/agent/heartbeat` updates health and free capacity;
 after the configured TTL a node is reported as `offline`, then removed after the retention window.
-`GET /runner/agents` exposes the inventory to administrators only. Registry state is intentionally
+`GET /runner/agents` exposes the inventory to administrators only and reports whether the control
+plane is enabled. The Settings page combines it with `GET /runner/jobs` into a 10-second polling
+operations panel; it does not render source or job output. Registry state is intentionally
 ephemeral and is rebuilt after an Engine restart. Registration bodies are capped at 64 KiB and the
 registry holds at most 256 nodes.
 
@@ -273,6 +277,11 @@ keeps the issued credential in memory, and automatically re-registers after Engi
 probe reads `/proc/sys/kernel/osrelease`. Optional compile mode invokes only Clang with fixed
 arguments and resource limits; it never uses a shell, loads eBPF, or returns an object. Both client
 and server reject compile capability on `shared_kernel`. See the [Runner Agent Guide](runner-agent.md).
+
+Packaging includes the same Agent binary and an opt-in `runner-agent` Compose profile. A dedicated
+manager prepares its private bootstrap Secret and starts the hardened, unprivileged compiler
+container. A companion smoke test authenticates as the configured administrator, discovers the
+sanitized backend, submits a user-owned compile job, polls it, and verifies the normalized result.
 
 An Agent must register again after Engine restart or after its record is removed. Registration with
 the same ID replaces the old record. The endpoints return `401` for bad credentials, `503` when the

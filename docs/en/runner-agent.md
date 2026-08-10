@@ -8,12 +8,13 @@ capabilities. A compile job never loads eBPF or returns its object file.
 
 ## Engine Preparation
 
-Set a random bootstrap token of 32–512 characters on the Engine and restart it:
+For an external Agent, set a random bootstrap token of 32–512 characters on the Engine and restart
+the Docker stack:
 
 ```bash
 openssl rand -hex 32
 # Store the output as CYANREX_RUNNER_AGENT_TOKEN in docker/.env.
-./start.sh restart
+./start.sh stop && ./start.sh start --mode docker
 ```
 
 Keep this token off command lines, source control, screenshots, and frontend configuration. The
@@ -23,6 +24,29 @@ memory; restarting the Agent registers again and rotates that credential.
 Engine and Agent clocks must be synchronized because signed requests expire after 60 seconds by
 default. Use TLS for traffic between hosts. Plain HTTP to a non-loopback address is rejected unless
 the explicit lab-only override is enabled.
+
+## Managed Docker Agent
+
+The source tree and distribution package include an optional `runner-agent` Compose profile. It is
+disabled during a normal stack start. After the main stack is configured, start it with:
+
+```bash
+./scripts/runner-agent.sh start
+./scripts/runner-agent-smoke.sh
+```
+
+In a distribution package, use `./runner-agent.sh` and `./runner-agent-smoke.sh` from the package
+root. The manager generates a token only when the control plane is not configured, stores it in the
+private runtime environment, copies it to a mode-0600 Docker Secret, and recreates Engine once to
+apply it. It never prints the token. Use `status`, `logs`, and `stop` actions for lifecycle control.
+
+The managed Agent is a read-only, unprivileged container with all Linux capabilities dropped, no
+published ports, a PID limit, and CPU/memory limits. Its writable `/tmp` is a small `noexec` tmpfs.
+An internal control-only network connects it to Engine without access to the default PostgreSQL and
+frontend network or external networks. It reports `container` isolation and enables compile-only
+diagnostics; `/ebpf/run` remains local.
+CI runs the same Agent client against a real loopback Engine and Linux Clang, while also validating
+both source and distribution Compose profiles.
 
 ## Linux or WSL2
 
@@ -64,7 +88,7 @@ Use `shared_kernel`, `container`, `virtual_machine`, or `dedicated_host` only wh
 truthfully describes the node boundary. The label is displayed to administrators; it does not
 create isolation.
 
-## Container
+## External Container
 
 The Engine image also contains `/usr/local/bin/cyanrex-runner-agent` and Clang. Run it without
 `--privileged`, host PID mode, kernel mounts, or added capabilities:
@@ -119,6 +143,22 @@ so registration credentials cannot be forwarded to another endpoint accidentally
    without loading or returning the object.
 7. Re-register automatically when the Engine loses in-memory Agent state.
 8. Send a best-effort `draining` heartbeat on Ctrl-C.
+
+## Administrator Operations
+
+Open **Settings → Runner Agent Operations** with an administrator account. The panel refreshes every
+10 seconds and can also be refreshed manually. It distinguishes a disabled control plane from an
+enabled control plane with no registered nodes, then shows:
+
+- online and retained Agent counts, healthy free capacity, isolation, version, capabilities, labels,
+  kernel release, and the last heartbeat;
+- the 12 most recent remote jobs, including state, target or assigned Agent, owner, creation time,
+  and the bounded result message;
+- explicit health-probe submission for healthy Agents and cancellation for queued or claimed jobs.
+
+The panel never renders job output or source code. It is backed by administrator-only inventory and
+action routes; teachers and students continue to receive only the sanitized compiler backend list in
+the editor.
 
 Administrators submit explicit compile-only jobs with `POST /runner/jobs/compile-check` and inspect
 them through `GET /runner/agents` or `GET /runner/jobs`. Authenticated editor users see a sanitized

@@ -7,12 +7,13 @@
 
 ## 准备 Engine
 
-生成 32～512 字符的随机 Bootstrap Token，写入 Engine 的 `docker/.env` 后重启：
+外部 Agent 需要先生成 32～512 字符的随机 Bootstrap Token，写入 Engine 的 `docker/.env` 后重启
+Docker 栈：
 
 ```bash
 openssl rand -hex 32
 # 将输出保存为 CYANREX_RUNNER_AGENT_TOKEN。
-./start.sh restart
+./start.sh stop && ./start.sh start --mode docker
 ```
 
 不要把 Token 放进命令行、代码仓库、截图或前端配置。Agent 只在注册时使用它；注册返回的单节点
@@ -20,6 +21,27 @@ openssl rand -hex 32
 
 Engine 和 Agent 必须同步时钟，因为签名默认只有 60 秒时效。跨主机连接应使用 TLS；非回环地址的
 明文 HTTP 默认拒绝，只有受信、带防火墙的实验网络才应打开显式例外。
+
+## 托管 Docker Agent
+
+源码树与离线发布包都包含可选的 `runner-agent` Compose Profile，常规启动不会自动启用它。主系统
+完成配置后执行：
+
+```bash
+./scripts/runner-agent.sh start
+./scripts/runner-agent-smoke.sh
+```
+
+发布包中直接运行根目录的 `./runner-agent.sh` 和 `./runner-agent-smoke.sh`。管理脚本只在控制面尚未
+配置时生成 Token，将其写入私有运行环境和权限为 0600 的 Docker Secret，并重建一次 Engine 使配置
+生效；Token 不会输出到终端。可用 `status`、`logs`、`stop` 管理生命周期。
+
+托管 Agent 使用只读、无特权容器，丢弃全部 Linux Capability，不发布端口，并限制 PID、CPU 和内存；
+可写 `/tmp` 是较小的 `noexec` tmpfs。仅内部可见的控制网络让它只能连接 Engine，不能访问默认的
+PostgreSQL/前端网络或外部网络。它如实报告 `container` 隔离并开启只编译诊断，`/ebpf/run` 仍在本地
+执行。
+CI 还会让同一个 Agent 客户端连接真实回环 Engine 和 Linux Clang，并解析源码版与发布版两个
+Compose Profile。
 
 ## Linux 或 WSL2
 
@@ -60,7 +82,7 @@ CYANREX_AGENT_ISOLATION=virtual_machine \
 `shared_kernel`、`container`、`virtual_machine`、`dedicated_host` 必须如实描述节点边界。该字段只用于
 管理员观察，不会凭空创建隔离。
 
-## 容器
+## 外部容器
 
 Engine 镜像也包含 `/usr/local/bin/cyanrex-runner-agent` 和 Clang。运行 Agent 时不要添加
 `--privileged`、宿主 PID、内核目录挂载或额外 Capability：
@@ -113,6 +135,18 @@ docker run --rm --name cyanrex-runner-agent \
 6. 编译检查限制资源与输出，只返回目标摘要并删除工作区，不加载或返回目标文件；
 7. Engine 丢失内存注册状态后自动重新注册；
 8. 收到 Ctrl-C 时尽力发送 `draining` 心跳。
+
+## 管理员运维
+
+管理员可进入 **设置 → Runner Agent 运维**。面板每 10 秒自动刷新，也支持手动刷新，并会明确区分
+“控制面未启用”和“控制面已启用但暂无节点”两种状态。面板展示：
+
+- 在线与保留 Agent 数、健康空闲容量、隔离类型、版本、能力、标签、内核版本和最后心跳；
+- 最近 12 个远程作业的状态、目标或执行 Agent、所有者、创建时间与有上限的结果消息；
+- 对健康 Agent 显式发送健康探针，以及取消排队中或已领取的作业。
+
+面板不会渲染作业输出或源码。节点清单和操作接口只允许管理员使用；教师与学生仍只能在编辑器中
+取得脱敏后的编译后端清单。
 
 管理员通过 `POST /runner/jobs/compile-check` 显式提交只编译作业，并用 `GET /runner/agents` 和
 `GET /runner/jobs` 查看状态。已登录的编辑器用户通过 `GET /ebpf/check/backends` 获取脱敏后的编译

@@ -252,6 +252,8 @@ administrator-only.
 - Remote diagnostics require an explicit editor selection and never silently fall back; local checking remains the default
 - Optional compile jobs use restricted Clang and never load or return eBPF objects; `/ebpf/run` remote dispatch remains disabled
 - `cyanrex-runner-agent` connects trusted Linux, WSL2, and unprivileged container nodes to this protocol
+- `scripts/runner-agent.sh start` enables the optional hardened Compose Agent; the matching smoke script verifies the authenticated editor path
+- Administrators can inspect Agent health/capacity and probe or cancel recent jobs from **Settings → Runner Agent Operations**
 
 ## Scripts APIs (Implemented)
 
