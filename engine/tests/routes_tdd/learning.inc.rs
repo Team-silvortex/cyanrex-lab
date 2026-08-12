@@ -87,3 +87,92 @@ async fn teacher_learning_overview_is_staff_only() {
         .unwrap();
     assert_eq!(forbidden.status(), StatusCode::FORBIDDEN);
 }
+
+#[tokio::test]
+async fn teacher_attempt_review_is_limited_and_students_cannot_read_it() {
+    let mut state = test_state();
+    let data_path = std::env::temp_dir().join(format!(
+        "cyanrex-learning-review-{}.json",
+        uuid::Uuid::new_v4()
+    ));
+    std::sync::Arc::get_mut(&mut state)
+        .expect("test state should be uniquely owned")
+        .learning_store =
+        cyanrex_engine::services::learning_store::LearningStore::with_local_data_path(
+            data_path.clone(),
+        );
+    let app = build_router(state.clone());
+    register_user(&app, "review-student", "student-pass-123").await;
+
+    for source in [
+        "SEC(\"xdp\") int first(void *ctx) { return XDP_PASS; }",
+        "SEC(\"xdp\") int second(void *ctx) { return XDP_PASS; }",
+    ] {
+        state
+            .learning_store
+            .record_run(
+                "review-student",
+                cyanrex_engine::services::learning_store::LearningRunOutcome {
+                    lab_id: "01-first-program",
+                    template_id: Some("xdp-pass"),
+                    source,
+                    run_success: true,
+                    stage: "load",
+                    attach_expected: false,
+                    attach_verified: false,
+                },
+            )
+            .await
+            .expect("learning attempt should be recorded");
+    }
+
+    let admin_otp = state
+        .auth_service
+        .generate_current_totp_for_user("admin")
+        .expect("default admin otp should be available");
+    let admin_cookie = login_and_get_session_cookie(&app, &admin_otp).await;
+    let response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .uri("/learning/teacher/attempts?username=review-student&limit=1")
+                .header(header::COOKIE, admin_cookie)
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = response.into_body().collect().await.unwrap().to_bytes();
+    let json: Value = serde_json::from_slice(&body).unwrap();
+    assert_eq!(json["username"], "review-student");
+    assert_eq!(json["attempts"].as_array().unwrap().len(), 1);
+    assert!(json["attempts"][0]["source"]
+        .as_str()
+        .unwrap()
+        .contains("XDP_PASS"));
+
+    let student_otp = state
+        .auth_service
+        .generate_current_totp_for_user("review-student")
+        .expect("student otp should exist");
+    let student_cookie = login_for_user(
+        &app,
+        "review-student",
+        "student-pass-123",
+        &student_otp,
+    )
+    .await;
+    let forbidden = app
+        .oneshot(
+            Request::builder()
+                .uri("/learning/teacher/attempts?username=review-student")
+                .header(header::COOKIE, student_cookie)
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(forbidden.status(), StatusCode::FORBIDDEN);
+    let _ = tokio::fs::remove_file(data_path).await;
+}

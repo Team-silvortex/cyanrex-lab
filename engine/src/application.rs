@@ -158,6 +158,10 @@ fn staff_routes(state: Arc<AppState>) -> Router<Arc<AppState>> {
             "/learning/teacher/overview",
             get(routes::learning::teacher_overview),
         )
+        .route(
+            "/learning/teacher/attempts",
+            get(routes::learning::teacher_attempts),
+        )
         .route("/modules", get(routes::modules::list_modules))
         .route(
             "/modules/c-headers/catalog",

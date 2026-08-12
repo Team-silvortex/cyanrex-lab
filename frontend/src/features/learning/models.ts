@@ -35,5 +35,26 @@ export type TeacherLearningOverview = {
   students: StudentLearningOverview[];
 };
 
+export type LabAttempt = {
+  id: string;
+  username: string;
+  lab_id: string;
+  template_id?: string | null;
+  source: string;
+  source_sha256: string;
+  run_success: boolean;
+  stage: string;
+  attach_expected: boolean;
+  attach_verified: boolean;
+  completed: boolean;
+  feedback: string[];
+  created_at: string;
+};
+
+export type TeacherStudentAttempts = {
+  username: string;
+  attempts: LabAttempt[];
+};
+
 export const labTitleKey = (labId: string): string =>
   `learn.sectionLab${labId.slice(0, 2)}Title`;

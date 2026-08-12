@@ -64,3 +64,9 @@ pub struct TeacherLearningOverview {
     pub active_students: u32,
     pub students: Vec<StudentLearningOverview>,
 }
+
+#[derive(Debug, Clone, Serialize)]
+pub struct TeacherStudentAttempts {
+    pub username: String,
+    pub attempts: Vec<LabAttempt>,
+}

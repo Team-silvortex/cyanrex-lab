@@ -73,6 +73,18 @@ impl Default for LearningStore {
 }
 
 impl LearningStore {
+    pub fn with_local_data_path(data_path: PathBuf) -> Self {
+        Self {
+            in_memory: Arc::new(RwLock::new(Vec::new())),
+            data_path,
+            persist_lock: Arc::new(Mutex::new(())),
+            memory_loaded: Arc::new(OnceCell::new()),
+            db_pool: None,
+            schema_ready: Arc::new(OnceCell::new()),
+            db_disabled: Arc::new(AtomicBool::new(false)),
+        }
+    }
+
     pub async fn record_run(
         &self,
         username: &str,
@@ -143,18 +155,41 @@ impl LearningStore {
     }
 
     pub async fn attempts_for_user(&self, username: &str) -> Vec<LabAttempt> {
+        self.attempts_for_user_with_limit(username, None).await
+    }
+
+    pub async fn recent_attempts_for_user(&self, username: &str, limit: usize) -> Vec<LabAttempt> {
+        self.attempts_for_user_with_limit(username, Some(limit.clamp(1, 50)))
+            .await
+    }
+
+    async fn attempts_for_user_with_limit(
+        &self,
+        username: &str,
+        limit: Option<usize>,
+    ) -> Vec<LabAttempt> {
         let Some(username) = sanitize_username(username) else {
             return Vec::new();
         };
         if let Some(pool) = self.active_pool() {
             if self.ensure_schema().await.is_ok() {
-                match sqlx::query(
-                    "SELECT * FROM learning_attempts WHERE username = $1 ORDER BY created_at DESC",
-                )
-                .bind(&username)
-                .fetch_all(pool)
-                .await
-                {
+                let fetched = match limit {
+                    Some(limit) => sqlx::query(
+                        "SELECT * FROM learning_attempts WHERE username = $1
+                         ORDER BY created_at DESC LIMIT $2",
+                    )
+                    .bind(&username)
+                    .bind(limit as i64)
+                    .fetch_all(pool)
+                    .await,
+                    None => sqlx::query(
+                        "SELECT * FROM learning_attempts WHERE username = $1 ORDER BY created_at DESC",
+                    )
+                    .bind(&username)
+                    .fetch_all(pool)
+                    .await,
+                };
+                match fetched {
                     Ok(rows) => return rows.into_iter().map(decode_attempt).collect(),
                     Err(error) => {
                         self.disable_db(&format!("list learning attempts failed: {error}"))
@@ -173,6 +208,9 @@ impl LearningStore {
             .cloned()
             .collect::<Vec<_>>();
         attempts.sort_by_key(|attempt| std::cmp::Reverse(attempt.created_at));
+        if let Some(limit) = limit {
+            attempts.truncate(limit);
+        }
         attempts
     }
 

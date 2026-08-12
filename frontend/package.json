@@ -11,7 +11,7 @@
     "start": "next start",
     "test:performance-hotspots": "node --experimental-strip-types --test tests/performanceHotspots.test.mjs",
     "test:security-headers": "node --test tests/securityHeaders.test.mjs",
-    "test:ui-permissions": "node --test tests/sidebarPermissions.test.mjs",
+    "test:ui-permissions": "node --experimental-strip-types --test tests/sidebarPermissions.test.mjs tests/teachingReview.test.mjs",
     "lint": "next lint"
   },
   "dependencies": {

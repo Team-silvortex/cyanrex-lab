@@ -272,6 +272,8 @@ administrator-only.
 - `GET /learning/labs` — current user's five-lab catalog and progress
 - `GET /learning/attempts` — current user's backend-recorded run attempts
 - `GET /learning/teacher/overview` — teacher/admin classroom progress summary
+- `GET /learning/teacher/attempts?username=...&limit=...` — staff-only bounded attempt,
+  feedback, and submitted-source review for one student
 - `/ebpf/run` records an attempt only when a known `lab_id` is supplied; completion is calculated
   from the real run, required template/source patterns, and attachment verification.
 

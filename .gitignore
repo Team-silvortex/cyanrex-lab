@@ -26,6 +26,7 @@ node_modules/
 out/
 dist/
 coverage/
+/engine/data/
 scripts/bench-event-bus-compare-*.jsonl
 .run/perf/*.jsonl
 

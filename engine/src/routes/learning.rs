@@ -1,13 +1,23 @@
 use std::sync::Arc;
 
 use axum::{
-    extract::State,
+    extract::{Query, State},
     http::{HeaderMap, StatusCode},
     response::{IntoResponse, Response},
     Json,
 };
+use serde::Deserialize;
 
-use crate::{models::auth::AuthRole, AppState};
+use crate::{
+    models::{auth::AuthRole, learning::TeacherStudentAttempts},
+    AppState,
+};
+
+#[derive(Deserialize)]
+pub struct TeacherAttemptsQuery {
+    username: String,
+    limit: Option<usize>,
+}
 
 pub async fn list_labs(State(state): State<Arc<AppState>>, headers: HeaderMap) -> Response {
     let Some(session) =
@@ -49,6 +59,42 @@ pub async fn teacher_overview(State(state): State<Arc<AppState>>) -> Response {
     });
     overview.active_students = overview.students.len() as u32;
     Json(overview).into_response()
+}
+
+pub async fn teacher_attempts(
+    State(state): State<Arc<AppState>>,
+    Query(query): Query<TeacherAttemptsQuery>,
+) -> Response {
+    let username = query.username.trim();
+    if !valid_username(username)
+        || !matches!(
+            state.auth_service.role_for_username(username),
+            AuthRole::Student
+        )
+    {
+        return (
+            StatusCode::NOT_FOUND,
+            Json(serde_json::json!({"ok": false, "message": "student not found"})),
+        )
+            .into_response();
+    }
+    let attempts = state
+        .learning_store
+        .recent_attempts_for_user(username, query.limit.unwrap_or(20))
+        .await;
+    Json(TeacherStudentAttempts {
+        username: username.to_string(),
+        attempts,
+    })
+    .into_response()
+}
+
+fn valid_username(username: &str) -> bool {
+    !username.is_empty()
+        && username.len() <= 64
+        && username.chars().all(|character| {
+            character.is_ascii_alphanumeric() || matches!(character, '_' | '-' | '.')
+        })
 }
 
 fn auth_error() -> (StatusCode, Json<serde_json::Value>) {

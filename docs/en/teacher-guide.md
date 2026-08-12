@@ -82,6 +82,12 @@ five lab states. A student attempt is recorded only when the eBPF editor was ope
 context and `/ebpf/run` reached the Engine. Completion therefore cannot be set by a browser-only
 checkbox.
 
+Select **Review attempts** beside a student to inspect up to 20 recent submissions. Each record
+shows the backend stage, run and attachment result, automated feedback, and the exact submitted
+source. Use this evidence to distinguish a compile failure from a verifier/attach failure and to
+discuss the student's reasoning. The review API is restricted to teacher and administrator roles;
+students can only read their own attempt history.
+
 Automated checks require the expected template, a successful `run` stage, structured source
 evidence, and attachment verification where the lab requires it. Source evidence uses C tokens:
 comments, string literals, helper-name substrings, and preprocessor definitions do not count.
