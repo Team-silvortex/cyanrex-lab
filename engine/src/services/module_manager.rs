@@ -13,7 +13,9 @@ pub struct ModuleManager {
 impl ModuleManager {
     pub fn list(&self) -> Vec<ModuleInfo> {
         let guard = self.inner.read().expect("module manager lock poisoned");
-        guard.values().cloned().collect()
+        let mut modules = guard.values().cloned().collect::<Vec<_>>();
+        modules.sort_by(|left, right| left.name.cmp(&right.name));
+        modules
     }
 
     pub fn start(&self, name: &str) -> ModuleInfo {

@@ -8,21 +8,22 @@ RUN_SECURITY_AUDIT=0
 
 print_help() {
   cat <<'EOF'
-Usage: ./scripts/quality-gate.sh [--backend-only|--frontend-only|--format-only|--security|--security-only|--permissions-only|--no-npm-install]
+Usage: ./scripts/quality-gate.sh [--backend-only|--frontend-only|--sdk-only|--format-only|--security|--security-only|--permissions-only|--no-npm-install]
 
 Runs project quality checks used before commit/CI.
 
 Modes:
-  (default)      Run file-length, backend, and frontend checks.
+  (default)      Run file-length, backend, frontend, and SDK checks.
   --backend-only Run file-length and backend checks.
   --frontend-only Run file-length and frontend checks.
+  --sdk-only    Run file-length and JavaScript SDK checks.
   --format-only  Run file-length and Rust formatting check only.
   --security     Run file-length and security audit check.
   --security-only Run only security audit check.
   --permissions-only Run file-length and permission regression checks (backend route_tdd + frontend permission tests).
 
 Flags:
-  --no-npm-install Skip npm install step in frontend checks.
+  --no-npm-install Skip npm install steps in frontend and SDK checks.
 EOF
 }
 
@@ -33,6 +34,9 @@ while [[ $# -gt 0 ]]; do
       ;;
     --frontend-only)
       MODE="frontend"
+      ;;
+    --sdk-only)
+      MODE="sdk"
       ;;
     --format-only)
       MODE="format-only"
@@ -66,6 +70,10 @@ run_file_length_check() {
   "$PROJECT_ROOT/scripts/check-file-lengths.sh"
 }
 
+run_version_sync_check() {
+  "$PROJECT_ROOT/scripts/check-version-sync.sh"
+}
+
 run_runner_agent_tool_checks() {
   "$PROJECT_ROOT/scripts/test-runner-agent-tools.sh"
 }
@@ -90,6 +98,9 @@ run_frontend_checks() {
   (cd "$PROJECT_ROOT/frontend" && npx --yes tsc --noEmit)
   npm --prefix "$PROJECT_ROOT/frontend" run test:performance-hotspots
   npm --prefix "$PROJECT_ROOT/frontend" run test:security-headers
+  npm --prefix "$PROJECT_ROOT/frontend" run test:tooling
+  npm --prefix "$PROJECT_ROOT/frontend" run test:ui-permissions
+  npm --prefix "$PROJECT_ROOT/frontend" audit --omit=dev --audit-level=moderate
 }
 
 run_frontend_dependencies() {
@@ -98,6 +109,16 @@ run_frontend_dependencies() {
   else
     npm ci --prefix "$PROJECT_ROOT/frontend"
   fi
+}
+
+run_sdk_checks() {
+  if [[ "$SKIP_NPM_INSTALL" == "1" ]]; then
+    echo "Skipping npm install for SDK checks."
+  else
+    npm ci --prefix "$PROJECT_ROOT/sdk-js"
+  fi
+  npm --prefix "$PROJECT_ROOT/sdk-js" run check
+  npm --prefix "$PROJECT_ROOT/sdk-js" audit --omit=dev --audit-level=moderate
 }
 
 run_format_only() {
@@ -119,6 +140,7 @@ run_permissions_checks() {
 }
 
 run_file_length_check
+run_version_sync_check
 run_runner_agent_tool_checks
 run_distribution_tool_checks
 
@@ -132,6 +154,9 @@ case "$MODE" in
   frontend)
     run_frontend_checks
     ;;
+  sdk)
+    run_sdk_checks
+    ;;
   permissions)
     run_permissions_checks
     ;;
@@ -144,5 +169,6 @@ case "$MODE" in
     fi
     run_backend_checks
     run_frontend_checks
+    run_sdk_checks
     ;;
 esac

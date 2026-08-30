@@ -30,7 +30,7 @@ flowchart LR
 | `docker/` | Docker 与分发拓扑 | 容器部署 |
 | `scripts/` | 启动、打包、审计、质量和性能脚本 | 运维流程 |
 | `modules/` | 模块示例与约定 | 教学示例 |
-| `sdk-js/` | 初期 JavaScript 客户端骨架 | 可选集成面 |
+| `sdk-js/` | 面向浏览器与 Node.js 的类型化 Engine HTTP 客户端 | 可选集成面 |
 
 目前 `modules/` 下的目录是示例，Engine 尚不会动态发现这些目录；模块运行状态由
 `ModuleManager` 保存在内存中。
@@ -207,7 +207,7 @@ curl -sS -X POST http://127.0.0.1:8080/runner/agent/register \
   -d '{
     "agent_id":"lab-vm-01",
     "protocol_version":1,
-    "agent_version":"0.2.0",
+    "agent_version":"0.2.9",
     "isolation":"virtual_machine",
     "max_concurrent":2,
     "capabilities":["bpftool","btf","ringbuf"],
@@ -320,7 +320,8 @@ Engine 容器需要内核能力、宿主 PID、bpffs、tracefs 和内核模块�
 - 系统面向可信自部署教学环境，不面向公网多租户。
 - Engine 是单进程；挂载、模块和降级状态不会在多个副本间共享。
 - PostgreSQL 可以共享，但 Engine 横向扩容前必须先设计 eBPF 挂载所有权与协调机制。
-- `sdk-js` 仍是骨架，尚未覆盖身份、CSRF 和全部 API。
+- `sdk-js` 目前仍由人工跟随 Engine 路由维护，已有构建与传输层回归；在把它视为独立版本的
+  公共兼容契约前，仍需补充机器可读的 API Schema。
 - `modules/` 是示例边界，不是动态插件运行时。
 
 这些是显式架构约束。若要移除某项限制，应同时提供协调模型、安全审计、迁移方案和回归测试。

@@ -83,7 +83,7 @@ docker run --rm --name cyanrex-runner-agent \
   --entrypoint cyanrex-runner-agent \
   --env-file runner-agent.env \
   --mount type=bind,src="$PWD/agent-token",dst=/run/secrets/cyanrex-agent-bootstrap-token,ro \
-  cyanrex/cyanrex-engine:0.2.0
+  cyanrex/cyanrex-engine:0.2.9
 ```
 
 Compile checking is disabled by default and forbidden with `shared_kernel`. Even when enabled, the

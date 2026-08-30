@@ -1,7 +1,31 @@
 {
   "name": "@cyanrex/sdk-js",
-  "version": "0.2.0",
+  "version": "0.2.9",
+  "description": "Typed browser and Node.js client for the Cyanrex Lab API",
   "type": "module",
-  "main": "src/index.ts",
-  "private": true
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "private": true,
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "node --experimental-strip-types --test tests/*.test.mjs",
+    "check": "npm run build && npm test"
+  },
+  "devDependencies": {
+    "typescript": "5.8.3"
+  },
+  "engines": {
+    "node": ">=18"
+  }
 }

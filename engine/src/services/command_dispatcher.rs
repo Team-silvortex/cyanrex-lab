@@ -1,5 +1,5 @@
 use crate::{
-    models::command::{CommandRequest, CommandType},
+    models::command::{CommandRequest, CommandResponse, CommandType},
     services::module_manager::ModuleManager,
 };
 
@@ -13,29 +13,80 @@ impl CommandDispatcher {
         Self { module_manager }
     }
 
-    pub async fn dispatch(&self, command: CommandRequest) -> bool {
+    pub async fn dispatch(&self, command: CommandRequest) -> CommandResponse {
         match command.command_type {
             CommandType::ListModules => {
-                let _ = self.module_manager.list();
-                true
+                let modules = self.module_manager.list();
+                CommandResponse {
+                    ok: true,
+                    command_type: CommandType::ListModules,
+                    message: format!("listed {} module(s)", modules.len()),
+                    modules: Some(modules),
+                    module: None,
+                    next_path: None,
+                }
             }
             CommandType::StartModule => {
-                if let Some(module_name) = command.module_name {
-                    let _ = self.module_manager.start(&module_name);
-                    true
-                } else {
-                    false
+                let Some(module_name) = valid_module_name(command.module_name) else {
+                    return invalid_module_name(CommandType::StartModule);
+                };
+                let module = self.module_manager.start(&module_name);
+                CommandResponse {
+                    ok: true,
+                    command_type: CommandType::StartModule,
+                    message: format!("module {} started", module.name),
+                    modules: None,
+                    module: Some(module),
+                    next_path: None,
                 }
             }
             CommandType::StopModule => {
-                if let Some(module_name) = command.module_name {
-                    let _ = self.module_manager.stop(&module_name);
-                    true
-                } else {
-                    false
+                let Some(module_name) = valid_module_name(command.module_name) else {
+                    return invalid_module_name(CommandType::StopModule);
+                };
+                let module = self.module_manager.stop(&module_name);
+                CommandResponse {
+                    ok: true,
+                    command_type: CommandType::StopModule,
+                    message: format!("module {} stopped", module.name),
+                    modules: None,
+                    module: Some(module),
+                    next_path: None,
                 }
             }
-            CommandType::RunExperiment => true,
+            CommandType::RunExperiment => CommandResponse {
+                ok: true,
+                command_type: CommandType::RunExperiment,
+                message: "open the eBPF workspace to configure and run an experiment".to_string(),
+                modules: None,
+                module: None,
+                next_path: Some("/ebpf".to_string()),
+            },
         }
+    }
+}
+
+fn valid_module_name(raw: Option<String>) -> Option<String> {
+    let name = raw?.trim().to_string();
+    if name.is_empty()
+        || name.len() > 128
+        || !name.chars().all(|character| {
+            character.is_ascii_alphanumeric() || matches!(character, '-' | '_' | '.')
+        })
+    {
+        return None;
+    }
+    Some(name)
+}
+
+fn invalid_module_name(command_type: CommandType) -> CommandResponse {
+    CommandResponse {
+        ok: false,
+        command_type,
+        message: "module name is required and may contain only letters, numbers, '.', '-' or '_'"
+            .to_string(),
+        modules: None,
+        module: None,
+        next_path: None,
     }
 }

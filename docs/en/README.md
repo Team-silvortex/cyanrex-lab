@@ -8,11 +8,12 @@ semantic completion, kernel loading, event observation, and program detach into 
 ### Teacher
 
 1. [Teacher Quick Start](teacher-guide.md)
-2. [System Architecture](architecture.md)
-3. [Runner Agent Guide](runner-agent.md)
-4. [Concept Map](concepts.md)
-5. [Security and Classroom Deployment](security.md)
-6. Browse all labs and perform a dry run first
+2. [Project Status](project-status.md)
+3. [System Architecture](architecture.md)
+4. [Runner Agent Guide](runner-agent.md)
+5. [Concept Map](concepts.md)
+6. [Security and Classroom Deployment](security.md)
+7. Browse all labs and perform a dry run first
    - Template path in the eBPF page:
      - `learning/foundations/beginner/fundamentals`
      - `learning/foundations/intermediate/protocols`
@@ -65,5 +66,6 @@ For high event traffic classes, you can tune persistence queue alerting in `dock
 ## CI and Merge Gate
 
 - CI workflow now includes an aggregate gate job `ci-gate` in `.github/workflows/ci.yml`.
-- `ci-gate` requires `security-audit`, `file-lengths`, `engine`, `frontend`, and `permissions` and fails if any required job fails.
+- `ci-gate` requires `security-audit`, `file-lengths`, `engine`, `frontend`, `permissions`, and
+  `distribution`, and fails if any required job fails.
 - For branch protection, enable required status check for **`CI gate`** on your main branch.

@@ -14,7 +14,7 @@ for the complete frontend/Engine boundary.
 - `/modules`: module catalog and lifecycle controls
 - `/events`: event filters, export, deletion, and realtime updates
 - `/settings`: per-user event retention settings
-- `/terminal`: command dispatch interface
+- `/terminal`: administrator-only module command bus and eBPF workspace handoff (not a system shell)
 - `/login`, `/register`, `/otp-setup`, `/account`: account and TOTP flows
 
 The interface supports Simplified Chinese, English, Spanish, and Japanese.

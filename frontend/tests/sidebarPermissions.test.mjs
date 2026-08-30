@@ -14,6 +14,7 @@ const sampleNavItems = [
   { href: "/modules", key: "layout.nav.modules", allowedRoles: ["admin", "teacher"] },
   { href: "/teaching", key: "layout.nav.teaching", allowedRoles: ["admin", "teacher"] },
   { href: "/settings", key: "layout.nav.settings", allowedRoles: ["admin"] },
+  { href: "/terminal", key: "layout.nav.terminal", allowedRoles: ["admin"] },
 ];
 
 test("normalizeAuthRole accepts only supported roles", () => {
@@ -31,6 +32,7 @@ test("getRequiredRolesForRoute returns route-specific role policies", () => {
   assert.deepEqual(getRequiredRolesForRoute("/teaching"), ["admin", "teacher"]);
   assert.deepEqual(getRequiredRolesForRoute("/settings"), ["admin"]);
   assert.deepEqual(getRequiredRolesForRoute("/settings/compiler"), ["admin"]);
+  assert.deepEqual(getRequiredRolesForRoute("/terminal"), ["admin"]);
 });
 
 test("isRoleAllowed handles allowlists and unauthenticated role", () => {
@@ -49,10 +51,12 @@ test("isRouteAllowed enforces route policy end-to-end", () => {
   assert.equal(isRouteAllowed("/teaching", "student"), false);
   assert.equal(isRouteAllowed("/settings", "admin"), true);
   assert.equal(isRouteAllowed("/settings", "teacher"), false);
+  assert.equal(isRouteAllowed("/terminal", "admin"), true);
+  assert.equal(isRouteAllowed("/terminal", "teacher"), false);
 });
 
 test("filterNavItemsByRole only shows modules/settings per role", () => {
-  assert.equal(filterNavItemsByRole(sampleNavItems, "admin").length, 4);
+  assert.equal(filterNavItemsByRole(sampleNavItems, "admin").length, 5);
   assert.equal(filterNavItemsByRole(sampleNavItems, "teacher").length, 3);
   assert.equal(filterNavItemsByRole(sampleNavItems, "student").length, 1);
   assert.equal(filterNavItemsByRole(sampleNavItems, "teacher")[1].href, "/modules");

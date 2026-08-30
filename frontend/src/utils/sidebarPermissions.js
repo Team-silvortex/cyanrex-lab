@@ -40,7 +40,7 @@ export const isRoleAllowed = (roles, userRole) => {
  * @returns {AuthRole[]|null}
  */
 export const getRequiredRolesForRoute = (pathname) => {
-  if (pathname.startsWith("/settings")) {
+  if (pathname.startsWith("/settings") || pathname.startsWith("/terminal")) {
     return ["admin"];
   }
   if (pathname.startsWith("/modules") || pathname.startsWith("/teaching")) {

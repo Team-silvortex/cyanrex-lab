@@ -8,11 +8,12 @@ Cyanrex 是一个面向 eBPF 入门教学的实验系统。它把源码编辑、
 ### 教师
 
 1. [教师快速开始](teacher-guide.md)
-2. [系统架构](architecture.md)
-3. [Runner Agent 使用指南](runner-agent.md)
-4. [课程知识地图](concepts.md)
-5. [安全与课堂部署](security.md)
-6. 浏览全部实验并提前试跑
+2. [项目进度状态](project-status.md)
+3. [系统架构](architecture.md)
+4. [Runner Agent 使用指南](runner-agent.md)
+5. [课程知识地图](concepts.md)
+6. [安全与课堂部署](security.md)
+7. 浏览全部实验并提前试跑
    - eBPF 页面中的课程路径：
      - `learning/foundations/beginner/fundamentals`
      - `learning/foundations/intermediate/protocols`
@@ -65,5 +66,6 @@ eBPF 永远运行在 Linux 内核中。Windows 和 macOS 的 Docker 模式观察
 ## CI 与合并门禁
 
 - CI 流程已加入聚合任务 `CI gate`（位于 `.github/workflows/ci.yml`）。
-- `CI gate` 会依赖 `security-audit`、`file-lengths`、`engine`、`frontend` 和 `permissions`，并在任一任务失败时直接失败。
+- `CI gate` 会依赖 `security-audit`、`file-lengths`、`engine`、`frontend`、`permissions` 和
+  `distribution`，并在任一任务失败时直接失败。
 - 建议在分支保护中只配置必需检查项为 **`CI gate`**，这样合并统一受该门禁控制。

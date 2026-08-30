@@ -90,6 +90,35 @@ jobs:
       - name: Build
         working-directory: frontend
         run: npm run build
+      - name: Run frontend regression checks
+        working-directory: frontend
+        run: |
+          npm run test:performance-hotspots
+          npm run test:security-headers
+          npm run test:tooling
+      - name: Audit frontend production dependencies
+        working-directory: frontend
+        run: npm audit --omit=dev --audit-level=moderate
+
+  sdk:
+    name: JavaScript SDK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: sdk-js/package-lock.json
+      - name: Install dependencies
+        working-directory: sdk-js
+        run: npm ci
+      - name: Build and test
+        working-directory: sdk-js
+        run: npm run check
+      - name: Audit production dependencies
+        working-directory: sdk-js
+        run: npm audit --omit=dev --audit-level=moderate
 
   distribution:
     name: Distribution install smoke
@@ -122,6 +151,7 @@ jobs:
       - file-lengths
       - engine
       - frontend
+      - sdk
       - permissions
       - distribution
     steps:
@@ -143,6 +173,10 @@ jobs:
           fi
           if [[ "${{ needs.frontend.result }}" != "success" ]]; then
             echo "frontend failed"
+            exit 1
+          fi
+          if [[ "${{ needs.sdk.result }}" != "success" ]]; then
+            echo "sdk failed"
             exit 1
           fi
           if [[ "${{ needs.permissions.result }}" != "success" ]]; then

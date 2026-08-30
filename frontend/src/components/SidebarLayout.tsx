@@ -38,7 +38,7 @@ const navItems: NavItem[] = [
   },
   { href: "/events", key: "layout.nav.events" },
   { href: "/settings", key: "layout.nav.settings", allowedRoles: ["admin"] as const },
-  { href: "/terminal", key: "layout.nav.terminal" },
+  { href: "/terminal", key: "layout.nav.terminal", allowedRoles: ["admin"] as const },
   { href: "/account", key: "layout.nav.account" },
 ];
 

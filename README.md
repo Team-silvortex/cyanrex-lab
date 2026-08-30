@@ -1,10 +1,11 @@
 # cyanrex-lab
 
-Version: `0.2.0`
+Version: `0.2.9`
 
 Cyanrex monorepo for eBPF experiments: Axum engine + Next.js dashboard + module utilities.
 
 Architecture: [English](docs/en/architecture.md) · [简体中文](docs/zh-CN/architecture.md)
+· Project status: [English](docs/en/project-status.md) · [简体中文](docs/zh-CN/project-status.md)
 
 cyanrex-lab is free and open source under the [Apache License 2.0](LICENSE).
 Contributions are welcome; start with [CONTRIBUTING.md](CONTRIBUTING.md), follow the
@@ -17,7 +18,7 @@ private process in [SECURITY.md](SECURITY.md).
 cyanrex-lab/
 ├ frontend/        # Next.js UI
 ├ engine/          # Axum backend
-├ sdk-js/          # cyanrex-js SDK scaffold
+├ sdk-js/          # typed browser/Node.js API client
 ├ modules/         # module examples
 │  ├ module-ebpf
 │  ├ module-network
@@ -49,6 +50,7 @@ streaming. See the architecture document before adding a service, route, or depl
   - event settings endpoint (`/settings/events`)
   - C header module endpoints (catalog/download/delete/select/inject metadata)
   - learning progress endpoints for student labs and teacher overview
+  - structured admin command bus (`/command`) for module lifecycle and experiment handoff
 - Auth system:
   - register/login/logout/session (`HTTP cookie`)
   - OTP/TOTP verification
@@ -65,6 +67,10 @@ streaming. See the architecture document before adding a service, route, or depl
 - Frontend pages:
   - `/dashboard`, `/ebpf`, `/learn`, `/teaching`, `/helper`, `/modules`, `/events`, `/terminal`
   - `/login`, `/register`, `/otp-setup`, `/account`
+  - administrator-only Terminal with structured results, module snapshots, and session history
+- JavaScript SDK:
+  - typed ESM package covering the browser-facing Engine API
+  - browser credentials, Node session-cookie capture, Origin-based CSRF support, cancellation, and typed errors
 - Frontend i18n:
   - supported languages: Simplified Chinese (`zh-CN`), English (`en`), Spanish (`es`), Japanese (`ja`)
   - sidebar + auth pages + core runtime pages integrated
@@ -132,12 +138,12 @@ privileged and must not be exposed to untrusted users.
 For classroom deployment or offline distribution, create a packaged artifact with prebuilt Docker images:
 
 ```bash
-./scripts/package-distribution.sh --version 0.2.0
+./scripts/package-distribution.sh --version 0.2.9
 ```
 
 This produces:
-- `dist/cyanrex-lab-0.2.0-<timestamp>.tar.gz`
-- `dist/cyanrex-lab-0.2.0-<timestamp>.tar.gz.sha256`
+- `dist/cyanrex-lab-0.2.9-<timestamp>.tar.gz`
+- `dist/cyanrex-lab-0.2.9-<timestamp>.tar.gz.sha256`
 
 The archive contains the PostgreSQL, Engine, and frontend images. On a disposable Docker host,
 verify the freshly extracted package end to end with `./install-smoke.sh`. It checks the package
@@ -311,6 +317,7 @@ Run the same checks used by CI before submitting changes:
   - `engine`
   - `frontend`
   - `permissions`
+  - `distribution`
 - Set branch protection to require only `ci-gate` (instead of each matrix-like job), then any failed job will fail the required gate.
 - Recommended GitHub branch rule (GitHub UI):
   - Settings → Branches → Branch protection rules

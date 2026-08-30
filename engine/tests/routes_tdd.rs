@@ -23,6 +23,7 @@ fn test_state() -> std::sync::Arc<cyanrex_engine::AppState> {
 
 include!("routes_tdd/basic.inc.rs");
 include!("routes_tdd/modules.inc.rs");
+include!("routes_tdd/command.inc.rs");
 include!("routes_tdd/auth.inc.rs");
 include!("routes_tdd/auth_csrf.inc.rs");
 include!("routes_tdd/learning.inc.rs");

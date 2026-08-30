@@ -33,7 +33,7 @@ and kernel form a privileged sandbox boundary.
 | `docker/` | Docker and distribution topology | Container deployment |
 | `scripts/` | Launch, package, audit, quality, and benchmark automation | Operator workflows |
 | `modules/` | Example module packages and contracts | Teaching examples |
-| `sdk-js/` | Early JavaScript client scaffold | Optional integration surface |
+| `sdk-js/` | Typed browser and Node.js client for the Engine HTTP API | Optional integration surface |
 
 The current `modules/` directories are examples; the Engine does not dynamically discover them.
 Module lifecycle state is currently maintained by `ModuleManager` in memory.
@@ -228,7 +228,7 @@ curl -sS -X POST http://127.0.0.1:8080/runner/agent/register \
   -d '{
     "agent_id":"lab-vm-01",
     "protocol_version":1,
-    "agent_version":"0.2.0",
+    "agent_version":"0.2.9",
     "isolation":"virtual_machine",
     "max_concurrent":2,
     "capabilities":["bpftool","btf","ringbuf"],
@@ -362,7 +362,9 @@ test performed from a newly built and extracted offline distribution archive.
   replicas.
 - PostgreSQL is shared infrastructure, but horizontal Engine scaling requires explicit ownership and
   coordination for eBPF attachments before it is safe.
-- `sdk-js` is a scaffold and does not yet cover authentication, CSRF behavior, or the complete API.
+- `sdk-js` is hand-maintained against the Engine routes. It has build and transport regressions, but
+  a machine-readable API schema is still needed before treating it as an independently versioned
+  public compatibility contract.
 - `modules/` is an example boundary rather than a dynamic plugin runtime.
 
 These are architectural constraints, not hidden guarantees. A change that removes one should include

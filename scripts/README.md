@@ -13,6 +13,7 @@ Utility scripts for Cyanrex local operation.
   - default: run file-length + backend + frontend checks
   - `--backend-only`: run file-length + backend checks
   - `--frontend-only`: run file-length + frontend checks
+  - `--sdk-only`: run file-length + JavaScript SDK build, tests, and audit
   - `--format-only`: run file-length + Rust format check
   - `--permissions-only`: run file-length + permission regression checks
   - `--security`: run file-length + security audit check in addition to backend/frontend checks
@@ -21,6 +22,10 @@ Utility scripts for Cyanrex local operation.
 - `check-security-audit.sh`: audit Rust dependencies against a tracked exception registry.
   - reads `scripts/security-audit-exceptions.json`
   - reports explicit exceptions and fails on unapproved advisories
+- `check-version-sync.sh`: keeps the Engine, frontend, SDK, lockfiles, and release-facing docs on
+  the same semantic version. `engine/Cargo.toml` is the canonical source.
+- `clean-macos-metadata.mjs`: removes `.DS_Store` and AppleDouble `._*` sidecars that can be
+  mistaken for source files by Next.js after copying the repository through a macOS filesystem.
 - `debug-system.sh`: collect environment/runtime diagnostics for local troubleshooting.
   - prints toolchain versions, kernel capability status, compose backend status, and port checks
   - intended for `./start.sh diagnose`
@@ -119,6 +124,7 @@ Run quality checks before commit/PR:
 ./scripts/quality-gate.sh --format-only   # lightweight format + file-length check
 ./scripts/quality-gate.sh --backend-only   # backend + file-length check
 ./scripts/quality-gate.sh --frontend-only --no-npm-install   # frontend + file-length check
+./scripts/quality-gate.sh --sdk-only --no-npm-install  # SDK build/tests + file-length check
 ./scripts/quality-gate.sh --security-only  # security audit only
 ./scripts/quality-gate.sh --permissions-only  # permission regression checks only
 ./scripts/quality-gate.sh --security       # adds security audit to full checks
@@ -134,14 +140,14 @@ Run security audit directly:
 Build a distribution package:
 
 ```bash
-./scripts/package-distribution.sh --version 0.2.0
-./scripts/package-distribution.sh --version 0.2.0 --compose-template docker/docker-compose.yml   # custom compose if needed
+./scripts/package-distribution.sh --version 0.2.9
+./scripts/package-distribution.sh --version 0.2.9 --compose-template docker/docker-compose.yml   # custom compose if needed
 ```
 
 If you already have local images (for example CI or private registry preloads), package without rebuilding:
 
 ```bash
-./scripts/package-distribution.sh --skip-build --engine-image myrepo/cyanrex-engine:0.2.0 --frontend-image myrepo/cyanrex-frontend:0.2.0
+./scripts/package-distribution.sh --skip-build --engine-image myrepo/cyanrex-engine:0.2.9 --frontend-image myrepo/cyanrex-frontend:0.2.9
 ```
 
 Packaging also honors `ENGINE_RUST_IMAGE`, `ENGINE_DEBIAN_IMAGE`, `ENGINE_APT_MIRROR`,
