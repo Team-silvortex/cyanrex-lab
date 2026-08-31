@@ -34,6 +34,10 @@ Utility scripts for Cyanrex local operation.
 - `generate-sdk-types.mjs`: converts OpenAPI component schemas into the committed
   `sdk-js/src/generated/openapi.ts` type map; use `--check` to reject stale SDK models.
 - `tests/sdkTypeGenerator.test.mjs`: JSON Schema-to-TypeScript rendering regressions.
+- `generate-sdk-operations.mjs`: generates the 56 browser-facing SDK operation inputs, responses,
+  access/transport metadata, and operationId registry while excluding the signed Runner Agent protocol.
+- `tests/sdkOperationGenerator.test.mjs`: operation transport, parameter, response, and Agent-boundary
+  generation regressions.
 - `api-compatibility.mjs`: compares the current Engine contract with the frozen SDK baseline and
   rejects removed operations, access changes, narrowed inputs, or weakened successful responses.
   - `--write-baseline` intentionally replaces the baseline after an approved compatibility reset

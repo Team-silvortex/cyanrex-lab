@@ -13,6 +13,10 @@
     "./openapi": {
       "types": "./dist/generated/openapi.d.ts",
       "import": "./dist/generated/openapi.js"
+    },
+    "./operations": {
+      "types": "./dist/generated/operations.d.ts",
+      "import": "./dist/generated/operations.js"
     }
   },
   "files": [
@@ -23,13 +27,17 @@
   "private": true,
   "scripts": {
     "generate:types": "node ../scripts/generate-sdk-types.mjs",
-    "check:generated": "node ../scripts/generate-sdk-types.mjs --check",
+    "generate:operations": "node ../scripts/generate-sdk-operations.mjs",
+    "generate": "npm run generate:types && npm run generate:operations",
+    "check:generated": "node ../scripts/generate-sdk-types.mjs --check && node ../scripts/generate-sdk-operations.mjs --check",
     "check:compatibility": "node ../scripts/api-compatibility.mjs",
     "prebuild": "npm run check:generated",
     "build": "tsc -p tsconfig.json",
-    "test": "node --experimental-strip-types --test tests/*.test.mjs",
+    "pretest": "npm run build",
+    "test": "node --test tests/*.test.mjs",
+    "test:types": "tsc -p tsconfig.type-tests.json",
     "test:package": "node --test tests/package-smoke.mjs",
-    "check": "npm run check:compatibility && npm run build && npm test && npm run test:package"
+    "check": "npm run check:compatibility && npm test && npm run test:types && npm run test:package"
   },
   "devDependencies": {
     "typescript": "5.8.3"

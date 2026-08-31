@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { CyanrexApiError, CyanrexClient } from "../src/index.ts";
+import { CyanrexApiError, CyanrexClient } from "../dist/index.js";
 
 test("uses cookie credentials and serializes JSON requests", async () => {
   const calls = [];
@@ -126,4 +126,64 @@ test("loads the public OpenAPI contract through the system namespace", async () 
   assert.equal(contract.openapi, "3.1.0");
   assert.equal(calls[0].url, "http://localhost:8080/openapi.json");
   assert.equal(calls[0].init.method, "GET");
+});
+
+test("dispatches generated JSON operations with typed body and query inputs", async () => {
+  const calls = [];
+  const client = new CyanrexClient("http://localhost:8080", {
+    fetch: async (url, init) => {
+      calls.push({ url, init });
+      return Response.json({ ok: true });
+    },
+  });
+
+  await client.operation("postModulesStart", { body: { name: "module-network" } });
+  await client.operation("getLearningTeacherAttempts", {
+    query: { username: "student", limit: 10 },
+  });
+
+  assert.equal(calls[0].url, "http://localhost:8080/modules/start");
+  assert.equal(calls[0].init.method, "POST");
+  assert.equal(calls[0].init.body, JSON.stringify({ name: "module-network" }));
+  assert.equal(
+    calls[1].url,
+    "http://localhost:8080/learning/teacher/attempts?username=student&limit=10",
+  );
+  assert.equal(calls[1].init.method, "GET");
+});
+
+test("dispatches generated download and WebSocket transports", async () => {
+  const calls = [];
+  const client = new CyanrexClient("https://lab.example/api", {
+    fetch: async (url, init) => {
+      calls.push({ url, init });
+      return new Response("timestamp,severity\n", {
+        headers: {
+          "content-disposition": "attachment; filename=events.csv",
+          "content-type": "text/csv",
+        },
+      });
+    },
+  });
+
+  const download = await client.operation("getEventsExport", { query: { format: "csv" } });
+  const websocketUrl = await client.operation("getWsEvents");
+
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].url, "https://lab.example/api/events/export?format=csv");
+  assert.equal(await download.blob.text(), "timestamp,severity\n");
+  assert.equal(download.filename, "events.csv");
+  assert.equal(download.contentType, "text/csv");
+  assert.equal(websocketUrl, "wss://lab.example/api/ws/events");
+});
+
+test("rejects unknown generated operation names at runtime", async () => {
+  const client = new CyanrexClient("http://localhost:8080", {
+    fetch: async () => Response.json({}),
+  });
+
+  await assert.rejects(
+    () => client.operation("missingOperation"),
+    /Unknown OpenAPI operation: missingOperation/,
+  );
 });

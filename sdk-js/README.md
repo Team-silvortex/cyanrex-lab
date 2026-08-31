@@ -18,6 +18,12 @@ await cyanrex.auth.login({
 const modules = await cyanrex.modules.list();
 const check = await cyanrex.ebpf.check("int main(void) { return 0; }");
 
+// The generated operationId surface stays synchronized with OpenAPI.
+const health = await cyanrex.operation("getHealth");
+await cyanrex.operation("postModulesStart", {
+  body: { name: "module-network" },
+});
+
 try {
   await cyanrex.command.dispatch({ commandType: "StartModule", moduleName: "module-network" });
 } catch (error) {
@@ -29,8 +35,14 @@ try {
 
 The client covers authentication, modules and the admin command bus, events, settings, scripts,
 learning, eBPF checks/runs/attachments, Runner status/admin jobs, and environment diagnostics. Every
-method accepts an optional `{ signal }` argument for cancellation. `client.request<T>()` remains
-available for forward-compatible calls to newer Engine endpoints.
+method accepts an optional `{ signal }` argument for cancellation. The generated `operation()` layer
+covers all 56 browser-facing operations and derives required bodies, query parameters, and response
+types from each OpenAPI operation. The five signed Runner Agent protocol operations remain isolated
+from the browser SDK. `client.request<T>()` remains available for forward-compatible calls.
+
+The generated dispatcher also preserves non-JSON behavior: `getEventsExport` returns `ApiDownload`,
+and `getWsEvents` resolves to the authenticated WebSocket URL. Existing namespaces remain the stable,
+task-oriented facade; the operationId surface is additive.
 
 Public request and response models are generated from the Engine OpenAPI component schemas. The
 hand-designed client namespaces remain stable while the quality gate rejects stale generated types.
@@ -40,6 +52,16 @@ The complete generated map also has an explicit type subpath:
 import type { OpenApiSchemas } from "@cyanrex/sdk-js/openapi";
 
 type RunnerJob = OpenApiSchemas["RunnerJobView"];
+```
+
+Operation metadata is available without constructing a client:
+
+```ts
+import { openApiOperations } from "@cyanrex/sdk-js/operations";
+import type { OpenApiOperationInput } from "@cyanrex/sdk-js/operations";
+
+type EventInput = OpenApiOperationInput<"getEvents">;
+console.log(openApiOperations.getEvents.access); // authenticated
 ```
 
 ## Compatibility Baseline
@@ -70,11 +92,11 @@ with an external cookie jar. Never expose a Node-managed session cookie to brows
 
 ## Development
 
-Requires Node.js 22 or later.
+Requires Node.js 18 or later.
 
 ```bash
 npm ci
-npm run generate:types # only after intentionally changing the OpenAPI schemas
+npm run generate # after intentionally changing OpenAPI schemas or operations
 npm run check:compatibility
 npm run check
 npm run test:package

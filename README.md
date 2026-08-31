@@ -72,6 +72,8 @@ streaming. See the architecture document before adding a service, route, or depl
 - JavaScript SDK:
   - typed ESM package covering the browser-facing Engine API
   - public request/response models generated from 76 OpenAPI component schemas
+  - generated `client.operation(operationId, input)` layer and runtime metadata for all 56
+    non-Agent operations, alongside the stable hand-designed namespaces
   - browser credentials, Node session-cookie capture, Origin-based CSRF support, cancellation, and typed errors
   - coverage checked against every non-Agent Engine operation in the generated API contract
   - dry-run package manifest, declaration-closure, and ESM consumer-import acceptance checks
@@ -299,7 +301,8 @@ catalog root with `CYANREX_MODULES_DIR` when running outside the repository or p
   routes plus maintained request/response schemas.
 - The quality gate rejects route or access-tier drift between the Engine and OpenAPI document, plus
   unexpected JavaScript SDK coverage or generated-model drift.
-- SDK consumers can import the full generated map from `@cyanrex/sdk-js/openapi` after packaging.
+- SDK consumers can import generated schemas from `@cyanrex/sdk-js/openapi` and operation metadata/types
+  from `@cyanrex/sdk-js/operations` after packaging.
 - A frozen `0.3.0` compatibility baseline rejects removed operations, access changes, narrowed
   requests, and weakened successful-response guarantees while allowing additive evolution.
 

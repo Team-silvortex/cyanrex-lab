@@ -1,3 +1,10 @@
+import { openApiOperations } from "./generated/operations.js";
+import type {
+  OpenApiOperationDescriptor,
+  OpenApiOperationInput,
+  OpenApiOperationName,
+  OpenApiOperationResponse,
+} from "./generated/operations.js";
 import type {
   ApiDownload,
   ApiMessage,
@@ -54,9 +61,29 @@ import type {
   UserScript,
 } from "./types.js";
 
+export { openApiOperations } from "./generated/operations.js";
+export type {
+  OpenApiOperationAccess,
+  OpenApiOperationDescriptor,
+  OpenApiOperationInput,
+  OpenApiOperationMethod,
+  OpenApiOperationName,
+  OpenApiOperationResponse,
+  OpenApiOperations,
+  OpenApiOperationTransport,
+} from "./generated/operations.js";
 export type * from "./types.js";
 
 type Query = object;
+type OperationArguments<Name extends OpenApiOperationName> =
+  Record<string, never> extends OpenApiOperationInput<Name>
+    ? [input?: OpenApiOperationInput<Name>, options?: RequestOptions]
+    : [input: OpenApiOperationInput<Name>, options?: RequestOptions];
+type OperationRuntimeInput = {
+  body?: unknown;
+  path?: Record<string, unknown>;
+  query?: Query;
+};
 
 export class CyanrexApiError extends Error {
   readonly status: number;
@@ -284,6 +311,32 @@ export class CyanrexClient {
       this.get<EnvironmentReport>("/helper/environment", undefined, options),
   };
 
+  async operation<Name extends OpenApiOperationName>(
+    name: Name,
+    ...args: OperationArguments<Name>
+  ): Promise<OpenApiOperationResponse<Name>> {
+    const descriptors = openApiOperations as unknown as Record<
+      string,
+      OpenApiOperationDescriptor | undefined
+    >;
+    const descriptor = descriptors[name];
+    if (!descriptor) throw new TypeError(`Unknown OpenAPI operation: ${name}`);
+
+    const [input = {}, options] = args as [OperationRuntimeInput?, RequestOptions?];
+    const routePath = interpolatePath(descriptor.path, input.path);
+    if (descriptor.transport === "websocket") {
+      return this.websocketUrl(routePath) as unknown as OpenApiOperationResponse<Name>;
+    }
+    if (descriptor.transport === "download") {
+      return await this.download(routePath, input.query, options) as OpenApiOperationResponse<Name>;
+    }
+    return await this.request(descriptor.method, routePath, {
+      body: input.body,
+      query: input.query,
+      signal: options?.signal,
+    }) as OpenApiOperationResponse<Name>;
+  }
+
   getSessionCookie(): string | null {
     return this.sessionCookie;
   }
@@ -410,6 +463,16 @@ export class CyanrexClient {
 
 function isSafeMethod(method: string): boolean {
   return method === "GET" || method === "HEAD" || method === "OPTIONS";
+}
+
+function interpolatePath(template: string, values?: Record<string, unknown>): string {
+  return template.replace(/\{([^}]+)\}/g, (_, name: string) => {
+    const value = values?.[name];
+    if (value === undefined || value === null || value === "") {
+      throw new TypeError(`OpenAPI operation path parameter ${name} is required`);
+    }
+    return encodeURIComponent(String(value));
+  });
 }
 
 function normalizeSessionCookie(cookie: string | null): string | null {

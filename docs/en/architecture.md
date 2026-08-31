@@ -366,11 +366,11 @@ test performed from a newly built and extracted offline distribution archive.
   replicas.
 - PostgreSQL is shared infrastructure, but horizontal Engine scaling requires explicit ownership and
   coordination for eBPF attachments before it is safe.
-- `sdk-js` retains a hand-designed namespaced client surface, while public request/response models
-  are generated from OpenAPI and CI rejects route, access, coverage, and generated-type drift.
-  A frozen pre-1.0 baseline also rejects breaking input/output changes. Package-consumer smoke
-  coverage verifies artifact shape, but client-operation generation and a public deprecation/release
-  policy remain pending decisions.
+- `sdk-js` retains a stable hand-designed namespaced surface and adds generated operationId calls for
+  all non-Agent operations. Public wire models, operation inputs/responses, and runtime access/transport
+  metadata are generated from OpenAPI; CI rejects route, access, coverage, and generated-code drift.
+  A frozen pre-1.0 baseline also rejects breaking input/output changes, and package-consumer smoke
+  coverage verifies artifact shape. A public stability, deprecation, and release policy remains pending.
 - `modules/` is a versioned, dynamically discovered catalog, not an executable plugin runtime;
   start/stop is single-process control state and unknown names are rejected.
 

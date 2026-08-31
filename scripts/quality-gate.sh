@@ -80,6 +80,7 @@ run_openapi_contract_checks() {
   node "$PROJECT_ROOT/scripts/openapi-contract.mjs"
   node "$PROJECT_ROOT/scripts/api-compatibility.mjs"
   node "$PROJECT_ROOT/scripts/generate-sdk-types.mjs" --check
+  node "$PROJECT_ROOT/scripts/generate-sdk-operations.mjs" --check
   node --test "$PROJECT_ROOT"/scripts/tests/*.test.mjs
 }
 

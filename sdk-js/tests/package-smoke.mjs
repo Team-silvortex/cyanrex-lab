@@ -18,6 +18,8 @@ test("package manifest contains the runtime and generated declaration closure", 
     "README.md",
     "dist/generated/openapi.d.ts",
     "dist/generated/openapi.js",
+    "dist/generated/operations.d.ts",
+    "dist/generated/operations.js",
     "dist/index.d.ts",
     "dist/index.js",
     "dist/types.d.ts",
@@ -35,6 +37,7 @@ test("package manifest contains the runtime and generated declaration closure", 
     }
   }
   assert.ok(packageJson.exports["./openapi"], "generated OpenAPI types need an explicit subpath export");
+  assert.ok(packageJson.exports["./operations"], "generated operations need an explicit subpath export");
 });
 
 test("packed JavaScript and declarations have no dangling relative imports", async () => {
@@ -54,11 +57,19 @@ test("packed JavaScript and declarations have no dangling relative imports", asy
 test("built ESM entry point works from a consumer-style import", async () => {
   const { CyanrexClient } = await import(packageJson.name);
   await import(`${packageJson.name}/openapi`);
+  const { openApiOperations } = await import(`${packageJson.name}/operations`);
   const client = new CyanrexClient("http://localhost:8080", {
     fetch: async () => Response.json({ status: "ok" }),
   });
 
   assert.deepEqual(await client.system.health(), { status: "ok" });
+  assert.equal(Object.keys(openApiOperations).length, 56);
+  assert.deepEqual(openApiOperations.getHealth, {
+    method: "GET",
+    path: "/health",
+    access: "public",
+    transport: "json",
+  });
 });
 
 async function packManifest() {
