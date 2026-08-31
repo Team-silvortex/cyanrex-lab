@@ -69,3 +69,6 @@ For high event traffic classes, you can tune persistence queue alerting in `dock
 - `ci-gate` requires `security-audit`, `file-lengths`, `engine`, `frontend`, `permissions`, and
   `distribution`, and fails if any required job fails.
 - For branch protection, enable required status check for **`CI gate`** on your main branch.
+- An annotated version Tag triggers `Release Candidate Validation`, which binds the clean Tag commit to
+  a newly built offline archive, runs extracted-package installation acceptance, and retains the result
+  as a 30-day workflow artifact. It does not create or sign a GitHub Release.

@@ -366,3 +366,11 @@ Run the same checks used by CI before submitting changes:
   - Enable **Require status checks to pass before merging**
   - Add required status check: `CI gate`
   - (Optional) keep each sub-job unchecked to reduce noise; `ci-gate` already aggregates failures.
+
+### Tag candidate acceptance
+
+Pushing a new annotated `v<major>.<minor>.<patch>` Tag runs `Release Candidate Validation`. After
+validating the immutable version tree, it builds the offline archive from that exact commit, requires
+`release-metadata.json` to report the same Tag/revision with a clean source and locally built images,
+runs `install-smoke.sh` against the extracted archive, and uploads the accepted archive plus outer
+checksum as a 30-day workflow artifact. This does not create a GitHub Release or sign/publish packages.

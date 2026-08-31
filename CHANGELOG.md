@@ -18,6 +18,8 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
   stability/deprecation policy.
 - Added machine-readable offline-package metadata that records Git source state, matching annotated Tag,
   image references, build mode, and the streamed SHA-256 of the bundled image archive.
+- Added a Tag candidate workflow that binds a clean source revision to a locally built distribution,
+  runs the extracted-package installation smoke, and retains the accepted archive without publishing it.
 
 ## [0.3.1] - 2026-08-31
 

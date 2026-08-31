@@ -1,4 +1,4 @@
-name: Release Tag Validation
+name: Release Candidate Validation
 
 on:
   push:
@@ -7,6 +7,10 @@ on:
 
 permissions:
   contents: read
+
+concurrency:
+  group: release-candidate-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   metadata:
@@ -21,3 +25,61 @@ jobs:
           node-version: 22
       - name: Verify annotated tag and synchronized release tree
         run: node scripts/release-preflight.mjs --tag "$GITHUB_REF_NAME"
+
+  distribution:
+    name: Build and accept tagged distribution
+    needs: metadata
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - name: Resolve immutable release identity
+        id: release
+        run: |
+          release_version="${GITHUB_REF_NAME#v}"
+          release_revision="$(git rev-list -n 1 "refs/tags/$GITHUB_REF_NAME")"
+          printf 'version=%s\n' "$release_version" >> "$GITHUB_OUTPUT"
+          printf 'revision=%s\n' "$release_revision" >> "$GITHUB_OUTPUT"
+      - name: Build tagged offline distribution
+        env:
+          RELEASE_VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          ./scripts/package-distribution.sh --version "$RELEASE_VERSION" --skip-checks \
+            --output "$RUNNER_TEMP/cyanrex-release"
+      - name: Verify tag-bound artifact metadata
+        env:
+          RELEASE_VERSION: ${{ steps.release.outputs.version }}
+          RELEASE_REVISION: ${{ steps.release.outputs.revision }}
+        run: |
+          cd "$RUNNER_TEMP/cyanrex-release"
+          sha256sum -c ./*.tar.gz.sha256
+          mkdir -p "$RUNNER_TEMP/cyanrex-release-extracted"
+          tar -xzf ./*.tar.gz -C "$RUNNER_TEMP/cyanrex-release-extracted"
+          package_dir="$(find "$RUNNER_TEMP/cyanrex-release-extracted" \
+            -mindepth 1 -maxdepth 1 -type d -name 'cyanrex-lab-*' -print -quit)"
+          test -n "$package_dir"
+          node "$GITHUB_WORKSPACE/scripts/release-metadata.mjs" --verify "$package_dir" \
+            --expect-version "$RELEASE_VERSION" --expect-revision "$RELEASE_REVISION" \
+            --expect-tag "$GITHUB_REF_NAME" --expect-source-state clean --expect-image-mode built
+      - name: Smoke test the exact candidate archive
+        run: |
+          package_dir="$(find "$RUNNER_TEMP/cyanrex-release-extracted" \
+            -mindepth 1 -maxdepth 1 -type d -name 'cyanrex-lab-*' -print -quit)"
+          test -n "$package_dir"
+          source "$package_dir/manifest.env"
+          docker image rm "$ENGINE_IMAGE" "$FRONTEND_IMAGE" "$POSTGRES_IMAGE"
+          "$package_dir/install-smoke.sh"
+      - name: Upload accepted candidate artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cyanrex-lab-${{ github.ref_name }}
+          path: |
+            ${{ runner.temp }}/cyanrex-release/*.tar.gz
+            ${{ runner.temp }}/cyanrex-release/*.tar.gz.sha256
+          if-no-files-found: error
+          retention-days: 30

@@ -5,6 +5,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PACKAGE_SCRIPT="$ROOT_DIR/scripts/package-distribution.sh"
 SMOKE_SCRIPT="$ROOT_DIR/scripts/distribution-install-smoke.sh"
 METADATA_SCRIPT="$ROOT_DIR/scripts/release-metadata.mjs"
+RELEASE_WORKFLOW="$ROOT_DIR/.github/workflows/release-validation.yml"
 WORK_DIR="$(mktemp -d)"
 trap 'rm -rf "$WORK_DIR"' EXIT
 
@@ -14,7 +15,7 @@ bash -n "$PACKAGE_SCRIPT" "$SMOKE_SCRIPT"
 assert_contains() {
   local file="$1"
   local pattern="$2"
-  if ! grep -Fq "$pattern" "$file"; then
+  if ! grep -Fq -- "$pattern" "$file"; then
     echo "Distribution tool test failed: '$pattern' missing from $file." >&2
     exit 1
   fi
@@ -22,6 +23,15 @@ assert_contains() {
 
 assert_contains "$PACKAGE_SCRIPT" 'distribution-install-smoke.sh'
 assert_contains "$PACKAGE_SCRIPT" 'release-metadata.json'
+assert_contains "$RELEASE_WORKFLOW" 'needs: metadata'
+assert_contains "$RELEASE_WORKFLOW" 'release-metadata.mjs" --verify'
+assert_contains "$RELEASE_WORKFLOW" '--expect-source-state clean --expect-image-mode built'
+assert_contains "$RELEASE_WORKFLOW" '"$package_dir/install-smoke.sh"'
+assert_contains "$RELEASE_WORKFLOW" 'actions/upload-artifact@v4'
+if grep -Eq 'contents:[[:space:]]*write|gh release|action-gh-release' "$RELEASE_WORKFLOW"; then
+  echo "Distribution tool test failed: release validation must not publish releases." >&2
+  exit 1
+fi
 assert_contains "$PACKAGE_SCRIPT" 'install-smoke.sh'
 assert_contains "$PACKAGE_SCRIPT" 'POSTGRES_IMAGE="${POSTGRES_IMAGE:-postgres:16}"'
 assert_contains "$PACKAGE_SCRIPT" 'docker save "$engine_image" "$frontend_image" "$postgres_image"'

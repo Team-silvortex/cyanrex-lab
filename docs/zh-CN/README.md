@@ -69,3 +69,6 @@ eBPF 永远运行在 Linux 内核中。Windows 和 macOS 的 Docker 模式观察
 - `CI gate` 会依赖 `security-audit`、`file-lengths`、`engine`、`frontend`、`permissions` 和
   `distribution`，并在任一任务失败时直接失败。
 - 建议在分支保护中只配置必需检查项为 **`CI gate`**，这样合并统一受该门禁控制。
+- 推送注解版本 Tag 会触发 `Release Candidate Validation`：它把干净的 Tag 提交绑定到新构建的
+  离线发行包，完成解压安装验收后将结果保留为 30 天的工作流制品；该流程不会创建或签名
+  GitHub Release。

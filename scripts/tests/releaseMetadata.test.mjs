@@ -9,6 +9,8 @@ import test from "node:test";
 import {
   createReleaseMetadata,
   inspectGitSource,
+  parseReleaseMetadataArguments,
+  validateReleaseExpectations,
   verifyPackageReleaseMetadata,
   writeReleaseMetadata,
 } from "../release-metadata.mjs";
@@ -62,6 +64,72 @@ test("release metadata rejects ambiguous or host-specific build inputs", async (
   }
 });
 
+test("release expectations bind a candidate to its tag, commit, source state, and image mode", async () => {
+  const root = mkdtempSync(path.join(tmpdir(), "cyanrex-release-expectations-"));
+  try {
+    const archive = path.join(root, "cyanrex-images.tar");
+    writeFileSync(archive, "fixture\n");
+    const metadata = await createReleaseMetadata(buildOptions(root, archive));
+    assert.doesNotThrow(() => validateReleaseExpectations(metadata, {
+      version: "1.2.3",
+      revision: REVISION.toUpperCase(),
+      tag: "v1.2.3",
+      sourceState: "clean",
+      imageMode: "built",
+    }));
+    assert.throws(
+      () => validateReleaseExpectations(metadata, {
+        version: "1.2.4",
+        revision: "b".repeat(40),
+        tag: "v1.2.4",
+        sourceState: "dirty",
+        imageMode: "prebuilt",
+      }),
+      /package version is 1\.2\.3; expected 1\.2\.4[\s\S]*source revision[\s\S]*source tag[\s\S]*source state[\s\S]*image mode/,
+    );
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("release metadata CLI parses tag-bound verification expectations", () => {
+  assert.deepEqual(
+    parseReleaseMetadataArguments([
+      "--verify",
+      "/tmp/cyanrex-package",
+      "--expect-version",
+      "1.2.3",
+      "--expect-revision",
+      REVISION,
+      "--expect-tag",
+      "v1.2.3",
+      "--expect-source-state",
+      "clean",
+      "--expect-image-mode",
+      "built",
+    ]),
+    {
+      mode: "verify",
+      packageDirectory: "/tmp/cyanrex-package",
+      expectations: {
+        version: "1.2.3",
+        revision: REVISION,
+        tag: "v1.2.3",
+        sourceState: "clean",
+        imageMode: "built",
+      },
+    },
+  );
+  assert.throws(
+    () => parseReleaseMetadataArguments(["--verify", "/tmp/package", "--expect-tag"]),
+    /name\/value pairs/,
+  );
+  assert.throws(
+    () => parseReleaseMetadataArguments(["--verify", "/tmp/package", "--unknown", "value"]),
+    /unknown verify option/,
+  );
+});
+
 test("Git source inspection distinguishes clean, dirty, tagged, and unavailable trees", () => {
   const root = mkdtempSync(path.join(tmpdir(), "cyanrex-release-source-"));
   const unavailable = mkdtempSync(path.join(tmpdir(), "cyanrex-release-no-git-"));
@@ -112,7 +180,13 @@ test("packaged metadata verification binds JSON and image archive to checksums",
       `${metadataHash}  release-metadata.json\n${archiveHash}  cyanrex-images.tar\n`,
     );
 
-    const verified = await verifyPackageReleaseMetadata(root);
+    const verified = await verifyPackageReleaseMetadata(root, {
+      version: "1.2.3",
+      revision: REVISION,
+      tag: "v1.2.3",
+      sourceState: "clean",
+      imageMode: "built",
+    });
     assert.equal(verified.package.name, packageName);
     writeFileSync(archive, "tampered\n");
     await assert.rejects(verifyPackageReleaseMetadata(root), /image archive SHA-256/);

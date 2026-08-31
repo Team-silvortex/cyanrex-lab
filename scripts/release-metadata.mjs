@@ -86,11 +86,12 @@ export async function writeReleaseMetadata(options) {
   return metadata;
 }
 
-export async function verifyPackageReleaseMetadata(packageDirectory) {
+export async function verifyPackageReleaseMetadata(packageDirectory, expectations = {}) {
   const root = path.resolve(packageDirectory);
   const metadataFile = path.join(root, "release-metadata.json");
   const metadata = parseJsonFile(metadataFile);
   validateMetadata(metadata);
+  validateReleaseExpectations(metadata, expectations);
   if (metadata.package.name !== path.basename(root)) {
     throw new Error(`package directory is ${path.basename(root)}; metadata names ${metadata.package.name}`);
   }
@@ -111,6 +112,41 @@ export async function verifyPackageReleaseMetadata(packageDirectory) {
     if (actual !== expected) throw new Error(`checksum manifest does not match ${file}`);
   }
   return metadata;
+}
+
+export function validateReleaseExpectations(metadata, expectations = {}) {
+  if (!isRecord(expectations)) throw new Error("release expectations must be an object");
+  const errors = [];
+  if (expectations.version !== undefined) {
+    if (typeof expectations.version !== "string" || !SEMVER.test(expectations.version)) {
+      throw new Error("expected version must use x.y.z");
+    }
+    compareExpected(errors, "package version", metadata.package.version, expectations.version);
+  }
+  if (expectations.revision !== undefined) {
+    if (typeof expectations.revision !== "string") throw new Error("expected source revision is invalid");
+    const revision = expectations.revision.toLowerCase();
+    if (!GIT_REVISION.test(revision)) throw new Error("expected source revision is invalid");
+    compareExpected(errors, "source revision", metadata.source.revision, revision);
+  }
+  if (expectations.tag !== undefined) {
+    if (
+      typeof expectations.tag !== "string"
+      || !/^v[0-9]+\.[0-9]+\.[0-9]+$/.test(expectations.tag)
+    ) {
+      throw new Error("expected source tag must use vx.y.z");
+    }
+    compareExpected(errors, "source tag", metadata.source.tag, expectations.tag);
+  }
+  if (expectations.sourceState !== undefined) {
+    if (!SOURCE_STATES.has(expectations.sourceState)) throw new Error("expected source state is invalid");
+    compareExpected(errors, "source state", metadata.source.state, expectations.sourceState);
+  }
+  if (expectations.imageMode !== undefined) {
+    if (!IMAGE_MODES.has(expectations.imageMode)) throw new Error("expected image mode is invalid");
+    compareExpected(errors, "image mode", metadata.images.mode, expectations.imageMode);
+  }
+  if (errors.length > 0) throw new Error(errors.join("\n"));
 }
 
 function validateBuildOptions(options) {
@@ -269,6 +305,10 @@ function isRecord(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
+function compareExpected(errors, label, actual, expected) {
+  if (actual !== expected) errors.push(`${label} is ${actual ?? "null"}; expected ${expected}`);
+}
+
 function git(root, arguments_) {
   return execFileSync("git", arguments_, {
     cwd: root,
@@ -277,21 +317,35 @@ function git(root, arguments_) {
   });
 }
 
-function parseArguments(argv) {
+export function parseReleaseMetadataArguments(argv) {
   if (argv.length === 0 || argv.includes("-h") || argv.includes("--help")) return { help: true };
   if (argv[0] === "--verify") {
-    if (argv.length !== 2) throw new Error("--verify requires exactly one package directory");
-    return { mode: "verify", packageDirectory: argv[1] };
+    if (!argv[1] || argv[1].startsWith("--")) {
+      throw new Error("--verify requires one package directory before expectation options");
+    }
+    const values = parseNamedValues(argv.slice(2));
+    const allowed = [
+      "expect-version",
+      "expect-revision",
+      "expect-tag",
+      "expect-source-state",
+      "expect-image-mode",
+    ];
+    const unknown = Object.keys(values).filter((name) => !allowed.includes(name));
+    if (unknown.length > 0) throw new Error(`unknown verify option --${unknown[0]}`);
+    return {
+      mode: "verify",
+      packageDirectory: argv[1],
+      expectations: {
+        ...(values["expect-version"] ? { version: values["expect-version"] } : {}),
+        ...(values["expect-revision"] ? { revision: values["expect-revision"] } : {}),
+        ...(values["expect-tag"] ? { tag: values["expect-tag"] } : {}),
+        ...(values["expect-source-state"] ? { sourceState: values["expect-source-state"] } : {}),
+        ...(values["expect-image-mode"] ? { imageMode: values["expect-image-mode"] } : {}),
+      },
+    };
   }
-  const values = {};
-  for (let index = 0; index < argv.length; index += 2) {
-    const name = argv[index];
-    const value = argv[index + 1];
-    if (!name?.startsWith("--") || value === undefined) throw new Error("metadata options require name/value pairs");
-    const key = name.slice(2);
-    if (key in values) throw new Error(`duplicate option --${key}`);
-    values[key] = value;
-  }
+  const values = parseNamedValues(argv);
   const required = [
     "output",
     "project-root",
@@ -326,20 +380,37 @@ function parseArguments(argv) {
   };
 }
 
+function parseNamedValues(argv) {
+  const values = {};
+  for (let index = 0; index < argv.length; index += 2) {
+    const name = argv[index];
+    const value = argv[index + 1];
+    if (!name?.startsWith("--") || value === undefined) {
+      throw new Error("metadata options require name/value pairs");
+    }
+    const key = name.slice(2);
+    if (key in values) throw new Error(`duplicate option --${key}`);
+    values[key] = value;
+  }
+  return values;
+}
+
 function printHelp() {
   console.log(`Usage:
   node scripts/release-metadata.mjs --output <file> --project-root <dir> --package-name <name> \\
     --version <x.y.z> --package-timestamp <YYYYMMDD-HHMMSS> --engine-image <image> \\
     --frontend-image <image> --postgres-image <image> --image-mode <built|prebuilt> \\
     --compose-source <relative-path> --image-archive <file>
-  node scripts/release-metadata.mjs --verify <extracted-package-directory>`);
+  node scripts/release-metadata.mjs --verify <extracted-package-directory> \\
+    [--expect-version <x.y.z>] [--expect-revision <commit>] [--expect-tag <vx.y.z>] \\
+    [--expect-source-state <clean|dirty|unavailable>] [--expect-image-mode <built|prebuilt>]`);
 }
 
 async function main() {
-  const options = parseArguments(process.argv.slice(2));
+  const options = parseReleaseMetadataArguments(process.argv.slice(2));
   if (options.help) return printHelp();
   if (options.mode === "verify") {
-    const metadata = await verifyPackageReleaseMetadata(options.packageDirectory);
+    const metadata = await verifyPackageReleaseMetadata(options.packageDirectory, options.expectations);
     console.log(`Release metadata verified for ${metadata.package.name}.`);
     return;
   }
