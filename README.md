@@ -51,6 +51,7 @@ streaming. See the architecture document before adding a service, route, or depl
   - C header module endpoints (catalog/download/delete/select/inject metadata)
   - learning progress endpoints for student labs and teacher overview
   - structured admin command bus (`/command`) for module lifecycle and experiment handoff
+  - generated OpenAPI 3.1 contract (`/openapi.json`) with Engine route/access and SDK coverage checks
 - Auth system:
   - register/login/logout/session (`HTTP cookie`)
   - OTP/TOTP verification
@@ -71,6 +72,7 @@ streaming. See the architecture document before adding a service, route, or depl
 - JavaScript SDK:
   - typed ESM package covering the browser-facing Engine API
   - browser credentials, Node session-cookie capture, Origin-based CSRF support, cancellation, and typed errors
+  - coverage checked against every non-Agent Engine operation in the generated API contract
 - Frontend i18n:
   - supported languages: Simplified Chinese (`zh-CN`), English (`en`), Spanish (`es`), Japanese (`ja`)
   - sidebar + auth pages + core runtime pages integrated
@@ -283,6 +285,21 @@ administrator-only.
 - `/ebpf/run` records an attempt only when a known `lab_id` is supplied; completion is calculated
   from the real run, required template/source patterns, and attachment verification.
 
+## API Contract
+
+- `GET /openapi.json` serves the versioned OpenAPI 3.1 document without authentication.
+- [`engine/openapi/openapi.json`](engine/openapi/openapi.json) is generated from the registered Axum
+  routes plus maintained request/response schemas.
+- The quality gate rejects route or access-tier drift between the Engine and OpenAPI document, plus
+  unexpected JavaScript SDK coverage drift.
+
+Regenerate and validate it after changing routes or wire models:
+
+```bash
+node scripts/generate-openapi.mjs
+node scripts/openapi-contract.mjs
+```
+
 ## Auth Persistence
 
 - Tables: `users`, `sessions`
@@ -300,6 +317,7 @@ administrator-only.
 - This repo is TDD-first.
 - Flow: `Red -> Green -> Refactor`.
 - For backend route changes, update tests in `engine/tests/` first.
+- For API changes, regenerate the OpenAPI document and keep its component schemas current.
 - Maintained source files are limited to 600 lines; documentation files are limited to 2000 lines.
 - See `TDD.md` for team conventions.
 
@@ -316,6 +334,7 @@ Run the same checks used by CI before submitting changes:
   - `file-lengths`
   - `engine`
   - `frontend`
+  - `sdk`
   - `permissions`
   - `distribution`
 - Set branch protection to require only `ci-gate` (instead of each matrix-like job), then any failed job will fail the required gate.

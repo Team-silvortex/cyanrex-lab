@@ -111,3 +111,19 @@ test("captures a Node session cookie and adds the configured CSRF origin", async
   assert.equal(calls[1].init.headers.Cookie, "cyanrex_session=session-token");
   assert.equal(calls[1].init.headers.Origin, "http://localhost:3000");
 });
+
+test("loads the public OpenAPI contract through the system namespace", async () => {
+  const calls = [];
+  const client = new CyanrexClient("http://localhost:8080", {
+    fetch: async (url, init) => {
+      calls.push({ url, init });
+      return Response.json({ openapi: "3.1.0", info: { version: "0.2.9" }, paths: {} });
+    },
+  });
+
+  const contract = await client.system.openapi();
+
+  assert.equal(contract.openapi, "3.1.0");
+  assert.equal(calls[0].url, "http://localhost:8080/openapi.json");
+  assert.equal(calls[0].init.method, "GET");
+});

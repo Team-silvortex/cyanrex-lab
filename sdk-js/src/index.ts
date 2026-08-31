@@ -28,6 +28,7 @@ import type {
   LoginRequest,
   LoginResponse,
   ModuleInfo,
+  OpenApiDocument,
   PerformanceMetrics,
   RegisterRequest,
   RequestOptions,
@@ -104,6 +105,8 @@ export class CyanrexClient {
       this.get<{ name: string; status: string }>("/", undefined, options),
     health: (options?: RequestOptions) =>
       this.get<{ status: string }>("/health", undefined, options),
+    openapi: (options?: RequestOptions) =>
+      this.get<OpenApiDocument>("/openapi.json", undefined, options),
   };
 
   readonly auth = {

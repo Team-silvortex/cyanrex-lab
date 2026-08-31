@@ -10,20 +10,27 @@ Utility scripts for Cyanrex local operation.
 - `start-lock.sh`: shared runtime helper loaded by `start.sh` for same-instance
   compose-operations mutual exclusion (start/stop/status/logs).
 - `quality-gate.sh`: single-command quality gate for submit/CI checks.
-  - default: run file-length + backend + frontend checks
-  - `--backend-only`: run file-length + backend checks
-  - `--frontend-only`: run file-length + frontend checks
-  - `--sdk-only`: run file-length + JavaScript SDK build, tests, and audit
-  - `--format-only`: run file-length + Rust format check
-  - `--permissions-only`: run file-length + permission regression checks
-  - `--security`: run file-length + security audit check in addition to backend/frontend checks
-  - `--security-only`: run only security audit check
-  - `--no-npm-install`: skip `npm ci` during frontend checks
+  - every mode also checks file length, version/OpenAPI drift, and repository tooling
+  - default: run backend + frontend + JavaScript SDK checks
+  - `--backend-only`: run common preflight + backend checks
+  - `--frontend-only`: run common preflight + frontend checks
+  - `--sdk-only`: run common preflight + JavaScript SDK build, tests, and audit
+  - `--format-only`: run common preflight + Rust format check
+  - `--permissions-only`: run common preflight + permission regression checks
+  - `--security`: add the security audit to the default backend/frontend/SDK checks
+  - `--security-only`: run common preflight + security audit check
+  - `--no-npm-install`: skip `npm ci` during frontend and SDK checks
 - `check-security-audit.sh`: audit Rust dependencies against a tracked exception registry.
   - reads `scripts/security-audit-exceptions.json`
   - reports explicit exceptions and fails on unapproved advisories
 - `check-version-sync.sh`: keeps the Engine, frontend, SDK, lockfiles, and release-facing docs on
-  the same semantic version. `engine/Cargo.toml` is the canonical source.
+  the same semantic version, including the generated OpenAPI document. `engine/Cargo.toml` is the
+  canonical source.
+- `generate-openapi.mjs`: generates `engine/openapi/openapi.json` from the registered Axum routes,
+  access rules, and maintained component schemas; use `--check` to reject stale output.
+- `openapi-contract.mjs`: checks exact Engine/OpenAPI route and access-tier parity, expected Engine/SDK
+  coverage, operation metadata, version sync, and schema references.
+- `tests/openapiContract.test.mjs`: parser and drift-reporting regressions for the contract checks.
 - `clean-macos-metadata.mjs`: removes `.DS_Store` and AppleDouble `._*` sidecars that can be
   mistaken for source files by Next.js after copying the repository through a macOS filesystem.
 - `debug-system.sh`: collect environment/runtime diagnostics for local troubleshooting.

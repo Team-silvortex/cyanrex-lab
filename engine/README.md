@@ -18,8 +18,13 @@ The composition root is split by responsibility: `application.rs` owns HTTP and 
 
 ## API
 
+The complete versioned OpenAPI 3.1 contract is generated at
+[`openapi/openapi.json`](openapi/openapi.json) and served publicly by `GET /openapi.json`. The list
+below highlights the main endpoints:
+
 - `GET /`
 - `GET /health`
+- `GET /openapi.json`
 - `POST /auth/login`
 - `POST /auth/register`
 - `POST /auth/totp/bootstrap`
@@ -73,4 +78,12 @@ Run the engine checks on Linux because Aya targets Linux kernel APIs:
 ```bash
 cargo fmt --manifest-path engine/Cargo.toml -- --check
 cargo test --manifest-path engine/Cargo.toml --locked
+```
+
+After changing routes or wire models, regenerate and validate the API contract from the repository
+root:
+
+```bash
+node scripts/generate-openapi.mjs
+node scripts/openapi-contract.mjs
 ```

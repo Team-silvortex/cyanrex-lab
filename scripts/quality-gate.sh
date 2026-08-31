@@ -10,17 +10,18 @@ print_help() {
   cat <<'EOF'
 Usage: ./scripts/quality-gate.sh [--backend-only|--frontend-only|--sdk-only|--format-only|--security|--security-only|--permissions-only|--no-npm-install]
 
-Runs project quality checks used before commit/CI.
+Runs project quality checks used before commit/CI. Every mode starts with file-length, version and
+OpenAPI drift, Runner Agent tooling, and distribution tooling checks.
 
 Modes:
-  (default)      Run file-length, backend, frontend, and SDK checks.
-  --backend-only Run file-length and backend checks.
-  --frontend-only Run file-length and frontend checks.
-  --sdk-only    Run file-length and JavaScript SDK checks.
-  --format-only  Run file-length and Rust formatting check only.
-  --security     Run file-length and security audit check.
-  --security-only Run only security audit check.
-  --permissions-only Run file-length and permission regression checks (backend route_tdd + frontend permission tests).
+  (default)      Run common preflight, backend, frontend, and SDK checks.
+  --backend-only Run common preflight and backend checks.
+  --frontend-only Run common preflight and frontend checks.
+  --sdk-only    Run common preflight and JavaScript SDK checks.
+  --format-only  Run common preflight and Rust formatting check.
+  --security     Add the security audit to the default full checks.
+  --security-only Run common preflight and the security audit.
+  --permissions-only Run common preflight and permission regressions (backend route_tdd + frontend permission tests).
 
 Flags:
   --no-npm-install Skip npm install steps in frontend and SDK checks.
@@ -72,6 +73,12 @@ run_file_length_check() {
 
 run_version_sync_check() {
   "$PROJECT_ROOT/scripts/check-version-sync.sh"
+}
+
+run_openapi_contract_checks() {
+  node "$PROJECT_ROOT/scripts/generate-openapi.mjs" --check
+  node "$PROJECT_ROOT/scripts/openapi-contract.mjs"
+  node --test "$PROJECT_ROOT/scripts/tests/openapiContract.test.mjs"
 }
 
 run_runner_agent_tool_checks() {
@@ -141,6 +148,7 @@ run_permissions_checks() {
 
 run_file_length_check
 run_version_sync_check
+run_openapi_contract_checks
 run_runner_agent_tool_checks
 run_distribution_tool_checks
 

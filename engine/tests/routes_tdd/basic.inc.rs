@@ -39,6 +39,37 @@ async fn get_health_should_return_ok_status() {
 }
 
 #[tokio::test]
+async fn get_openapi_should_return_versioned_machine_readable_contract() {
+    let app = build_router(test_state());
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/openapi.json")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    assert_eq!(
+        response
+            .headers()
+            .get(header::CONTENT_TYPE)
+            .and_then(|value| value.to_str().ok()),
+        Some("application/json")
+    );
+
+    let payload = response.into_body().collect().await.unwrap().to_bytes();
+    let json: Value = serde_json::from_slice(&payload).unwrap();
+    assert_eq!(json["openapi"], "3.1.0");
+    assert_eq!(json["info"]["version"], env!("CARGO_PKG_VERSION"));
+    assert!(json["paths"]["/command"]["post"].is_object());
+    assert!(json["components"]["securitySchemes"]["cookieAuth"].is_object());
+}
+
+#[tokio::test]
 async fn post_ebpf_run_with_empty_code_should_fail_validation() {
     let state = test_state();
     let app = build_router(state.clone());

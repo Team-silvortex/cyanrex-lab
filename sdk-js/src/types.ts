@@ -38,6 +38,17 @@ export interface ApiMessage {
   message: string;
 }
 
+export interface OpenApiDocument {
+  openapi: string;
+  info: {
+    title: string;
+    version: string;
+    description?: string;
+  };
+  paths: Record<string, Record<string, unknown>>;
+  components?: Record<string, unknown>;
+}
+
 export interface SessionResponse {
   authenticated: boolean;
   username: string | null;

@@ -84,6 +84,7 @@ fn public_routes() -> Router<Arc<AppState>> {
     Router::new()
         .route("/", get(routes::index::index))
         .route("/health", get(routes::health::health))
+        .route("/openapi.json", get(routes::openapi::document))
         .route("/auth/login", post(routes::auth::login))
         .route("/auth/totp/bootstrap", post(routes::auth::bootstrap_totp))
         .route("/auth/register", post(routes::auth::register))

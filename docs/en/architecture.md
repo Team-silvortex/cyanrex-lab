@@ -349,6 +349,8 @@ Use these ownership rules when adding functionality:
 7. Add user-visible text to the English catalog first, then provide the supported translations.
 8. Update both architecture and operator documentation when a trust boundary or deployment topology
    changes.
+9. Regenerate the OpenAPI document and update its component schemas when a route or wire model
+   changes.
 
 Maintained source files must stay within 600 lines and documentation files within 2000 lines. Split
 by responsibility before reaching the limit. The CI gate verifies file length, Rust formatting and
@@ -362,9 +364,9 @@ test performed from a newly built and extracted offline distribution archive.
   replicas.
 - PostgreSQL is shared infrastructure, but horizontal Engine scaling requires explicit ownership and
   coordination for eBPF attachments before it is safe.
-- `sdk-js` is hand-maintained against the Engine routes. It has build and transport regressions, but
-  a machine-readable API schema is still needed before treating it as an independently versioned
-  public compatibility contract.
+- `sdk-js` remains hand-maintained, while the generated OpenAPI 3.1 document and CI drift checks
+  enforce route coverage. Request/response types are not yet generated from that schema, so an
+  independently versioned public compatibility policy is still pending.
 - `modules/` is an example boundary rather than a dynamic plugin runtime.
 
 These are architectural constraints, not hidden guarantees. A change that removes one should include

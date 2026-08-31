@@ -8,6 +8,7 @@ pub mod helper;
 pub mod index;
 pub mod learning;
 pub mod modules;
+pub mod openapi;
 pub mod runner;
 pub mod runner_agent;
 pub mod runner_job;
