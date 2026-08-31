@@ -21,7 +21,8 @@
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "STABILITY.md"
   ],
   "sideEffects": false,
   "private": true,
@@ -31,13 +32,14 @@
     "generate": "npm run generate:types && npm run generate:operations",
     "check:generated": "node ../scripts/generate-sdk-types.mjs --check && node ../scripts/generate-sdk-operations.mjs --check",
     "check:compatibility": "node ../scripts/api-compatibility.mjs",
+    "check:surface": "node ../scripts/sdk-surface-compatibility.mjs",
     "prebuild": "npm run check:generated",
     "build": "tsc -p tsconfig.json",
     "pretest": "npm run build",
     "test": "node --test tests/*.test.mjs",
     "test:types": "tsc -p tsconfig.type-tests.json",
     "test:package": "node --test tests/package-smoke.mjs",
-    "check": "npm run check:compatibility && npm test && npm run test:types && npm run test:package"
+    "check": "npm run check:compatibility && npm run check:surface && npm test && npm run test:types && npm run test:package"
   },
   "devDependencies": {
     "typescript": "5.8.3"

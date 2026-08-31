@@ -14,6 +14,8 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 - Added operation-generator regressions, compile-time SDK fixtures, and packaged `/operations` exports.
 - Added a release preflight that rejects dirty candidates, reused/lightweight tags, version drift, and
   missing dated changelog entries, plus automatic validation for future pushed version tags.
+- Added an additive-only compatibility baseline for 77 public `CyanrexClient` member paths and a packaged
+  stability/deprecation policy.
 
 ## [0.3.1] - 2026-08-31
 

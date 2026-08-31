@@ -16,6 +16,7 @@ test("package manifest contains the runtime and generated declaration closure", 
   const files = new Set(manifest.files.map((entry) => entry.path));
   for (const required of [
     "README.md",
+    "STABILITY.md",
     "dist/generated/openapi.d.ts",
     "dist/generated/openapi.js",
     "dist/generated/operations.d.ts",

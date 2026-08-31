@@ -44,6 +44,9 @@ The generated dispatcher also preserves non-JSON behavior: `getEventsExport` ret
 and `getWsEvents` resolves to the authenticated WebSocket URL. Existing namespaces remain the stable,
 task-oriented facade; the operationId surface is additive.
 
+The additive-only namespace baseline and deprecation window are defined in [STABILITY.md](STABILITY.md).
+The quality gate rejects removal or renaming of any captured public client path.
+
 Public request and response models are generated from the Engine OpenAPI component schemas. The
 hand-designed client namespaces remain stable while the quality gate rejects stale generated types.
 The complete generated map also has an explicit type subpath:
@@ -73,6 +76,10 @@ require an explicit compatibility reset. Additive operations and optional input/
 Run `npm run check:compatibility` to inspect a candidate contract. Replacing the baseline with
 `node ../scripts/api-compatibility.mjs --write-baseline` is reserved for an intentionally reviewed
 breaking release; routine generation and quality checks never rewrite it.
+
+Run `npm run check:surface` to inspect the hand-designed client namespace baseline. Its baseline writer
+is reserved for accepted additions or a separately reviewed breaking release, as described by the
+stability policy.
 
 ## Sessions and CSRF
 

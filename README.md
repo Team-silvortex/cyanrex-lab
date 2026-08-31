@@ -76,6 +76,7 @@ streaming. See the architecture document before adding a service, route, or depl
   - public request/response models generated from 76 OpenAPI component schemas
   - generated `client.operation(operationId, input)` layer and runtime metadata for all 56
     non-Agent operations, alongside the stable hand-designed namespaces
+  - additive-only compatibility baseline for 77 public client namespace and method paths
   - browser credentials, Node session-cookie capture, Origin-based CSRF support, cancellation, and typed errors
   - coverage checked against every non-Agent Engine operation in the generated API contract
   - dry-run package manifest, declaration-closure, and ESM consumer-import acceptance checks

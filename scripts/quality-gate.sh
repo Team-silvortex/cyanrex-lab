@@ -81,6 +81,7 @@ run_openapi_contract_checks() {
   node "$PROJECT_ROOT/scripts/api-compatibility.mjs"
   node "$PROJECT_ROOT/scripts/generate-sdk-types.mjs" --check
   node "$PROJECT_ROOT/scripts/generate-sdk-operations.mjs" --check
+  node "$PROJECT_ROOT/scripts/sdk-surface-compatibility.mjs"
   node --test "$PROJECT_ROOT"/scripts/tests/*.test.mjs
 }
 

@@ -20,7 +20,7 @@ The detailed trust boundaries and data flows remain in the [system architecture]
 | Deployment and distribution | Operational | Docker, WSL2, native Linux, hardened optional compiler Agent, and offline package/install tooling |
 | Release traceability | Baseline established | Changelog/version sync, annotated `v0.2.9`/`v0.3.1` targets, and preflight plus automatic validation for future tags; `0.3.0` is an API baseline only and publication remains manual |
 | Module catalog | Operational, state-only | Versioned v1 manifests are discovered and validated at startup; lifecycle is in memory and never executes directory code |
-| JavaScript SDK | Operational internal package | Typed ESM client with OpenAPI-generated wire models and all 56 non-Agent operationId calls, stable task namespaces, explicit `/openapi` and `/operations` exports, browser/Node sessions, cancellation, downloads, typed errors, and package-consumer smoke coverage |
+| JavaScript SDK | Operational internal package | Typed ESM client with 56 generated non-Agent operationId calls, a 77-member additive namespace baseline and deprecation policy, explicit `/openapi` and `/operations` exports, browser/Node sessions, cancellation, downloads, typed errors, and package-consumer smoke coverage |
 | API contract | Operational internal contract | Generated OpenAPI 3.1 served at `/openapi.json`; route/access/SDK/model drift and breaking changes against the frozen `0.3.0` baseline fail the quality gate |
 | Terminal page | Operational for admins | Permission-aware List/Start/Stop module commands, structured results/history, and a safe handoff to the eBPF experiment workspace; it is not a shell |
 
@@ -34,7 +34,7 @@ The following checks passed on the snapshot date:
 - Frontend regressions: 14 tests covering permissions, Terminal commands, teacher review, performance
   hotspot logic, security headers, and macOS metadata cleanup; the SDK has 9 transport/operation
   regressions, a compile-time operation fixture, plus 3 package-manifest/import smoke checks.
-- File-length, version/changelog sync, OpenAPI generation/route/access/model/compatibility checks with 18
+- File-length, version/changelog sync, OpenAPI generation/route/access/model/compatibility checks with 21
   contract, compatibility, and schema/operation-generator regressions, Runner Agent tooling, distribution tooling, and both Compose profile
   configuration checks.
 - Production dependency audits: zero npm vulnerabilities and zero RustSec findings.
@@ -56,8 +56,8 @@ acceptance checks in CI or a dedicated Linux host.
 
 1. Define a signed, isolated executable-module adapter and durable ownership model before extending
    the state-only module catalog into a process or library plugin runtime.
-2. Define the public stability and deprecation cadence for the additive generated operationId layer
-   and hand-designed namespaces before publishing a stable independently consumed SDK package.
+2. Define registry publication, support ownership, and 1.0 readiness criteria before making the SDK
+   a stable independently consumed package.
 3. Define a real isolation and ownership model before adding remote eBPF execution or Engine replicas.
 4. Automate signed release publication and attach checksums/provenance to each tagged distribution.
 5. Promote live kernel attach/stream and extracted-distribution smoke checks to a documented release

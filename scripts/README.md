@@ -42,6 +42,10 @@ Utility scripts for Cyanrex local operation.
   access/transport metadata, and operationId registry while excluding the signed Runner Agent protocol.
 - `tests/sdkOperationGenerator.test.mjs`: operation transport, parameter, response, and Agent-boundary
   generation regressions.
+- `sdk-surface-compatibility.mjs`: checks the frozen additive-only `CyanrexClient` namespace/method
+  baseline and rejects removed or renamed public member paths; `--write-baseline` is review-only.
+- `tests/sdkSurfaceCompatibility.test.mjs`: nested surface extraction, removal, additive growth, and
+  deterministic baseline regressions.
 - `api-compatibility.mjs`: compares the current Engine contract with the frozen SDK baseline and
   rejects removed operations, access changes, narrowed inputs, or weakened successful responses.
   - `--write-baseline` intentionally replaces the baseline after an approved compatibility reset

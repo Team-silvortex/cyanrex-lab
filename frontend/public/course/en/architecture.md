@@ -370,7 +370,8 @@ test performed from a newly built and extracted offline distribution archive.
   all non-Agent operations. Public wire models, operation inputs/responses, and runtime access/transport
   metadata are generated from OpenAPI; CI rejects route, access, coverage, and generated-code drift.
   A frozen pre-1.0 baseline also rejects breaking input/output changes, and package-consumer smoke
-  coverage verifies artifact shape. A public stability, deprecation, and release policy remains pending.
+  coverage verifies artifact shape. A 77-member additive namespace baseline and documented deprecation
+  window protect the hand-designed facade; registry publication and long-term support ownership remain pending.
 - `modules/` is a versioned, dynamically discovered catalog, not an executable plugin runtime;
   start/stop is single-process control state and unknown names are rejected.
 
