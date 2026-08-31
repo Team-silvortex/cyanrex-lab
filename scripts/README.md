@@ -24,8 +24,8 @@ Utility scripts for Cyanrex local operation.
   - reads `scripts/security-audit-exceptions.json`
   - reports explicit exceptions and fails on unapproved advisories
 - `check-version-sync.sh`: keeps the Engine, frontend, SDK, lockfiles, and release-facing docs on
-  the same semantic version, including the generated OpenAPI document. `engine/Cargo.toml` is the
-  canonical source.
+  the same semantic version, including the generated OpenAPI document and current `CHANGELOG.md`
+  release heading. `engine/Cargo.toml` is the canonical source.
 - `generate-openapi.mjs`: generates `engine/openapi/openapi.json` from the registered Axum routes,
   access rules, and maintained component schemas; use `--check` to reject stale output.
 - `openapi-contract.mjs`: checks exact Engine/OpenAPI route and access-tier parity, expected Engine/SDK

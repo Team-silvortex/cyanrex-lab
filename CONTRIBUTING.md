@@ -79,6 +79,26 @@ already installed and unchanged, `--no-npm-install` can shorten a local run.
 
 Run `./scripts/check-file-lengths.sh` to verify the line limits directly.
 
+## Release Workflow
+
+`engine/Cargo.toml` is the canonical version source. A release must update every synchronized version
+target, move the relevant entries from `Unreleased` into a dated `CHANGELOG.md` section, and pass the
+full quality gate before the version commit is tagged.
+
+Create an annotated `v<version>` tag on the exact version commit. Do not move an existing release tag;
+publish a follow-up patch release when a released artifact needs correction. Branch and tag publication
+remain explicit operations so a local validation run cannot publish accidentally:
+
+```bash
+./scripts/quality-gate.sh
+git tag -a v0.3.2 -m "cyanrex-lab 0.3.2"
+git push origin main
+git push origin v0.3.2
+```
+
+The release owner should verify the tag target, distribution checksum, extracted-package smoke result,
+and changelog links before publication.
+
 ## Course Material and Translations
 
 English is the primary source language for new interface strings and course

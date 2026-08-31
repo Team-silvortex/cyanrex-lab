@@ -6,6 +6,7 @@ Cyanrex monorepo for eBPF experiments: Axum engine + Next.js dashboard + module 
 
 Architecture: [English](docs/en/architecture.md) · [简体中文](docs/zh-CN/architecture.md)
 · Project status: [English](docs/en/project-status.md) · [简体中文](docs/zh-CN/project-status.md)
+· [Changelog](CHANGELOG.md)
 
 cyanrex-lab is free and open source under the [Apache License 2.0](LICENSE).
 Contributions are welcome; start with [CONTRIBUTING.md](CONTRIBUTING.md), follow the
@@ -24,6 +25,7 @@ cyanrex-lab/
 │  ├ module-network
 │  └ module-protocol
 ├ scripts/         # saved experiment scripts
+├ CHANGELOG.md      # auditable release history and unreleased changes
 ├ docs/zh-CN/      # Chinese course and lab manual
 ├ docker/          # compose and container assets
 └ start.sh         # unified launcher

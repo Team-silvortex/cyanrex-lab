@@ -52,6 +52,8 @@ assert_version "frontend/package-lock.json" "$(read_json_version "$PROJECT_ROOT/
 assert_version "sdk-js/package.json" "$(read_json_version "$PROJECT_ROOT/sdk-js/package.json")" "$CANONICAL_VERSION"
 assert_version "sdk-js/package-lock.json" "$(read_json_version "$PROJECT_ROOT/sdk-js/package-lock.json")" "$CANONICAL_VERSION"
 assert_version "engine/openapi/openapi.json" "$(read_json_version "$PROJECT_ROOT/engine/openapi/openapi.json")" "$CANONICAL_VERSION"
+assert_contains_version "$PROJECT_ROOT/CHANGELOG.md" "## [$CANONICAL_VERSION]"
+assert_contains_version "$PROJECT_ROOT/CHANGELOG.md" "## [Unreleased]"
 
 for versioned_doc in \
   "$PROJECT_ROOT/docs/en/runner-agent.md" \
