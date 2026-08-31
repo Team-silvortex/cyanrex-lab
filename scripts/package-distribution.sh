@@ -181,7 +181,7 @@ build_artifacts() {
     --build-arg RUST_IMAGE="${ENGINE_RUST_IMAGE:-rust:bookworm}" \
     --build-arg DEBIAN_IMAGE="${ENGINE_DEBIAN_IMAGE:-debian:bookworm}" \
     --build-arg APT_MIRROR="${ENGINE_APT_MIRROR:-deb.debian.org}" \
-    --build-arg CARGO_SOURCE_MIRROR="${ENGINE_CARGO_REGISTRY_INDEX:-}" "$ROOT_DIR/engine"
+    --build-arg CARGO_SOURCE_MIRROR="${ENGINE_CARGO_REGISTRY_INDEX:-}" "$ROOT_DIR"
   docker build -t "$frontend_image" -f "$ROOT_DIR/frontend/Dockerfile" \
     --build-arg NODE_IMAGE="${FRONTEND_NODE_IMAGE:-node:20}" \
     --build-arg NPM_REGISTRY="${FRONTEND_NPM_REGISTRY:-https://registry.npmjs.org}" \

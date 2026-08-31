@@ -57,8 +57,14 @@ async fn post_command_should_return_structured_module_results_for_admin() {
     let list_json: Value = serde_json::from_slice(&list_payload).unwrap();
     assert_eq!(list_json["ok"], true);
     assert_eq!(list_json["commandType"], "ListModules");
-    assert_eq!(list_json["modules"][0]["name"], "module-network");
-    assert_eq!(list_json["modules"][0]["status"], "running");
+    let modules = list_json["modules"].as_array().unwrap();
+    let network = modules
+        .iter()
+        .find(|module| module["name"] == "module-network")
+        .expect("module-network should be discovered");
+    assert_eq!(network["status"], "running");
+    assert_eq!(network["version"], env!("CARGO_PKG_VERSION"));
+    assert!(network["capabilities"].is_array());
 }
 
 #[tokio::test]
@@ -101,6 +107,37 @@ async fn post_command_should_validate_module_name_and_describe_experiment_handof
         .as_str()
         .unwrap_or_default()
         .contains("module name"));
+
+    let unknown_response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/command")
+                .header("content-type", "application/json")
+                .header(header::ORIGIN, "http://localhost:3000")
+                .header(header::COOKIE, &session_cookie)
+                .body(Body::from(
+                    r#"{"commandType":"StartModule","moduleName":"module-unknown"}"#,
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(unknown_response.status(), StatusCode::BAD_REQUEST);
+    let unknown_payload = unknown_response
+        .into_body()
+        .collect()
+        .await
+        .unwrap()
+        .to_bytes();
+    let unknown_json: Value = serde_json::from_slice(&unknown_payload).unwrap();
+    assert_eq!(unknown_json["ok"], false);
+    assert!(unknown_json["message"]
+        .as_str()
+        .unwrap_or_default()
+        .contains("unknown module"));
 
     let experiment_response = app
         .oneshot(

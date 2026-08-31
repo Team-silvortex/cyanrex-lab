@@ -1,0 +1,8 @@
+{
+  "$schema": "../module.schema.json",
+  "schema_version": 1,
+  "name": "module-ebpf",
+  "version": "0.3.1",
+  "description": "Declares the eBPF attachment and event-streaming integration surface.",
+  "capabilities": ["ebpf.attach", "ebpf.detach", "ebpf.events"]
+}

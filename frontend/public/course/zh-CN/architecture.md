@@ -29,11 +29,12 @@ flowchart LR
 | `frontend/public/course/` | `docs/` 的构建副本 | 由 `npm run sync:course` 生成 |
 | `docker/` | Docker 与分发拓扑 | 容器部署 |
 | `scripts/` | 启动、打包、审计、质量和性能脚本 | 运维流程 |
-| `modules/` | 模块示例与约定 | 教学示例 |
+| `modules/` | 版本化模块清单、目录项与协议边界 | 模块目录契约 |
 | `sdk-js/` | 面向浏览器与 Node.js 的类型化 Engine HTTP 客户端 | 可选集成面 |
 
-目前 `modules/` 下的目录是示例，Engine 尚不会动态发现这些目录；模块运行状态由
-`ModuleManager` 保存在内存中。
+Engine 启动时会发现直接子目录中的合法 v1 `module.json`。`ModuleManager` 会拒绝格式错误、
+过大、重复或名称与目录不一致的清单，并在内存中保存 start/stop 控制状态；发现过程不会加载
+动态库、启动进程或执行模块目录中的文件。
 
 ## 3. 前端架构
 
@@ -119,7 +120,7 @@ flowchart LR
 | `LearningStore` | 实验尝试、自动验收、进度聚合及数据库/文件降级 |
 | `CHeaderModule` | 可信头文件目录、摘要校验和选中元数据 |
 | `EnvironmentChecker` | 内核、工具链和运行环境检查 |
-| `ModuleManager` | 内存中的教学模块生命周期 |
+| `ModuleManager` | 版本化清单发现、目录校验与内存生命周期状态 |
 | `CommandDispatcher` | 把管理命令分发到对应服务 |
 
 大型服务可以拆成私有子模块或 `include!` 片段，但调用者只依赖公开服务类型，不得跨层引用内部文件。
@@ -207,7 +208,7 @@ curl -sS -X POST http://127.0.0.1:8080/runner/agent/register \
   -d '{
     "agent_id":"lab-vm-01",
     "protocol_version":1,
-    "agent_version":"0.2.9",
+    "agent_version":"0.3.1",
     "isolation":"virtual_machine",
     "max_concurrent":2,
     "capabilities":["bpftool","btf","ringbuf"],
@@ -322,8 +323,9 @@ Engine 容器需要内核能力、宿主 PID、bpffs、tracefs 和内核模块�
 - Engine 是单进程；挂载、模块和降级状态不会在多个副本间共享。
 - PostgreSQL 可以共享，但 Engine 横向扩容前必须先设计 eBPF 挂载所有权与协调机制。
 - `sdk-js` 保留人工设计的分组客户端接口，公共请求/响应模型已从 OpenAPI 生成；CI 会拒绝路由、
-  权限层、覆盖范围和生成类型漂移。包消费冒烟只验证产物形态，不代表稳定性承诺；是否生成客户端
-  操作，以及独立版本的公共兼容策略，仍待确定。
-- `modules/` 是示例边界，不是动态插件运行时。
+  权限层、覆盖范围和生成类型漂移，并以冻结的 1.0 前基线阻止输入/输出破坏。包消费冒烟只验证
+  产物形态；是否生成客户端操作，以及公开弃用/发布策略，仍待确定。
+- `modules/` 是动态发现的版本化目录，不是可执行插件运行时；start/stop 只修改单进程状态，
+  未知模块名会被拒绝。
 
 这些是显式架构约束。若要移除某项限制，应同时提供协调模型、安全审计、迁移方案和回归测试。

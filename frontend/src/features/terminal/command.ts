@@ -7,6 +7,9 @@ export type CommandType =
 export type ModuleInfo = {
   name: string;
   status: string;
+  version?: string;
+  description?: string;
+  capabilities?: string[];
 };
 
 export type CommandRequest = {

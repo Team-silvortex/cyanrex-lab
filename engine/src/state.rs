@@ -33,7 +33,8 @@ pub struct AppState {
 }
 
 pub fn build_state() -> Arc<AppState> {
-    let module_manager = ModuleManager::default();
+    let module_manager =
+        ModuleManager::from_env().unwrap_or_else(|error| panic!("invalid module catalog: {error}"));
     let ebpf_loader = EbpfLoader::default();
     let runner_manager = RunnerManager::from_env(ebpf_loader.clone())
         .unwrap_or_else(|error| panic!("invalid Runner configuration: {error}"));

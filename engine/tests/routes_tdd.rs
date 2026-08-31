@@ -11,6 +11,11 @@ use tower::ServiceExt;
 static CSRF_ENV_LOCK: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
 
 fn test_state() -> std::sync::Arc<cyanrex_engine::AppState> {
+    let module_catalog = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .expect("Engine should have a repository parent")
+        .join("modules");
+    std::env::set_var("CYANREX_MODULES_DIR", module_catalog);
     std::env::set_var("CYANREX_ALLOW_REGISTRATION", "true");
     std::env::set_var("CYANREX_ALLOW_TOTP_BOOTSTRAP", "true");
     std::env::set_var("CYANREX_TEACHER_USERNAMES", "teacher");

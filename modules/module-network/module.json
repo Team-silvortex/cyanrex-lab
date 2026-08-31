@@ -1,0 +1,8 @@
+{
+  "$schema": "../module.schema.json",
+  "schema_version": 1,
+  "name": "module-network",
+  "version": "0.3.1",
+  "description": "Declares normalized network-event capture and publication capabilities.",
+  "capabilities": ["network.events", "event.publish"]
+}

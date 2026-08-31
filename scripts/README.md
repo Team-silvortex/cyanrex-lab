@@ -34,6 +34,12 @@ Utility scripts for Cyanrex local operation.
 - `generate-sdk-types.mjs`: converts OpenAPI component schemas into the committed
   `sdk-js/src/generated/openapi.ts` type map; use `--check` to reject stale SDK models.
 - `tests/sdkTypeGenerator.test.mjs`: JSON Schema-to-TypeScript rendering regressions.
+- `api-compatibility.mjs`: compares the current Engine contract with the frozen SDK baseline and
+  rejects removed operations, access changes, narrowed inputs, or weakened successful responses.
+  - `--write-baseline` intentionally replaces the baseline after an approved compatibility reset
+  - normal quality checks never rewrite the baseline
+- `tests/apiCompatibility.test.mjs`: breaking/additive request, response, access, enum, and nullability
+  compatibility regressions.
 - `clean-macos-metadata.mjs`: removes `.DS_Store` and AppleDouble `._*` sidecars that can be
   mistaken for source files by Next.js after copying the repository through a macOS filesystem.
 - `debug-system.sh`: collect environment/runtime diagnostics for local troubleshooting.
@@ -150,14 +156,14 @@ Run security audit directly:
 Build a distribution package:
 
 ```bash
-./scripts/package-distribution.sh --version 0.2.9
-./scripts/package-distribution.sh --version 0.2.9 --compose-template docker/docker-compose.yml   # custom compose if needed
+./scripts/package-distribution.sh --version 0.3.1
+./scripts/package-distribution.sh --version 0.3.1 --compose-template docker/docker-compose.yml   # custom compose if needed
 ```
 
 If you already have local images (for example CI or private registry preloads), package without rebuilding:
 
 ```bash
-./scripts/package-distribution.sh --skip-build --engine-image myrepo/cyanrex-engine:0.2.9 --frontend-image myrepo/cyanrex-frontend:0.2.9
+./scripts/package-distribution.sh --skip-build --engine-image myrepo/cyanrex-engine:0.3.1 --frontend-image myrepo/cyanrex-frontend:0.3.1
 ```
 
 Packaging also honors `ENGINE_RUST_IMAGE`, `ENGINE_DEBIAN_IMAGE`, `ENGINE_APT_MIRROR`,

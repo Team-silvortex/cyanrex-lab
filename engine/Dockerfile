@@ -2,12 +2,12 @@ ARG RUST_IMAGE=rust:bookworm
 ARG DEBIAN_IMAGE=debian:bookworm
 FROM ${RUST_IMAGE} AS builder
 ARG CARGO_SOURCE_MIRROR=
-WORKDIR /app
+WORKDIR /app/engine
 ENV CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse \
     CARGO_NET_RETRY=10
 
-COPY Cargo.toml Cargo.lock ./
-COPY src ./src
+COPY engine/Cargo.toml engine/Cargo.lock ./
+COPY engine/src ./src
 
 RUN if [ -n "${CARGO_SOURCE_MIRROR}" ]; then \
       mkdir -p .cargo; \
@@ -25,11 +25,13 @@ RUN sed -i "s|deb.debian.org|${APT_MIRROR}|g" /etc/apt/sources.list.d/debian.sou
     && apt-get install -y --no-install-recommends ca-certificates wget clang bpftool linux-libc-dev libbpf-dev \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /app/target/release/cyanrex-engine /usr/local/bin/cyanrex-engine
-COPY --from=builder /app/target/release/cyanrex-runner-agent /usr/local/bin/cyanrex-runner-agent
+COPY --from=builder /app/engine/target/release/cyanrex-engine /usr/local/bin/cyanrex-engine
+COPY --from=builder /app/engine/target/release/cyanrex-runner-agent /usr/local/bin/cyanrex-runner-agent
+COPY modules ./modules
 
 ENV ENGINE_HOST=0.0.0.0
 ENV ENGINE_PORT=8080
+ENV CYANREX_MODULES_DIR=/app/modules
 EXPOSE 8080
 
 CMD ["cyanrex-engine"]

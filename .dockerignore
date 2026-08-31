@@ -1,0 +1,8 @@
+**
+!engine/
+!engine/Cargo.toml
+!engine/Cargo.lock
+!engine/src/
+!engine/src/**
+!modules/
+!modules/**

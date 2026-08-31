@@ -2,65 +2,12 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Cyanrex Lab Engine API",
-    "version": "0.3.1",
-    "description": "Machine-readable contract for the Cyanrex teaching control and execution plane."
+    "version": "0.3.0"
   },
-  "servers": [
-    {
-      "url": "/",
-      "description": "Current Engine origin"
-    }
-  ],
-  "tags": [
-    {
-      "name": "Authentication"
-    },
-    {
-      "name": "C Headers"
-    },
-    {
-      "name": "Command"
-    },
-    {
-      "name": "Environment"
-    },
-    {
-      "name": "Events"
-    },
-    {
-      "name": "Learning"
-    },
-    {
-      "name": "Modules"
-    },
-    {
-      "name": "Runner"
-    },
-    {
-      "name": "Runner Agent"
-    },
-    {
-      "name": "Scripts"
-    },
-    {
-      "name": "Settings"
-    },
-    {
-      "name": "System"
-    },
-    {
-      "name": "eBPF"
-    }
-  ],
   "paths": {
     "/": {
       "get": {
         "operationId": "getRoot",
-        "summary": "GET /",
-        "tags": [
-          "System"
-        ],
-        "security": [],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -89,11 +36,6 @@
     "/auth/me": {
       "get": {
         "operationId": "getAuthMe",
-        "summary": "GET /auth/me",
-        "tags": [
-          "Authentication"
-        ],
-        "security": [],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -122,15 +64,6 @@
     "/ebpf/attachments": {
       "get": {
         "operationId": "getEbpfAttachments",
-        "summary": "GET /ebpf/attachments",
-        "tags": [
-          "eBPF"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -165,26 +98,12 @@
             }
           }
         },
-        "x-cyanrex-access": "authenticated",
-        "x-cyanrex-roles": [
-          "admin",
-          "teacher",
-          "student"
-        ]
+        "x-cyanrex-access": "authenticated"
       }
     },
     "/ebpf/attachments/details": {
       "get": {
         "operationId": "getEbpfAttachmentsDetails",
-        "summary": "GET /ebpf/attachments/details",
-        "tags": [
-          "eBPF"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -219,26 +138,12 @@
             }
           }
         },
-        "x-cyanrex-access": "authenticated",
-        "x-cyanrex-roles": [
-          "admin",
-          "teacher",
-          "student"
-        ]
+        "x-cyanrex-access": "authenticated"
       }
     },
     "/ebpf/check/backends": {
       "get": {
         "operationId": "getEbpfCheckBackends",
-        "summary": "GET /ebpf/check/backends",
-        "tags": [
-          "eBPF"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -261,24 +166,20 @@
             }
           }
         },
-        "x-cyanrex-access": "authenticated",
-        "x-cyanrex-roles": [
-          "admin",
-          "teacher",
-          "student"
-        ]
+        "x-cyanrex-access": "authenticated"
       }
     },
     "/ebpf/check/remote": {
       "get": {
         "operationId": "getEbpfCheckRemote",
-        "summary": "GET /ebpf/check/remote",
-        "tags": [
-          "eBPF"
-        ],
-        "security": [
+        "parameters": [
           {
-            "cookieAuth": []
+            "name": "job_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -303,34 +204,20 @@
             }
           }
         },
-        "x-cyanrex-access": "authenticated",
-        "x-cyanrex-roles": [
-          "admin",
-          "teacher",
-          "student"
-        ],
-        "parameters": [
-          {
-            "name": "job_id",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ]
+        "x-cyanrex-access": "authenticated"
       },
       "post": {
         "operationId": "postEbpfCheckRemote",
-        "summary": "POST /ebpf/check/remote",
-        "tags": [
-          "eBPF"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EbpfRemoteCheckSubmitRequest"
+              }
+            }
           }
-        ],
+        },
         "responses": {
           "202": {
             "description": "Successful response",
@@ -353,37 +240,12 @@
             }
           }
         },
-        "x-cyanrex-access": "authenticated",
-        "x-cyanrex-roles": [
-          "admin",
-          "teacher",
-          "student"
-        ],
-        "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/EbpfRemoteCheckSubmitRequest"
-              }
-            }
-          }
-        }
+        "x-cyanrex-access": "authenticated"
       }
     },
     "/ebpf/templates": {
       "get": {
         "operationId": "getEbpfTemplates",
-        "summary": "GET /ebpf/templates",
-        "tags": [
-          "eBPF"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -409,57 +271,12 @@
             }
           }
         },
-        "x-cyanrex-access": "authenticated",
-        "x-cyanrex-roles": [
-          "admin",
-          "teacher",
-          "student"
-        ]
+        "x-cyanrex-access": "authenticated"
       }
     },
     "/events": {
       "get": {
         "operationId": "getEvents",
-        "summary": "GET /events",
-        "tags": [
-          "Events"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/EventRecord"
-                  }
-                }
-              }
-            }
-          },
-          "default": {
-            "description": "Error response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiMessage"
-                }
-              }
-            }
-          }
-        },
-        "x-cyanrex-access": "authenticated",
-        "x-cyanrex-roles": [
-          "admin",
-          "teacher",
-          "student"
-        ],
         "parameters": [
           {
             "name": "category",
@@ -523,24 +340,10 @@
               "maximum": 500
             }
           }
-        ]
-      }
-    },
-    "/events/export": {
-      "get": {
-        "operationId": "getEventsExport",
-        "summary": "GET /events/export",
-        "tags": [
-          "Events"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
-          }
         ],
         "responses": {
           "200": {
-            "description": "Event export download",
+            "description": "Successful response",
             "content": {
               "application/json": {
                 "schema": {
@@ -548,11 +351,6 @@
                   "items": {
                     "$ref": "#/components/schemas/EventRecord"
                   }
-                }
-              },
-              "text/csv": {
-                "schema": {
-                  "type": "string"
                 }
               }
             }
@@ -568,12 +366,12 @@
             }
           }
         },
-        "x-cyanrex-access": "authenticated",
-        "x-cyanrex-roles": [
-          "admin",
-          "teacher",
-          "student"
-        ],
+        "x-cyanrex-access": "authenticated"
+      }
+    },
+    "/events/export": {
+      "get": {
+        "operationId": "getEventsExport",
         "parameters": [
           {
             "name": "category",
@@ -639,21 +437,43 @@
               ]
             }
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "Event export download",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EventRecord"
+                  }
+                }
+              },
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            }
+          }
+        },
+        "x-cyanrex-access": "authenticated"
       }
     },
     "/events/unread-count": {
       "get": {
         "operationId": "getEventsUnreadCount",
-        "summary": "GET /events/unread-count",
-        "tags": [
-          "Events"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -686,22 +506,12 @@
             }
           }
         },
-        "x-cyanrex-access": "authenticated",
-        "x-cyanrex-roles": [
-          "admin",
-          "teacher",
-          "student"
-        ]
+        "x-cyanrex-access": "authenticated"
       }
     },
     "/health": {
       "get": {
         "operationId": "getHealth",
-        "summary": "GET /health",
-        "tags": [
-          "System"
-        ],
-        "security": [],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -730,15 +540,6 @@
     "/helper/environment": {
       "get": {
         "operationId": "getHelperEnvironment",
-        "summary": "GET /helper/environment",
-        "tags": [
-          "Environment"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -761,26 +562,12 @@
             }
           }
         },
-        "x-cyanrex-access": "authenticated",
-        "x-cyanrex-roles": [
-          "admin",
-          "teacher",
-          "student"
-        ]
+        "x-cyanrex-access": "authenticated"
       }
     },
     "/learning/attempts": {
       "get": {
         "operationId": "getLearningAttempts",
-        "summary": "GET /learning/attempts",
-        "tags": [
-          "Learning"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -806,26 +593,12 @@
             }
           }
         },
-        "x-cyanrex-access": "authenticated",
-        "x-cyanrex-roles": [
-          "admin",
-          "teacher",
-          "student"
-        ]
+        "x-cyanrex-access": "authenticated"
       }
     },
     "/learning/labs": {
       "get": {
         "operationId": "getLearningLabs",
-        "summary": "GET /learning/labs",
-        "tags": [
-          "Learning"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -851,24 +624,30 @@
             }
           }
         },
-        "x-cyanrex-access": "authenticated",
-        "x-cyanrex-roles": [
-          "admin",
-          "teacher",
-          "student"
-        ]
+        "x-cyanrex-access": "authenticated"
       }
     },
     "/learning/teacher/attempts": {
       "get": {
         "operationId": "getLearningTeacherAttempts",
-        "summary": "GET /learning/teacher/attempts",
-        "tags": [
-          "Learning"
-        ],
-        "security": [
+        "parameters": [
           {
-            "cookieAuth": []
+            "name": "username",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
           }
         ],
         "responses": {
@@ -893,45 +672,12 @@
             }
           }
         },
-        "x-cyanrex-access": "staff",
-        "x-cyanrex-roles": [
-          "admin",
-          "teacher"
-        ],
-        "parameters": [
-          {
-            "name": "username",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 100
-            }
-          }
-        ]
+        "x-cyanrex-access": "staff"
       }
     },
     "/learning/teacher/overview": {
       "get": {
         "operationId": "getLearningTeacherOverview",
-        "summary": "GET /learning/teacher/overview",
-        "tags": [
-          "Learning"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -954,25 +700,12 @@
             }
           }
         },
-        "x-cyanrex-access": "staff",
-        "x-cyanrex-roles": [
-          "admin",
-          "teacher"
-        ]
+        "x-cyanrex-access": "staff"
       }
     },
     "/modules": {
       "get": {
         "operationId": "getModules",
-        "summary": "GET /modules",
-        "tags": [
-          "Modules"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -998,25 +731,12 @@
             }
           }
         },
-        "x-cyanrex-access": "staff",
-        "x-cyanrex-roles": [
-          "admin",
-          "teacher"
-        ]
+        "x-cyanrex-access": "staff"
       }
     },
     "/modules/c-headers/catalog": {
       "get": {
         "operationId": "getModulesCHeadersCatalog",
-        "summary": "GET /modules/c-headers/catalog",
-        "tags": [
-          "C Headers"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -1051,25 +771,12 @@
             }
           }
         },
-        "x-cyanrex-access": "staff",
-        "x-cyanrex-roles": [
-          "admin",
-          "teacher"
-        ]
+        "x-cyanrex-access": "staff"
       }
     },
     "/modules/c-headers/selected-metadata": {
       "get": {
         "operationId": "getModulesCHeadersSelectedMetadata",
-        "summary": "GET /modules/c-headers/selected-metadata",
-        "tags": [
-          "C Headers"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -1104,22 +811,12 @@
             }
           }
         },
-        "x-cyanrex-access": "authenticated",
-        "x-cyanrex-roles": [
-          "admin",
-          "teacher",
-          "student"
-        ]
+        "x-cyanrex-access": "authenticated"
       }
     },
     "/openapi.json": {
       "get": {
         "operationId": "getOpenapiJson",
-        "summary": "GET /openapi.json",
-        "tags": [
-          "System"
-        ],
-        "security": [],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -1149,15 +846,6 @@
     "/runner/agents": {
       "get": {
         "operationId": "getRunnerAgents",
-        "summary": "GET /runner/agents",
-        "tags": [
-          "Runner Agent"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -1180,24 +868,12 @@
             }
           }
         },
-        "x-cyanrex-access": "admin",
-        "x-cyanrex-roles": [
-          "admin"
-        ]
+        "x-cyanrex-access": "admin"
       }
     },
     "/runner/jobs": {
       "get": {
         "operationId": "getRunnerJobs",
-        "summary": "GET /runner/jobs",
-        "tags": [
-          "Runner"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -1220,24 +896,12 @@
             }
           }
         },
-        "x-cyanrex-access": "admin",
-        "x-cyanrex-roles": [
-          "admin"
-        ]
+        "x-cyanrex-access": "admin"
       }
     },
     "/runner/overview": {
       "get": {
         "operationId": "getRunnerOverview",
-        "summary": "GET /runner/overview",
-        "tags": [
-          "Runner"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -1260,24 +924,12 @@
             }
           }
         },
-        "x-cyanrex-access": "admin",
-        "x-cyanrex-roles": [
-          "admin"
-        ]
+        "x-cyanrex-access": "admin"
       }
     },
     "/runner/status": {
       "get": {
         "operationId": "getRunnerStatus",
-        "summary": "GET /runner/status",
-        "tags": [
-          "Runner"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -1300,26 +952,12 @@
             }
           }
         },
-        "x-cyanrex-access": "authenticated",
-        "x-cyanrex-roles": [
-          "admin",
-          "teacher",
-          "student"
-        ]
+        "x-cyanrex-access": "authenticated"
       }
     },
     "/scripts": {
       "get": {
         "operationId": "getScripts",
-        "summary": "GET /scripts",
-        "tags": [
-          "Scripts"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -1345,26 +983,12 @@
             }
           }
         },
-        "x-cyanrex-access": "authenticated",
-        "x-cyanrex-roles": [
-          "admin",
-          "teacher",
-          "student"
-        ]
+        "x-cyanrex-access": "authenticated"
       }
     },
     "/settings/compiler": {
       "get": {
         "operationId": "getSettingsCompiler",
-        "summary": "GET /settings/compiler",
-        "tags": [
-          "Settings"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -1387,22 +1011,20 @@
             }
           }
         },
-        "x-cyanrex-access": "admin",
-        "x-cyanrex-roles": [
-          "admin"
-        ]
+        "x-cyanrex-access": "admin"
       },
       "post": {
         "operationId": "postSettingsCompiler",
-        "summary": "POST /settings/compiler",
-        "tags": [
-          "Settings"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCompilerSettingsRequest"
+              }
+            }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "Successful response",
@@ -1425,35 +1047,12 @@
             }
           }
         },
-        "x-cyanrex-access": "admin",
-        "x-cyanrex-roles": [
-          "admin"
-        ],
-        "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateCompilerSettingsRequest"
-              }
-            }
-          }
-        }
+        "x-cyanrex-access": "admin"
       }
     },
     "/settings/events": {
       "get": {
         "operationId": "getSettingsEvents",
-        "summary": "GET /settings/events",
-        "tags": [
-          "Settings"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -1476,24 +1075,20 @@
             }
           }
         },
-        "x-cyanrex-access": "authenticated",
-        "x-cyanrex-roles": [
-          "admin",
-          "teacher",
-          "student"
-        ]
+        "x-cyanrex-access": "authenticated"
       },
       "post": {
         "operationId": "postSettingsEvents",
-        "summary": "POST /settings/events",
-        "tags": [
-          "Settings"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventSettings"
+              }
+            }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "Successful response",
@@ -1516,37 +1111,12 @@
             }
           }
         },
-        "x-cyanrex-access": "authenticated",
-        "x-cyanrex-roles": [
-          "admin",
-          "teacher",
-          "student"
-        ],
-        "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/EventSettings"
-              }
-            }
-          }
-        }
+        "x-cyanrex-access": "authenticated"
       }
     },
     "/settings/performance": {
       "get": {
         "operationId": "getSettingsPerformance",
-        "summary": "GET /settings/performance",
-        "tags": [
-          "Settings"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -1569,49 +1139,33 @@
             }
           }
         },
-        "x-cyanrex-access": "admin",
-        "x-cyanrex-roles": [
-          "admin"
-        ]
+        "x-cyanrex-access": "admin"
       }
     },
     "/ws/events": {
       "get": {
         "operationId": "getWsEvents",
-        "summary": "GET /ws/events",
-        "tags": [
-          "Events"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
         "responses": {
           "101": {
             "description": "WebSocket protocol upgrade"
           }
         },
-        "x-cyanrex-access": "authenticated",
-        "x-cyanrex-roles": [
-          "admin",
-          "teacher",
-          "student"
-        ]
+        "x-cyanrex-access": "authenticated"
       }
     },
     "/auth/delete": {
       "post": {
         "operationId": "postAuthDelete",
-        "summary": "POST /auth/delete",
-        "tags": [
-          "Authentication"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteAccountRequest"
+              }
+            }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "Successful response",
@@ -1634,33 +1188,22 @@
             }
           }
         },
-        "x-cyanrex-access": "authenticated",
-        "x-cyanrex-roles": [
-          "admin",
-          "teacher",
-          "student"
-        ],
-        "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DeleteAccountRequest"
-              }
-            }
-          }
-        }
+        "x-cyanrex-access": "authenticated"
       }
     },
     "/auth/login": {
       "post": {
         "operationId": "postAuthLogin",
-        "summary": "POST /auth/login",
-        "tags": [
-          "Authentication"
-        ],
-        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful response",
@@ -1683,32 +1226,12 @@
             }
           }
         },
-        "x-cyanrex-access": "public",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LoginRequest"
-              }
-            }
-          }
-        }
+        "x-cyanrex-access": "public"
       }
     },
     "/auth/logout": {
       "post": {
         "operationId": "postAuthLogout",
-        "summary": "POST /auth/logout",
-        "tags": [
-          "Authentication"
-        ],
-        "security": [
-          {},
-          {
-            "cookieAuth": []
-          }
-        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -1731,51 +1254,12 @@
             }
           }
         },
-        "x-cyanrex-access": "optional-session-csrf",
-        "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin"
+        "x-cyanrex-access": "optional-session-csrf"
       }
     },
     "/auth/password/change": {
       "post": {
         "operationId": "postAuthPasswordChange",
-        "summary": "POST /auth/password/change",
-        "tags": [
-          "Authentication"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiMessage"
-                }
-              }
-            }
-          },
-          "default": {
-            "description": "Error response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiMessage"
-                }
-              }
-            }
-          }
-        },
-        "x-cyanrex-access": "authenticated",
-        "x-cyanrex-roles": [
-          "admin",
-          "teacher",
-          "student"
-        ],
-        "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin",
         "requestBody": {
           "required": true,
           "content": {
@@ -1785,17 +1269,45 @@
               }
             }
           }
-        }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            }
+          }
+        },
+        "x-cyanrex-access": "authenticated"
       }
     },
     "/auth/register": {
       "post": {
         "operationId": "postAuthRegister",
-        "summary": "POST /auth/register",
-        "tags": [
-          "Authentication"
-        ],
-        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "201": {
             "description": "Successful response",
@@ -1818,27 +1330,22 @@
             }
           }
         },
-        "x-cyanrex-access": "public",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RegisterRequest"
-              }
-            }
-          }
-        }
+        "x-cyanrex-access": "public"
       }
     },
     "/auth/totp/bootstrap": {
       "post": {
         "operationId": "postAuthTotpBootstrap",
-        "summary": "POST /auth/totp/bootstrap",
-        "tags": [
-          "Authentication"
-        ],
-        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TotpBootstrapRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful response",
@@ -1861,31 +1368,22 @@
             }
           }
         },
-        "x-cyanrex-access": "public",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TotpBootstrapRequest"
-              }
-            }
-          }
-        }
+        "x-cyanrex-access": "public"
       }
     },
     "/command": {
       "post": {
         "operationId": "postCommand",
-        "summary": "POST /command",
-        "tags": [
-          "Command"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommandRequest"
+              }
+            }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "Successful response",
@@ -1908,35 +1406,22 @@
             }
           }
         },
-        "x-cyanrex-access": "admin",
-        "x-cyanrex-roles": [
-          "admin"
-        ],
-        "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CommandRequest"
-              }
-            }
-          }
-        }
+        "x-cyanrex-access": "admin"
       }
     },
     "/ebpf/check": {
       "post": {
         "operationId": "postEbpfCheck",
-        "summary": "POST /ebpf/check",
-        "tags": [
-          "eBPF"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EbpfCodeRequest"
+              }
+            }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "Successful response",
@@ -1959,37 +1444,22 @@
             }
           }
         },
-        "x-cyanrex-access": "authenticated",
-        "x-cyanrex-roles": [
-          "admin",
-          "teacher",
-          "student"
-        ],
-        "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/EbpfCodeRequest"
-              }
-            }
-          }
-        }
+        "x-cyanrex-access": "authenticated"
       }
     },
     "/ebpf/check/remote/cancel": {
       "post": {
         "operationId": "postEbpfCheckRemoteCancel",
-        "summary": "POST /ebpf/check/remote/cancel",
-        "tags": [
-          "eBPF"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EbpfRemoteCheckCancelRequest"
+              }
+            }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "Successful response",
@@ -2012,37 +1482,22 @@
             }
           }
         },
-        "x-cyanrex-access": "authenticated",
-        "x-cyanrex-roles": [
-          "admin",
-          "teacher",
-          "student"
-        ],
-        "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/EbpfRemoteCheckCancelRequest"
-              }
-            }
-          }
-        }
+        "x-cyanrex-access": "authenticated"
       }
     },
     "/ebpf/complete": {
       "post": {
         "operationId": "postEbpfComplete",
-        "summary": "POST /ebpf/complete",
-        "tags": [
-          "eBPF"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EbpfCompletionRequest"
+              }
+            }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "Successful response",
@@ -2065,37 +1520,22 @@
             }
           }
         },
-        "x-cyanrex-access": "authenticated",
-        "x-cyanrex-roles": [
-          "admin",
-          "teacher",
-          "student"
-        ],
-        "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/EbpfCompletionRequest"
-              }
-            }
-          }
-        }
+        "x-cyanrex-access": "authenticated"
       }
     },
     "/ebpf/detach": {
       "post": {
         "operationId": "postEbpfDetach",
-        "summary": "POST /ebpf/detach",
-        "tags": [
-          "eBPF"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EbpfDetachRequest"
+              }
+            }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "Successful response",
@@ -2118,37 +1558,22 @@
             }
           }
         },
-        "x-cyanrex-access": "authenticated",
-        "x-cyanrex-roles": [
-          "admin",
-          "teacher",
-          "student"
-        ],
-        "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/EbpfDetachRequest"
-              }
-            }
-          }
-        }
+        "x-cyanrex-access": "authenticated"
       }
     },
     "/ebpf/run": {
       "post": {
         "operationId": "postEbpfRun",
-        "summary": "POST /ebpf/run",
-        "tags": [
-          "eBPF"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EbpfRunRequest"
+              }
+            }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "Successful response",
@@ -2171,80 +1596,12 @@
             }
           }
         },
-        "x-cyanrex-access": "authenticated",
-        "x-cyanrex-roles": [
-          "admin",
-          "teacher",
-          "student"
-        ],
-        "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/EbpfRunRequest"
-              }
-            }
-          }
-        }
+        "x-cyanrex-access": "authenticated"
       }
     },
     "/events/delete": {
       "post": {
         "operationId": "postEventsDelete",
-        "summary": "POST /events/delete",
-        "tags": [
-          "Events"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ok": {
-                      "type": "boolean"
-                    },
-                    "deleted": {
-                      "type": "integer",
-                      "minimum": 0
-                    }
-                  },
-                  "required": [
-                    "ok",
-                    "deleted"
-                  ],
-                  "additionalProperties": false
-                }
-              }
-            }
-          },
-          "default": {
-            "description": "Error response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiMessage"
-                }
-              }
-            }
-          }
-        },
-        "x-cyanrex-access": "authenticated",
-        "x-cyanrex-roles": [
-          "admin",
-          "teacher",
-          "student"
-        ],
-        "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin",
         "parameters": [
           {
             "name": "category",
@@ -2298,21 +1655,49 @@
               "format": "date-time"
             }
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "deleted": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "deleted"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            }
+          }
+        },
+        "x-cyanrex-access": "authenticated"
       }
     },
     "/events/mark-read": {
       "post": {
         "operationId": "postEventsMarkRead",
-        "summary": "POST /events/mark-read",
-        "tags": [
-          "Events"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -2344,27 +1729,22 @@
             }
           }
         },
-        "x-cyanrex-access": "authenticated",
-        "x-cyanrex-roles": [
-          "admin",
-          "teacher",
-          "student"
-        ],
-        "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin"
+        "x-cyanrex-access": "authenticated"
       }
     },
     "/modules/c-headers/delete": {
       "post": {
         "operationId": "postModulesCHeadersDelete",
-        "summary": "POST /modules/c-headers/delete",
-        "tags": [
-          "C Headers"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DownloadHeaderRequest"
+              }
+            }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "Successful response",
@@ -2387,62 +1767,12 @@
             }
           }
         },
-        "x-cyanrex-access": "admin",
-        "x-cyanrex-roles": [
-          "admin"
-        ],
-        "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DownloadHeaderRequest"
-              }
-            }
-          }
-        }
+        "x-cyanrex-access": "admin"
       }
     },
     "/modules/c-headers/download": {
       "post": {
         "operationId": "postModulesCHeadersDownload",
-        "summary": "POST /modules/c-headers/download",
-        "tags": [
-          "C Headers"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiMessage"
-                }
-              }
-            }
-          },
-          "default": {
-            "description": "Error response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiMessage"
-                }
-              }
-            }
-          }
-        },
-        "x-cyanrex-access": "admin",
-        "x-cyanrex-roles": [
-          "admin"
-        ],
-        "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin",
         "requestBody": {
           "required": true,
           "content": {
@@ -2452,21 +1782,7 @@
               }
             }
           }
-        }
-      }
-    },
-    "/modules/c-headers/select": {
-      "post": {
-        "operationId": "postModulesCHeadersSelect",
-        "summary": "POST /modules/c-headers/select",
-        "tags": [
-          "C Headers"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
+        },
         "responses": {
           "200": {
             "description": "Successful response",
@@ -2489,11 +1805,12 @@
             }
           }
         },
-        "x-cyanrex-access": "admin",
-        "x-cyanrex-roles": [
-          "admin"
-        ],
-        "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin",
+        "x-cyanrex-access": "admin"
+      }
+    },
+    "/modules/c-headers/select": {
+      "post": {
+        "operationId": "postModulesCHeadersSelect",
         "requestBody": {
           "required": true,
           "content": {
@@ -2503,21 +1820,45 @@
               }
             }
           }
-        }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            }
+          }
+        },
+        "x-cyanrex-access": "admin"
       }
     },
     "/modules/start": {
       "post": {
         "operationId": "postModulesStart",
-        "summary": "POST /modules/start",
-        "tags": [
-          "Modules"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModuleControlRequest"
+              }
+            }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "Successful response",
@@ -2540,35 +1881,22 @@
             }
           }
         },
-        "x-cyanrex-access": "admin",
-        "x-cyanrex-roles": [
-          "admin"
-        ],
-        "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ModuleControlRequest"
-              }
-            }
-          }
-        }
+        "x-cyanrex-access": "admin"
       }
     },
     "/modules/stop": {
       "post": {
         "operationId": "postModulesStop",
-        "summary": "POST /modules/stop",
-        "tags": [
-          "Modules"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModuleControlRequest"
+              }
+            }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "Successful response",
@@ -2591,38 +1919,22 @@
             }
           }
         },
-        "x-cyanrex-access": "admin",
-        "x-cyanrex-roles": [
-          "admin"
-        ],
-        "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ModuleControlRequest"
-              }
-            }
-          }
-        }
+        "x-cyanrex-access": "admin"
       }
     },
     "/runner/agent/heartbeat": {
       "post": {
         "operationId": "postRunnerAgentHeartbeat",
-        "summary": "POST /runner/agent/heartbeat",
-        "tags": [
-          "Runner Agent"
-        ],
-        "security": [
-          {
-            "agentIdHeader": [],
-            "agentTimestampHeader": [],
-            "agentNonceHeader": [],
-            "agentSignatureHeader": []
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RunnerAgentHeartbeatRequest"
+              }
+            }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "Successful response",
@@ -2645,34 +1957,22 @@
             }
           }
         },
-        "x-cyanrex-access": "runner-agent-signed",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RunnerAgentHeartbeatRequest"
-              }
-            }
-          }
-        }
+        "x-cyanrex-access": "runner-agent-signed"
       }
     },
     "/runner/agent/jobs/claim": {
       "post": {
         "operationId": "postRunnerAgentJobsClaim",
-        "summary": "POST /runner/agent/jobs/claim",
-        "tags": [
-          "Runner Agent"
-        ],
-        "security": [
-          {
-            "agentIdHeader": [],
-            "agentTimestampHeader": [],
-            "agentNonceHeader": [],
-            "agentSignatureHeader": []
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RunnerJobClaimRequest"
+              }
+            }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "Successful response",
@@ -2695,34 +1995,22 @@
             }
           }
         },
-        "x-cyanrex-access": "runner-agent-signed",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RunnerJobClaimRequest"
-              }
-            }
-          }
-        }
+        "x-cyanrex-access": "runner-agent-signed"
       }
     },
     "/runner/agent/jobs/result": {
       "post": {
         "operationId": "postRunnerAgentJobsResult",
-        "summary": "POST /runner/agent/jobs/result",
-        "tags": [
-          "Runner Agent"
-        ],
-        "security": [
-          {
-            "agentIdHeader": [],
-            "agentTimestampHeader": [],
-            "agentNonceHeader": [],
-            "agentSignatureHeader": []
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RunnerJobResultRequest"
+              }
+            }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "Successful response",
@@ -2745,34 +2033,22 @@
             }
           }
         },
-        "x-cyanrex-access": "runner-agent-signed",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RunnerJobResultRequest"
-              }
-            }
-          }
-        }
+        "x-cyanrex-access": "runner-agent-signed"
       }
     },
     "/runner/agent/jobs/sync": {
       "post": {
         "operationId": "postRunnerAgentJobsSync",
-        "summary": "POST /runner/agent/jobs/sync",
-        "tags": [
-          "Runner Agent"
-        ],
-        "security": [
-          {
-            "agentIdHeader": [],
-            "agentTimestampHeader": [],
-            "agentNonceHeader": [],
-            "agentSignatureHeader": []
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RunnerJobSyncRequest"
+              }
+            }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "Successful response",
@@ -2795,31 +2071,22 @@
             }
           }
         },
-        "x-cyanrex-access": "runner-agent-signed",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RunnerJobSyncRequest"
-              }
-            }
-          }
-        }
+        "x-cyanrex-access": "runner-agent-signed"
       }
     },
     "/runner/agent/register": {
       "post": {
         "operationId": "postRunnerAgentRegister",
-        "summary": "POST /runner/agent/register",
-        "tags": [
-          "Runner Agent"
-        ],
-        "security": [
-          {
-            "runnerBootstrapBearer": []
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RunnerAgentRegisterRequest"
+              }
+            }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "Successful response",
@@ -2842,58 +2109,12 @@
             }
           }
         },
-        "x-cyanrex-access": "runner-agent-bootstrap",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RunnerAgentRegisterRequest"
-              }
-            }
-          }
-        }
+        "x-cyanrex-access": "runner-agent-bootstrap"
       }
     },
     "/runner/jobs/cancel": {
       "post": {
         "operationId": "postRunnerJobsCancel",
-        "summary": "POST /runner/jobs/cancel",
-        "tags": [
-          "Runner"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RunnerJobView"
-                }
-              }
-            }
-          },
-          "default": {
-            "description": "Error response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiMessage"
-                }
-              }
-            }
-          }
-        },
-        "x-cyanrex-access": "admin",
-        "x-cyanrex-roles": [
-          "admin"
-        ],
-        "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin",
         "requestBody": {
           "required": true,
           "content": {
@@ -2903,23 +2124,9 @@
               }
             }
           }
-        }
-      }
-    },
-    "/runner/jobs/compile-check": {
-      "post": {
-        "operationId": "postRunnerJobsCompileCheck",
-        "summary": "POST /runner/jobs/compile-check",
-        "tags": [
-          "Runner"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
+        },
         "responses": {
-          "201": {
+          "200": {
             "description": "Successful response",
             "content": {
               "application/json": {
@@ -2940,11 +2147,12 @@
             }
           }
         },
-        "x-cyanrex-access": "admin",
-        "x-cyanrex-roles": [
-          "admin"
-        ],
-        "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin",
+        "x-cyanrex-access": "admin"
+      }
+    },
+    "/runner/jobs/compile-check": {
+      "post": {
+        "operationId": "postRunnerJobsCompileCheck",
         "requestBody": {
           "required": true,
           "content": {
@@ -2954,21 +2162,7 @@
               }
             }
           }
-        }
-      }
-    },
-    "/runner/jobs/probe": {
-      "post": {
-        "operationId": "postRunnerJobsProbe",
-        "summary": "POST /runner/jobs/probe",
-        "tags": [
-          "Runner"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
+        },
         "responses": {
           "201": {
             "description": "Successful response",
@@ -2991,11 +2185,12 @@
             }
           }
         },
-        "x-cyanrex-access": "admin",
-        "x-cyanrex-roles": [
-          "admin"
-        ],
-        "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin",
+        "x-cyanrex-access": "admin"
+      }
+    },
+    "/runner/jobs/probe": {
+      "post": {
+        "operationId": "postRunnerJobsProbe",
         "requestBody": {
           "required": true,
           "content": {
@@ -3005,21 +2200,45 @@
               }
             }
           }
-        }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunnerJobView"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            }
+          }
+        },
+        "x-cyanrex-access": "admin"
       }
     },
     "/scripts/delete": {
       "post": {
         "operationId": "postScriptsDelete",
-        "summary": "POST /scripts/delete",
-        "tags": [
-          "Scripts"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteScriptRequest"
+              }
+            }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "Successful response",
@@ -3042,37 +2261,22 @@
             }
           }
         },
-        "x-cyanrex-access": "authenticated",
-        "x-cyanrex-roles": [
-          "admin",
-          "teacher",
-          "student"
-        ],
-        "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DeleteScriptRequest"
-              }
-            }
-          }
-        }
+        "x-cyanrex-access": "authenticated"
       }
     },
     "/scripts/save": {
       "post": {
         "operationId": "postScriptsSave",
-        "summary": "POST /scripts/save",
-        "tags": [
-          "Scripts"
-        ],
-        "security": [
-          {
-            "cookieAuth": []
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveScriptRequest"
+              }
+            }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "Successful response",
@@ -3095,58 +2299,11 @@
             }
           }
         },
-        "x-cyanrex-access": "authenticated",
-        "x-cyanrex-roles": [
-          "admin",
-          "teacher",
-          "student"
-        ],
-        "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SaveScriptRequest"
-              }
-            }
-          }
-        }
+        "x-cyanrex-access": "authenticated"
       }
     }
   },
   "components": {
-    "securitySchemes": {
-      "cookieAuth": {
-        "type": "apiKey",
-        "in": "cookie",
-        "name": "cyanrex_session"
-      },
-      "runnerBootstrapBearer": {
-        "type": "http",
-        "scheme": "bearer"
-      },
-      "agentIdHeader": {
-        "type": "apiKey",
-        "in": "header",
-        "name": "x-cyanrex-agent-id"
-      },
-      "agentTimestampHeader": {
-        "type": "apiKey",
-        "in": "header",
-        "name": "x-cyanrex-agent-timestamp"
-      },
-      "agentNonceHeader": {
-        "type": "apiKey",
-        "in": "header",
-        "name": "x-cyanrex-agent-nonce"
-      },
-      "agentSignatureHeader": {
-        "type": "apiKey",
-        "in": "header",
-        "name": "x-cyanrex-agent-signature"
-      }
-    },
     "schemas": {
       "ApiMessage": {
         "type": "object",
@@ -3452,23 +2609,7 @@
             "type": "string"
           },
           "status": {
-            "type": "string",
-            "enum": [
-              "stopped",
-              "running"
-            ]
-          },
-          "version": {
             "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "capabilities": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
           }
         },
         "required": [

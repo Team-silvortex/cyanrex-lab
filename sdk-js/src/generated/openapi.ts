@@ -247,7 +247,10 @@ export interface OpenApiSchemas {
   };
   "ModuleInfo": {
     "name": string;
-    "status": string;
+    "status": "stopped" | "running";
+    "version"?: string;
+    "description"?: string;
+    "capabilities"?: Array<string>;
   };
   "PerformanceMetrics": {
     "check": OpenApiSchemas["CompilerOperationMetrics"];

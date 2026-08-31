@@ -10,7 +10,7 @@ The composition root is split by responsibility: `application.rs` owns HTTP and 
 
 - Cookie sessions, account management, and TOTP verification
 - PostgreSQL persistence with an in-memory availability fallback
-- Module lifecycle and command dispatch
+- Versioned module discovery, bounded manifest validation, lifecycle state, and command dispatch
 - Persistent user-scoped event storage and WebSocket streaming
 - eBPF compilation, loading, attachment inspection, event collection, and detach
 - `bpftool` and Aya runtime backends
@@ -51,6 +51,11 @@ below highlights the main endpoints:
 - `GET /settings/events`
 - `POST /settings/events`
 - `GET /ws/events`
+
+`ModuleManager` discovers direct child directories containing a v1 `module.json`. Invalid catalogs
+fail Engine startup and unknown names cannot be inserted through lifecycle endpoints. Start/stop is
+control-plane state only and never executes module-directory files. Set `CYANREX_MODULES_DIR` to
+override the default repository or image catalog.
 
 ## Development Credentials
 

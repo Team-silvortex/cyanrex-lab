@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 
 import SidebarLayout from "../src/components/SidebarLayout";
 import { getEngineUrl } from "../src/config/runtime";
@@ -32,6 +32,24 @@ export default function TerminalPage() {
   const [lastResponse, setLastResponse] = useState<CommandResponse | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadCatalog = async () => {
+      try {
+        const response = await fetch(`${engineUrl}/modules`, { credentials: "include" });
+        if (!response.ok) return;
+        const catalog = (await response.json()) as ModuleInfo[];
+        if (!cancelled) setModules(catalog);
+      } catch {
+        // Command execution still reports actionable errors if the initial catalog is unavailable.
+      }
+    };
+    loadCatalog();
+    return () => {
+      cancelled = true;
+    };
+  }, [engineUrl]);
 
   const runCommand = async (event: FormEvent) => {
     event.preventDefault();
@@ -103,9 +121,15 @@ export default function TerminalPage() {
                 value={moduleName}
                 onChange={(event) => setModuleName(event.target.value)}
                 placeholder={t("terminal.moduleNamePlaceholder")}
+                list="terminal-module-catalog"
                 disabled={!commandNeedsModuleName(commandType)}
                 style={{ marginTop: 6 }}
               />
+              <datalist id="terminal-module-catalog">
+                {modules.map((module) => (
+                  <option key={module.name} value={module.name} />
+                ))}
+              </datalist>
             </label>
           </div>
           <div className="row" style={{ marginTop: 12 }}>
@@ -143,14 +167,21 @@ export default function TerminalPage() {
               <thead>
                 <tr>
                   <th>{t("terminal.module")}</th>
+                  <th>{t("terminal.version")}</th>
                   <th>{t("terminal.status")}</th>
+                  <th>{t("terminal.capabilities")}</th>
                 </tr>
               </thead>
               <tbody>
                 {modules.map((module) => (
                   <tr key={module.name}>
-                    <td><code>{module.name}</code></td>
+                    <td>
+                      <code>{module.name}</code>
+                      {module.description && <div className="meta">{module.description}</div>}
+                    </td>
+                    <td>{module.version ?? "—"}</td>
                     <td>{module.status}</td>
+                    <td>{module.capabilities?.join(", ") || "—"}</td>
                   </tr>
                 ))}
               </tbody>

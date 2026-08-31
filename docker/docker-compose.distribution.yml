@@ -40,6 +40,7 @@ services:
       DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/cyanrex
       RUST_LOG: info
       CYANREX_RUNTIME_MODE: docker
+      CYANREX_MODULES_DIR: /app/modules
       CYANREX_ADMIN_USERNAME: admin
       CYANREX_INSTANCE_ID: ${CYANREX_INSTANCE_ID:-default}
       CYANREX_RUNNER_MODE: ${CYANREX_RUNNER_MODE:-local_process}

@@ -17,7 +17,16 @@ const object = (properties, required = Object.keys(properties), extra = {}) => (
 const enumString = (...values) => string({ enum: values });
 
 const messageProperties = { ok: boolean, message: string() };
-const moduleInfo = object({ name: string(), status: string() });
+const moduleInfo = object(
+  {
+    name: string(),
+    status: enumString("stopped", "running"),
+    version: string(),
+    description: string(),
+    capabilities: array(string()),
+  },
+  ["name", "status"],
+);
 const compilerMetrics = object({
   total_requests: integer({ minimum: 0 }),
   cache_hits: integer({ minimum: 0 }),

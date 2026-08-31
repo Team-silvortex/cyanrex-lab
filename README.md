@@ -1,6 +1,6 @@
 # cyanrex-lab
 
-Version: `0.2.9`
+Version: `0.3.1`
 
 Cyanrex monorepo for eBPF experiments: Axum engine + Next.js dashboard + module utilities.
 
@@ -19,7 +19,7 @@ cyanrex-lab/
 ├ frontend/        # Next.js UI
 ├ engine/          # Axum backend
 ├ sdk-js/          # typed browser/Node.js API client
-├ modules/         # module examples
+├ modules/         # versioned module catalog and manifest contract
 │  ├ module-ebpf
 │  ├ module-network
 │  └ module-protocol
@@ -37,7 +37,7 @@ streaming. See the architecture document before adding a service, route, or depl
 
 - TDD-first backend workflow (`engine/tests/routes_tdd.rs`)
 - Axum API server with:
-  - module control endpoints
+  - versioned module discovery and catalog-backed control endpoints
   - eBPF run pipeline endpoint (`/ebpf/run`)
   - compile-only clang diagnostics (`/ebpf/check`)
   - semantic C/eBPF completion (`/ebpf/complete`)
@@ -142,12 +142,12 @@ privileged and must not be exposed to untrusted users.
 For classroom deployment or offline distribution, create a packaged artifact with prebuilt Docker images:
 
 ```bash
-./scripts/package-distribution.sh --version 0.2.9
+./scripts/package-distribution.sh --version 0.3.1
 ```
 
 This produces:
-- `dist/cyanrex-lab-0.2.9-<timestamp>.tar.gz`
-- `dist/cyanrex-lab-0.2.9-<timestamp>.tar.gz.sha256`
+- `dist/cyanrex-lab-0.3.1-<timestamp>.tar.gz`
+- `dist/cyanrex-lab-0.3.1-<timestamp>.tar.gz.sha256`
 
 The archive contains the PostgreSQL, Engine, and frontend images. On a disposable Docker host,
 verify the freshly extracted package end to end with `./install-smoke.sh`. It checks the package
@@ -204,6 +204,11 @@ Registration and password-only TOTP bootstrap are disabled by default. Set
 user scripts are available to authenticated users. Module browsing is available
 to admin/teacher roles, while module modification and system settings remain
 administrator-only.
+
+Module directories opt into discovery with a v1 `module.json` manifest. Engine startup rejects
+malformed manifests and lifecycle requests reject unknown names. Start/stop only update the
+single-process control state; Cyanrex never executes files from a module directory. Override the
+catalog root with `CYANREX_MODULES_DIR` when running outside the repository or packaged image.
 
 ## Auth API (Implemented)
 
@@ -295,12 +300,15 @@ administrator-only.
 - The quality gate rejects route or access-tier drift between the Engine and OpenAPI document, plus
   unexpected JavaScript SDK coverage or generated-model drift.
 - SDK consumers can import the full generated map from `@cyanrex/sdk-js/openapi` after packaging.
+- A frozen `0.3.0` compatibility baseline rejects removed operations, access changes, narrowed
+  requests, and weakened successful-response guarantees while allowing additive evolution.
 
 Regenerate and validate it after changing routes or wire models:
 
 ```bash
 node scripts/generate-openapi.mjs
 node scripts/openapi-contract.mjs
+node scripts/api-compatibility.mjs
 node scripts/generate-sdk-types.mjs
 ```
 
@@ -322,6 +330,7 @@ node scripts/generate-sdk-types.mjs
 - Flow: `Red -> Green -> Refactor`.
 - For backend route changes, update tests in `engine/tests/` first.
 - For API changes, regenerate the OpenAPI document and keep its component schemas current.
+- Replace the compatibility baseline only as part of an explicitly reviewed compatibility reset.
 - Maintained source files are limited to 600 lines; documentation files are limited to 2000 lines.
 - See `TDD.md` for team conventions.
 

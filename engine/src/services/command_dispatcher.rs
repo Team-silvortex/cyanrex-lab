@@ -30,28 +30,32 @@ impl CommandDispatcher {
                 let Some(module_name) = valid_module_name(command.module_name) else {
                     return invalid_module_name(CommandType::StartModule);
                 };
-                let module = self.module_manager.start(&module_name);
-                CommandResponse {
-                    ok: true,
-                    command_type: CommandType::StartModule,
-                    message: format!("module {} started", module.name),
-                    modules: None,
-                    module: Some(module),
-                    next_path: None,
+                match self.module_manager.start(&module_name) {
+                    Ok(module) => CommandResponse {
+                        ok: true,
+                        command_type: CommandType::StartModule,
+                        message: format!("module {} started", module.name),
+                        modules: None,
+                        module: Some(module),
+                        next_path: None,
+                    },
+                    Err(error) => module_error(CommandType::StartModule, error.to_string()),
                 }
             }
             CommandType::StopModule => {
                 let Some(module_name) = valid_module_name(command.module_name) else {
                     return invalid_module_name(CommandType::StopModule);
                 };
-                let module = self.module_manager.stop(&module_name);
-                CommandResponse {
-                    ok: true,
-                    command_type: CommandType::StopModule,
-                    message: format!("module {} stopped", module.name),
-                    modules: None,
-                    module: Some(module),
-                    next_path: None,
+                match self.module_manager.stop(&module_name) {
+                    Ok(module) => CommandResponse {
+                        ok: true,
+                        command_type: CommandType::StopModule,
+                        message: format!("module {} stopped", module.name),
+                        modules: None,
+                        module: Some(module),
+                        next_path: None,
+                    },
+                    Err(error) => module_error(CommandType::StopModule, error.to_string()),
                 }
             }
             CommandType::RunExperiment => CommandResponse {
@@ -85,6 +89,17 @@ fn invalid_module_name(command_type: CommandType) -> CommandResponse {
         command_type,
         message: "module name is required and may contain only letters, numbers, '.', '-' or '_'"
             .to_string(),
+        modules: None,
+        module: None,
+        next_path: None,
+    }
+}
+
+fn module_error(command_type: CommandType, message: String) -> CommandResponse {
+    CommandResponse {
+        ok: false,
+        command_type,
+        message,
         modules: None,
         module: None,
         next_path: None,

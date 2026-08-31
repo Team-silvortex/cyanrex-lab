@@ -42,6 +42,16 @@ import type { OpenApiSchemas } from "@cyanrex/sdk-js/openapi";
 type RunnerJob = OpenApiSchemas["RunnerJobView"];
 ```
 
+## Compatibility Baseline
+
+The committed `0.3.0` OpenAPI baseline is checked before SDK builds. Existing inputs must remain
+accepted, successful responses must retain their previous guarantees, and access-tier changes
+require an explicit compatibility reset. Additive operations and optional input/output growth pass.
+
+Run `npm run check:compatibility` to inspect a candidate contract. Replacing the baseline with
+`node ../scripts/api-compatibility.mjs --write-baseline` is reserved for an intentionally reviewed
+breaking release; routine generation and quality checks never rewrite it.
+
 ## Sessions and CSRF
 
 Browser requests use `credentials: "include"`; the browser owns the `HttpOnly` session cookie and
@@ -65,6 +75,7 @@ Requires Node.js 22 or later.
 ```bash
 npm ci
 npm run generate:types # only after intentionally changing the OpenAPI schemas
+npm run check:compatibility
 npm run check
 npm run test:package
 ```

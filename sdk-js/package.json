@@ -1,6 +1,6 @@
 {
   "name": "@cyanrex/sdk-js",
-  "version": "0.2.9",
+  "version": "0.3.1",
   "description": "Typed browser and Node.js client for the Cyanrex Lab API",
   "type": "module",
   "main": "./dist/index.js",
@@ -24,11 +24,12 @@
   "scripts": {
     "generate:types": "node ../scripts/generate-sdk-types.mjs",
     "check:generated": "node ../scripts/generate-sdk-types.mjs --check",
+    "check:compatibility": "node ../scripts/api-compatibility.mjs",
     "prebuild": "npm run check:generated",
     "build": "tsc -p tsconfig.json",
     "test": "node --experimental-strip-types --test tests/*.test.mjs",
     "test:package": "node --test tests/package-smoke.mjs",
-    "check": "npm run build && npm test && npm run test:package"
+    "check": "npm run check:compatibility && npm run build && npm test && npm run test:package"
   },
   "devDependencies": {
     "typescript": "5.8.3"

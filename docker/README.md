@@ -32,6 +32,10 @@ Local Runner capacity is configurable in the same file:
 - `CYANREX_RUNNER_AGENT_RETENTION_SECS` (default: `300`; stale in-memory record retention)
 - `CYANREX_RUNNER_AGENT_SIGNATURE_WINDOW_SECS` (default: `60`, range: `15`–`300`)
 
+The Engine image contains the versioned module catalog at `/app/modules` and sets
+`CYANREX_MODULES_DIR` accordingly. Catalog start/stop operations only change Engine state; no module
+directory file is executed.
+
 These are fairness and resource limits. The Docker Engine still reports `shared_kernel` and is not
 a multi-tenant isolation boundary. An unsupported mode fails Engine startup instead of silently
 falling back to local execution.
@@ -83,7 +87,7 @@ docker run --rm --name cyanrex-runner-agent \
   --entrypoint cyanrex-runner-agent \
   --env-file runner-agent.env \
   --mount type=bind,src="$PWD/agent-token",dst=/run/secrets/cyanrex-agent-bootstrap-token,ro \
-  cyanrex/cyanrex-engine:0.2.9
+  cyanrex/cyanrex-engine:0.3.1
 ```
 
 Compile checking is disabled by default and forbidden with `shared_kernel`. Even when enabled, the
