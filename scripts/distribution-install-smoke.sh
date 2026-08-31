@@ -93,7 +93,7 @@ replace_env_value() {
 }
 
 for command in docker curl python3 openssl awk mktemp; do require_cmd "$command"; done
-for file in checksums.sha256 manifest.env docker-compose.yml .env.example \
+for file in checksums.sha256 manifest.env release-metadata.json docker-compose.yml .env.example \
   deploy.sh runner-agent.sh runner-agent-smoke.sh cyanrex-images.tar; do
   if [ ! -f "$PACKAGE_DIR/$file" ]; then
     echo "Error: distribution package is missing '$file'." >&2
@@ -113,6 +113,30 @@ fi
 resolve_checksum_command
 echo "[cyanrex] Verifying packaged file checksums..."
 (cd "$PACKAGE_DIR" && "${CHECKSUM_CMD[@]}" checksums.sha256 >/dev/null)
+python3 - "$PACKAGE_DIR" <<'PY'
+import hashlib
+import json
+from pathlib import Path
+import sys
+
+root = Path(sys.argv[1]).resolve()
+with (root / "release-metadata.json").open(encoding="utf-8") as handle:
+    metadata = json.load(handle)
+if metadata.get("schemaVersion") != 1 or metadata.get("package", {}).get("name") != root.name:
+    raise SystemExit("release metadata package identity is invalid")
+archive = metadata.get("images", {}).get("archive", {})
+if archive.get("file") != "cyanrex-images.tar":
+    raise SystemExit("release metadata image archive path is invalid")
+digest = hashlib.sha256()
+with (root / archive["file"]).open("rb") as handle:
+    for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+        digest.update(chunk)
+if digest.hexdigest() != archive.get("sha256"):
+    raise SystemExit("release metadata image archive checksum is invalid")
+compose_source = Path(metadata.get("compose", {}).get("source", ""))
+if compose_source.is_absolute() or ".." in compose_source.parts:
+    raise SystemExit("release metadata leaks an absolute compose source path")
+PY
 bash -n "$PACKAGE_DIR/deploy.sh" "$PACKAGE_DIR/run.sh" "$PACKAGE_DIR/stop.sh" \
   "$PACKAGE_DIR/runner-agent.sh" "$PACKAGE_DIR/runner-agent-smoke.sh"
 

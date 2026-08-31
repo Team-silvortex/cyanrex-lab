@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PACKAGE_SCRIPT="$ROOT_DIR/scripts/package-distribution.sh"
 SMOKE_SCRIPT="$ROOT_DIR/scripts/distribution-install-smoke.sh"
+METADATA_SCRIPT="$ROOT_DIR/scripts/release-metadata.mjs"
 WORK_DIR="$(mktemp -d)"
 trap 'rm -rf "$WORK_DIR"' EXIT
 
@@ -20,6 +21,7 @@ assert_contains() {
 }
 
 assert_contains "$PACKAGE_SCRIPT" 'distribution-install-smoke.sh'
+assert_contains "$PACKAGE_SCRIPT" 'release-metadata.json'
 assert_contains "$PACKAGE_SCRIPT" 'install-smoke.sh'
 assert_contains "$PACKAGE_SCRIPT" 'POSTGRES_IMAGE="${POSTGRES_IMAGE:-postgres:16}"'
 assert_contains "$PACKAGE_SCRIPT" 'docker save "$engine_image" "$frontend_image" "$postgres_image"'
@@ -84,6 +86,12 @@ tar -xzf "$archive_path" -C "$WORK_DIR/extracted"
 package_dir="$(find "$WORK_DIR/extracted" -mindepth 1 -maxdepth 1 -type d -print -quit)"
 [ -x "$package_dir/install-smoke.sh" ]
 assert_contains "$package_dir/manifest.env" 'POSTGRES_IMAGE=postgres:16'
+assert_contains "$package_dir/manifest.env" 'COMPOSE_TEMPLATE=docker/docker-compose.distribution.yml'
+node "$METADATA_SCRIPT" --verify "$package_dir" >/dev/null
+if grep -Fq "$ROOT_DIR" "$package_dir/release-metadata.json" "$package_dir/manifest.env"; then
+  echo "Distribution tool test failed: package metadata contains the build-host path." >&2
+  exit 1
+fi
 bash -n "$package_dir/deploy.sh" "$package_dir/run.sh" "$package_dir/stop.sh"
 "$package_dir/deploy.sh" --help >/dev/null
 if command -v sha256sum >/dev/null 2>&1; then

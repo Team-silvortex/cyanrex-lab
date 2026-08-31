@@ -156,9 +156,12 @@ This produces:
 
 The archive contains the PostgreSQL, Engine, and frontend images. On a disposable Docker host,
 verify the freshly extracted package end to end with `./install-smoke.sh`. It checks the package
-manifest, loads the offline images with registry pulls disabled, generates temporary secrets, starts
-every required service and the optional compiler Agent, runs authenticated probes, then removes its
-temporary stack and volume. It refuses to overwrite an existing `.env`.
+manifest and `release-metadata.json`, loads the offline images with registry pulls disabled, generates
+temporary secrets, starts every required service and the optional compiler Agent, runs authenticated
+probes, then removes its temporary stack and volume. The release metadata records the source revision
+and clean/dirty state, matching annotated version Tag when present, image references/build mode, and
+the image archive SHA-256 without exposing a build-host path. It is checksum-bound but not signed.
+The smoke test refuses to overwrite an existing `.env`.
 
 Usage on target machine:
 

@@ -30,6 +30,10 @@ Utility scripts for Cyanrex local operation.
   annotated version tag against every synchronized version field, dated changelog entry, and release doc.
 - `tests/releasePreflight.test.mjs`: argument, drift-reporting, clean-tree, lightweight/annotated Tag,
   and immutable historical-tree release regressions.
+- `release-metadata.mjs`: writes machine-readable offline-package provenance with Git source state,
+  image references/build mode, and streamed image-archive SHA-256; `--verify` checks an extracted package.
+- `tests/releaseMetadata.test.mjs`: metadata validation, Git-state detection, path privacy, tamper, and
+  checksum-binding regressions.
 - `generate-openapi.mjs`: generates `engine/openapi/openapi.json` from the registered Axum routes,
   access rules, and maintained component schemas; use `--check` to reject stale output.
 - `openapi-contract.mjs`: checks exact Engine/OpenAPI route and access-tier parity, expected Engine/SDK
@@ -130,6 +134,7 @@ In CI, workflow `Performance Regression` can also consume a baseline by passing 
 - `package-distribution.sh`: build and package distributable artifacts for air-gapped deployment.
   - builds or pulls and exports PostgreSQL, Engine, and frontend Docker images
   - generates `deploy.sh`, `run.sh`, `stop.sh`, and a disposable `install-smoke.sh`
+  - emits checksum-bound `release-metadata.json` without build-host absolute paths
   - outputs `dist/cyanrex-lab-<version>-<timestamp>.tar.gz` by default
 - `distribution-install-smoke.sh`: packaged as `install-smoke.sh`; validates a freshly extracted
   release, including checksums, service health, frontend CSP, login, and remote Agent compilation.

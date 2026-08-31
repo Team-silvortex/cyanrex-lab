@@ -16,6 +16,8 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
   missing dated changelog entries, plus automatic validation for future pushed version tags.
 - Added an additive-only compatibility baseline for 77 public `CyanrexClient` member paths and a packaged
   stability/deprecation policy.
+- Added machine-readable offline-package metadata that records Git source state, matching annotated Tag,
+  image references, build mode, and the streamed SHA-256 of the bundled image archive.
 
 ## [0.3.1] - 2026-08-31
 

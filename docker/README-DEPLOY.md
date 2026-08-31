@@ -1,6 +1,10 @@
 # Cyanrex Lab Offline Deployment
 
-Package metadata, version, build time, and bundled image names are recorded in `manifest.env`.
+Runtime package values remain in `manifest.env`. Auditable build details are recorded in
+`release-metadata.json`: package identity/time, Git revision and clean/dirty state, a matching annotated
+version Tag when available, image references/build mode, Compose template source, and the streamed
+SHA-256 of `cyanrex-images.tar`. The JSON file is covered by `checksums.sha256`, but neither file is a
+cryptographic signature.
 
 ## Package contents
 
@@ -9,6 +13,7 @@ Package metadata, version, build time, and bundled image names are recorded in `
 - `runner-agent.sh` and `runner-agent-smoke.sh`
 - `install-smoke.sh` for disposable clean-host installation acceptance
 - `cyanrex-images.tar` containing PostgreSQL, Engine, and frontend images
+- `manifest.env` and machine-readable `release-metadata.json`
 - `checksums.sha256`, `LICENSE`, and quick-readme documents
 
 ## Disposable release acceptance

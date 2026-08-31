@@ -12,6 +12,8 @@ SKIP_BUILD=0
 NO_COMPRESS=0
 COMPOSE_TEMPLATE="$ROOT_DIR/docker/docker-compose.distribution.yml"
 CHECKSUM_CMD=()
+COMPOSE_TEMPLATE_SOURCE=""
+IMAGE_MODE="prebuilt"
 print_help() {
   cat <<'EOF'
 Usage: ./scripts/package-distribution.sh [--version <version>] [--engine-image <image>] [--frontend-image <image>] [--compose-template <path>] [--output <dir>] [--skip-checks] [--skip-build] [--no-compress]
@@ -498,10 +500,11 @@ chmod +x "$stop_script"
 generate_checksums() {
   local package_dir="$1"
   resolve_checksum_command
-  (cd "$package_dir" && "${CHECKSUM_CMD[@]}" docker-compose.yml .env.example runner-agent.env.example runner-agent.sh runner-agent-smoke.sh install-smoke.sh LICENSE README.md README-en.md README-zh-CN.md README-docker.md README-DEPLOY.md manifest.env deploy.sh run.sh stop.sh cyanrex-images.tar > checksums.sha256)
+  (cd "$package_dir" && "${CHECKSUM_CMD[@]}" docker-compose.yml .env.example runner-agent.env.example runner-agent.sh runner-agent-smoke.sh install-smoke.sh LICENSE README.md README-en.md README-zh-CN.md README-docker.md README-DEPLOY.md manifest.env release-metadata.json deploy.sh run.sh stop.sh cyanrex-images.tar > checksums.sha256)
 }
 resolve_version
 require_cmd tar
+require_cmd node
 resolve_checksum_command
 require_cmd docker
 validate_compose_template
@@ -513,7 +516,13 @@ if [[ "$SKIP_CHECKS" == "0" ]]; then
   "$ROOT_DIR/scripts/quality-gate.sh" --format-only
 fi
 resolve_images
-validate_compose_template
+COMPOSE_TEMPLATE="$(cd "$(dirname "$COMPOSE_TEMPLATE")" && pwd -P)/$(basename "$COMPOSE_TEMPLATE")"
+if [[ "$COMPOSE_TEMPLATE" == "$ROOT_DIR/"* ]]; then
+  COMPOSE_TEMPLATE_SOURCE="${COMPOSE_TEMPLATE#"$ROOT_DIR/"}"
+else
+  COMPOSE_TEMPLATE_SOURCE="$(basename "$COMPOSE_TEMPLATE")"
+fi
+if [[ "$SKIP_BUILD" == "0" ]]; then IMAGE_MODE="built"; fi
 PACKAGE_NAME="cyanrex-lab-${VERSION}-${PACKAGE_TAG}"
 PACKAGE_DIR="$OUTPUT_DIR/$PACKAGE_NAME"
 ARCHIVE_PATH="$OUTPUT_DIR/${PACKAGE_NAME}.tar.gz"
@@ -552,12 +561,18 @@ cp "$ROOT_DIR/docker/README-DEPLOY.md" "$PACKAGE_DIR/README-DEPLOY.md"
   printf 'ENGINE_IMAGE=%q\n' "$ENGINE_IMAGE"
   printf 'FRONTEND_IMAGE=%q\n' "$FRONTEND_IMAGE"
   printf 'POSTGRES_IMAGE=%q\n' "$POSTGRES_IMAGE"
-  printf 'COMPOSE_TEMPLATE=%q\n' "$COMPOSE_TEMPLATE"
+  printf 'COMPOSE_TEMPLATE=%q\n' "$COMPOSE_TEMPLATE_SOURCE"
 } > "$PACKAGE_DIR/manifest.env"
 
 echo "[cyanrex] Exporting Docker images..."
 export_images "$ENGINE_IMAGE" "$FRONTEND_IMAGE" "$POSTGRES_IMAGE" "$IMAGE_ARCHIVE"
 echo "[cyanrex] Exported image archive: $IMAGE_ARCHIVE"
+node "$ROOT_DIR/scripts/release-metadata.mjs" --output "$PACKAGE_DIR/release-metadata.json" \
+  --project-root "$ROOT_DIR" --package-name "$PACKAGE_NAME" --version "$VERSION" \
+  --package-timestamp "$PACKAGE_TAG" --engine-image "$ENGINE_IMAGE" \
+  --frontend-image "$FRONTEND_IMAGE" --postgres-image "$POSTGRES_IMAGE" \
+  --image-mode "$IMAGE_MODE" \
+  --compose-source "$COMPOSE_TEMPLATE_SOURCE" --image-archive "$IMAGE_ARCHIVE"
 
 generate_deploy_script "$PACKAGE_DIR"
 generate_checksums "$PACKAGE_DIR"
