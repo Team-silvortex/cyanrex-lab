@@ -19,8 +19,8 @@ The detailed trust boundaries and data flows remain in the [system architecture]
 | Runner Agent | Operational for remote checks | Signed registration, heartbeat, leases, cancellation, probes, and isolated compile-only diagnostics; remote eBPF loading is not enabled |
 | Deployment and distribution | Operational | Docker, WSL2, native Linux, hardened optional compiler Agent, and offline package/install tooling |
 | Module runtime | Partial | Module lifecycle is in memory and `modules/` contains examples; directories are not dynamically discovered |
-| JavaScript SDK | Operational internal package | Typed ESM client for user/admin HTTP APIs with browser credentials, Node cookie capture, configurable CSRF Origin, cancellation, downloads, and typed errors |
-| API contract | Operational internal contract | Generated OpenAPI 3.1 document served at `/openapi.json`, with exact Engine route/access and expected SDK coverage checks in the quality gate |
+| JavaScript SDK | Operational internal package | Typed ESM client with OpenAPI-generated public wire models, explicit `/openapi` type export, browser/Node session handling, cancellation, downloads, typed errors, and package-consumer smoke coverage |
+| API contract | Operational internal contract | Generated OpenAPI 3.1 document served at `/openapi.json`, with exact Engine route/access, expected SDK coverage, and generated-model checks in the quality gate |
 | Terminal page | Operational for admins | Permission-aware List/Start/Stop module commands, structured results/history, and a safe handoff to the eBPF experiment workspace; it is not a shell |
 
 ## Verified Baseline
@@ -31,9 +31,11 @@ The following checks passed on the snapshot date:
   Runner Agent compile integration run explicitly and passing.
 - Next.js production build: 17 statically generated routes with TypeScript validation.
 - Frontend regressions: 14 tests covering permissions, Terminal commands, teacher review, performance
-  hotspot logic, security headers, and macOS metadata cleanup; the SDK has 6 transport regressions.
-- File-length, version-sync, OpenAPI generation/route/access-drift checks with 4 parser regressions, Runner
-  Agent tooling, distribution tooling, and both Compose profile configuration checks.
+  hotspot logic, security headers, and macOS metadata cleanup; the SDK has 6 transport regressions
+  plus 3 package-manifest/import smoke checks.
+- File-length, version-sync, OpenAPI generation/route/access/model-drift checks with 7 contract and
+  type-generator regressions, Runner Agent tooling, distribution tooling, and both Compose profile
+  configuration checks.
 - Production dependency audits: zero npm vulnerabilities and zero RustSec findings.
 
 This snapshot did not start the privileged Engine to perform a live kernel attach/stream, and it did
@@ -52,8 +54,8 @@ acceptance checks in CI or a dedicated Linux host.
 ## Next Decision Points
 
 1. Decide whether `modules/` should become a versioned dynamic runtime or remain documented examples.
-2. Decide whether to generate SDK models/client code from OpenAPI, and define compatibility policy,
-   before publishing it as a stable independently consumed package.
+2. Decide whether to generate client operations from OpenAPI or retain the hand-designed namespaces,
+   and define compatibility policy before publishing a stable independently consumed package.
 3. Define a real isolation and ownership model before adding remote eBPF execution or Engine replicas.
 4. Add release tags and a changelog so the synchronized semantic version is tied to an auditable release.
 5. Promote live kernel attach/stream and extracted-distribution smoke checks to a documented release

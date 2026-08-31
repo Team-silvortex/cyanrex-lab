@@ -9,6 +9,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./openapi": {
+      "types": "./dist/generated/openapi.d.ts",
+      "import": "./dist/generated/openapi.js"
     }
   },
   "files": [
@@ -18,9 +22,13 @@
   "sideEffects": false,
   "private": true,
   "scripts": {
+    "generate:types": "node ../scripts/generate-sdk-types.mjs",
+    "check:generated": "node ../scripts/generate-sdk-types.mjs --check",
+    "prebuild": "npm run check:generated",
     "build": "tsc -p tsconfig.json",
     "test": "node --experimental-strip-types --test tests/*.test.mjs",
-    "check": "npm run build && npm test"
+    "test:package": "node --test tests/package-smoke.mjs",
+    "check": "npm run build && npm test && npm run test:package"
   },
   "devDependencies": {
     "typescript": "5.8.3"

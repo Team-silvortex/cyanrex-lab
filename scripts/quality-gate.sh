@@ -78,7 +78,8 @@ run_version_sync_check() {
 run_openapi_contract_checks() {
   node "$PROJECT_ROOT/scripts/generate-openapi.mjs" --check
   node "$PROJECT_ROOT/scripts/openapi-contract.mjs"
-  node --test "$PROJECT_ROOT/scripts/tests/openapiContract.test.mjs"
+  node "$PROJECT_ROOT/scripts/generate-sdk-types.mjs" --check
+  node --test "$PROJECT_ROOT"/scripts/tests/*.test.mjs
 }
 
 run_runner_agent_tool_checks() {

@@ -71,8 +71,10 @@ streaming. See the architecture document before adding a service, route, or depl
   - administrator-only Terminal with structured results, module snapshots, and session history
 - JavaScript SDK:
   - typed ESM package covering the browser-facing Engine API
+  - public request/response models generated from 76 OpenAPI component schemas
   - browser credentials, Node session-cookie capture, Origin-based CSRF support, cancellation, and typed errors
   - coverage checked against every non-Agent Engine operation in the generated API contract
+  - dry-run package manifest, declaration-closure, and ESM consumer-import acceptance checks
 - Frontend i18n:
   - supported languages: Simplified Chinese (`zh-CN`), English (`en`), Spanish (`es`), Japanese (`ja`)
   - sidebar + auth pages + core runtime pages integrated
@@ -291,13 +293,15 @@ administrator-only.
 - [`engine/openapi/openapi.json`](engine/openapi/openapi.json) is generated from the registered Axum
   routes plus maintained request/response schemas.
 - The quality gate rejects route or access-tier drift between the Engine and OpenAPI document, plus
-  unexpected JavaScript SDK coverage drift.
+  unexpected JavaScript SDK coverage or generated-model drift.
+- SDK consumers can import the full generated map from `@cyanrex/sdk-js/openapi` after packaging.
 
 Regenerate and validate it after changing routes or wire models:
 
 ```bash
 node scripts/generate-openapi.mjs
 node scripts/openapi-contract.mjs
+node scripts/generate-sdk-types.mjs
 ```
 
 ## Auth Persistence

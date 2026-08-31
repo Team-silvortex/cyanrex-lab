@@ -31,6 +31,9 @@ Utility scripts for Cyanrex local operation.
 - `openapi-contract.mjs`: checks exact Engine/OpenAPI route and access-tier parity, expected Engine/SDK
   coverage, operation metadata, version sync, and schema references.
 - `tests/openapiContract.test.mjs`: parser and drift-reporting regressions for the contract checks.
+- `generate-sdk-types.mjs`: converts OpenAPI component schemas into the committed
+  `sdk-js/src/generated/openapi.ts` type map; use `--check` to reject stale SDK models.
+- `tests/sdkTypeGenerator.test.mjs`: JSON Schema-to-TypeScript rendering regressions.
 - `clean-macos-metadata.mjs`: removes `.DS_Store` and AppleDouble `._*` sidecars that can be
   mistaken for source files by Next.js after copying the repository through a macOS filesystem.
 - `debug-system.sh`: collect environment/runtime diagnostics for local troubleshooting.

@@ -364,9 +364,11 @@ test performed from a newly built and extracted offline distribution archive.
   replicas.
 - PostgreSQL is shared infrastructure, but horizontal Engine scaling requires explicit ownership and
   coordination for eBPF attachments before it is safe.
-- `sdk-js` remains hand-maintained, while the generated OpenAPI 3.1 document and CI drift checks
-  enforce route coverage. Request/response types are not yet generated from that schema, so an
-  independently versioned public compatibility policy is still pending.
+- `sdk-js` retains a hand-designed namespaced client surface, while public request/response models
+  are generated from OpenAPI and CI rejects route, access, coverage, and generated-type drift.
+  Package-consumer smoke coverage verifies the artifact shape but does not define stability;
+  client-operation generation and an independently versioned public compatibility policy remain
+  pending decisions.
 - `modules/` is an example boundary rather than a dynamic plugin runtime.
 
 These are architectural constraints, not hidden guarantees. A change that removes one should include

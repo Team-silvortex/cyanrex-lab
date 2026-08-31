@@ -32,6 +32,16 @@ learning, eBPF checks/runs/attachments, Runner status/admin jobs, and environmen
 method accepts an optional `{ signal }` argument for cancellation. `client.request<T>()` remains
 available for forward-compatible calls to newer Engine endpoints.
 
+Public request and response models are generated from the Engine OpenAPI component schemas. The
+hand-designed client namespaces remain stable while the quality gate rejects stale generated types.
+The complete generated map also has an explicit type subpath:
+
+```ts
+import type { OpenApiSchemas } from "@cyanrex/sdk-js/openapi";
+
+type RunnerJob = OpenApiSchemas["RunnerJobView"];
+```
+
 ## Sessions and CSRF
 
 Browser requests use `credentials: "include"`; the browser owns the `HttpOnly` session cookie and
@@ -54,7 +64,12 @@ Requires Node.js 22 or later.
 
 ```bash
 npm ci
+npm run generate:types # only after intentionally changing the OpenAPI schemas
 npm run check
+npm run test:package
 ```
 
 `npm run build` emits ESM JavaScript, declarations, declaration maps, and source maps under `dist/`.
+`npm run test:package` validates the dry-run npm manifest, relative declaration/runtime imports, and
+consumer-style loading of both package exports. The package remains private until a compatibility
+and release policy is approved.

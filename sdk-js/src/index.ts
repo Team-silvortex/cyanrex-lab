@@ -12,6 +12,7 @@ import type {
   EbpfCheckResponse,
   EbpfCompletionResponse,
   EbpfDetachResponse,
+  EbpfRemoteCheckSubmitRequest,
   EbpfRemoteCheckResponse,
   EbpfRunRequest,
   EbpfRunResponse,
@@ -23,6 +24,7 @@ import type {
   EventSettings,
   FetchLike,
   HeaderModuleItem,
+  HealthResponse,
   LabAttempt,
   LabProgress,
   LoginRequest,
@@ -33,13 +35,16 @@ import type {
   RegisterRequest,
   RequestOptions,
   RunnerAgentInventory,
+  RunnerCompileCheckRequest,
   RunnerJob,
   RunnerJobInventory,
   RunnerOverview,
+  RunnerProbeRequest,
   RunnerStatus,
   SaveScriptResponse,
   SelectedHeaderMetadata,
   SessionResponse,
+  SystemInfo,
   TeacherLearningOverview,
   TeacherStudentAttempts,
   TotpBootstrapRequest,
@@ -102,9 +107,9 @@ export class CyanrexClient {
 
   readonly system = {
     info: (options?: RequestOptions) =>
-      this.get<{ name: string; status: string }>("/", undefined, options),
+      this.get<SystemInfo>("/", undefined, options),
     health: (options?: RequestOptions) =>
-      this.get<{ status: string }>("/health", undefined, options),
+      this.get<HealthResponse>("/health", undefined, options),
     openapi: (options?: RequestOptions) =>
       this.get<OpenApiDocument>("/openapi.json", undefined, options),
   };
@@ -235,7 +240,7 @@ export class CyanrexClient {
       this.get<EbpfCheckBackendInventory>("/ebpf/check/backends", undefined, options),
     remoteCheck: {
       submit: (
-        request: { code: string; agent_id: string; program_name?: string },
+        request: EbpfRemoteCheckSubmitRequest,
         options?: RequestOptions,
       ) => this.post<EbpfRemoteCheckResponse>("/ebpf/check/remote", request, options),
       status: (jobId: string, options?: RequestOptions) =>
@@ -263,16 +268,11 @@ export class CyanrexClient {
     jobs: (options?: RequestOptions) =>
       this.get<RunnerJobInventory>("/runner/jobs", undefined, options),
     submitProbe: (
-      request: { agent_id?: string; message: string; timeout_seconds?: number },
+      request: RunnerProbeRequest,
       options?: RequestOptions,
     ) => this.post<RunnerJob>("/runner/jobs/probe", request, options),
     submitCompileCheck: (
-      request: {
-        agent_id?: string;
-        source: string;
-        program_name?: string;
-        timeout_seconds?: number;
-      },
+      request: RunnerCompileCheckRequest,
       options?: RequestOptions,
     ) => this.post<RunnerJob>("/runner/jobs/compile-check", request, options),
     cancel: (jobId: string, options?: RequestOptions) =>
