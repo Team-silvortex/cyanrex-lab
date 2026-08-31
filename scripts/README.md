@@ -26,6 +26,10 @@ Utility scripts for Cyanrex local operation.
 - `check-version-sync.sh`: keeps the Engine, frontend, SDK, lockfiles, and release-facing docs on
   the same semantic version, including the generated OpenAPI document and current `CHANGELOG.md`
   release heading. `engine/Cargo.toml` is the canonical source.
+- `release-preflight.mjs`: validates a clean committed candidate before tagging, or verifies an existing
+  annotated version tag against every synchronized version field, dated changelog entry, and release doc.
+- `tests/releasePreflight.test.mjs`: argument, drift-reporting, clean-tree, lightweight/annotated Tag,
+  and immutable historical-tree release regressions.
 - `generate-openapi.mjs`: generates `engine/openapi/openapi.json` from the registered Axum routes,
   access rules, and maintained component schemas; use `--check` to reject stale output.
 - `openapi-contract.mjs`: checks exact Engine/OpenAPI route and access-tier parity, expected Engine/SDK

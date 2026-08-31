@@ -91,13 +91,18 @@ remain explicit operations so a local validation run cannot publish accidentally
 
 ```bash
 ./scripts/quality-gate.sh
+git commit -m "0.3.2"
+git fetch origin --tags --prune
+node scripts/release-preflight.mjs --version 0.3.2
 git tag -a v0.3.2 -m "cyanrex-lab 0.3.2"
+node scripts/release-preflight.mjs --tag v0.3.2
 git push origin main
 git push origin v0.3.2
 ```
 
 The release owner should verify the tag target, distribution checksum, extracted-package smoke result,
-and changelog links before publication.
+and changelog links before publication. A pushed version tag also runs the dedicated release metadata
+workflow; this validates the tag but does not publish a release or move any ref.
 
 ## Course Material and Translations
 

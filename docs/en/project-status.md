@@ -18,7 +18,7 @@ The detailed trust boundaries and data flows remain in the [system architecture]
 | Local Runner | Operational | Replaceable driver boundary, global/per-user leases, timeout handling, and explicit `shared_kernel` reporting |
 | Runner Agent | Operational for remote checks | Signed registration, heartbeat, leases, cancellation, probes, and isolated compile-only diagnostics; remote eBPF loading is not enabled |
 | Deployment and distribution | Operational | Docker, WSL2, native Linux, hardened optional compiler Agent, and offline package/install tooling |
-| Release traceability | Baseline established | A committed changelog, synchronized version check, and annotated `v0.2.9`/`v0.3.1` tag targets; `0.3.0` is explicitly an API baseline only and remote publication remains manual |
+| Release traceability | Baseline established | Changelog/version sync, annotated `v0.2.9`/`v0.3.1` targets, and preflight plus automatic validation for future tags; `0.3.0` is an API baseline only and publication remains manual |
 | Module catalog | Operational, state-only | Versioned v1 manifests are discovered and validated at startup; lifecycle is in memory and never executes directory code |
 | JavaScript SDK | Operational internal package | Typed ESM client with OpenAPI-generated wire models and all 56 non-Agent operationId calls, stable task namespaces, explicit `/openapi` and `/operations` exports, browser/Node sessions, cancellation, downloads, typed errors, and package-consumer smoke coverage |
 | API contract | Operational internal contract | Generated OpenAPI 3.1 served at `/openapi.json`; route/access/SDK/model drift and breaking changes against the frozen `0.3.0` baseline fail the quality gate |
@@ -34,7 +34,7 @@ The following checks passed on the snapshot date:
 - Frontend regressions: 14 tests covering permissions, Terminal commands, teacher review, performance
   hotspot logic, security headers, and macOS metadata cleanup; the SDK has 9 transport/operation
   regressions, a compile-time operation fixture, plus 3 package-manifest/import smoke checks.
-- File-length, version/changelog sync, OpenAPI generation/route/access/model/compatibility checks with 15
+- File-length, version/changelog sync, OpenAPI generation/route/access/model/compatibility checks with 18
   contract, compatibility, and schema/operation-generator regressions, Runner Agent tooling, distribution tooling, and both Compose profile
   configuration checks.
 - Production dependency audits: zero npm vulnerabilities and zero RustSec findings.

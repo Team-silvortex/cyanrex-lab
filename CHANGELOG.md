@@ -12,6 +12,8 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 - Added `CyanrexClient.operation()` without removing the stable task-oriented SDK namespaces; JSON,
   event-download, and WebSocket transports are supported while signed Runner Agent calls stay isolated.
 - Added operation-generator regressions, compile-time SDK fixtures, and packaged `/operations` exports.
+- Added a release preflight that rejects dirty candidates, reused/lightweight tags, version drift, and
+  missing dated changelog entries, plus automatic validation for future pushed version tags.
 
 ## [0.3.1] - 2026-08-31
 
