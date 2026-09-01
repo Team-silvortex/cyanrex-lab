@@ -166,6 +166,8 @@ The metadata is checksum-bound but not signed. The smoke test refuses to overwri
 Set `CYANREX_SMOKE_RUN_LIVE_KERNEL=1` only on a disposable privileged Linux host to additionally run
 the packaged `live-kernel-smoke.sh`: it attaches the built-in Aya `sched_switch` ring-buffer program,
 requires a uniquely identified real kernel event, detaches the exact pin, and rejects residual attachments.
+Set `CYANREX_KERNEL_SMOKE_REPORT=/safe/output/report.json` to atomically write machine-readable evidence;
+the script refuses to overwrite an existing report.
 
 Usage on target machine:
 
@@ -378,5 +380,6 @@ validating the immutable version tree, it builds the offline archive from that e
 `release-metadata.json` to report the same Tag/revision with a clean source and locally built images,
 runs `install-smoke.sh` against the extracted archive (including loaded-image content ID checks), and
 enables its privileged live-kernel attach/event/detach acceptance before uploading the accepted archive
-plus outer checksum as a 30-day workflow artifact. This does not create a GitHub Release or sign/publish
-packages.
+plus outer checksum as a 30-day workflow artifact. The artifact also retains a separately checksummed
+live-kernel report bound to the candidate metadata, kernel environment, unique event, and exact cleanup.
+This does not create a GitHub Release or sign/publish packages.

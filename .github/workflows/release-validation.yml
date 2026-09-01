@@ -69,6 +69,7 @@ jobs:
       - name: Smoke test the exact candidate archive
         env:
           CYANREX_SMOKE_RUN_LIVE_KERNEL: "1"
+          CYANREX_KERNEL_SMOKE_REPORT: ${{ runner.temp }}/cyanrex-live-kernel-acceptance.json
         run: |
           package_dir="$(find "$RUNNER_TEMP/cyanrex-release-extracted" \
             -mindepth 1 -maxdepth 1 -type d -name 'cyanrex-lab-*' -print -quit)"
@@ -76,6 +77,47 @@ jobs:
           source "$package_dir/manifest.env"
           docker image rm "$ENGINE_IMAGE" "$FRONTEND_IMAGE" "$POSTGRES_IMAGE"
           "$package_dir/install-smoke.sh"
+      - name: Verify live kernel acceptance evidence
+        env:
+          RELEASE_VERSION: ${{ steps.release.outputs.version }}
+          RELEASE_REVISION: ${{ steps.release.outputs.revision }}
+        run: |
+          report="$RUNNER_TEMP/cyanrex-live-kernel-acceptance.json"
+          package_dir="$(find "$RUNNER_TEMP/cyanrex-release-extracted" \
+            -mindepth 1 -maxdepth 1 -type d -name 'cyanrex-lab-*' -print -quit)"
+          test -n "$package_dir"
+          metadata_sha256="$(sha256sum "$package_dir/release-metadata.json" | awk '{print $1}')"
+          python3 - "$report" "$RELEASE_VERSION" "$RELEASE_REVISION" "$GITHUB_REF_NAME" \
+            "$metadata_sha256" <<'PY'
+          import json
+          import sys
+          with open(sys.argv[1], encoding="utf-8") as handle:
+              report = json.load(handle)
+          candidate = report.get("candidate") or {}
+          exercise = report.get("exercise") or {}
+          if report.get("schemaVersion") != 1 or report.get("result") != "passed":
+              raise SystemExit("live kernel evidence does not report a passed v1 acceptance")
+          if (candidate.get("package") or {}).get("version") != sys.argv[2]:
+              raise SystemExit("live kernel evidence package version does not match the Tag")
+          source = candidate.get("source") or {}
+          if source.get("revision") != sys.argv[3] or source.get("tag") != sys.argv[4]:
+              raise SystemExit("live kernel evidence source identity does not match the Tag")
+          if candidate.get("releaseMetadataSha256") != sys.argv[5]:
+              raise SystemExit("live kernel evidence is not bound to the candidate metadata")
+          event = exercise.get("event") or {}
+          if (
+              exercise.get("runtimeBackend") != "aya"
+              or exercise.get("templateId") != "ringbuf-hi-freq-sampler"
+              or exercise.get("hook") != "tracepoint/sched/sched_switch"
+              or event.get("type") != "ebpf.kernel_ringbuf"
+              or event.get("bytes", 0) <= 0
+          ):
+              raise SystemExit("live kernel evidence omits the Aya ring-buffer event")
+          if report.get("cleanup") != {"exactPinDetached": True, "remainingAttachments": 0}:
+              raise SystemExit("live kernel evidence omits exact cleanup")
+          PY
+          (cd "$RUNNER_TEMP" && sha256sum cyanrex-live-kernel-acceptance.json \
+            > cyanrex-live-kernel-acceptance.json.sha256)
       - name: Upload accepted candidate artifact
         uses: actions/upload-artifact@v4
         with:
@@ -83,5 +125,7 @@ jobs:
           path: |
             ${{ runner.temp }}/cyanrex-release/*.tar.gz
             ${{ runner.temp }}/cyanrex-release/*.tar.gz.sha256
+            ${{ runner.temp }}/cyanrex-live-kernel-acceptance.json
+            ${{ runner.temp }}/cyanrex-live-kernel-acceptance.json.sha256
           if-no-files-found: error
           retention-days: 30

@@ -71,5 +71,5 @@ For high event traffic classes, you can tune persistence queue alerting in `dock
 - For branch protection, enable required status check for **`CI gate`** on your main branch.
 - An annotated version Tag triggers `Release Candidate Validation`, which binds the clean Tag commit to
   a newly built offline archive, runs exact-image installation plus live Aya attach/event/detach
-  acceptance, and retains the result as a 30-day workflow artifact. It does not create or sign a
-  GitHub Release.
+  acceptance, and retains the result plus separately checksummed, candidate-bound kernel evidence as a
+  30-day workflow artifact. It does not create or sign a GitHub Release.

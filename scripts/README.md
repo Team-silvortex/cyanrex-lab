@@ -75,9 +75,10 @@ Utility scripts for Cyanrex local operation.
   safe Agent IDs, and shell syntax without starting Docker.
 - `live-kernel-smoke.sh`: on a disposable privileged Linux stack, authenticate, require an empty
   attachment set, run the built-in Aya `sched_switch` ring-buffer template, require a uniquely bound
-  kernel event, detach its exact pin, and reject residue.
-- `test-live-kernel-smoke.sh`: mock the successful and missing-event paths and require cleanup in both,
-  without loading a program into the local kernel.
+  kernel event, detach its exact pin, and reject residue. `CYANREX_KERNEL_SMOKE_REPORT` optionally writes
+  atomic evidence bound to packaged release metadata and the runtime environment.
+- `test-live-kernel-smoke.sh`: mock successful, stale-event, and missing-event paths, validate generated
+  evidence, and require cleanup without loading a program into the local kernel.
 
 - `bench-event-bus.sh`: run the local event-bus throughput benchmark.
   - configurable through environment variables:

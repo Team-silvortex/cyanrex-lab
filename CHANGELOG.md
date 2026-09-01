@@ -23,7 +23,8 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 - Bound every packaged image reference to its Docker content ID and made installation acceptance reject
   inherited image overrides or loaded image identities that differ from the candidate metadata.
 - Added privileged Tag-candidate acceptance that loads the built-in Aya `sched_switch` ring-buffer
-  program, requires a uniquely bound real kernel event, detaches its exact pin, and rejects residue.
+  program, requires a uniquely bound real kernel event, detaches its exact pin, rejects residue, and
+  retains checksum-addressed evidence bound to the candidate metadata and kernel environment.
 - Added deterministic course-document mirror validation so stale committed frontend lessons fail every
   quality-gate mode instead of being repaired only as a build side effect.
 

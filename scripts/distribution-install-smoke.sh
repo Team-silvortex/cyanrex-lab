@@ -24,6 +24,7 @@ Environment:
   CYANREX_SMOKE_POSTGRES_PORT=15432    Host PostgreSQL port
   CYANREX_SMOKE_SKIP_AGENT=0           Set to 1 to skip Runner Agent validation
   CYANREX_SMOKE_RUN_LIVE_KERNEL=0      Set to 1 for privileged attach/stream acceptance
+  CYANREX_KERNEL_SMOKE_REPORT=         Optional live-kernel evidence output path
   CYANREX_SMOKE_KEEP=0                 Set to 1 to keep stack and generated .env for debugging
 EOF
 }

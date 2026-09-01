@@ -32,11 +32,15 @@ disposable privileged Linux acceptance host, require a real Aya attach/ring-buff
 cycle as part of the installation smoke:
 
 ```bash
-CYANREX_SMOKE_RUN_LIVE_KERNEL=1 ./install-smoke.sh
+CYANREX_SMOKE_RUN_LIVE_KERNEL=1 \
+CYANREX_KERNEL_SMOKE_REPORT=/safe/output/live-kernel-acceptance.json \
+./install-smoke.sh
 ```
 
 The live check refuses a non-empty administrator attachment set and verifies that no tracked attachment
-remains. It is enabled for annotated Tag candidates, not for routine non-privileged tooling checks.
+remains. When an evidence path is supplied, it refuses to overwrite an existing file and records the
+candidate metadata hash, environment, unique event, and cleanup result. It is enabled for annotated Tag
+candidates, not for routine non-privileged tooling checks.
 
 Set `CYANREX_SMOKE_KEEP=1` to retain a failed smoke stack for diagnosis.
 On a host already using the default ports, select another loopback address such as

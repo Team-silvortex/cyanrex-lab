@@ -29,6 +29,7 @@ Environment:
   CYANREX_KERNEL_SMOKE_STREAM_SECONDS=6            Kernel sampling window (2-30)
   CYANREX_KERNEL_SMOKE_POLL_ATTEMPTS=80            Event polling attempts (1-200)
   CYANREX_KERNEL_SMOKE_POLL_INTERVAL=0.25          Seconds between polls
+  CYANREX_KERNEL_SMOKE_REPORT=                      Optional machine-readable evidence output path
 
 The runtime environment file must provide CYANREX_ADMIN_PASSWORD and
 CYANREX_ADMIN_TOTP_SECRET. Run only on a disposable privileged Linux acceptance host.
@@ -69,6 +70,7 @@ ORIGIN="${CYANREX_SMOKE_ORIGIN:-http://localhost:${CYANREX_FRONTEND_PORT:-3000}}
 STREAM_SECONDS="${CYANREX_KERNEL_SMOKE_STREAM_SECONDS:-6}"
 POLL_ATTEMPTS="${CYANREX_KERNEL_SMOKE_POLL_ATTEMPTS:-80}"
 POLL_INTERVAL="${CYANREX_KERNEL_SMOKE_POLL_INTERVAL:-0.25}"
+REPORT_PATH="${CYANREX_KERNEL_SMOKE_REPORT:-}"
 PROGRAM_NAME="$(python3 -c 'import uuid; print("release-kernel-smoke-" + uuid.uuid4().hex[:16])')"
 if [[ ! "$STREAM_SECONDS" =~ ^[0-9]+$ ]] || (( STREAM_SECONDS < 2 || STREAM_SECONDS > 30 )); then
   echo "Error: CYANREX_KERNEL_SMOKE_STREAM_SECONDS must be an integer from 2 to 30." >&2
@@ -82,14 +84,20 @@ if [[ ! "$POLL_INTERVAL" =~ ^[0-9]+([.][0-9]+)?$ ]]; then
   echo "Error: CYANREX_KERNEL_SMOKE_POLL_INTERVAL must be a non-negative number." >&2
   exit 1
 fi
+if [ -n "$REPORT_PATH" ] && [ -e "$REPORT_PATH" ]; then
+  echo "Error: live kernel evidence output already exists: $REPORT_PATH" >&2
+  exit 1
+fi
 
 WORK_DIR="$(mktemp -d)"
 COOKIE_JAR="$WORK_DIR/cookies.txt"
 LOGIN_JSON="$WORK_DIR/login.json"
 TEMPLATES_JSON="$WORK_DIR/templates.json"
+ENVIRONMENT_JSON="$WORK_DIR/environment.json"
 RUN_JSON="$WORK_DIR/run.json"
 RESPONSE_JSON="$WORK_DIR/response.json"
 DETACH_JSON="$WORK_DIR/detach.json"
+MATCHED_EVENT_JSON="$WORK_DIR/matched-event.json"
 PIN_PATH=""
 RUN_ATTEMPTED=0
 
@@ -138,6 +146,18 @@ PY
 echo "[cyanrex] Authenticating privileged live-kernel acceptance..."
 curl -fsS -c "$COOKIE_JAR" -H 'Content-Type: application/json' \
   --data-binary "@$LOGIN_JSON" "$ENGINE_URL/auth/login" > "$RESPONSE_JSON"
+
+curl -fsS -b "$COOKIE_JAR" "$ENGINE_URL/helper/environment" > "$ENVIRONMENT_JSON"
+python3 - "$ENVIRONMENT_JSON" <<'PY'
+import json
+import sys
+with open(sys.argv[1], encoding="utf-8") as handle:
+    payload = json.load(handle)
+checks = payload.get("checks")
+kernel = next((item for item in checks or [] if item.get("name") == "kernel"), None)
+if not payload.get("runtime_mode") or not kernel or not kernel.get("detail"):
+    raise SystemExit("live kernel environment report omits runtime mode or kernel release")
+PY
 
 curl -fsS -b "$COOKIE_JAR" "$ENGINE_URL/ebpf/attachments" > "$RESPONSE_JSON"
 python3 - "$RESPONSE_JSON" <<'PY'
@@ -203,19 +223,25 @@ event_ready=0
 for ((attempt = 1; attempt <= POLL_ATTEMPTS; attempt++)); do
   curl -fsS -b "$COOKIE_JAR" \
     "$ENGINE_URL/events?category=kernel&since_minutes=5&limit=500" > "$RESPONSE_JSON"
-  if python3 - "$RESPONSE_JSON" <<'PY'
+  if python3 - "$RESPONSE_JSON" "$MATCHED_EVENT_JSON" <<'PY'
 import json
 import os
 import sys
 with open(sys.argv[1], encoding="utf-8") as handle:
     events = json.load(handle)
-matched = any(
-    event.get("event_type") == "ebpf.kernel_ringbuf"
-    and event.get("payload", {}).get("program_name") == os.environ["PROGRAM_NAME"]
-    and event.get("payload", {}).get("bytes", 0) > 0
-    for event in events
+matched = next(
+    (
+        event for event in events
+        if event.get("event_type") == "ebpf.kernel_ringbuf"
+        and event.get("payload", {}).get("program_name") == os.environ["PROGRAM_NAME"]
+        and event.get("payload", {}).get("bytes", 0) > 0
+    ),
+    None,
 )
-raise SystemExit(0 if matched else 1)
+if matched:
+    with open(sys.argv[2], "w", encoding="utf-8") as handle:
+        json.dump(matched, handle)
+raise SystemExit(0 if matched is not None else 1)
 PY
   then
     event_ready=1
@@ -256,5 +282,75 @@ with open(sys.argv[1], encoding="utf-8") as handle:
 if payload.get("pin_paths"):
     raise SystemExit("tracked live kernel attachments remain after cleanup")
 PY
+
+if [ -n "$REPORT_PATH" ]; then
+  export ENVIRONMENT_JSON MATCHED_EVENT_JSON PIN_PATH PROGRAM_NAME REPORT_PATH ROOT_DIR
+  python3 - <<'PY'
+import datetime
+import hashlib
+import json
+import os
+
+with open(os.environ["ENVIRONMENT_JSON"], encoding="utf-8") as handle:
+    environment = json.load(handle)
+with open(os.environ["MATCHED_EVENT_JSON"], encoding="utf-8") as handle:
+    event = json.load(handle)
+
+metadata_path = os.path.join(os.environ["ROOT_DIR"], "release-metadata.json")
+candidate = None
+if os.path.isfile(metadata_path):
+    with open(metadata_path, "rb") as handle:
+        metadata_bytes = handle.read()
+    metadata = json.loads(metadata_bytes)
+    images = metadata.get("images", {})
+    candidate = {
+        "releaseMetadataSha256": hashlib.sha256(metadata_bytes).hexdigest(),
+        "package": metadata.get("package"),
+        "source": metadata.get("source"),
+        "images": {
+            "mode": images.get("mode"),
+            "references": images.get("references"),
+            "contentIds": images.get("contentIds"),
+            "archiveSha256": images.get("archive", {}).get("sha256"),
+        },
+    }
+
+payload = event.get("payload", {})
+report = {
+    "schemaVersion": 1,
+    "result": "passed",
+    "generatedAt": datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
+    "candidate": candidate,
+    "environment": environment,
+    "exercise": {
+        "templateId": "ringbuf-hi-freq-sampler",
+        "programName": os.environ["PROGRAM_NAME"],
+        "runtimeBackend": "aya",
+        "hook": "tracepoint/sched/sched_switch",
+        "pinPath": os.environ["PIN_PATH"],
+        "event": {
+            "timestamp": event.get("timestamp"),
+            "type": event.get("event_type"),
+            "bytes": payload.get("bytes"),
+        },
+    },
+    "cleanup": {"exactPinDetached": True, "remainingAttachments": 0},
+}
+
+output = os.path.abspath(os.environ["REPORT_PATH"])
+os.makedirs(os.path.dirname(output), exist_ok=True)
+temporary = f"{output}.tmp-{os.getpid()}"
+try:
+    with open(temporary, "w", encoding="utf-8") as handle:
+        json.dump(report, handle, indent=2, sort_keys=True)
+        handle.write("\n")
+    os.chmod(temporary, 0o644)
+    os.replace(temporary, output)
+finally:
+    if os.path.exists(temporary):
+        os.unlink(temporary)
+PY
+  echo "[cyanrex] Live kernel acceptance evidence: $REPORT_PATH"
+fi
 
 echo "[cyanrex] Live kernel attach, event stream, and detach acceptance passed."
