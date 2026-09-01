@@ -10,8 +10,8 @@ print_help() {
   cat <<'EOF'
 Usage: ./scripts/quality-gate.sh [--backend-only|--frontend-only|--sdk-only|--format-only|--security|--security-only|--permissions-only|--no-npm-install]
 
-Runs project quality checks used before commit/CI. Every mode starts with file-length, version and
-OpenAPI drift, Runner Agent tooling, and distribution tooling checks.
+Runs project quality checks used before commit/CI. Every mode starts with file-length, version,
+course-document, and OpenAPI drift, Runner Agent tooling, and distribution tooling checks.
 
 Modes:
   (default)      Run common preflight, backend, frontend, and SDK checks.
@@ -73,6 +73,10 @@ run_file_length_check() {
 
 run_version_sync_check() {
   "$PROJECT_ROOT/scripts/check-version-sync.sh"
+}
+
+run_course_docs_check() {
+  node "$PROJECT_ROOT/frontend/scripts/sync-course-docs.mjs" --check
 }
 
 run_openapi_contract_checks() {
@@ -153,6 +157,7 @@ run_permissions_checks() {
 
 run_file_length_check
 run_version_sync_check
+run_course_docs_check
 run_openapi_contract_checks
 run_runner_agent_tool_checks
 run_distribution_tool_checks

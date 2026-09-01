@@ -60,6 +60,9 @@ Utility scripts for Cyanrex local operation.
   compatibility regressions.
 - `clean-macos-metadata.mjs`: removes `.DS_Store` and AppleDouble `._*` sidecars that can be
   mistaken for source files by Next.js after copying the repository through a macOS filesystem.
+- `frontend/scripts/sync-course-docs.mjs`: replaces the frontend's committed course copy from the
+  authoritative `docs/` tree; `--check` rejects missing, changed, and unexpected mirrored files and is
+  included in every quality-gate mode.
 - `debug-system.sh`: collect environment/runtime diagnostics for local troubleshooting.
   - prints toolchain versions, kernel capability status, compose backend status, and port checks
   - intended for `./start.sh diagnose`

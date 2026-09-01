@@ -34,7 +34,7 @@ The following checks passed on the snapshot date:
 - Frontend regressions: 14 tests covering permissions, Terminal commands, teacher review, performance
   hotspot logic, security headers, and macOS metadata cleanup; the SDK has 9 transport/operation
   regressions, a compile-time operation fixture, plus 3 package-manifest/import smoke checks.
-- File-length, version/changelog sync, OpenAPI generation/route/access/model/compatibility checks with 27
+- File-length, version/changelog/course-copy sync, OpenAPI generation/route/access/model/compatibility checks with 28
   contract, compatibility, and schema/operation-generator regressions, Runner Agent tooling, distribution tooling, and both Compose profile
   configuration checks.
 - Production dependency audits: zero npm vulnerabilities and zero RustSec findings.

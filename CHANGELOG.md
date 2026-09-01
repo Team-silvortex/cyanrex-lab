@@ -24,6 +24,8 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
   inherited image overrides or loaded image identities that differ from the candidate metadata.
 - Added privileged Tag-candidate acceptance that loads the built-in Aya `sched_switch` ring-buffer
   program, requires a uniquely bound real kernel event, detaches its exact pin, and rejects residue.
+- Added deterministic course-document mirror validation so stale committed frontend lessons fail every
+  quality-gate mode instead of being repaired only as a build side effect.
 
 ## [0.3.1] - 2026-08-31
 
