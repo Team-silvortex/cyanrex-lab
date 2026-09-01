@@ -163,6 +163,9 @@ and clean/dirty state, matching annotated version Tag when present, image refere
 mode, and the image archive SHA-256 without exposing a build-host path. Installation acceptance pins
 the packaged image references and verifies all three loaded Docker content IDs before probing services.
 The metadata is checksum-bound but not signed. The smoke test refuses to overwrite an existing `.env`.
+Set `CYANREX_SMOKE_RUN_LIVE_KERNEL=1` only on a disposable privileged Linux host to additionally run
+the packaged `live-kernel-smoke.sh`: it attaches the built-in Aya `sched_switch` ring-buffer program,
+requires a uniquely identified real kernel event, detaches the exact pin, and rejects residual attachments.
 
 Usage on target machine:
 
@@ -374,5 +377,6 @@ Pushing a new annotated `v<major>.<minor>.<patch>` Tag runs `Release Candidate V
 validating the immutable version tree, it builds the offline archive from that exact commit, requires
 `release-metadata.json` to report the same Tag/revision with a clean source and locally built images,
 runs `install-smoke.sh` against the extracted archive (including loaded-image content ID checks), and
-uploads the accepted archive plus outer checksum as a 30-day workflow artifact. This does not create a
-GitHub Release or sign/publish packages.
+enables its privileged live-kernel attach/event/detach acceptance before uploading the accepted archive
+plus outer checksum as a 30-day workflow artifact. This does not create a GitHub Release or sign/publish
+packages.

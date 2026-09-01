@@ -23,6 +23,7 @@ Environment:
   CYANREX_SMOKE_FRONTEND_PORT=3000     Host frontend port
   CYANREX_SMOKE_POSTGRES_PORT=15432    Host PostgreSQL port
   CYANREX_SMOKE_SKIP_AGENT=0           Set to 1 to skip Runner Agent validation
+  CYANREX_SMOKE_RUN_LIVE_KERNEL=0      Set to 1 for privileged attach/stream acceptance
   CYANREX_SMOKE_KEEP=0                 Set to 1 to keep stack and generated .env for debugging
 EOF
 }
@@ -94,7 +95,7 @@ replace_env_value() {
 
 for command in docker curl python3 openssl awk mktemp; do require_cmd "$command"; done
 for file in checksums.sha256 manifest.env release-metadata.json docker-compose.yml .env.example \
-  deploy.sh runner-agent.sh runner-agent-smoke.sh cyanrex-images.tar; do
+  deploy.sh runner-agent.sh runner-agent-smoke.sh live-kernel-smoke.sh cyanrex-images.tar; do
   if [ ! -f "$PACKAGE_DIR/$file" ]; then
     echo "Error: distribution package is missing '$file'." >&2
     exit 1
@@ -152,7 +153,8 @@ CYANREX_ENGINE_IMAGE="$ENGINE_IMAGE"
 CYANREX_FRONTEND_IMAGE="$FRONTEND_IMAGE"
 export CYANREX_ENGINE_IMAGE CYANREX_FRONTEND_IMAGE POSTGRES_IMAGE
 bash -n "$PACKAGE_DIR/deploy.sh" "$PACKAGE_DIR/run.sh" "$PACKAGE_DIR/stop.sh" \
-  "$PACKAGE_DIR/runner-agent.sh" "$PACKAGE_DIR/runner-agent-smoke.sh"
+  "$PACKAGE_DIR/runner-agent.sh" "$PACKAGE_DIR/runner-agent-smoke.sh" \
+  "$PACKAGE_DIR/live-kernel-smoke.sh"
 
 ENGINE_PORT="${CYANREX_SMOKE_ENGINE_PORT:-8080}"
 FRONTEND_PORT="${CYANREX_SMOKE_FRONTEND_PORT:-3000}"
@@ -233,6 +235,11 @@ grep -q 'CYANREX' "$WORK_DIR/frontend.html"
 tr -d '\r' < "$WORK_DIR/frontend.headers" | grep -Eiq \
   "^content-security-policy:.*http://localhost:${ENGINE_PORT}([ ;]|$)"
 "$PACKAGE_DIR/deploy.sh" status
+
+if [ "${CYANREX_SMOKE_RUN_LIVE_KERNEL:-0}" = "1" ]; then
+  CYANREX_SMOKE_ENGINE_URL="$ENGINE_URL" CYANREX_SMOKE_ORIGIN="http://localhost:$FRONTEND_PORT" \
+    "$PACKAGE_DIR/live-kernel-smoke.sh"
+fi
 
 if [ "${CYANREX_SMOKE_SKIP_AGENT:-0}" != "1" ]; then
   "$PACKAGE_DIR/runner-agent.sh" start --agent-id "$SMOKE_ID-agent"

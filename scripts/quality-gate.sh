@@ -91,6 +91,7 @@ run_runner_agent_tool_checks() {
 
 run_distribution_tool_checks() {
   "$PROJECT_ROOT/scripts/test-distribution-tools.sh"
+  "$PROJECT_ROOT/scripts/test-live-kernel-smoke.sh"
 }
 
 run_backend_checks() {

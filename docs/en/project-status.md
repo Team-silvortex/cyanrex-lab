@@ -18,7 +18,7 @@ The detailed trust boundaries and data flows remain in the [system architecture]
 | Local Runner | Operational | Replaceable driver boundary, global/per-user leases, timeout handling, and explicit `shared_kernel` reporting |
 | Runner Agent | Operational for remote checks | Signed registration, heartbeat, leases, cancellation, probes, and isolated compile-only diagnostics; remote eBPF loading is not enabled |
 | Deployment and distribution | Operational | Docker, WSL2, native Linux, hardened optional compiler Agent, and offline package/install tooling |
-| Release traceability | Accepted unsigned candidates | Changelog/version sync, annotated `v0.2.9`/`v0.3.1` targets, immutable-Tag validation, checksum-bound source/archive metadata, per-image Docker content IDs, and exact-image install acceptance before 30-day workflow retention; `0.3.0` is an API baseline only and signed publication remains manual |
+| Release traceability | Accepted unsigned candidates | Changelog/version sync, annotated `v0.2.9`/`v0.3.1` targets, immutable-Tag validation, checksum-bound source/archive metadata, per-image Docker content IDs, exact-image installation, and live Aya attach/event/detach acceptance before 30-day workflow retention; `0.3.0` is an API baseline only and signed publication remains manual |
 | Module catalog | Operational, state-only | Versioned v1 manifests are discovered and validated at startup; lifecycle is in memory and never executes directory code |
 | JavaScript SDK | Operational internal package | Typed ESM client with 56 generated non-Agent operationId calls, a 77-member additive namespace baseline and deprecation policy, explicit `/openapi` and `/operations` exports, browser/Node sessions, cancellation, downloads, typed errors, and package-consumer smoke coverage |
 | API contract | Operational internal contract | Generated OpenAPI 3.1 served at `/openapi.json`; route/access/SDK/model drift and breaking changes against the frozen `0.3.0` baseline fail the quality gate |
@@ -39,9 +39,10 @@ The following checks passed on the snapshot date:
   configuration checks.
 - Production dependency audits: zero npm vulnerabilities and zero RustSec findings.
 
-This snapshot did not start the privileged Engine to perform a live kernel attach/stream, and it did
-not run the destructive disposable-host offline installation smoke. Those remain environment-level
-acceptance checks in CI or a dedicated Linux host.
+This local snapshot did not start the privileged Engine or run the destructive disposable-host offline
+installation smoke. The annotated-Tag candidate workflow now enables the packaged live Aya
+attach/ring-buffer-event/exact-detach check; its result is environment-level evidence and is not claimed
+by the local checks listed above.
 
 ## Intentional Boundaries
 
@@ -60,8 +61,8 @@ acceptance checks in CI or a dedicated Linux host.
    a stable independently consumed package.
 3. Define a real isolation and ownership model before adding remote eBPF execution or Engine replicas.
 4. Sign and publish accepted candidate artifacts after choosing a release trust/key ownership model.
-5. Promote live kernel attach/stream checks to a dedicated privileged release acceptance environment;
-   extracted-distribution installation is now covered by the Tag candidate workflow.
+5. Collect the first annotated-Tag live-kernel evidence, then decide whether release acceptance needs a
+   dedicated self-hosted kernel-version matrix beyond the GitHub-hosted privileged Docker environment.
 
 `engine/Cargo.toml` is the canonical release version. `scripts/check-version-sync.sh` prevents the
 frontend, SDK, OpenAPI document, lockfiles, and release-facing documentation from drifting again.

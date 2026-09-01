@@ -22,6 +22,8 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
   runs the extracted-package installation smoke, and retains the accepted archive without publishing it.
 - Bound every packaged image reference to its Docker content ID and made installation acceptance reject
   inherited image overrides or loaded image identities that differ from the candidate metadata.
+- Added privileged Tag-candidate acceptance that loads the built-in Aya `sched_switch` ring-buffer
+  program, requires a uniquely bound real kernel event, detaches its exact pin, and rejects residue.
 
 ## [0.3.1] - 2026-08-31
 

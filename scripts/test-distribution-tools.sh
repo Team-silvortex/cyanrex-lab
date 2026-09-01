@@ -22,10 +22,12 @@ assert_contains() {
 }
 
 assert_contains "$PACKAGE_SCRIPT" 'distribution-install-smoke.sh'
+assert_contains "$PACKAGE_SCRIPT" 'live-kernel-smoke.sh'
 assert_contains "$PACKAGE_SCRIPT" 'release-metadata.json'
 assert_contains "$RELEASE_WORKFLOW" 'needs: metadata'
 assert_contains "$RELEASE_WORKFLOW" 'release-metadata.mjs" --verify'
 assert_contains "$RELEASE_WORKFLOW" '--expect-source-state clean --expect-image-mode built'
+assert_contains "$RELEASE_WORKFLOW" 'CYANREX_SMOKE_RUN_LIVE_KERNEL: "1"'
 assert_contains "$RELEASE_WORKFLOW" '"$package_dir/install-smoke.sh"'
 assert_contains "$RELEASE_WORKFLOW" 'actions/upload-artifact@v4'
 if grep -Eq 'contents:[[:space:]]*write|gh release|action-gh-release' "$RELEASE_WORKFLOW"; then
@@ -50,6 +52,7 @@ assert_contains "$SMOKE_SCRIPT" 'docker", "image", "inspect", "--format", "{{.Id
 assert_contains "$SMOKE_SCRIPT" 'CYANREX_ENGINE_IMAGE="$ENGINE_IMAGE"'
 assert_contains "$SMOKE_SCRIPT" 'CYANREX_SMOKE_BIND_ADDRESS'
 assert_contains "$SMOKE_SCRIPT" 'frontend_ready'
+assert_contains "$SMOKE_SCRIPT" '"$PACKAGE_DIR/live-kernel-smoke.sh"'
 assert_contains "$ROOT_DIR/scripts/runner-agent.sh" 'export CYANREX_ENGINE_IMAGE CYANREX_IMAGE_TAG POSTGRES_IMAGE'
 for compose_file in docker/docker-compose.yml docker/docker-compose.distribution.yml; do
   assert_contains "$ROOT_DIR/$compose_file" 'CYANREX_ALLOW_MISSING_ORIGIN:'
@@ -110,6 +113,7 @@ archive_path="${archive_checksum%.sha256}"
 tar -xzf "$archive_path" -C "$WORK_DIR/extracted"
 package_dir="$(find "$WORK_DIR/extracted" -mindepth 1 -maxdepth 1 -type d -print -quit)"
 [ -x "$package_dir/install-smoke.sh" ]
+[ -x "$package_dir/live-kernel-smoke.sh" ]
 assert_contains "$package_dir/manifest.env" 'POSTGRES_IMAGE=postgres:16'
 assert_contains "$package_dir/manifest.env" 'COMPOSE_TEMPLATE=docker/docker-compose.distribution.yml'
 node "$METADATA_SCRIPT" --verify "$package_dir" >/dev/null

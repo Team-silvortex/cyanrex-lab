@@ -70,6 +70,11 @@ Utility scripts for Cyanrex local operation.
   poll its user-scoped result, and fail if the end-to-end remote diagnostics path is unhealthy.
 - `test-runner-agent-tools.sh`: verify secret generation, mode 0600, stable reuse, non-disclosure,
   safe Agent IDs, and shell syntax without starting Docker.
+- `live-kernel-smoke.sh`: on a disposable privileged Linux stack, authenticate, require an empty
+  attachment set, run the built-in Aya `sched_switch` ring-buffer template, require a uniquely bound
+  kernel event, detach its exact pin, and reject residue.
+- `test-live-kernel-smoke.sh`: mock the successful and missing-event paths and require cleanup in both,
+  without loading a program into the local kernel.
 
 - `bench-event-bus.sh`: run the local event-bus throughput benchmark.
   - configurable through environment variables:
@@ -140,7 +145,9 @@ In CI, workflow `Performance Regression` can also consume a baseline by passing 
   - outputs `dist/cyanrex-lab-<version>-<timestamp>.tar.gz` by default
 - `distribution-install-smoke.sh`: packaged as `install-smoke.sh`; validates a freshly extracted
   release, including checksums, packaged image content IDs, service health, frontend CSP, login, and
-  remote Agent compilation; inherited host image overrides cannot replace candidate images.
+  remote Agent compilation; inherited host image overrides cannot replace candidate images. Set
+  `CYANREX_SMOKE_RUN_LIVE_KERNEL=1` only on a disposable privileged Linux host to add live kernel
+  attach/event/detach acceptance.
 - `test-distribution-tools.sh`: static regression checks for packaging helpers and Compose runtime
   environment forwarding, plus non-publishing Tag candidate workflow invariants; included in every
   quality-gate mode.
@@ -200,6 +207,7 @@ Distributed package entry points:
 ./deploy.sh down   # stop services
 ./runner-agent.sh start  # optional unprivileged compiler Agent
 ./runner-agent-smoke.sh  # authenticated remote compile smoke test
+./live-kernel-smoke.sh   # privileged live attach/event/detach acceptance
 ./install-smoke.sh       # destructive disposable-host installation acceptance
 # `run.sh` and `stop.sh` remain compatibility shortcuts.
 ```

@@ -67,6 +67,8 @@ jobs:
             --expect-version "$RELEASE_VERSION" --expect-revision "$RELEASE_REVISION" \
             --expect-tag "$GITHUB_REF_NAME" --expect-source-state clean --expect-image-mode built
       - name: Smoke test the exact candidate archive
+        env:
+          CYANREX_SMOKE_RUN_LIVE_KERNEL: "1"
         run: |
           package_dir="$(find "$RUNNER_TEMP/cyanrex-release-extracted" \
             -mindepth 1 -maxdepth 1 -type d -name 'cyanrex-lab-*' -print -quit)"

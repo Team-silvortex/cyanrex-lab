@@ -11,7 +11,7 @@ covered by `checksums.sha256`, but neither file is a cryptographic signature.
 
 - `docker-compose.yml` and `.env.example`
 - `deploy.sh`, `run.sh`, and `stop.sh`
-- `runner-agent.sh` and `runner-agent-smoke.sh`
+- `runner-agent.sh`, `runner-agent-smoke.sh`, and `live-kernel-smoke.sh`
 - `install-smoke.sh` for disposable clean-host installation acceptance
 - `cyanrex-images.tar` containing PostgreSQL, Engine, and frontend images
 - `manifest.env` and machine-readable `release-metadata.json`
@@ -26,6 +26,17 @@ pulling disabled, exercises login and remote compilation, then removes its gener
 ```bash
 ./install-smoke.sh
 ```
+
+The default path stays non-destructive to the host kernel beyond starting the privileged Engine. On a
+disposable privileged Linux acceptance host, require a real Aya attach/ring-buffer-event/exact-detach
+cycle as part of the installation smoke:
+
+```bash
+CYANREX_SMOKE_RUN_LIVE_KERNEL=1 ./install-smoke.sh
+```
+
+The live check refuses a non-empty administrator attachment set and verifies that no tracked attachment
+remains. It is enabled for annotated Tag candidates, not for routine non-privileged tooling checks.
 
 Set `CYANREX_SMOKE_KEEP=1` to retain a failed smoke stack for diagnosis.
 On a host already using the default ports, select another loopback address such as
