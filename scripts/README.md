@@ -31,8 +31,9 @@ Utility scripts for Cyanrex local operation.
 - `tests/releasePreflight.test.mjs`: argument, drift-reporting, clean-tree, lightweight/annotated Tag,
   and immutable historical-tree release regressions.
 - `release-metadata.mjs`: writes machine-readable offline-package provenance with Git source state,
-  image references/build mode, and streamed image-archive SHA-256; `--verify` checks an extracted package,
-  while `--expect-*` flags bind a Tag candidate to its version, revision, source state, and image mode.
+  image references/content IDs/build mode, and streamed image-archive SHA-256; `--verify` checks an
+  extracted package, while `--expect-*` flags bind a Tag candidate to its version, revision, source state,
+  and image mode.
 - `tests/releaseMetadata.test.mjs`: metadata validation, Git-state detection, path privacy, tamper, and
   checksum-binding regressions.
 - `generate-openapi.mjs`: generates `engine/openapi/openapi.json` from the registered Axum routes,
@@ -138,7 +139,8 @@ In CI, workflow `Performance Regression` can also consume a baseline by passing 
   - emits checksum-bound `release-metadata.json` without build-host absolute paths
   - outputs `dist/cyanrex-lab-<version>-<timestamp>.tar.gz` by default
 - `distribution-install-smoke.sh`: packaged as `install-smoke.sh`; validates a freshly extracted
-  release, including checksums, service health, frontend CSP, login, and remote Agent compilation.
+  release, including checksums, packaged image content IDs, service health, frontend CSP, login, and
+  remote Agent compilation; inherited host image overrides cannot replace candidate images.
 - `test-distribution-tools.sh`: static regression checks for packaging helpers and Compose runtime
   environment forwarding, plus non-publishing Tag candidate workflow invariants; included in every
   quality-gate mode.

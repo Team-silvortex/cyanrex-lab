@@ -14,6 +14,8 @@ import { pathToFileURL } from "node:url";
 const SEMVER = /^[0-9]+\.[0-9]+\.[0-9]+$/;
 const GIT_REVISION = /^(?:[a-f0-9]{40}|[a-f0-9]{64})$/;
 const SHA256 = /^[a-f0-9]{64}$/;
+const IMAGE_ID = /^sha256:[a-f0-9]{64}$/;
+const IMAGE_NAMES = ["engine", "frontend", "postgres"];
 const SOURCE_STATES = new Set(["clean", "dirty", "unavailable"]);
 const IMAGE_MODES = new Set(["built", "prebuilt"]);
 
@@ -40,6 +42,13 @@ export async function createReleaseMetadata(options) {
   validateBuildOptions(options);
   const source = options.source ?? inspectGitSource(options.projectRoot, options.version);
   validateSource(source, options.version);
+  const references = {
+    engine: options.engineImage,
+    frontend: options.frontendImage,
+    postgres: options.postgresImage,
+  };
+  const contentIds = options.imageIdentities ?? inspectDockerImageIdentities(references);
+  validateImageIdentities(contentIds);
   const archiveHash = await sha256File(options.imageArchive);
 
   return {
@@ -56,11 +65,8 @@ export async function createReleaseMetadata(options) {
     },
     images: {
       mode: options.imageMode,
-      references: {
-        engine: options.engineImage,
-        frontend: options.frontendImage,
-        postgres: options.postgresImage,
-      },
+      references,
+      contentIds,
       archive: {
         file: path.basename(options.imageArchive),
         sha256: archiveHash,
@@ -71,6 +77,28 @@ export async function createReleaseMetadata(options) {
       manifest: "checksums.sha256",
     },
   };
+}
+
+export function inspectDockerImageIdentities(references) {
+  const identities = {};
+  for (const name of IMAGE_NAMES) {
+    const reference = references[name];
+    let identity;
+    try {
+      identity = execFileSync("docker", ["image", "inspect", "--format", "{{.Id}}", reference], {
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "pipe"],
+      }).trim().toLowerCase();
+    } catch (error) {
+      const detail = error?.stderr?.toString().trim() || error?.message || String(error);
+      throw new Error(`cannot inspect ${name} image ${reference}: ${detail}`);
+    }
+    if (!IMAGE_ID.test(identity)) {
+      throw new Error(`${name} image ${reference} returned an invalid content ID`);
+    }
+    identities[name] = identity;
+  }
+  return identities;
 }
 
 export async function writeReleaseMetadata(options) {
@@ -203,12 +231,13 @@ function validateMetadata(metadata) {
     throw new Error("release metadata image mode is invalid");
   }
   if (!isRecord(metadata.images.references)) throw new Error("image references are missing");
-  for (const name of ["engine", "frontend", "postgres"]) {
+  for (const name of IMAGE_NAMES) {
     const value = metadata.images.references[name];
     if (typeof value !== "string" || !value || /[\r\n]/.test(value)) {
       throw new Error(`release metadata contains an invalid ${name} image reference`);
     }
   }
+  validateImageIdentities(metadata.images.contentIds);
   if (!isRecord(metadata.images.archive) || !SHA256.test(metadata.images.archive.sha256 ?? "")) {
     throw new Error("release metadata image archive is invalid");
   }
@@ -222,6 +251,15 @@ function validateMetadata(metadata) {
     || metadata.integrity.manifest !== "checksums.sha256"
   ) {
     throw new Error("release metadata integrity section is invalid");
+  }
+}
+
+function validateImageIdentities(identities) {
+  if (!isRecord(identities)) throw new Error("image content IDs are missing");
+  for (const name of IMAGE_NAMES) {
+    if (!IMAGE_ID.test(identities[name] ?? "")) {
+      throw new Error(`release metadata contains an invalid ${name} image content ID`);
+    }
   }
 }
 

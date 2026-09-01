@@ -16,6 +16,11 @@ import {
 } from "../release-metadata.mjs";
 
 const REVISION = "a".repeat(40);
+const IMAGE_IDENTITIES = {
+  engine: `sha256:${"1".repeat(64)}`,
+  frontend: `sha256:${"2".repeat(64)}`,
+  postgres: `sha256:${"3".repeat(64)}`,
+};
 
 test("release metadata records source, image references, and archive integrity", async () => {
   const root = mkdtempSync(path.join(tmpdir(), "cyanrex-release-metadata-"));
@@ -32,6 +37,7 @@ test("release metadata records source, image references, and archive integrity",
     assert.deepEqual(metadata.source, { revision: REVISION, state: "clean", tag: "v1.2.3" });
     assert.equal(metadata.images.archive.file, "cyanrex-images.tar");
     assert.match(metadata.images.archive.sha256, /^[a-f0-9]{64}$/);
+    assert.deepEqual(metadata.images.contentIds, IMAGE_IDENTITIES);
     assert.equal(metadata.compose.source, "docker/docker-compose.distribution.yml");
     assert.equal(JSON.stringify(metadata).includes(root), false);
   } finally {
@@ -58,6 +64,13 @@ test("release metadata rejects ambiguous or host-specific build inputs", async (
         source: { revision: null, state: "clean", tag: null },
       }),
       /source revision is invalid/,
+    );
+    await assert.rejects(
+      createReleaseMetadata({
+        ...buildOptions(root, archive),
+        imageIdentities: { ...IMAGE_IDENTITIES, engine: "sha256:invalid" },
+      }),
+      /invalid engine image content ID/,
     );
   } finally {
     rmSync(root, { recursive: true, force: true });
@@ -207,6 +220,7 @@ function buildOptions(root, archive) {
     imageMode: "built",
     composeSource: "docker/docker-compose.distribution.yml",
     imageArchive: archive,
+    imageIdentities: IMAGE_IDENTITIES,
     source: { revision: REVISION, state: "clean", tag: "v1.2.3" },
   };
 }

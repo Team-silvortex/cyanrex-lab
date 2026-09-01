@@ -3,8 +3,9 @@
 Runtime package values remain in `manifest.env`. Auditable build details are recorded in
 `release-metadata.json`: package identity/time, Git revision and clean/dirty state, a matching annotated
 version Tag when available, image references/build mode, Compose template source, and the streamed
-SHA-256 of `cyanrex-images.tar`. The JSON file is covered by `checksums.sha256`, but neither file is a
-cryptographic signature.
+SHA-256 of `cyanrex-images.tar`. Each image reference is also bound to its Docker content ID; installation
+acceptance ignores inherited image overrides and verifies those IDs again after loading. The JSON file is
+covered by `checksums.sha256`, but neither file is a cryptographic signature.
 
 ## Package contents
 

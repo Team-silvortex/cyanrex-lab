@@ -45,6 +45,9 @@ assert_contains "$PACKAGE_SCRIPT" 'basename "$ARCHIVE_PATH"'
 assert_contains "$PACKAGE_SCRIPT" "printf 'POSTGRES_IMAGE=%q"
 assert_contains "$PACKAGE_SCRIPT" 'compose --profile runner-agent down'
 assert_contains "$SMOKE_SCRIPT" 'up --pull never'
+assert_contains "$SMOKE_SCRIPT" 'metadata["images"]["contentIds"]'
+assert_contains "$SMOKE_SCRIPT" 'docker", "image", "inspect", "--format", "{{.Id}}"'
+assert_contains "$SMOKE_SCRIPT" 'CYANREX_ENGINE_IMAGE="$ENGINE_IMAGE"'
 assert_contains "$SMOKE_SCRIPT" 'CYANREX_SMOKE_BIND_ADDRESS'
 assert_contains "$SMOKE_SCRIPT" 'frontend_ready'
 assert_contains "$ROOT_DIR/scripts/runner-agent.sh" 'export CYANREX_ENGINE_IMAGE CYANREX_IMAGE_TAG POSTGRES_IMAGE'
@@ -62,7 +65,19 @@ cat > "$WORK_DIR/bin/docker" <<'MOCK'
 #!/usr/bin/env bash
 set -euo pipefail
 case "${1:-}:${2:-}" in
-  info:|image:inspect) exit 0 ;;
+  info:) exit 0 ;;
+  image:inspect)
+    if [[ "$*" == *"--format"* ]]; then
+      case "${*: -1}" in
+        cyanrex/cyanrex-engine:*) digit=1 ;;
+        cyanrex/cyanrex-frontend:*) digit=2 ;;
+        postgres:*) digit=3 ;;
+        *) exit 2 ;;
+      esac
+      printf 'sha256:%064d\n' "$digit"
+    fi
+    exit 0
+    ;;
   save:*)
     output=""
     shift
@@ -98,6 +113,15 @@ package_dir="$(find "$WORK_DIR/extracted" -mindepth 1 -maxdepth 1 -type d -print
 assert_contains "$package_dir/manifest.env" 'POSTGRES_IMAGE=postgres:16'
 assert_contains "$package_dir/manifest.env" 'COMPOSE_TEMPLATE=docker/docker-compose.distribution.yml'
 node "$METADATA_SCRIPT" --verify "$package_dir" >/dev/null
+node - "$package_dir/release-metadata.json" <<'NODE'
+const metadata = JSON.parse(require("node:fs").readFileSync(process.argv[2], "utf8"));
+for (const [name, digit] of Object.entries({ engine: "1", frontend: "2", postgres: "3" })) {
+  const expected = `sha256:${"0".repeat(63)}${digit}`;
+  if (metadata.images.contentIds[name] !== expected) {
+    throw new Error(`unexpected ${name} image content ID`);
+  }
+}
+NODE
 if grep -Fq "$ROOT_DIR" "$package_dir/release-metadata.json" "$package_dir/manifest.env"; then
   echo "Distribution tool test failed: package metadata contains the build-host path." >&2
   exit 1

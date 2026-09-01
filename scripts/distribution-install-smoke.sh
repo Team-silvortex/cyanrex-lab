@@ -117,6 +117,7 @@ python3 - "$PACKAGE_DIR" <<'PY'
 import hashlib
 import json
 from pathlib import Path
+import re
 import sys
 
 root = Path(sys.argv[1]).resolve()
@@ -133,10 +134,23 @@ with (root / archive["file"]).open("rb") as handle:
         digest.update(chunk)
 if digest.hexdigest() != archive.get("sha256"):
     raise SystemExit("release metadata image archive checksum is invalid")
+content_ids = metadata.get("images", {}).get("contentIds", {})
+references = metadata.get("images", {}).get("references", {})
+for name in ("engine", "frontend", "postgres"):
+    if not re.fullmatch(r"sha256:[a-f0-9]{64}", content_ids.get(name, "")):
+        raise SystemExit(f"release metadata {name} image content ID is invalid")
+    if not isinstance(references.get(name), str) or not references[name].strip():
+        raise SystemExit(f"release metadata {name} image reference is invalid")
 compose_source = Path(metadata.get("compose", {}).get("source", ""))
 if compose_source.is_absolute() or ".." in compose_source.parts:
     raise SystemExit("release metadata leaks an absolute compose source path")
 PY
+# Pin acceptance to the package manifest instead of inherited host image overrides.
+# shellcheck disable=SC1091
+source "$PACKAGE_DIR/manifest.env"
+CYANREX_ENGINE_IMAGE="$ENGINE_IMAGE"
+CYANREX_FRONTEND_IMAGE="$FRONTEND_IMAGE"
+export CYANREX_ENGINE_IMAGE CYANREX_FRONTEND_IMAGE POSTGRES_IMAGE
 bash -n "$PACKAGE_DIR/deploy.sh" "$PACKAGE_DIR/run.sh" "$PACKAGE_DIR/stop.sh" \
   "$PACKAGE_DIR/runner-agent.sh" "$PACKAGE_DIR/runner-agent-smoke.sh"
 
@@ -166,6 +180,30 @@ WORK_DIR="$(mktemp -d)"
 STACK_ATTEMPTED=1
 echo "[cyanrex] Starting extracted distribution package..."
 CYANREX_DEPLOY_HEALTH_TIMEOUT_SECONDS=120 "$PACKAGE_DIR/deploy.sh" up --pull never
+python3 - "$PACKAGE_DIR/release-metadata.json" <<'PY'
+import json
+import subprocess
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as handle:
+    metadata = json.load(handle)
+references = metadata["images"]["references"]
+content_ids = metadata["images"]["contentIds"]
+for name in ("engine", "frontend", "postgres"):
+    result = subprocess.run(
+        ["docker", "image", "inspect", "--format", "{{.Id}}", references[name]],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        raise SystemExit(f"cannot inspect loaded {name} image: {result.stderr.strip()}")
+    actual = result.stdout.strip().lower()
+    if actual != content_ids[name]:
+        raise SystemExit(
+            f"loaded {name} image ID {actual or 'missing'} does not match {content_ids[name]}"
+        )
+PY
 
 ENGINE_URL="http://$BIND_ADDRESS:$ENGINE_PORT"
 FRONTEND_URL="http://$BIND_ADDRESS:$FRONTEND_PORT"
