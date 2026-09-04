@@ -107,6 +107,10 @@ chmod +x "$WORK_DIR/bin/curl"
 cat > "$WORK_DIR/bin/cyanrex-release" <<'MOCK'
 #!/usr/bin/env bash
 set -euo pipefail
+if [ "${1:-}" = "smoke" ]; then
+  printf '%s\n' "$@" > "$MOCK_NATIVE_SMOKE_LOG"
+  exit 0
+fi
 printf 'native\n' > "$MOCK_NATIVE_EVIDENCE_MARKER"
 if [ "${1:-}" != "evidence" ]; then
   echo "Expected evidence subcommand." >&2
@@ -127,11 +131,26 @@ run_smoke() {
     MOCK_KERNEL_MODE="$mode" \
     MOCK_NATIVE_EVIDENCE_TOOL="$WORK_DIR/runtime/live-kernel-evidence.py" \
     MOCK_NATIVE_EVIDENCE_MARKER="$WORK_DIR/native-evidence.marker" \
+    MOCK_NATIVE_SMOKE_LOG="$WORK_DIR/native-smoke.log" \
+    CYANREX_LIVE_KERNEL_SMOKE_FORCE_SHELL=1 \
     CYANREX_KERNEL_SMOKE_REPORT="$report_path" \
     CYANREX_KERNEL_SMOKE_POLL_ATTEMPTS=2 \
     CYANREX_KERNEL_SMOKE_POLL_INTERVAL=0.01 \
     "$WORK_DIR/runtime/live-kernel-smoke.sh"
 }
+
+PATH="$WORK_DIR/bin:$PATH" \
+  MOCK_NATIVE_SMOKE_LOG="$WORK_DIR/native-smoke.log" \
+  CYANREX_KERNEL_SMOKE_REPORT="$WORK_DIR/native-evidence.json" \
+  "$WORK_DIR/runtime/live-kernel-smoke.sh" >/dev/null
+mapfile -t native_arguments < "$WORK_DIR/native-smoke.log"
+if [ "${native_arguments[0]}" != "smoke" ] ||
+  [ "${native_arguments[1]}" != "live-kernel" ] ||
+  [[ " ${native_arguments[*]} " != *" --report $WORK_DIR/native-evidence.json "* ]] ||
+  [[ " ${native_arguments[*]} " != *" --release-metadata $WORK_DIR/runtime/release-metadata.json "* ]]; then
+  echo "Live kernel smoke tool test failed: wrapper did not select the native CLI." >&2
+  exit 1
+fi
 
 run_smoke success "$WORK_DIR/evidence.json" >/dev/null
 if [ "$(cat "$WORK_DIR/native-evidence.marker")" != "native" ]; then

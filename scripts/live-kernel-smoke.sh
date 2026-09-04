@@ -12,13 +12,17 @@ if [ -f "$ROOT_DIR/docker/.env" ]; then
 else
   ENV_FILE="$ROOT_DIR/.env"
 fi
-EVIDENCE_COMMAND=()
+RELEASE_TOOL=()
 if [ -n "${CYANREX_RELEASE_TOOL:-}" ]; then
-  EVIDENCE_COMMAND=("$CYANREX_RELEASE_TOOL" evidence)
+  RELEASE_TOOL=("$CYANREX_RELEASE_TOOL")
 elif [ -x "$ROOT_DIR/cyanrex-release" ]; then
-  EVIDENCE_COMMAND=("$ROOT_DIR/cyanrex-release" evidence)
+  RELEASE_TOOL=("$ROOT_DIR/cyanrex-release")
 elif command -v cyanrex-release >/dev/null 2>&1; then
-  EVIDENCE_COMMAND=(cyanrex-release evidence)
+  RELEASE_TOOL=(cyanrex-release)
+fi
+EVIDENCE_COMMAND=()
+if [ "${#RELEASE_TOOL[@]}" -gt 0 ]; then
+  EVIDENCE_COMMAND=("${RELEASE_TOOL[@]}" evidence)
 elif [ -f "$ROOT_DIR/scripts/live-kernel-evidence.py" ]; then
   EVIDENCE_COMMAND=(python3 "$ROOT_DIR/scripts/live-kernel-evidence.py")
 elif [ -f "$ROOT_DIR/live-kernel-evidence.py" ]; then
@@ -65,7 +69,6 @@ require_cmd() {
   fi
 }
 
-for command in curl python3; do require_cmd "$command"; done
 if [ ! -f "$ENV_FILE" ]; then
   echo "Error: runtime configuration is missing: $ENV_FILE" >&2
   exit 1
@@ -83,6 +86,19 @@ STREAM_SECONDS="${CYANREX_KERNEL_SMOKE_STREAM_SECONDS:-6}"
 POLL_ATTEMPTS="${CYANREX_KERNEL_SMOKE_POLL_ATTEMPTS:-80}"
 POLL_INTERVAL="${CYANREX_KERNEL_SMOKE_POLL_INTERVAL:-0.25}"
 REPORT_PATH="${CYANREX_KERNEL_SMOKE_REPORT:-}"
+
+if [ "${#RELEASE_TOOL[@]}" -gt 0 ] && [ "${CYANREX_LIVE_KERNEL_SMOKE_FORCE_SHELL:-0}" != "1" ]; then
+  native_arguments=(smoke live-kernel --engine-url "$ENGINE_URL" --origin "$ORIGIN")
+  if [ -n "$REPORT_PATH" ]; then
+    native_arguments+=(--report "$REPORT_PATH")
+    if [ -f "$ROOT_DIR/release-metadata.json" ]; then
+      native_arguments+=(--release-metadata "$ROOT_DIR/release-metadata.json")
+    fi
+  fi
+  exec "${RELEASE_TOOL[@]}" "${native_arguments[@]}"
+fi
+
+for command in curl python3; do require_cmd "$command"; done
 PROGRAM_NAME="$(python3 -c 'import uuid; print("release-kernel-smoke-" + uuid.uuid4().hex[:16])')"
 if [[ ! "$STREAM_SECONDS" =~ ^[0-9]+$ ]] || (( STREAM_SECONDS < 2 || STREAM_SECONDS > 30 )); then
   echo "Error: CYANREX_KERNEL_SMOKE_STREAM_SECONDS must be an integer from 2 to 30." >&2

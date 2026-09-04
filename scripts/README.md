@@ -74,10 +74,11 @@ Utility scripts for Cyanrex local operation.
   Its shell/Python implementation remains as a compatibility fallback when the CLI is unavailable.
 - `test-runner-agent-tools.sh`: verify secret generation, mode 0600, stable reuse, non-disclosure,
   safe Agent IDs, and shell syntax without starting Docker.
-- `live-kernel-smoke.sh`: on a disposable privileged Linux stack, authenticate, require an empty
-  attachment set, run the built-in Aya `sched_switch` ring-buffer template, require a uniquely bound
-  kernel event, detach its exact pin, and reject residue. `CYANREX_KERNEL_SMOKE_REPORT` optionally writes
-  atomic evidence bound to packaged release metadata and the runtime environment.
+- `live-kernel-smoke.sh`: on a disposable privileged Linux stack, prefer the native Rust client to
+  authenticate, require an empty attachment set, run the built-in Aya `sched_switch` ring-buffer
+  template, require a uniquely bound kernel event, detach its exact pin, and reject residue. The
+  shell/Python implementation remains a compatibility fallback. `CYANREX_KERNEL_SMOKE_REPORT`
+  optionally writes atomic evidence bound to packaged release metadata and the runtime environment.
 - `../engine/src/bin/cyanrex-release/`: native Rust release CLI. It handles complete Tag candidates,
   live-kernel evidence, verified two-file package extraction, and Runner Agent acceptance. Evidence
   accepts legacy v1 reports while new reports use the self-contained v2 event binding.
@@ -86,8 +87,8 @@ Utility scripts for Cyanrex local operation.
 - `release-tool-image.sh`: safely exports `cyanrex-release` from the built Engine image into an offline
   package and cleans up its temporary container.
 - `test-live-kernel-smoke.sh`: mock successful, stale-event, and missing-event paths, validate generated
-  and legacy evidence, reject tampering/metadata mismatches/duplicate keys, and require cleanup without
-  loading a program into the local kernel.
+  and legacy evidence, exercise native-wrapper selection, reject tampering/metadata mismatches/duplicate
+  keys, and require cleanup without loading a program into the local kernel.
 - `release-candidate.py`: compatibility implementation of four-file Tag artifact verification retained
   for older environments and parity regression coverage.
 - `release-package.py`: compatibility implementation for verifying and safely extracting an
@@ -228,14 +229,15 @@ Distributed package entry points:
 ./runner-agent.sh start  # optional unprivileged compiler Agent
 ./runner-agent-smoke.sh  # authenticated remote compile smoke; native CLI is preferred
 ./live-kernel-smoke.sh   # privileged live attach/event/detach acceptance
+./cyanrex-release smoke live-kernel --report /safe/output/report.json
 ./cyanrex-release smoke runner-agent --agent-id <id>
 ./cyanrex-release evidence verify /path/to/report.json --release-metadata ./release-metadata.json
 ./install-smoke.sh       # destructive disposable-host installation acceptance
 # `run.sh` and `stop.sh` remain compatibility shortcuts.
 ```
 
-The packaged smoke script prefers `cyanrex-release`; the adjacent Python tool remains a migration
-fallback for older or manually assembled environments.
+The packaged smoke scripts prefer `cyanrex-release`; their shell/Python implementations remain
+migration fallbacks for older or manually assembled environments.
 
 Verify a complete downloaded Tag candidate before extraction (use a directory containing only the
 archive, its checksum, the live-kernel report, and its checksum):

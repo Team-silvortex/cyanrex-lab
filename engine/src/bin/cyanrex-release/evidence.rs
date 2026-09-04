@@ -1,12 +1,10 @@
-use crate::strict_json;
+use crate::{evidence_output, strict_json};
 use chrono::{DateTime, SecondsFormat, Utc};
 use serde_json::{json, Map, Value};
 use sha2::{Digest, Sha256};
 use std::collections::BTreeSet;
-use std::fs::{self, OpenOptions};
-use std::io::Write;
+use std::fs;
 use std::path::{Path, PathBuf};
-use uuid::Uuid;
 
 const IMAGE_NAMES: [&str; 3] = ["engine", "frontend", "postgres"];
 
@@ -141,7 +139,7 @@ fn program_name(value: &str) -> bool {
         .is_some_and(|suffix| lowercase_hex(suffix, &[16]))
 }
 
-fn validate_environment(value: &Value) -> Result<(), String> {
+pub(crate) fn validate_environment(value: &Value) -> Result<(), String> {
     let report = object(value, "environment")?;
     if !report.get("overall_ok").is_some_and(Value::is_boolean) {
         return Err("environment overall_ok must be boolean".to_owned());
@@ -262,7 +260,7 @@ fn validate_candidate(value: &Value) -> Result<(), String> {
     Ok(())
 }
 
-fn candidate_from_metadata(path: &Path) -> Result<Value, String> {
+pub(crate) fn candidate_from_metadata(path: &Path) -> Result<Value, String> {
     let (metadata_value, source) = load_json(path, "release metadata")?;
     let metadata = object(&metadata_value, "release metadata")?;
     if metadata.get("schemaVersion").and_then(Value::as_u64) != Some(1) {
@@ -378,20 +376,34 @@ pub(crate) fn validate_report(value: &Value) -> Result<(), String> {
 fn create_report(options: &CreateOptions) -> Result<Value, String> {
     let (environment, _) = load_json(&options.environment, "environment report")?;
     let (event_value, _) = load_json(&options.event, "matched kernel event")?;
+    build_report(
+        environment,
+        event_value,
+        &options.program_name,
+        &options.pin_path,
+        options.release_metadata.as_deref(),
+    )
+}
+
+fn build_report(
+    environment: Value,
+    event_value: Value,
+    program_name: &str,
+    pin_path: &str,
+    release_metadata: Option<&Path>,
+) -> Result<Value, String> {
     validate_environment(&environment)?;
     let event = object(&event_value, "matched kernel event")?;
     let payload = object(&event["payload"], "matched kernel event payload")?;
     if event["event_type"].as_str() != Some("ebpf.kernel_ringbuf") {
         return Err("matched kernel event type is invalid".to_owned());
     }
-    if payload["program_name"].as_str() != Some(&options.program_name) {
+    if payload["program_name"].as_str() != Some(program_name) {
         return Err("matched kernel event belongs to another program".to_owned());
     }
     positive_integer(&payload["bytes"], "matched kernel event bytes")?;
     timestamp(&event["timestamp"], "matched kernel event timestamp")?;
-    let candidate = options
-        .release_metadata
-        .as_deref()
+    let candidate = release_metadata
         .map(candidate_from_metadata)
         .transpose()?
         .unwrap_or(Value::Null);
@@ -403,10 +415,10 @@ fn create_report(options: &CreateOptions) -> Result<Value, String> {
         "environment": environment,
         "exercise": {
             "templateId": "ringbuf-hi-freq-sampler",
-            "programName": options.program_name,
+            "programName": program_name,
             "runtimeBackend": "aya",
             "hook": "tracepoint/sched/sched_switch",
-            "pinPath": options.pin_path,
+            "pinPath": pin_path,
             "event": {
                 "timestamp": event.get("timestamp").cloned().unwrap_or(Value::Null),
                 "type": event.get("event_type").cloned().unwrap_or(Value::Null),
@@ -422,68 +434,19 @@ fn create_report(options: &CreateOptions) -> Result<Value, String> {
 
 pub fn create(options: &CreateOptions) -> Result<PathBuf, String> {
     let report = create_report(options)?;
-    write_report(&report, &options.output)
+    evidence_output::write_report(&report, &options.output)
 }
 
-fn write_report(report: &Value, output: &Path) -> Result<PathBuf, String> {
-    let destination = if output.is_absolute() {
-        output.to_path_buf()
-    } else {
-        std::env::current_dir()
-            .map_err(|error| format!("cannot resolve evidence output: {error}"))?
-            .join(output)
-    };
-    let parent = destination
-        .parent()
-        .ok_or_else(|| format!("evidence output has no parent: {}", destination.display()))?;
-    fs::create_dir_all(parent).map_err(|error| {
-        format!(
-            "cannot create evidence output directory {}: {error}",
-            parent.display()
-        )
-    })?;
-    let name = destination
-        .file_name()
-        .ok_or_else(|| format!("invalid evidence output path: {}", destination.display()))?
-        .to_string_lossy();
-    let temporary = parent.join(format!(".{name}.tmp-{}", Uuid::new_v4().simple()));
-    let result = (|| -> Result<(), String> {
-        let mut file = OpenOptions::new()
-            .write(true)
-            .create_new(true)
-            .open(&temporary)
-            .map_err(|error| format!("cannot create temporary evidence output: {error}"))?;
-        serde_json::to_writer_pretty(&mut file, report)
-            .map_err(|error| format!("cannot serialize live kernel evidence: {error}"))?;
-        file.write_all(b"\n")
-            .map_err(|error| format!("cannot write live kernel evidence: {error}"))?;
-        file.sync_all()
-            .map_err(|error| format!("cannot sync live kernel evidence: {error}"))?;
-        drop(file);
-        #[cfg(unix)]
-        {
-            use std::os::unix::fs::PermissionsExt;
-            fs::set_permissions(&temporary, fs::Permissions::from_mode(0o644))
-                .map_err(|error| format!("cannot set evidence permissions: {error}"))?;
-        }
-        fs::hard_link(&temporary, &destination).map_err(|error| {
-            if error.kind() == std::io::ErrorKind::AlreadyExists {
-                format!(
-                    "live kernel evidence output already exists: {}",
-                    destination.display()
-                )
-            } else {
-                format!(
-                    "cannot publish live kernel evidence {}: {error}",
-                    destination.display()
-                )
-            }
-        })?;
-        Ok(())
-    })();
-    let _ = fs::remove_file(&temporary);
-    result?;
-    Ok(destination)
+pub(crate) fn create_from_values(
+    environment: Value,
+    event: Value,
+    program_name: &str,
+    pin_path: &str,
+    release_metadata: Option<&Path>,
+    output: &Path,
+) -> Result<PathBuf, String> {
+    let report = build_report(environment, event, program_name, pin_path, release_metadata)?;
+    evidence_output::write_report(&report, output)
 }
 
 pub fn verify(options: &VerifyOptions) -> Result<(), String> {

@@ -166,6 +166,8 @@ The metadata is checksum-bound but not signed. The smoke test refuses to overwri
 Set `CYANREX_SMOKE_RUN_LIVE_KERNEL=1` only on a disposable privileged Linux host to additionally run
 the packaged `live-kernel-smoke.sh`: it attaches the built-in Aya `sched_switch` ring-buffer program,
 requires a uniquely identified real kernel event, detaches the exact pin, and rejects residual attachments.
+New packages run this flow through the adjacent native `cyanrex-release smoke live-kernel` client; the
+script retains its shell/Python path for compatibility with older or manually assembled packages.
 Set `CYANREX_KERNEL_SMOKE_REPORT=/safe/output/report.json` to atomically write machine-readable evidence;
 the script refuses to overwrite an existing report.
 

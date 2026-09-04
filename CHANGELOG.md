@@ -15,6 +15,8 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
   strict evidence validation, archived-metadata binding, and optional verified extraction.
 - Added a native Runner Agent acceptance client with bounded HTTP responses, local-or-TLS credential
   transport, TOTP login, compile-job polling, result validation, and failure cancellation.
+- Added a native privileged live-kernel acceptance client with strict environment validation, unique
+  attachment/event binding, exact cleanup proof, and optional in-memory evidence creation.
 
 ### Changed
 
@@ -26,6 +28,8 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 - Tag acceptance now uses native candidate verification after live-kernel smoke acceptance.
 - Packaged `runner-agent-smoke.sh` now prefers the adjacent Rust CLI and retains its previous shell/Python
   path only for source checkouts and older manually assembled packages.
+- Packaged `live-kernel-smoke.sh` now prefers the adjacent Rust CLI and retains its previous shell/Python
+  path as a compatibility fallback.
 
 ## [0.3.2] - 2026-09-04
 

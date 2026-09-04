@@ -136,6 +136,9 @@ cp .env.example .env   # fill secure credentials first
 The packaged deploy helper validates secrets, docker daemon readiness, and engine startup health by
 default.
 
+Packaged `runner-agent-smoke.sh` and `live-kernel-smoke.sh` prefer the adjacent native Rust release
+CLI. Their previous shell/Python paths remain compatibility fallbacks for older packages.
+
 For release acceptance on a disposable Docker host, run `./install-smoke.sh` immediately after
 extracting the archive. The script verifies all packaged checksums, loads the bundled images, starts
 the complete stack, validates the frontend and Engine, runs the authenticated Runner Agent compile

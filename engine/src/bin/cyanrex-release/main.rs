@@ -3,12 +3,14 @@ mod candidate;
 mod candidate_cli;
 mod evidence;
 mod evidence_cli;
+mod evidence_output;
 mod package;
 mod package_cli;
 mod release_archive;
 mod release_metadata;
 mod smoke_cli;
 mod smoke_http;
+mod smoke_live_kernel;
 mod smoke_runner_agent;
 mod strict_json;
 
@@ -51,7 +53,7 @@ fn print_help() {
            cyanrex-release candidate verify <bundle> [options]\n\
            cyanrex-release evidence <create|verify> [options]\n\
            cyanrex-release package extract <bundle> [options]\n\
-           cyanrex-release smoke runner-agent [options]\n\
+           cyanrex-release smoke <live-kernel|runner-agent> [options]\n\
            cyanrex-release --version\n\
          \n\
          Commands:\n\
