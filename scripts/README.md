@@ -82,8 +82,8 @@ Utility scripts for Cyanrex local operation.
 - `../engine/src/bin/cyanrex-release/`: native Rust release CLI. It handles complete Tag candidates,
   live-kernel evidence, verified two-file package extraction, and Runner Agent acceptance. Evidence
   accepts legacy v1 reports while new reports use the self-contained v2 event binding.
-- `live-kernel-evidence.py`: compatibility implementation retained for older environments and parity
-  regression coverage.
+- `live-kernel-evidence.py`: source-checkout compatibility implementation retained for parity regression
+  coverage; new offline packages ship only the native release CLI.
 - `release-tool-image.sh`: safely exports `cyanrex-release` from the built Engine image into an offline
   package and cleans up its temporary container.
 - `test-live-kernel-smoke.sh`: mock successful, stale-event, and missing-event paths, validate generated

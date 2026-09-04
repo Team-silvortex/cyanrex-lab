@@ -30,6 +30,8 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
   path only for source checkouts and older manually assembled packages.
 - Packaged `live-kernel-smoke.sh` now prefers the adjacent Rust CLI and retains its previous shell/Python
   path as a compatibility fallback.
+- New offline distributions no longer bundle the standalone Python live-kernel evidence helper; its
+  source copy remains for compatibility and cross-implementation regression coverage.
 
 ## [0.3.2] - 2026-09-04
 

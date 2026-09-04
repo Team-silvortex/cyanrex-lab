@@ -178,8 +178,8 @@ Verify that report later against the exact extracted package metadata:
   --release-metadata ./release-metadata.json
 ```
 
-New offline packages carry this native Rust verifier. The Python release tools remain temporarily
-available as compatibility and cross-implementation references.
+New offline packages carry this native Rust verifier without standalone Python release helpers. The
+Python implementations remain in source checkouts as compatibility and cross-implementation references.
 
 For an artifact downloaded from the Tag workflow, place its four files in a dedicated directory and
 verify the complete candidate from a trusted checkout of the matching source Tag before extracting it:

@@ -96,8 +96,7 @@ replace_env_value() {
 
 for command in docker curl python3 openssl awk mktemp; do require_cmd "$command"; done
 for file in checksums.sha256 manifest.env release-metadata.json docker-compose.yml .env.example \
-  deploy.sh runner-agent.sh runner-agent-smoke.sh live-kernel-smoke.sh live-kernel-evidence.py \
-  cyanrex-release \
+  deploy.sh runner-agent.sh runner-agent-smoke.sh live-kernel-smoke.sh cyanrex-release \
   cyanrex-images.tar; do
   if [ ! -f "$PACKAGE_DIR/$file" ]; then
     echo "Error: distribution package is missing '$file'." >&2
@@ -158,7 +157,6 @@ export CYANREX_ENGINE_IMAGE CYANREX_FRONTEND_IMAGE POSTGRES_IMAGE
 bash -n "$PACKAGE_DIR/deploy.sh" "$PACKAGE_DIR/run.sh" "$PACKAGE_DIR/stop.sh" \
   "$PACKAGE_DIR/runner-agent.sh" "$PACKAGE_DIR/runner-agent-smoke.sh" \
   "$PACKAGE_DIR/live-kernel-smoke.sh"
-python3 "$PACKAGE_DIR/live-kernel-evidence.py" --help >/dev/null
 "$PACKAGE_DIR/cyanrex-release" --help >/dev/null
 
 ENGINE_PORT="${CYANREX_SMOKE_ENGINE_PORT:-8080}"

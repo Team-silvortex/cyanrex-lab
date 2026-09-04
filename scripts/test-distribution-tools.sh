@@ -30,7 +30,6 @@ assert_contains() {
 
 assert_contains "$PACKAGE_SCRIPT" 'distribution-install-smoke.sh'
 assert_contains "$PACKAGE_SCRIPT" 'live-kernel-smoke.sh'
-assert_contains "$PACKAGE_SCRIPT" 'live-kernel-evidence.py'
 assert_contains "$PACKAGE_SCRIPT" 'cyanrex-release'
 assert_contains "$PACKAGE_SCRIPT" 'release-tool-image.sh'
 assert_contains "$PACKAGE_SCRIPT" 'release-metadata.json'
@@ -55,6 +54,10 @@ if grep -Fq 'release-package.py" extract' "$RELEASE_WORKFLOW" "$CI_WORKFLOW"; th
 fi
 if grep -Fq 'release-candidate.py" verify' "$RELEASE_WORKFLOW"; then
   echo "Distribution tool test failed: Tag validation must use native candidate verification." >&2
+  exit 1
+fi
+if grep -Fq 'cp "$ROOT_DIR/scripts/live-kernel-evidence.py"' "$PACKAGE_SCRIPT"; then
+  echo "Distribution tool test failed: new packages must not bundle the Python evidence helper." >&2
   exit 1
 fi
 if grep -Fq 'tar -xzf' "$RELEASE_WORKFLOW" "$CI_WORKFLOW"; then
@@ -182,7 +185,7 @@ python3 "$SAFE_PACKAGE_SCRIPT" extract "$WORK_DIR/output" \
 package_dir="$(find "$WORK_DIR/extracted" -mindepth 1 -maxdepth 1 -type d -print -quit)"
 [ -x "$package_dir/install-smoke.sh" ]
 [ -x "$package_dir/live-kernel-smoke.sh" ]
-[ -x "$package_dir/live-kernel-evidence.py" ]
+[ ! -e "$package_dir/live-kernel-evidence.py" ]
 [ -x "$package_dir/cyanrex-release" ]
 assert_contains "$package_dir/manifest.env" 'POSTGRES_IMAGE=postgres:16'
 assert_contains "$package_dir/manifest.env" 'COMPOSE_TEMPLATE=docker/docker-compose.distribution.yml'
