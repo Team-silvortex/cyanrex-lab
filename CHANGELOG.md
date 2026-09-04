@@ -5,6 +5,8 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-09-04
+
 ### Added
 
 - Generated TypeScript inputs, responses, access tiers, transports, and runtime descriptors for all
@@ -57,5 +59,6 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 The canonical package metadata advanced directly from `0.2.9` to `0.3.1`. Version `0.3.0` identifies
 the frozen API compatibility snapshot only; it was not a package release and must not be tagged.
 
-[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.2...HEAD
+[0.3.2]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.2.9...v0.3.1

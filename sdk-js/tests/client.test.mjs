@@ -117,7 +117,7 @@ test("loads the public OpenAPI contract through the system namespace", async () 
   const client = new CyanrexClient("http://localhost:8080", {
     fetch: async (url, init) => {
       calls.push({ url, init });
-      return Response.json({ openapi: "3.1.0", info: { version: "0.3.1" }, paths: {} });
+      return Response.json({ openapi: "3.1.0", info: { version: "0.3.2" }, paths: {} });
     },
   });
 
