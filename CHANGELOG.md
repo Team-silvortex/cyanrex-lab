@@ -27,6 +27,8 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
   retains checksum-addressed evidence bound to the candidate metadata and kernel environment.
 - Added a packaged, strict live-kernel evidence CLI that creates self-contained v2 reports, preserves
   v1 verification, and rejects schema drift, duplicate JSON keys, tampering, or candidate mismatches.
+- Added a single downloaded-candidate verifier that streams the outer archive without extraction,
+  rejects unsafe members, checks every packaged file, and cross-binds release metadata to kernel evidence.
 - Added deterministic course-document mirror validation so stale committed frontend lessons fail every
   quality-gate mode instead of being repaired only as a build side effect.
 

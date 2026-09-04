@@ -83,6 +83,11 @@ Utility scripts for Cyanrex local operation.
 - `test-live-kernel-smoke.sh`: mock successful, stale-event, and missing-event paths, validate generated
   and legacy evidence, reject tampering/metadata mismatches/duplicate keys, and require cleanup without
   loading a program into the local kernel.
+- `release-candidate.py`: verify the exact four-file Tag artifact as one unit. It validates both outer
+  checksums, streams the package without extraction, rejects unsafe or ambiguous archive structures,
+  verifies every internal file, and cross-binds release metadata to the live-kernel evidence.
+- `test-release-candidate.sh`: build a minimal valid candidate and reject checksum tampering, evidence
+  substitution, modified package members, traversal, symbolic links, and ambiguous archives.
 
 - `bench-event-bus.sh`: run the local event-bus throughput benchmark.
   - configurable through environment variables:
@@ -219,4 +224,13 @@ Distributed package entry points:
 python3 ./live-kernel-evidence.py verify /path/to/report.json --release-metadata ./release-metadata.json
 ./install-smoke.sh       # destructive disposable-host installation acceptance
 # `run.sh` and `stop.sh` remain compatibility shortcuts.
+```
+
+Verify a complete downloaded Tag candidate before extraction (use a directory containing only the
+archive, its checksum, the live-kernel report, and its checksum):
+
+```bash
+release_revision="$(git rev-list -n 1 v0.3.1)"
+python3 scripts/release-candidate.py verify /path/to/downloaded-candidate \
+  --expect-version 0.3.1 --expect-revision "$release_revision" --expect-tag v0.3.1
 ```

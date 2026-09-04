@@ -5,12 +5,15 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PACKAGE_SCRIPT="$ROOT_DIR/scripts/package-distribution.sh"
 SMOKE_SCRIPT="$ROOT_DIR/scripts/distribution-install-smoke.sh"
 METADATA_SCRIPT="$ROOT_DIR/scripts/release-metadata.mjs"
+CANDIDATE_SCRIPT="$ROOT_DIR/scripts/release-candidate.py"
+EVIDENCE_SCRIPT="$ROOT_DIR/scripts/live-kernel-evidence.py"
 RELEASE_WORKFLOW="$ROOT_DIR/.github/workflows/release-validation.yml"
 WORK_DIR="$(mktemp -d)"
 trap 'rm -rf "$WORK_DIR"' EXIT
 
 bash -n "$PACKAGE_SCRIPT" "$SMOKE_SCRIPT"
 "$SMOKE_SCRIPT" --help >/dev/null
+python3 "$CANDIDATE_SCRIPT" --help >/dev/null
 
 assert_contains() {
   local file="$1"
@@ -31,8 +34,8 @@ assert_contains "$RELEASE_WORKFLOW" '--expect-source-state clean --expect-image-
 assert_contains "$RELEASE_WORKFLOW" 'CYANREX_SMOKE_RUN_LIVE_KERNEL: "1"'
 assert_contains "$RELEASE_WORKFLOW" 'CYANREX_KERNEL_SMOKE_REPORT:'
 assert_contains "$RELEASE_WORKFLOW" 'cyanrex-live-kernel-acceptance.json.sha256'
-assert_contains "$RELEASE_WORKFLOW" 'live-kernel-evidence.py" verify'
-assert_contains "$RELEASE_WORKFLOW" '--release-metadata "$package_dir/release-metadata.json"'
+assert_contains "$RELEASE_WORKFLOW" 'release-candidate.py" verify'
+assert_contains "$RELEASE_WORKFLOW" 'cp "$report" "$RUNNER_TEMP/cyanrex-release/"'
 assert_contains "$RELEASE_WORKFLOW" '--expect-revision "$RELEASE_REVISION"'
 assert_contains "$RELEASE_WORKFLOW" '--expect-source-state clean'
 assert_contains "$RELEASE_WORKFLOW" '"$package_dir/install-smoke.sh"'
@@ -145,5 +148,37 @@ if command -v sha256sum >/dev/null 2>&1; then
 else
   (cd "$package_dir" && shasum -a 256 -c checksums.sha256 >/dev/null)
 fi
+
+cat > "$WORK_DIR/environment.json" <<'JSON'
+{
+  "overall_ok": true,
+  "generated_at": "2026-09-04T01:02:04Z",
+  "runtime_mode": "native-linux",
+  "checks": [{"name": "kernel", "ok": true, "detail": "mock test kernel"}]
+}
+JSON
+cat > "$WORK_DIR/event.json" <<'JSON'
+{
+  "timestamp": "2026-09-04T01:02:05Z",
+  "event_type": "ebpf.kernel_ringbuf",
+  "payload": {
+    "program_name": "release-kernel-smoke-0123456789abcdef",
+    "bytes": 64
+  }
+}
+JSON
+report="$WORK_DIR/output/cyanrex-live-kernel-acceptance.json"
+python3 "$EVIDENCE_SCRIPT" create --output "$report" \
+  --environment "$WORK_DIR/environment.json" --event "$WORK_DIR/event.json" \
+  --program-name release-kernel-smoke-0123456789abcdef \
+  --pin-path /sys/fs/bpf/release-kernel-smoke-0123456789abcdef \
+  --release-metadata "$package_dir/release-metadata.json" >/dev/null
+if command -v sha256sum >/dev/null 2>&1; then
+  (cd "$WORK_DIR/output" && sha256sum "$(basename "$report")" > "$(basename "$report").sha256")
+else
+  (cd "$WORK_DIR/output" && shasum -a 256 "$(basename "$report")" > "$(basename "$report").sha256")
+fi
+python3 "$CANDIDATE_SCRIPT" verify "$WORK_DIR/output" \
+  --expect-version 0.2.0 --expect-image-mode prebuilt >/dev/null
 
 echo "Distribution management tool checks passed."

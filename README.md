@@ -176,6 +176,20 @@ python3 ./live-kernel-evidence.py verify /safe/output/report.json \
   --release-metadata ./release-metadata.json
 ```
 
+For an artifact downloaded from the Tag workflow, place its four files in a dedicated directory and
+verify the complete candidate from a trusted checkout of the matching source Tag before extracting it:
+
+```bash
+release_revision="$(git rev-list -n 1 v0.3.1)"
+python3 scripts/release-candidate.py verify /path/to/downloaded-candidate \
+  --expect-version 0.3.1 --expect-revision "$release_revision" --expect-tag v0.3.1
+```
+
+This streams the archive without extracting it, rejects links, path traversal, duplicate members, and
+unchecksummed payloads, then binds the exact archived metadata to the separately checksummed live-kernel
+evidence. Until release signing is configured, these checks prove bundle consistency rather than
+publisher authenticity.
+
 Usage on target machine:
 
 ```bash
@@ -389,5 +403,5 @@ runs `install-smoke.sh` against the extracted archive (including loaded-image co
 enables its privileged live-kernel attach/event/detach acceptance before uploading the accepted archive
 plus outer checksum as a 30-day workflow artifact. The artifact also retains a separately checksummed
 live-kernel report bound to the candidate metadata, kernel environment, unique event, and exact cleanup;
-the packaged strict verifier rechecks this contract offline. This does not create a GitHub Release or
-sign/publish packages.
+the unified candidate verifier streams and checks the complete four-file artifact before upload and can
+recheck it offline after download. This does not create a GitHub Release or sign/publish packages.

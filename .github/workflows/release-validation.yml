@@ -77,32 +77,27 @@ jobs:
           source "$package_dir/manifest.env"
           docker image rm "$ENGINE_IMAGE" "$FRONTEND_IMAGE" "$POSTGRES_IMAGE"
           "$package_dir/install-smoke.sh"
-      - name: Verify live kernel acceptance evidence
+      - name: Assemble and verify accepted candidate bundle
         env:
           RELEASE_VERSION: ${{ steps.release.outputs.version }}
           RELEASE_REVISION: ${{ steps.release.outputs.revision }}
         run: |
           report="$RUNNER_TEMP/cyanrex-live-kernel-acceptance.json"
-          package_dir="$(find "$RUNNER_TEMP/cyanrex-release-extracted" \
-            -mindepth 1 -maxdepth 1 -type d -name 'cyanrex-lab-*' -print -quit)"
-          test -n "$package_dir"
-          python3 "$GITHUB_WORKSPACE/scripts/live-kernel-evidence.py" verify "$report" \
-            --release-metadata "$package_dir/release-metadata.json" \
+          cp "$report" "$RUNNER_TEMP/cyanrex-release/"
+          (cd "$RUNNER_TEMP/cyanrex-release" && \
+            sha256sum cyanrex-live-kernel-acceptance.json \
+              > cyanrex-live-kernel-acceptance.json.sha256)
+          python3 "$GITHUB_WORKSPACE/scripts/release-candidate.py" verify \
+            "$RUNNER_TEMP/cyanrex-release" \
             --expect-version "$RELEASE_VERSION" \
             --expect-revision "$RELEASE_REVISION" \
             --expect-tag "$GITHUB_REF_NAME" \
             --expect-source-state clean \
             --expect-image-mode built
-          (cd "$RUNNER_TEMP" && sha256sum cyanrex-live-kernel-acceptance.json \
-            > cyanrex-live-kernel-acceptance.json.sha256)
       - name: Upload accepted candidate artifact
         uses: actions/upload-artifact@v4
         with:
           name: cyanrex-lab-${{ github.ref_name }}
-          path: |
-            ${{ runner.temp }}/cyanrex-release/*.tar.gz
-            ${{ runner.temp }}/cyanrex-release/*.tar.gz.sha256
-            ${{ runner.temp }}/cyanrex-live-kernel-acceptance.json
-            ${{ runner.temp }}/cyanrex-live-kernel-acceptance.json.sha256
+          path: ${{ runner.temp }}/cyanrex-release/*
           if-no-files-found: error
           retention-days: 30
