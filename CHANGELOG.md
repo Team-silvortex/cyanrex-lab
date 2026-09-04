@@ -5,6 +5,17 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Added the native Rust `cyanrex-release evidence` CLI with strict duplicate-key rejection, candidate
+  metadata binding, legacy v1 verification, and atomic non-overwriting report creation.
+
+### Changed
+
+- Offline distributions now export the native release CLI from the Engine image and prefer it for
+  live-kernel evidence, while retaining the Python implementation as a compatibility fallback during
+  the remaining release-tool migration.
+
 ## [0.3.2] - 2026-09-04
 
 ### Added

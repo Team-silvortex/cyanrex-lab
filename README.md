@@ -172,9 +172,12 @@ the script refuses to overwrite an existing report.
 Verify that report later against the exact extracted package metadata:
 
 ```bash
-python3 ./live-kernel-evidence.py verify /safe/output/report.json \
+./cyanrex-release evidence verify /safe/output/report.json \
   --release-metadata ./release-metadata.json
 ```
+
+New offline packages carry this native Rust verifier. `live-kernel-evidence.py` remains available as a
+temporary compatibility fallback while the remaining candidate and extraction commands are migrated.
 
 For an artifact downloaded from the Tag workflow, place its four files in a dedicated directory and
 verify the complete candidate from a trusted checkout of the matching source Tag before extracting it:

@@ -11,8 +11,8 @@ covered by `checksums.sha256`, but neither file is a cryptographic signature.
 
 - `docker-compose.yml` and `.env.example`
 - `deploy.sh`, `run.sh`, and `stop.sh`
-- `runner-agent.sh`, `runner-agent-smoke.sh`, `live-kernel-smoke.sh`, and
-  `live-kernel-evidence.py`
+- `runner-agent.sh`, `runner-agent-smoke.sh`, `live-kernel-smoke.sh`, and the native
+  `cyanrex-release` CLI (`live-kernel-evidence.py` remains as a compatibility fallback)
 - `install-smoke.sh` for disposable clean-host installation acceptance
 - `cyanrex-images.tar` containing PostgreSQL, Engine, and frontend images
 - `manifest.env` and machine-readable `release-metadata.json`
@@ -47,7 +47,7 @@ The packaged verifier performs strict offline schema and candidate-binding check
 package metadata used to create the report:
 
 ```bash
-python3 ./live-kernel-evidence.py verify /safe/output/live-kernel-acceptance.json \
+./cyanrex-release evidence verify /safe/output/live-kernel-acceptance.json \
   --release-metadata ./release-metadata.json
 ```
 

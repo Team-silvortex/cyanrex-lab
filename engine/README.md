@@ -85,6 +85,13 @@ cargo fmt --manifest-path engine/Cargo.toml -- --check
 cargo test --manifest-path engine/Cargo.toml --locked
 ```
 
+The same crate also builds `cyanrex-release`, the native release-tool migration target. Its first
+stable command replaces Python on the live-kernel evidence path:
+
+```bash
+cargo run --manifest-path engine/Cargo.toml --bin cyanrex-release -- evidence --help
+```
+
 After changing routes or wire models, regenerate and validate the API contract from the repository
 root:
 

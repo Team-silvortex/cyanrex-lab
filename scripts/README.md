@@ -77,9 +77,14 @@ Utility scripts for Cyanrex local operation.
   attachment set, run the built-in Aya `sched_switch` ring-buffer template, require a uniquely bound
   kernel event, detach its exact pin, and reject residue. `CYANREX_KERNEL_SMOKE_REPORT` optionally writes
   atomic evidence bound to packaged release metadata and the runtime environment.
-- `live-kernel-evidence.py`: create and strictly verify versioned live-kernel evidence, including exact
-  candidate metadata, image identities, environment, unique event, bpffs pin, and cleanup. The verifier
-  accepts legacy v1 evidence while new reports use the self-contained v2 event binding.
+- `../engine/src/bin/cyanrex-release/`: native Rust release CLI. Its first migrated command creates and
+  strictly verifies live-kernel evidence, including exact candidate metadata, image identities,
+  environment, unique event, bpffs pin, and cleanup. It accepts legacy v1 evidence while new reports
+  use the self-contained v2 event binding.
+- `live-kernel-evidence.py`: compatibility implementation retained while the candidate and safe-package
+  commands move into the native CLI.
+- `release-tool-image.sh`: safely exports `cyanrex-release` from the built Engine image into an offline
+  package and cleans up its temporary container.
 - `test-live-kernel-smoke.sh`: mock successful, stale-event, and missing-event paths, validate generated
   and legacy evidence, reject tampering/metadata mismatches/duplicate keys, and require cleanup without
   loading a program into the local kernel.
@@ -226,10 +231,13 @@ Distributed package entry points:
 ./runner-agent.sh start  # optional unprivileged compiler Agent
 ./runner-agent-smoke.sh  # authenticated remote compile smoke test
 ./live-kernel-smoke.sh   # privileged live attach/event/detach acceptance
-python3 ./live-kernel-evidence.py verify /path/to/report.json --release-metadata ./release-metadata.json
+./cyanrex-release evidence verify /path/to/report.json --release-metadata ./release-metadata.json
 ./install-smoke.sh       # destructive disposable-host installation acceptance
 # `run.sh` and `stop.sh` remain compatibility shortcuts.
 ```
+
+The packaged smoke script prefers `cyanrex-release`; the adjacent Python tool remains a migration
+fallback for older or manually assembled environments.
 
 Verify a complete downloaded Tag candidate before extraction (use a directory containing only the
 archive, its checksum, the live-kernel report, and its checksum):

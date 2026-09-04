@@ -104,6 +104,18 @@ PY
 esac
 MOCK
 chmod +x "$WORK_DIR/bin/curl"
+cat > "$WORK_DIR/bin/cyanrex-release" <<'MOCK'
+#!/usr/bin/env bash
+set -euo pipefail
+printf 'native\n' > "$MOCK_NATIVE_EVIDENCE_MARKER"
+if [ "${1:-}" != "evidence" ]; then
+  echo "Expected evidence subcommand." >&2
+  exit 2
+fi
+shift
+exec python3 "$MOCK_NATIVE_EVIDENCE_TOOL" "$@"
+MOCK
+chmod +x "$WORK_DIR/bin/cyanrex-release"
 
 run_smoke() {
   local mode="$1"
@@ -113,6 +125,8 @@ run_smoke() {
     MOCK_KERNEL_STATE="$WORK_DIR/state" \
     MOCK_KERNEL_PROGRAM="$WORK_DIR/program" \
     MOCK_KERNEL_MODE="$mode" \
+    MOCK_NATIVE_EVIDENCE_TOOL="$WORK_DIR/runtime/live-kernel-evidence.py" \
+    MOCK_NATIVE_EVIDENCE_MARKER="$WORK_DIR/native-evidence.marker" \
     CYANREX_KERNEL_SMOKE_REPORT="$report_path" \
     CYANREX_KERNEL_SMOKE_POLL_ATTEMPTS=2 \
     CYANREX_KERNEL_SMOKE_POLL_INTERVAL=0.01 \
@@ -120,6 +134,10 @@ run_smoke() {
 }
 
 run_smoke success "$WORK_DIR/evidence.json" >/dev/null
+if [ "$(cat "$WORK_DIR/native-evidence.marker")" != "native" ]; then
+  echo "Live kernel smoke tool test failed: native evidence CLI was not preferred." >&2
+  exit 1
+fi
 if [ "$(cat "$WORK_DIR/state")" != "detached" ]; then
   echo "Live kernel smoke tool test failed: successful run did not detach." >&2
   exit 1

@@ -27,6 +27,7 @@ RUN sed -i "s|deb.debian.org|${APT_MIRROR}|g" /etc/apt/sources.list.d/debian.sou
 
 COPY --from=builder /app/engine/target/release/cyanrex-engine /usr/local/bin/cyanrex-engine
 COPY --from=builder /app/engine/target/release/cyanrex-runner-agent /usr/local/bin/cyanrex-runner-agent
+COPY --from=builder /app/engine/target/release/cyanrex-release /usr/local/bin/cyanrex-release
 COPY modules ./modules
 
 ENV ENGINE_HOST=0.0.0.0

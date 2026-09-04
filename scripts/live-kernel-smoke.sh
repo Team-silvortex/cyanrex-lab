@@ -12,10 +12,17 @@ if [ -f "$ROOT_DIR/docker/.env" ]; then
 else
   ENV_FILE="$ROOT_DIR/.env"
 fi
-if [ -f "$ROOT_DIR/scripts/live-kernel-evidence.py" ]; then
-  EVIDENCE_TOOL="$ROOT_DIR/scripts/live-kernel-evidence.py"
-else
-  EVIDENCE_TOOL="$ROOT_DIR/live-kernel-evidence.py"
+EVIDENCE_COMMAND=()
+if [ -n "${CYANREX_RELEASE_TOOL:-}" ]; then
+  EVIDENCE_COMMAND=("$CYANREX_RELEASE_TOOL" evidence)
+elif [ -x "$ROOT_DIR/cyanrex-release" ]; then
+  EVIDENCE_COMMAND=("$ROOT_DIR/cyanrex-release" evidence)
+elif command -v cyanrex-release >/dev/null 2>&1; then
+  EVIDENCE_COMMAND=(cyanrex-release evidence)
+elif [ -f "$ROOT_DIR/scripts/live-kernel-evidence.py" ]; then
+  EVIDENCE_COMMAND=(python3 "$ROOT_DIR/scripts/live-kernel-evidence.py")
+elif [ -f "$ROOT_DIR/live-kernel-evidence.py" ]; then
+  EVIDENCE_COMMAND=(python3 "$ROOT_DIR/live-kernel-evidence.py")
 fi
 
 usage() {
@@ -93,8 +100,8 @@ if [ -n "$REPORT_PATH" ] && [ -e "$REPORT_PATH" ]; then
   echo "Error: live kernel evidence output already exists: $REPORT_PATH" >&2
   exit 1
 fi
-if [ -n "$REPORT_PATH" ] && [ ! -f "$EVIDENCE_TOOL" ]; then
-  echo "Error: live kernel evidence tool is missing: $EVIDENCE_TOOL" >&2
+if [ -n "$REPORT_PATH" ] && [ "${#EVIDENCE_COMMAND[@]}" -eq 0 ]; then
+  echo "Error: neither cyanrex-release nor the Python evidence fallback is available." >&2
   exit 1
 fi
 
@@ -297,7 +304,7 @@ if [ -n "$REPORT_PATH" ]; then
   if [ -f "$ROOT_DIR/release-metadata.json" ]; then
     metadata_arguments=(--release-metadata "$ROOT_DIR/release-metadata.json")
   fi
-  python3 "$EVIDENCE_TOOL" create \
+  "${EVIDENCE_COMMAND[@]}" create \
     --output "$REPORT_PATH" \
     --environment "$ENVIRONMENT_JSON" \
     --event "$MATCHED_EVENT_JSON" \

@@ -1,0 +1,44 @@
+mod evidence;
+mod evidence_cli;
+mod strict_json;
+
+use std::env;
+
+fn main() {
+    if let Err(error) = run(env::args().skip(1).collect()) {
+        eprintln!("Error: {error}");
+        std::process::exit(1);
+    }
+}
+
+fn run(arguments: Vec<String>) -> Result<(), String> {
+    let Some(command) = arguments.first().map(String::as_str) else {
+        print_help();
+        return Ok(());
+    };
+    match command {
+        "--help" | "-h" | "help" => {
+            print_help();
+            Ok(())
+        }
+        "--version" | "-V" => {
+            println!("cyanrex-release {}", env!("CARGO_PKG_VERSION"));
+            Ok(())
+        }
+        "evidence" => evidence_cli::run(&arguments[1..]),
+        _ => Err(format!("unknown command {command:?}; run with --help")),
+    }
+}
+
+fn print_help() {
+    println!(
+        "Cyanrex native release tooling\n\
+         \n\
+         Usage:\n\
+           cyanrex-release evidence <create|verify> [options]\n\
+           cyanrex-release --version\n\
+         \n\
+         Commands:\n\
+           evidence    Create or strictly verify live-kernel acceptance evidence"
+    );
+}

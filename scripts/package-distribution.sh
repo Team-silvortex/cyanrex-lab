@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=release-tool-image.sh
+source "$ROOT_DIR/scripts/release-tool-image.sh"
 OUTPUT_DIR="${ROOT_DIR}/dist"
 PACKAGE_TAG="$(date -u +%Y%m%d-%H%M%S)"
 VERSION=""
@@ -500,7 +502,7 @@ chmod +x "$stop_script"
 generate_checksums() {
   local package_dir="$1"
   resolve_checksum_command
-  (cd "$package_dir" && "${CHECKSUM_CMD[@]}" docker-compose.yml .env.example runner-agent.env.example runner-agent.sh runner-agent-smoke.sh live-kernel-smoke.sh live-kernel-evidence.py install-smoke.sh LICENSE README.md README-en.md README-zh-CN.md README-docker.md README-DEPLOY.md manifest.env release-metadata.json deploy.sh run.sh stop.sh cyanrex-images.tar > checksums.sha256)
+  (cd "$package_dir" && "${CHECKSUM_CMD[@]}" docker-compose.yml .env.example runner-agent.env.example runner-agent.sh runner-agent-smoke.sh live-kernel-smoke.sh live-kernel-evidence.py cyanrex-release install-smoke.sh LICENSE README.md README-en.md README-zh-CN.md README-docker.md README-DEPLOY.md manifest.env release-metadata.json deploy.sh run.sh stop.sh cyanrex-images.tar > checksums.sha256)
 }
 resolve_version
 require_cmd tar
@@ -540,6 +542,7 @@ if [[ "$SKIP_BUILD" == "0" ]]; then
 fi
 
 assert_images "$ENGINE_IMAGE" "$FRONTEND_IMAGE" "$POSTGRES_IMAGE"
+export_release_tool "$ENGINE_IMAGE" "$PACKAGE_DIR/cyanrex-release"
 
 cp "$COMPOSE_TEMPLATE" "$PACKAGE_DIR/docker-compose.yml"
 cp "$ROOT_DIR/docker/.env.example" "$PACKAGE_DIR/.env.example"

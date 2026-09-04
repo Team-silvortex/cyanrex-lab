@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PACKAGE_SCRIPT="$ROOT_DIR/scripts/package-distribution.sh"
+RELEASE_TOOL_IMAGE_SCRIPT="$ROOT_DIR/scripts/release-tool-image.sh"
 SMOKE_SCRIPT="$ROOT_DIR/scripts/distribution-install-smoke.sh"
 METADATA_SCRIPT="$ROOT_DIR/scripts/release-metadata.mjs"
 CANDIDATE_SCRIPT="$ROOT_DIR/scripts/release-candidate.py"
@@ -13,7 +14,7 @@ CI_WORKFLOW="$ROOT_DIR/.github/workflows/ci.yml"
 WORK_DIR="$(mktemp -d)"
 trap 'rm -rf "$WORK_DIR"' EXIT
 
-bash -n "$PACKAGE_SCRIPT" "$SMOKE_SCRIPT"
+bash -n "$PACKAGE_SCRIPT" "$RELEASE_TOOL_IMAGE_SCRIPT" "$SMOKE_SCRIPT"
 "$SMOKE_SCRIPT" --help >/dev/null
 python3 "$CANDIDATE_SCRIPT" --help >/dev/null
 python3 "$SAFE_PACKAGE_SCRIPT" --help >/dev/null
@@ -30,6 +31,8 @@ assert_contains() {
 assert_contains "$PACKAGE_SCRIPT" 'distribution-install-smoke.sh'
 assert_contains "$PACKAGE_SCRIPT" 'live-kernel-smoke.sh'
 assert_contains "$PACKAGE_SCRIPT" 'live-kernel-evidence.py'
+assert_contains "$PACKAGE_SCRIPT" 'cyanrex-release'
+assert_contains "$PACKAGE_SCRIPT" 'release-tool-image.sh'
 assert_contains "$PACKAGE_SCRIPT" 'release-metadata.json'
 assert_contains "$RELEASE_WORKFLOW" 'needs: metadata'
 assert_contains "$RELEASE_WORKFLOW" '--expect-source-state clean --expect-image-mode built'
@@ -60,6 +63,9 @@ assert_contains "$PACKAGE_SCRIPT" '"$ROOT_DIR/engine/Dockerfile"'
 assert_contains "$PACKAGE_SCRIPT" '"$ROOT_DIR"'
 assert_contains "$ROOT_DIR/engine/Dockerfile" 'COPY modules ./modules'
 assert_contains "$ROOT_DIR/engine/Dockerfile" 'CYANREX_MODULES_DIR=/app/modules'
+assert_contains "$ROOT_DIR/engine/Dockerfile" 'target/release/cyanrex-release /usr/local/bin/cyanrex-release'
+assert_contains "$ROOT_DIR/scripts/live-kernel-smoke.sh" 'EVIDENCE_COMMAND=(cyanrex-release evidence)'
+assert_contains "$SMOKE_SCRIPT" '"$PACKAGE_DIR/cyanrex-release" --help'
 assert_contains "$PACKAGE_SCRIPT" 'FRONTEND_NPM_REGISTRY:-https://registry.npmjs.org'
 assert_contains "$PACKAGE_SCRIPT" 'basename "$ARCHIVE_PATH"'
 assert_contains "$PACKAGE_SCRIPT" "printf 'POSTGRES_IMAGE=%q"
@@ -85,6 +91,9 @@ mkdir -p "$WORK_DIR/bin" "$WORK_DIR/output"
 cat > "$WORK_DIR/bin/docker" <<'MOCK'
 #!/usr/bin/env bash
 set -euo pipefail
+if [ -n "${MOCK_DOCKER_LOG:-}" ]; then
+  printf '%s\n' "$*" >> "$MOCK_DOCKER_LOG"
+fi
 case "${1:-}:${2:-}" in
   info:) exit 0 ;;
   image:inspect)
@@ -108,12 +117,44 @@ case "${1:-}:${2:-}" in
     [ -n "$output" ] || exit 2
     printf 'mock offline image archive\n' > "$output"
     ;;
+  create:*)
+    printf 'mock-release-tool-container\n'
+    ;;
+  cp:*)
+    if [ "${MOCK_DOCKER_CP_FAIL:-0}" = "1" ]; then exit 1; fi
+    destination="${3:-}"
+    [ -n "$destination" ] || exit 2
+    cat > "$destination" <<'TOOL'
+#!/usr/bin/env bash
+set -euo pipefail
+if [ "${1:-}" = "--help" ]; then
+  echo "Cyanrex native release tooling"
+  exit 0
+fi
+echo "Unexpected mock cyanrex-release call: $*" >&2
+exit 2
+TOOL
+    ;;
+  rm:*) exit 0 ;;
   *) echo "Unexpected mock docker call: $*" >&2; exit 2 ;;
 esac
 MOCK
 chmod +x "$WORK_DIR/bin/docker"
-PATH="$WORK_DIR/bin:$PATH" "$PACKAGE_SCRIPT" --version 0.2.0 --skip-checks --skip-build \
+PATH="$WORK_DIR/bin:$PATH" MOCK_DOCKER_LOG="$WORK_DIR/docker.log" \
+  "$PACKAGE_SCRIPT" --version 0.2.0 --skip-checks --skip-build \
   --output "$WORK_DIR/output" >/dev/null
+grep -Fq 'create cyanrex/cyanrex-engine:0.2.0' "$WORK_DIR/docker.log"
+grep -Fq 'cp mock-release-tool-container:/usr/local/bin/cyanrex-release' "$WORK_DIR/docker.log"
+grep -Fxq 'rm mock-release-tool-container' "$WORK_DIR/docker.log"
+
+if PATH="$WORK_DIR/bin:$PATH" MOCK_DOCKER_LOG="$WORK_DIR/docker-failure.log" \
+  MOCK_DOCKER_CP_FAIL=1 "$PACKAGE_SCRIPT" --version 0.2.0 --skip-checks --skip-build \
+  --output "$WORK_DIR/failing-output" >"$WORK_DIR/export-failure.log" 2>&1; then
+  echo "Distribution tool test failed: missing native release binary was accepted." >&2
+  exit 1
+fi
+grep -Fq 'Engine image does not contain /usr/local/bin/cyanrex-release' "$WORK_DIR/export-failure.log"
+grep -Fxq 'rm -f mock-release-tool-container' "$WORK_DIR/docker-failure.log"
 
 archive_checksum="$(find "$WORK_DIR/output" -maxdepth 1 -type f -name '*.tar.gz.sha256' -print -quit)"
 [ -n "$archive_checksum" ]
@@ -129,6 +170,7 @@ package_dir="$(find "$WORK_DIR/extracted" -mindepth 1 -maxdepth 1 -type d -print
 [ -x "$package_dir/install-smoke.sh" ]
 [ -x "$package_dir/live-kernel-smoke.sh" ]
 [ -x "$package_dir/live-kernel-evidence.py" ]
+[ -x "$package_dir/cyanrex-release" ]
 assert_contains "$package_dir/manifest.env" 'POSTGRES_IMAGE=postgres:16'
 assert_contains "$package_dir/manifest.env" 'COMPOSE_TEMPLATE=docker/docker-compose.distribution.yml'
 node "$METADATA_SCRIPT" --verify "$package_dir" >/dev/null
