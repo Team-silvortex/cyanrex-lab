@@ -7,6 +7,9 @@ mod package;
 mod package_cli;
 mod release_archive;
 mod release_metadata;
+mod smoke_cli;
+mod smoke_http;
+mod smoke_runner_agent;
 mod strict_json;
 
 use std::env;
@@ -35,6 +38,7 @@ fn run(arguments: Vec<String>) -> Result<(), String> {
         "candidate" => candidate_cli::run(&arguments[1..]),
         "evidence" => evidence_cli::run(&arguments[1..]),
         "package" => package_cli::run(&arguments[1..]),
+        "smoke" => smoke_cli::run(&arguments[1..]),
         _ => Err(format!("unknown command {command:?}; run with --help")),
     }
 }
@@ -47,11 +51,13 @@ fn print_help() {
            cyanrex-release candidate verify <bundle> [options]\n\
            cyanrex-release evidence <create|verify> [options]\n\
            cyanrex-release package extract <bundle> [options]\n\
+           cyanrex-release smoke runner-agent [options]\n\
            cyanrex-release --version\n\
          \n\
          Commands:\n\
            candidate   Verify a complete Tag candidate and optionally extract it\n\
            evidence    Create or strictly verify live-kernel acceptance evidence\n\
-           package     Verify and safely extract an offline release package"
+           package     Verify and safely extract an offline release package\n\
+           smoke       Run native release acceptance probes"
     );
 }

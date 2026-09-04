@@ -69,8 +69,9 @@ Utility scripts for Cyanrex local operation.
 - `runner-agent.sh`: prepare and manage the optional unprivileged Compose compiler Agent.
   - `start`, `stop`, `status`, `logs`, and secret-only `prepare` actions
   - creates a missing bootstrap token without printing it and mounts a mode-0600 Docker Secret
-- `runner-agent-smoke.sh`: authenticate, discover the managed Agent, submit a real compile check,
-  poll its user-scoped result, and fail if the end-to-end remote diagnostics path is unhealthy.
+- `runner-agent-smoke.sh`: load runtime configuration and prefer the native Rust acceptance client for
+  TOTP authentication, Agent discovery, a real compile check, result validation, and failure cleanup.
+  Its shell/Python implementation remains as a compatibility fallback when the CLI is unavailable.
 - `test-runner-agent-tools.sh`: verify secret generation, mode 0600, stable reuse, non-disclosure,
   safe Agent IDs, and shell syntax without starting Docker.
 - `live-kernel-smoke.sh`: on a disposable privileged Linux stack, authenticate, require an empty
@@ -78,8 +79,8 @@ Utility scripts for Cyanrex local operation.
   kernel event, detach its exact pin, and reject residue. `CYANREX_KERNEL_SMOKE_REPORT` optionally writes
   atomic evidence bound to packaged release metadata and the runtime environment.
 - `../engine/src/bin/cyanrex-release/`: native Rust release CLI. It handles complete Tag candidates,
-  live-kernel evidence, and verified two-file package extraction. Evidence accepts legacy v1 reports
-  while new reports use the self-contained v2 event binding.
+  live-kernel evidence, verified two-file package extraction, and Runner Agent acceptance. Evidence
+  accepts legacy v1 reports while new reports use the self-contained v2 event binding.
 - `live-kernel-evidence.py`: compatibility implementation retained for older environments and parity
   regression coverage.
 - `release-tool-image.sh`: safely exports `cyanrex-release` from the built Engine image into an offline
@@ -225,8 +226,9 @@ Distributed package entry points:
 ./deploy.sh logs   # tail logs
 ./deploy.sh down   # stop services
 ./runner-agent.sh start  # optional unprivileged compiler Agent
-./runner-agent-smoke.sh  # authenticated remote compile smoke test
+./runner-agent-smoke.sh  # authenticated remote compile smoke; native CLI is preferred
 ./live-kernel-smoke.sh   # privileged live attach/event/detach acceptance
+./cyanrex-release smoke runner-agent --agent-id <id>
 ./cyanrex-release evidence verify /path/to/report.json --release-metadata ./release-metadata.json
 ./install-smoke.sh       # destructive disposable-host installation acceptance
 # `run.sh` and `stop.sh` remain compatibility shortcuts.

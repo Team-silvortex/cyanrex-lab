@@ -92,6 +92,7 @@ commands cover complete Tag candidates, live-kernel evidence, and verified two-f
 cargo run --manifest-path engine/Cargo.toml --bin cyanrex-release -- candidate --help
 cargo run --manifest-path engine/Cargo.toml --bin cyanrex-release -- evidence --help
 cargo run --manifest-path engine/Cargo.toml --bin cyanrex-release -- package --help
+cargo run --manifest-path engine/Cargo.toml --bin cyanrex-release -- smoke --help
 ```
 
 After changing routes or wire models, regenerate and validate the API contract from the repository

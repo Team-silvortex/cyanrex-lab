@@ -24,8 +24,6 @@ if [ ! -f "$ENV_FILE" ]; then
   echo "Error: runtime configuration is missing: $ENV_FILE" >&2
   exit 1
 fi
-require_cmd curl
-require_cmd python3
 
 set -a
 # shellcheck disable=SC1090
@@ -38,6 +36,22 @@ ENGINE_URL="${CYANREX_SMOKE_ENGINE_URL:-http://127.0.0.1:${CYANREX_ENGINE_PORT:-
 ORIGIN="${CYANREX_SMOKE_ORIGIN:-http://localhost:${CYANREX_FRONTEND_PORT:-3000}}"
 AGENT_ID="${1:-${CYANREX_AGENT_ID:-cyanrex-docker-compiler}}"
 CYANREX_AGENT_ID="$AGENT_ID"
+
+NATIVE_SMOKE=()
+if [ -n "${CYANREX_RELEASE_TOOL:-}" ]; then
+  NATIVE_SMOKE=("$CYANREX_RELEASE_TOOL")
+elif [ -x "$ROOT_DIR/cyanrex-release" ]; then
+  NATIVE_SMOKE=("$ROOT_DIR/cyanrex-release")
+elif command -v cyanrex-release >/dev/null 2>&1; then
+  NATIVE_SMOKE=(cyanrex-release)
+fi
+if [ "${#NATIVE_SMOKE[@]}" -gt 0 ]; then
+  exec "${NATIVE_SMOKE[@]}" smoke runner-agent \
+    --engine-url "$ENGINE_URL" --origin "$ORIGIN" --agent-id "$AGENT_ID"
+fi
+
+require_cmd curl
+require_cmd python3
 WORK_DIR="$(mktemp -d)"
 COOKIE_JAR="$WORK_DIR/cookies.txt"
 LOGIN_JSON="$WORK_DIR/login.json"

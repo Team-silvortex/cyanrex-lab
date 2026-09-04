@@ -61,4 +61,24 @@ if bash "$WORK_DIR/runner-agent.sh" prepare --agent-id '../unsafe' >/dev/null 2>
   exit 1
 fi
 
+cat > "$WORK_DIR/cyanrex-release" <<'MOCK'
+#!/usr/bin/env bash
+set -euo pipefail
+printf '%s\n' "$@" > "$MOCK_NATIVE_SMOKE_LOG"
+MOCK
+chmod +x "$WORK_DIR/cyanrex-release"
+MOCK_NATIVE_SMOKE_LOG="$WORK_DIR/native-smoke.log" \
+  bash "$WORK_DIR/runner-agent-smoke.sh" fixture-compiler
+mapfile -t native_arguments < "$WORK_DIR/native-smoke.log"
+expected_arguments=(
+  smoke runner-agent
+  --engine-url http://127.0.0.1:8080
+  --origin http://localhost:3000
+  --agent-id fixture-compiler
+)
+if [ "${native_arguments[*]}" != "${expected_arguments[*]}" ]; then
+  echo "Runner Agent tool test failed: smoke wrapper did not select the native CLI." >&2
+  exit 1
+fi
+
 echo "Runner Agent management tool checks passed."

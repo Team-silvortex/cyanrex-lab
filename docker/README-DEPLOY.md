@@ -82,7 +82,7 @@ The optional unprivileged compiler Agent can be enabled after the main stack is 
 
 ```bash
 ./runner-agent.sh start
-./runner-agent-smoke.sh
+./runner-agent-smoke.sh # prefers the adjacent native acceptance client
 ```
 
 Set `CYANREX_DEPLOY_WAIT_FOR_HEALTH=0` only when an external orchestrator owns readiness checks.
