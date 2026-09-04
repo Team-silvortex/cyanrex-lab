@@ -131,12 +131,10 @@ jobs:
       - uses: actions/checkout@v6
       - name: Build offline distribution
         run: ./scripts/package-distribution.sh --skip-checks --output "$RUNNER_TEMP/cyanrex-dist"
-      - name: Verify and extract archive
+      - name: Verify and safely extract archive
         run: |
-          cd "$RUNNER_TEMP/cyanrex-dist"
-          sha256sum -c ./*.tar.gz.sha256
-          mkdir -p "$RUNNER_TEMP/cyanrex-install"
-          tar -xzf ./*.tar.gz -C "$RUNNER_TEMP/cyanrex-install"
+          python3 "$GITHUB_WORKSPACE/scripts/release-package.py" extract \
+            "$RUNNER_TEMP/cyanrex-dist" --output "$RUNNER_TEMP/cyanrex-install"
       - name: Install and smoke test extracted package
         run: |
           package_dir="$(find "$RUNNER_TEMP/cyanrex-install" -mindepth 1 -maxdepth 1 -type d -name 'cyanrex-lab-*' -print -quit)"

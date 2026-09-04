@@ -52,10 +52,11 @@ python3 ./live-kernel-evidence.py verify /safe/output/live-kernel-acceptance.jso
 ```
 
 Before extracting a four-file Tag workflow artifact, a trusted checkout of the matching source Tag can
-run `python3 scripts/release-candidate.py verify /path/to/artifact`. It streams the package without
-extracting it, rejects unsafe archive members, verifies every package checksum, and binds the archived
-metadata to the external evidence. This proves consistency, not publisher authenticity; signing remains
-a separate release decision.
+run `python3 scripts/release-candidate.py verify /path/to/artifact --extract-to /path/to/new-output`.
+It rejects unsafe archive members, verifies every package checksum, binds the archived metadata to the
+external evidence, then manually writes only verified regular files without overwriting an existing
+output. A two-file package without evidence can use `scripts/release-package.py extract` instead. These
+checks prove consistency, not publisher authenticity; signing remains a separate release decision.
 
 Set `CYANREX_SMOKE_KEEP=1` to retain a failed smoke stack for diagnosis.
 On a host already using the default ports, select another loopback address such as

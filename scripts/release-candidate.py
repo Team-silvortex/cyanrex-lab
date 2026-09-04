@@ -446,6 +446,23 @@ def load_evidence_tool() -> ModuleType:
     return module
 
 
+def load_package_tool() -> ModuleType:
+    path = Path(__file__).resolve().with_name("release-package.py")
+    spec = importlib.util.spec_from_file_location("cyanrex_release_package", path)
+    if spec is None or spec.loader is None:
+        raise CandidateError(f"cannot load safe package extractor from {path}")
+    module = importlib.util.module_from_spec(spec)
+    previous_bytecode_setting = sys.dont_write_bytecode
+    try:
+        sys.dont_write_bytecode = True
+        spec.loader.exec_module(module)
+    except (ImportError, OSError) as error:
+        raise CandidateError(f"cannot load safe package extractor: {error}") from error
+    finally:
+        sys.dont_write_bytecode = previous_bytecode_setting
+    return module
+
+
 def verify_evidence(report_path: Path, metadata: dict[str, Any], metadata_source: bytes) -> dict[str, Any]:
     try:
         report_source = report_path.read_bytes()
@@ -474,7 +491,9 @@ def verify_evidence(report_path: Path, metadata: dict[str, Any], metadata_source
     return report
 
 
-def verify_candidate(options: argparse.Namespace) -> tuple[dict[str, Any], dict[str, Any], Path]:
+def verify_candidate(
+    options: argparse.Namespace,
+) -> tuple[dict[str, Any], dict[str, Any], Path, str, dict[str, str]]:
     archive, report_path = discover_bundle(Path(options.bundle))
     package_root, hashes, controls = inspect_archive(archive)
     verify_manifest(hashes, controls["checksums.sha256"])
@@ -482,7 +501,7 @@ def verify_candidate(options: argparse.Namespace) -> tuple[dict[str, Any], dict[
     metadata = validate_metadata(metadata_source, package_root, archive.name, hashes)
     enforce_expectations(metadata, options)
     report = verify_evidence(report_path, metadata, metadata_source)
-    return metadata, report, archive
+    return metadata, report, archive, package_root, hashes
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -495,14 +514,27 @@ def build_parser() -> argparse.ArgumentParser:
     verify.add_argument("--expect-tag")
     verify.add_argument("--expect-source-state", choices=("clean", "dirty", "unavailable"))
     verify.add_argument("--expect-image-mode", choices=("built", "prebuilt"))
+    verify.add_argument("--extract-to", help="safely extract into a new directory after verification")
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     options = build_parser().parse_args(argv)
     try:
-        metadata, report, archive = verify_candidate(options)
-    except (CandidateError, OSError) as error:
+        metadata, report, archive, package_root, hashes = verify_candidate(options)
+        extracted = None
+        if options.extract_to:
+            package_tool = load_package_tool()
+            extracted = package_tool.extract_verified_archive(
+                archive,
+                package_root,
+                hashes,
+                options.extract_to,
+                archive_path,
+                MAX_ARCHIVE_MEMBERS,
+                MAX_ARCHIVE_BYTES,
+            )
+    except (ValueError, OSError) as error:
         print(f"Error: {error}", file=sys.stderr)
         return 1
     revision = metadata["source"]["revision"] or "unavailable"
@@ -511,6 +543,8 @@ def main(argv: list[str] | None = None) -> int:
         f"{archive.name} version={metadata['package']['version']} "
         f"revision={revision} evidence={report['generatedAt']}"
     )
+    if extracted is not None:
+        print(f"[cyanrex] Candidate safely extracted: {extracted}")
     return 0
 
 

@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 VERIFIER="$ROOT_DIR/scripts/release-candidate.py"
+PACKAGE_TOOL="$ROOT_DIR/scripts/release-package.py"
 EVIDENCE_TOOL="$ROOT_DIR/scripts/live-kernel-evidence.py"
 WORK_DIR="$(mktemp -d)"
 PACKAGE_NAME="cyanrex-lab-1.2.3-20260904-010203"
@@ -54,6 +55,8 @@ clone_bundle() {
 mkdir -p "$PACKAGE_DIR" "$BUNDLE_DIR"
 printf 'services: {}\n' > "$PACKAGE_DIR/docker-compose.yml"
 printf 'mock image archive\n' > "$PACKAGE_DIR/cyanrex-images.tar"
+printf '#!/usr/bin/env bash\necho ready\n' > "$PACKAGE_DIR/run.sh"
+chmod +x "$PACKAGE_DIR/run.sh"
 IMAGE_HASH="$(sha256_path "$PACKAGE_DIR/cyanrex-images.tar")"
 cat > "$PACKAGE_DIR/release-metadata.json" <<EOF
 {
@@ -95,7 +98,7 @@ cat > "$PACKAGE_DIR/release-metadata.json" <<EOF
   }
 }
 EOF
-for package_file in docker-compose.yml cyanrex-images.tar release-metadata.json; do
+for package_file in docker-compose.yml cyanrex-images.tar release-metadata.json run.sh; do
   printf '%s  %s\n' "$(sha256_path "$PACKAGE_DIR/$package_file")" "$package_file"
 done > "$PACKAGE_DIR/checksums.sha256"
 tar -czf "$BUNDLE_DIR/$PACKAGE_NAME.tar.gz" -C "$WORK_DIR/source" "$PACKAGE_NAME"
@@ -136,6 +139,36 @@ python3 "$VERIFIER" verify "$BUNDLE_DIR" \
   --expect-tag v1.2.3 \
   --expect-source-state clean \
   --expect-image-mode built >/dev/null
+
+FULL_EXTRACT="$WORK_DIR/full-extract"
+python3 "$VERIFIER" verify "$BUNDLE_DIR" \
+  --expect-version 1.2.3 \
+  --expect-revision "$REVISION" \
+  --expect-tag v1.2.3 \
+  --expect-source-state clean \
+  --expect-image-mode built \
+  --extract-to "$FULL_EXTRACT" >/dev/null
+[ -f "$FULL_EXTRACT/$PACKAGE_NAME/docker-compose.yml" ]
+[ -x "$FULL_EXTRACT/$PACKAGE_NAME/run.sh" ]
+[ ! -e "$FULL_EXTRACT/$PACKAGE_NAME/cyanrex-live-kernel-acceptance.json" ]
+printf 'preserve me\n' > "$FULL_EXTRACT/marker"
+expect_failure "existing extraction output" "refusing to overwrite extraction output" \
+  python3 "$VERIFIER" verify "$BUNDLE_DIR" --extract-to "$FULL_EXTRACT"
+grep -Fxq 'preserve me' "$FULL_EXTRACT/marker"
+
+PACKAGE_BUNDLE="$WORK_DIR/package-bundle"
+mkdir -p "$PACKAGE_BUNDLE"
+cp "$BUNDLE_DIR/$PACKAGE_NAME.tar.gz" "$BUNDLE_DIR/$PACKAGE_NAME.tar.gz.sha256" \
+  "$PACKAGE_BUNDLE/"
+python3 "$PACKAGE_TOOL" extract "$PACKAGE_BUNDLE" \
+  --output "$WORK_DIR/package-extract" \
+  --expect-version 1.2.3 \
+  --expect-revision "$REVISION" \
+  --expect-tag v1.2.3 \
+  --expect-source-state clean \
+  --expect-image-mode built >/dev/null
+[ -x "$WORK_DIR/package-extract/$PACKAGE_NAME/run.sh" ]
+
 expect_failure "wrong version expectation" "package version does not match expectation" \
   python3 "$VERIFIER" verify "$BUNDLE_DIR" --expect-version 9.9.9
 
@@ -183,8 +216,9 @@ with tarfile.open(sys.argv[1], "w:gz") as archive:
 PY
 write_checksum "$TRAVERSAL/$PACKAGE_NAME.tar.gz"
 expect_failure "path traversal archive" "escapes its package root" \
-  python3 "$VERIFIER" verify "$TRAVERSAL"
+  python3 "$VERIFIER" verify "$TRAVERSAL" --extract-to "$WORK_DIR/traversal-output"
 [ ! -e "$WORK_DIR/escape" ]
+[ ! -e "$WORK_DIR/traversal-output" ]
 
 SYMLINK="$(clone_bundle symlink)"
 python3 - "$SYMLINK/$PACKAGE_NAME.tar.gz" "$PACKAGE_NAME" <<'PY'

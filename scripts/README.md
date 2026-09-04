@@ -85,9 +85,14 @@ Utility scripts for Cyanrex local operation.
   loading a program into the local kernel.
 - `release-candidate.py`: verify the exact four-file Tag artifact as one unit. It validates both outer
   checksums, streams the package without extraction, rejects unsafe or ambiguous archive structures,
-  verifies every internal file, and cross-binds release metadata to the live-kernel evidence.
+  verifies every internal file, cross-binds release metadata to the live-kernel evidence, and optionally
+  delegates verified extraction through `--extract-to`.
+- `release-package.py`: verify an archive/checksum pair and safely extract it into a new, non-existing
+  output directory. It writes regular files manually, rechecks each hash during extraction, sanitizes
+  modes, and never asks the system `tar` command to interpret untrusted members.
 - `test-release-candidate.sh`: build a minimal valid candidate and reject checksum tampering, evidence
-  substitution, modified package members, traversal, symbolic links, and ambiguous archives.
+  substitution, modified package members, traversal, symbolic links, ambiguous archives, and output
+  replacement while exercising both candidate and package-only extraction paths.
 
 - `bench-event-bus.sh`: run the local event-bus throughput benchmark.
   - configurable through environment variables:
@@ -232,5 +237,13 @@ archive, its checksum, the live-kernel report, and its checksum):
 ```bash
 release_revision="$(git rev-list -n 1 v0.3.1)"
 python3 scripts/release-candidate.py verify /path/to/downloaded-candidate \
-  --expect-version 0.3.1 --expect-revision "$release_revision" --expect-tag v0.3.1
+  --expect-version 0.3.1 --expect-revision "$release_revision" --expect-tag v0.3.1 \
+  --extract-to /path/to/new-output-directory
+```
+
+Safely extract a two-file package that has no live-kernel evidence:
+
+```bash
+python3 scripts/release-package.py extract /path/to/archive-and-checksum \
+  --output /path/to/new-output-directory
 ```

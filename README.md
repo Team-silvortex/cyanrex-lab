@@ -182,19 +182,29 @@ verify the complete candidate from a trusted checkout of the matching source Tag
 ```bash
 release_revision="$(git rev-list -n 1 v0.3.1)"
 python3 scripts/release-candidate.py verify /path/to/downloaded-candidate \
-  --expect-version 0.3.1 --expect-revision "$release_revision" --expect-tag v0.3.1
+  --expect-version 0.3.1 --expect-revision "$release_revision" --expect-tag v0.3.1 \
+  --extract-to /path/to/new-output-directory
 ```
 
 This streams the archive without extracting it, rejects links, path traversal, duplicate members, and
 unchecksummed payloads, then binds the exact archived metadata to the separately checksummed live-kernel
-evidence. Until release signing is configured, these checks prove bundle consistency rather than
-publisher authenticity.
+evidence. Extraction starts only after the complete candidate passes, writes only regular files into a
+private temporary directory, preserves script execution bits, and refuses an existing output path.
+Until release signing is configured, these checks prove bundle consistency rather than publisher
+authenticity.
+
+For a locally built two-file package that has no Tag acceptance report, use the same verified extraction
+path without the evidence step:
+
+```bash
+python3 scripts/release-package.py extract /path/to/archive-and-checksum \
+  --output /path/to/new-output-directory
+```
 
 Usage on target machine:
 
 ```bash
-tar -xzf cyanrex-lab-*.tar.gz
-cd cyanrex-lab-*
+cd /path/to/new-output-directory/cyanrex-lab-*
 cp .env.example .env   # update credentials/bind settings as needed
 ./run.sh               # start
 ./stop.sh              # stop
@@ -403,5 +413,6 @@ runs `install-smoke.sh` against the extracted archive (including loaded-image co
 enables its privileged live-kernel attach/event/detach acceptance before uploading the accepted archive
 plus outer checksum as a 30-day workflow artifact. The artifact also retains a separately checksummed
 live-kernel report bound to the candidate metadata, kernel environment, unique event, and exact cleanup;
-the unified candidate verifier streams and checks the complete four-file artifact before upload and can
-recheck it offline after download. This does not create a GitHub Release or sign/publish packages.
+verified extraction replaces direct archive expansion in CI and Tag acceptance. The unified candidate
+verifier streams and checks the complete four-file artifact before upload and can safely extract it after
+download. This does not create a GitHub Release or sign/publish packages.

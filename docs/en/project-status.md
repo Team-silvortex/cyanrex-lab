@@ -18,7 +18,7 @@ The detailed trust boundaries and data flows remain in the [system architecture]
 | Local Runner | Operational | Replaceable driver boundary, global/per-user leases, timeout handling, and explicit `shared_kernel` reporting |
 | Runner Agent | Operational for remote checks | Signed registration, heartbeat, leases, cancellation, probes, and isolated compile-only diagnostics; remote eBPF loading is not enabled |
 | Deployment and distribution | Operational | Docker, WSL2, native Linux, hardened optional compiler Agent, and offline package/install tooling |
-| Release traceability | Accepted unsigned candidates | Changelog/version sync, annotated `v0.2.9`/`v0.3.1` targets, immutable-Tag validation, checksum-bound source/archive metadata, per-image Docker content IDs, exact-image installation, and a safe streaming whole-bundle verifier that cross-binds strictly validated live Aya evidence before 30-day workflow retention; `0.3.0` is an API baseline only and signed publication remains manual |
+| Release traceability | Accepted unsigned candidates | Changelog/version sync, annotated `v0.2.9`/`v0.3.1` targets, immutable-Tag validation, checksum-bound source/archive metadata, per-image Docker content IDs, exact-image installation, and safe non-overwriting extraction after whole-bundle verification cross-binds strict live Aya evidence; `0.3.0` is an API baseline only and signed publication remains manual |
 | Module catalog | Operational, state-only | Versioned v1 manifests are discovered and validated at startup; lifecycle is in memory and never executes directory code |
 | JavaScript SDK | Operational internal package | Typed ESM client with 56 generated non-Agent operationId calls, a 77-member additive namespace baseline and deprecation policy, explicit `/openapi` and `/operations` exports, browser/Node sessions, cancellation, downloads, typed errors, and package-consumer smoke coverage |
 | API contract | Operational internal contract | Generated OpenAPI 3.1 served at `/openapi.json`; route/access/SDK/model drift and breaking changes against the frozen `0.3.0` baseline fail the quality gate |
@@ -44,7 +44,8 @@ installation smoke. The annotated-Tag candidate workflow now enables the package
 attach/ring-buffer-event/exact-detach check and retains a candidate-bound report; its result is
 environment-level evidence and is not claimed by the local checks listed above. The packaged verifier
 can recheck v1/v2 schema, release metadata binding, event identity, and cleanup without kernel access;
-the repository verifier additionally checks the complete downloaded artifact without extracting it.
+the repository verifier additionally checks the complete downloaded artifact and can manually extract
+only verified regular files without invoking `tar` or replacing an existing output.
 
 ## Intentional Boundaries
 

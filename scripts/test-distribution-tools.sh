@@ -6,14 +6,17 @@ PACKAGE_SCRIPT="$ROOT_DIR/scripts/package-distribution.sh"
 SMOKE_SCRIPT="$ROOT_DIR/scripts/distribution-install-smoke.sh"
 METADATA_SCRIPT="$ROOT_DIR/scripts/release-metadata.mjs"
 CANDIDATE_SCRIPT="$ROOT_DIR/scripts/release-candidate.py"
+SAFE_PACKAGE_SCRIPT="$ROOT_DIR/scripts/release-package.py"
 EVIDENCE_SCRIPT="$ROOT_DIR/scripts/live-kernel-evidence.py"
 RELEASE_WORKFLOW="$ROOT_DIR/.github/workflows/release-validation.yml"
+CI_WORKFLOW="$ROOT_DIR/.github/workflows/ci.yml"
 WORK_DIR="$(mktemp -d)"
 trap 'rm -rf "$WORK_DIR"' EXIT
 
 bash -n "$PACKAGE_SCRIPT" "$SMOKE_SCRIPT"
 "$SMOKE_SCRIPT" --help >/dev/null
 python3 "$CANDIDATE_SCRIPT" --help >/dev/null
+python3 "$SAFE_PACKAGE_SCRIPT" --help >/dev/null
 
 assert_contains() {
   local file="$1"
@@ -29,17 +32,22 @@ assert_contains "$PACKAGE_SCRIPT" 'live-kernel-smoke.sh'
 assert_contains "$PACKAGE_SCRIPT" 'live-kernel-evidence.py'
 assert_contains "$PACKAGE_SCRIPT" 'release-metadata.json'
 assert_contains "$RELEASE_WORKFLOW" 'needs: metadata'
-assert_contains "$RELEASE_WORKFLOW" 'release-metadata.mjs" --verify'
 assert_contains "$RELEASE_WORKFLOW" '--expect-source-state clean --expect-image-mode built'
 assert_contains "$RELEASE_WORKFLOW" 'CYANREX_SMOKE_RUN_LIVE_KERNEL: "1"'
 assert_contains "$RELEASE_WORKFLOW" 'CYANREX_KERNEL_SMOKE_REPORT:'
 assert_contains "$RELEASE_WORKFLOW" 'cyanrex-live-kernel-acceptance.json.sha256'
 assert_contains "$RELEASE_WORKFLOW" 'release-candidate.py" verify'
+assert_contains "$RELEASE_WORKFLOW" 'release-package.py" extract'
 assert_contains "$RELEASE_WORKFLOW" 'cp "$report" "$RUNNER_TEMP/cyanrex-release/"'
 assert_contains "$RELEASE_WORKFLOW" '--expect-revision "$RELEASE_REVISION"'
 assert_contains "$RELEASE_WORKFLOW" '--expect-source-state clean'
 assert_contains "$RELEASE_WORKFLOW" '"$package_dir/install-smoke.sh"'
 assert_contains "$RELEASE_WORKFLOW" 'actions/upload-artifact@v4'
+assert_contains "$CI_WORKFLOW" 'release-package.py" extract'
+if grep -Fq 'tar -xzf' "$RELEASE_WORKFLOW" "$CI_WORKFLOW"; then
+  echo "Distribution tool test failed: workflows must use verified safe extraction." >&2
+  exit 1
+fi
 if grep -Eq 'contents:[[:space:]]*write|gh release|action-gh-release' "$RELEASE_WORKFLOW"; then
   echo "Distribution tool test failed: release validation must not publish releases." >&2
   exit 1
@@ -73,7 +81,7 @@ for compose_file in docker/docker-compose.yml docker/docker-compose.distribution
   assert_contains "$ROOT_DIR/$compose_file" 'CYANREX_EVENT_PERSIST_QUEUE_WARNING_INTERVAL_MS:'
 done
 
-mkdir -p "$WORK_DIR/bin" "$WORK_DIR/output" "$WORK_DIR/extracted"
+mkdir -p "$WORK_DIR/bin" "$WORK_DIR/output"
 cat > "$WORK_DIR/bin/docker" <<'MOCK'
 #!/usr/bin/env bash
 set -euo pipefail
@@ -114,13 +122,9 @@ if [[ "$checksum_target" == */* ]]; then
   echo "Distribution tool test failed: outer checksum contains a build-host path." >&2
   exit 1
 fi
-if command -v sha256sum >/dev/null 2>&1; then
-  (cd "$WORK_DIR/output" && sha256sum -c "$(basename "$archive_checksum")" >/dev/null)
-else
-  (cd "$WORK_DIR/output" && shasum -a 256 -c "$(basename "$archive_checksum")" >/dev/null)
-fi
-archive_path="${archive_checksum%.sha256}"
-tar -xzf "$archive_path" -C "$WORK_DIR/extracted"
+python3 "$SAFE_PACKAGE_SCRIPT" extract "$WORK_DIR/output" \
+  --output "$WORK_DIR/extracted" \
+  --expect-version 0.2.0 --expect-image-mode prebuilt >/dev/null
 package_dir="$(find "$WORK_DIR/extracted" -mindepth 1 -maxdepth 1 -type d -print -quit)"
 [ -x "$package_dir/install-smoke.sh" ]
 [ -x "$package_dir/live-kernel-smoke.sh" ]

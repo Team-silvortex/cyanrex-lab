@@ -73,5 +73,6 @@ For high event traffic classes, you can tune persistence queue alerting in `dock
   a newly built offline archive, runs exact-image installation plus live Aya attach/event/detach
   acceptance, and retains the result plus separately checksummed, candidate-bound kernel evidence as a
   30-day workflow artifact. A unified offline verifier streams the archive without extraction, rejects
-  unsafe members, checks every package file, and binds its metadata to that evidence. The workflow does
-  not create or sign a GitHub Release.
+  unsafe members, checks every package file, binds its metadata to that evidence, and only then performs
+  non-overwriting manual extraction when requested. CI and Tag acceptance use this path instead of direct
+  `tar` expansion. The workflow does not create or sign a GitHub Release.

@@ -51,19 +51,14 @@ jobs:
         run: |
           ./scripts/package-distribution.sh --version "$RELEASE_VERSION" --skip-checks \
             --output "$RUNNER_TEMP/cyanrex-release"
-      - name: Verify tag-bound artifact metadata
+      - name: Verify and safely extract tag-bound artifact
         env:
           RELEASE_VERSION: ${{ steps.release.outputs.version }}
           RELEASE_REVISION: ${{ steps.release.outputs.revision }}
         run: |
-          cd "$RUNNER_TEMP/cyanrex-release"
-          sha256sum -c ./*.tar.gz.sha256
-          mkdir -p "$RUNNER_TEMP/cyanrex-release-extracted"
-          tar -xzf ./*.tar.gz -C "$RUNNER_TEMP/cyanrex-release-extracted"
-          package_dir="$(find "$RUNNER_TEMP/cyanrex-release-extracted" \
-            -mindepth 1 -maxdepth 1 -type d -name 'cyanrex-lab-*' -print -quit)"
-          test -n "$package_dir"
-          node "$GITHUB_WORKSPACE/scripts/release-metadata.mjs" --verify "$package_dir" \
+          python3 "$GITHUB_WORKSPACE/scripts/release-package.py" extract \
+            "$RUNNER_TEMP/cyanrex-release" \
+            --output "$RUNNER_TEMP/cyanrex-release-extracted" \
             --expect-version "$RELEASE_VERSION" --expect-revision "$RELEASE_REVISION" \
             --expect-tag "$GITHUB_REF_NAME" --expect-source-state clean --expect-image-mode built
       - name: Smoke test the exact candidate archive
