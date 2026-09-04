@@ -129,11 +129,15 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: engine -> target
       - name: Build offline distribution
         run: ./scripts/package-distribution.sh --skip-checks --output "$RUNNER_TEMP/cyanrex-dist"
       - name: Verify and safely extract archive
         run: |
-          python3 "$GITHUB_WORKSPACE/scripts/release-package.py" extract \
+          cargo run --quiet --manifest-path "$GITHUB_WORKSPACE/engine/Cargo.toml" --locked --bin cyanrex-release -- package extract \
             "$RUNNER_TEMP/cyanrex-dist" --output "$RUNNER_TEMP/cyanrex-install"
       - name: Install and smoke test extracted package
         run: |

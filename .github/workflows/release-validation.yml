@@ -38,6 +38,10 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 22
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: engine -> target
       - name: Resolve immutable release identity
         id: release
         run: |
@@ -56,7 +60,7 @@ jobs:
           RELEASE_VERSION: ${{ steps.release.outputs.version }}
           RELEASE_REVISION: ${{ steps.release.outputs.revision }}
         run: |
-          python3 "$GITHUB_WORKSPACE/scripts/release-package.py" extract \
+          cargo run --quiet --manifest-path "$GITHUB_WORKSPACE/engine/Cargo.toml" --locked --bin cyanrex-release -- package extract \
             "$RUNNER_TEMP/cyanrex-release" \
             --output "$RUNNER_TEMP/cyanrex-release-extracted" \
             --expect-version "$RELEASE_VERSION" --expect-revision "$RELEASE_REVISION" \

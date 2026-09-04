@@ -40,13 +40,19 @@ assert_contains "$RELEASE_WORKFLOW" 'CYANREX_SMOKE_RUN_LIVE_KERNEL: "1"'
 assert_contains "$RELEASE_WORKFLOW" 'CYANREX_KERNEL_SMOKE_REPORT:'
 assert_contains "$RELEASE_WORKFLOW" 'cyanrex-live-kernel-acceptance.json.sha256'
 assert_contains "$RELEASE_WORKFLOW" 'release-candidate.py" verify'
-assert_contains "$RELEASE_WORKFLOW" 'release-package.py" extract'
+assert_contains "$RELEASE_WORKFLOW" '--bin cyanrex-release -- package extract'
+assert_contains "$RELEASE_WORKFLOW" 'dtolnay/rust-toolchain@stable'
 assert_contains "$RELEASE_WORKFLOW" 'cp "$report" "$RUNNER_TEMP/cyanrex-release/"'
 assert_contains "$RELEASE_WORKFLOW" '--expect-revision "$RELEASE_REVISION"'
 assert_contains "$RELEASE_WORKFLOW" '--expect-source-state clean'
 assert_contains "$RELEASE_WORKFLOW" '"$package_dir/install-smoke.sh"'
 assert_contains "$RELEASE_WORKFLOW" 'actions/upload-artifact@v4'
-assert_contains "$CI_WORKFLOW" 'release-package.py" extract'
+assert_contains "$CI_WORKFLOW" '--bin cyanrex-release -- package extract'
+assert_contains "$CI_WORKFLOW" 'dtolnay/rust-toolchain@stable'
+if grep -Fq 'release-package.py" extract' "$RELEASE_WORKFLOW" "$CI_WORKFLOW"; then
+  echo "Distribution tool test failed: workflows must use native package extraction." >&2
+  exit 1
+fi
 if grep -Fq 'tar -xzf' "$RELEASE_WORKFLOW" "$CI_WORKFLOW"; then
   echo "Distribution tool test failed: workflows must use verified safe extraction." >&2
   exit 1

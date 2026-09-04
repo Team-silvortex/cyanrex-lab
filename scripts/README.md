@@ -77,12 +77,11 @@ Utility scripts for Cyanrex local operation.
   attachment set, run the built-in Aya `sched_switch` ring-buffer template, require a uniquely bound
   kernel event, detach its exact pin, and reject residue. `CYANREX_KERNEL_SMOKE_REPORT` optionally writes
   atomic evidence bound to packaged release metadata and the runtime environment.
-- `../engine/src/bin/cyanrex-release/`: native Rust release CLI. Its first migrated command creates and
-  strictly verifies live-kernel evidence, including exact candidate metadata, image identities,
-  environment, unique event, bpffs pin, and cleanup. It accepts legacy v1 evidence while new reports
-  use the self-contained v2 event binding.
-- `live-kernel-evidence.py`: compatibility implementation retained while the candidate and safe-package
-  commands move into the native CLI.
+- `../engine/src/bin/cyanrex-release/`: native Rust release CLI. It creates and strictly verifies
+  live-kernel evidence, and verifies then safely extracts two-file release packages. Evidence accepts
+  legacy v1 reports while new reports use the self-contained v2 event binding.
+- `live-kernel-evidence.py`: compatibility implementation retained while candidate verification moves
+  into the native CLI.
 - `release-tool-image.sh`: safely exports `cyanrex-release` from the built Engine image into an offline
   package and cleans up its temporary container.
 - `test-live-kernel-smoke.sh`: mock successful, stale-event, and missing-event paths, validate generated
@@ -92,9 +91,8 @@ Utility scripts for Cyanrex local operation.
   checksums, streams the package without extraction, rejects unsafe or ambiguous archive structures,
   verifies every internal file, cross-binds release metadata to the live-kernel evidence, and optionally
   delegates verified extraction through `--extract-to`.
-- `release-package.py`: verify an archive/checksum pair and safely extract it into a new, non-existing
-  output directory. It writes regular files manually, rechecks each hash during extraction, sanitizes
-  modes, and never asks the system `tar` command to interpret untrusted members.
+- `release-package.py`: compatibility implementation for verifying and safely extracting an
+  archive/checksum pair while older environments migrate to `cyanrex-release package extract`.
 - `test-release-candidate.sh`: build a minimal valid candidate and reject checksum tampering, evidence
   substitution, modified package members, traversal, symbolic links, ambiguous archives, and output
   replacement while exercising both candidate and package-only extraction paths.
@@ -252,6 +250,7 @@ python3 scripts/release-candidate.py verify /path/to/downloaded-candidate \
 Safely extract a two-file package that has no live-kernel evidence:
 
 ```bash
-python3 scripts/release-package.py extract /path/to/archive-and-checksum \
+cargo run --quiet --manifest-path engine/Cargo.toml --locked --bin cyanrex-release -- \
+  package extract /path/to/archive-and-checksum \
   --output /path/to/new-output-directory
 ```

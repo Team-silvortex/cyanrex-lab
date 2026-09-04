@@ -1,5 +1,10 @@
+mod arguments;
 mod evidence;
 mod evidence_cli;
+mod package;
+mod package_cli;
+mod release_archive;
+mod release_metadata;
 mod strict_json;
 
 use std::env;
@@ -26,6 +31,7 @@ fn run(arguments: Vec<String>) -> Result<(), String> {
             Ok(())
         }
         "evidence" => evidence_cli::run(&arguments[1..]),
+        "package" => package_cli::run(&arguments[1..]),
         _ => Err(format!("unknown command {command:?}; run with --help")),
     }
 }
@@ -36,9 +42,11 @@ fn print_help() {
          \n\
          Usage:\n\
            cyanrex-release evidence <create|verify> [options]\n\
+           cyanrex-release package extract <bundle> [options]\n\
            cyanrex-release --version\n\
          \n\
          Commands:\n\
-           evidence    Create or strictly verify live-kernel acceptance evidence"
+           evidence    Create or strictly verify live-kernel acceptance evidence\n\
+           package     Verify and safely extract an offline release package"
     );
 }

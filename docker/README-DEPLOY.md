@@ -55,8 +55,9 @@ Before extracting a four-file Tag workflow artifact, a trusted checkout of the m
 run `python3 scripts/release-candidate.py verify /path/to/artifact --extract-to /path/to/new-output`.
 It rejects unsafe archive members, verifies every package checksum, binds the archived metadata to the
 external evidence, then manually writes only verified regular files without overwriting an existing
-output. A two-file package without evidence can use `scripts/release-package.py extract` instead. These
-checks prove consistency, not publisher authenticity; signing remains a separate release decision.
+output. A two-file package without evidence can use `cyanrex-release package extract` from a trusted
+source checkout instead; `scripts/release-package.py` remains a compatibility entry point. These checks
+prove consistency, not publisher authenticity; signing remains a separate release decision.
 
 Set `CYANREX_SMOKE_KEEP=1` to retain a failed smoke stack for diagnosis.
 On a host already using the default ports, select another loopback address such as

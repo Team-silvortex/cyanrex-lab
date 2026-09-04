@@ -177,7 +177,7 @@ Verify that report later against the exact extracted package metadata:
 ```
 
 New offline packages carry this native Rust verifier. `live-kernel-evidence.py` remains available as a
-temporary compatibility fallback while the remaining candidate and extraction commands are migrated.
+temporary compatibility fallback while the remaining candidate command is migrated.
 
 For an artifact downloaded from the Tag workflow, place its four files in a dedicated directory and
 verify the complete candidate from a trusted checkout of the matching source Tag before extracting it:
@@ -197,12 +197,15 @@ Until release signing is configured, these checks prove bundle consistency rathe
 authenticity.
 
 For a locally built two-file package that has no Tag acceptance report, use the same verified extraction
-path without the evidence step:
+path without the evidence step from a trusted source checkout:
 
 ```bash
-python3 scripts/release-package.py extract /path/to/archive-and-checksum \
+cargo run --quiet --manifest-path engine/Cargo.toml --locked --bin cyanrex-release -- \
+  package extract /path/to/archive-and-checksum \
   --output /path/to/new-output-directory
 ```
+
+The previous `scripts/release-package.py` entry point remains temporarily available for compatibility.
 
 Usage on target machine:
 
