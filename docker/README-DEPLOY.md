@@ -52,7 +52,7 @@ package metadata used to create the report:
 ```
 
 Before extracting a four-file Tag workflow artifact, a trusted checkout of the matching source Tag can
-run `python3 scripts/release-candidate.py verify /path/to/artifact --extract-to /path/to/new-output`.
+run `cyanrex-release candidate verify /path/to/artifact --extract-to /path/to/new-output`.
 It rejects unsafe archive members, verifies every package checksum, binds the archived metadata to the
 external evidence, then manually writes only verified regular files without overwriting an existing
 output. A two-file package without evidence can use `cyanrex-release package extract` from a trusted

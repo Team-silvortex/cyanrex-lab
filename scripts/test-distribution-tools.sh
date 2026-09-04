@@ -39,7 +39,7 @@ assert_contains "$RELEASE_WORKFLOW" '--expect-source-state clean --expect-image-
 assert_contains "$RELEASE_WORKFLOW" 'CYANREX_SMOKE_RUN_LIVE_KERNEL: "1"'
 assert_contains "$RELEASE_WORKFLOW" 'CYANREX_KERNEL_SMOKE_REPORT:'
 assert_contains "$RELEASE_WORKFLOW" 'cyanrex-live-kernel-acceptance.json.sha256'
-assert_contains "$RELEASE_WORKFLOW" 'release-candidate.py" verify'
+assert_contains "$RELEASE_WORKFLOW" '--bin cyanrex-release -- candidate verify'
 assert_contains "$RELEASE_WORKFLOW" '--bin cyanrex-release -- package extract'
 assert_contains "$RELEASE_WORKFLOW" 'dtolnay/rust-toolchain@stable'
 assert_contains "$RELEASE_WORKFLOW" 'cp "$report" "$RUNNER_TEMP/cyanrex-release/"'
@@ -51,6 +51,10 @@ assert_contains "$CI_WORKFLOW" '--bin cyanrex-release -- package extract'
 assert_contains "$CI_WORKFLOW" 'dtolnay/rust-toolchain@stable'
 if grep -Fq 'release-package.py" extract' "$RELEASE_WORKFLOW" "$CI_WORKFLOW"; then
   echo "Distribution tool test failed: workflows must use native package extraction." >&2
+  exit 1
+fi
+if grep -Fq 'release-candidate.py" verify' "$RELEASE_WORKFLOW"; then
+  echo "Distribution tool test failed: Tag validation must use native candidate verification." >&2
   exit 1
 fi
 if grep -Fq 'tar -xzf' "$RELEASE_WORKFLOW" "$CI_WORKFLOW"; then

@@ -292,7 +292,7 @@ fn sha256(source: &[u8]) -> String {
         .collect()
 }
 
-fn validate_report(value: &Value) -> Result<(), String> {
+pub(crate) fn validate_report(value: &Value) -> Result<(), String> {
     let report = object(value, "live kernel evidence")?;
     exact_keys(
         report,

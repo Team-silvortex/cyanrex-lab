@@ -299,6 +299,31 @@ pub fn parse_archive_name(name: &str) -> Result<ArchiveName, String> {
     })
 }
 
+pub fn archive_name_syntax(name: &str) -> bool {
+    let Some(value) = name
+        .strip_suffix(".tar.gz")
+        .and_then(|value| value.strip_prefix("cyanrex-lab-"))
+    else {
+        return false;
+    };
+    if value.len() <= 16 {
+        return false;
+    }
+    let timestamp_separator = value.len() - 16;
+    if value.as_bytes()[timestamp_separator] != b'-' {
+        return false;
+    }
+    let version = &value[..timestamp_separator];
+    let timestamp = &value[timestamp_separator + 1..];
+    decimal_triplet(version)
+        && timestamp.len() == 15
+        && timestamp.as_bytes()[8] == b'-'
+        && timestamp
+            .bytes()
+            .enumerate()
+            .all(|(index, byte)| index == 8 || byte.is_ascii_digit())
+}
+
 pub fn portable_path(value: &Value, label: &str) -> Result<String, String> {
     let text = value.as_str().unwrap_or_default();
     if text.is_empty() || text.contains('\\') || text.starts_with('/') {

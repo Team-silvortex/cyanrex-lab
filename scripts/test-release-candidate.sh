@@ -52,6 +52,14 @@ clone_bundle() {
   printf '%s\n' "$destination"
 }
 
+candidate_verify() {
+  if [ -n "${CYANREX_NATIVE_RELEASE_TOOL:-}" ]; then
+    "$CYANREX_NATIVE_RELEASE_TOOL" candidate "$@"
+  else
+    python3 "$VERIFIER" "$@"
+  fi
+}
+
 mkdir -p "$PACKAGE_DIR" "$BUNDLE_DIR"
 printf 'services: {}\n' > "$PACKAGE_DIR/docker-compose.yml"
 printf 'mock image archive\n' > "$PACKAGE_DIR/cyanrex-images.tar"
@@ -133,7 +141,7 @@ python3 "$EVIDENCE_TOOL" create \
   --release-metadata "$PACKAGE_DIR/release-metadata.json" >/dev/null
 write_checksum "$BUNDLE_DIR/cyanrex-live-kernel-acceptance.json"
 
-python3 "$VERIFIER" verify "$BUNDLE_DIR" \
+candidate_verify verify "$BUNDLE_DIR" \
   --expect-version 1.2.3 \
   --expect-revision "$REVISION" \
   --expect-tag v1.2.3 \
@@ -141,7 +149,7 @@ python3 "$VERIFIER" verify "$BUNDLE_DIR" \
   --expect-image-mode built >/dev/null
 
 FULL_EXTRACT="$WORK_DIR/full-extract"
-python3 "$VERIFIER" verify "$BUNDLE_DIR" \
+candidate_verify verify "$BUNDLE_DIR" \
   --expect-version 1.2.3 \
   --expect-revision "$REVISION" \
   --expect-tag v1.2.3 \
@@ -153,7 +161,7 @@ python3 "$VERIFIER" verify "$BUNDLE_DIR" \
 [ ! -e "$FULL_EXTRACT/$PACKAGE_NAME/cyanrex-live-kernel-acceptance.json" ]
 printf 'preserve me\n' > "$FULL_EXTRACT/marker"
 expect_failure "existing extraction output" "refusing to overwrite extraction output" \
-  python3 "$VERIFIER" verify "$BUNDLE_DIR" --extract-to "$FULL_EXTRACT"
+  candidate_verify verify "$BUNDLE_DIR" --extract-to "$FULL_EXTRACT"
 grep -Fxq 'preserve me' "$FULL_EXTRACT/marker"
 
 PACKAGE_BUNDLE="$WORK_DIR/package-bundle"
@@ -170,12 +178,12 @@ python3 "$PACKAGE_TOOL" extract "$PACKAGE_BUNDLE" \
 [ -x "$WORK_DIR/package-extract/$PACKAGE_NAME/run.sh" ]
 
 expect_failure "wrong version expectation" "package version does not match expectation" \
-  python3 "$VERIFIER" verify "$BUNDLE_DIR" --expect-version 9.9.9
+  candidate_verify verify "$BUNDLE_DIR" --expect-version 9.9.9
 
 OUTER_TAMPER="$(clone_bundle outer-tamper)"
 printf 'tampered\n' >> "$OUTER_TAMPER/$PACKAGE_NAME.tar.gz"
 expect_failure "outer archive tampering" "SHA-256 mismatch" \
-  python3 "$VERIFIER" verify "$OUTER_TAMPER"
+  candidate_verify verify "$OUTER_TAMPER"
 
 REPORT_TAMPER="$(clone_bundle report-tamper)"
 python3 - "$REPORT_TAMPER/cyanrex-live-kernel-acceptance.json" <<'PY'
@@ -192,7 +200,7 @@ with open(path, "w", encoding="utf-8") as handle:
 PY
 write_checksum "$REPORT_TAMPER/cyanrex-live-kernel-acceptance.json"
 expect_failure "candidate evidence mismatch" "does not match the archived release metadata" \
-  python3 "$VERIFIER" verify "$REPORT_TAMPER"
+  candidate_verify verify "$REPORT_TAMPER"
 
 INTERNAL_TAMPER="$(clone_bundle internal-tamper)"
 mkdir -p "$WORK_DIR/internal-source"
@@ -201,7 +209,7 @@ printf 'tampered: true\n' >> "$WORK_DIR/internal-source/$PACKAGE_NAME/docker-com
 tar -czf "$INTERNAL_TAMPER/$PACKAGE_NAME.tar.gz" -C "$WORK_DIR/internal-source" "$PACKAGE_NAME"
 write_checksum "$INTERNAL_TAMPER/$PACKAGE_NAME.tar.gz"
 expect_failure "package member tampering" "checksum manifest does not match docker-compose.yml" \
-  python3 "$VERIFIER" verify "$INTERNAL_TAMPER"
+  candidate_verify verify "$INTERNAL_TAMPER"
 
 TRAVERSAL="$(clone_bundle traversal)"
 python3 - "$TRAVERSAL/$PACKAGE_NAME.tar.gz" <<'PY'
@@ -216,7 +224,7 @@ with tarfile.open(sys.argv[1], "w:gz") as archive:
 PY
 write_checksum "$TRAVERSAL/$PACKAGE_NAME.tar.gz"
 expect_failure "path traversal archive" "escapes its package root" \
-  python3 "$VERIFIER" verify "$TRAVERSAL" --extract-to "$WORK_DIR/traversal-output"
+  candidate_verify verify "$TRAVERSAL" --extract-to "$WORK_DIR/traversal-output"
 [ ! -e "$WORK_DIR/escape" ]
 [ ! -e "$WORK_DIR/traversal-output" ]
 
@@ -236,7 +244,7 @@ with tarfile.open(sys.argv[1], "w:gz") as archive:
 PY
 write_checksum "$SYMLINK/$PACKAGE_NAME.tar.gz"
 expect_failure "symbolic-link archive" "unsupported member type" \
-  python3 "$VERIFIER" verify "$SYMLINK"
+  candidate_verify verify "$SYMLINK"
 
 DUPLICATE="$(clone_bundle duplicate)"
 python3 - "$DUPLICATE/$PACKAGE_NAME.tar.gz" "$PACKAGE_NAME" <<'PY'
@@ -255,7 +263,7 @@ with tarfile.open(sys.argv[1], "w:gz") as archive:
 PY
 write_checksum "$DUPLICATE/$PACKAGE_NAME.tar.gz"
 expect_failure "duplicate archive member" "duplicate member" \
-  python3 "$VERIFIER" verify "$DUPLICATE"
+  candidate_verify verify "$DUPLICATE"
 
 UNCHECKSUMMED="$(clone_bundle unchecksummed)"
 mkdir -p "$WORK_DIR/unchecksummed-source"
@@ -265,12 +273,12 @@ tar -czf "$UNCHECKSUMMED/$PACKAGE_NAME.tar.gz" \
   -C "$WORK_DIR/unchecksummed-source" "$PACKAGE_NAME"
 write_checksum "$UNCHECKSUMMED/$PACKAGE_NAME.tar.gz"
 expect_failure "unchecksummed package member" "checksum manifest file set is invalid" \
-  python3 "$VERIFIER" verify "$UNCHECKSUMMED"
+  candidate_verify verify "$UNCHECKSUMMED"
 
 AMBIGUOUS="$(clone_bundle ambiguous)"
 cp "$AMBIGUOUS/$PACKAGE_NAME.tar.gz" \
   "$AMBIGUOUS/cyanrex-lab-9.9.9-20260904-010203.tar.gz"
 expect_failure "ambiguous bundle" "exactly one Cyanrex .tar.gz archive" \
-  python3 "$VERIFIER" verify "$AMBIGUOUS"
+  candidate_verify verify "$AMBIGUOUS"
 
 echo "Release candidate bundle verifier checks passed."

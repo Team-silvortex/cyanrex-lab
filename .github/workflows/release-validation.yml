@@ -86,7 +86,7 @@ jobs:
           (cd "$RUNNER_TEMP/cyanrex-release" && \
             sha256sum cyanrex-live-kernel-acceptance.json \
               > cyanrex-live-kernel-acceptance.json.sha256)
-          python3 "$GITHUB_WORKSPACE/scripts/release-candidate.py" verify \
+          cargo run --quiet --manifest-path "$GITHUB_WORKSPACE/engine/Cargo.toml" --locked --bin cyanrex-release -- candidate verify \
             "$RUNNER_TEMP/cyanrex-release" \
             --expect-version "$RELEASE_VERSION" \
             --expect-revision "$RELEASE_REVISION" \

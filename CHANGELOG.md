@@ -11,6 +11,8 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
   metadata binding, legacy v1 verification, and atomic non-overwriting report creation.
 - Added native `cyanrex-release package extract` verification and staged extraction with strict bundle,
   archive, metadata, checksum, path, member-type, size, and non-overwrite enforcement.
+- Added native `cyanrex-release candidate verify` for checksum-bound four-file Tag artifacts, including
+  strict evidence validation, archived-metadata binding, and optional verified extraction.
 
 ### Changed
 
@@ -18,7 +20,8 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
   live-kernel evidence, while retaining the Python implementation as a compatibility fallback during
   the remaining release-tool migration.
 - CI and Tag validation now use the Rust release CLI for two-file package extraction; the Python package
-  tool remains available as a compatibility reference while candidate verification is migrated.
+  tool remains available as a compatibility and cross-implementation reference.
+- Tag acceptance now uses native candidate verification after live-kernel smoke acceptance.
 
 ## [0.3.2] - 2026-09-04
 

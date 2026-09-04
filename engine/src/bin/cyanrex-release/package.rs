@@ -1,5 +1,5 @@
 use crate::release_archive::{
-    archive_path, decimal_triplet, inspect_archive, regular_file, verify_checksum_file,
+    archive_name_syntax, archive_path, inspect_archive, regular_file, verify_checksum_file,
     verify_manifest, MAX_ARCHIVE_BYTES, MAX_ARCHIVE_MEMBERS,
 };
 use crate::release_metadata::{enforce_expectations, validate_metadata, Expectations};
@@ -17,11 +17,12 @@ pub struct ExtractedPackage {
     pub path: PathBuf,
 }
 
-struct VerifiedPackage {
-    metadata: Value,
-    archive: PathBuf,
-    package_root: String,
-    hashes: BTreeMap<String, String>,
+pub(crate) struct VerifiedPackage {
+    pub metadata: Value,
+    pub metadata_source: Vec<u8>,
+    pub archive: PathBuf,
+    pub package_root: String,
+    pub hashes: BTreeMap<String, String>,
 }
 
 pub fn verify_and_extract(
@@ -30,7 +31,7 @@ pub fn verify_and_extract(
     expectations: &Expectations,
 ) -> Result<ExtractedPackage, String> {
     let verified = verify_package(bundle, expectations)?;
-    let path = extract_archive(
+    let path = extract_verified_archive(
         &verified.archive,
         &verified.package_root,
         &verified.hashes,
@@ -44,11 +45,18 @@ pub fn verify_and_extract(
 
 fn verify_package(bundle: &Path, expectations: &Expectations) -> Result<VerifiedPackage, String> {
     let archive = discover_package_bundle(bundle)?;
+    verify_archive(&archive, expectations)
+}
+
+pub(crate) fn verify_archive(
+    archive: &Path,
+    expectations: &Expectations,
+) -> Result<VerifiedPackage, String> {
     let archive_name = archive
         .file_name()
         .and_then(|name| name.to_str())
         .ok_or_else(|| "release package archive name is not UTF-8".to_owned())?;
-    let inspected = inspect_archive(&archive)?;
+    let inspected = inspect_archive(archive)?;
     verify_manifest(
         &inspected.hashes,
         inspected
@@ -56,11 +64,13 @@ fn verify_package(bundle: &Path, expectations: &Expectations) -> Result<Verified
             .get("checksums.sha256")
             .expect("archive inspection requires its checksum manifest"),
     )?;
+    let metadata_source = inspected
+        .controls
+        .get("release-metadata.json")
+        .expect("archive inspection requires release metadata")
+        .clone();
     let metadata = validate_metadata(
-        inspected
-            .controls
-            .get("release-metadata.json")
-            .expect("archive inspection requires release metadata"),
+        &metadata_source,
         &inspected.package_root,
         archive_name,
         &inspected.hashes,
@@ -68,7 +78,8 @@ fn verify_package(bundle: &Path, expectations: &Expectations) -> Result<Verified
     enforce_expectations(&metadata, expectations)?;
     Ok(VerifiedPackage {
         metadata,
-        archive,
+        metadata_source,
+        archive: archive.to_path_buf(),
         package_root: inspected.package_root,
         hashes: inspected.hashes,
     })
@@ -134,7 +145,7 @@ fn discover_package_bundle(directory: &Path) -> Result<PathBuf, String> {
     Ok(archive)
 }
 
-fn extract_archive(
+pub(crate) fn extract_verified_archive(
     archive_path: &Path,
     package_root: &str,
     hashes: &BTreeMap<String, String>,
@@ -371,31 +382,6 @@ fn output_path(value: &Path) -> Result<PathBuf, String> {
         ));
     }
     Ok(destination)
-}
-
-fn archive_name_syntax(name: &str) -> bool {
-    let Some(value) = name
-        .strip_suffix(".tar.gz")
-        .and_then(|value| value.strip_prefix("cyanrex-lab-"))
-    else {
-        return false;
-    };
-    if value.len() <= 16 {
-        return false;
-    }
-    let timestamp_separator = value.len() - 16;
-    if value.as_bytes()[timestamp_separator] != b'-' {
-        return false;
-    }
-    let version = &value[..timestamp_separator];
-    let timestamp = &value[timestamp_separator + 1..];
-    decimal_triplet(version)
-        && timestamp.len() == 15
-        && timestamp.as_bytes()[8] == b'-'
-        && timestamp
-            .bytes()
-            .enumerate()
-            .all(|(index, byte)| index == 8 || byte.is_ascii_digit())
 }
 
 fn allowed_directories(package_root: &str, hashes: &BTreeMap<String, String>) -> BTreeSet<String> {

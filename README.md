@@ -176,15 +176,16 @@ Verify that report later against the exact extracted package metadata:
   --release-metadata ./release-metadata.json
 ```
 
-New offline packages carry this native Rust verifier. `live-kernel-evidence.py` remains available as a
-temporary compatibility fallback while the remaining candidate command is migrated.
+New offline packages carry this native Rust verifier. The Python release tools remain temporarily
+available as compatibility and cross-implementation references.
 
 For an artifact downloaded from the Tag workflow, place its four files in a dedicated directory and
 verify the complete candidate from a trusted checkout of the matching source Tag before extracting it:
 
 ```bash
 release_revision="$(git rev-list -n 1 v0.3.2)"
-python3 scripts/release-candidate.py verify /path/to/downloaded-candidate \
+cargo run --quiet --manifest-path engine/Cargo.toml --locked --bin cyanrex-release -- \
+  candidate verify /path/to/downloaded-candidate \
   --expect-version 0.3.2 --expect-revision "$release_revision" --expect-tag v0.3.2 \
   --extract-to /path/to/new-output-directory
 ```

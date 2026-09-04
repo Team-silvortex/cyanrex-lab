@@ -77,20 +77,18 @@ Utility scripts for Cyanrex local operation.
   attachment set, run the built-in Aya `sched_switch` ring-buffer template, require a uniquely bound
   kernel event, detach its exact pin, and reject residue. `CYANREX_KERNEL_SMOKE_REPORT` optionally writes
   atomic evidence bound to packaged release metadata and the runtime environment.
-- `../engine/src/bin/cyanrex-release/`: native Rust release CLI. It creates and strictly verifies
-  live-kernel evidence, and verifies then safely extracts two-file release packages. Evidence accepts
-  legacy v1 reports while new reports use the self-contained v2 event binding.
-- `live-kernel-evidence.py`: compatibility implementation retained while candidate verification moves
-  into the native CLI.
+- `../engine/src/bin/cyanrex-release/`: native Rust release CLI. It handles complete Tag candidates,
+  live-kernel evidence, and verified two-file package extraction. Evidence accepts legacy v1 reports
+  while new reports use the self-contained v2 event binding.
+- `live-kernel-evidence.py`: compatibility implementation retained for older environments and parity
+  regression coverage.
 - `release-tool-image.sh`: safely exports `cyanrex-release` from the built Engine image into an offline
   package and cleans up its temporary container.
 - `test-live-kernel-smoke.sh`: mock successful, stale-event, and missing-event paths, validate generated
   and legacy evidence, reject tampering/metadata mismatches/duplicate keys, and require cleanup without
   loading a program into the local kernel.
-- `release-candidate.py`: verify the exact four-file Tag artifact as one unit. It validates both outer
-  checksums, streams the package without extraction, rejects unsafe or ambiguous archive structures,
-  verifies every internal file, cross-binds release metadata to the live-kernel evidence, and optionally
-  delegates verified extraction through `--extract-to`.
+- `release-candidate.py`: compatibility implementation of four-file Tag artifact verification retained
+  for older environments and parity regression coverage.
 - `release-package.py`: compatibility implementation for verifying and safely extracting an
   archive/checksum pair while older environments migrate to `cyanrex-release package extract`.
 - `test-release-candidate.sh`: build a minimal valid candidate and reject checksum tampering, evidence
@@ -242,7 +240,8 @@ archive, its checksum, the live-kernel report, and its checksum):
 
 ```bash
 release_revision="$(git rev-list -n 1 v0.3.2)"
-python3 scripts/release-candidate.py verify /path/to/downloaded-candidate \
+cargo run --quiet --manifest-path engine/Cargo.toml --locked --bin cyanrex-release -- \
+  candidate verify /path/to/downloaded-candidate \
   --expect-version 0.3.2 --expect-revision "$release_revision" --expect-tag v0.3.2 \
   --extract-to /path/to/new-output-directory
 ```
