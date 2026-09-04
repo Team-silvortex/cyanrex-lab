@@ -500,7 +500,7 @@ chmod +x "$stop_script"
 generate_checksums() {
   local package_dir="$1"
   resolve_checksum_command
-  (cd "$package_dir" && "${CHECKSUM_CMD[@]}" docker-compose.yml .env.example runner-agent.env.example runner-agent.sh runner-agent-smoke.sh live-kernel-smoke.sh install-smoke.sh LICENSE README.md README-en.md README-zh-CN.md README-docker.md README-DEPLOY.md manifest.env release-metadata.json deploy.sh run.sh stop.sh cyanrex-images.tar > checksums.sha256)
+  (cd "$package_dir" && "${CHECKSUM_CMD[@]}" docker-compose.yml .env.example runner-agent.env.example runner-agent.sh runner-agent-smoke.sh live-kernel-smoke.sh live-kernel-evidence.py install-smoke.sh LICENSE README.md README-en.md README-zh-CN.md README-docker.md README-DEPLOY.md manifest.env release-metadata.json deploy.sh run.sh stop.sh cyanrex-images.tar > checksums.sha256)
 }
 resolve_version
 require_cmd tar
@@ -547,6 +547,7 @@ cp "$ROOT_DIR/docker/runner-agent.env.example" "$PACKAGE_DIR/runner-agent.env.ex
 cp "$ROOT_DIR/scripts/runner-agent.sh" "$PACKAGE_DIR/runner-agent.sh"
 cp "$ROOT_DIR/scripts/runner-agent-smoke.sh" "$PACKAGE_DIR/runner-agent-smoke.sh"
 cp "$ROOT_DIR/scripts/live-kernel-smoke.sh" "$PACKAGE_DIR/live-kernel-smoke.sh"
+cp "$ROOT_DIR/scripts/live-kernel-evidence.py" "$PACKAGE_DIR/live-kernel-evidence.py"
 cp "$ROOT_DIR/scripts/distribution-install-smoke.sh" "$PACKAGE_DIR/install-smoke.sh"
 cp "$ROOT_DIR/LICENSE" "$PACKAGE_DIR/LICENSE"
 cp "$ROOT_DIR/README.md" "$PACKAGE_DIR/README.md"

@@ -71,4 +71,5 @@ eBPF 永远运行在 Linux 内核中。Windows 和 macOS 的 Docker 模式观察
 - 建议在分支保护中只配置必需检查项为 **`CI gate`**，这样合并统一受该门禁控制。
 - 推送注解版本 Tag 会触发 `Release Candidate Validation`：它把干净的 Tag 提交绑定到新构建的
   离线发行包，完成精确镜像安装及真实 Aya 挂载/事件/detach 验收后，将结果保留为 30 天的
-  工作流制品，并附带独立校验和保护、绑定候选产物的内核证据；该流程不会创建或签名 GitHub Release。
+  工作流制品，并附带独立校验和保护、绑定候选产物的内核证据；发行包内严格验证器可离线复验该
+  报告，该流程不会创建或签名 GitHub Release。

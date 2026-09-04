@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SOURCE_SCRIPT="$ROOT_DIR/scripts/live-kernel-smoke.sh"
+SOURCE_EVIDENCE_TOOL="$ROOT_DIR/scripts/live-kernel-evidence.py"
 WORK_DIR="$(mktemp -d)"
 trap 'rm -rf "$WORK_DIR"' EXIT
 
@@ -10,7 +11,8 @@ bash -n "$SOURCE_SCRIPT"
 "$SOURCE_SCRIPT" --help >/dev/null
 mkdir -p "$WORK_DIR/bin" "$WORK_DIR/runtime"
 cp "$SOURCE_SCRIPT" "$WORK_DIR/runtime/live-kernel-smoke.sh"
-chmod +x "$WORK_DIR/runtime/live-kernel-smoke.sh"
+cp "$SOURCE_EVIDENCE_TOOL" "$WORK_DIR/runtime/live-kernel-evidence.py"
+chmod +x "$WORK_DIR/runtime/live-kernel-smoke.sh" "$WORK_DIR/runtime/live-kernel-evidence.py"
 cat > "$WORK_DIR/runtime/.env" <<'EOF'
 CYANREX_ADMIN_PASSWORD=test-password
 CYANREX_ADMIN_TOTP_SECRET=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -130,7 +132,7 @@ with open(sys.argv[1], encoding="utf-8") as handle:
     report = json.load(handle)
 with open(sys.argv[2], "rb") as handle:
     metadata_hash = hashlib.sha256(handle.read()).hexdigest()
-assert report["schemaVersion"] == 1
+assert report["schemaVersion"] == 2
 assert report["result"] == "passed"
 assert report["candidate"]["package"]["version"] == "1.2.3"
 assert report["candidate"]["source"]["tag"] == "v1.2.3"
@@ -138,8 +140,86 @@ assert report["candidate"]["releaseMetadataSha256"] == metadata_hash
 assert report["environment"]["runtime_mode"] == "docker"
 assert report["exercise"]["programName"].startswith("release-kernel-smoke-")
 assert report["exercise"]["event"]["bytes"] == 32
+assert report["exercise"]["event"]["programName"] == report["exercise"]["programName"]
 assert report["cleanup"] == {"exactPinDetached": True, "remainingAttachments": 0}
 PY
+python3 "$WORK_DIR/runtime/live-kernel-evidence.py" verify "$WORK_DIR/evidence.json" \
+  --release-metadata "$WORK_DIR/runtime/release-metadata.json" \
+  --expect-version 1.2.3 \
+  --expect-revision aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa \
+  --expect-tag v1.2.3 \
+  --expect-source-state clean \
+  --expect-image-mode built >/dev/null
+python3 - "$WORK_DIR/evidence.json" "$WORK_DIR/tampered-evidence.json" \
+  "$WORK_DIR/legacy-evidence.json" "$WORK_DIR/runtime/release-metadata.json" \
+  "$WORK_DIR/mismatched-metadata.json" "$WORK_DIR/duplicate-keys.json" \
+  "$WORK_DIR/create-environment.json" "$WORK_DIR/create-event.json" <<'PY'
+import copy
+import json
+import sys
+with open(sys.argv[1], encoding="utf-8") as handle:
+    report = json.load(handle)
+tampered = copy.deepcopy(report)
+tampered["exercise"]["event"]["bytes"] = 0
+with open(sys.argv[2], "w", encoding="utf-8") as handle:
+    json.dump(tampered, handle)
+legacy = copy.deepcopy(report)
+legacy["schemaVersion"] = 1
+legacy["exercise"]["event"].pop("programName")
+with open(sys.argv[3], "w", encoding="utf-8") as handle:
+    json.dump(legacy, handle)
+with open(sys.argv[4], encoding="utf-8") as handle:
+    metadata = json.load(handle)
+metadata["images"]["archive"]["sha256"] = "c" * 64
+with open(sys.argv[5], "w", encoding="utf-8") as handle:
+    json.dump(metadata, handle)
+with open(sys.argv[6], "w", encoding="utf-8") as handle:
+    handle.write('{"schemaVersion":2,"schemaVersion":2}')
+with open(sys.argv[7], "w", encoding="utf-8") as handle:
+    json.dump(report["environment"], handle)
+with open(sys.argv[8], "w", encoding="utf-8") as handle:
+    json.dump({
+        "timestamp": report["exercise"]["event"]["timestamp"],
+        "event_type": report["exercise"]["event"]["type"],
+        "payload": {
+            "program_name": report["exercise"]["programName"],
+            "bytes": report["exercise"]["event"]["bytes"],
+        },
+    }, handle)
+PY
+python3 "$WORK_DIR/runtime/live-kernel-evidence.py" verify "$WORK_DIR/legacy-evidence.json" \
+  --release-metadata "$WORK_DIR/runtime/release-metadata.json" >/dev/null
+if python3 "$WORK_DIR/runtime/live-kernel-evidence.py" verify \
+  "$WORK_DIR/tampered-evidence.json" >"$WORK_DIR/tampered.log" 2>&1; then
+  echo "Live kernel smoke tool test failed: tampered evidence was accepted." >&2
+  exit 1
+fi
+if python3 "$WORK_DIR/runtime/live-kernel-evidence.py" verify "$WORK_DIR/evidence.json" \
+  --release-metadata "$WORK_DIR/mismatched-metadata.json" >"$WORK_DIR/mismatch.log" 2>&1; then
+  echo "Live kernel smoke tool test failed: mismatched candidate metadata was accepted." >&2
+  exit 1
+fi
+if python3 "$WORK_DIR/runtime/live-kernel-evidence.py" verify \
+  "$WORK_DIR/duplicate-keys.json" >"$WORK_DIR/duplicate.log" 2>&1; then
+  echo "Live kernel smoke tool test failed: duplicate JSON keys were accepted." >&2
+  exit 1
+fi
+if python3 "$WORK_DIR/runtime/live-kernel-evidence.py" create \
+  --output "$WORK_DIR/evidence.json" \
+  --environment "$WORK_DIR/create-environment.json" \
+  --event "$WORK_DIR/create-event.json" \
+  --program-name "$(cat "$WORK_DIR/program")" \
+  --pin-path /sys/fs/bpf/cyanrex/mock \
+  --release-metadata "$WORK_DIR/runtime/release-metadata.json" \
+  >"$WORK_DIR/overwrite.log" 2>&1; then
+  echo "Live kernel smoke tool test failed: existing evidence was overwritten." >&2
+  exit 1
+fi
+grep -q 'evidence output already exists' "$WORK_DIR/overwrite.log"
+if find "$WORK_DIR" -maxdepth 1 -name '.evidence.json.tmp-*' -print -quit | grep -q .; then
+  echo "Live kernel smoke tool test failed: atomic-write temporary file remains." >&2
+  exit 1
+fi
 if run_smoke stale-event >"$WORK_DIR/stale.log" 2>&1; then
   echo "Live kernel smoke tool test failed: a stale event was accepted." >&2
   exit 1

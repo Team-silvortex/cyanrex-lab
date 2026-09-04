@@ -11,7 +11,8 @@ covered by `checksums.sha256`, but neither file is a cryptographic signature.
 
 - `docker-compose.yml` and `.env.example`
 - `deploy.sh`, `run.sh`, and `stop.sh`
-- `runner-agent.sh`, `runner-agent-smoke.sh`, and `live-kernel-smoke.sh`
+- `runner-agent.sh`, `runner-agent-smoke.sh`, `live-kernel-smoke.sh`, and
+  `live-kernel-evidence.py`
 - `install-smoke.sh` for disposable clean-host installation acceptance
 - `cyanrex-images.tar` containing PostgreSQL, Engine, and frontend images
 - `manifest.env` and machine-readable `release-metadata.json`
@@ -41,6 +42,14 @@ The live check refuses a non-empty administrator attachment set and verifies tha
 remains. When an evidence path is supplied, it refuses to overwrite an existing file and records the
 candidate metadata hash, environment, unique event, and cleanup result. It is enabled for annotated Tag
 candidates, not for routine non-privileged tooling checks.
+
+The packaged verifier performs strict offline schema and candidate-binding checks. Supply the same
+package metadata used to create the report:
+
+```bash
+python3 ./live-kernel-evidence.py verify /safe/output/live-kernel-acceptance.json \
+  --release-metadata ./release-metadata.json
+```
 
 Set `CYANREX_SMOKE_KEEP=1` to retain a failed smoke stack for diagnosis.
 On a host already using the default ports, select another loopback address such as

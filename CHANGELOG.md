@@ -25,6 +25,8 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 - Added privileged Tag-candidate acceptance that loads the built-in Aya `sched_switch` ring-buffer
   program, requires a uniquely bound real kernel event, detaches its exact pin, rejects residue, and
   retains checksum-addressed evidence bound to the candidate metadata and kernel environment.
+- Added a packaged, strict live-kernel evidence CLI that creates self-contained v2 reports, preserves
+  v1 verification, and rejects schema drift, duplicate JSON keys, tampering, or candidate mismatches.
 - Added deterministic course-document mirror validation so stale committed frontend lessons fail every
   quality-gate mode instead of being repaired only as a build side effect.
 

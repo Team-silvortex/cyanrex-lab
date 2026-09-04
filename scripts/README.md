@@ -77,8 +77,12 @@ Utility scripts for Cyanrex local operation.
   attachment set, run the built-in Aya `sched_switch` ring-buffer template, require a uniquely bound
   kernel event, detach its exact pin, and reject residue. `CYANREX_KERNEL_SMOKE_REPORT` optionally writes
   atomic evidence bound to packaged release metadata and the runtime environment.
+- `live-kernel-evidence.py`: create and strictly verify versioned live-kernel evidence, including exact
+  candidate metadata, image identities, environment, unique event, bpffs pin, and cleanup. The verifier
+  accepts legacy v1 evidence while new reports use the self-contained v2 event binding.
 - `test-live-kernel-smoke.sh`: mock successful, stale-event, and missing-event paths, validate generated
-  evidence, and require cleanup without loading a program into the local kernel.
+  and legacy evidence, reject tampering/metadata mismatches/duplicate keys, and require cleanup without
+  loading a program into the local kernel.
 
 - `bench-event-bus.sh`: run the local event-bus throughput benchmark.
   - configurable through environment variables:
@@ -212,6 +216,7 @@ Distributed package entry points:
 ./runner-agent.sh start  # optional unprivileged compiler Agent
 ./runner-agent-smoke.sh  # authenticated remote compile smoke test
 ./live-kernel-smoke.sh   # privileged live attach/event/detach acceptance
+python3 ./live-kernel-evidence.py verify /path/to/report.json --release-metadata ./release-metadata.json
 ./install-smoke.sh       # destructive disposable-host installation acceptance
 # `run.sh` and `stop.sh` remain compatibility shortcuts.
 ```

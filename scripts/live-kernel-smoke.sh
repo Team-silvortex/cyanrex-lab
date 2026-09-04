@@ -12,6 +12,11 @@ if [ -f "$ROOT_DIR/docker/.env" ]; then
 else
   ENV_FILE="$ROOT_DIR/.env"
 fi
+if [ -f "$ROOT_DIR/scripts/live-kernel-evidence.py" ]; then
+  EVIDENCE_TOOL="$ROOT_DIR/scripts/live-kernel-evidence.py"
+else
+  EVIDENCE_TOOL="$ROOT_DIR/live-kernel-evidence.py"
+fi
 
 usage() {
   cat <<'EOF'
@@ -86,6 +91,10 @@ if [[ ! "$POLL_INTERVAL" =~ ^[0-9]+([.][0-9]+)?$ ]]; then
 fi
 if [ -n "$REPORT_PATH" ] && [ -e "$REPORT_PATH" ]; then
   echo "Error: live kernel evidence output already exists: $REPORT_PATH" >&2
+  exit 1
+fi
+if [ -n "$REPORT_PATH" ] && [ ! -f "$EVIDENCE_TOOL" ]; then
+  echo "Error: live kernel evidence tool is missing: $EVIDENCE_TOOL" >&2
   exit 1
 fi
 
@@ -284,73 +293,17 @@ if payload.get("pin_paths"):
 PY
 
 if [ -n "$REPORT_PATH" ]; then
-  export ENVIRONMENT_JSON MATCHED_EVENT_JSON PIN_PATH PROGRAM_NAME REPORT_PATH ROOT_DIR
-  python3 - <<'PY'
-import datetime
-import hashlib
-import json
-import os
-
-with open(os.environ["ENVIRONMENT_JSON"], encoding="utf-8") as handle:
-    environment = json.load(handle)
-with open(os.environ["MATCHED_EVENT_JSON"], encoding="utf-8") as handle:
-    event = json.load(handle)
-
-metadata_path = os.path.join(os.environ["ROOT_DIR"], "release-metadata.json")
-candidate = None
-if os.path.isfile(metadata_path):
-    with open(metadata_path, "rb") as handle:
-        metadata_bytes = handle.read()
-    metadata = json.loads(metadata_bytes)
-    images = metadata.get("images", {})
-    candidate = {
-        "releaseMetadataSha256": hashlib.sha256(metadata_bytes).hexdigest(),
-        "package": metadata.get("package"),
-        "source": metadata.get("source"),
-        "images": {
-            "mode": images.get("mode"),
-            "references": images.get("references"),
-            "contentIds": images.get("contentIds"),
-            "archiveSha256": images.get("archive", {}).get("sha256"),
-        },
-    }
-
-payload = event.get("payload", {})
-report = {
-    "schemaVersion": 1,
-    "result": "passed",
-    "generatedAt": datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
-    "candidate": candidate,
-    "environment": environment,
-    "exercise": {
-        "templateId": "ringbuf-hi-freq-sampler",
-        "programName": os.environ["PROGRAM_NAME"],
-        "runtimeBackend": "aya",
-        "hook": "tracepoint/sched/sched_switch",
-        "pinPath": os.environ["PIN_PATH"],
-        "event": {
-            "timestamp": event.get("timestamp"),
-            "type": event.get("event_type"),
-            "bytes": payload.get("bytes"),
-        },
-    },
-    "cleanup": {"exactPinDetached": True, "remainingAttachments": 0},
-}
-
-output = os.path.abspath(os.environ["REPORT_PATH"])
-os.makedirs(os.path.dirname(output), exist_ok=True)
-temporary = f"{output}.tmp-{os.getpid()}"
-try:
-    with open(temporary, "w", encoding="utf-8") as handle:
-        json.dump(report, handle, indent=2, sort_keys=True)
-        handle.write("\n")
-    os.chmod(temporary, 0o644)
-    os.replace(temporary, output)
-finally:
-    if os.path.exists(temporary):
-        os.unlink(temporary)
-PY
-  echo "[cyanrex] Live kernel acceptance evidence: $REPORT_PATH"
+  metadata_arguments=()
+  if [ -f "$ROOT_DIR/release-metadata.json" ]; then
+    metadata_arguments=(--release-metadata "$ROOT_DIR/release-metadata.json")
+  fi
+  python3 "$EVIDENCE_TOOL" create \
+    --output "$REPORT_PATH" \
+    --environment "$ENVIRONMENT_JSON" \
+    --event "$MATCHED_EVENT_JSON" \
+    --program-name "$PROGRAM_NAME" \
+    --pin-path "$PIN_PATH" \
+    "${metadata_arguments[@]}"
 fi
 
 echo "[cyanrex] Live kernel attach, event stream, and detach acceptance passed."

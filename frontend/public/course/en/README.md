@@ -72,4 +72,5 @@ For high event traffic classes, you can tune persistence queue alerting in `dock
 - An annotated version Tag triggers `Release Candidate Validation`, which binds the clean Tag commit to
   a newly built offline archive, runs exact-image installation plus live Aya attach/event/detach
   acceptance, and retains the result plus separately checksummed, candidate-bound kernel evidence as a
-  30-day workflow artifact. It does not create or sign a GitHub Release.
+  30-day workflow artifact. A packaged strict verifier can recheck the report offline. The workflow does
+  not create or sign a GitHub Release.

@@ -169,6 +169,13 @@ requires a uniquely identified real kernel event, detaches the exact pin, and re
 Set `CYANREX_KERNEL_SMOKE_REPORT=/safe/output/report.json` to atomically write machine-readable evidence;
 the script refuses to overwrite an existing report.
 
+Verify that report later against the exact extracted package metadata:
+
+```bash
+python3 ./live-kernel-evidence.py verify /safe/output/report.json \
+  --release-metadata ./release-metadata.json
+```
+
 Usage on target machine:
 
 ```bash
@@ -381,5 +388,6 @@ validating the immutable version tree, it builds the offline archive from that e
 runs `install-smoke.sh` against the extracted archive (including loaded-image content ID checks), and
 enables its privileged live-kernel attach/event/detach acceptance before uploading the accepted archive
 plus outer checksum as a 30-day workflow artifact. The artifact also retains a separately checksummed
-live-kernel report bound to the candidate metadata, kernel environment, unique event, and exact cleanup.
-This does not create a GitHub Release or sign/publish packages.
+live-kernel report bound to the candidate metadata, kernel environment, unique event, and exact cleanup;
+the packaged strict verifier rechecks this contract offline. This does not create a GitHub Release or
+sign/publish packages.
