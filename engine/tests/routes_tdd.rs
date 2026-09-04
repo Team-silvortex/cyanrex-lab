@@ -26,6 +26,21 @@ fn test_state() -> std::sync::Arc<cyanrex_engine::AppState> {
     build_state()
 }
 
+fn module_manifest_version(name: &str) -> String {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .expect("Engine should have a repository parent")
+        .join("modules")
+        .join(name)
+        .join("module.json");
+    let source = std::fs::read(path).expect("module manifest should be readable");
+    let manifest: Value = serde_json::from_slice(&source).expect("module manifest should be JSON");
+    manifest["version"]
+        .as_str()
+        .expect("module manifest version should be a string")
+        .to_owned()
+}
+
 include!("routes_tdd/basic.inc.rs");
 include!("routes_tdd/modules.inc.rs");
 include!("routes_tdd/command.inc.rs");

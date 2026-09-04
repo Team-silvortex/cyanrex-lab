@@ -63,7 +63,10 @@ async fn post_command_should_return_structured_module_results_for_admin() {
         .find(|module| module["name"] == "module-network")
         .expect("module-network should be discovered");
     assert_eq!(network["status"], "running");
-    assert_eq!(network["version"], env!("CARGO_PKG_VERSION"));
+    assert_eq!(
+        network["version"],
+        module_manifest_version("module-network")
+    );
     assert!(network["capabilities"].is_array());
 }
 

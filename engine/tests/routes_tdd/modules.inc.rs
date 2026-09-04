@@ -111,7 +111,7 @@ async fn get_modules_list_allowed_for_admin() {
     assert_eq!(modules.len(), 2);
     assert_eq!(modules[0]["name"], "module-ebpf");
     assert_eq!(modules[0]["status"], "stopped");
-    assert_eq!(modules[0]["version"], env!("CARGO_PKG_VERSION"));
+    assert_eq!(modules[0]["version"], module_manifest_version("module-ebpf"));
     assert!(modules[0]["description"].is_string());
     assert!(modules[0]["capabilities"].is_array());
 }
@@ -238,7 +238,10 @@ async fn post_modules_lifecycle_updates_a_discovered_catalog_entry() {
     let start_json: Value = serde_json::from_slice(&start_payload).unwrap();
     assert_eq!(start_json["name"], "module-ebpf");
     assert_eq!(start_json["status"], "running");
-    assert_eq!(start_json["version"], env!("CARGO_PKG_VERSION"));
+    assert_eq!(
+        start_json["version"],
+        module_manifest_version("module-ebpf")
+    );
     assert!(start_json["capabilities"].is_array());
 
     let stop_response = app
