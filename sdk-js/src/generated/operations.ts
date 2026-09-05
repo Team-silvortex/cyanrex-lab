@@ -255,6 +255,12 @@ export interface OpenApiOperations {
       "ok": boolean;
     };
   };
+  "postLearningTeacherFeedback": {
+    input: {
+      "body": OpenApiSchemas["SaveTeacherFeedbackRequest"];
+    };
+    response: OpenApiSchemas["LabTeacherFeedback"];
+  };
   "postModulesCHeadersDelete": {
     input: {
       "body": OpenApiSchemas["DownloadHeaderRequest"];
@@ -388,6 +394,7 @@ export const openApiOperations = {
   "postEbpfRun": {"method":"POST","path":"/ebpf/run","access":"authenticated","transport":"json"},
   "postEventsDelete": {"method":"POST","path":"/events/delete","access":"authenticated","transport":"json"},
   "postEventsMarkRead": {"method":"POST","path":"/events/mark-read","access":"authenticated","transport":"json"},
+  "postLearningTeacherFeedback": {"method":"POST","path":"/learning/teacher/feedback","access":"staff","transport":"json"},
   "postModulesCHeadersDelete": {"method":"POST","path":"/modules/c-headers/delete","access":"admin","transport":"json"},
   "postModulesCHeadersDownload": {"method":"POST","path":"/modules/c-headers/download","access":"admin","transport":"json"},
   "postModulesCHeadersSelect": {"method":"POST","path":"/modules/c-headers/select","access":"admin","transport":"json"},

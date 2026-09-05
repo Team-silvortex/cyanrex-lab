@@ -20,6 +20,9 @@ use crate::services::learning_catalog::{assess_lab_run, find_lab, lab_definition
 use crate::sqlx_compat as sqlx;
 use crate::sqlx_compat::{PgPool, PgPoolOptions, Row};
 
+mod feedback;
+pub use feedback::LearningFeedbackError;
+
 pub struct LearningRunOutcome<'a> {
     pub lab_id: &'a str,
     pub template_id: Option<&'a str>,
@@ -114,6 +117,7 @@ impl LearningStore {
             attach_verified: outcome.attach_verified,
             completed: assessment.completed,
             feedback: assessment.feedback,
+            teacher_feedback: None,
             created_at: Utc::now(),
         };
 
@@ -149,8 +153,11 @@ impl LearningStore {
         }
 
         self.load_memory().await?;
-        self.in_memory.write().await.push(attempt.clone());
-        self.persist_memory().await?;
+        let _guard = self.persist_lock.lock().await;
+        let mut attempts = self.in_memory.read().await.clone();
+        attempts.push(attempt.clone());
+        self.persist_attempts(&attempts).await?;
+        *self.in_memory.write().await = attempts;
         Ok(attempt)
     }
 
@@ -302,6 +309,11 @@ impl LearningStore {
                 )
                 .execute(pool)
                 .await?;
+                sqlx::query(include_str!(
+                    "../../migrations/0005_learning_teacher_feedback.sql"
+                ))
+                .execute(pool)
+                .await?;
                 sqlx::query(
                     "CREATE INDEX IF NOT EXISTS idx_learning_attempts_user_lab_created
                      ON learning_attempts(username, lab_id, created_at DESC)",
@@ -334,8 +346,8 @@ impl LearningStore {
             .map(|_| ())
     }
 
-    async fn persist_memory(&self) -> Result<(), String> {
-        let _guard = self.persist_lock.lock().await;
+    // Callers hold persist_lock and only publish the new snapshot after the rename succeeds.
+    async fn persist_attempts(&self, attempts: &[LabAttempt]) -> Result<(), String> {
         let parent = self
             .data_path
             .parent()
@@ -343,7 +355,7 @@ impl LearningStore {
         tokio::fs::create_dir_all(parent)
             .await
             .map_err(|error| format!("failed to prepare learning data dir: {error}"))?;
-        let content = serde_json::to_string_pretty(&*self.in_memory.read().await)
+        let content = serde_json::to_string_pretty(attempts)
             .map_err(|error| format!("failed to encode learning attempts: {error}"))?;
         let temp_path = self.data_path.with_extension("json.tmp");
         tokio::fs::write(&temp_path, content)
@@ -370,6 +382,7 @@ fn decode_attempt(row: crate::sqlx_compat::postgres::PgRow) -> LabAttempt {
         attach_verified: row.get("attach_verified"),
         completed: row.get("completed"),
         feedback: feedback.lines().map(str::to_string).collect(),
+        teacher_feedback: feedback::decode_feedback(&row),
         created_at: row.get("created_at"),
     }
 }
@@ -463,6 +476,7 @@ mod tests {
             attach_verified: false,
             completed: true,
             feedback: vec!["passed".to_string()],
+            teacher_feedback: None,
             created_at: Utc::now(),
         };
         let mut later_failure = base.clone();

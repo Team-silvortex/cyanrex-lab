@@ -5,6 +5,7 @@ import SidebarLayout from "../../src/components/SidebarLayout";
 import { getEngineUrl } from "../../src/config/runtime";
 import { useI18n } from "../../src/i18n/context";
 import { LabProgress, labTitleKey } from "../../src/features/learning/models";
+import { AttemptHistory } from "../../src/features/learning/AttemptHistory";
 
 const sections = [
   { href: "/learn/teacher-guide", titleKey: "learn.sectionTeacherGuideTitle", detailKey: "learn.sectionTeacherGuideDetail" },
@@ -98,6 +99,7 @@ export default function LearnIndexPage() {
           ))}
         </div>
       </section>
+      <AttemptHistory engineUrl={engineUrl} />
     </SidebarLayout>
   );
 }

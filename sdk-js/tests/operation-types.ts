@@ -16,6 +16,14 @@ async function verifyOperationTypes() {
   await client.operation("getLearningTeacherAttempts", {
     query: { username: "student", limit: 10 },
   });
+  const feedback = await client.operation("postLearningTeacherFeedback", {
+    body: { username: "student", attempt_id: "attempt", comment: "Check bounds", expected_revision: 0 },
+  });
+  feedback.comment.toUpperCase();
+  feedback.revision.toFixed();
+  await client.learning.saveTeacherFeedback({ username: "student", attempt_id: "attempt", comment: "Update", expected_revision: feedback.revision });
+  // @ts-expect-error the feedback revision is required to prevent overwriting newer feedback
+  await client.learning.saveTeacherFeedback({ username: "student", attempt_id: "attempt", comment: "Update" });
   await client.operation("getEvents", { query: { category: "kernel", limit: 20 } });
   await client.operation("getHealth", {}, { signal });
 

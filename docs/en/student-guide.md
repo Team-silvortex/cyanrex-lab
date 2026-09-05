@@ -75,6 +75,12 @@ often than the UI reports, and an unattached or untriggered program produces no 
 Failed runs are also retained as attempts so you and the teacher can see improvement over time.
 Automated completion validates the runtime portion; explanation questions still require discussion.
 
+**My lab history** in Learning Center shows each submission's stage, automated feedback, and original
+source, newest first. Teacher feedback includes its author and modification time. Use **Refresh** for
+new comments or **Load more attempts** for older submissions. Comments never change automated acceptance;
+revise your program and select the corresponding lab again to continue. Students can read only their
+own history and cannot write or edit teacher feedback.
+
 ## 5. Lab Discipline
 
 - Do not delete unknown bpffs files you cannot explain.

@@ -36,7 +36,7 @@ try {
 The client covers authentication, modules and the admin command bus, events, settings, scripts,
 learning, eBPF checks/runs/attachments, Runner status/admin jobs, and environment diagnostics. Every
 method accepts an optional `{ signal }` argument for cancellation. The generated `operation()` layer
-covers all 56 browser-facing operations and derives required bodies, query parameters, and response
+covers all 57 browser-facing operations and derives required bodies, query parameters, and response
 types from each OpenAPI operation. The five signed Runner Agent protocol operations remain isolated
 from the browser SDK. `client.request<T>()` remains available for forward-compatible calls.
 
@@ -46,6 +46,26 @@ task-oriented facade; the operationId surface is additive.
 
 The additive-only namespace baseline and deprecation window are defined in [STABILITY.md](STABILITY.md).
 The quality gate rejects removal or renaming of any captured public client path.
+
+Teachers and administrators can leave student-visible feedback on existing lab attempts:
+
+```ts
+const { attempts } = await cyanrex.learning.teacherAttempts("student");
+const attempt = attempts[0];
+if (attempt) {
+  await cyanrex.learning.saveTeacherFeedback({
+    username: attempt.username,
+    attempt_id: attempt.id,
+    comment: "Explain why the pointer is safe before dereferencing it.",
+    expected_revision: attempt.teacher_feedback?.revision ?? 0,
+  });
+}
+```
+
+Comments are trimmed plain text (1–2000 Unicode characters). The server assigns the reviewer and time;
+students read them through `learning.attempts()`. A stale revision returns `CyanrexApiError` with status
+`409`: reload, compare, and explicitly resubmit instead of automatically retrying an overwrite.
+Feedback never modifies automated acceptance. Node clients must configure `csrfOrigin` as above.
 
 Public request and response models are generated from the Engine OpenAPI component schemas. The
 hand-designed client namespaces remain stable while the quality gate rejects stale generated types.

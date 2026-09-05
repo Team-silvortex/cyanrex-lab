@@ -48,7 +48,22 @@ export type LabAttempt = {
   attach_verified: boolean;
   completed: boolean;
   feedback: string[];
+  teacher_feedback?: LabTeacherFeedback | null;
   created_at: string;
+};
+
+export type LabTeacherFeedback = {
+  reviewer: string;
+  comment: string;
+  revision: number;
+  updated_at: string;
+};
+
+export type SaveTeacherFeedbackRequest = {
+  username: string;
+  attempt_id: string;
+  comment: string;
+  expected_revision: number;
 };
 
 export type TeacherStudentAttempts = {

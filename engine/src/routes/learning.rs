@@ -9,7 +9,11 @@ use axum::{
 use serde::Deserialize;
 
 use crate::{
-    models::{auth::AuthRole, learning::TeacherStudentAttempts},
+    models::{
+        auth::AuthRole,
+        learning::{SaveTeacherFeedbackRequest, TeacherStudentAttempts},
+    },
+    services::learning_store::LearningFeedbackError,
     AppState,
 };
 
@@ -95,6 +99,58 @@ fn valid_username(username: &str) -> bool {
         && username.chars().all(|character| {
             character.is_ascii_alphanumeric() || matches!(character, '_' | '-' | '.')
         })
+}
+
+pub async fn save_teacher_feedback(
+    State(state): State<Arc<AppState>>,
+    headers: HeaderMap,
+    Json(request): Json<SaveTeacherFeedbackRequest>,
+) -> Response {
+    let Some(session) =
+        crate::routes::auth::current_session_from_headers(state.as_ref(), &headers).await
+    else {
+        return auth_error().into_response();
+    };
+    if !valid_username(&request.username)
+        || !matches!(
+            state.auth_service.role_for_username(&request.username),
+            AuthRole::Student
+        )
+    {
+        return learning_error(StatusCode::NOT_FOUND, "student not found");
+    }
+    match state
+        .learning_store
+        .save_teacher_feedback(&session.username, &request)
+        .await
+    {
+        Ok(feedback) => Json(feedback).into_response(),
+        Err(LearningFeedbackError::InvalidInput(message)) => {
+            learning_error(StatusCode::BAD_REQUEST, message)
+        }
+        Err(LearningFeedbackError::NotFound) => {
+            learning_error(StatusCode::NOT_FOUND, "student attempt not found")
+        }
+        Err(LearningFeedbackError::Conflict) => learning_error(
+            StatusCode::CONFLICT,
+            "feedback changed; reload before editing",
+        ),
+        Err(LearningFeedbackError::Storage(error)) => {
+            tracing::warn!("failed to save teacher feedback: {error}");
+            learning_error(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "failed to save teacher feedback",
+            )
+        }
+    }
+}
+
+fn learning_error(status: StatusCode, message: &str) -> Response {
+    (
+        status,
+        Json(serde_json::json!({"ok": false, "message": message})),
+    )
+        .into_response()
 }
 
 fn auth_error() -> (StatusCode, Json<serde_json::Value>) {

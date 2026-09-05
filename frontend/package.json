@@ -15,6 +15,7 @@
     "test:security-headers": "node --test tests/securityHeaders.test.mjs",
     "test:tooling": "node --test tests/cleanMacosMetadata.test.mjs",
     "test:ui-permissions": "node --experimental-strip-types --test tests/sidebarPermissions.test.mjs tests/teachingReview.test.mjs tests/terminalCommand.test.mjs",
+    "test:learning-browser": "node --test tests/learningFeedback.browser.mjs",
     "lint": "next lint"
   },
   "dependencies": {

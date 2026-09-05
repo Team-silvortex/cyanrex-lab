@@ -88,6 +88,14 @@ source. Use this evidence to distinguish a compile failure from a verifier/attac
 discuss the student's reasoning. The review API is restricted to teacher and administrator roles;
 students can only read their own attempt history.
 
+Write and save feedback below a submission. The student can read it under **Learn → My lab history**.
+Each attempt keeps one current comment with the last teacher/admin's identity and modification time;
+this is not a grade and never changes automated completion. Comments are plain text, trimmed before
+validation, and limited to 1–2000 Unicode characters. If another teacher edits the same comment, the
+page keeps your draft and rejects the stale save. Select **Load latest feedback**, compare the latest
+comment with your draft, and explicitly save again. Failed saves also keep the draft. Role and CSRF
+origin checks apply to the write API.
+
 Automated checks require the expected template, a successful `run` stage, structured source
 evidence, and attachment verification where the lab requires it. Source evidence uses C tokens:
 comments, string literals, helper-name substrings, and preprocessor definitions do not count.

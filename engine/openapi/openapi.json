@@ -2353,6 +2353,58 @@
         "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin"
       }
     },
+    "/learning/teacher/feedback": {
+      "post": {
+        "operationId": "postLearningTeacherFeedback",
+        "summary": "POST /learning/teacher/feedback",
+        "tags": [
+          "Learning"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabTeacherFeedback"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            }
+          }
+        },
+        "x-cyanrex-access": "staff",
+        "x-cyanrex-roles": [
+          "admin",
+          "teacher"
+        ],
+        "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveTeacherFeedbackRequest"
+              }
+            }
+          }
+        }
+      }
+    },
     "/modules/c-headers/delete": {
       "post": {
         "operationId": "postModulesCHeadersDelete",
@@ -4032,6 +4084,16 @@
               "type": "string"
             }
           },
+          "teacher_feedback": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LabTeacherFeedback"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "created_at": {
             "type": "string",
             "format": "date-time"
@@ -4051,6 +4113,68 @@
           "completed",
           "feedback",
           "created_at"
+        ],
+        "additionalProperties": false
+      },
+      "LabTeacherFeedback": {
+        "type": "object",
+        "properties": {
+          "reviewer": {
+            "type": "string"
+          },
+          "comment": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 4294967295
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "reviewer",
+          "comment",
+          "revision",
+          "updated_at"
+        ],
+        "additionalProperties": false
+      },
+      "SaveTeacherFeedbackRequest": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "attempt_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "comment": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000,
+            "description": "Trimmed before validation and storage; plain text visible to the student."
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967294,
+            "description": "Use 0 for an unreviewed attempt or the last read feedback revision. Stale writes return HTTP 409."
+          }
+        },
+        "required": [
+          "username",
+          "attempt_id",
+          "comment",
+          "expected_revision"
         ],
         "additionalProperties": false
       },

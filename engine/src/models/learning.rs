@@ -33,7 +33,26 @@ pub struct LabAttempt {
     pub attach_verified: bool,
     pub completed: bool,
     pub feedback: Vec<String>,
+    #[serde(default)]
+    pub teacher_feedback: Option<LabTeacherFeedback>,
     pub created_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LabTeacherFeedback {
+    pub reviewer: String,
+    pub comment: String,
+    pub revision: u32,
+    pub updated_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct SaveTeacherFeedbackRequest {
+    pub username: String,
+    pub attempt_id: String,
+    pub comment: String,
+    pub expected_revision: u32,
 }
 
 #[derive(Debug, Clone, Serialize)]

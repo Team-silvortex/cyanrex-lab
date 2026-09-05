@@ -13,14 +13,14 @@ The detailed trust boundaries and data flows remain in the [system architecture]
 |---|---|---|
 | Identity and authorization | Operational | Argon2 passwords, TOTP, cookie sessions, CSRF origin checks, and admin/teacher/student route guards |
 | eBPF workbench | Operational | Monaco editing, local Clang diagnostics/completion, bpftool execution, Aya tracepoint execution, attachments, source probes, and kernel event streaming |
-| Learning workflow | Operational | Five assessed labs, persisted attempts, student progress, teacher overview, and bounded source review |
+| Learning workflow | Operational | Five assessed labs, persisted attempts, student progress, teacher overview, bounded source review, and student-visible teacher feedback (Unreleased) |
 | Events and persistence | Operational | User-scoped WebSocket/event center, retention policies, PostgreSQL storage, and documented memory/file fallbacks |
 | Local Runner | Operational | Replaceable driver boundary, global/per-user leases, timeout handling, and explicit `shared_kernel` reporting |
 | Runner Agent | Operational for remote checks | Signed registration, heartbeat, leases, cancellation, probes, and isolated compile-only diagnostics; remote eBPF loading is not enabled |
 | Deployment and distribution | Operational | Docker, WSL2, native Linux, hardened optional compiler Agent, and offline package/install tooling |
 | Release traceability | `0.3.2` candidate prepared, unsigned | Changelog/version sync, accepted annotated `v0.2.9`/`v0.3.1` history, an immutable `v0.3.2` target, checksum-bound source/archive metadata, per-image Docker content IDs, exact-image installation, and safe non-overwriting extraction after whole-bundle verification cross-binds strict live Aya evidence; `0.3.0` is an API baseline only and signed publication remains manual |
 | Module catalog | Operational, state-only | Versioned v1 manifests are discovered and validated at startup; lifecycle is in memory and never executes directory code |
-| JavaScript SDK | Operational internal package | Typed ESM client with 56 generated non-Agent operationId calls, a 77-member additive namespace baseline and deprecation policy, explicit `/openapi` and `/operations` exports, browser/Node sessions, cancellation, downloads, typed errors, and package-consumer smoke coverage |
+| JavaScript SDK | Operational internal package | Typed ESM client with 57 generated non-Agent operationId calls, a 77-member additive namespace baseline and deprecation policy, explicit `/openapi` and `/operations` exports, browser/Node sessions, cancellation, downloads, typed errors, and package-consumer smoke coverage |
 | API contract | Operational internal contract | Generated OpenAPI 3.1 served at `/openapi.json`; route/access/SDK/model drift and breaking changes against the frozen `0.3.0` baseline fail the quality gate |
 | Terminal page | Operational for admins | Permission-aware List/Start/Stop module commands, structured results/history, and a safe handoff to the eBPF experiment workspace; it is not a shell |
 
@@ -46,6 +46,20 @@ environment-level evidence and is not claimed by the local checks listed above. 
 can recheck v1/v2 schema, release metadata binding, event identity, and cleanup without kernel access;
 the repository verifier additionally checks the complete downloaded artifact and can manually extract
 only verified regular files without invoking `tar` or replacing an existing output.
+
+## Teaching mainline update (2026-09-05, Unreleased)
+
+- Teachers/admins can save the current comment on an existing student submission; students read it in
+  **Learn → My lab history**. Multiline plain text, reviewer/time, and a 2000-character limit are supported;
+  automated acceptance and the submitted source remain unchanged.
+- Revision checks reject stale writes with `409`. The page retains the draft and lets the teacher load
+  the latest comment before explicitly resubmitting. Failed local writes do not publish unsaved changes,
+  and failed PostgreSQL writes do not write a local fallback copy.
+- Added 8 backend route, 2 frontend request-builder, and 2 SDK regressions. Separately verified legacy-table
+  migration, concurrent updates, and failure without fallback against a disposable UTF-8 PostgreSQL database,
+  plus Chromium interactions using a mocked Engine API.
+- This increment completes the teaching feedback loop without changing the release version, privileged
+  kernel execution, or remote Agent trust boundaries.
 
 ## Intentional Boundaries
 

@@ -73,8 +73,8 @@ streaming. See the architecture document before adding a service, route, or depl
   - administrator-only Terminal with structured results, module snapshots, and session history
 - JavaScript SDK:
   - typed ESM package covering the browser-facing Engine API
-  - public request/response models generated from 76 OpenAPI component schemas
-  - generated `client.operation(operationId, input)` layer and runtime metadata for all 56
+  - public request/response models generated from 78 OpenAPI component schemas
+  - generated `client.operation(operationId, input)` layer and runtime metadata for all 57
     non-Agent operations, alongside the stable hand-designed namespaces
   - additive-only compatibility baseline for 77 public client namespace and method paths
   - browser credentials, Node session-cookie capture, Origin-based CSRF support, cancellation, and typed errors
@@ -345,6 +345,12 @@ catalog root with `CYANREX_MODULES_DIR` when running outside the repository or p
 - `GET /learning/teacher/overview` — teacher/admin classroom progress summary
 - `GET /learning/teacher/attempts?username=...&limit=...` — staff-only bounded attempt,
   feedback, and submitted-source review for one student
+- `POST /learning/teacher/feedback` — teacher/admin saves a student-visible comment on an existing
+  attempt; requires CSRF origin and `{ username, attempt_id, comment, expected_revision }`
+- Feedback is plain text (1–2000 characters after trimming), with server-assigned reviewer and time.
+  Use revision `0` for a first comment, then the last read revision; stale edits return `409`.
+  Feedback is persisted with the attempt and never changes automatic completion or the submitted source.
+- Students can review their own submissions and teacher feedback in **Learn → My lab history**.
 - `/ebpf/run` records an attempt only when a known `lab_id` is supplied; completion is calculated
   from the real run, required template/source patterns, and attachment verification.
 

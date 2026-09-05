@@ -7,6 +7,10 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ### Added
 
+- Added teacher/admin feedback on student lab attempts, with student-visible history, Unicode-aware
+  comment limits, reviewer attribution, optimistic revision checks, and PostgreSQL/local persistence.
+- Added the typed `learning.saveTeacherFeedback()` SDK method and generated operation, while keeping
+  automated lab acceptance separate from teacher comments and preserving the frozen API/SDK baselines.
 - Added the native Rust `cyanrex-release evidence` CLI with strict duplicate-key rejection, candidate
   metadata binding, legacy v1 verification, and atomic non-overwriting report creation.
 - Added native `cyanrex-release package extract` verification and staged extraction with strict bundle,

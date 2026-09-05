@@ -33,6 +33,7 @@ import type {
   HeaderModuleItem,
   HealthResponse,
   LabAttempt,
+  LabTeacherFeedback,
   LabProgress,
   LoginRequest,
   LoginResponse,
@@ -49,6 +50,7 @@ import type {
   RunnerProbeRequest,
   RunnerStatus,
   SaveScriptResponse,
+  SaveTeacherFeedbackRequest,
   SelectedHeaderMetadata,
   SessionResponse,
   SystemInfo,
@@ -242,6 +244,8 @@ export class CyanrexClient {
         { username, limit },
         options,
       ),
+    saveTeacherFeedback: (request: SaveTeacherFeedbackRequest, options?: RequestOptions) =>
+      this.post<LabTeacherFeedback>("/learning/teacher/feedback", request, options),
   };
 
   readonly ebpf = {

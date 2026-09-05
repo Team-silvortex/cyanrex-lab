@@ -3,11 +3,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import SidebarLayout from "../src/components/SidebarLayout";
 import { getEngineUrl } from "../src/config/runtime";
 import type {
-  LabAttempt,
   TeacherLearningOverview,
   TeacherStudentAttempts,
 } from "../src/features/learning/models";
 import { buildTeacherAttemptsUrl } from "../src/features/learning/teacherReview";
+import { AttemptCard } from "../src/features/learning/AttemptCard";
+import { TeacherFeedbackEditor } from "../src/features/learning/TeacherFeedback";
 import { useI18n } from "../src/i18n/context";
 
 export default function TeachingPage() {
@@ -153,6 +154,7 @@ export default function TeachingPage() {
           review={attemptReview}
           loading={attemptLoading}
           error={attemptError}
+          engineUrl={engineUrl}
           t={t}
         />
       )}
@@ -167,12 +169,14 @@ function AttemptReviewPanel({
   review,
   loading,
   error,
+  engineUrl,
   t,
 }: {
   username: string;
   review: TeacherStudentAttempts | null;
   loading: boolean;
   error: string;
+  engineUrl: string;
   t: Translate;
 }) {
   return (
@@ -185,47 +189,12 @@ function AttemptReviewPanel({
       )}
       <div className="grid" style={{ gap: 12 }}>
         {review?.attempts.map((attempt) => (
-          <AttemptCard key={attempt.id} attempt={attempt} t={t} />
+          <AttemptCard key={attempt.id} attempt={attempt}>
+            <TeacherFeedbackEditor attempt={attempt} engineUrl={engineUrl} />
+          </AttemptCard>
         ))}
       </div>
     </section>
-  );
-}
-
-function AttemptCard({ attempt, t }: { attempt: LabAttempt; t: Translate }) {
-  const attachment = !attempt.attach_expected
-    ? t("teaching.attachmentNotExpected")
-    : attempt.attach_verified
-      ? t("teaching.attachmentVerified")
-      : t("teaching.attachmentMissing");
-  return (
-    <article style={{ borderTop: "1px solid var(--line)", paddingTop: 12 }}>
-      <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
-        <strong>{attempt.lab_id}</strong>
-        <span className={`learning-status ${attempt.completed ? "completed" : "in_progress"}`}>
-          {attempt.completed ? t("teaching.attemptCompleted") : t("teaching.attemptIncomplete")}
-        </span>
-      </div>
-      <p className="meta">
-        {formatTime(attempt.created_at)} · {t("teaching.stage")}: {attempt.stage} · {attachment}
-      </p>
-      <p className="meta">
-        {t("teaching.runResult")}: {attempt.run_success
-          ? t("teaching.runSucceeded")
-          : t("teaching.runFailed")}
-        {attempt.template_id ? ` · ${t("teaching.template")}: ${attempt.template_id}` : ""}
-      </p>
-      {attempt.feedback.length > 0 && (
-        <div>
-          <strong>{t("teaching.feedback")}</strong>
-          <ul>{attempt.feedback.map((item) => <li key={item}>{item}</li>)}</ul>
-        </div>
-      )}
-      <details>
-        <summary>{t("teaching.source")}</summary>
-        <pre style={{ maxHeight: 360, overflow: "auto" }}>{attempt.source}</pre>
-      </details>
-    </article>
   );
 }
 

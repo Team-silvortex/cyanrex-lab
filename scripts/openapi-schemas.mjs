@@ -211,7 +211,21 @@ export const schemas = {
     attach_verified: boolean,
     completed: boolean,
     feedback: array(string()),
+    teacher_feedback: nullable(ref("LabTeacherFeedback")),
     created_at: timestamp,
+  }, ["id", "username", "lab_id", "template_id", "source", "source_sha256", "run_success",
+    "stage", "attach_expected", "attach_verified", "completed", "feedback", "created_at"]),
+  LabTeacherFeedback: object({
+    reviewer: string(),
+    comment: string({ minLength: 1, maxLength: 2000 }),
+    revision: integer({ minimum: 1, maximum: 4294967295 }),
+    updated_at: timestamp,
+  }),
+  SaveTeacherFeedbackRequest: object({
+    username: string({ minLength: 1, maxLength: 64 }),
+    attempt_id: string({ format: "uuid" }),
+    comment: string({ minLength: 1, maxLength: 2000, description: "Trimmed before validation and storage; plain text visible to the student." }),
+    expected_revision: integer({ minimum: 0, maximum: 4294967294, description: "Use 0 for an unreviewed attempt or the last read feedback revision. Stale writes return HTTP 409." }),
   }),
   LabProgress: object({
     lab: ref("LabDefinition"),

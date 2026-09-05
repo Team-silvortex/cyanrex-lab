@@ -211,6 +211,7 @@ export interface OpenApiSchemas {
     "attach_verified": boolean;
     "completed": boolean;
     "feedback": Array<string>;
+    "teacher_feedback"?: OpenApiSchemas["LabTeacherFeedback"] | null;
     "created_at": string;
   };
   "LabDefinition": {
@@ -229,6 +230,12 @@ export interface OpenApiSchemas {
     "latest_feedback": Array<string>;
     "last_attempt_at": string | null;
     "completed_at": string | null;
+  };
+  "LabTeacherFeedback": {
+    "reviewer": string;
+    "comment": string;
+    "revision": number;
+    "updated_at": string;
   };
   "LoginRequest": {
     "username": string;
@@ -423,6 +430,12 @@ export interface OpenApiSchemas {
     "ok": boolean;
     "message": string;
     "record": OpenApiSchemas["UserScript"] | null;
+  };
+  "SaveTeacherFeedbackRequest": {
+    "username": string;
+    "attempt_id": string;
+    "comment": string;
+    "expected_revision": number;
   };
   "SelectHeaderRequest": {
     "id": string;
