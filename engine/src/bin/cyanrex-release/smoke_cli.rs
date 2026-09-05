@@ -1,4 +1,5 @@
 use crate::arguments::ParsedArguments;
+use crate::smoke_health;
 use crate::smoke_live_kernel::{self, Options as LiveKernelOptions};
 use crate::smoke_runner_agent::{self, Options as RunnerAgentOptions};
 use std::env;
@@ -15,12 +16,29 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
         return Ok(());
     }
     match arguments[0].as_str() {
+        "health" => run_health(&arguments[1..]),
         "live-kernel" => run_live_kernel(&arguments[1..]),
         "runner-agent" => run_runner_agent(&arguments[1..]),
         command => Err(format!(
             "unknown smoke command {command:?}; run with smoke --help"
         )),
     }
+}
+
+fn run_health(arguments: &[String]) -> Result<(), String> {
+    let parsed = ParsedArguments::new(arguments, &["--engine-url"])?;
+    if !parsed.positionals.is_empty() {
+        return Err("smoke health does not accept positional arguments".to_owned());
+    }
+    let engine_url = option_or_env(
+        &parsed,
+        "--engine-url",
+        "CYANREX_SMOKE_ENGINE_URL",
+        "http://127.0.0.1:8080",
+    );
+    runtime()?.block_on(smoke_health::run(&engine_url))?;
+    println!("[cyanrex] Engine health payload is ok.");
+    Ok(())
 }
 
 fn run_runner_agent(arguments: &[String]) -> Result<(), String> {
@@ -247,8 +265,12 @@ fn print_help() {
         "Run native release acceptance probes\n\
          \n\
          Usage:\n\
+           cyanrex-release smoke health [options]\n\
            cyanrex-release smoke live-kernel [options]\n\
            cyanrex-release smoke runner-agent [options]\n\
+         \n\
+         Health options:\n\
+           --engine-url <origin>       Engine URL (default: CYANREX_SMOKE_ENGINE_URL)\n\
          \n\
          Live kernel options:\n\
            --engine-url <origin>       Engine URL (default: CYANREX_SMOKE_ENGINE_URL)\n\

@@ -17,6 +17,8 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
   transport, TOTP login, compile-job polling, result validation, and failure cancellation.
 - Added a native privileged live-kernel acceptance client with strict environment validation, unique
   attachment/event binding, exact cleanup proof, and optional in-memory evidence creation.
+- Added native extracted-package verification, checksum-bound Docker image identity inspection with
+  timeout/output limits, and an Engine health probe for installation acceptance.
 
 ### Changed
 
@@ -32,6 +34,13 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
   path as a compatibility fallback.
 - New offline distributions no longer bundle the standalone Python live-kernel evidence helper; its
   source copy remains for compatibility and cross-implementation regression coverage.
+- Packaged installation acceptance now uses Rust for package/metadata checks, loaded image identities,
+  and health JSON validation, removing its host Python requirement.
+
+### Fixed
+
+- Installation smoke preflight now preserves existing runtime configuration and Agent tokens; cleanup
+  removes only state created by the current acceptance run.
 
 ## [0.3.2] - 2026-09-04
 

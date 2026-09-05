@@ -144,6 +144,8 @@ extracting the archive. The script verifies all packaged checksums, loads the bu
 the complete stack, validates the frontend and Engine, runs the authenticated Runner Agent compile
 probe, and removes its generated configuration and Docker volume. It refuses to run when `.env`
 already exists; set `CYANREX_SMOKE_KEEP=1` only when retaining a failed smoke stack for diagnosis.
+Package, image identity, and Engine health validation use the bundled Rust CLI, so the default
+installation acceptance path does not require host Python.
 
 For an existing installation that used the old development credentials, set
 `CYANREX_ROTATE_ADMIN_CREDENTIALS=true` in `docker/.env`, start the Engine once, then immediately

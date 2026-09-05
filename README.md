@@ -163,6 +163,8 @@ and clean/dirty state, matching annotated version Tag when present, image refere
 mode, and the image archive SHA-256 without exposing a build-host path. Installation acceptance pins
 the packaged image references and verifies all three loaded Docker content IDs before probing services.
 The metadata is checksum-bound but not signed. The smoke test refuses to overwrite an existing `.env`.
+Installation acceptance uses the bundled Rust CLI for package validation, loaded-image identity checks,
+and Engine health checks; its default packaged path no longer requires Python on the Docker host.
 Set `CYANREX_SMOKE_RUN_LIVE_KERNEL=1` only on a disposable privileged Linux host to additionally run
 the packaged `live-kernel-smoke.sh`: it attaches the built-in Aya `sched_switch` ring-buffer program,
 requires a uniquely identified real kernel event, detaches the exact pin, and rejects residual attachments.

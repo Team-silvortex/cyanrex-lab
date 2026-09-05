@@ -82,13 +82,18 @@ assert_contains "$ROOT_DIR/scripts/live-kernel-smoke.sh" 'smoke live-kernel'
 assert_contains "$ROOT_DIR/scripts/runner-agent-smoke.sh" 'NATIVE_SMOKE=(cyanrex-release)'
 assert_contains "$ROOT_DIR/scripts/runner-agent-smoke.sh" 'smoke runner-agent'
 assert_contains "$SMOKE_SCRIPT" '"$PACKAGE_DIR/cyanrex-release" --help'
+assert_contains "$SMOKE_SCRIPT" 'cyanrex-release" package verify "$PACKAGE_DIR"'
+assert_contains "$SMOKE_SCRIPT" 'cyanrex-release" package verify-loaded-images "$PACKAGE_DIR"'
+assert_contains "$SMOKE_SCRIPT" 'cyanrex-release" smoke health --engine-url "$ENGINE_URL"'
+if grep -Fq 'python3' "$SMOKE_SCRIPT"; then
+  echo "Distribution tool test failed: packaged installation smoke must not require Python." >&2
+  exit 1
+fi
 assert_contains "$PACKAGE_SCRIPT" 'FRONTEND_NPM_REGISTRY:-https://registry.npmjs.org'
 assert_contains "$PACKAGE_SCRIPT" 'basename "$ARCHIVE_PATH"'
 assert_contains "$PACKAGE_SCRIPT" "printf 'POSTGRES_IMAGE=%q"
 assert_contains "$PACKAGE_SCRIPT" 'compose --profile runner-agent down'
 assert_contains "$SMOKE_SCRIPT" 'up --pull never'
-assert_contains "$SMOKE_SCRIPT" 'metadata["images"]["contentIds"]'
-assert_contains "$SMOKE_SCRIPT" 'docker", "image", "inspect", "--format", "{{.Id}}"'
 assert_contains "$SMOKE_SCRIPT" 'CYANREX_ENGINE_IMAGE="$ENGINE_IMAGE"'
 assert_contains "$SMOKE_SCRIPT" 'CYANREX_SMOKE_BIND_ADDRESS'
 assert_contains "$SMOKE_SCRIPT" 'frontend_ready'

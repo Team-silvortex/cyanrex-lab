@@ -11,6 +11,10 @@ const PACKAGE_ROOT: &str = "cyanrex-lab-1.2.3-20260904-010203";
 const ARCHIVE_NAME: &str = "cyanrex-lab-1.2.3-20260904-010203.tar.gz";
 const REVISION: &str = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 
+#[cfg(unix)]
+#[path = "release_package_cases/installed.rs"]
+mod installed_tests;
+
 #[derive(Clone, Copy)]
 enum ArchiveMutation {
     None,
@@ -25,6 +29,7 @@ enum ArchiveMutation {
 struct Fixture {
     root: PathBuf,
     bundle: PathBuf,
+    package: PathBuf,
 }
 
 impl Fixture {
@@ -102,7 +107,11 @@ impl Fixture {
             format!("{}  {ARCHIVE_NAME}\n", sha256_file(&archive_path)),
         )
         .unwrap();
-        Self { root, bundle }
+        Self {
+            root,
+            bundle,
+            package: source,
+        }
     }
 
     fn extract(&self, output: &Path) -> Output {
@@ -123,6 +132,14 @@ impl Fixture {
                 "--expect-image-mode",
                 "built",
             ])
+            .output()
+            .unwrap()
+    }
+
+    fn verify_installed(&self) -> Output {
+        Command::new(env!("CARGO_BIN_EXE_cyanrex-release"))
+            .args(["package", "verify"])
+            .arg(&self.package)
             .output()
             .unwrap()
     }
@@ -321,6 +338,32 @@ fn native_extractor_rejects_outer_checksum_tampering() {
     assert!(!output.status.success());
     assert!(String::from_utf8_lossy(&output.stderr).contains("SHA-256 mismatch"));
     assert!(!output_path.exists());
+}
+
+#[test]
+fn native_installed_package_verifier_rejects_tampering_and_unlisted_files() {
+    let valid = Fixture::new(ArchiveMutation::None);
+    assert_success(&valid.verify_installed());
+
+    let tampered = Fixture::new(ArchiveMutation::None);
+    fs::write(tampered.package.join("run.sh"), b"#!/bin/sh\nexit 9\n").unwrap();
+    let output = tampered.verify_installed();
+    assert!(!output.status.success());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("checksum manifest does not match"));
+
+    let unlisted = Fixture::new(ArchiveMutation::None);
+    fs::write(unlisted.package.join("unexpected.txt"), b"unexpected\n").unwrap();
+    let output = unlisted.verify_installed();
+    assert!(!output.status.success());
+    assert!(
+        String::from_utf8_lossy(&output.stderr).contains("checksum manifest file set is invalid")
+    );
+
+    let empty_directory = Fixture::new(ArchiveMutation::None);
+    fs::create_dir(empty_directory.package.join("unexpected-directory")).unwrap();
+    let output = empty_directory.verify_installed();
+    assert!(!output.status.success());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("directory set is invalid"));
 }
 
 #[cfg(unix)]

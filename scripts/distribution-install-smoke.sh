@@ -5,6 +5,8 @@ PACKAGE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENV_FILE="$PACKAGE_DIR/.env"
 WORK_DIR=""
 STACK_ATTEMPTED=0
+ENV_CREATED=0
+AGENT_ATTEMPTED=0
 
 usage() {
   cat <<'EOF'
@@ -56,7 +58,8 @@ cleanup() {
   if [ "$STACK_ATTEMPTED" -eq 1 ] && [ -f "$ENV_FILE" ]; then
     "$PACKAGE_DIR/deploy.sh" down --volumes --remove-orphans >/dev/null 2>&1 || true
   fi
-  rm -f "$ENV_FILE" "$PACKAGE_DIR/.runner-agent-token"
+  if [ "$ENV_CREATED" -eq 1 ]; then rm -f "$ENV_FILE"; fi
+  if [ "$AGENT_ATTEMPTED" -eq 1 ]; then rm -f "$PACKAGE_DIR/.runner-agent-token"; fi
   if [ -n "$WORK_DIR" ]; then rm -rf "$WORK_DIR"; fi
   exit "$exit_code"
 }
@@ -94,7 +97,7 @@ replace_env_value() {
   mv -f "$temporary" "$ENV_FILE"
 }
 
-for command in docker curl python3 openssl awk mktemp; do require_cmd "$command"; done
+for command in docker curl openssl awk mktemp; do require_cmd "$command"; done
 for file in checksums.sha256 manifest.env release-metadata.json docker-compose.yml .env.example \
   deploy.sh runner-agent.sh runner-agent-smoke.sh live-kernel-smoke.sh cyanrex-release \
   cyanrex-images.tar; do
@@ -103,9 +106,13 @@ for file in checksums.sha256 manifest.env release-metadata.json docker-compose.y
     exit 1
   fi
 done
-if [ -e "$ENV_FILE" ]; then
+if [ -e "$ENV_FILE" ] || [ -L "$ENV_FILE" ]; then
   echo "Error: refusing to overwrite existing runtime configuration: $ENV_FILE" >&2
   echo "Run this smoke test only in a freshly extracted disposable package." >&2
+  exit 1
+fi
+if [ -e "$PACKAGE_DIR/.runner-agent-token" ] || [ -L "$PACKAGE_DIR/.runner-agent-token" ]; then
+  echo "Error: refusing to replace an existing Runner Agent token." >&2
   exit 1
 fi
 if ! docker info >/dev/null 2>&1; then
@@ -113,41 +120,11 @@ if ! docker info >/dev/null 2>&1; then
   exit 1
 fi
 
-resolve_checksum_command
 echo "[cyanrex] Verifying packaged file checksums..."
+# Check the bundled executable before running its stricter package verifier.
+resolve_checksum_command
 (cd "$PACKAGE_DIR" && "${CHECKSUM_CMD[@]}" checksums.sha256 >/dev/null)
-python3 - "$PACKAGE_DIR" <<'PY'
-import hashlib
-import json
-from pathlib import Path
-import re
-import sys
-
-root = Path(sys.argv[1]).resolve()
-with (root / "release-metadata.json").open(encoding="utf-8") as handle:
-    metadata = json.load(handle)
-if metadata.get("schemaVersion") != 1 or metadata.get("package", {}).get("name") != root.name:
-    raise SystemExit("release metadata package identity is invalid")
-archive = metadata.get("images", {}).get("archive", {})
-if archive.get("file") != "cyanrex-images.tar":
-    raise SystemExit("release metadata image archive path is invalid")
-digest = hashlib.sha256()
-with (root / archive["file"]).open("rb") as handle:
-    for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-        digest.update(chunk)
-if digest.hexdigest() != archive.get("sha256"):
-    raise SystemExit("release metadata image archive checksum is invalid")
-content_ids = metadata.get("images", {}).get("contentIds", {})
-references = metadata.get("images", {}).get("references", {})
-for name in ("engine", "frontend", "postgres"):
-    if not re.fullmatch(r"sha256:[a-f0-9]{64}", content_ids.get(name, "")):
-        raise SystemExit(f"release metadata {name} image content ID is invalid")
-    if not isinstance(references.get(name), str) or not references[name].strip():
-        raise SystemExit(f"release metadata {name} image reference is invalid")
-compose_source = Path(metadata.get("compose", {}).get("source", ""))
-if compose_source.is_absolute() or ".." in compose_source.parts:
-    raise SystemExit("release metadata leaks an absolute compose source path")
-PY
+"$PACKAGE_DIR/cyanrex-release" package verify "$PACKAGE_DIR"
 # Pin acceptance to the package manifest instead of inherited host image overrides.
 # shellcheck disable=SC1091
 source "$PACKAGE_DIR/manifest.env"
@@ -168,6 +145,11 @@ if [[ ! "$BIND_ADDRESS" =~ ^127\. ]]; then
   exit 1
 fi
 SMOKE_ID="dist-smoke-$$"
+if ! (set -o noclobber; umask 077; : > "$ENV_FILE"); then
+  echo "Error: cannot create disposable runtime configuration: $ENV_FILE" >&2
+  exit 1
+fi
+ENV_CREATED=1
 cp "$PACKAGE_DIR/.env.example" "$ENV_FILE"
 chmod 600 "$ENV_FILE"
 replace_env_value POSTGRES_PASSWORD "$(openssl rand -hex 24)"
@@ -185,42 +167,11 @@ WORK_DIR="$(mktemp -d)"
 STACK_ATTEMPTED=1
 echo "[cyanrex] Starting extracted distribution package..."
 CYANREX_DEPLOY_HEALTH_TIMEOUT_SECONDS=120 "$PACKAGE_DIR/deploy.sh" up --pull never
-python3 - "$PACKAGE_DIR/release-metadata.json" <<'PY'
-import json
-import subprocess
-import sys
-
-with open(sys.argv[1], encoding="utf-8") as handle:
-    metadata = json.load(handle)
-references = metadata["images"]["references"]
-content_ids = metadata["images"]["contentIds"]
-for name in ("engine", "frontend", "postgres"):
-    result = subprocess.run(
-        ["docker", "image", "inspect", "--format", "{{.Id}}", references[name]],
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    if result.returncode != 0:
-        raise SystemExit(f"cannot inspect loaded {name} image: {result.stderr.strip()}")
-    actual = result.stdout.strip().lower()
-    if actual != content_ids[name]:
-        raise SystemExit(
-            f"loaded {name} image ID {actual or 'missing'} does not match {content_ids[name]}"
-        )
-PY
+"$PACKAGE_DIR/cyanrex-release" package verify-loaded-images "$PACKAGE_DIR"
 
 ENGINE_URL="http://$BIND_ADDRESS:$ENGINE_PORT"
 FRONTEND_URL="http://$BIND_ADDRESS:$FRONTEND_PORT"
-curl -fsS "$ENGINE_URL/health" > "$WORK_DIR/health.json"
-python3 - "$WORK_DIR/health.json" <<'PY'
-import json
-import sys
-with open(sys.argv[1], encoding="utf-8") as handle:
-    payload = json.load(handle)
-if payload.get("status") != "ok":
-    raise SystemExit("Engine health payload is not ok")
-PY
+"$PACKAGE_DIR/cyanrex-release" smoke health --engine-url "$ENGINE_URL"
 frontend_ready=0
 for ((attempt = 1; attempt <= 30; attempt++)); do
   if curl -fsS -D "$WORK_DIR/frontend.headers" "$FRONTEND_URL/login" \
@@ -245,6 +196,7 @@ if [ "${CYANREX_SMOKE_RUN_LIVE_KERNEL:-0}" = "1" ]; then
 fi
 
 if [ "${CYANREX_SMOKE_SKIP_AGENT:-0}" != "1" ]; then
+  AGENT_ATTEMPTED=1
   "$PACKAGE_DIR/runner-agent.sh" start --agent-id "$SMOKE_ID-agent"
   CYANREX_SMOKE_ENGINE_URL="$ENGINE_URL" \
     CYANREX_SMOKE_ORIGIN="http://localhost:$FRONTEND_PORT" \

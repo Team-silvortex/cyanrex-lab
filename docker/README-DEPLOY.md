@@ -28,6 +28,12 @@ pulling disabled, exercises login and remote compilation, then removes its gener
 ./install-smoke.sh
 ```
 
+The packaged acceptance path requires Docker, Bash, curl, OpenSSL, and standard shell/checksum tools;
+it uses the bundled Rust CLI for JSON processing and does not require host Python. Before creating
+runtime configuration, `./cyanrex-release package verify .` checks the exact extracted file set and
+metadata. After loading images, `./cyanrex-release package verify-loaded-images .` checks the
+checksum-bound metadata and Docker image IDs; this second command does not recheck every package file.
+
 The default path stays non-destructive to the host kernel beyond starting the privileged Engine. On a
 disposable privileged Linux acceptance host, require a real Aya attach/ring-buffer-event/exact-detach
 cycle as part of the installation smoke:

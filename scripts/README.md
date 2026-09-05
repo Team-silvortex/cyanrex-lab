@@ -80,8 +80,9 @@ Utility scripts for Cyanrex local operation.
   shell/Python implementation remains a compatibility fallback. `CYANREX_KERNEL_SMOKE_REPORT`
   optionally writes atomic evidence bound to packaged release metadata and the runtime environment.
 - `../engine/src/bin/cyanrex-release/`: native Rust release CLI. It handles complete Tag candidates,
-  live-kernel evidence, verified two-file package extraction, and Runner Agent acceptance. Evidence
-  accepts legacy v1 reports while new reports use the self-contained v2 event binding.
+  live-kernel evidence, verified extraction, extracted-package/image verification, and health,
+  live-kernel, and Runner Agent acceptance. Evidence accepts legacy v1 reports while new reports use
+  the self-contained v2 event binding.
 - `live-kernel-evidence.py`: source-checkout compatibility implementation retained for parity regression
   coverage; new offline packages ship only the native release CLI.
 - `release-tool-image.sh`: safely exports `cyanrex-release` from the built Engine image into an offline
@@ -166,7 +167,9 @@ In CI, workflow `Performance Regression` can also consume a baseline by passing 
   - outputs `dist/cyanrex-lab-<version>-<timestamp>.tar.gz` by default
 - `distribution-install-smoke.sh`: packaged as `install-smoke.sh`; validates a freshly extracted
   release, including checksums, packaged image content IDs, service health, frontend CSP, login, and
-  remote Agent compilation; inherited host image overrides cannot replace candidate images. Set
+  remote Agent compilation. Package/metadata validation, image inspection, and health JSON checks use
+  Rust, so the packaged path does not require host Python. Cleanup preserves pre-existing runtime
+  configuration and tokens; inherited host image overrides cannot replace candidate images. Set
   `CYANREX_SMOKE_RUN_LIVE_KERNEL=1` only on a disposable privileged Linux host to add live kernel
   attach/event/detach acceptance.
 - `test-distribution-tools.sh`: static regression checks for packaging helpers and Compose runtime
@@ -231,13 +234,17 @@ Distributed package entry points:
 ./live-kernel-smoke.sh   # privileged live attach/event/detach acceptance
 ./cyanrex-release smoke live-kernel --report /safe/output/report.json
 ./cyanrex-release smoke runner-agent --agent-id <id>
+./cyanrex-release smoke health --engine-url http://127.0.0.1:8080
 ./cyanrex-release evidence verify /path/to/report.json --release-metadata ./release-metadata.json
 ./install-smoke.sh       # destructive disposable-host installation acceptance
 # `run.sh` and `stop.sh` remain compatibility shortcuts.
 ```
 
-The packaged smoke scripts prefer `cyanrex-release`; their shell/Python implementations remain
-migration fallbacks for older or manually assembled environments.
+The Runner Agent and live-kernel scripts prefer `cyanrex-release`; their shell/Python implementations
+remain migration fallbacks for older or manually assembled environments. Installation smoke requires
+the native CLI. Use `./cyanrex-release package verify .` before creating any runtime files to verify a
+freshly extracted package, and `./cyanrex-release package verify-loaded-images .` after loading its
+images to check their content IDs against the checksum-bound metadata.
 
 Verify a complete downloaded Tag candidate before extraction (use a directory containing only the
 archive, its checksum, the live-kernel report, and its checksum):

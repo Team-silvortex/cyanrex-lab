@@ -21,6 +21,19 @@ pub struct SmokeHttpClient {
 }
 
 impl SmokeHttpClient {
+    pub async fn public_get_json<T: DeserializeOwned>(
+        engine_url: &str,
+        path: &str,
+    ) -> Result<T, String> {
+        let base_url = validate_engine_url(engine_url)?;
+        let response = http_client()?
+            .get(endpoint(&base_url, path)?)
+            .send()
+            .await
+            .map_err(|error| format!("GET {path} failed: {error}"))?;
+        response_json(path, response).await
+    }
+
     pub async fn login(
         engine_url: &str,
         origin: &str,
@@ -29,11 +42,7 @@ impl SmokeHttpClient {
     ) -> Result<Self, String> {
         let base_url = validate_engine_url(engine_url)?;
         let origin = validate_origin(origin)?;
-        let client = Client::builder()
-            .redirect(reqwest::redirect::Policy::none())
-            .timeout(Duration::from_secs(15))
-            .build()
-            .map_err(|error| format!("cannot initialize smoke HTTP client: {error}"))?;
+        let client = http_client()?;
         let otp = current_totp(totp_secret)?;
         let response = client
             .post(endpoint(&base_url, "/auth/login")?)
@@ -85,6 +94,14 @@ impl SmokeHttpClient {
             .map_err(|error| format!("POST {path} failed: {error}"))?;
         response_json(path, response).await
     }
+}
+
+fn http_client() -> Result<Client, String> {
+    Client::builder()
+        .redirect(reqwest::redirect::Policy::none())
+        .timeout(Duration::from_secs(15))
+        .build()
+        .map_err(|error| format!("cannot initialize smoke HTTP client: {error}"))
 }
 
 fn validate_engine_url(value: &str) -> Result<Url, String> {

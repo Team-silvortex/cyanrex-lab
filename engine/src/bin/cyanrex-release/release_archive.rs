@@ -221,7 +221,7 @@ pub fn archive_path(raw_name: &str, directory: bool) -> Result<(String, Vec<Stri
     Ok((name.to_owned(), parts))
 }
 
-fn parse_manifest(source: &[u8]) -> Result<BTreeMap<String, String>, String> {
+pub(crate) fn parse_manifest(source: &[u8]) -> Result<BTreeMap<String, String>, String> {
     std::str::from_utf8(source)
         .map_err(|error| format!("checksum manifest is not UTF-8: {error}"))?;
     let mut entries = BTreeMap::new();

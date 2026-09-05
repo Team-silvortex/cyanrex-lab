@@ -86,8 +86,8 @@ cargo test --manifest-path engine/Cargo.toml --locked
 ```
 
 The same crate also builds `cyanrex-release`, the native release-tool migration target. Its stable
-commands cover complete Tag candidates, live-kernel evidence, verified two-file extraction, and
-privileged live-kernel plus unprivileged Runner Agent acceptance:
+commands cover complete Tag candidates, live-kernel evidence, verified two-file extraction,
+extracted-package and Docker image verification, and health, live-kernel, and Runner Agent acceptance:
 
 ```bash
 cargo run --manifest-path engine/Cargo.toml --bin cyanrex-release -- candidate --help
