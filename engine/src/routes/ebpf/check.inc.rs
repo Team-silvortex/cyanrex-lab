@@ -1,65 +1,50 @@
 pub async fn check_ebpf(
     State(state): State<Arc<AppState>>,
+    headers: HeaderMap,
     Json(payload): Json<EbpfRunRequest>,
 ) -> (StatusCode, Json<EbpfCheckResponse>) {
-    state.record_check_request();
-    let start = Instant::now();
-
-    if payload.code.len() > MAX_EBPF_SOURCE_BYTES {
-        let response = EbpfCheckResponse {
-            ok: false,
-            message: format!("source exceeds {MAX_EBPF_SOURCE_BYTES} byte limit"),
-            diagnostics: Vec::new(),
-            stdout: String::new(),
-            stderr: String::new(),
-        };
-        state.finish_check_request(
-            start.elapsed().as_nanos() as u64,
-            None,
-            response.ok,
-            false,
-        );
+    let Some(session) =
+        crate::routes::auth::current_session_from_headers(state.as_ref(), &headers).await
+    else {
         return (
-            StatusCode::PAYLOAD_TOO_LARGE,
-            Json(response),
-        );
-    }
-
-    let slots = EBPF_CHECK_SLOTS.get_or_init(|| Semaphore::new(2));
-    let Ok(_permit) = slots.try_acquire() else {
-        let response = EbpfCheckResponse {
-            ok: false,
-            message: "compiler is busy; retry shortly".to_string(),
-            diagnostics: Vec::new(),
-            stdout: String::new(),
-            stderr: String::new(),
-        };
-        state.finish_check_request(
-            start.elapsed().as_nanos() as u64,
-            None,
-            response.ok,
-            true,
-        );
-        return (
-            StatusCode::TOO_MANY_REQUESTS,
-            Json(response),
+            StatusCode::UNAUTHORIZED,
+            Json(check_failure_response("authentication required")),
         );
     };
+    let metrics = CompilerMetricsGuard::new(state.as_ref(), CompilerOperation::Check);
+    if payload.code.len() > MAX_EBPF_SOURCE_BYTES {
+        metrics.finish(None, false, false);
+        return (
+            StatusCode::PAYLOAD_TOO_LARGE,
+            Json(check_failure_response(format!(
+                "source exceeds {MAX_EBPF_SOURCE_BYTES} byte limit",
+            ))),
+        );
+    }
     let selected_headers = state
         .c_header_module
         .selected_metadata()
         .await
         .selected_headers;
-
-    let (response, cache_hit) = state
-        .ebpf_loader
-        .check_with_cache_status(&payload.code, &selected_headers)
-        .await;
-    state.finish_check_request(
-        start.elapsed().as_nanos() as u64,
-        Some(cache_hit),
-        response.ok,
-        false,
-    );
-    (StatusCode::OK, Json(response))
+    match state
+        .runner_manager
+        .check(RunnerCheckRequest {
+            owner_username: &session.username,
+            code: &payload.code,
+            selected_headers: &selected_headers,
+        })
+        .await
+    {
+        Ok(outcome) => {
+            metrics.finish(outcome.cache_hit, outcome.response.ok, false);
+            (StatusCode::OK, Json(outcome.response))
+        }
+        Err(error) => {
+            metrics.finish(None, false, matches!(error, RunnerOperationError::Busy));
+            (
+                runner_operation_status(&error),
+                Json(check_failure_response(error.to_string())),
+            )
+        }
+    }
 }

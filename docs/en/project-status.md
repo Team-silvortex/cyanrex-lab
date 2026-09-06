@@ -1,7 +1,7 @@
 # Project Status
 
-Snapshot date: **2026-09-04**
-Current release line: **0.3.2**
+Snapshot date: **2026-09-06**
+Current release line: **0.3.3**
 
 This page is the capability-level progress baseline for Cyanrex Lab. It records what is usable now,
 what remains intentionally limited, and which decisions should drive the next development cycle.
@@ -13,12 +13,12 @@ The detailed trust boundaries and data flows remain in the [system architecture]
 |---|---|---|
 | Identity and authorization | Operational | Argon2 passwords, TOTP, cookie sessions, CSRF origin checks, and admin/teacher/student route guards |
 | eBPF workbench | Operational | Monaco editing, local Clang diagnostics/completion, bpftool execution, Aya tracepoint execution, attachments, source probes, and kernel event streaming |
-| Learning workflow | Operational | Five assessed labs, persisted attempts, student progress, teacher overview, bounded source review, and student-visible teacher feedback (Unreleased) |
+| Learning workflow | Operational | Five assessed labs, persisted attempts, student progress, teacher overview, bounded source review, and student-visible teacher feedback |
 | Events and persistence | Operational | User-scoped WebSocket/event center, retention policies, PostgreSQL storage, and documented memory/file fallbacks |
 | Local Runner | Operational | Replaceable driver boundary, global/per-user leases, timeout handling, and explicit `shared_kernel` reporting |
 | Runner Agent | Operational for remote checks | Signed registration, heartbeat, leases, cancellation, probes, and isolated compile-only diagnostics; remote eBPF loading is not enabled |
 | Deployment and distribution | Operational | Docker, WSL2, native Linux, hardened optional compiler Agent, and offline package/install tooling |
-| Release traceability | `0.3.2` candidate prepared, unsigned | Changelog/version sync, accepted annotated `v0.2.9`/`v0.3.1` history, an immutable `v0.3.2` target, checksum-bound source/archive metadata, per-image Docker content IDs, exact-image installation, and safe non-overwriting extraction after whole-bundle verification cross-binds strict live Aya evidence; `0.3.0` is an API baseline only and signed publication remains manual |
+| Release traceability | `0.3.3` version metadata prepared; artifact acceptance/publication pending | Changelog/version sync, annotated-tag preflight, checksum-bound source/archive metadata, per-image Docker content IDs, exact-image installation, and native Rust evidence/candidate verification with safe non-overwriting extraction; `0.3.0` is an API baseline only, and this snapshot does not claim an accepted `0.3.3` artifact or published tag |
 | Module catalog | Operational, state-only | Versioned v1 manifests are discovered and validated at startup; lifecycle is in memory and never executes directory code |
 | JavaScript SDK | Operational internal package | Typed ESM client with 57 generated non-Agent operationId calls, a 77-member additive namespace baseline and deprecation policy, explicit `/openapi` and `/operations` exports, browser/Node sessions, cancellation, downloads, typed errors, and package-consumer smoke coverage |
 | API contract | Operational internal contract | Generated OpenAPI 3.1 served at `/openapi.json`; route/access/SDK/model drift and breaking changes against the frozen `0.3.0` baseline fail the quality gate |
@@ -28,16 +28,17 @@ The detailed trust boundaries and data flows remain in the [system architecture]
 
 The following checks passed on the snapshot date:
 
-- Rust formatting and the locked Engine suite: 105 tests, plus the normally ignored real loopback
-  Runner Agent compile integration run explicitly and passing.
+- Rust formatting and the locked Engine suite: 153 tests passed; 2 environment-dependent integrations
+  (PostgreSQL feedback and real loopback Runner Agent compilation) remain ignored in the default gate.
 - Next.js production build: 17 statically generated routes with TypeScript validation.
-- Frontend regressions: 14 tests covering permissions, Terminal commands, teacher review, performance
-  hotspot logic, security headers, and macOS metadata cleanup; the SDK has 9 transport/operation
+- Frontend regressions: 16 tests covering permissions, Terminal commands, teacher review/feedback, performance
+  hotspot logic, security headers, and macOS metadata cleanup; the SDK has 11 transport/operation
   regressions, a compile-time operation fixture, plus 3 package-manifest/import smoke checks.
 - File-length, version/changelog/course-copy sync, OpenAPI generation/route/access/model/compatibility checks with 28
   contract, compatibility, and schema/operation-generator regressions, Runner Agent tooling, distribution tooling, and both Compose profile
   configuration checks.
-- Production dependency audits: zero npm vulnerabilities and zero RustSec findings.
+- Production npm dependency audits: zero vulnerabilities. The additional RustSec audit could not run
+  because `cargo-audit` is not installed in this environment; no fresh RustSec result is claimed.
 
 This local snapshot did not start the privileged Engine or run the destructive disposable-host offline
 installation smoke. The annotated-Tag candidate workflow now enables the packaged live Aya
@@ -47,7 +48,7 @@ can recheck v1/v2 schema, release metadata binding, event identity, and cleanup 
 the repository verifier additionally checks the complete downloaded artifact and can manually extract
 only verified regular files without invoking `tar` or replacing an existing output.
 
-## Teaching mainline update (2026-09-05, Unreleased)
+## Teaching mainline update (2026-09-05, included in 0.3.3)
 
 - Teachers/admins can save the current comment on an existing student submission; students read it in
   **Learn → My lab history**. Multiline plain text, reviewer/time, and a 2000-character limit are supported;
@@ -58,8 +59,29 @@ only verified regular files without invoking `tar` or replacing an existing outp
 - Added 8 backend route, 2 frontend request-builder, and 2 SDK regressions. Separately verified legacy-table
   migration, concurrent updates, and failure without fallback against a disposable UTF-8 PostgreSQL database,
   plus Chromium interactions using a mocked Engine API.
-- This increment completes the teaching feedback loop without changing the release version, privileged
-  kernel execution, or remote Agent trust boundaries.
+- This increment completes the teaching feedback loop without changing privileged kernel execution
+  or remote Agent trust boundaries.
+
+## LAN/desktop Runner preparation (2026-09-06, included in 0.3.3)
+
+- Recorded the [Linux desktop/LAN isolation target](classroom-isolation.md): teaching control separate
+  from exclusive student VMs, with desktop virtualization hosts supported by the design.
+- Runner execution validates the lease owner. Attachment inventory, detach, and cleanup reports now
+  use the selected driver, with operation deadlines and no local fallback on backend failure.
+- Added ownership, lifecycle, timeout, authentication/CSRF, and local-adapter regression coverage.
+- VM provisioning/loading, persistent environment ownership, full runtime/event delegation, and LAN
+  ingress hardening remain pending. This increment does not make the local Engine a student sandbox.
+
+## Compiler Runner increment (2026-09-06, included in 0.3.3)
+
+- Check/completion routes now pass session ownership, source, selected headers, and cursor data to the
+  selected Runner driver, preserving diagnostics and optional cache-status reporting without local fallback.
+- Compiler capacity is per-manager (2 checks, 3 completions); operation deadlines and cancellation-safe
+  metrics/permits prevent stuck requests from retaining capacity or inflating in-flight counts.
+- The local adapter isolates cache keys by owner and cleans private source workspaces on return/cancellation.
+  Added 4 route, 2 cache-scope, 2 workspace, and 1 required-owner regressions.
+- Attach verification, event streaming, environment/settings, remote header delivery, and VM lifecycle
+  remain pending; the actual runtime is still local and shared-kernel.
 
 ## Intentional Boundaries
 
@@ -76,7 +98,8 @@ only verified regular files without invoking `tar` or replacing an existing outp
    the state-only module catalog into a process or library plugin runtime.
 2. Define registry publication, support ownership, and 1.0 readiness criteria before making the SDK
    a stable independently consumed package.
-3. Define a real isolation and ownership model before adding remote eBPF execution or Engine replicas.
+3. Implement the desktop/LAN isolation target's full runtime boundary, durable environment ownership,
+   and VM recovery before enabling remote eBPF execution or Engine replicas.
 4. Sign and publish accepted candidate artifacts after choosing a release trust/key ownership model.
 5. Collect the first annotated-Tag live-kernel evidence, then decide whether release acceptance needs a
    dedicated self-hosted kernel-version matrix beyond the GitHub-hosted privileged Docker environment.

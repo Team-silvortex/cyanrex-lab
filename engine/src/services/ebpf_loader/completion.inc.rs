@@ -10,12 +10,24 @@ impl EbpfLoader {
         column: usize,
         selected_headers: &[SelectedHeaderMetadata],
     ) -> (EbpfCompletionResponse, bool) {
+        self.complete_for_user_with_cache_status("", code, line, column, selected_headers).await
+    }
+
+    pub async fn complete_for_user_with_cache_status(
+        &self,
+        owner_username: &str,
+        code: &str,
+        line: usize,
+        column: usize,
+        selected_headers: &[SelectedHeaderMetadata],
+    ) -> (EbpfCompletionResponse, bool) {
         if code.trim().is_empty() || line == 0 || column == 0 {
             return (completion_failure("source and one-based cursor position are required"), false);
         }
 
         let cache_key = format!(
-            "{}:{line}:{column}:{}",
+            "{}:{}:{line}:{column}:{}",
+            source_cache_key(owner_username),
             source_cache_key(code),
             selected_headers_cache_key(selected_headers)
         );
@@ -25,16 +37,16 @@ impl EbpfLoader {
             }
         }
 
-        let temp_dir = std::env::temp_dir().join(format!("cyanrex-complete-{}", Uuid::new_v4()));
-        if let Err(error) = fs::create_dir(&temp_dir).await {
-            return (
+        let workspace = match CompilerWorkspace::create(owner_username) {
+            Ok(workspace) => workspace,
+            Err(error) => return (
                 completion_failure(&format!("failed to create completion directory: {error}")),
                 false,
-            );
-        }
+            ),
+        };
         let response =
-            self.complete_in_directory(code, line, column, selected_headers, &temp_dir).await;
-        let _ = fs::remove_dir_all(&temp_dir).await;
+            self.complete_in_directory(code, line, column, selected_headers, workspace.path()).await;
+        drop(workspace);
         let mut cache = self.completion_cache.write().await;
         let cache_limit = if self.resident_compiler_enabled() { 1024 } else { 128 };
         if cache.len() >= cache_limit && cache_limit > 0 {

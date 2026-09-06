@@ -132,11 +132,14 @@ pub async fn run_ebpf(
         if !bpftool_attach.attached && tooling_unavailable {
             let previous_pin = result.pin_path.clone();
             let detached = state
-                .ebpf_loader
-                .detach_for_user(&username, previous_pin.as_deref())
+                .runner_manager
+                .detach(RunnerDetachRequest {
+                    owner_username: &username,
+                    pin_path: previous_pin.as_deref(),
+                })
                 .await;
 
-            if detached.is_ok() {
+            if detached.is_ok_and(|outcome| outcome.clean) {
                 runtime_backend = EbpfRuntimeBackend::Aya;
                 result = match state
                     .runner_manager
@@ -464,115 +467,4 @@ mod debug_backend_fallback_tests {
 
 pub async fn list_templates() -> Json<Vec<EbpfTemplate>> {
     Json(default_templates())
-}
-
-pub async fn list_attachments(
-    State(state): State<Arc<AppState>>,
-    headers: HeaderMap,
-) -> Json<EbpfAttachmentListResponse> {
-    let username = crate::routes::auth::current_session_from_headers(state.as_ref(), &headers)
-        .await
-        .map(|session| session.username)
-        .unwrap_or_else(|| "unknown".to_string());
-    Json(EbpfAttachmentListResponse {
-        pin_paths: state.ebpf_loader.list_attachments_for_user(&username).await,
-    })
-}
-
-pub async fn list_attachment_details(
-    State(state): State<Arc<AppState>>,
-    headers: HeaderMap,
-) -> Json<EbpfAttachmentDetailListResponse> {
-    let username = crate::routes::auth::current_session_from_headers(state.as_ref(), &headers)
-        .await
-        .map(|session| session.username)
-        .unwrap_or_else(|| "unknown".to_string());
-    let attachments = state
-        .ebpf_loader
-        .list_attachment_details_for_user(&username)
-        .await
-        .into_iter()
-        .map(|(pin_path, source, program_name)| EbpfAttachmentDetail {
-            pin_path,
-            source,
-            program_name,
-        })
-        .collect();
-
-    Json(EbpfAttachmentDetailListResponse { attachments })
-}
-
-pub async fn detach_ebpf(
-    State(state): State<Arc<AppState>>,
-    headers: HeaderMap,
-    Json(payload): Json<EbpfDetachRequest>,
-) -> (StatusCode, Json<EbpfDetachResponse>) {
-    let username = crate::routes::auth::current_session_from_headers(state.as_ref(), &headers)
-        .await
-        .map(|session| session.username)
-        .unwrap_or_else(|| "unknown".to_string());
-
-    match state
-        .ebpf_loader
-        .detach_for_user(&username, payload.pin_path.as_deref())
-        .await
-    {
-        Ok(detached) => {
-            let (clean, safety_notes) = evaluate_detach_safety(
-                state.as_ref(),
-                &username,
-                payload.pin_path.as_deref(),
-                &detached,
-            )
-            .await;
-            let severity = if clean {
-                EventSeverity::Success
-            } else {
-                EventSeverity::Warning
-            };
-
-            state
-                .event_bus
-                .publish(Event {
-                    username,
-                    timestamp: Utc::now(),
-                    source: "module-ebpf".to_string(),
-                    event_type: "ebpf.detached".to_string(),
-                    category: EventCategory::Platform,
-                    severity,
-                    color: severity.color(),
-                    payload: json!({
-                        "detached": detached,
-                        "clean": clean,
-                        "safety_notes": safety_notes,
-                    }),
-                })
-                .await;
-
-            (
-                StatusCode::OK,
-                Json(EbpfDetachResponse {
-                    ok: true,
-                    message: if clean {
-                        "detached cleanly".to_string()
-                    } else {
-                        "detached with safety warnings".to_string()
-                    },
-                    detached,
-                    clean,
-                    safety_notes,
-                }),
-            )
-        }
-        Err(error) => (
-            StatusCode::BAD_REQUEST,
-            Json(EbpfDetachResponse {
-                ok: false,
-                message: error,
-                detached: Vec::new(),
-                clean: false,
-                safety_notes: vec!["detach failed".to_string()],
-            }),
-        ),
-    }
 }

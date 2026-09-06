@@ -9,7 +9,8 @@ they can perform privileged kernel observation and loading. Do not expose Engine
 
 ## Default Protections
 
-- Frontend, Engine, and PostgreSQL are bound to `127.0.0.1` only.
+- Docker published ports default to `127.0.0.1`. The native/WSL launcher currently sets
+  `ENGINE_HOST=0.0.0.0`; verify actual listeners and restrict access before starting that mode on a LAN.
 - First startup generates random DB, admin, and TOTP secrets.
 - `.env` permissions are `0600` and ignored by git.
 - User registration and OTP bootstrap are disabled by default.
@@ -18,6 +19,9 @@ they can perform privileged kernel observation and loading. Do not expose Engine
 - Temporary lockout after repeated login failures.
 - Global and per-user Runner capacity, source size, and execution time limits are enforced for eBPF tasks.
 - Runner status reports `shared_kernel`; local quotas do not claim tenant isolation.
+- Local check/completion caches are owner-scoped. Their source workspaces use `0700` on Unix and
+  cleanup guards run on return or cancellation; failed cleanup is logged. These are hygiene measures,
+  not an independent-kernel boundary.
 - DB stores session token hashes, not raw usable tokens.
 
 These measures reduce accidental exposure, but they do not make the privileged Engine a shared safe runtime.
@@ -61,6 +65,13 @@ traffic but blocks direct access to the default database/frontend network and ex
 
 ## Recommended Isolation
 
+For multiple students submitting their own code, the chosen next-stage target is an unprivileged
+teaching control service plus an exclusive Linux VM per active student. Desktops may host these VMs;
+centralized execution hardware is optional. This target is not yet implemented. See
+[Linux Desktop and LAN Classroom Isolation](classroom-isolation.md) for ownership, recovery, and the
+limits of trusting results from student-administered machines. Do not enable remote loading by simply
+giving the current compile-only Agent elevated privileges.
+
 ### Personal Computer
 
 One instance per student. Windows users should use WSL2, Linux users choose native Linux or Docker. This is preferred.
@@ -96,6 +107,10 @@ ssh -L 3000:127.0.0.1:3000 \
 
 Long-running services should use TLS reverse proxy, source restrictions, and host firewall, and set
 `CYANREX_SECURE_COOKIES=true`. Enable Secure Cookie only when browser access is HTTPS.
+
+Current Compose uses `CYANREX_BIND_ADDRESS` for the published database, Engine, and frontend ports.
+Changing it to a LAN address exposes all three, not just the browser entrance. Keep internal ports
+private and verify listener/firewall behavior; dedicated classroom ingress configuration is pending.
 
 ### Optional persistence warning tuning
 

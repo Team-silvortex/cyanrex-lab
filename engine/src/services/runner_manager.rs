@@ -5,17 +5,25 @@ use std::{
 };
 
 use chrono::{DateTime, Utc};
+use tokio::sync::Semaphore;
 use uuid::Uuid;
 
 use crate::{
     config::runtime_instance_id,
     models::{
-        ebpf::{EbpfRunResponse, EbpfRuntimeBackend},
+        ebpf::{
+            EbpfAttachmentDetail, EbpfCheckResponse, EbpfCompletionResponse, EbpfRunResponse,
+            EbpfRuntimeBackend,
+        },
         runner::{RunnerLeaseView, RunnerOverview, RunnerStatus},
     },
     services::{
         ebpf_loader::EbpfLoader,
-        runner_driver::{LocalProcessRunnerDriver, RunnerDriver, RunnerExecutionRequest},
+        runner_driver::{
+            LocalProcessRunnerDriver, RunnerCheckRequest, RunnerCompilerOutcome,
+            RunnerCompletionRequest, RunnerDetachOutcome, RunnerDetachRequest, RunnerDriver,
+            RunnerExecutionRequest, RunnerOperationError,
+        },
     },
 };
 
@@ -50,6 +58,8 @@ struct RunnerManagerInner {
     config: RunnerConfig,
     active: Mutex<HashMap<String, ActiveLease>>,
     driver: Arc<dyn RunnerDriver>,
+    check_slots: Semaphore,
+    completion_slots: Semaphore,
 }
 
 #[derive(Clone)]
@@ -103,6 +113,8 @@ impl RunnerManager {
                 config,
                 active: Mutex::new(HashMap::new()),
                 driver,
+                check_slots: Semaphore::new(2),
+                completion_slots: Semaphore::new(3),
             }),
         }
     }
@@ -207,6 +219,9 @@ impl RunnerManager {
             let Some(active_lease) = active.get_mut(lease.runner_id()) else {
                 return Err(RunnerExecutionError::InvalidLease);
             };
+            if active_lease.username != request.owner_username {
+                return Err(RunnerExecutionError::InvalidLease);
+            }
             active_lease.runtime_backend = backend_name(request.runtime_backend).to_string();
         }
 
@@ -217,6 +232,72 @@ impl RunnerManager {
         tokio::time::timeout(remaining, self.inner.driver.execute(request))
             .await
             .map_err(|_| RunnerExecutionError::Timeout)
+    }
+
+    pub async fn list_attachments(
+        &self,
+        owner_username: &str,
+    ) -> Result<Vec<EbpfAttachmentDetail>, RunnerOperationError> {
+        tokio::time::timeout(
+            self.inner.config.execution_timeout,
+            self.inner.driver.list_attachments(owner_username),
+        )
+        .await
+        .map_err(|_| RunnerOperationError::Timeout)?
+    }
+
+    pub async fn check(
+        &self,
+        request: RunnerCheckRequest<'_>,
+    ) -> Result<RunnerCompilerOutcome<EbpfCheckResponse>, RunnerOperationError> {
+        validate_compiler_owner(request.owner_username)?;
+        let _permit = self
+            .inner
+            .check_slots
+            .try_acquire()
+            .map_err(|_| RunnerOperationError::Busy)?;
+        tokio::time::timeout(
+            self.inner
+                .config
+                .execution_timeout
+                .min(Duration::from_secs(15)),
+            self.inner.driver.check(request),
+        )
+        .await
+        .map_err(|_| RunnerOperationError::Timeout)?
+    }
+
+    pub async fn complete(
+        &self,
+        request: RunnerCompletionRequest<'_>,
+    ) -> Result<RunnerCompilerOutcome<EbpfCompletionResponse>, RunnerOperationError> {
+        validate_compiler_owner(request.owner_username)?;
+        let _permit = self
+            .inner
+            .completion_slots
+            .try_acquire()
+            .map_err(|_| RunnerOperationError::Busy)?;
+        tokio::time::timeout(
+            self.inner
+                .config
+                .execution_timeout
+                .min(Duration::from_secs(8)),
+            self.inner.driver.complete(request),
+        )
+        .await
+        .map_err(|_| RunnerOperationError::Timeout)?
+    }
+
+    pub async fn detach(
+        &self,
+        request: RunnerDetachRequest<'_>,
+    ) -> Result<RunnerDetachOutcome, RunnerOperationError> {
+        tokio::time::timeout(
+            self.inner.config.execution_timeout,
+            self.inner.driver.detach(request),
+        )
+        .await
+        .map_err(|_| RunnerOperationError::Timeout)?
     }
 
     fn build_status(&self, active: &HashMap<String, ActiveLease>, username: &str) -> RunnerStatus {
@@ -272,6 +353,16 @@ fn backend_name(backend: EbpfRuntimeBackend) -> &'static str {
     }
 }
 
+fn validate_compiler_owner(owner: &str) -> Result<(), RunnerOperationError> {
+    if owner.trim().is_empty() {
+        Err(RunnerOperationError::InvalidRequest(
+            "runner compiler request requires an owner".into(),
+        ))
+    } else {
+        Ok(())
+    }
+}
+
 fn env_usize(name: &str, fallback: usize) -> usize {
     std::env::var(name)
         .ok()
@@ -287,144 +378,5 @@ fn env_u64(name: &str, fallback: u64) -> u64 {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::{RunnerAcquireError, RunnerConfig, RunnerManager};
-    use crate::{
-        models::ebpf::{EbpfRunResponse, EbpfRuntimeBackend},
-        services::{
-            ebpf_loader::EbpfLoader,
-            runner_driver::{
-                RunnerDriver, RunnerDriverDescriptor, RunnerExecutionFuture, RunnerExecutionRequest,
-            },
-        },
-    };
-    use std::{
-        sync::{
-            atomic::{AtomicUsize, Ordering},
-            Arc,
-        },
-        time::Duration,
-    };
-
-    struct RecordingDriver {
-        calls: Arc<AtomicUsize>,
-    }
-
-    impl RunnerDriver for RecordingDriver {
-        fn descriptor(&self) -> RunnerDriverDescriptor {
-            RunnerDriverDescriptor {
-                mode: "test_driver",
-                isolation: "test_vm",
-            }
-        }
-
-        fn execute<'a>(
-            &'a self,
-            _request: RunnerExecutionRequest<'a>,
-        ) -> RunnerExecutionFuture<'a> {
-            self.calls.fetch_add(1, Ordering::Relaxed);
-            Box::pin(async { EbpfRunResponse::validation_error("recorded") })
-        }
-    }
-
-    fn manager(max_concurrent: usize, max_per_user: usize) -> RunnerManager {
-        RunnerManager::local(
-            RunnerConfig {
-                max_concurrent,
-                max_per_user,
-                execution_timeout: Duration::from_secs(45),
-                instance_id: "test".to_string(),
-            },
-            EbpfLoader::default(),
-        )
-    }
-
-    #[test]
-    fn enforces_per_user_capacity_and_releases_on_drop() {
-        let manager = manager(2, 1);
-        let first = manager
-            .try_acquire("alice", EbpfRuntimeBackend::Bpftool)
-            .unwrap();
-        assert_eq!(
-            manager
-                .try_acquire("alice", EbpfRuntimeBackend::Bpftool)
-                .err(),
-            Some(RunnerAcquireError::UserCapacity)
-        );
-        assert!(manager.try_acquire("bob", EbpfRuntimeBackend::Aya).is_ok());
-        drop(first);
-        assert!(manager
-            .try_acquire("alice", EbpfRuntimeBackend::Bpftool)
-            .is_ok());
-    }
-
-    #[test]
-    fn reports_global_capacity_without_exposing_other_user_count() {
-        let manager = manager(1, 1);
-        let _lease = manager
-            .try_acquire("alice", EbpfRuntimeBackend::Bpftool)
-            .unwrap();
-        assert_eq!(
-            manager.try_acquire("bob", EbpfRuntimeBackend::Aya).err(),
-            Some(RunnerAcquireError::GlobalCapacity)
-        );
-        let status = manager.status_for("bob");
-        assert_eq!(status.active_total, 1);
-        assert_eq!(status.active_for_current_user, 0);
-        assert_eq!(status.available_slots, 0);
-    }
-
-    #[test]
-    fn unsupported_driver_mode_fails_closed() {
-        let config = RunnerConfig {
-            max_concurrent: 2,
-            max_per_user: 1,
-            execution_timeout: Duration::from_secs(45),
-            instance_id: "test".to_string(),
-        };
-        let error = RunnerManager::from_mode(config, EbpfLoader::default(), "remote_vm")
-            .err()
-            .expect("unsupported mode should fail");
-        assert!(error.contains("supports only `local_process`"));
-    }
-
-    #[tokio::test]
-    async fn execution_delegates_to_driver_and_updates_runtime_metadata() {
-        let calls = Arc::new(AtomicUsize::new(0));
-        let manager = RunnerManager::new(
-            RunnerConfig {
-                max_concurrent: 1,
-                max_per_user: 1,
-                execution_timeout: Duration::from_secs(45),
-                instance_id: "test".to_string(),
-            },
-            Arc::new(RecordingDriver {
-                calls: calls.clone(),
-            }),
-        );
-        let lease = manager
-            .try_acquire("alice", EbpfRuntimeBackend::Bpftool)
-            .unwrap();
-        let response = manager
-            .execute(
-                &lease,
-                RunnerExecutionRequest {
-                    owner_username: "alice",
-                    code: "int main(void) { return 0; }",
-                    program_name: Some("test"),
-                    runtime_backend: EbpfRuntimeBackend::Aya,
-                    selected_headers: &[],
-                    debug_breakpoints: None,
-                },
-            )
-            .await
-            .unwrap();
-
-        assert_eq!(response.message, "recorded");
-        assert_eq!(calls.load(Ordering::Relaxed), 1);
-        let overview = manager.overview();
-        assert_eq!(overview.status.mode, "test_driver");
-        assert_eq!(overview.status.isolation, "test_vm");
-        assert_eq!(overview.active_leases[0].runtime_backend, "aya");
-    }
-}
+#[path = "runner_manager/tests.rs"]
+mod tests;

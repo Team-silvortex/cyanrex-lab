@@ -8,12 +8,22 @@ impl EbpfLoader {
         code: &str,
         selected_headers: &[SelectedHeaderMetadata],
     ) -> (EbpfCheckResponse, bool) {
+        self.check_for_user_with_cache_status("", code, selected_headers).await
+    }
+
+    pub async fn check_for_user_with_cache_status(
+        &self,
+        owner_username: &str,
+        code: &str,
+        selected_headers: &[SelectedHeaderMetadata],
+    ) -> (EbpfCheckResponse, bool) {
         if code.trim().is_empty() {
             return (check_failure("eBPF source code is empty", String::new()), false);
         }
 
         let cache_key = format!(
-            "{}:{}",
+            "{}:{}:{}",
+            source_cache_key(owner_username),
             source_cache_key(code),
             selected_headers_cache_key(selected_headers)
         );
@@ -23,16 +33,16 @@ impl EbpfLoader {
             }
         }
 
-        let temp_dir = std::env::temp_dir().join(format!("cyanrex-check-{}", Uuid::new_v4()));
-        if let Err(error) = fs::create_dir(&temp_dir).await {
-            return (
+        let workspace = match CompilerWorkspace::create(owner_username) {
+            Ok(workspace) => workspace,
+            Err(error) => return (
                 check_failure(&format!("failed to create check directory: {error}"), String::new()),
                 false,
-            );
-        }
+            ),
+        };
 
-        let response = self.check_in_directory(code, selected_headers, &temp_dir).await;
-        let _ = fs::remove_dir_all(&temp_dir).await;
+        let response = self.check_in_directory(code, selected_headers, workspace.path()).await;
+        drop(workspace);
         let mut cache = self.check_cache.write().await;
         let cache_limit = if self.resident_compiler_enabled() { 512 } else { 64 };
         if cache.len() >= cache_limit && cache_limit > 0 {

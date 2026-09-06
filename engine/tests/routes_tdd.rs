@@ -49,5 +49,7 @@ include!("routes_tdd/auth_csrf.inc.rs");
 include!("routes_tdd/learning.inc.rs");
 include!("routes_tdd/learning_feedback.inc.rs");
 include!("routes_tdd/runner.inc.rs");
+include!("routes_tdd/runner_lifecycle.inc.rs");
+include!("routes_tdd/runner_compiler.inc.rs");
 include!("routes_tdd/runner_agent.inc.rs");
 include!("routes_tdd/runner_job.inc.rs");

@@ -1,7 +1,4 @@
-use std::{
-    path::Path,
-    sync::{Arc, OnceLock},
-};
+use std::{path::Path, sync::Arc};
 
 use axum::{
     extract::{Query, State},
@@ -16,15 +13,14 @@ use tokio::{
     fs,
     io::{AsyncBufReadExt, AsyncReadExt, BufReader},
     process::Command,
-    sync::Semaphore,
     time::{Duration, Instant},
 };
 
 use crate::{
     models::{
         ebpf::{
-            EbpfAttachmentDetail, EbpfAttachmentDetailListResponse, EbpfAttachmentListResponse,
-            EbpfCheckBackend, EbpfCheckBackendInventory, EbpfCheckResponse, EbpfCompletionRequest,
+            EbpfAttachmentDetailListResponse, EbpfAttachmentListResponse, EbpfCheckBackend,
+            EbpfCheckBackendInventory, EbpfCheckResponse, EbpfCompletionRequest,
             EbpfCompletionResponse, EbpfDetachRequest, EbpfDetachResponse,
             EbpfRemoteCheckCancelRequest, EbpfRemoteCheckResponse, EbpfRemoteCheckStatusQuery,
             EbpfRemoteCheckSubmitRequest, EbpfRunRequest, EbpfRunResponse, EbpfRuntimeBackend,
@@ -35,18 +31,33 @@ use crate::{
         runner_job::{RunnerCompileReport, RunnerJobState, RunnerJobView},
     },
     services::{
-        runner_driver::RunnerExecutionRequest, runner_job_queue::RunnerJobQueueError,
+        runner_driver::{
+            RunnerCheckRequest, RunnerCompletionRequest, RunnerDetachRequest,
+            RunnerExecutionRequest, RunnerOperationError,
+        },
+        runner_job_queue::RunnerJobQueueError,
         runner_manager::RunnerExecutionError,
     },
     AppState,
 };
 
 const MAX_EBPF_SOURCE_BYTES: usize = 256 * 1024;
-static EBPF_CHECK_SLOTS: OnceLock<Semaphore> = OnceLock::new();
-static EBPF_COMPLETION_SLOTS: OnceLock<Semaphore> = OnceLock::new();
+
+fn runner_operation_status(error: &RunnerOperationError) -> StatusCode {
+    match error {
+        RunnerOperationError::Busy => StatusCode::TOO_MANY_REQUESTS,
+        RunnerOperationError::InvalidRequest(_) => StatusCode::BAD_REQUEST,
+        RunnerOperationError::Unavailable | RunnerOperationError::Unsupported => {
+            StatusCode::SERVICE_UNAVAILABLE
+        }
+        RunnerOperationError::Timeout => StatusCode::REQUEST_TIMEOUT,
+    }
+}
 
 include!("ebpf/handlers.inc.rs");
+include!("ebpf/attachments.inc.rs");
 include!("ebpf/learning.inc.rs");
+include!("ebpf/compiler.inc.rs");
 include!("ebpf/check.inc.rs");
 include!("ebpf/remote_check.inc.rs");
 include!("ebpf/completion.inc.rs");

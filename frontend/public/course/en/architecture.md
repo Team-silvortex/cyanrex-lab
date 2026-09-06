@@ -20,7 +20,7 @@ flowchart LR
 The browser is the control plane. It never performs privileged kernel work itself. The Engine is
 the execution plane and owns authentication, authorization, compilation, loading, attachment,
 event delivery, and persistence. PostgreSQL stores durable application data. The Linux toolchain
-and kernel form a privileged sandbox boundary.
+and kernel form a privileged execution boundary, not a multi-student security sandbox.
 
 ## 2. Repository Boundaries
 
@@ -191,11 +191,29 @@ The local runner reports `isolation=shared_kernel` deliberately: its quotas are 
 not a security boundary. Workspaces and bpffs pins are separated by instance plus a hashed user
 namespace, and transient compile files are removed when a run scope ends.
 
-Routes submit a `RunnerExecutionRequest` through the `RunnerDriver` interface instead of calling the
-loader directly. `LocalProcessRunnerDriver` owns the existing `EbpfLoader` path. A future VM or
-remote-container driver must implement the same execution contract and provide truthful mode and
-isolation descriptors. Unknown `CYANREX_RUNNER_MODE` values fail Engine startup; there is no implicit
-fallback to privileged local execution.
+Run requests submit a `RunnerExecutionRequest` through `RunnerDriver`; the manager checks that the
+request owner matches its lease owner before dispatch. Attachment inventory and detach also use the
+selected driver, including cleanup before an Aya debug retry. The driver owns detach verification in
+its execution environment; inventory/detach have bounded deadlines and do not require a live execution
+capacity lease. Unavailable backends never produce a successful empty local inventory or local detach.
+`LocalProcessRunnerDriver` retains the existing `EbpfLoader` path and shared-kernel behavior.
+
+Compiler checks and semantic completion also use the selected driver, carrying the session owner,
+source, selected-header metadata, and cursor position. Each Runner manager permits two checks and three
+completions independently of execution leases. Their complete driver calls are capped at 15 and 8 seconds
+respectively, or the configured Runner timeout if shorter. Capacity exhaustion returns `429`; unsupported
+or unavailable drivers return `503`, and timeouts return `408`, without a local fallback. Diagnostic
+responses retain their existing HTTP/JSON contract; unknown cache status is not counted as a miss.
+Cancellation releases both the permit and in-flight metrics. The local adapter scopes cache entries to
+the owner and uses private, drop-cleaned compiler source workspaces.
+
+The boundary is still incomplete: attach verification, event streaming, environment discovery, and
+compiler settings retain local paths. Selected-header metadata still contains local paths; remote
+drivers will need validated header bundles rather than treating those paths as guest-accessible files.
+Future isolated drivers must cover that entire lifecycle and
+provide truthful descriptors. Unknown `CYANREX_RUNNER_MODE` values fail Engine startup; there is no
+implicit fallback to privileged local execution. See the [Linux desktop/LAN target](classroom-isolation.md)
+for the environment ownership and VM recovery requirements; VM execution is not enabled yet.
 
 Runner mode is configured with `CYANREX_RUNNER_MODE` (currently `local_process`). Limits use
 `CYANREX_RUNNER_MAX_CONCURRENT` (default `2`),
@@ -230,7 +248,7 @@ curl -sS -X POST http://127.0.0.1:8080/runner/agent/register \
   -d '{
     "agent_id":"lab-vm-01",
     "protocol_version":1,
-    "agent_version":"0.3.2",
+    "agent_version":"0.3.3",
     "isolation":"virtual_machine",
     "max_concurrent":2,
     "capabilities":["bpftool","btf","ringbuf"],
@@ -336,6 +354,14 @@ kernel module mounts. Treat it as a privileged teaching sandbox:
 - explicitly configure CORS origins for LAN access;
 - never accept code from untrusted or anonymous users;
 - do not place unrelated workloads in the same privileged runtime.
+
+### Multi-student LAN target
+
+Linux desktops with hardware virtualization are the planning baseline; a dedicated classroom server
+is optional. The target separates an unprivileged teaching control service from exclusive student VMs,
+which may run on student desktops or managed virtualization hosts. A VM is retained for the experiment,
+then rebuilt before another user receives it. This is a planned topology, not an isolation guarantee of
+the current local Engine. Details and implementation gaps are in [Classroom Isolation](classroom-isolation.md).
 
 ## 7. Extension Rules
 

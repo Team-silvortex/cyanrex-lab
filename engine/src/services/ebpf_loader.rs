@@ -21,6 +21,10 @@ use tokio::{
 };
 use uuid::Uuid;
 
+#[path = "ebpf_loader/compiler_workspace.rs"]
+mod compiler_workspace;
+use compiler_workspace::CompilerWorkspace;
+
 use crate::models::c_headers::SelectedHeaderMetadata;
 use crate::models::ebpf::{
     EbpfCheckResponse, EbpfCompilerDiagnostic, EbpfCompletionItem, EbpfCompletionResponse,
@@ -121,6 +125,10 @@ include!("ebpf_loader/check.inc.rs");
 include!("ebpf_loader/completion.inc.rs");
 include!("ebpf_loader/aya.inc.rs");
 include!("ebpf_loader/attach.inc.rs");
+
+#[cfg(test)]
+#[path = "ebpf_loader/compiler_scope_tests.rs"]
+mod compiler_scope_tests;
 
 #[cfg(test)]
 mod workspace_tests {

@@ -5,6 +5,8 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.3.3] - 2026-09-06
+
 ### Added
 
 - Added teacher/admin feedback on student lab attempts, with student-visible history, Unicode-aware
@@ -26,6 +28,12 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ### Changed
 
+- eBPF checks/completion now use owner-scoped Runner requests, per-manager compiler capacity,
+  operation deadlines, and cancellation-safe metrics while preserving successful response contracts.
+- Attachment inventory, detach, and debug-retry cleanup now use the selected Runner driver, with
+  bounded deadlines, driver-owned cleanup reports, and no implicit local fallback on backend failure.
+- Documented the Linux desktop/LAN classroom target and its unimplemented VM ownership, recovery,
+  and ingress requirements, without enabling remote eBPF loading.
 - Offline distributions now export the native release CLI from the Engine image and prefer it for
   live-kernel evidence, while retaining the Python implementation as a compatibility fallback during
   the remaining release-tool migration.
@@ -43,6 +51,10 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ### Fixed
 
+- Local compiler caches now separate users, and private source workspace guards clean up on cancellation
+  as well as normal return; cancelled header setup cannot recreate a workspace after cleanup.
+- Runner execution now rejects a request whose user differs from the execution lease owner before
+  invoking the driver or changing lease metadata.
 - Installation smoke preflight now preserves existing runtime configuration and Agent tokens; cleanup
   removes only state created by the current acceptance run.
 
@@ -100,6 +112,7 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 The canonical package metadata advanced directly from `0.2.9` to `0.3.1`. Version `0.3.0` identifies
 the frozen API compatibility snapshot only; it was not a package release and must not be tagged.
 
-[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.2...HEAD
+[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.3...HEAD
+[0.3.3]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.2.9...v0.3.1

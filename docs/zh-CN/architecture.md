@@ -17,7 +17,8 @@ flowchart LR
 ```
 
 浏览器是控制面，不直接执行任何内核特权操作。Engine 是执行面，负责身份、权限、编译、
-加载、挂载、事件投递与持久化。PostgreSQL 保存持久数据，Linux 工具链和内核组成特权沙箱边界。
+加载、挂载、事件投递与持久化。PostgreSQL 保存持久数据，Linux 工具链和内核组成特权执行边界，
+不是多学生安全沙箱。
 
 ## 2. 仓库边界
 
@@ -175,10 +176,23 @@ flowchart LR
 `isolation=shared_kernel`：配额属于资源控制，不是安全隔离边界。临时工作区和 bpffs pin 按实例
 及匿名化用户命名空间分开，运行作用域结束后会删除临时编译文件。
 
-路由不再直接调用 loader，而是把 `RunnerExecutionRequest` 交给 `RunnerDriver` 接口。
-`LocalProcessRunnerDriver` 承载现有 `EbpfLoader` 路径；未来的 VM 或远程容器驱动必须实现相同
-执行契约，并如实提供模式和隔离级别。未知 `CYANREX_RUNNER_MODE` 会让 Engine 启动失败，系统
-不会静默降级到特权本地执行。
+运行请求把 `RunnerExecutionRequest` 交给 `RunnerDriver`，Manager 在分发前检查请求用户与租约
+所有者一致。挂载清单、卸载以及 Aya 调试重试前的清理也使用选定驱动；驱动在自己的执行环境验证
+卸载结果。清单和卸载都有超时上限，不要求短期执行容量租约仍然存活。后端不可用时，不会返回成功
+的本机空清单或退回本机卸载。`LocalProcessRunnerDriver` 保留原有 `EbpfLoader` 和共享内核行为。
+
+编译检查和语义补全也使用选定驱动，携带 Session 用户、源码、所选头文件元数据和光标位置。
+每个 Runner Manager 独立提供 2 个检查、3 个补全名额，不占用运行租约；整个驱动调用分别最多
+15 秒、8 秒，若 Runner 配置的超时更短则取更短值。容量不足返回 `429`，后端不可用或不支持返回
+`503`，超时返回 `408`，不回退本地。诊断结果保持现有 HTTP/JSON 契约，未知缓存状态不记为未命中。
+取消请求会释放名额并归还进行中统计；本地适配器按用户区分缓存，编译源码工作区使用私有权限并随
+作用域结束清理。
+
+这层接口仍未完整：挂载验证、事件流、环境探测和编译设置还有本机路径。所选头文件元数据仍包含
+本机路径，远程驱动还需可验证的头文件包，不能把这些路径直接当作客体可读文件。后续隔离驱动必须
+覆盖完整生命周期，并如实报告边界。未知 `CYANREX_RUNNER_MODE` 仍会让 Engine 启动失败，不会静默降级
+到特权本地执行。[Linux 桌面/局域网目标架构](classroom-isolation.md)定义了环境归属和 VM 恢复要求；
+目前尚未开启 VM 执行。
 
 Runner 模式由 `CYANREX_RUNNER_MODE` 配置（当前为 `local_process`）；配额由
 `CYANREX_RUNNER_MAX_CONCURRENT`（默认 `2`）、
@@ -208,7 +222,7 @@ curl -sS -X POST http://127.0.0.1:8080/runner/agent/register \
   -d '{
     "agent_id":"lab-vm-01",
     "protocol_version":1,
-    "agent_version":"0.3.2",
+    "agent_version":"0.3.3",
     "isolation":"virtual_machine",
     "max_concurrent":2,
     "capabilities":["bpftool","btf","ringbuf"],
@@ -301,6 +315,13 @@ Engine 容器需要内核能力、宿主 PID、bpffs、tracefs 和内核模块�
 - 局域网访问必须显式配置 CORS 来源；
 - 不接受不可信或匿名用户提交代码；
 - 不要让无关业务与 Engine 共用特权运行环境。
+
+### 多学生局域网目标
+
+规划默认 Linux 桌面机支持硬件虚拟化，独立课堂服务器不是必要条件。目标是把无特权教学控制服务与
+学生独占 VM 分开；VM 可以运行在学生桌面或受管虚拟化服务器上。环境在实验期间保留，换用户前重建。
+这是待实现的部署拓扑，不是现有本地 Engine 的隔离保证。具体要求和缺口见
+[课堂隔离设计](classroom-isolation.md)。
 
 ## 7. 扩展规则
 

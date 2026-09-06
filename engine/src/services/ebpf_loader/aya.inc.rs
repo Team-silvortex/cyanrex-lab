@@ -77,7 +77,8 @@ impl EbpfLoader {
 
             let target_path = temp_dir.join(include_path);
             if let Some(parent) = target_path.parent() {
-                if let Err(error) = fs::create_dir_all(parent).await {
+                // A cancelled async mkdir could recreate the workspace after its guard removes it.
+                if let Err(error) = std::fs::create_dir_all(parent) {
                     return Err(format!(
                         "failed to create compiler workspace directory for header '{}': {} (target: {}, source: {})",
                         selected.id,
