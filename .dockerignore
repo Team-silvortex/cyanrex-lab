@@ -4,5 +4,9 @@
 !engine/Cargo.lock
 !engine/src/
 !engine/src/**
+!engine/openapi/
+!engine/openapi/**
+!engine/migrations/
+!engine/migrations/**
 !modules/
 !modules/**

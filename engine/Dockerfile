@@ -8,13 +8,15 @@ ENV CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse \
 
 COPY engine/Cargo.toml engine/Cargo.lock ./
 COPY engine/src ./src
+COPY engine/openapi ./openapi
+COPY engine/migrations ./migrations
 
 RUN if [ -n "${CARGO_SOURCE_MIRROR}" ]; then \
       mkdir -p .cargo; \
       printf '[source.crates-io]\nreplace-with = "mirror"\n[source.mirror]\nregistry = "%s"\n' \
         "${CARGO_SOURCE_MIRROR}" > .cargo/config.toml; \
     fi \
-    && cargo build --release --bins
+    && cargo build --release --locked --bins
 
 FROM ${DEBIAN_IMAGE} AS runtime
 ARG APT_MIRROR=deb.debian.org

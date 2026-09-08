@@ -60,6 +60,10 @@ Utility scripts for Cyanrex local operation.
   compatibility regressions.
 - `clean-macos-metadata.mjs`: removes `.DS_Store` and AppleDouble `._*` sidecars that can be
   mistaken for source files by Next.js after copying the repository through a macOS filesystem.
+  The repository-wide CLI wraps `frontend/scripts/clean-macos-metadata.mjs`; frontend build/dev hooks
+  use that context-local implementation so Docker builds do not require parent-directory scripts.
+- `tests/dockerBuildInputs.test.mjs`: checks Engine compile-time asset allowances/copies and runs the
+  frontend prebuild hook in an isolated frontend-only context; included in every quality-gate mode.
 - `frontend/scripts/sync-course-docs.mjs`: replaces the frontend's committed course copy from the
   authoritative `docs/` tree; `--check` rejects missing, changed, and unexpected mirrored files and is
   included in every quality-gate mode.

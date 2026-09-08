@@ -5,6 +5,14 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- Engine Docker builds now include the OpenAPI document and SQL migrations required at compile time,
+  while using the committed Cargo lockfile.
+- Frontend Docker builds now use a context-local metadata cleanup hook instead of depending on a
+  parent-directory script; the repository-wide cleanup command remains available.
+- Added build-input and isolated frontend prebuild regressions to the common quality gate.
+
 ## [0.3.3] - 2026-09-06
 
 ### Added
