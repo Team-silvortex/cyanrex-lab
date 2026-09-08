@@ -21,8 +21,11 @@ use crate::models::event::Event;
 mod event_bus_schema;
 #[cfg(test)]
 mod read_bench;
+mod subscriptions;
 #[cfg(test)]
 mod tests;
+
+pub(crate) use subscriptions::{UserEventSubscription, UserFanout};
 
 pub(crate) const DB_PERSIST_QUEUE_CAPACITY: usize = 2_048;
 const DB_PERSIST_DROP_NEW_COUNT_TTL: StdDuration = StdDuration::from_secs(1);
@@ -30,6 +33,7 @@ const DB_PERSIST_DROP_NEW_COUNT_TTL: StdDuration = StdDuration::from_secs(1);
 #[derive(Clone)]
 pub struct EventBus {
     sender: broadcast::Sender<Event>,
+    user_fanout: UserFanout,
     history: Arc<RwLock<HashMap<String, VecDeque<Event>>>>,
     unread: Arc<RwLock<HashMap<String, usize>>>,
     settings: Arc<RwLock<HashMap<String, UserEventSettings>>>,
@@ -101,6 +105,7 @@ impl EventBus {
 
         let bus = Self {
             sender,
+            user_fanout: UserFanout::new(buffer),
             history: Arc::new(RwLock::new(HashMap::new())),
             unread: Arc::new(RwLock::new(HashMap::new())),
             settings: Arc::new(RwLock::new(HashMap::new())),
@@ -139,7 +144,11 @@ impl EventBus {
             }
             bucket.push_back(event.clone());
         }
-        let _ = self.sender.send(event.clone());
+        self.user_fanout.publish(&event);
+        // Preserve the legacy global service API without cloning for an unused channel.
+        if self.sender.receiver_count() > 0 {
+            let _ = self.sender.send(event.clone());
+        }
         {
             let mut unread = self.unread.write().await;
             let counter = unread.entry(event.username.clone()).or_insert(0);

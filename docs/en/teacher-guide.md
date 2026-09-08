@@ -96,6 +96,11 @@ page keeps your draft and rejects the stale save. Select **Load latest feedback*
 comment with your draft, and explicitly save again. Failed saves also keep the draft. Role and CSRF
 origin checks apply to the write API.
 
+Local history uses shared snapshots and bounded recent selection, but still rewrites the full JSON on
+save. A started local save continues after a timeout/disconnection, so reload the current feedback
+before retrying. Keep backups and do not treat it as an append-only durable log; see
+[Learning Record Storage](learning-storage.md) for costs, limits and reproducible local measurements.
+
 Automated checks require the expected template, a successful `run` stage, structured source
 evidence, and attachment verification where the lab requires it. Source evidence uses C tokens:
 comments, string literals, helper-name substrings, and preprocessor definitions do not count.

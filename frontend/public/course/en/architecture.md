@@ -128,9 +128,9 @@ corresponding Engine guard.
 |---|---|
 | `AuthService` | Users, password hashes, TOTP, login throttling, session lifecycle, role mapping |
 | `EbpfLoader` | clang checks/completion, caches, loading, attachment tracking, Aya sessions |
-| `EventBus` | Per-user event buffers, unread counters, broadcast, retention, async persistence |
+| `EventBus` | Per-user history and live queues, shared lazy event JSON, unread counters, retention, async persistence; legacy global subscription API |
 | `ScriptStore` | Per-user script CRUD and database/file fallback |
-| `LearningStore` | Lab attempts, automated acceptance, progress aggregation, database/file fallback |
+| `LearningStore` | Lab attempts, shared local snapshots, bounded recent selection, single-pass progress aggregation, database/file fallback |
 | `CHeaderModule` | Trusted header catalog, checksum validation, selection metadata |
 | `EnvironmentChecker` | Runtime/kernel/toolchain readiness report |
 | `ModuleManager` | Versioned manifest discovery, catalog validation, and in-memory lifecycle state |
@@ -248,7 +248,7 @@ curl -sS -X POST http://127.0.0.1:8080/runner/agent/register \
   -d '{
     "agent_id":"lab-vm-01",
     "protocol_version":1,
-    "agent_version":"0.3.4",
+    "agent_version":"0.3.5",
     "isolation":"virtual_machine",
     "max_concurrent":2,
     "capabilities":["bpftool","btf","ringbuf"],
@@ -334,11 +334,22 @@ If enabled with `CYANREX_DB_FALLBACK`, individual services can degrade independe
 Fallback keeps a lab usable during a database outage, but memory-backed users, sessions, and events
 do not survive an Engine restart. Production-like classroom runs should monitor PostgreSQL health.
 
+Local learning records use shared immutable snapshots: reads avoid cloning all source, appends share
+unchanged records, and feedback replaces only the edited record. Recent selection is bounded before
+copying response payloads; progress aggregates in one pass. A blocking worker streams the complete JSON
+file through a 64 KiB buffer, flushes, renames and publishes memory while retaining writer admission even
+after request cancellation. This is not fsync, crash recovery or cross-process coordination. There is no new
+SQL projection, HTTP pagination contract or retention policy. See [Learning Record Storage](learning-storage.md).
+
 ### Event stream recovery
 
 `/ws/events` retains raw per-owner Event JSON frames. Its handshake uses session authentication and
 the Origin/Referer policy even though it is a GET. The route subscribes before finishing the upgrade,
-closes with `1013` on broadcast lag, and bounds socket sends. Both browser consumers share a bounded
+selects a bounded queue by the session owner, closes with `1013` on that owner's lag, and bounds socket sends.
+Connections for one owner share immutable events and lazy JSON; the last subscription removes the queue.
+Other owners cannot evict that queue's events, but aggregate memory grows with active owners and payloads;
+shared process resources are not isolated. The legacy global service subscription API remains available.
+Both browser consumers share a bounded
 reconnect/snapshot controller; data gaps stay visible after recovery. This is a recent-history view,
 not a durable or exactly-once replay protocol. See [Event Stream Recovery](event-stream.md) for deadlines,
 client migration, snapshot races, and the limits of recovery from asynchronous persistence.

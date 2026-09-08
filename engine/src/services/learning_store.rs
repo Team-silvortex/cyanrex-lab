@@ -1,5 +1,4 @@
 use std::{
-    collections::HashMap,
     path::PathBuf,
     sync::{
         atomic::{AtomicBool, Ordering},
@@ -13,15 +12,20 @@ use tokio::sync::{Mutex, OnceCell, RwLock};
 use uuid::Uuid;
 
 use crate::config::runtime_instance_id;
-use crate::models::learning::{
-    LabAttempt, LabProgress, LabProgressStatus, StudentLearningOverview, TeacherLearningOverview,
-};
-use crate::services::learning_catalog::{assess_lab_run, find_lab, lab_definitions};
+use crate::models::learning::{LabAttempt, LabProgress, TeacherLearningOverview};
+use crate::services::learning_catalog::{assess_lab_run, find_lab};
 use crate::sqlx_compat as sqlx;
 use crate::sqlx_compat::{PgPool, PgPoolOptions, Row};
 
 mod feedback;
+mod persistence;
+mod queries;
+#[cfg(test)]
+mod snapshot_tests;
 pub use feedback::LearningFeedbackError;
+use queries::{progress_from_attempts, select_recent, teacher_overview_from_attempts};
+
+type AttemptSnapshot = Arc<Vec<Arc<LabAttempt>>>;
 
 pub struct LearningRunOutcome<'a> {
     pub lab_id: &'a str,
@@ -35,7 +39,7 @@ pub struct LearningRunOutcome<'a> {
 
 #[derive(Clone)]
 pub struct LearningStore {
-    in_memory: Arc<RwLock<Vec<LabAttempt>>>,
+    in_memory: Arc<RwLock<AttemptSnapshot>>,
     data_path: PathBuf,
     persist_lock: Arc<Mutex<()>>,
     memory_loaded: Arc<OnceCell<()>>,
@@ -64,7 +68,7 @@ impl Default for LearningStore {
             });
 
         Self {
-            in_memory: Arc::new(RwLock::new(Vec::new())),
+            in_memory: Arc::new(RwLock::new(Arc::new(Vec::new()))),
             data_path,
             persist_lock: Arc::new(Mutex::new(())),
             memory_loaded: Arc::new(OnceCell::new()),
@@ -78,7 +82,7 @@ impl Default for LearningStore {
 impl LearningStore {
     pub fn with_local_data_path(data_path: PathBuf) -> Self {
         Self {
-            in_memory: Arc::new(RwLock::new(Vec::new())),
+            in_memory: Arc::new(RwLock::new(Arc::new(Vec::new()))),
             data_path,
             persist_lock: Arc::new(Mutex::new(())),
             memory_loaded: Arc::new(OnceCell::new()),
@@ -153,11 +157,13 @@ impl LearningStore {
         }
 
         self.load_memory().await?;
-        let _guard = self.persist_lock.lock().await;
-        let mut attempts = self.in_memory.read().await.clone();
-        attempts.push(attempt.clone());
-        self.persist_attempts(&attempts).await?;
-        *self.in_memory.write().await = attempts;
+        let guard = self.persist_lock.clone().lock_owned().await;
+        let current = self.in_memory.read().await.clone();
+        let mut rows = Vec::with_capacity(current.len() + 1);
+        rows.extend(current.iter().cloned());
+        rows.push(Arc::new(attempt.clone()));
+        let attempts = Arc::new(rows);
+        self.persist_and_publish(attempts, guard).await?;
         Ok(attempt)
     }
 
@@ -206,63 +212,54 @@ impl LearningStore {
         }
 
         let _ = self.load_memory().await;
-        let mut attempts = self
-            .in_memory
-            .read()
-            .await
-            .iter()
-            .filter(|attempt| attempt.username == username)
-            .cloned()
-            .collect::<Vec<_>>();
-        attempts.sort_by_key(|attempt| std::cmp::Reverse(attempt.created_at));
-        if let Some(limit) = limit {
-            attempts.truncate(limit);
-        }
-        attempts
+        let snapshot = self.in_memory.read().await.clone();
+        select_recent(
+            snapshot
+                .iter()
+                .map(Arc::as_ref)
+                .filter(|attempt| attempt.username == username),
+            limit,
+        )
+        .into_iter()
+        .cloned()
+        .collect()
     }
 
     pub async fn progress_for_user(&self, username: &str) -> Vec<LabProgress> {
-        progress_from_attempts(&self.attempts_for_user(username).await)
+        if self.active_pool().is_some() {
+            // Keep the database query/fallback behavior unchanged; optimize local projections here.
+            return progress_from_attempts(&self.attempts_for_user(username).await);
+        }
+        let Some(username) = sanitize_username(username) else {
+            return progress_from_attempts(std::iter::empty());
+        };
+        let _ = self.load_memory().await;
+        let snapshot = self.in_memory.read().await.clone();
+        progress_from_attempts(
+            snapshot
+                .iter()
+                .map(Arc::as_ref)
+                .filter(|row| row.username == username),
+        )
     }
 
     pub async fn teacher_overview(&self) -> TeacherLearningOverview {
         let attempts = self.all_attempts().await;
-        let mut grouped: HashMap<String, Vec<LabAttempt>> = HashMap::new();
-        for attempt in attempts {
-            grouped
-                .entry(attempt.username.clone())
-                .or_default()
-                .push(attempt);
-        }
-
-        let total_labs = lab_definitions().len() as u32;
-        let mut students = grouped
-            .into_iter()
-            .map(|(username, attempts)| student_overview(username, &attempts, total_labs))
-            .collect::<Vec<_>>();
-        students.sort_by(|left, right| {
-            right
-                .last_activity_at
-                .cmp(&left.last_activity_at)
-                .then_with(|| left.username.cmp(&right.username))
-        });
-
-        TeacherLearningOverview {
-            generated_at: Utc::now(),
-            total_labs,
-            active_students: students.len() as u32,
-            students,
-        }
+        teacher_overview_from_attempts(attempts.iter().map(Arc::as_ref))
     }
 
-    async fn all_attempts(&self) -> Vec<LabAttempt> {
+    async fn all_attempts(&self) -> AttemptSnapshot {
         if let Some(pool) = self.active_pool() {
             if self.ensure_schema().await.is_ok() {
                 match sqlx::query("SELECT * FROM learning_attempts ORDER BY created_at DESC")
                     .fetch_all(pool)
                     .await
                 {
-                    Ok(rows) => return rows.into_iter().map(decode_attempt).collect(),
+                    Ok(rows) => {
+                        return Arc::new(
+                            rows.into_iter().map(decode_attempt).map(Arc::new).collect(),
+                        )
+                    }
                     Err(error) => self.disable_db(&format!("learning overview failed: {error}")),
                 }
             }
@@ -339,31 +336,11 @@ impl LearningStore {
                     .map_err(|error| format!("failed to read learning attempts: {error}"))?;
                 let attempts = serde_json::from_str::<Vec<LabAttempt>>(&content)
                     .map_err(|error| format!("failed to parse learning attempts: {error}"))?;
-                *memory.write().await = attempts;
+                *memory.write().await = Arc::new(attempts.into_iter().map(Arc::new).collect());
                 Ok(())
             })
             .await
             .map(|_| ())
-    }
-
-    // Callers hold persist_lock and only publish the new snapshot after the rename succeeds.
-    async fn persist_attempts(&self, attempts: &[LabAttempt]) -> Result<(), String> {
-        let parent = self
-            .data_path
-            .parent()
-            .ok_or_else(|| "invalid learning data path".to_string())?;
-        tokio::fs::create_dir_all(parent)
-            .await
-            .map_err(|error| format!("failed to prepare learning data dir: {error}"))?;
-        let content = serde_json::to_string_pretty(attempts)
-            .map_err(|error| format!("failed to encode learning attempts: {error}"))?;
-        let temp_path = self.data_path.with_extension("json.tmp");
-        tokio::fs::write(&temp_path, content)
-            .await
-            .map_err(|error| format!("failed to persist learning attempts: {error}"))?;
-        tokio::fs::rename(&temp_path, &self.data_path)
-            .await
-            .map_err(|error| format!("failed to finalize learning attempts: {error}"))
     }
 }
 
@@ -384,62 +361,6 @@ fn decode_attempt(row: crate::sqlx_compat::postgres::PgRow) -> LabAttempt {
         feedback: feedback.lines().map(str::to_string).collect(),
         teacher_feedback: feedback::decode_feedback(&row),
         created_at: row.get("created_at"),
-    }
-}
-
-fn progress_from_attempts(attempts: &[LabAttempt]) -> Vec<LabProgress> {
-    lab_definitions()
-        .into_iter()
-        .map(|lab| {
-            let mut matching = attempts
-                .iter()
-                .filter(|attempt| attempt.lab_id == lab.id)
-                .collect::<Vec<_>>();
-            matching.sort_by_key(|attempt| std::cmp::Reverse(attempt.created_at));
-            let latest = matching.first().copied();
-            let completed_at = matching
-                .iter()
-                .filter(|attempt| attempt.completed)
-                .map(|attempt| attempt.created_at)
-                .min();
-            let status = if completed_at.is_some() {
-                LabProgressStatus::Completed
-            } else if matching.is_empty() {
-                LabProgressStatus::NotStarted
-            } else {
-                LabProgressStatus::InProgress
-            };
-            LabProgress {
-                lab,
-                status,
-                attempts: matching.len() as u32,
-                latest_stage: latest.map(|attempt| attempt.stage.clone()),
-                latest_feedback: latest
-                    .map(|attempt| attempt.feedback.clone())
-                    .unwrap_or_default(),
-                last_attempt_at: latest.map(|attempt| attempt.created_at),
-                completed_at,
-            }
-        })
-        .collect()
-}
-
-fn student_overview(
-    username: String,
-    attempts: &[LabAttempt],
-    total_labs: u32,
-) -> StudentLearningOverview {
-    let labs = progress_from_attempts(attempts);
-    StudentLearningOverview {
-        username,
-        completed_labs: labs
-            .iter()
-            .filter(|lab| lab.status == LabProgressStatus::Completed)
-            .count() as u32,
-        total_labs,
-        total_attempts: attempts.len() as u32,
-        last_activity_at: attempts.iter().map(|attempt| attempt.created_at).max(),
-        labs,
     }
 }
 

@@ -116,9 +116,9 @@ flowchart LR
 |---|---|
 | `AuthService` | 用户、密码摘要、TOTP、登录限速、Session 与角色 |
 | `EbpfLoader` | clang 检查/补全、缓存、加载、挂载记录和 Aya Session |
-| `EventBus` | 用户事件缓冲、未读数、广播、保留策略和异步落库 |
+| `EventBus` | 用户历史与实时队列、共享惰性事件 JSON、未读数、保留策略和异步落库；兼容旧全局订阅接口 |
 | `ScriptStore` | 用户脚本 CRUD 及数据库/文件降级 |
-| `LearningStore` | 实验尝试、自动验收、进度聚合及数据库/文件降级 |
+| `LearningStore` | 实验尝试、共享本地快照、有界最近记录选择、单次遍历进度聚合及数据库/文件降级 |
 | `CHeaderModule` | 可信头文件目录、摘要校验和选中元数据 |
 | `EnvironmentChecker` | 内核、工具链和运行环境检查 |
 | `ModuleManager` | 版本化清单发现、目录校验与内存生命周期状态 |
@@ -222,7 +222,7 @@ curl -sS -X POST http://127.0.0.1:8080/runner/agent/register \
   -d '{
     "agent_id":"lab-vm-01",
     "protocol_version":1,
-    "agent_version":"0.3.4",
+    "agent_version":"0.3.5",
     "isolation":"virtual_machine",
     "max_concurrent":2,
     "capabilities":["bpftool","btf","ringbuf"],
@@ -297,10 +297,18 @@ PostgreSQL 优先保存用户、Session、事件、事件设置、脚本和学�
 
 降级可保证课堂在数据库短暂故障时继续运行，但内存用户、Session 和事件在 Engine 重启后会丢失。
 
+本地学习记录采用共享只读快照：读取不复制所有源码，新增共享未修改记录，评语只替换被编辑的
+记录。最近页先做有界选择再复制返回载荷，进度以单次遍历聚合；阻塞工作线程以 64 KiB 缓冲流式
+写入整份 JSON，flush、rename 后发布内存，请求取消后仍持有写锁完成提交。未新增 fsync、
+崩溃恢复、跨进程协调、SQL 投影、HTTP 分页契约或保留策略。
+详见[学习记录存储](learning-storage.md)。
+
 ### 事件流恢复
 
 `/ws/events` 保持按用户发送原始 Event JSON。即使是 GET，握手也检查会话及 Origin/Referer。
-订阅在握手完成前建立；广播 lag 时发送 `1013` 关闭码，socket 发送有超时上限。
+订阅在握手完成前按会话用户建立；本人队列 lag 时发送 `1013` 关闭码，socket 发送有超时上限。
+同一用户的连接共享不可变事件及惰性 JSON，最后一个订阅退出时清理队列。他人流量不能挤掉
+该队列中的事件，但总内存随活跃用户和载荷增长，共享进程资源并未隔离；旧全局服务订阅接口仍兼容。
 事件中心和断点面板共用有界重连及快照恢复逻辑，恢复后仍显示可能缺失的提示。
 这只是最近历史视图，不是持久或恰好一次的重放协议。超时、客户端迁移、快照竞态与异步持久化
 限制见[事件流恢复](event-stream.md)。

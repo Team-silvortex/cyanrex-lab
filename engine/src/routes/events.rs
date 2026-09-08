@@ -139,7 +139,7 @@ pub async fn ws_events(
 ) -> Response {
     let username = current_username_from_headers(&state, &headers).await;
     // Subscribe before completing the handshake so the client's open notification is a barrier.
-    let receiver = state.event_bus.subscribe();
+    let receiver = state.event_bus.subscribe_for_user(&username);
     ws.on_upgrade(move |socket| stream::handle_ws(socket, receiver, username))
 }
 

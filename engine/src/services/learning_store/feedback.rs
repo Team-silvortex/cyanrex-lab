@@ -1,4 +1,4 @@
-use super::{sanitize_username, sqlx, LearningStore, Row, Utc, Uuid};
+use super::{sanitize_username, sqlx, Arc, LearningStore, Row, Utc, Uuid};
 use crate::models::learning::{LabTeacherFeedback, SaveTeacherFeedbackRequest};
 
 #[cfg(test)]
@@ -76,24 +76,27 @@ impl LearningStore {
         }
 
         self.load_memory().await.map_err(Storage)?;
-        let _guard = self.persist_lock.lock().await;
+        let guard = self.persist_lock.clone().lock_owned().await;
         let mut attempts = self.in_memory.read().await.clone();
-        let attempt = attempts
-            .iter_mut()
-            .find(|attempt| {
+        let index = attempts
+            .iter()
+            .position(|attempt| {
                 attempt.id == request.attempt_id && attempt.username == request.username
             })
             .ok_or(NotFound)?;
-        let revision = attempt
+        let revision = attempts[index]
             .teacher_feedback
             .as_ref()
             .map_or(0, |value| value.revision);
         if revision != request.expected_revision {
             return Err(Conflict);
         }
-        attempt.teacher_feedback = Some(feedback.clone());
-        self.persist_attempts(&attempts).await.map_err(Storage)?;
-        *self.in_memory.write().await = attempts;
+        // Copy only the pointer index and this record; existing readers retain their old snapshot.
+        Arc::make_mut(&mut Arc::make_mut(&mut attempts)[index]).teacher_feedback =
+            Some(feedback.clone());
+        self.persist_and_publish(attempts, guard)
+            .await
+            .map_err(Storage)?;
         Ok(feedback)
     }
 }

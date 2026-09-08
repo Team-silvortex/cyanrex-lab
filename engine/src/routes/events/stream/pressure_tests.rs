@@ -11,12 +11,13 @@ use serde_json::{json, Value};
 use std::{net::SocketAddr, time::Instant};
 use tokio::{
     net::{TcpListener, TcpSocket},
-    sync::{broadcast, mpsc},
+    sync::mpsc,
     task::JoinSet,
 };
 use tokio_tungstenite::{client_async, connect_async, tungstenite::Message as ClientMessage};
 
-use crate::models::event::{EventCategory, EventColor, EventSeverity};
+use crate::models::event::{Event, EventCategory, EventColor, EventSeverity};
+use crate::services::event_bus::UserFanout;
 
 #[derive(Deserialize)]
 struct Owner {
@@ -30,16 +31,14 @@ impl Drop for Server {
     }
 }
 
-async fn server(
-    sender: broadcast::Sender<Event>,
-) -> (Server, SocketAddr, mpsc::UnboundedReceiver<f64>) {
+async fn server(sender: UserFanout) -> (Server, SocketAddr, mpsc::UnboundedReceiver<f64>) {
     let (finished, receiver) = mpsc::unbounded_channel();
     // This unauthenticated router exists only in the private cfg(test) harness. Production route
     // authentication and Origin enforcement are covered separately by routes_tdd.
     let app = Router::new().route(
         "/ws",
         get(move |ws: WebSocketUpgrade, Query(owner): Query<Owner>| {
-            let events = sender.subscribe();
+            let events = sender.subscribe(&owner.username);
             let finished = finished.clone();
             async move {
                 ws.on_upgrade(move |socket| async move {
@@ -72,7 +71,7 @@ fn event(user: usize, index: usize, payload: &str, done: bool) -> Event {
 async fn fanout(burst: bool) -> Value {
     let capacity = if burst { 8 } else { 1024 };
     let count = if burst { 60000 } else { 2000 };
-    let (sender, _) = broadcast::channel(capacity);
+    let sender = UserFanout::new(capacity);
     let (_server, address, _finished) = server(sender.clone()).await;
     let mut clients = JoinSet::new();
     for subscriber in 0..32 {
@@ -111,10 +110,10 @@ async fn fanout(burst: bool) -> Value {
         if !burst && index % 8 == 0 {
             pace.tick().await;
         }
-        let _ = sender.send(event(index % 8, index, &payload, false));
+        sender.publish(&event(index % 8, index, &payload, false));
     }
     for user in 0..8 {
-        let _ = sender.send(event(user, 0, "", true));
+        sender.publish(&event(user, 0, "", true));
     }
     let mut delivered = 0;
     let mut resync_closes = 0;
@@ -136,11 +135,11 @@ async fn fanout(burst: bool) -> Value {
     json!({"scenario": if burst { "burst" } else { "paced" }, "subscribers": 32,
         "users": 8, "published": count, "expected_matching_copies": count * 4,
         "delivered_copies": delivered, "resync_closes": resync_closes,
-        "broadcast_capacity": capacity, "elapsed_seconds": start.elapsed().as_secs_f64()})
+        "owner_channel_capacity": capacity, "elapsed_seconds": start.elapsed().as_secs_f64()})
 }
 
 async fn stalled_reader() -> Value {
-    let (sender, _) = broadcast::channel(128);
+    let sender = UserFanout::new(128);
     let (_server, address, mut finished) = server(sender.clone()).await;
     let socket = TcpSocket::new_v4().unwrap();
     socket.set_recv_buffer_size(4096).unwrap();
@@ -152,7 +151,7 @@ async fn stalled_reader() -> Value {
     // close cannot satisfy this test; the real TCP send must time out and release its receiver.
     let payload = "x".repeat(256 * 1024);
     for index in 0..64 {
-        sender.send(event(0, index, &payload, false)).unwrap();
+        sender.publish(&event(0, index, &payload, false));
     }
     let seconds = tokio::time::timeout(Duration::from_secs(8), finished.recv())
         .await
@@ -167,10 +166,16 @@ async fn stalled_reader() -> Value {
         0,
         "the timed-out subscriber must be dropped"
     );
+    assert_eq!(
+        sender.active_owner_count(),
+        0,
+        "idle owner queue must be removed"
+    );
     drop(client);
     json!({"scenario": "stalled", "published": 64, "payload_bytes": 256 * 1024,
-        "requested_receive_buffer_bytes": 4096, "broadcast_capacity": 128,
-        "handler_seconds": seconds, "remaining_subscribers": sender.receiver_count()})
+        "requested_receive_buffer_bytes": 4096, "owner_channel_capacity": 128,
+        "handler_seconds": seconds, "remaining_subscribers": sender.receiver_count(),
+        "remaining_owner_queues": sender.active_owner_count()})
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 16)]

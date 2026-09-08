@@ -1,9 +1,9 @@
 use std::{future::Future, time::Duration};
 
 use axum::extract::ws::{CloseFrame, Message, WebSocket};
-use tokio::sync::broadcast::{error::RecvError, Receiver};
+use tokio::sync::broadcast::error::RecvError;
 
-use crate::models::event::Event;
+use crate::services::event_bus::UserEventSubscription;
 
 const SEND_TIMEOUT: Duration = Duration::from_secs(5);
 const CLOSE_TIMEOUT: Duration = Duration::from_secs(1);
@@ -13,7 +13,7 @@ mod pressure_tests;
 
 pub(super) async fn handle_ws(
     mut socket: WebSocket,
-    mut receiver: Receiver<Event>,
+    mut receiver: UserEventSubscription,
     username: String,
 ) {
     loop {
@@ -35,18 +35,18 @@ pub(super) async fn handle_ws(
     }
 }
 
-async fn next_message(receiver: &mut Receiver<Event>, username: &str) -> Message {
+async fn next_message(receiver: &mut UserEventSubscription, username: &str) -> Message {
     loop {
         match receiver.recv().await {
             Ok(event) if event.username == username => {
-                return match serde_json::to_string(&event) {
+                return match event.json() {
                     Ok(text) => Message::Text(text.into()),
                     Err(_) => close(1011, "event serialization failed; reload /events"),
                 };
             }
             Ok(_) => continue,
-            // This channel is global, so its skipped count is not an owner-specific loss count.
-            // Never expose other users' traffic counts or silently resume after a possible gap.
+            // Only this owner's traffic can overrun the queue. Keep the existing recovery signal,
+            // without suggesting that a queue's skipped count is an exact durable-history gap.
             Err(RecvError::Lagged(_)) => {
                 return close(1013, "event stream lagged; reload /events");
             }
@@ -91,8 +91,9 @@ mod tests {
 
     #[tokio::test]
     async fn closed_channel_produces_a_normal_shutdown_close() {
-        let (sender, mut receiver) = tokio::sync::broadcast::channel::<Event>(1);
-        drop(sender);
+        let fanout = crate::services::event_bus::UserFanout::new(1);
+        let mut receiver = fanout.subscribe("alice");
+        drop(fanout);
         let Message::Close(Some(frame)) = next_message(&mut receiver, "alice").await else {
             panic!("expected a close frame");
         };

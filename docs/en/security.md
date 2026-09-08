@@ -27,6 +27,9 @@ they can perform privileged kernel observation and loading. Do not expose Engine
   CORS headers alone do not protect WebSocket connections. Native clients must send an allowed Origin.
   The existing `CYANREX_ALLOW_MISSING_ORIGIN` override also affects this endpoint; keep it disabled on
   a LAN unless its security tradeoff is explicitly accepted. See [Event Stream Recovery](event-stream.md).
+- Event live queues use the authenticated owner rather than a client-supplied identity, preventing
+  cross-owner queue eviction. Capacity is per active owner; this is not a global connection/memory quota
+  or a tenant-isolation boundary. The existing Origin/session policy and shared-kernel limits still apply.
 
 These measures reduce accidental exposure, but they do not make the privileged Engine a shared safe runtime.
 

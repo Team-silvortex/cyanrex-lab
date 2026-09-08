@@ -25,7 +25,7 @@ const metadata = {
   source_status: await command("git", ["status", "--porcelain", "--", "engine"]), source_sha256: {},
   rustc: await command("rustc", ["--version"]), cpu: os.cpus()[0]?.model, kernel: os.release(),
   tokio_workers: 16, build: "release test executable (cfg(test))", repeats: 3,
-  scope: "Real WebSocket handler with raw global broadcast and loopback TCP. No EventBus histories, DB, auth, browser, kernel, or Agent. Paced case is a delivery check, not maximum throughput.",
+  scope: "Real WebSocket handler with owner-scoped shared-event queues and loopback TCP. No EventBus histories, DB, auth, browser, kernel, or Agent. Capacity is per active owner, not global. Paced case is a delivery check, not maximum throughput.",
 };
 const sources = (await command("git", ["ls-files", "--cached", "--others", "--exclude-standard", "-z", "--", "engine/src", "engine/Cargo.toml", "engine/Cargo.lock"]))
   .split("\0").filter(Boolean).sort();

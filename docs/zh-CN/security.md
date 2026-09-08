@@ -25,6 +25,8 @@ Docker 配置需要访问宿主机或虚拟机的 eBPF、tracefs、BTF 和 bpffs
 - 携带会话的 `/ws/events` 握手也执行 Origin/Referer 来源策略；CORS 响应头本身不能保护
   WebSocket。原生客户端必须提供允许的 Origin。已有的 `CYANREX_ALLOW_MISSING_ORIGIN` 豁免
   也作用于此接口，局域网中应保持关闭，除非已明确接受风险。详见[事件流恢复](event-stream.md)。
+- 实时事件队列使用已认证会话的用户，不接受客户端指定身份，避免他人流量挤占订阅队列。
+  容量按活跃用户计算，并非全局连接/内存配额或租户隔离；原有来源、会话与共享内核限制仍适用。
 
 这些措施降低误暴露风险，但不能把特权 Engine 变成安全的共享执行平台。
 

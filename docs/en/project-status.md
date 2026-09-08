@@ -1,7 +1,7 @@
 # Project Status
 
 Snapshot date: **2026-09-08**
-Current release line: **0.3.4**
+Current release line: **0.3.5**
 
 This page is the capability-level progress baseline for Cyanrex Lab. It records what is usable now,
 what remains intentionally limited, and which decisions should drive the next development cycle.
@@ -14,11 +14,11 @@ The detailed trust boundaries and data flows remain in the [system architecture]
 | Identity and authorization | Operational | Argon2 passwords, TOTP, cookie sessions, CSRF origin checks, and admin/teacher/student route guards |
 | eBPF workbench | Operational | Monaco editing, local Clang diagnostics/completion, bpftool execution, Aya tracepoint execution, attachments, source probes, and kernel event streaming |
 | Learning workflow | Operational | Five assessed labs, persisted attempts, student progress, teacher overview, bounded source review, and student-visible teacher feedback |
-| Events and persistence | Operational | User-scoped event center, FIFO retention, bounded filtered reads, explicit WebSocket lag closure and recent-history recovery, PostgreSQL storage, and documented memory/file fallbacks |
+| Events and persistence | Operational | User-scoped event center and live queues, shared lazy event JSON, FIFO retention, bounded filtered reads, explicit WebSocket lag closure and recent-history recovery, PostgreSQL storage, and documented memory/file fallbacks |
 | Local Runner | Operational | Replaceable driver boundary, global/per-user leases, timeout handling, and explicit `shared_kernel` reporting |
 | Runner Agent | Operational for remote checks | Signed registration, heartbeat, leases, cancellation, probes, and isolated compile-only diagnostics; remote eBPF loading is not enabled |
 | Deployment and distribution | Operational | Docker, WSL2, native Linux, hardened optional compiler Agent, and offline package/install tooling |
-| Release traceability | `0.3.4` version metadata prepared; artifact acceptance/publication pending | Changelog/version sync, annotated-tag preflight, checksum-bound source/archive metadata, per-image Docker content IDs, exact-image installation, and native Rust evidence/candidate verification with safe non-overwriting extraction; `0.3.0` is an API baseline only, and this snapshot does not claim an accepted `0.3.4` artifact or published tag |
+| Release traceability | `0.3.5` version metadata prepared; artifact acceptance/publication pending | Changelog/version sync, annotated-tag preflight, checksum-bound source/archive metadata, per-image Docker content IDs, exact-image installation, and native Rust evidence/candidate verification with safe non-overwriting extraction; `0.3.0` is an API baseline only, and this snapshot does not claim an accepted `0.3.5` artifact or published tag |
 | Module catalog | Operational, state-only | Versioned v1 manifests are discovered and validated at startup; lifecycle is in memory and never executes directory code |
 | JavaScript SDK | Operational internal package | Typed ESM client with 57 generated non-Agent operationId calls, a 77-member additive namespace baseline and deprecation policy, explicit `/openapi` and `/operations` exports, browser/Node sessions, cancellation, downloads, typed errors, and package-consumer smoke coverage |
 | API contract | Operational internal contract | Generated OpenAPI 3.1 served at `/openapi.json`; route/access/SDK/model drift and breaking changes against the frozen `0.3.0` baseline fail the quality gate |
@@ -26,16 +26,16 @@ The detailed trust boundaries and data flows remain in the [system architecture]
 
 ## Verified Baseline
 
-The following checks passed on the snapshot date:
+The following working-tree checks passed on the snapshot date, including the increments recorded in 0.3.5 below:
 
-- Rust formatting and the locked Engine suite: 174 tests passed; 4 tests remain ignored in the default
-  gate (external PostgreSQL and Runner Agent integrations, plus two explicitly manual benchmarks).
+- Rust formatting and the locked Engine suite: 205 tests passed; 5 tests remain ignored in the default
+  gate (external PostgreSQL and Runner Agent integrations, plus three explicitly manual benchmarks).
 - Next.js production build: 17 statically generated routes with TypeScript validation.
 - Frontend regressions: 29 tests covering permissions, Terminal commands, teacher review/feedback, event
   recovery, performance hotspot logic, security headers, and macOS metadata cleanup; the SDK has 11 transport/operation
   regressions, a compile-time operation fixture, plus 3 package-manifest/import smoke checks.
 - File-length, version/changelog/course-copy sync, OpenAPI generation/route/access/model/compatibility checks
-  with 43 common tooling regressions, plus Runner Agent and distribution tooling checks.
+  with 45 common tooling regressions, plus Runner Agent and distribution tooling checks.
 - Production npm dependency audits and the RustSec audit passed, with no reported vulnerabilities.
 
 This local snapshot did not start the privileged Engine or run the destructive disposable-host offline
@@ -45,6 +45,67 @@ environment-level evidence and is not claimed by the local checks listed above. 
 can recheck v1/v2 schema, release metadata binding, event identity, and cleanup without kernel access;
 the repository verifier additionally checks the complete downloaded artifact and can manually extract
 only verified regular files without invoking `tar` or replacing an existing output.
+
+## Streaming local learning commits (2026-09-08, included in 0.3.5)
+
+- Local writes stream byte-compatible pretty JSON through a 64 KiB buffer on a blocking worker,
+  explicitly flush before rename, then publish memory. No full encoded-file buffer is allocated;
+  the complete file is still rewritten and source snapshots/SQL/HTTP/SDK contracts remain unchanged.
+- Admission is acquired before dispatch; one queued/running worker per store retains the write lock
+  after request cancellation through final publication. This fixes disk/memory divergence and stale
+  subsequent overwrites. Cancellation before handoff remains harmless; after handoff a save may finish
+  without a response, so reload before retrying. No append idempotency or crash/power-loss guarantee is added.
+- Added 9 Rust regressions covering cancellation before admission, blocking-pool queuing, cancellation
+  after rename for append/feedback, failed detached commits, streaming, exact bytes, interrupted/partial
+  writes and flush failures. The full security-enabled quality gate passed.
+- A fresh 72-run paired disk matrix compares with the preceding snapshot optimization, not the clean
+  release. At 50,000 rows / 1,112-byte source, write mean was 144.6 → 111.3 ms and p95 152.5 → 122.1 ms.
+  At 10,000 rows, whole-process write peak RSS fell 63.2 → 39.2 MiB. Small-write mean/p50 and some unchanged
+  read controls regressed; large-source disk tails varied widely, so this is not a uniform speedup claim.
+- Source-bound raw measurements are in `reports/benchmarks/2026-09-08-learning-streaming-writes`, with
+  a separate 72-run tmpfs control. See [Learning Record Storage](learning-storage.md) for cancellation,
+  retry and shutdown behavior. Fsync, recovery logs, incremental persistence and cross-process coordination
+  remain future work. Benchmark source/version fingerprints remain unchanged by the patch bump and are
+  not release-artifact acceptance evidence.
+
+## LearningStore snapshots and queries (2026-09-08, included in 0.3.5)
+
+- Local readers share immutable snapshots. Recent review selects bounded references before copying
+  response records; progress and teacher overview aggregate in one pass without cloning submitted source.
+  Appends copy the pointer index; feedback additionally copies only the edited record, preserving old readers.
+- Added 12 Rust regressions and 2 benchmark-ordering regressions; the full security-enabled gate passed.
+  Plain pretty JSON, legacy records, SQL queries, authorization, revision conflicts and response schemas
+  remain compatible. Write/rename failure, concurrent updates and reload behavior have regression coverage.
+- In a corrected-order 72-run disk comparison, 50,000 records with 1,112-byte source reduced recent-20
+  p95 from 1.744 to 0.220 ms and teacher overview from 41.907 to 4.446 ms; write-process peak RSS fell
+  from 296.3 to 180.1 MiB. These are warm local-service measurements, not HTTP or classroom capacity.
+- Disk writes are not uniformly faster: 50,000 records with 4,184-byte source increased mean write
+  latency by 28%. A separate 72-run tmpfs control improved writes but does not establish durable-disk
+  performance. The initial 72-run ordering-defect dataset is retained separately, not merged or replaced.
+- This measurement stage still used a complete encoded-file buffer and cancellable rename/publication;
+  the follow-up above replaces those mechanisms without rewriting these historical measurements.
+  Whole-file replacement, unbounded resident records, pointer-index copying and old reader snapshots
+  remain, without new fsync, recovery logs or cross-process coordination.
+- See [Learning Record Storage](learning-storage.md) and
+  `reports/benchmarks/2026-09-08-learning-snapshots-final` for evidence and remaining limits.
+
+## Owner-scoped event distribution (2026-09-08, included in 0.3.5)
+
+- `/ws/events` uses the authenticated owner's bounded live queue. Another user's burst cannot evict
+  this owner's pending events; own-overload closure, authentication/Origin checks and raw JSON remain
+  compatible. The global EventBus service subscription API remains available.
+- Same-owner connections share immutable events and one lazy JSON encoding. Last-connection drop or
+  cancellation removes the queue, with generation-safe cleanup during simultaneous reconnections.
+- Added 10 regressions and passed the full security-enabled quality gate. A final 30-run release-mode
+  experiment (24 current-path comparisons and 6 no-subscriber binary controls) found 24–64% higher
+  one-owner and 40–56% higher eight-owner service/frame-construction throughput at equal matching
+  output. Nine separate real-loopback checks preserved delivery, explicit overload and five-second
+  stalled-peer cleanup. The regressing uncached prototype's evidence is retained, not overwritten.
+- These are local synthetic results, not LAN/kernel or release acceptance. Queue capacity is per active
+  owner; aggregate memory and cached JSON costs grow with active owners/payloads. Shared locks,
+  persistence and CPU remain shared; global admission limits and durable replay are not implemented.
+- Details and reproducible commands are in [Event Stream Recovery](event-stream.md); measurements are
+  under `reports/benchmarks/2026-09-08-owner-fanout-final` and `2026-09-08-owner-event-stream`.
 
 ## Event performance and recovery (2026-09-08, included in 0.3.4)
 
@@ -56,7 +117,8 @@ only verified regular files without invoking `tar` or replacing an existing outp
 - Cookie-authenticated WebSocket handshakes also enforce the Origin/Referer policy; native clients must
   supply an allowed source. See [Event Stream Recovery](event-stream.md) for compatibility and limits.
 - Separately verified nine real loopback pressure runs and a production-page Chromium smoke with mock
-  HTTP/WebSocket fixtures. Global broadcast fan-out and durable cursor-based replay remain future work.
+  HTTP/WebSocket fixtures. Those 0.3.4 measurements used global broadcast; the 0.3.5 increment above
+  adds owner-scoped distribution. Durable cursor-based replay remains future work.
 - Fixed Docker build input coverage and bounded retry handling for transient npm audit failures.
 
 ## Teaching mainline update (2026-09-05, included in 0.3.3)

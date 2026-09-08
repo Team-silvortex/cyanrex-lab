@@ -239,14 +239,14 @@ Run security audit directly:
 Build a distribution package:
 
 ```bash
-./scripts/package-distribution.sh --version 0.3.4
-./scripts/package-distribution.sh --version 0.3.4 --compose-template docker/docker-compose.yml   # custom compose if needed
+./scripts/package-distribution.sh --version 0.3.5
+./scripts/package-distribution.sh --version 0.3.5 --compose-template docker/docker-compose.yml   # custom compose if needed
 ```
 
 If you already have local images (for example CI or private registry preloads), package without rebuilding:
 
 ```bash
-./scripts/package-distribution.sh --skip-build --engine-image myrepo/cyanrex-engine:0.3.4 --frontend-image myrepo/cyanrex-frontend:0.3.4
+./scripts/package-distribution.sh --skip-build --engine-image myrepo/cyanrex-engine:0.3.5 --frontend-image myrepo/cyanrex-frontend:0.3.5
 ```
 
 Packaging also honors `ENGINE_RUST_IMAGE`, `ENGINE_DEBIAN_IMAGE`, `ENGINE_APT_MIRROR`,
@@ -281,10 +281,10 @@ Verify a complete downloaded Tag candidate before extraction (use a directory co
 archive, its checksum, the live-kernel report, and its checksum):
 
 ```bash
-release_revision="$(git rev-list -n 1 v0.3.4)"
+release_revision="$(git rev-list -n 1 v0.3.5)"
 cargo run --quiet --manifest-path engine/Cargo.toml --locked --bin cyanrex-release -- \
   candidate verify /path/to/downloaded-candidate \
-  --expect-version 0.3.4 --expect-revision "$release_revision" --expect-tag v0.3.4 \
+  --expect-version 0.3.5 --expect-revision "$release_revision" --expect-tag v0.3.5 \
   --extract-to /path/to/new-output-directory
 ```
 

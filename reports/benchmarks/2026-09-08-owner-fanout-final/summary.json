@@ -1,0 +1,342 @@
+[
+  {
+    "case": "1u-128b-global",
+    "metrics": {
+      "result.throughput": {
+        "median": 115562.27070790302,
+        "min": 113901.2632434114,
+        "max": 117345.03863653603
+      },
+      "result.publish.p95_us": {
+        "median": 383.234,
+        "min": 359.359,
+        "max": 424.391
+      },
+      "result.complete_seconds": {
+        "median": 2.07680239,
+        "min": 2.045250509,
+        "max": 2.107088132
+      },
+      "resource.user_seconds": {
+        "median": 14.53,
+        "min": 14.43,
+        "max": 14.57
+      },
+      "resource.system_seconds": {
+        "median": 3.34,
+        "min": 3.34,
+        "max": 3.55
+      },
+      "resource.max_rss_kib": {
+        "median": 53328,
+        "min": 51008,
+        "max": 53672
+      }
+    }
+  },
+  {
+    "case": "1u-128b-owner",
+    "metrics": {
+      "result.throughput": {
+        "median": 143166.84820063945,
+        "min": 142433.28530850905,
+        "max": 143208.28881412782
+      },
+      "result.publish.p95_us": {
+        "median": 266.877,
+        "min": 266.477,
+        "max": 266.878
+      },
+      "result.complete_seconds": {
+        "median": 1.676365744,
+        "min": 1.675880649,
+        "max": 1.684999398
+      },
+      "resource.user_seconds": {
+        "median": 5.14,
+        "min": 4.95,
+        "max": 5.17
+      },
+      "resource.system_seconds": {
+        "median": 3.13,
+        "min": 3.06,
+        "max": 3.31
+      },
+      "resource.max_rss_kib": {
+        "median": 60036,
+        "min": 59700,
+        "max": 61452
+      }
+    }
+  },
+  {
+    "case": "1u-4096b-global",
+    "metrics": {
+      "result.throughput": {
+        "median": 70627.11479376779,
+        "min": 69271.42578952934,
+        "max": 71199.13209824354
+      },
+      "result.publish.p95_us": {
+        "median": 609.616,
+        "min": 592.755,
+        "max": 638.169
+      },
+      "result.complete_seconds": {
+        "median": 3.398128335,
+        "min": 3.3708276059999998,
+        "max": 3.464632022
+      },
+      "resource.user_seconds": {
+        "median": 42.75,
+        "min": 42.55,
+        "max": 42.88
+      },
+      "resource.system_seconds": {
+        "median": 1.59,
+        "min": 1.55,
+        "max": 2.32
+      },
+      "resource.max_rss_kib": {
+        "median": 429296,
+        "min": 329076,
+        "max": 451572
+      }
+    }
+  },
+  {
+    "case": "1u-4096b-owner",
+    "metrics": {
+      "result.throughput": {
+        "median": 115553.46432887475,
+        "min": 113408.09178047311,
+        "max": 121495.22650494544
+      },
+      "result.publish.p95_us": {
+        "median": 500.332,
+        "min": 454.538,
+        "max": 533.073
+      },
+      "result.complete_seconds": {
+        "median": 2.076960664,
+        "min": 1.975386251,
+        "max": 2.116251109
+      },
+      "resource.user_seconds": {
+        "median": 9.21,
+        "min": 9.16,
+        "max": 9.21
+      },
+      "resource.system_seconds": {
+        "median": 6.99,
+        "min": 6.46,
+        "max": 7.37
+      },
+      "resource.max_rss_kib": {
+        "median": 446328,
+        "min": 310516,
+        "max": 503320
+      }
+    }
+  },
+  {
+    "case": "8u-128b-global",
+    "metrics": {
+      "result.throughput": {
+        "median": 156513.91108717176,
+        "min": 153955.0170177129,
+        "max": 158210.71674278792
+      },
+      "result.publish.p95_us": {
+        "median": 264.663,
+        "min": 263.641,
+        "max": 265.114
+      },
+      "result.complete_seconds": {
+        "median": 1.533410023,
+        "min": 1.516964242,
+        "max": 1.558896908
+      },
+      "resource.user_seconds": {
+        "median": 8.45,
+        "min": 8.16,
+        "max": 8.74
+      },
+      "resource.system_seconds": {
+        "median": 4.46,
+        "min": 3.99,
+        "max": 4.53
+      },
+      "resource.max_rss_kib": {
+        "median": 58264,
+        "min": 57892,
+        "max": 58732
+      }
+    }
+  },
+  {
+    "case": "8u-128b-owner",
+    "metrics": {
+      "result.throughput": {
+        "median": 244925.86148770823,
+        "min": 239933.49115605204,
+        "max": 245984.2154388795
+      },
+      "result.publish.p95_us": {
+        "median": 157.103,
+        "min": 155.851,
+        "max": 167.553
+      },
+      "result.complete_seconds": {
+        "median": 0.979888357,
+        "min": 0.97567236,
+        "max": 1.000277197
+      },
+      "resource.user_seconds": {
+        "median": 1.72,
+        "min": 1.69,
+        "max": 1.76
+      },
+      "resource.system_seconds": {
+        "median": 1.04,
+        "min": 1.01,
+        "max": 1.1
+      },
+      "resource.max_rss_kib": {
+        "median": 123092,
+        "min": 122616,
+        "max": 123768
+      }
+    }
+  },
+  {
+    "case": "8u-4096b-global",
+    "metrics": {
+      "result.throughput": {
+        "median": 115791.5305379218,
+        "min": 114543.75906612957,
+        "max": 116597.33835890664
+      },
+      "result.publish.p95_us": {
+        "median": 338.661,
+        "min": 336.106,
+        "max": 345.654
+      },
+      "result.complete_seconds": {
+        "median": 2.072690454,
+        "min": 2.058366026,
+        "max": 2.095269109
+      },
+      "resource.user_seconds": {
+        "median": 14.19,
+        "min": 13.96,
+        "max": 14.23
+      },
+      "resource.system_seconds": {
+        "median": 7.17,
+        "min": 7,
+        "max": 7.29
+      },
+      "resource.max_rss_kib": {
+        "median": 93788,
+        "min": 93384,
+        "max": 94412
+      }
+    }
+  },
+  {
+    "case": "8u-4096b-owner",
+    "metrics": {
+      "result.throughput": {
+        "median": 162445.5892137033,
+        "min": 161928.9161407758,
+        "max": 163453.2359801501
+      },
+      "result.publish.p95_us": {
+        "median": 244.897,
+        "min": 243.874,
+        "max": 245.508
+      },
+      "result.complete_seconds": {
+        "median": 1.477417769,
+        "min": 1.468309872,
+        "max": 1.482131825
+      },
+      "resource.user_seconds": {
+        "median": 3.87,
+        "min": 3.83,
+        "max": 3.93
+      },
+      "resource.system_seconds": {
+        "median": 2.2,
+        "min": 2.19,
+        "max": 2.29
+      },
+      "resource.max_rss_kib": {
+        "median": 168680,
+        "min": 166740,
+        "max": 170752
+      }
+    }
+  },
+  {
+    "case": "control-before",
+    "metrics": {
+      "result.throughput": {
+        "median": 640523.9303328908,
+        "min": 590235.8887674934,
+        "max": 660656.585183272
+      },
+      "result.publish.p95_us": {
+        "median": 69.039,
+        "min": 67.997,
+        "max": 76.743
+      },
+      "resource.user_seconds": {
+        "median": 3.62,
+        "min": 3.49,
+        "max": 3.93
+      },
+      "resource.system_seconds": {
+        "median": 1.07,
+        "min": 1.02,
+        "max": 1.09
+      },
+      "resource.max_rss_kib": {
+        "median": 28416,
+        "min": 28056,
+        "max": 28472
+      }
+    }
+  },
+  {
+    "case": "control-after",
+    "metrics": {
+      "result.throughput": {
+        "median": 707585.4291557353,
+        "min": 688363.0307399646,
+        "max": 709558.4972133718
+      },
+      "result.publish.p95_us": {
+        "median": 60.382,
+        "min": 60.112,
+        "max": 63.137
+      },
+      "resource.user_seconds": {
+        "median": 3.17,
+        "min": 3.16,
+        "max": 3.32
+      },
+      "resource.system_seconds": {
+        "median": 1.22,
+        "min": 1.15,
+        "max": 1.24
+      },
+      "resource.max_rss_kib": {
+        "median": 28224,
+        "min": 28204,
+        "max": 28488
+      }
+    }
+  }
+]

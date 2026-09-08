@@ -1,0 +1,293 @@
+{
+  "started_at": "2026-09-08T11:25:22.438Z",
+  "complete": true,
+  "source_commit": "5fa774110a50e8835422402014182827c21d3044",
+  "source_status": "M engine/src/routes/events.rs\n M engine/src/routes/events/stream.rs\n M engine/src/routes/events/stream/pressure_tests.rs\n M engine/src/services/event_bus.rs\n M engine/src/services/learning_store.rs\n M engine/src/services/learning_store/feedback.rs\n M engine/tests/routes_tdd/events_ws.inc.rs\n?? engine/src/services/event_bus/subscriptions.rs\n?? engine/src/services/event_bus/subscriptions/\n?? engine/src/services/learning_store/queries.rs\n?? engine/src/services/learning_store/queries_tests.rs\n?? engine/src/services/learning_store/snapshot_tests.rs",
+  "source_sha256": {
+    "engine/Cargo.lock": "a890a833b9748930eeb9f4144cd592832251b7c8f9dce6cd5a6e41f930df5ba2",
+    "engine/Cargo.toml": "57c480d32d15e8a172dabde3fb7489b471766b24bc375497c8cc0fb249961251",
+    "engine/examples/mainline_bench.rs": "5c7d2028737123d6f2aafc1a951e1c42d66e82c3a015ae74901ba738e6a63111",
+    "engine/src/application.rs": "17b7e7d257cab3eda2d8fb74842209405a444e9121779e05a16de0e0203aa07c",
+    "engine/src/bin/cyanrex-release/arguments.rs": "931a4baf2a2c0cd256e1974de7616dec1245be6bb404ff7f02287635fb5b1355",
+    "engine/src/bin/cyanrex-release/candidate.rs": "fe63a5d861421d9dc2bc657e0ffb113894e9054bceec7464125674c5e5106e27",
+    "engine/src/bin/cyanrex-release/candidate_cli.rs": "8c41d67755a6fc39b3d4e64baf40b362092a5dc65fb457a337dc56cc5e01d6ff",
+    "engine/src/bin/cyanrex-release/evidence.rs": "d00cf0e2588a66f899f4fdbe453a21ff534a184c3968adce6ebac9879a32c7c4",
+    "engine/src/bin/cyanrex-release/evidence_cli.rs": "11ec66249b0a7455fff891c1392ef8b797a31df1c85bb59ec51ce0b141d0f091",
+    "engine/src/bin/cyanrex-release/evidence_output.rs": "9feeb69ebd3b7db2e976c954ea5491681696cd9a658f8a5aed1bda000ddc4d84",
+    "engine/src/bin/cyanrex-release/installed_images.rs": "1b9761611b857471e71395c2ca54011a071bc8ffd8bd68e72c08e2007a6fd792",
+    "engine/src/bin/cyanrex-release/installed_package.rs": "754e359a6310e92f9d1973e198c6aecc217e364bd8fa84503c445ba4ffdc6d2d",
+    "engine/src/bin/cyanrex-release/main.rs": "b81c575d1893f90b7bad52d6d65629ce081d9d116e109786d3e8355ad65e2cb2",
+    "engine/src/bin/cyanrex-release/package.rs": "d55eb37c6285c9e4fa7c0ffa2260acff917499c4db6e602244507f22aee18d46",
+    "engine/src/bin/cyanrex-release/package_cli.rs": "70991eb9b199412bacf2b06c05e2e2ce330b88568c7d1d204e8f38b0bc17c8e8",
+    "engine/src/bin/cyanrex-release/release_archive.rs": "d99800607e97ae59f7a6bb08b24fc58604bf48700301e3c45c6cae2c06e77281",
+    "engine/src/bin/cyanrex-release/release_metadata.rs": "27de9b77f294617712f9df4d9e050b4adfcc3b98fd1402cdc6cd6492c0fcd668",
+    "engine/src/bin/cyanrex-release/smoke_cli.rs": "1d71a1c1e2c7de24b82287c43f26585b5daf743cebbf972e341fcc3d51221347",
+    "engine/src/bin/cyanrex-release/smoke_health.rs": "d8f835b87850525df1cd00a0b272c8dd21b23799a8b2677891a32b58b2af67d3",
+    "engine/src/bin/cyanrex-release/smoke_http.rs": "9f452c794b2b68b3a85f1c86339b1026023e370ceef1cad0e0badaafb770bd08",
+    "engine/src/bin/cyanrex-release/smoke_live_kernel.rs": "cb29c9cc5aefd91cefe62c34692ff9f9750fa493d313d6c567f11de9342d2703",
+    "engine/src/bin/cyanrex-release/smoke_live_kernel_tests.rs": "c83bdc14b47e177dfcda40177cd24d399c8997eecaf96394507f6a80e8c0f9dd",
+    "engine/src/bin/cyanrex-release/smoke_runner_agent.rs": "baf0ba5544cebd377661c24a08a0b97ba5e004756b5e9fa64cdb1c0c21c8e4a0",
+    "engine/src/bin/cyanrex-release/smoke_runner_agent_tests.rs": "ac7689a0f963f86d48cafb30d4b6891e82399acc19dc00572425d20bff1f198f",
+    "engine/src/bin/cyanrex-release/strict_json.rs": "e28e50bd7981025df5a57ae332ac40fadda3f3c024a47da20a1bdb7798bdeed0",
+    "engine/src/bin/cyanrex-runner-agent.rs": "009cb4d1115fb3c85dff91d861c0d7641cd19c697aa5b6cae3e794c18e493b95",
+    "engine/src/bin/event_bus_bench.rs": "7fb6fd0606ab9fb549e2027a91683348ab3c55371f4f21059494d26f52e5a63a",
+    "engine/src/config.rs": "3ef33b88b9f0114686c76497bb8b7e51dfb0fa822a5b109416a0c00e87ac2ff7",
+    "engine/src/lib.rs": "8a6c2fa8348fd7ef7a50cd0475489aedbd698c4b9204a5737539b43d4428b103",
+    "engine/src/main.rs": "fe3568f1aec48427c49b5eb9ca01befde529d1a8ee6ae6f13e52937639d873f7",
+    "engine/src/metrics.rs": "3e122ade545fb79865ce74ffc035881abe84ee29ac85c68b737b91c0f6438b7b",
+    "engine/src/models/auth.rs": "488b69175159bf5b64b05f333a5ba791f274c88af7aef86711f336ec012d4655",
+    "engine/src/models/c_headers.rs": "1919215bec31c8ed42a3772302e0ede7678903207128ded4c8db717393be618f",
+    "engine/src/models/command.rs": "e122e2a9e29531cb6528a7810a179f58a7954d39981d256d595be8d73642830b",
+    "engine/src/models/ebpf.rs": "6d955c464b5c2c524c6e98ea1bc3ec02f4c65af09312f5b0149c5e324cf94c81",
+    "engine/src/models/environment.rs": "c5e40162c284582630030510ad8ab0f2ddde1580cff3b51fb2253b8771484ab5",
+    "engine/src/models/event.rs": "0ce592f95cf821cc032ee9aeb3fc890a166e4a15402320253271266c2da7856d",
+    "engine/src/models/learning.rs": "6c8b132fdd338b9bdac636526a081e786416b970a1f0b880c774b2c20f9abd74",
+    "engine/src/models/mod.rs": "cb7e126806e8276f25b813a94622cf8d614b74191a2689390ecc8071ff4abc31",
+    "engine/src/models/module.rs": "f52d2604a5bbdbb139c5c4efeb962fa506f7c65eb652cec257cc8ac28596d749",
+    "engine/src/models/runner.rs": "daf74eb0a2fc3e27c9325224f270663d9492e74815a44f279ea598363c0f7815",
+    "engine/src/models/runner_agent.rs": "24a14ccd35cd38e134faf2b67883f44e30a7ee26aa8f20af6de7fe0d2f3d75d3",
+    "engine/src/models/runner_job.rs": "96680eea353e8d498d2d7653a3827c44f4982156c748cec0cf60be514309d618",
+    "engine/src/models/script.rs": "b029941611d44b36ec18092e6f7010287926f07853b3b9b96d4b94cceeb2e8fd",
+    "engine/src/models/settings.rs": "ef238e72f582e9ad4ef08a43f11763b6aefc5e91198f216affcd10b9a5c4c530",
+    "engine/src/routes/auth.rs": "cffdb33830809008c0928ee14f16e58fbfa8f69fe029dcf7a2c6629da30b6be3",
+    "engine/src/routes/auth_session.rs": "7619476a8619575deb46686eb91402864077b579dd8a9de359ebde014565cccb",
+    "engine/src/routes/c_headers.rs": "89b2c584349f0a5313c75f3a7b2b2ddffdbac2abe5c034171fd923632b60f87d",
+    "engine/src/routes/command.rs": "845685c4edf1bd7aff0f8317fb663141e137d9aefeba409daf0d482a2afe0aef",
+    "engine/src/routes/ebpf.rs": "5374f873c65f5e6e46d3e741785b11d681e9fb415d34746bbd8a92f6ab0aca8a",
+    "engine/src/routes/ebpf/attachments.inc.rs": "e70184ac3a9e36f7d563380146b3feebea0a2f483b01a9b32e23c9a93f52b32c",
+    "engine/src/routes/ebpf/check.inc.rs": "240e4e9f1ad74f225de255160867778804e3a18fc95daeabc639d6b8328ebb59",
+    "engine/src/routes/ebpf/compiler.inc.rs": "a5cb8c339d297e10018b6a14f81adc9a1c09c757a4c204b98d9041bbc8e9a84c",
+    "engine/src/routes/ebpf/completion.inc.rs": "8515a5b267ee7f581e569b9e7c969369f49fb929b1009d552971a2300c488591",
+    "engine/src/routes/ebpf/handlers.inc.rs": "b577626b2ecc39f6a57c2c731e06d66a03ec9335060bd17344f5f42740479ead",
+    "engine/src/routes/ebpf/learning.inc.rs": "59547ed1150558e0e1351c0672dbe970a3f858a037508cc8a6d38dff2becdd45",
+    "engine/src/routes/ebpf/remote_check.inc.rs": "cf3f4672a41a0b893913780b7635bcc92f1192c373d894ee25911d1ca1157dc1",
+    "engine/src/routes/ebpf/ringbuf.inc.rs": "0a985bc16b741e72d300ebcb85f59bacf541e683e9af6942361c526968e6e974",
+    "engine/src/routes/ebpf/stream.inc.rs": "698f45e962f54bfd6f2218f323282032afa919bafdcc8c62cad778c9ea3e90f0",
+    "engine/src/routes/ebpf/template_catalog.inc.rs": "2604d1faf4792b47254153ff71949bd4fdfd628e5f8c34163a7acdd7d7a4f633",
+    "engine/src/routes/ebpf/template_utils.inc.rs": "60e225290baec0d2b84638a0a45972fffb231ef778badbe58aca224825e33721",
+    "engine/src/routes/ebpf/templates.inc.rs": "87c210b5de28734723b1c8d37ad68e7272dcc1057f1e30b537712c374465d6ca",
+    "engine/src/routes/ebpf/templates_learning.inc.rs": "efced0cace7cce9de468416a1faf65959443f8e345c1deef69a76d5b9bc25de9",
+    "engine/src/routes/ebpf/templates_learning_plus.inc.rs": "66bf02452460bd3782644968a6e9d7c57d40d11b83b4c7b7405ae7bfd2b71839",
+    "engine/src/routes/ebpf/templates_learning_plus2.inc.rs": "4f20e1c89bac510f32c9b11a9f6a0d24f3e31f0d3d6dee7b353b65837531683c",
+    "engine/src/routes/ebpf/templates_learning_plus3.inc.rs": "fc93e1d5221fcf12cd54e95b8d95961cf78fa764c9fee6ff5cfbf832594a0792",
+    "engine/src/routes/ebpf/templates_more.inc.rs": "17f1640a1b1adb4a0d46f7cf5f1eb7be63add9b5d84136cdcb0b7279f52a17ef",
+    "engine/src/routes/events.rs": "763d8e176ab99c063a7f02eec4cb89249ccc609f0782d1558cf7124b46aaf348",
+    "engine/src/routes/events/stream.rs": "9aae8b53ce4d1ed51f7d989b36016e802f91eaf48a9ab3a16971d4c6e99ad249",
+    "engine/src/routes/events/stream/pressure_tests.rs": "609de22a2ec419be3da89b73097e28dd06f9d753de09efa06c3ab1536a0cd6e7",
+    "engine/src/routes/health.rs": "bac8661f9a27af93f6d55c10461cc5a1c40448c5fd13fd6d132669470f8053dd",
+    "engine/src/routes/helper.rs": "6039c107714f9a01e27c344ad41a548ea5ae895c18001a2a824f0d777357df4d",
+    "engine/src/routes/index.rs": "629a95e8dff04cab83b16d76e488928b35cffbcd643a6afdc6b304416e38cb08",
+    "engine/src/routes/learning.rs": "79a8b7771de2ac1df54d340b736586009029b351041836de704882fdc984ec71",
+    "engine/src/routes/mod.rs": "1cc931379c0aefee7a9768cdcbbfaf1e38ab42def5818bb7fa0eb10fd7d86324",
+    "engine/src/routes/modules.rs": "8d685f9ee8fd748c3d50cce66f1c33fa7b3615c9a71440bb60563ece9c09a684",
+    "engine/src/routes/openapi.rs": "7da4b2b2d31391549c77dcd662a2f3c0c339dd32d370e2ad0e878557c0666bae",
+    "engine/src/routes/runner.rs": "6e8826c3a6755124edd9118f8348cebe1a6e13884a5ad1e882029325fff2a55c",
+    "engine/src/routes/runner_agent.rs": "473fe3286ca29c7d36bdbc4ec9fac386a33b71dbdbe0ee76688a0f668182a2ba",
+    "engine/src/routes/runner_job.rs": "a4625416ab6fa0d55eff85e67a94ee0c652c2e936d91b537a39b31114e23eb7c",
+    "engine/src/routes/scripts.rs": "b34bca96acc087657b55f8d6941f5f442ece2f044a8be5573d26b4d0b6b9d55e",
+    "engine/src/routes/settings.rs": "9e74f5d88ac45c215257c0e892bded4f1e7592300d171eee4f993eb962c219b9",
+    "engine/src/services/auth_service.rs": "36a11404d3720e5257035d8dc556cb214e1679646bc633a73447e47efa14a544",
+    "engine/src/services/auth_service/crypto.inc.rs": "dab5e77e1b9d56c11b57ace51cd64accf0bed830330a4c001a78a4c58712c6b4",
+    "engine/src/services/auth_service/service.inc.rs": "f25c948f9a83c56a374b70496fdd96845fdddf6665a6c63f8e509399c050a5b1",
+    "engine/src/services/c_header_module.rs": "d6a110dc943ffcfd09f5d13318fbd264ab1496f4f8ea20eec47c41fdc8c306a9",
+    "engine/src/services/command_dispatcher.rs": "7faae85b6ee916c89ac92682f24e6d528cb908ec675c13031d0fb8861d9c1a12",
+    "engine/src/services/ebpf_loader.rs": "287bb03216cced13c17aa73c41090033f8dbf44a71081324f4d2a696e429ca58",
+    "engine/src/services/ebpf_loader/attach.inc.rs": "3b5476009d7824470882832dca9d77aeb152df88f80920638b07f3f73a42ffad",
+    "engine/src/services/ebpf_loader/aya.inc.rs": "9a2b95c5f25e3c5969788417e5184a416e33feac0207ee9a908921580c943c6c",
+    "engine/src/services/ebpf_loader/check.inc.rs": "faeccc6d86fd6ef03bc7688ebc0237a683fcbeb347891d6843e08dc6148a3020",
+    "engine/src/services/ebpf_loader/compiler_scope_tests.rs": "31376b7c10a6fbe1089ac9b77dffa5a72ca6e8334f0b2da5420e081a85a6fbb9",
+    "engine/src/services/ebpf_loader/compiler_workspace.rs": "f044397161d5e7d94947765182317aa825e502be7ee92bc51b900314a61407b9",
+    "engine/src/services/ebpf_loader/completion.inc.rs": "9dcfcd189ad864abb9d010366ed0086b970bb8867a2310eb967a0343e49e3b5f",
+    "engine/src/services/ebpf_loader/core.inc.rs": "922ad9c8378accb48710e31f6e9330f36ce65ea1b31c5ad4f14558270839b1ad",
+    "engine/src/services/ebpf_loader/debug.inc.rs": "f9ed8f7e6aa5ff04b88f3c894b275ced75c6fbea43830159420f6b5ffb076bd9",
+    "engine/src/services/environment_checker.rs": "1390648ebb9c5be2e9c59abc3b7e3bea9772491e32d9c9cab6b4626cbe5cfd99",
+    "engine/src/services/event_bus.rs": "43e6d8a513130d51f291d83904c9b8cc54519c3383aa225ca7a6f5957b74e6b6",
+    "engine/src/services/event_bus/event_bus_schema.rs": "a14ae75c4550393d30fc121c2da5074413e83f2225246bed60b1e51305d2c534",
+    "engine/src/services/event_bus/read_bench.rs": "0f46a23407f0854f108a9bdb15668ab832ea1470253f1fb5b6f69ba4e0016da5",
+    "engine/src/services/event_bus/subscriptions.rs": "bd6117829bfc70c9d38b26e4f370b720cb119b4b2fe7478a2976672063bff77f",
+    "engine/src/services/event_bus/subscriptions/bench.rs": "9557b8fa968417ea2d5703373736248346c6070f4240e7eb28c3414b8ce1eae6",
+    "engine/src/services/event_bus/subscriptions/tests.rs": "67d5517c754a501e24f191e661a1462aed3c2831294377a519eb1bb279386478",
+    "engine/src/services/event_bus/tests.rs": "7e1d102bb7b16e3c2fbbae6dd5331a868f7d41887ccb89ec36a641bb767dd10b",
+    "engine/src/services/event_bus_codec.rs": "893318d95728fdaa70a4937ded4e870bb72b28d5d7afa4f873fac90da572e415",
+    "engine/src/services/event_bus_db.rs": "5d7d880607766cbbc7aeb3be15ddfe5e61005b8d7be8496a84fb169d2e83d356",
+    "engine/src/services/event_bus_db_config.rs": "d22cc5bfc284551ecdc1863ae6a015af10f7b0adf14971a027083fbc8d8af624",
+    "engine/src/services/event_bus_db_parser.rs": "6ecdc52321f593a94345b326ebef41c8bff7e90353dc726fd61e34032e9fa571",
+    "engine/src/services/event_bus_filter.rs": "15e40dcd20346057cc91b0ad14f4e54f6c81549cfa8f5cd26cf565ac612543de",
+    "engine/src/services/event_bus_policy.rs": "30c68c0c01291a32b58fed774a2735096c3158a3a6ec8ad32f6a7675c64b7722",
+    "engine/src/services/learning_catalog.rs": "efc90f4b4578677ede9d66c643911c9eface21b5cbac15329a046a67a1ff5f89",
+    "engine/src/services/learning_source.rs": "caff53596dc6d81b80d2bee0dc964f5f4b87253f8ce9be53429b17d2f8b9a669",
+    "engine/src/services/learning_store.rs": "c7a477f0534b41496d293bc1a5a0ed8365b07f0dc39ac8684360976229dedfa8",
+    "engine/src/services/learning_store/feedback.rs": "8aa6752214851143508f9f9a6002d90a7b3cb216338901a5f4c9216eb5f78dcc",
+    "engine/src/services/learning_store/feedback_tests.rs": "0ba62bcf0c1b99e9144fccc2a8440a738c54bb6ff5e6731801bee064bdfd251d",
+    "engine/src/services/learning_store/queries.rs": "60501c66f6a5ba0a5489058f9b979cca32ad977cc339c16990cb84b047378412",
+    "engine/src/services/learning_store/queries_tests.rs": "3fc84500a4ea49f450d087b2ac568f593fec67ea299b6b7c61aadf531327672a",
+    "engine/src/services/learning_store/snapshot_tests.rs": "06dcf3ff4f0eaa524eeff7e7520eb9e71e79863cd4bb1fbbc3abf173db448d1c",
+    "engine/src/services/mod.rs": "17727813b8a7f94e3873e2883e5b14ef24b34c642eaa27918454aab52cf60c52",
+    "engine/src/services/module_manager.rs": "712be5f47f168f8d9dfadb22ec2869d56702c7e0d517fcdbc34ab83645e08edb",
+    "engine/src/services/runner_agent_authenticator.rs": "99ffb35e5609f608b9aad407b654d921b399ab252474f855a398884af459484b",
+    "engine/src/services/runner_agent_client.rs": "c47859ad981b4cd2b9a97f29e3fd378b76149fd3f466c653c907d9385c1f636b",
+    "engine/src/services/runner_agent_client/tests.inc.rs": "819f26a83384616738f887676ddf80fdd2531b7a8ec28777ad712c11a8a4194a",
+    "engine/src/services/runner_agent_executor.rs": "2efdf630d1dc50c68375f71b76df971114b0e7cad933739ab8e7c3e52f5cc5a7",
+    "engine/src/services/runner_agent_executor/tests.inc.rs": "76253abb9ce33fd5bc6fd7f9f011878677f93245236d191cbdd4b7f6951e4112",
+    "engine/src/services/runner_agent_registry.rs": "07da9a1186019ff6f4f308402aa9ee2acb19614e39ebae931cd017fcd29ed7cb",
+    "engine/src/services/runner_driver.rs": "b08efbee3f16933c184cadd822d43c9a584d8e60ecece12872dcc09d2ec6b39a",
+    "engine/src/services/runner_job_queue.rs": "ae5045de6fc3d9941c8fed803aa3670d31471ca25e53e1933b7561ef5dd39131",
+    "engine/src/services/runner_job_queue/tests.inc.rs": "fcffa35605d5a4717a18332c32182bcfe7e59e6f1aed2acfe0672b1104948388",
+    "engine/src/services/runner_manager.rs": "150184cb2de207f6b1f8b1ae2a314fb12cddc7aa17b39834c70ab389b1a8f0e3",
+    "engine/src/services/runner_manager/tests.rs": "1de53cfdc27ce82816ec8aedb68489821ea5ff148e73efe5f65732877635542f",
+    "engine/src/services/script_store.rs": "eb5247d844f0fe71219ed9b4f017a224023b14ed2e9647699136ff7f70723532",
+    "engine/src/sqlx_compat.rs": "5de63443535451ec20b66f8991f36c1de6bb7d029df65cdea0ac6b2f014789a5",
+    "engine/src/state.rs": "fbdef586a3952e8059c2d1577a9fb14794f278f8a4febe165c17bec15c74a7f6",
+    "scripts/bench-learning-store.mjs": "b817641a57dcd5817587f18e0546ee6a84c47c557dcf0c225f53c09b5116e035",
+    "scripts/bench-learning-store-cases.mjs": "3f78275f052872256f2d5fbe5a6f4bc8d9d798a21acb701d12f6a4169578dc37",
+    "scripts/tests/learningBenchmark.test.mjs": "6bc0f35c85e2c5e61994c0e1499e7655631119bcd37df1f441c775c9363ed39e"
+  },
+  "rustc": "rustc 1.95.0 (59807616e 2026-04-14)",
+  "node": "v18.19.1",
+  "cpu": "AMD Ryzen 7 7735H with Radeon Graphics",
+  "kernel": "7.0.0-30-generic",
+  "tokio_workers": 16,
+  "temporary_directory": "/tmp",
+  "total_memory_bytes": 15961403392,
+  "repeats": 3,
+  "cases": [
+    {
+      "name": "recent-1000-1024",
+      "args": [
+        "learning",
+        "recent",
+        "1000",
+        "1024",
+        "100"
+      ]
+    },
+    {
+      "name": "overview-1000-1024",
+      "args": [
+        "learning",
+        "overview",
+        "1000",
+        "1024",
+        "30"
+      ]
+    },
+    {
+      "name": "record-1000-1024",
+      "args": [
+        "learning",
+        "record",
+        "1000",
+        "1024",
+        "10"
+      ]
+    },
+    {
+      "name": "recent-10000-1024",
+      "args": [
+        "learning",
+        "recent",
+        "10000",
+        "1024",
+        "100"
+      ]
+    },
+    {
+      "name": "overview-10000-1024",
+      "args": [
+        "learning",
+        "overview",
+        "10000",
+        "1024",
+        "30"
+      ]
+    },
+    {
+      "name": "record-10000-1024",
+      "args": [
+        "learning",
+        "record",
+        "10000",
+        "1024",
+        "10"
+      ]
+    },
+    {
+      "name": "recent-50000-1024",
+      "args": [
+        "learning",
+        "recent",
+        "50000",
+        "1024",
+        "100"
+      ]
+    },
+    {
+      "name": "overview-50000-1024",
+      "args": [
+        "learning",
+        "overview",
+        "50000",
+        "1024",
+        "30"
+      ]
+    },
+    {
+      "name": "record-50000-1024",
+      "args": [
+        "learning",
+        "record",
+        "50000",
+        "1024",
+        "10"
+      ]
+    },
+    {
+      "name": "recent-50000-4096",
+      "args": [
+        "learning",
+        "recent",
+        "50000",
+        "4096",
+        "100"
+      ]
+    },
+    {
+      "name": "overview-50000-4096",
+      "args": [
+        "learning",
+        "overview",
+        "50000",
+        "4096",
+        "30"
+      ]
+    },
+    {
+      "name": "record-50000-4096",
+      "args": [
+        "learning",
+        "record",
+        "50000",
+        "4096",
+        "10"
+      ]
+    }
+  ],
+  "baseline": {
+    "path": "/tmp/cyanrex-learning-baseline.S4Xk5G/mainline_bench",
+    "sha256": "0a95e997567120ae89af89fca232b198171fb53b016fedaa08e398096e286bd1",
+    "provenance": "Caller must establish baseline source identity separately."
+  },
+  "scope": "Local-file LearningStore public mainline example; no database, HTTP, eBPF, compiler, or Agent. Thirty synthetic students. Source bytes include the fixed example source plus the padding parameter. Data is preloaded before latency measurement. Writes still rewrite the entire pretty JSON file without fsync. GNU time includes fixture creation/loading/deletion; not steady-state RSS. Pairs and cases rotate; no CPU pinning or page-cache eviction.",
+  "initial_loadavg": [
+    2.49,
+    2.37,
+    2.31
+  ],
+  "current_binary_sha256": "23604a1b10f5ffbdcf3997b134311c7b72ce7985e32d785ce5a45b682bf66185",
+  "finished_at": "2026-09-08T11:26:57.617Z",
+  "final_loadavg": [
+    2.72,
+    2.51,
+    2.37
+  ]
+}

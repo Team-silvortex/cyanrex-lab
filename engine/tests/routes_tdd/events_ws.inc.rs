@@ -89,13 +89,37 @@ async fn event_websocket_lag_closes_with_resync_code_instead_of_silent_loss() {
     let (_server, url) = event_ws_server(app).await;
     let (mut socket, _) = connect_async(ws_request(&url, Some(&cookie))).await.unwrap();
     // A burst exceeds the tiny test channel before the current-thread socket task can drain it.
-    // Even lag caused by other users requires conservative resync, without leaking their counts.
     for index in 0..64 {
-        state.event_bus.publish(ws_test_event("another-user", index)).await;
+        state.event_bus.publish(ws_test_event("admin", index)).await;
     }
     let message = tokio::time::timeout(std::time::Duration::from_secs(2), socket.next())
         .await.expect("lag must not be silently ignored").unwrap().unwrap();
     let WsMessage::Close(Some(frame)) = message else { panic!("expected resync close") };
     assert_eq!(u16::from(frame.code), 1013);
     assert_eq!(frame.reason, "event stream lagged; reload /events");
+}
+
+#[tokio::test]
+async fn event_websocket_other_owner_burst_does_not_force_resync() {
+    let _guard = CSRF_ENV_LOCK.lock().await;
+    let mut state = test_state();
+    std::sync::Arc::get_mut(&mut state).unwrap().event_bus =
+        cyanrex_engine::services::event_bus::EventBus::new(1);
+    let app = build_router(state.clone());
+    let otp = state.auth_service.generate_current_totp_for_user("admin").unwrap();
+    let cookie = login_and_get_session_cookie(&app, &otp).await;
+    let (_server, url) = event_ws_server(app).await;
+    // A client-supplied owner must not override the authenticated session owner.
+    let url = format!("{url}?username=another-user");
+    let (mut socket, _) = connect_async(ws_request(&url, Some(&cookie))).await.unwrap();
+    for index in 0..64 {
+        state.event_bus.publish(ws_test_event("another-user", index)).await;
+    }
+    let event = ws_test_event("admin", 64);
+    state.event_bus.publish(event.clone()).await;
+    let message = tokio::time::timeout(std::time::Duration::from_secs(2), socket.next())
+        .await.expect("unrelated traffic must not interrupt delivery").unwrap().unwrap();
+    let WsMessage::Text(text) = message else { panic!("unrelated traffic forced a resync: {message:?}") };
+    assert_eq!(serde_json::from_str::<Value>(&text).unwrap(), serde_json::to_value(event).unwrap());
+    socket.close(None).await.unwrap();
 }

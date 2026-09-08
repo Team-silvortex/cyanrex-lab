@@ -1,0 +1,1274 @@
+[
+  {
+    "case": "recent-1000-1024",
+    "phase": "before",
+    "args": [
+      "learning",
+      "recent",
+      "1000",
+      "1024",
+      "100"
+    ],
+    "metrics": {
+      "result.latency.p50_us": {
+        "median": 6.413,
+        "min": 6.382,
+        "max": 6.833
+      },
+      "result.latency.p95_us": {
+        "median": 7.314,
+        "min": 7.124,
+        "max": 11.511
+      },
+      "result.latency.mean_us": {
+        "median": 6.92913,
+        "min": 6.5490200000000005,
+        "max": 6.9917
+      },
+      "result.file_bytes": {
+        "median": 1458545,
+        "min": 1458536,
+        "max": 1458551
+      },
+      "resource.wall_seconds": {
+        "median": 0,
+        "min": 0,
+        "max": 0.01
+      },
+      "resource.user_seconds": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "resource.system_seconds": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "resource.max_rss_kib": {
+        "median": 10068,
+        "min": 10000,
+        "max": 10356
+      }
+    }
+  },
+  {
+    "case": "recent-1000-1024",
+    "phase": "after",
+    "args": [
+      "learning",
+      "recent",
+      "1000",
+      "1024",
+      "100"
+    ],
+    "metrics": {
+      "result.latency.p50_us": {
+        "median": 6.222,
+        "min": 6.152,
+        "max": 6.352
+      },
+      "result.latency.p95_us": {
+        "median": 6.903,
+        "min": 6.893,
+        "max": 7.865
+      },
+      "result.latency.mean_us": {
+        "median": 6.5092799999999995,
+        "min": 6.36226,
+        "max": 6.50967
+      },
+      "result.file_bytes": {
+        "median": 1458548,
+        "min": 1458548,
+        "max": 1458551
+      },
+      "resource.wall_seconds": {
+        "median": 0,
+        "min": 0,
+        "max": 0.01
+      },
+      "resource.user_seconds": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "resource.system_seconds": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "resource.max_rss_kib": {
+        "median": 10204,
+        "min": 10140,
+        "max": 10416
+      }
+    }
+  },
+  {
+    "case": "overview-1000-1024",
+    "phase": "before",
+    "args": [
+      "learning",
+      "overview",
+      "1000",
+      "1024",
+      "30"
+    ],
+    "metrics": {
+      "result.latency.p50_us": {
+        "median": 64.412,
+        "min": 63.53,
+        "max": 65.464
+      },
+      "result.latency.p95_us": {
+        "median": 79.741,
+        "min": 73.249,
+        "max": 86.324
+      },
+      "result.latency.mean_us": {
+        "median": 65.93756666666667,
+        "min": 65.12736666666667,
+        "max": 68.41023333333334
+      },
+      "result.file_bytes": {
+        "median": 1458551,
+        "min": 1458548,
+        "max": 1458551
+      },
+      "resource.wall_seconds": {
+        "median": 0.01,
+        "min": 0.01,
+        "max": 0.01
+      },
+      "resource.user_seconds": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "resource.system_seconds": {
+        "median": 0,
+        "min": 0,
+        "max": 0.01
+      },
+      "resource.max_rss_kib": {
+        "median": 10508,
+        "min": 10316,
+        "max": 10592
+      }
+    }
+  },
+  {
+    "case": "overview-1000-1024",
+    "phase": "after",
+    "args": [
+      "learning",
+      "overview",
+      "1000",
+      "1024",
+      "30"
+    ],
+    "metrics": {
+      "result.latency.p50_us": {
+        "median": 63.47,
+        "min": 62.478,
+        "max": 63.6
+      },
+      "result.latency.p95_us": {
+        "median": 81.254,
+        "min": 80.402,
+        "max": 86.203
+      },
+      "result.latency.mean_us": {
+        "median": 65.84733333333332,
+        "min": 64.2357,
+        "max": 66.23886666666667
+      },
+      "result.file_bytes": {
+        "median": 1458548,
+        "min": 1458545,
+        "max": 1458548
+      },
+      "resource.wall_seconds": {
+        "median": 0.01,
+        "min": 0.01,
+        "max": 0.01
+      },
+      "resource.user_seconds": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "resource.system_seconds": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "resource.max_rss_kib": {
+        "median": 10444,
+        "min": 10248,
+        "max": 10472
+      }
+    }
+  },
+  {
+    "case": "record-1000-1024",
+    "phase": "before",
+    "args": [
+      "learning",
+      "record",
+      "1000",
+      "1024",
+      "10"
+    ],
+    "metrics": {
+      "result.latency.p50_us": {
+        "median": 1701.322,
+        "min": 1666.027,
+        "max": 1797.283
+      },
+      "result.latency.p95_us": {
+        "median": 3444.492,
+        "min": 3402.253,
+        "max": 3732.483
+      },
+      "result.latency.mean_us": {
+        "median": 1920.0228,
+        "min": 1909.9883,
+        "max": 1968.3949
+      },
+      "result.file_bytes": {
+        "median": 1566779,
+        "min": 1566776,
+        "max": 1566779
+      },
+      "resource.wall_seconds": {
+        "median": 0.02,
+        "min": 0.02,
+        "max": 0.03
+      },
+      "resource.user_seconds": {
+        "median": 0.01,
+        "min": 0.01,
+        "max": 0.01
+      },
+      "resource.system_seconds": {
+        "median": 0.01,
+        "min": 0.01,
+        "max": 0.01
+      },
+      "resource.max_rss_kib": {
+        "median": 12796,
+        "min": 12732,
+        "max": 12860
+      }
+    }
+  },
+  {
+    "case": "record-1000-1024",
+    "phase": "after",
+    "args": [
+      "learning",
+      "record",
+      "1000",
+      "1024",
+      "10"
+    ],
+    "metrics": {
+      "result.latency.p50_us": {
+        "median": 1910.34,
+        "min": 1894.548,
+        "max": 2016.708
+      },
+      "result.latency.p95_us": {
+        "median": 2426.855,
+        "min": 2085.94,
+        "max": 2532.649
+      },
+      "result.latency.mean_us": {
+        "median": 2000.8233,
+        "min": 1933.272,
+        "max": 2068.3111
+      },
+      "result.file_bytes": {
+        "median": 1566782,
+        "min": 1566779,
+        "max": 1566782
+      },
+      "resource.wall_seconds": {
+        "median": 0.03,
+        "min": 0.02,
+        "max": 0.03
+      },
+      "resource.user_seconds": {
+        "median": 0.01,
+        "min": 0,
+        "max": 0.02
+      },
+      "resource.system_seconds": {
+        "median": 0.01,
+        "min": 0.01,
+        "max": 0.02
+      },
+      "resource.max_rss_kib": {
+        "median": 10240,
+        "min": 10148,
+        "max": 10428
+      }
+    }
+  },
+  {
+    "case": "recent-10000-1024",
+    "phase": "before",
+    "args": [
+      "learning",
+      "recent",
+      "10000",
+      "1024",
+      "100"
+    ],
+    "metrics": {
+      "result.latency.p50_us": {
+        "median": 37.16,
+        "min": 37.01,
+        "max": 38.032
+      },
+      "result.latency.p95_us": {
+        "median": 46.208,
+        "min": 44.394,
+        "max": 54.694
+      },
+      "result.latency.mean_us": {
+        "median": 38.45128,
+        "min": 38.15842,
+        "max": 39.976949999999995
+      },
+      "result.file_bytes": {
+        "median": 14595521,
+        "min": 14595515,
+        "max": 14595524
+      },
+      "resource.wall_seconds": {
+        "median": 0.07,
+        "min": 0.07,
+        "max": 0.07
+      },
+      "resource.user_seconds": {
+        "median": 0.03,
+        "min": 0.03,
+        "max": 0.04
+      },
+      "resource.system_seconds": {
+        "median": 0.03,
+        "min": 0.03,
+        "max": 0.03
+      },
+      "resource.max_rss_kib": {
+        "median": 39880,
+        "min": 39620,
+        "max": 40108
+      }
+    }
+  },
+  {
+    "case": "recent-10000-1024",
+    "phase": "after",
+    "args": [
+      "learning",
+      "recent",
+      "10000",
+      "1024",
+      "100"
+    ],
+    "metrics": {
+      "result.latency.p50_us": {
+        "median": 34.996,
+        "min": 34.967,
+        "max": 35.136
+      },
+      "result.latency.p95_us": {
+        "median": 65.143,
+        "min": 42.571,
+        "max": 69.01
+      },
+      "result.latency.mean_us": {
+        "median": 40.758379999999995,
+        "min": 36.096059999999994,
+        "max": 41.62768
+      },
+      "result.file_bytes": {
+        "median": 14595515,
+        "min": 14595515,
+        "max": 14595524
+      },
+      "resource.wall_seconds": {
+        "median": 0.06,
+        "min": 0.06,
+        "max": 0.06
+      },
+      "resource.user_seconds": {
+        "median": 0.03,
+        "min": 0.03,
+        "max": 0.03
+      },
+      "resource.system_seconds": {
+        "median": 0.03,
+        "min": 0.03,
+        "max": 0.03
+      },
+      "resource.max_rss_kib": {
+        "median": 40096,
+        "min": 40004,
+        "max": 40192
+      }
+    }
+  },
+  {
+    "case": "overview-10000-1024",
+    "phase": "before",
+    "args": [
+      "learning",
+      "overview",
+      "10000",
+      "1024",
+      "30"
+    ],
+    "metrics": {
+      "result.latency.p50_us": {
+        "median": 325.396,
+        "min": 323.763,
+        "max": 350.143
+      },
+      "result.latency.p95_us": {
+        "median": 404.235,
+        "min": 347.048,
+        "max": 648.228
+      },
+      "result.latency.mean_us": {
+        "median": 351.8168333333333,
+        "min": 341.52076666666665,
+        "max": 397.39986666666664
+      },
+      "result.file_bytes": {
+        "median": 14595515,
+        "min": 14595497,
+        "max": 14595524
+      },
+      "resource.wall_seconds": {
+        "median": 0.07,
+        "min": 0.07,
+        "max": 0.07
+      },
+      "resource.user_seconds": {
+        "median": 0.04,
+        "min": 0.04,
+        "max": 0.04
+      },
+      "resource.system_seconds": {
+        "median": 0.03,
+        "min": 0.03,
+        "max": 0.03
+      },
+      "resource.max_rss_kib": {
+        "median": 39976,
+        "min": 39920,
+        "max": 40020
+      }
+    }
+  },
+  {
+    "case": "overview-10000-1024",
+    "phase": "after",
+    "args": [
+      "learning",
+      "overview",
+      "10000",
+      "1024",
+      "30"
+    ],
+    "metrics": {
+      "result.latency.p50_us": {
+        "median": 330.887,
+        "min": 319.255,
+        "max": 337.73
+      },
+      "result.latency.p95_us": {
+        "median": 389.096,
+        "min": 373.488,
+        "max": 457.487
+      },
+      "result.latency.mean_us": {
+        "median": 351.18593333333337,
+        "min": 338.93890000000005,
+        "max": 366.67543333333333
+      },
+      "result.file_bytes": {
+        "median": 14595515,
+        "min": 14595503,
+        "max": 14595539
+      },
+      "resource.wall_seconds": {
+        "median": 0.07,
+        "min": 0.07,
+        "max": 0.07
+      },
+      "resource.user_seconds": {
+        "median": 0.03,
+        "min": 0.03,
+        "max": 0.04
+      },
+      "resource.system_seconds": {
+        "median": 0.03,
+        "min": 0.03,
+        "max": 0.04
+      },
+      "resource.max_rss_kib": {
+        "median": 40112,
+        "min": 40076,
+        "max": 40196
+      }
+    }
+  },
+  {
+    "case": "record-10000-1024",
+    "phase": "before",
+    "args": [
+      "learning",
+      "record",
+      "10000",
+      "1024",
+      "10"
+    ],
+    "metrics": {
+      "result.latency.p50_us": {
+        "median": 17958.587,
+        "min": 17515.452,
+        "max": 18161.401
+      },
+      "result.latency.p95_us": {
+        "median": 31077.685,
+        "min": 30763.966,
+        "max": 33396.56
+      },
+      "result.latency.mean_us": {
+        "median": 19762.0718,
+        "min": 19118.3147,
+        "max": 20476.110699999997
+      },
+      "result.file_bytes": {
+        "median": 15513755,
+        "min": 15513746,
+        "max": 15513761
+      },
+      "resource.wall_seconds": {
+        "median": 0.26,
+        "min": 0.26,
+        "max": 0.27
+      },
+      "resource.user_seconds": {
+        "median": 0.15,
+        "min": 0.14,
+        "max": 0.16
+      },
+      "resource.system_seconds": {
+        "median": 0.11,
+        "min": 0.11,
+        "max": 0.11
+      },
+      "resource.max_rss_kib": {
+        "median": 64696,
+        "min": 64652,
+        "max": 64956
+      }
+    }
+  },
+  {
+    "case": "record-10000-1024",
+    "phase": "after",
+    "args": [
+      "learning",
+      "record",
+      "10000",
+      "1024",
+      "10"
+    ],
+    "metrics": {
+      "result.latency.p50_us": {
+        "median": 20102.891,
+        "min": 20005.657,
+        "max": 20926.659
+      },
+      "result.latency.p95_us": {
+        "median": 21850.172,
+        "min": 21693.532,
+        "max": 22900.899
+      },
+      "result.latency.mean_us": {
+        "median": 20540.629100000002,
+        "min": 20253.2886,
+        "max": 21394.906
+      },
+      "result.file_bytes": {
+        "median": 15513755,
+        "min": 15513740,
+        "max": 15513770
+      },
+      "resource.wall_seconds": {
+        "median": 0.27,
+        "min": 0.26,
+        "max": 0.28
+      },
+      "resource.user_seconds": {
+        "median": 0.14,
+        "min": 0.13,
+        "max": 0.15
+      },
+      "resource.system_seconds": {
+        "median": 0.13,
+        "min": 0.12,
+        "max": 0.13
+      },
+      "resource.max_rss_kib": {
+        "median": 40108,
+        "min": 39912,
+        "max": 40296
+      }
+    }
+  },
+  {
+    "case": "recent-50000-1024",
+    "phase": "before",
+    "args": [
+      "learning",
+      "recent",
+      "50000",
+      "1024",
+      "100"
+    ],
+    "metrics": {
+      "result.latency.p50_us": {
+        "median": 167.878,
+        "min": 167.207,
+        "max": 170.042
+      },
+      "result.latency.p95_us": {
+        "median": 192.515,
+        "min": 186.213,
+        "max": 193.367
+      },
+      "result.latency.mean_us": {
+        "median": 175.39163,
+        "min": 171.65857,
+        "max": 179.87596
+      },
+      "result.file_bytes": {
+        "median": 73022101,
+        "min": 73022080,
+        "max": 73022110
+      },
+      "resource.wall_seconds": {
+        "median": 0.34,
+        "min": 0.33,
+        "max": 0.34
+      },
+      "resource.user_seconds": {
+        "median": 0.17,
+        "min": 0.16,
+        "max": 0.17
+      },
+      "resource.system_seconds": {
+        "median": 0.17,
+        "min": 0.16,
+        "max": 0.18
+      },
+      "resource.max_rss_kib": {
+        "median": 170208,
+        "min": 170108,
+        "max": 170276
+      }
+    }
+  },
+  {
+    "case": "recent-50000-1024",
+    "phase": "after",
+    "args": [
+      "learning",
+      "recent",
+      "50000",
+      "1024",
+      "100"
+    ],
+    "metrics": {
+      "result.latency.p50_us": {
+        "median": 165.373,
+        "min": 158.591,
+        "max": 175.292
+      },
+      "result.latency.p95_us": {
+        "median": 198.556,
+        "min": 172.817,
+        "max": 264.111
+      },
+      "result.latency.mean_us": {
+        "median": 175.86685,
+        "min": 165.86194,
+        "max": 194.12117
+      },
+      "result.file_bytes": {
+        "median": 73022083,
+        "min": 73022074,
+        "max": 73022098
+      },
+      "resource.wall_seconds": {
+        "median": 0.33,
+        "min": 0.33,
+        "max": 0.35
+      },
+      "resource.user_seconds": {
+        "median": 0.15,
+        "min": 0.15,
+        "max": 0.16
+      },
+      "resource.system_seconds": {
+        "median": 0.18,
+        "min": 0.17,
+        "max": 0.18
+      },
+      "resource.max_rss_kib": {
+        "median": 169688,
+        "min": 169588,
+        "max": 169816
+      }
+    }
+  },
+  {
+    "case": "overview-50000-1024",
+    "phase": "before",
+    "args": [
+      "learning",
+      "overview",
+      "50000",
+      "1024",
+      "30"
+    ],
+    "metrics": {
+      "result.latency.p50_us": {
+        "median": 3538.986,
+        "min": 3458.31,
+        "max": 3543.238
+      },
+      "result.latency.p95_us": {
+        "median": 4160.904,
+        "min": 4147.776,
+        "max": 4213.598
+      },
+      "result.latency.mean_us": {
+        "median": 3637.5313666666666,
+        "min": 3613.1356333333333,
+        "max": 3671.1566333333335
+      },
+      "result.file_bytes": {
+        "median": 73022092,
+        "min": 73022047,
+        "max": 73022098
+      },
+      "resource.wall_seconds": {
+        "median": 0.43,
+        "min": 0.43,
+        "max": 0.44
+      },
+      "resource.user_seconds": {
+        "median": 0.26,
+        "min": 0.26,
+        "max": 0.27
+      },
+      "resource.system_seconds": {
+        "median": 0.17,
+        "min": 0.17,
+        "max": 0.17
+      },
+      "resource.max_rss_kib": {
+        "median": 170164,
+        "min": 169988,
+        "max": 170256
+      }
+    }
+  },
+  {
+    "case": "overview-50000-1024",
+    "phase": "after",
+    "args": [
+      "learning",
+      "overview",
+      "50000",
+      "1024",
+      "30"
+    ],
+    "metrics": {
+      "result.latency.p50_us": {
+        "median": 3915.52,
+        "min": 3693.964,
+        "max": 4381.87
+      },
+      "result.latency.p95_us": {
+        "median": 4580.332,
+        "min": 4379.007,
+        "max": 4615.272
+      },
+      "result.latency.mean_us": {
+        "median": 4030.8825666666667,
+        "min": 3832.443533333333,
+        "max": 4386.983066666667
+      },
+      "result.file_bytes": {
+        "median": 73022074,
+        "min": 73022047,
+        "max": 73022083
+      },
+      "resource.wall_seconds": {
+        "median": 0.43,
+        "min": 0.43,
+        "max": 0.45
+      },
+      "resource.user_seconds": {
+        "median": 0.26,
+        "min": 0.26,
+        "max": 0.28
+      },
+      "resource.system_seconds": {
+        "median": 0.17,
+        "min": 0.16,
+        "max": 0.17
+      },
+      "resource.max_rss_kib": {
+        "median": 169736,
+        "min": 169736,
+        "max": 170040
+      }
+    }
+  },
+  {
+    "case": "record-50000-1024",
+    "phase": "before",
+    "args": [
+      "learning",
+      "record",
+      "50000",
+      "1024",
+      "10"
+    ],
+    "metrics": {
+      "result.latency.p50_us": {
+        "median": 143204.681,
+        "min": 142777.602,
+        "max": 145646.879
+      },
+      "result.latency.p95_us": {
+        "median": 152506.166,
+        "min": 149470.907,
+        "max": 160476.259
+      },
+      "result.latency.mean_us": {
+        "median": 144637.87219999998,
+        "min": 143052.1023,
+        "max": 145640.1654
+      },
+      "result.file_bytes": {
+        "median": 77540305,
+        "min": 77540302,
+        "max": 77540314
+      },
+      "resource.wall_seconds": {
+        "median": 1.76,
+        "min": 1.76,
+        "max": 1.77
+      },
+      "resource.user_seconds": {
+        "median": 0.73,
+        "min": 0.73,
+        "max": 0.78
+      },
+      "resource.system_seconds": {
+        "median": 0.83,
+        "min": 0.8,
+        "max": 0.84
+      },
+      "resource.max_rss_kib": {
+        "median": 185108,
+        "min": 185028,
+        "max": 185488
+      }
+    }
+  },
+  {
+    "case": "record-50000-1024",
+    "phase": "after",
+    "args": [
+      "learning",
+      "record",
+      "50000",
+      "1024",
+      "10"
+    ],
+    "metrics": {
+      "result.latency.p50_us": {
+        "median": 110796.442,
+        "min": 110149.747,
+        "max": 113381.135
+      },
+      "result.latency.p95_us": {
+        "median": 122124.188,
+        "min": 119409.239,
+        "max": 122549.352
+      },
+      "result.latency.mean_us": {
+        "median": 111272.6882,
+        "min": 109417.1486,
+        "max": 112841.6908
+      },
+      "result.file_bytes": {
+        "median": 77540302,
+        "min": 77540284,
+        "max": 77540329
+      },
+      "resource.wall_seconds": {
+        "median": 1.43,
+        "min": 1.41,
+        "max": 1.44
+      },
+      "resource.user_seconds": {
+        "median": 0.69,
+        "min": 0.67,
+        "max": 0.71
+      },
+      "resource.system_seconds": {
+        "median": 0.6,
+        "min": 0.57,
+        "max": 0.61
+      },
+      "resource.max_rss_kib": {
+        "median": 169740,
+        "min": 169736,
+        "max": 170052
+      }
+    }
+  },
+  {
+    "case": "recent-50000-4096",
+    "phase": "before",
+    "args": [
+      "learning",
+      "recent",
+      "50000",
+      "4096",
+      "100"
+    ],
+    "metrics": {
+      "result.latency.p50_us": {
+        "median": 174.591,
+        "min": 174.381,
+        "max": 181.634
+      },
+      "result.latency.p95_us": {
+        "median": 413.483,
+        "min": 264.972,
+        "max": 451.976
+      },
+      "result.latency.mean_us": {
+        "median": 204.10320000000002,
+        "min": 199.46899,
+        "max": 211.30564999999999
+      },
+      "result.file_bytes": {
+        "median": 226622065,
+        "min": 226622053,
+        "max": 226622086
+      },
+      "resource.wall_seconds": {
+        "median": 0.78,
+        "min": 0.78,
+        "max": 0.83
+      },
+      "resource.user_seconds": {
+        "median": 0.3,
+        "min": 0.3,
+        "max": 0.31
+      },
+      "resource.system_seconds": {
+        "median": 0.48,
+        "min": 0.47,
+        "max": 0.52
+      },
+      "resource.max_rss_kib": {
+        "median": 474152,
+        "min": 474148,
+        "max": 474412
+      }
+    }
+  },
+  {
+    "case": "recent-50000-4096",
+    "phase": "after",
+    "args": [
+      "learning",
+      "recent",
+      "50000",
+      "4096",
+      "100"
+    ],
+    "metrics": {
+      "result.latency.p50_us": {
+        "median": 165.804,
+        "min": 165.143,
+        "max": 166.265
+      },
+      "result.latency.p95_us": {
+        "median": 358.379,
+        "min": 267.576,
+        "max": 501.6
+      },
+      "result.latency.mean_us": {
+        "median": 190.71657000000002,
+        "min": 182.04720999999998,
+        "max": 205.04094
+      },
+      "result.file_bytes": {
+        "median": 226622056,
+        "min": 226622050,
+        "max": 226622086
+      },
+      "resource.wall_seconds": {
+        "median": 0.77,
+        "min": 0.75,
+        "max": 0.84
+      },
+      "resource.user_seconds": {
+        "median": 0.27,
+        "min": 0.26,
+        "max": 0.28
+      },
+      "resource.system_seconds": {
+        "median": 0.48,
+        "min": 0.48,
+        "max": 0.57
+      },
+      "resource.max_rss_kib": {
+        "median": 474000,
+        "min": 473636,
+        "max": 474040
+      }
+    }
+  },
+  {
+    "case": "overview-50000-4096",
+    "phase": "before",
+    "args": [
+      "learning",
+      "overview",
+      "50000",
+      "4096",
+      "30"
+    ],
+    "metrics": {
+      "result.latency.p50_us": {
+        "median": 4126.894,
+        "min": 4074.6,
+        "max": 4195.507
+      },
+      "result.latency.p95_us": {
+        "median": 4633.93,
+        "min": 4612.514,
+        "max": 4637.633
+      },
+      "result.latency.mean_us": {
+        "median": 4128.713566666667,
+        "min": 4012.8274666666666,
+        "max": 4182.030866666667
+      },
+      "result.file_bytes": {
+        "median": 226622071,
+        "min": 226622035,
+        "max": 226622098
+      },
+      "resource.wall_seconds": {
+        "median": 0.89,
+        "min": 0.88,
+        "max": 0.91
+      },
+      "resource.user_seconds": {
+        "median": 0.41,
+        "min": 0.41,
+        "max": 0.43
+      },
+      "resource.system_seconds": {
+        "median": 0.47,
+        "min": 0.47,
+        "max": 0.47
+      },
+      "resource.max_rss_kib": {
+        "median": 474080,
+        "min": 474056,
+        "max": 474272
+      }
+    }
+  },
+  {
+    "case": "overview-50000-4096",
+    "phase": "after",
+    "args": [
+      "learning",
+      "overview",
+      "50000",
+      "4096",
+      "30"
+    ],
+    "metrics": {
+      "result.latency.p50_us": {
+        "median": 3639.285,
+        "min": 3622.119,
+        "max": 3844.562
+      },
+      "result.latency.p95_us": {
+        "median": 4173.282,
+        "min": 4150.814,
+        "max": 4230.623
+      },
+      "result.latency.mean_us": {
+        "median": 3660.4838333333337,
+        "min": 3652.6348333333335,
+        "max": 3845.4823666666666
+      },
+      "result.file_bytes": {
+        "median": 226622068,
+        "min": 226622038,
+        "max": 226622104
+      },
+      "resource.wall_seconds": {
+        "median": 0.86,
+        "min": 0.86,
+        "max": 0.88
+      },
+      "resource.user_seconds": {
+        "median": 0.38,
+        "min": 0.36,
+        "max": 0.39
+      },
+      "resource.system_seconds": {
+        "median": 0.48,
+        "min": 0.47,
+        "max": 0.49
+      },
+      "resource.max_rss_kib": {
+        "median": 473664,
+        "min": 473420,
+        "max": 473952
+      }
+    }
+  },
+  {
+    "case": "record-50000-4096",
+    "phase": "before",
+    "args": [
+      "learning",
+      "record",
+      "50000",
+      "4096",
+      "10"
+    ],
+    "metrics": {
+      "result.latency.p50_us": {
+        "median": 713524.431,
+        "min": 398259.167,
+        "max": 1119166.192
+      },
+      "result.latency.p95_us": {
+        "median": 1273480.096,
+        "min": 422939.068,
+        "max": 1711362.087
+      },
+      "result.latency.mean_us": {
+        "median": 815534.8161,
+        "min": 401806.2616,
+        "max": 992276.3415
+      },
+      "result.file_bytes": {
+        "median": 231171016,
+        "min": 231171010,
+        "max": 231171028
+      },
+      "resource.wall_seconds": {
+        "median": 8.94,
+        "min": 4.82,
+        "max": 10.68
+      },
+      "resource.user_seconds": {
+        "median": 1.72,
+        "min": 1.7,
+        "max": 1.74
+      },
+      "resource.system_seconds": {
+        "median": 2.52,
+        "min": 2.44,
+        "max": 2.62
+      },
+      "resource.max_rss_kib": {
+        "median": 487848,
+        "min": 487500,
+        "max": 488112
+      }
+    }
+  },
+  {
+    "case": "record-50000-4096",
+    "phase": "after",
+    "args": [
+      "learning",
+      "record",
+      "50000",
+      "4096",
+      "10"
+    ],
+    "metrics": {
+      "result.latency.p50_us": {
+        "median": 544877.977,
+        "min": 296856.928,
+        "max": 854730.769
+      },
+      "result.latency.p95_us": {
+        "median": 1129550.97,
+        "min": 377622.035,
+        "max": 1172864.918
+      },
+      "result.latency.mean_us": {
+        "median": 647936.21,
+        "min": 305292.1982,
+        "max": 835386.0277000001
+      },
+      "result.file_bytes": {
+        "median": 231171019,
+        "min": 231171016,
+        "max": 231171046
+      },
+      "resource.wall_seconds": {
+        "median": 7.26,
+        "min": 3.82,
+        "max": 9.11
+      },
+      "resource.user_seconds": {
+        "median": 1.53,
+        "min": 1.51,
+        "max": 1.58
+      },
+      "resource.system_seconds": {
+        "median": 1.77,
+        "min": 1.75,
+        "max": 1.78
+      },
+      "resource.max_rss_kib": {
+        "median": 473956,
+        "min": 473856,
+        "max": 474220
+      }
+    }
+  }
+]

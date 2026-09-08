@@ -1,0 +1,233 @@
+[
+  {
+    "case": "paced",
+    "round": 1,
+    "result": {
+      "delivered_copies": 8000,
+      "elapsed_seconds": 0.501353131,
+      "expected_matching_copies": 8000,
+      "owner_channel_capacity": 1024,
+      "published": 2000,
+      "resync_closes": 0,
+      "scenario": "paced",
+      "subscribers": 32,
+      "users": 8
+    },
+    "resource": {
+      "wall_seconds": 0.52,
+      "user_seconds": 0.32,
+      "system_seconds": 0.23,
+      "max_rss_kib": 17680
+    },
+    "loadavg": [
+      6.87,
+      3.73,
+      2.7
+    ]
+  },
+  {
+    "case": "burst",
+    "round": 1,
+    "result": {
+      "delivered_copies": 16,
+      "elapsed_seconds": 0.011301424,
+      "expected_matching_copies": 240000,
+      "owner_channel_capacity": 8,
+      "published": 60000,
+      "resync_closes": 32,
+      "scenario": "burst",
+      "subscribers": 32,
+      "users": 8
+    },
+    "resource": {
+      "wall_seconds": 0.03,
+      "user_seconds": 0.01,
+      "system_seconds": 0.01,
+      "max_rss_kib": 17228
+    },
+    "loadavg": [
+      6.87,
+      3.73,
+      2.7
+    ]
+  },
+  {
+    "case": "stalled",
+    "round": 1,
+    "result": {
+      "handler_seconds": 5.005563658,
+      "owner_channel_capacity": 128,
+      "payload_bytes": 262144,
+      "published": 64,
+      "remaining_owner_queues": 0,
+      "remaining_subscribers": 0,
+      "requested_receive_buffer_bytes": 4096,
+      "scenario": "stalled"
+    },
+    "resource": {
+      "wall_seconds": 5.01,
+      "user_seconds": 0,
+      "system_seconds": 0.01,
+      "max_rss_kib": 24972
+    },
+    "loadavg": [
+      6.56,
+      3.72,
+      2.7
+    ]
+  },
+  {
+    "case": "burst",
+    "round": 2,
+    "result": {
+      "delivered_copies": 56,
+      "elapsed_seconds": 0.011120256,
+      "expected_matching_copies": 240000,
+      "owner_channel_capacity": 8,
+      "published": 60000,
+      "resync_closes": 32,
+      "scenario": "burst",
+      "subscribers": 32,
+      "users": 8
+    },
+    "resource": {
+      "wall_seconds": 0.02,
+      "user_seconds": 0.01,
+      "system_seconds": 0.01,
+      "max_rss_kib": 17164
+    },
+    "loadavg": [
+      6.56,
+      3.72,
+      2.7
+    ]
+  },
+  {
+    "case": "stalled",
+    "round": 2,
+    "result": {
+      "handler_seconds": 5.00584038,
+      "owner_channel_capacity": 128,
+      "payload_bytes": 262144,
+      "published": 64,
+      "remaining_owner_queues": 0,
+      "remaining_subscribers": 0,
+      "requested_receive_buffer_bytes": 4096,
+      "scenario": "stalled"
+    },
+    "resource": {
+      "wall_seconds": 5.01,
+      "user_seconds": 0,
+      "system_seconds": 0.01,
+      "max_rss_kib": 25064
+    },
+    "loadavg": [
+      6.2,
+      3.69,
+      2.7
+    ]
+  },
+  {
+    "case": "paced",
+    "round": 2,
+    "result": {
+      "delivered_copies": 8000,
+      "elapsed_seconds": 0.501438146,
+      "expected_matching_copies": 8000,
+      "owner_channel_capacity": 1024,
+      "published": 2000,
+      "resync_closes": 0,
+      "scenario": "paced",
+      "subscribers": 32,
+      "users": 8
+    },
+    "resource": {
+      "wall_seconds": 0.51,
+      "user_seconds": 0.38,
+      "system_seconds": 0.24,
+      "max_rss_kib": 17816
+    },
+    "loadavg": [
+      6.2,
+      3.69,
+      2.7
+    ]
+  },
+  {
+    "case": "stalled",
+    "round": 3,
+    "result": {
+      "handler_seconds": 5.005605534,
+      "owner_channel_capacity": 128,
+      "payload_bytes": 262144,
+      "published": 64,
+      "remaining_owner_queues": 0,
+      "remaining_subscribers": 0,
+      "requested_receive_buffer_bytes": 4096,
+      "scenario": "stalled"
+    },
+    "resource": {
+      "wall_seconds": 5.01,
+      "user_seconds": 0,
+      "system_seconds": 0.01,
+      "max_rss_kib": 24756
+    },
+    "loadavg": [
+      5.86,
+      3.66,
+      2.69
+    ]
+  },
+  {
+    "case": "paced",
+    "round": 3,
+    "result": {
+      "delivered_copies": 8000,
+      "elapsed_seconds": 0.500853895,
+      "expected_matching_copies": 8000,
+      "owner_channel_capacity": 1024,
+      "published": 2000,
+      "resync_closes": 0,
+      "scenario": "paced",
+      "subscribers": 32,
+      "users": 8
+    },
+    "resource": {
+      "wall_seconds": 0.52,
+      "user_seconds": 0.3,
+      "system_seconds": 0.23,
+      "max_rss_kib": 17800
+    },
+    "loadavg": [
+      5.86,
+      3.66,
+      2.69
+    ]
+  },
+  {
+    "case": "burst",
+    "round": 3,
+    "result": {
+      "delivered_copies": 25,
+      "elapsed_seconds": 0.011636165,
+      "expected_matching_copies": 240000,
+      "owner_channel_capacity": 8,
+      "published": 60000,
+      "resync_closes": 32,
+      "scenario": "burst",
+      "subscribers": 32,
+      "users": 8
+    },
+    "resource": {
+      "wall_seconds": 0.03,
+      "user_seconds": 0.01,
+      "system_seconds": 0.01,
+      "max_rss_kib": 17060
+    },
+    "loadavg": [
+      5.86,
+      3.66,
+      2.69
+    ]
+  }
+]

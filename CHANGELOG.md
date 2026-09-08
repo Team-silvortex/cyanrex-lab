@@ -5,6 +5,33 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.3.5] - 2026-09-08
+
+### Changed
+
+- Local LearningStore writes stream the existing pretty JSON through a 64 KiB buffer on a blocking
+  worker, eliminating the full encoded-file allocation while still replacing the entire file. Added
+  cancellation, queued-worker, exact-byte, partial/interrupted-write and flush-failure regressions.
+- Local LearningStore reads share immutable snapshots, select bounded recent pages before copying
+  source, and aggregate progress/teacher views in one pass. Appends copy only the pointer index and new
+  record; feedback copies only the index and edited record. JSON format, full-history responses, SQL
+  queries and revision/failure semantics stay compatible; local writes still replace the whole file.
+- Added snapshot/selection/aggregation regressions and paired local LearningStore benchmarks with
+  regression-tested run ordering, retaining earlier diagnostic measurements without overwriting them.
+- Event WebSockets now subscribe to bounded queues keyed by the authenticated owner, sharing immutable
+  events and lazily encoded JSON across that owner's connections. Idle queues are removed when the last
+  subscription closes or is cancelled; the legacy global EventBus subscription API remains available.
+- Added owner-isolation, concurrent subscription lifecycle, shared-encoding, and compatibility regressions,
+  plus release-mode fan-out comparisons and updated real-loopback slow-consumer pressure checks.
+
+### Fixed
+
+- Cancelling a local learning append or teacher-feedback request no longer releases the writer lock
+  between disk rename and memory publication. An admitted worker completes despite request cancellation;
+  queued callers remain cancellable before handoff. This is not crash recovery, fsync or exactly-once retry.
+- Another user's event burst no longer overruns an unrelated WebSocket subscription. An owner's own
+  overload still closes with `1013`, preserving the existing recent-history recovery protocol and deadlines.
+
 ## [0.3.4] - 2026-09-08
 
 ### Changed
@@ -143,7 +170,8 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 The canonical package metadata advanced directly from `0.2.9` to `0.3.1`. Version `0.3.0` identifies
 the frozen API compatibility snapshot only; it was not a package release and must not be tagged.
 
-[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.4...HEAD
+[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.5...HEAD
+[0.3.5]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.4...v0.3.5
 [0.3.4]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.3...v0.3.4
 [0.3.3]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.1...v0.3.2
