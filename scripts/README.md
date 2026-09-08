@@ -109,7 +109,27 @@ Utility scripts for Cyanrex local operation.
   substitution, modified package members, traversal, symbolic links, ambiguous archives, and output
   replacement while exercising both candidate and package-only extraction paths.
 
-- `bench-event-bus.sh`: run the local event-bus throughput benchmark.
+- `bench-event-stream.mjs <new-output-directory>`: serial release-mode loopback WebSocket pressure
+  checks: paced 32-subscriber delivery, explicit lag closure under burst, and deadline cleanup of a
+  real non-reading TCP client. Uses the private ignored test harness; excludes history, database,
+  auth and browsers. Captures source hashes and three runs per case; refuses existing output paths.
+- `bench-event-history-reads.mjs <new-output-directory>`: serial, database-free filtered-read matrix.
+  Builds the release library test executable and invokes only its explicitly ignored manual benchmark;
+  does not open a new public service API. Runs latest-200, sparse filtering, no-match, full-export,
+  and synthetic mixed read/write cases, recording source hashes, per-run measurements, and three-run
+  medians/ranges. Real frontend pages do not poll history at the mixed scenario's 10 ms interval.
+  Requires Cargo's offline dependency cache, Node, and Linux GNU `time`; refuses existing output paths.
+- `bench-mainline.mjs <new-output-directory> [repeats=3]`: serial release-mode, database-free service
+  benchmark matrix. Runs the `mainline_bench` Rust example with prefilled event histories, subscriber
+  filtering/JSON, snapshot readers, compiler cache/burst scenarios, and isolated local learning data.
+  Writes per-run measurements, process resource counters, medians/ranges, and environment/source metadata.
+  Records Engine source hashes and worktree status so uncommitted implementations remain distinguishable.
+  Never overwrites an existing output directory. Requires Linux GNU `time`, Cargo, Node, and Clang.
+  This is not an HTTP, PostgreSQL, kernel/eBPF, or remote-Agent end-to-end benchmark.
+  Verify measurement helpers with `cargo test --manifest-path engine/Cargo.toml --release --locked --example mainline_bench`.
+- `bench-event-bus.sh`: run the legacy local event-bus throughput benchmark (debug build, empty initial
+  history, no subscribers). Its publication metrics do not establish durable database throughput;
+  `--verify` can observe the in-memory fallback, so it is not proof of successful persistence.
   - configurable through environment variables:
     - `CYANREX_BENCH_EVENTS`
     - `CYANREX_BENCH_USERS`
@@ -219,14 +239,14 @@ Run security audit directly:
 Build a distribution package:
 
 ```bash
-./scripts/package-distribution.sh --version 0.3.3
-./scripts/package-distribution.sh --version 0.3.3 --compose-template docker/docker-compose.yml   # custom compose if needed
+./scripts/package-distribution.sh --version 0.3.4
+./scripts/package-distribution.sh --version 0.3.4 --compose-template docker/docker-compose.yml   # custom compose if needed
 ```
 
 If you already have local images (for example CI or private registry preloads), package without rebuilding:
 
 ```bash
-./scripts/package-distribution.sh --skip-build --engine-image myrepo/cyanrex-engine:0.3.3 --frontend-image myrepo/cyanrex-frontend:0.3.3
+./scripts/package-distribution.sh --skip-build --engine-image myrepo/cyanrex-engine:0.3.4 --frontend-image myrepo/cyanrex-frontend:0.3.4
 ```
 
 Packaging also honors `ENGINE_RUST_IMAGE`, `ENGINE_DEBIAN_IMAGE`, `ENGINE_APT_MIRROR`,
@@ -261,10 +281,10 @@ Verify a complete downloaded Tag candidate before extraction (use a directory co
 archive, its checksum, the live-kernel report, and its checksum):
 
 ```bash
-release_revision="$(git rev-list -n 1 v0.3.3)"
+release_revision="$(git rev-list -n 1 v0.3.4)"
 cargo run --quiet --manifest-path engine/Cargo.toml --locked --bin cyanrex-release -- \
   candidate verify /path/to/downloaded-candidate \
-  --expect-version 0.3.3 --expect-revision "$release_revision" --expect-tag v0.3.3 \
+  --expect-version 0.3.4 --expect-revision "$release_revision" --expect-tag v0.3.4 \
   --extract-to /path/to/new-output-directory
 ```
 

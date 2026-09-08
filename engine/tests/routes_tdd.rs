@@ -42,6 +42,7 @@ fn module_manifest_version(name: &str) -> String {
 }
 
 include!("routes_tdd/basic.inc.rs");
+include!("routes_tdd/events_ws.inc.rs");
 include!("routes_tdd/modules.inc.rs");
 include!("routes_tdd/command.inc.rs");
 include!("routes_tdd/auth.inc.rs");

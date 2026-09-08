@@ -114,6 +114,7 @@ run_frontend_checks() {
   npm --prefix "$PROJECT_ROOT/frontend" run build
   (cd "$PROJECT_ROOT/frontend" && npx --yes tsc --noEmit)
   npm --prefix "$PROJECT_ROOT/frontend" run test:performance-hotspots
+  npm --prefix "$PROJECT_ROOT/frontend" run test:event-stream
   npm --prefix "$PROJECT_ROOT/frontend" run test:security-headers
   npm --prefix "$PROJECT_ROOT/frontend" run test:tooling
   npm --prefix "$PROJECT_ROOT/frontend" run test:ui-permissions

@@ -352,7 +352,7 @@ dependencies = [
 
 [[package]]
 name = "cyanrex-engine"
-version = "0.3.3"
+version = "0.3.4"
 dependencies = [
  "argon2",
  "axum",
@@ -360,6 +360,7 @@ dependencies = [
  "chrono",
  "data-encoding",
  "flate2",
+ "futures-util",
  "hmac",
  "http-body-util",
  "libc",
@@ -373,6 +374,7 @@ dependencies = [
  "tar",
  "thiserror 2.0.19",
  "tokio",
+ "tokio-tungstenite",
  "tower",
  "tower-http",
  "tracing",

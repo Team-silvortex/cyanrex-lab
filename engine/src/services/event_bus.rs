@@ -1,11 +1,11 @@
 use crate::services::event_bus_codec::{to_category_str, to_color_str, to_severity_str};
 use crate::services::event_bus_db;
-use crate::services::event_bus_filter::filter_events;
+use crate::services::event_bus_filter::{filter_events, latest_matching_events};
 use crate::services::event_bus_policy::{parse_policy, policy_to_str};
 use crate::sqlx_compat::{PgPool, PgPoolOptions, Postgres, QueryBuilder, Row};
 use chrono::{DateTime, Utc};
 use std::{
-    collections::HashMap,
+    collections::{HashMap, VecDeque},
     sync::{
         atomic::{AtomicBool, Ordering},
         Arc,
@@ -19,6 +19,10 @@ use tokio::sync::{broadcast, mpsc, OnceCell, RwLock};
 use crate::models::event::Event;
 
 mod event_bus_schema;
+#[cfg(test)]
+mod read_bench;
+#[cfg(test)]
+mod tests;
 
 pub(crate) const DB_PERSIST_QUEUE_CAPACITY: usize = 2_048;
 const DB_PERSIST_DROP_NEW_COUNT_TTL: StdDuration = StdDuration::from_secs(1);
@@ -26,7 +30,7 @@ const DB_PERSIST_DROP_NEW_COUNT_TTL: StdDuration = StdDuration::from_secs(1);
 #[derive(Clone)]
 pub struct EventBus {
     sender: broadcast::Sender<Event>,
-    history: Arc<RwLock<HashMap<String, Vec<Event>>>>,
+    history: Arc<RwLock<HashMap<String, VecDeque<Event>>>>,
     unread: Arc<RwLock<HashMap<String, usize>>>,
     settings: Arc<RwLock<HashMap<String, UserEventSettings>>>,
     db_pool: Option<PgPool>,
@@ -129,10 +133,11 @@ impl EventBus {
             {
                 return;
             }
-            bucket.push(event.clone());
-            if bucket.len() > max_records {
-                bucket.drain(..bucket.len() - max_records);
+            // Evict before insertion: a full deque must not grow or shift retained events.
+            while bucket.len() >= max_records {
+                bucket.pop_front();
             }
+            bucket.push_back(event.clone());
         }
         let _ = self.sender.send(event.clone());
         {
@@ -202,24 +207,8 @@ impl EventBus {
         username: &str,
         filters: EventQueryFilters<'_>,
     ) -> Vec<Event> {
-        let EventQueryFilters {
-            category,
-            severity,
-            limit,
-            since_minutes,
-            start,
-            end,
-        } = filters;
         if let Some(pool) = self.active_pool() {
             if self.ensure_schema().await.is_ok() {
-                let filters = EventQueryFilters {
-                    category,
-                    severity,
-                    limit,
-                    since_minutes,
-                    start,
-                    end,
-                };
                 match event_bus_db::snapshot_from_db_with_filters(
                     pool,
                     filters.to_db_query(username),
@@ -232,16 +221,7 @@ impl EventBus {
             }
         }
 
-        let history = self.snapshot_from_history(username).await;
-        filter_events(
-            history,
-            category,
-            severity,
-            limit,
-            since_minutes,
-            start,
-            end,
-        )
+        self.snapshot_from_history_filtered(username, filters).await
     }
 
     pub async fn delete_user_events_filtered(
@@ -332,14 +312,27 @@ impl EventBus {
     }
 
     async fn snapshot_from_history(&self, username: &str) -> Vec<Event> {
-        let max_records = self.settings_for_user(username).await.max_records.max(1) as i64;
+        self.snapshot_from_history_filtered(username, EventQueryFilters::default())
+            .await
+    }
+
+    async fn snapshot_from_history_filtered(
+        &self,
+        username: &str,
+        filters: EventQueryFilters<'_>,
+    ) -> Vec<Event> {
+        let max_records = self.settings_for_user(username).await.max_records.max(1);
         let history = self.history.read().await;
-        let mut data = history.get(username).cloned().unwrap_or_default();
-        let max = max_records as usize;
-        if data.len() > max {
-            data = data.split_off(data.len() - max);
-        }
-        data
+        history
+            .get(username)
+            .map(|events| {
+                let mut selected: Vec<_> =
+                    latest_matching_events(events.iter(), max_records, filters).collect();
+                // Reverse lightweight references, then clone FIFO into an exactly sized result.
+                selected.reverse();
+                selected.into_iter().cloned().collect()
+            })
+            .unwrap_or_default()
     }
 
     async fn delete_from_history_filtered(
@@ -416,7 +409,7 @@ impl EventBus {
         }
         {
             let mut history = self.history.write().await;
-            history.insert(username.to_string(), truncated.clone());
+            history.insert(username.to_string(), truncated.clone().into());
         }
         {
             let mut unread = self.unread.write().await;

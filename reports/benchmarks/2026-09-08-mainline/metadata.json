@@ -1,0 +1,397 @@
+{
+  "started_at": "2026-09-08T08:44:46.327Z",
+  "source_commit": "0fc3f9b142eebcc5284876d1c8a3c3ecb0018dd8",
+  "rustc": "rustc 1.95.0 (59807616e 2026-04-14)",
+  "node": "v18.19.1",
+  "kernel": "7.0.0-30-generic",
+  "architecture": "x64",
+  "cpu": "AMD Ryzen 7 7735H with Radeon Graphics",
+  "logical_cpus": 16,
+  "tokio_workers": 16,
+  "total_memory_bytes": 15961403392,
+  "initial_loadavg": [
+    1.11,
+    1.4,
+    1.72
+  ],
+  "repeats": 3,
+  "build_profile": "release",
+  "database": "disabled",
+  "scope": "In-process EventBus + subscriber filtering/JSON; local compiler via RunnerManager; local-file LearningStore. No HTTP, PostgreSQL, eBPF load, or remote Agent.",
+  "measurement": "Event histories are prefilled. Publish latency excludes event construction; throughput includes it. GNU time covers the entire process including setup/teardown. Runs are serial and case order rotates per round.",
+  "benchmark_sha256": {
+    "engine/examples/mainline_bench.rs": "5c7d2028737123d6f2aafc1a951e1c42d66e82c3a015ae74901ba738e6a63111",
+    "scripts/bench-mainline.mjs": "8f6187dec9aebe6fc5ed20b1654490bcfdad6535dbb27e3afa418e6c9b7c9dff"
+  },
+  "cases": [
+    {
+      "name": "events-default-w1",
+      "args": [
+        "events",
+        "100000",
+        "8",
+        "1",
+        "500",
+        "128",
+        "0",
+        "0"
+      ]
+    },
+    {
+      "name": "events-default-w4",
+      "args": [
+        "events",
+        "100000",
+        "8",
+        "4",
+        "500",
+        "128",
+        "0",
+        "0"
+      ]
+    },
+    {
+      "name": "events-default-w16",
+      "args": [
+        "events",
+        "100000",
+        "8",
+        "16",
+        "500",
+        "128",
+        "0",
+        "0"
+      ]
+    },
+    {
+      "name": "events-default-w32",
+      "args": [
+        "events",
+        "100000",
+        "8",
+        "32",
+        "500",
+        "128",
+        "0",
+        "0"
+      ]
+    },
+    {
+      "name": "events-history-5000",
+      "args": [
+        "events",
+        "30000",
+        "8",
+        "32",
+        "5000",
+        "128",
+        "0",
+        "0"
+      ]
+    },
+    {
+      "name": "events-history-20000",
+      "args": [
+        "events",
+        "20000",
+        "8",
+        "32",
+        "20000",
+        "128",
+        "0",
+        "0"
+      ]
+    },
+    {
+      "name": "events-history-50000",
+      "args": [
+        "events",
+        "10000",
+        "8",
+        "32",
+        "50000",
+        "128",
+        "0",
+        "0"
+      ]
+    },
+    {
+      "name": "events-users-1",
+      "args": [
+        "events",
+        "100000",
+        "1",
+        "32",
+        "500",
+        "128",
+        "0",
+        "0"
+      ]
+    },
+    {
+      "name": "events-users-32",
+      "args": [
+        "events",
+        "100000",
+        "32",
+        "32",
+        "500",
+        "128",
+        "0",
+        "0"
+      ]
+    },
+    {
+      "name": "events-payload-4k",
+      "args": [
+        "events",
+        "100000",
+        "8",
+        "32",
+        "500",
+        "4096",
+        "0",
+        "0"
+      ]
+    },
+    {
+      "name": "events-subscribers-8",
+      "args": [
+        "events",
+        "60000",
+        "8",
+        "32",
+        "500",
+        "128",
+        "8",
+        "0"
+      ]
+    },
+    {
+      "name": "events-subscribers-32",
+      "args": [
+        "events",
+        "60000",
+        "8",
+        "32",
+        "500",
+        "128",
+        "32",
+        "0"
+      ]
+    },
+    {
+      "name": "events-readers-default",
+      "args": [
+        "events",
+        "60000",
+        "8",
+        "32",
+        "500",
+        "128",
+        "0",
+        "8"
+      ]
+    },
+    {
+      "name": "events-readers-20k",
+      "args": [
+        "events",
+        "10000",
+        "8",
+        "32",
+        "20000",
+        "128",
+        "0",
+        "8"
+      ]
+    },
+    {
+      "name": "snapshot-500",
+      "args": [
+        "snapshots",
+        "500",
+        "128",
+        "100"
+      ]
+    },
+    {
+      "name": "snapshot-5000",
+      "args": [
+        "snapshots",
+        "5000",
+        "128",
+        "100"
+      ]
+    },
+    {
+      "name": "snapshot-20000",
+      "args": [
+        "snapshots",
+        "20000",
+        "128",
+        "100"
+      ]
+    },
+    {
+      "name": "snapshot-50000",
+      "args": [
+        "snapshots",
+        "50000",
+        "128",
+        "100"
+      ]
+    },
+    {
+      "name": "check-cold",
+      "args": [
+        "compiler",
+        "check-cold",
+        "50",
+        "1"
+      ]
+    },
+    {
+      "name": "check-warm",
+      "args": [
+        "compiler",
+        "check-warm",
+        "10000",
+        "1"
+      ]
+    },
+    {
+      "name": "check-burst32",
+      "args": [
+        "compiler",
+        "check-burst",
+        "20",
+        "32"
+      ]
+    },
+    {
+      "name": "complete-cold",
+      "args": [
+        "compiler",
+        "complete-cold",
+        "50",
+        "1"
+      ]
+    },
+    {
+      "name": "complete-warm",
+      "args": [
+        "compiler",
+        "complete-warm",
+        "10000",
+        "1"
+      ]
+    },
+    {
+      "name": "complete-burst32",
+      "args": [
+        "compiler",
+        "complete-burst",
+        "20",
+        "32"
+      ]
+    },
+    {
+      "name": "learning-recent-1000",
+      "args": [
+        "learning",
+        "recent",
+        "1000",
+        "1024",
+        "100"
+      ]
+    },
+    {
+      "name": "learning-overview-1000",
+      "args": [
+        "learning",
+        "overview",
+        "1000",
+        "1024",
+        "10"
+      ]
+    },
+    {
+      "name": "learning-record-1000",
+      "args": [
+        "learning",
+        "record",
+        "1000",
+        "1024",
+        "10"
+      ]
+    },
+    {
+      "name": "learning-recent-10000",
+      "args": [
+        "learning",
+        "recent",
+        "10000",
+        "1024",
+        "100"
+      ]
+    },
+    {
+      "name": "learning-overview-10000",
+      "args": [
+        "learning",
+        "overview",
+        "10000",
+        "1024",
+        "10"
+      ]
+    },
+    {
+      "name": "learning-record-10000",
+      "args": [
+        "learning",
+        "record",
+        "10000",
+        "1024",
+        "10"
+      ]
+    },
+    {
+      "name": "learning-recent-50000",
+      "args": [
+        "learning",
+        "recent",
+        "50000",
+        "1024",
+        "100"
+      ]
+    },
+    {
+      "name": "learning-overview-50000",
+      "args": [
+        "learning",
+        "overview",
+        "50000",
+        "1024",
+        "10"
+      ]
+    },
+    {
+      "name": "learning-record-50000",
+      "args": [
+        "learning",
+        "record",
+        "50000",
+        "1024",
+        "10"
+      ]
+    }
+  ],
+  "complete": true,
+  "finished_at": "2026-09-08T08:47:20.146Z",
+  "final_loadavg": [
+    4.37,
+    2.54,
+    2.1
+  ]
+}

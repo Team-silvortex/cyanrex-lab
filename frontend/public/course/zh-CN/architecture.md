@@ -222,7 +222,7 @@ curl -sS -X POST http://127.0.0.1:8080/runner/agent/register \
   -d '{
     "agent_id":"lab-vm-01",
     "protocol_version":1,
-    "agent_version":"0.3.3",
+    "agent_version":"0.3.4",
     "isolation":"virtual_machine",
     "max_concurrent":2,
     "capabilities":["bpftool","btf","ringbuf"],
@@ -296,6 +296,14 @@ PostgreSQL 优先保存用户、Session、事件、事件设置、脚本和学�
 - 已下载头文件及选择状态始终使用文件系统。
 
 降级可保证课堂在数据库短暂故障时继续运行，但内存用户、Session 和事件在 Engine 重启后会丢失。
+
+### 事件流恢复
+
+`/ws/events` 保持按用户发送原始 Event JSON。即使是 GET，握手也检查会话及 Origin/Referer。
+订阅在握手完成前建立；广播 lag 时发送 `1013` 关闭码，socket 发送有超时上限。
+事件中心和断点面板共用有界重连及快照恢复逻辑，恢复后仍显示可能缺失的提示。
+这只是最近历史视图，不是持久或恰好一次的重放协议。超时、客户端迁移、快照竞态与异步持久化
+限制见[事件流恢复](event-stream.md)。
 
 ## 6. 部署拓扑
 

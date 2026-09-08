@@ -1,73 +1,37 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { toWebSocketUrl } from "../../config/runtime";
+import { startEventStream, type EngineEvent, type EventStreamState } from "../events/eventStream";
 import type { EbpfBreakpointHit } from "./models";
-
-type EngineEvent = {
-  timestamp?: unknown;
-  event_type?: unknown;
-  payload?: unknown;
-};
 
 const MAX_VISIBLE_HITS = 50;
 
 export function useBreakpointHitStream(engineUrl: string, sessionId: string | null) {
   const [hits, setHits] = useState<EbpfBreakpointHit[]>([]);
-  const seenRef = useRef(new Set<string>());
+  const [streamGap, setStreamGap] = useState(false);
+  const [connection, setConnection] = useState<EventStreamState>("closed");
 
   useEffect(() => {
     setHits([]);
-    seenRef.current.clear();
+    setStreamGap(false);
+    setConnection("closed");
     if (!sessionId) {
       return;
     }
 
-    let alive = true;
-    let socket: WebSocket | null = null;
-
-    const acceptEvent = (event: EngineEvent) => {
-      if (!alive || event.event_type !== "ebpf.debug_breakpoint_hit") {
-        return;
-      }
-      const payload = event.payload;
-      if (!payload || typeof payload !== "object") {
-        return;
-      }
-      const data = payload as Record<string, unknown>;
-      if (data.debug_session_id !== sessionId || typeof data.line !== "number") {
-        return;
-      }
-      const timestamp = typeof event.timestamp === "string" ? event.timestamp : new Date().toISOString();
-      const key = `${timestamp}:${data.line}`;
-      if (seenRef.current.has(key)) {
-        return;
-      }
-      seenRef.current.add(key);
-      setHits((current) => [...current.slice(-(MAX_VISIBLE_HITS - 1)), {
-        line: data.line as number,
-        timestamp,
-      }]);
-    };
-
-    socket = new WebSocket(toWebSocketUrl(engineUrl, "/ws/events"));
-    socket.onmessage = (message) => {
-      try {
-        acceptEvent(JSON.parse(message.data as string) as EngineEvent);
-      } catch {
-        // Ignore malformed or unrelated event frames.
-      }
-    };
-
-    void fetch(`${engineUrl}/events?limit=200`, { credentials: "include" })
-      .then(async (response) => response.ok ? response.json() as Promise<EngineEvent[]> : [])
-      .then((events) => events.forEach(acceptEvent))
-      .catch(() => undefined);
-
-    return () => {
-      alive = false;
-      socket?.close();
-    };
+    const accepts = (event: EngineEvent) => event.event_type === "ebpf.debug_breakpoint_hit"
+      && event.payload.debug_session_id === sessionId && typeof event.payload.line === "number";
+    return startEventStream({
+      socketUrl: toWebSocketUrl(engineUrl, "/ws/events"),
+      snapshotUrl: `${engineUrl}/events?category=kernel&limit=200`,
+      accepts,
+      onEvents: (events) => setHits(events.slice(-MAX_VISIBLE_HITS).map((event) => ({
+        line: event.payload.line as number, timestamp: event.timestamp,
+      }))),
+      onState: setConnection,
+      onGap: () => setStreamGap(true),
+    });
   }, [engineUrl, sessionId]);
 
-  return hits;
+  return { hits, streamGap, connection };
 }

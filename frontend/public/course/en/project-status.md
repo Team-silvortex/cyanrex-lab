@@ -1,7 +1,7 @@
 # Project Status
 
-Snapshot date: **2026-09-06**
-Current release line: **0.3.3**
+Snapshot date: **2026-09-08**
+Current release line: **0.3.4**
 
 This page is the capability-level progress baseline for Cyanrex Lab. It records what is usable now,
 what remains intentionally limited, and which decisions should drive the next development cycle.
@@ -14,11 +14,11 @@ The detailed trust boundaries and data flows remain in the [system architecture]
 | Identity and authorization | Operational | Argon2 passwords, TOTP, cookie sessions, CSRF origin checks, and admin/teacher/student route guards |
 | eBPF workbench | Operational | Monaco editing, local Clang diagnostics/completion, bpftool execution, Aya tracepoint execution, attachments, source probes, and kernel event streaming |
 | Learning workflow | Operational | Five assessed labs, persisted attempts, student progress, teacher overview, bounded source review, and student-visible teacher feedback |
-| Events and persistence | Operational | User-scoped WebSocket/event center, retention policies, PostgreSQL storage, and documented memory/file fallbacks |
+| Events and persistence | Operational | User-scoped event center, FIFO retention, bounded filtered reads, explicit WebSocket lag closure and recent-history recovery, PostgreSQL storage, and documented memory/file fallbacks |
 | Local Runner | Operational | Replaceable driver boundary, global/per-user leases, timeout handling, and explicit `shared_kernel` reporting |
 | Runner Agent | Operational for remote checks | Signed registration, heartbeat, leases, cancellation, probes, and isolated compile-only diagnostics; remote eBPF loading is not enabled |
 | Deployment and distribution | Operational | Docker, WSL2, native Linux, hardened optional compiler Agent, and offline package/install tooling |
-| Release traceability | `0.3.3` version metadata prepared; artifact acceptance/publication pending | Changelog/version sync, annotated-tag preflight, checksum-bound source/archive metadata, per-image Docker content IDs, exact-image installation, and native Rust evidence/candidate verification with safe non-overwriting extraction; `0.3.0` is an API baseline only, and this snapshot does not claim an accepted `0.3.3` artifact or published tag |
+| Release traceability | `0.3.4` version metadata prepared; artifact acceptance/publication pending | Changelog/version sync, annotated-tag preflight, checksum-bound source/archive metadata, per-image Docker content IDs, exact-image installation, and native Rust evidence/candidate verification with safe non-overwriting extraction; `0.3.0` is an API baseline only, and this snapshot does not claim an accepted `0.3.4` artifact or published tag |
 | Module catalog | Operational, state-only | Versioned v1 manifests are discovered and validated at startup; lifecycle is in memory and never executes directory code |
 | JavaScript SDK | Operational internal package | Typed ESM client with 57 generated non-Agent operationId calls, a 77-member additive namespace baseline and deprecation policy, explicit `/openapi` and `/operations` exports, browser/Node sessions, cancellation, downloads, typed errors, and package-consumer smoke coverage |
 | API contract | Operational internal contract | Generated OpenAPI 3.1 served at `/openapi.json`; route/access/SDK/model drift and breaking changes against the frozen `0.3.0` baseline fail the quality gate |
@@ -28,17 +28,15 @@ The detailed trust boundaries and data flows remain in the [system architecture]
 
 The following checks passed on the snapshot date:
 
-- Rust formatting and the locked Engine suite: 153 tests passed; 2 environment-dependent integrations
-  (PostgreSQL feedback and real loopback Runner Agent compilation) remain ignored in the default gate.
+- Rust formatting and the locked Engine suite: 174 tests passed; 4 tests remain ignored in the default
+  gate (external PostgreSQL and Runner Agent integrations, plus two explicitly manual benchmarks).
 - Next.js production build: 17 statically generated routes with TypeScript validation.
-- Frontend regressions: 16 tests covering permissions, Terminal commands, teacher review/feedback, performance
-  hotspot logic, security headers, and macOS metadata cleanup; the SDK has 11 transport/operation
+- Frontend regressions: 29 tests covering permissions, Terminal commands, teacher review/feedback, event
+  recovery, performance hotspot logic, security headers, and macOS metadata cleanup; the SDK has 11 transport/operation
   regressions, a compile-time operation fixture, plus 3 package-manifest/import smoke checks.
-- File-length, version/changelog/course-copy sync, OpenAPI generation/route/access/model/compatibility checks with 28
-  contract, compatibility, and schema/operation-generator regressions, Runner Agent tooling, distribution tooling, and both Compose profile
-  configuration checks.
-- Production npm dependency audits: zero vulnerabilities. The additional RustSec audit could not run
-  because `cargo-audit` is not installed in this environment; no fresh RustSec result is claimed.
+- File-length, version/changelog/course-copy sync, OpenAPI generation/route/access/model/compatibility checks
+  with 43 common tooling regressions, plus Runner Agent and distribution tooling checks.
+- Production npm dependency audits and the RustSec audit passed, with no reported vulnerabilities.
 
 This local snapshot did not start the privileged Engine or run the destructive disposable-host offline
 installation smoke. The annotated-Tag candidate workflow now enables the packaged live Aya
@@ -47,6 +45,19 @@ environment-level evidence and is not claimed by the local checks listed above. 
 can recheck v1/v2 schema, release metadata binding, event identity, and cleanup without kernel access;
 the repository verifier additionally checks the complete downloaded artifact and can manually extract
 only verified regular files without invoking `tar` or replacing an existing output.
+
+## Event performance and recovery (2026-09-08, included in 0.3.4)
+
+- Replaced full-history head shifts with FIFO deques and selected matching references before copying
+  limited snapshots. Added isolated release benchmarks; their original source/version fingerprints remain
+  unchanged by the patch bump and are not release-artifact acceptance evidence.
+- WebSocket lag now closes explicitly, blocked sends time out, and both browser consumers reconnect with
+  bounded snapshots, cancellation and visible possible-gap notices. Recovery is limited to retained history.
+- Cookie-authenticated WebSocket handshakes also enforce the Origin/Referer policy; native clients must
+  supply an allowed source. See [Event Stream Recovery](event-stream.md) for compatibility and limits.
+- Separately verified nine real loopback pressure runs and a production-page Chromium smoke with mock
+  HTTP/WebSocket fixtures. Global broadcast fan-out and durable cursor-based replay remain future work.
+- Fixed Docker build input coverage and bounded retry handling for transient npm audit failures.
 
 ## Teaching mainline update (2026-09-05, included in 0.3.3)
 

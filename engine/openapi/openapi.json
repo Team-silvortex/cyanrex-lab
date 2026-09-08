@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Cyanrex Lab Engine API",
-    "version": "0.3.3",
+    "version": "0.3.4",
     "description": "Machine-readable contract for the Cyanrex teaching control and execution plane."
   },
   "servers": [
@@ -1589,7 +1589,7 @@
         ],
         "responses": {
           "101": {
-            "description": "WebSocket protocol upgrade"
+            "description": "Cookie-authenticated WebSocket; requires an allowed Origin/Referer (same CSRF policy as state changes). Text frames remain raw EventRecord JSON. Broadcast lag closes with code 1013 and reason 'event stream lagged; reload /events'. Sends time out after 5s (the peer may observe abnormal closure); close sends are bounded to 1s. Reconnect with backoff, then reload retained recent /events history. No durable cursor, exactly-once delivery, or complete gap recovery is guaranteed."
           }
         },
         "x-cyanrex-access": "authenticated",

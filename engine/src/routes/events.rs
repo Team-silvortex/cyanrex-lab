@@ -2,10 +2,7 @@ use std::sync::Arc;
 
 use crate::services::event_bus::EventQueryFilters;
 use axum::{
-    extract::{
-        ws::{Message, WebSocket, WebSocketUpgrade},
-        Query, State,
-    },
+    extract::{ws::WebSocketUpgrade, Query, State},
     http::{header, HeaderMap, HeaderValue, StatusCode},
     response::{IntoResponse, Response},
     Json,
@@ -13,6 +10,8 @@ use axum::{
 use serde::Deserialize;
 
 use crate::{models::event::Event, AppState};
+
+mod stream;
 
 const DEFAULT_EVENT_LIMIT: usize = 200;
 const MAX_EVENT_LIMIT: usize = 500;
@@ -139,7 +138,9 @@ pub async fn ws_events(
     headers: HeaderMap,
 ) -> Response {
     let username = current_username_from_headers(&state, &headers).await;
-    ws.on_upgrade(move |socket| handle_ws(socket, state, username))
+    // Subscribe before completing the handshake so the client's open notification is a barrier.
+    let receiver = state.event_bus.subscribe();
+    ws.on_upgrade(move |socket| stream::handle_ws(socket, receiver, username))
 }
 
 pub async fn unread_count(
@@ -158,42 +159,6 @@ pub async fn mark_read(
     let username = current_username_from_headers(&state, &headers).await;
     state.event_bus.mark_all_read_for_user(&username).await;
     Json(serde_json::json!({ "ok": true }))
-}
-
-async fn handle_ws(mut socket: WebSocket, state: Arc<AppState>, username: String) {
-    let mut receiver = state.event_bus.subscribe();
-
-    loop {
-        tokio::select! {
-            maybe_msg = socket.recv() => {
-                match maybe_msg {
-                    Some(Ok(Message::Close(_))) | None => break,
-                    Some(Ok(_)) => {}
-                    Some(Err(_)) => break,
-                }
-            }
-            maybe_event = receiver.recv() => {
-                match maybe_event {
-                    Ok(event) => {
-                        if event.username != username {
-                            continue;
-                        }
-                        let text = match serde_json::to_string(&event) {
-                            Ok(value) => value,
-                            Err(_) => continue,
-                        };
-                        if socket.send(Message::Text(text.into())).await.is_err() {
-                            break;
-                        }
-                    }
-                    Err(tokio::sync::broadcast::error::RecvError::Lagged(_)) => {
-                        continue;
-                    }
-                    Err(tokio::sync::broadcast::error::RecvError::Closed) => break,
-                }
-            }
-        }
-    }
 }
 
 async fn current_username_from_headers(state: &Arc<AppState>, headers: &HeaderMap) -> String {

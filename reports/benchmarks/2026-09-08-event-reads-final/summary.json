@@ -1,0 +1,328 @@
+[
+  {
+    "name": "latest-500",
+    "kind": "latest",
+    "records": 500,
+    "metrics": {
+      "result.snapshot.p95_us": {
+        "median": 50.956,
+        "min": 49.522,
+        "max": 51.134
+      },
+      "resource.max_rss_kib": {
+        "median": 7764,
+        "min": 7756,
+        "max": 7880
+      }
+    }
+  },
+  {
+    "name": "filtered-500",
+    "kind": "filtered",
+    "records": 500,
+    "metrics": {
+      "result.snapshot.p95_us": {
+        "median": 6.25,
+        "min": 6.199,
+        "max": 6.768
+      },
+      "resource.max_rss_kib": {
+        "median": 8196,
+        "min": 7688,
+        "max": 8396
+      }
+    }
+  },
+  {
+    "name": "miss-500",
+    "kind": "miss",
+    "records": 500,
+    "metrics": {
+      "result.snapshot.p95_us": {
+        "median": 1.512,
+        "min": 1.503,
+        "max": 1.532
+      },
+      "resource.max_rss_kib": {
+        "median": 8292,
+        "min": 8208,
+        "max": 8420
+      }
+    }
+  },
+  {
+    "name": "full-500",
+    "kind": "full",
+    "records": 500,
+    "metrics": {
+      "result.snapshot.p95_us": {
+        "median": 105.243,
+        "min": 104.982,
+        "max": 105.998
+      },
+      "resource.max_rss_kib": {
+        "median": 8092,
+        "min": 7548,
+        "max": 8280
+      }
+    }
+  },
+  {
+    "name": "latest-5000",
+    "kind": "latest",
+    "records": 5000,
+    "metrics": {
+      "result.snapshot.p95_us": {
+        "median": 44.957,
+        "min": 40.288,
+        "max": 49.144
+      },
+      "resource.max_rss_kib": {
+        "median": 17028,
+        "min": 16928,
+        "max": 17052
+      }
+    }
+  },
+  {
+    "name": "filtered-5000",
+    "kind": "filtered",
+    "records": 5000,
+    "metrics": {
+      "result.snapshot.p95_us": {
+        "median": 66.62,
+        "min": 51.104,
+        "max": 72.321
+      },
+      "resource.max_rss_kib": {
+        "median": 17056,
+        "min": 16980,
+        "max": 17208
+      }
+    }
+  },
+  {
+    "name": "miss-5000",
+    "kind": "miss",
+    "records": 5000,
+    "metrics": {
+      "result.snapshot.p95_us": {
+        "median": 14.051,
+        "min": 13.667,
+        "max": 17.835
+      },
+      "resource.max_rss_kib": {
+        "median": 16864,
+        "min": 16784,
+        "max": 17008
+      }
+    }
+  },
+  {
+    "name": "full-5000",
+    "kind": "full",
+    "records": 5000,
+    "metrics": {
+      "result.snapshot.p95_us": {
+        "median": 755.505,
+        "min": 737.403,
+        "max": 1002.694
+      },
+      "resource.max_rss_kib": {
+        "median": 17316,
+        "min": 17248,
+        "max": 17544
+      }
+    }
+  },
+  {
+    "name": "latest-20000",
+    "kind": "latest",
+    "records": 20000,
+    "metrics": {
+      "result.snapshot.p95_us": {
+        "median": 37.286,
+        "min": 35.716,
+        "max": 37.823
+      },
+      "resource.max_rss_kib": {
+        "median": 48128,
+        "min": 48088,
+        "max": 48308
+      }
+    }
+  },
+  {
+    "name": "filtered-20000",
+    "kind": "filtered",
+    "records": 20000,
+    "metrics": {
+      "result.snapshot.p95_us": {
+        "median": 49.833,
+        "min": 48.117,
+        "max": 51.527
+      },
+      "resource.max_rss_kib": {
+        "median": 48116,
+        "min": 48028,
+        "max": 48184
+      }
+    }
+  },
+  {
+    "name": "miss-20000",
+    "kind": "miss",
+    "records": 20000,
+    "metrics": {
+      "result.snapshot.p95_us": {
+        "median": 86.44,
+        "min": 63.741,
+        "max": 95.202
+      },
+      "resource.max_rss_kib": {
+        "median": 48456,
+        "min": 48152,
+        "max": 48484
+      }
+    }
+  },
+  {
+    "name": "full-20000",
+    "kind": "full",
+    "records": 20000,
+    "metrics": {
+      "result.snapshot.p95_us": {
+        "median": 3801.049,
+        "min": 3740.714,
+        "max": 3925.056
+      },
+      "resource.max_rss_kib": {
+        "median": 48728,
+        "min": 48496,
+        "max": 48736
+      }
+    }
+  },
+  {
+    "name": "latest-50000",
+    "kind": "latest",
+    "records": 50000,
+    "metrics": {
+      "result.snapshot.p95_us": {
+        "median": 36.707,
+        "min": 35.684,
+        "max": 37.622
+      },
+      "resource.max_rss_kib": {
+        "median": 110480,
+        "min": 110456,
+        "max": 110532
+      }
+    }
+  },
+  {
+    "name": "filtered-50000",
+    "kind": "filtered",
+    "records": 50000,
+    "metrics": {
+      "result.snapshot.p95_us": {
+        "median": 51.192,
+        "min": 51.186,
+        "max": 51.768
+      },
+      "resource.max_rss_kib": {
+        "median": 110644,
+        "min": 110384,
+        "max": 110656
+      }
+    }
+  },
+  {
+    "name": "miss-50000",
+    "kind": "miss",
+    "records": 50000,
+    "metrics": {
+      "result.snapshot.p95_us": {
+        "median": 186.029,
+        "min": 141.517,
+        "max": 235.532
+      },
+      "resource.max_rss_kib": {
+        "median": 110388,
+        "min": 110304,
+        "max": 110468
+      }
+    }
+  },
+  {
+    "name": "full-50000",
+    "kind": "full",
+    "records": 50000,
+    "metrics": {
+      "result.snapshot.p95_us": {
+        "median": 9451.366,
+        "min": 9203.585,
+        "max": 10871.879
+      },
+      "resource.max_rss_kib": {
+        "median": 111280,
+        "min": 111188,
+        "max": 111280
+      }
+    }
+  },
+  {
+    "name": "mixed-500",
+    "kind": "mixed",
+    "records": 500,
+    "metrics": {
+      "result.throughput": {
+        "median": 610672.599419669,
+        "min": 600841.409277418,
+        "max": 612493.7792946799
+      },
+      "result.publish.p95_us": {
+        "median": 71.036,
+        "min": 70.091,
+        "max": 71.877
+      },
+      "result.snapshot.p95_us": {
+        "median": 422.344,
+        "min": 419.331,
+        "max": 459.67
+      },
+      "resource.max_rss_kib": {
+        "median": 25120,
+        "min": 24732,
+        "max": 25736
+      }
+    }
+  },
+  {
+    "name": "mixed-20000",
+    "kind": "mixed",
+    "records": 20000,
+    "metrics": {
+      "result.throughput": {
+        "median": 592600.0978268464,
+        "min": 587324.0283601533,
+        "max": 599381.1529362918
+      },
+      "result.publish.p95_us": {
+        "median": 72.555,
+        "min": 72.54,
+        "max": 74.631
+      },
+      "result.snapshot.p95_us": {
+        "median": 384.154,
+        "min": 349.291,
+        "max": 471.176
+      },
+      "resource.max_rss_kib": {
+        "median": 211912,
+        "min": 211492,
+        "max": 217316
+      }
+    }
+  }
+]

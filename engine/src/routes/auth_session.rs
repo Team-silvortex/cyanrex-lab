@@ -101,7 +101,9 @@ pub async fn csrf_guard(
     request: Request,
     next: Next,
 ) -> Response {
-    if is_csrf_safe_method(request.method()) {
+    // A cookie-authenticated WebSocket GET grants a long-lived read channel. CORS alone does
+    // not protect its handshake; apply the same explicit Origin/Referer policy as state changes.
+    if is_csrf_safe_method(request.method()) && request.uri().path() != "/ws/events" {
         return next.run(request).await;
     }
 

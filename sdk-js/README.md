@@ -44,6 +44,12 @@ The generated dispatcher also preserves non-JSON behavior: `getEventsExport` ret
 and `getWsEvents` resolves to the authenticated WebSocket URL. Existing namespaces remain the stable,
 task-oriented facade; the operationId surface is additive.
 
+Event sockets require the session cookie and an allowed Origin/Referer, including for native clients;
+the URL helper does not attach those headers or manage reconnects. Frames remain raw Event records.
+Code `1013` means possible broadcast lag: reconnect with backoff and refresh retained `/events` history.
+Slow sends can instead end abnormally. Complete replay is not guaranteed; see
+[Event Stream Recovery](../docs/en/event-stream.md) for migration and recovery limits.
+
 The additive-only namespace baseline and deprecation window are defined in [STABILITY.md](STABILITY.md).
 The quality gate rejects removal or renaming of any captured public client path.
 

@@ -46,6 +46,8 @@ export default function EbpfPage() {
     saveCurrentScript,
     debugBreakpoints,
     breakpointHits,
+    breakpointStreamGap,
+    breakpointConnection,
     lastBreakpointHit,
     activeLabProgress,
     clearDebugBreakpoints,
@@ -282,6 +284,10 @@ export default function EbpfPage() {
             </p>
           )}
         </div>
+
+        {breakpointStreamGap && <p className="meta" role="status">
+          {t("events.streamGap")} ({t(`events.connection${breakpointConnection[0].toUpperCase()}${breakpointConnection.slice(1)}`)})
+        </p>}
 
         <div className="grid cols-2" style={{ marginTop: 12 }}>
           <div>

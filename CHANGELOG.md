@@ -5,8 +5,28 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.3.4] - 2026-09-08
+
+### Changed
+
+- In-memory event histories now use FIFO deques and evict before insertion, avoiding steady-state
+  head shifts and extra growth at full retention while preserving overflow, ordering, and unread behavior.
+- Added isolated release-mode mainline benchmarks and event-history regressions covering rollover,
+  capacity changes, filtering, replacement, broadcast delivery, and concurrent user isolation.
+- In-memory event queries now select matching references within retention before cloning the requested
+  page, stopping once the limit is satisfied and preserving FIFO responses, time filters, and full exports.
+- Added private filtered-read benchmarks plus differential and bounded-visit regressions, without
+  exposing new Engine endpoints or changing database queries.
+- Event WebSockets preserve raw Event JSON while closing explicitly on lag and bounding data/close
+  sends. Both browser consumers now reconnect with backoff, refresh recent history, cancel stale
+  snapshots, bound buffers, and keep possible-gap notices visible; recovery is not durable replay.
+- Added real loopback WebSocket pressure checks and client recovery regressions to cover overload,
+  stalled peers, snapshot/live overlap, filters, and cancellation without kernel or database access.
+
 ### Fixed
 
+- Cookie-authenticated event WebSocket handshakes now apply the existing Origin/Referer CSRF policy.
+  Native clients must send an allowed Origin or explicitly opt into the existing missing-origin override.
 - Engine Docker builds now include the OpenAPI document and SQL migrations required at compile time,
   while using the committed Cargo lockfile.
 - Frontend Docker builds now use a context-local metadata cleanup hook instead of depending on a
@@ -123,7 +143,8 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 The canonical package metadata advanced directly from `0.2.9` to `0.3.1`. Version `0.3.0` identifies
 the frozen API compatibility snapshot only; it was not a package release and must not be tagged.
 
-[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.3...HEAD
+[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.4...HEAD
+[0.3.4]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.3...v0.3.4
 [0.3.3]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.2.9...v0.3.1

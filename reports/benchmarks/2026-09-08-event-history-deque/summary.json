@@ -1,0 +1,4063 @@
+[
+  {
+    "case": "events-default-w1",
+    "args": [
+      "events",
+      "100000",
+      "8",
+      "1",
+      "500",
+      "128",
+      "0",
+      "0"
+    ],
+    "repeats": 3,
+    "metrics": {
+      "result.broadcast_lagged": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.broadcast_received": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.delivered": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.elapsed_seconds": {
+        "median": 0.088327337,
+        "min": 0.085947184,
+        "max": 0.114252165
+      },
+      "result.events": {
+        "median": 100000,
+        "min": 100000,
+        "max": 100000
+      },
+      "result.expected_deliveries": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.payload_bytes": {
+        "median": 128,
+        "min": 128,
+        "max": 128
+      },
+      "result.publish.count": {
+        "median": 100000,
+        "min": 100000,
+        "max": 100000
+      },
+      "result.publish.max_us": {
+        "median": 27.57,
+        "min": 25.475,
+        "max": 72.287
+      },
+      "result.publish.mean_us": {
+        "median": 0.6992363500000001,
+        "min": 0.68129083,
+        "max": 0.94119358
+      },
+      "result.publish.p50_us": {
+        "median": 0.641,
+        "min": 0.601,
+        "max": 0.772
+      },
+      "result.publish.p95_us": {
+        "median": 1.032,
+        "min": 0.952,
+        "max": 1.863
+      },
+      "result.publish.p99_us": {
+        "median": 1.893,
+        "min": 1.874,
+        "max": 2.585
+      },
+      "result.readers": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.records": {
+        "median": 500,
+        "min": 500,
+        "max": 500
+      },
+      "result.serialized_bytes": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.snapshot.count": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.subscribers": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.throughput": {
+        "median": 1132152.3256157942,
+        "min": 875256.9371442546,
+        "max": 1163505.2522488695
+      },
+      "result.users": {
+        "median": 8,
+        "min": 8,
+        "max": 8
+      },
+      "result.writers": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      },
+      "resource.wall_seconds": {
+        "median": 0.09,
+        "min": 0.09,
+        "max": 0.12
+      },
+      "resource.user_seconds": {
+        "median": 0.09,
+        "min": 0.09,
+        "max": 0.12
+      },
+      "resource.system_seconds": {
+        "median": 0.01,
+        "min": 0.01,
+        "max": 0.01
+      },
+      "resource.max_rss_kib": {
+        "median": 12916,
+        "min": 12804,
+        "max": 13052
+      },
+      "resource.voluntary_switches": {
+        "median": 2360,
+        "min": 2184,
+        "max": 2368
+      },
+      "resource.involuntary_switches": {
+        "median": 19,
+        "min": 13,
+        "max": 34
+      }
+    }
+  },
+  {
+    "case": "events-default-w4",
+    "args": [
+      "events",
+      "100000",
+      "8",
+      "4",
+      "500",
+      "128",
+      "0",
+      "0"
+    ],
+    "repeats": 3,
+    "metrics": {
+      "result.broadcast_lagged": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.broadcast_received": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.delivered": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.elapsed_seconds": {
+        "median": 0.163564432,
+        "min": 0.159348607,
+        "max": 0.168366793
+      },
+      "result.events": {
+        "median": 100000,
+        "min": 100000,
+        "max": 100000
+      },
+      "result.expected_deliveries": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.payload_bytes": {
+        "median": 128,
+        "min": 128,
+        "max": 128
+      },
+      "result.publish.count": {
+        "median": 100000,
+        "min": 100000,
+        "max": 100000
+      },
+      "result.publish.max_us": {
+        "median": 1705.202,
+        "min": 434.946,
+        "max": 4046.628
+      },
+      "result.publish.mean_us": {
+        "median": 6.28071651,
+        "min": 6.101476249999999,
+        "max": 6.412574569999999
+      },
+      "result.publish.p50_us": {
+        "median": 5.66,
+        "min": 5.42,
+        "max": 5.86
+      },
+      "result.publish.p95_us": {
+        "median": 8.665,
+        "min": 8.515,
+        "max": 8.816
+      },
+      "result.publish.p99_us": {
+        "median": 12.232,
+        "min": 11.931,
+        "max": 12.592
+      },
+      "result.readers": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.records": {
+        "median": 500,
+        "min": 500,
+        "max": 500
+      },
+      "result.serialized_bytes": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.snapshot.count": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.subscribers": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.throughput": {
+        "median": 611379.8628298357,
+        "min": 593941.3480424255,
+        "max": 627554.9054532996
+      },
+      "result.users": {
+        "median": 8,
+        "min": 8,
+        "max": 8
+      },
+      "result.writers": {
+        "median": 4,
+        "min": 4,
+        "max": 4
+      },
+      "resource.wall_seconds": {
+        "median": 0.17,
+        "min": 0.16,
+        "max": 0.18
+      },
+      "resource.user_seconds": {
+        "median": 0.19,
+        "min": 0.18,
+        "max": 0.19
+      },
+      "resource.system_seconds": {
+        "median": 0.05,
+        "min": 0.05,
+        "max": 0.06
+      },
+      "resource.max_rss_kib": {
+        "median": 11980,
+        "min": 11924,
+        "max": 12180
+      },
+      "resource.voluntary_switches": {
+        "median": 24103,
+        "min": 21465,
+        "max": 24450
+      },
+      "resource.involuntary_switches": {
+        "median": 56,
+        "min": 36,
+        "max": 78
+      }
+    }
+  },
+  {
+    "case": "events-default-w16",
+    "args": [
+      "events",
+      "100000",
+      "8",
+      "16",
+      "500",
+      "128",
+      "0",
+      "0"
+    ],
+    "repeats": 3,
+    "metrics": {
+      "result.broadcast_lagged": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.broadcast_received": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.delivered": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.elapsed_seconds": {
+        "median": 0.160122988,
+        "min": 0.155528187,
+        "max": 0.172751534
+      },
+      "result.events": {
+        "median": 100000,
+        "min": 100000,
+        "max": 100000
+      },
+      "result.expected_deliveries": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.payload_bytes": {
+        "median": 128,
+        "min": 128,
+        "max": 128
+      },
+      "result.publish.count": {
+        "median": 100000,
+        "min": 100000,
+        "max": 100000
+      },
+      "result.publish.max_us": {
+        "median": 171.988,
+        "min": 144.034,
+        "max": 389.266
+      },
+      "result.publish.mean_us": {
+        "median": 25.30394163,
+        "min": 24.5405376,
+        "max": 27.29607892
+      },
+      "result.publish.p50_us": {
+        "median": 22.089,
+        "min": 22.01,
+        "max": 28.13
+      },
+      "result.publish.p95_us": {
+        "median": 35.362,
+        "min": 33.14,
+        "max": 36.264
+      },
+      "result.publish.p99_us": {
+        "median": 43.788,
+        "min": 43.356,
+        "max": 45.53
+      },
+      "result.readers": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.records": {
+        "median": 500,
+        "min": 500,
+        "max": 500
+      },
+      "result.serialized_bytes": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.snapshot.count": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.subscribers": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.throughput": {
+        "median": 624519.9471296401,
+        "min": 578866.0608941393,
+        "max": 642970.2675052722
+      },
+      "result.users": {
+        "median": 8,
+        "min": 8,
+        "max": 8
+      },
+      "result.writers": {
+        "median": 16,
+        "min": 16,
+        "max": 16
+      },
+      "resource.wall_seconds": {
+        "median": 0.16,
+        "min": 0.16,
+        "max": 0.18
+      },
+      "resource.user_seconds": {
+        "median": 0.19,
+        "min": 0.17,
+        "max": 0.21
+      },
+      "resource.system_seconds": {
+        "median": 0.05,
+        "min": 0.05,
+        "max": 0.07
+      },
+      "resource.max_rss_kib": {
+        "median": 12276,
+        "min": 12224,
+        "max": 12496
+      },
+      "resource.voluntary_switches": {
+        "median": 24807,
+        "min": 24434,
+        "max": 24945
+      },
+      "resource.involuntary_switches": {
+        "median": 25,
+        "min": 15,
+        "max": 53
+      }
+    }
+  },
+  {
+    "case": "events-default-w32",
+    "args": [
+      "events",
+      "100000",
+      "8",
+      "32",
+      "500",
+      "128",
+      "0",
+      "0"
+    ],
+    "repeats": 3,
+    "metrics": {
+      "result.broadcast_lagged": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.broadcast_received": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.delivered": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.elapsed_seconds": {
+        "median": 0.167979899,
+        "min": 0.143829722,
+        "max": 0.174531159
+      },
+      "result.events": {
+        "median": 100000,
+        "min": 100000,
+        "max": 100000
+      },
+      "result.expected_deliveries": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.payload_bytes": {
+        "median": 128,
+        "min": 128,
+        "max": 128
+      },
+      "result.publish.count": {
+        "median": 100000,
+        "min": 100000,
+        "max": 100000
+      },
+      "result.publish.max_us": {
+        "median": 344.597,
+        "min": 216.988,
+        "max": 798.307
+      },
+      "result.publish.mean_us": {
+        "median": 53.30686582,
+        "min": 45.63020718,
+        "max": 55.340084170000004
+      },
+      "result.publish.p50_us": {
+        "median": 51.401,
+        "min": 41.114,
+        "max": 55.758
+      },
+      "result.publish.p95_us": {
+        "median": 73.58,
+        "min": 63.444,
+        "max": 74.481
+      },
+      "result.publish.p99_us": {
+        "median": 97.421,
+        "min": 77.048,
+        "max": 97.872
+      },
+      "result.readers": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.records": {
+        "median": 500,
+        "min": 500,
+        "max": 500
+      },
+      "result.serialized_bytes": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.snapshot.count": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.subscribers": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.throughput": {
+        "median": 595309.3232899253,
+        "min": 572963.5932802119,
+        "max": 695266.5875277156
+      },
+      "result.users": {
+        "median": 8,
+        "min": 8,
+        "max": 8
+      },
+      "result.writers": {
+        "median": 32,
+        "min": 32,
+        "max": 32
+      },
+      "resource.wall_seconds": {
+        "median": 0.17,
+        "min": 0.15,
+        "max": 0.18
+      },
+      "resource.user_seconds": {
+        "median": 0.19,
+        "min": 0.16,
+        "max": 0.2
+      },
+      "resource.system_seconds": {
+        "median": 0.06,
+        "min": 0.06,
+        "max": 0.07
+      },
+      "resource.max_rss_kib": {
+        "median": 12720,
+        "min": 12196,
+        "max": 12900
+      },
+      "resource.voluntary_switches": {
+        "median": 24406,
+        "min": 22599,
+        "max": 24452
+      },
+      "resource.involuntary_switches": {
+        "median": 56,
+        "min": 34,
+        "max": 63
+      }
+    }
+  },
+  {
+    "case": "events-history-5000",
+    "args": [
+      "events",
+      "30000",
+      "8",
+      "32",
+      "5000",
+      "128",
+      "0",
+      "0"
+    ],
+    "repeats": 3,
+    "metrics": {
+      "result.broadcast_lagged": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.broadcast_received": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.delivered": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.elapsed_seconds": {
+        "median": 0.045666905,
+        "min": 0.04500352,
+        "max": 0.057331853
+      },
+      "result.events": {
+        "median": 30000,
+        "min": 30000,
+        "max": 30000
+      },
+      "result.expected_deliveries": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.payload_bytes": {
+        "median": 128,
+        "min": 128,
+        "max": 128
+      },
+      "result.publish.count": {
+        "median": 30000,
+        "min": 30000,
+        "max": 30000
+      },
+      "result.publish.max_us": {
+        "median": 170.74,
+        "min": 157.793,
+        "max": 218.536
+      },
+      "result.publish.mean_us": {
+        "median": 48.3519533,
+        "min": 47.61063246666667,
+        "max": 60.7044425
+      },
+      "result.publish.p50_us": {
+        "median": 42.435,
+        "min": 42.315,
+        "max": 62.299
+      },
+      "result.publish.p95_us": {
+        "median": 67.982,
+        "min": 65.626,
+        "max": 77.637
+      },
+      "result.publish.p99_us": {
+        "median": 91.07,
+        "min": 90.852,
+        "max": 95.939
+      },
+      "result.readers": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.records": {
+        "median": 5000,
+        "min": 5000,
+        "max": 5000
+      },
+      "result.serialized_bytes": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.snapshot.count": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.subscribers": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.throughput": {
+        "median": 656930.8780614758,
+        "min": 523269.3246457602,
+        "max": 666614.5225973435
+      },
+      "result.users": {
+        "median": 8,
+        "min": 8,
+        "max": 8
+      },
+      "result.writers": {
+        "median": 32,
+        "min": 32,
+        "max": 32
+      },
+      "resource.wall_seconds": {
+        "median": 0.11,
+        "min": 0.1,
+        "max": 0.12
+      },
+      "resource.user_seconds": {
+        "median": 0.09,
+        "min": 0.08,
+        "max": 0.1
+      },
+      "resource.system_seconds": {
+        "median": 0.04,
+        "min": 0.03,
+        "max": 0.04
+      },
+      "resource.max_rss_kib": {
+        "median": 53628,
+        "min": 53288,
+        "max": 53864
+      },
+      "resource.voluntary_switches": {
+        "median": 7322,
+        "min": 6863,
+        "max": 7573
+      },
+      "resource.involuntary_switches": {
+        "median": 24,
+        "min": 8,
+        "max": 32
+      }
+    }
+  },
+  {
+    "case": "events-history-20000",
+    "args": [
+      "events",
+      "20000",
+      "8",
+      "32",
+      "20000",
+      "128",
+      "0",
+      "0"
+    ],
+    "repeats": 3,
+    "metrics": {
+      "result.broadcast_lagged": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.broadcast_received": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.delivered": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.elapsed_seconds": {
+        "median": 0.030955882,
+        "min": 0.02904859,
+        "max": 0.033216499
+      },
+      "result.events": {
+        "median": 20000,
+        "min": 20000,
+        "max": 20000
+      },
+      "result.expected_deliveries": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.payload_bytes": {
+        "median": 128,
+        "min": 128,
+        "max": 128
+      },
+      "result.publish.count": {
+        "median": 20000,
+        "min": 20000,
+        "max": 20000
+      },
+      "result.publish.max_us": {
+        "median": 165.852,
+        "min": 137.456,
+        "max": 236.987
+      },
+      "result.publish.mean_us": {
+        "median": 49.1329433,
+        "min": 46.046246350000004,
+        "max": 52.71858375
+      },
+      "result.publish.p50_us": {
+        "median": 42.605,
+        "min": 41.033,
+        "max": 47.233
+      },
+      "result.publish.p95_us": {
+        "median": 68.731,
+        "min": 61.611,
+        "max": 76.604
+      },
+      "result.publish.p99_us": {
+        "median": 85.721,
+        "min": 81.165,
+        "max": 103.072
+      },
+      "result.readers": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.records": {
+        "median": 20000,
+        "min": 20000,
+        "max": 20000
+      },
+      "result.serialized_bytes": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.snapshot.count": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.subscribers": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.throughput": {
+        "median": 646080.7674612534,
+        "min": 602110.4150681263,
+        "max": 688501.5761522332
+      },
+      "result.users": {
+        "median": 8,
+        "min": 8,
+        "max": 8
+      },
+      "result.writers": {
+        "median": 32,
+        "min": 32,
+        "max": 32
+      },
+      "resource.wall_seconds": {
+        "median": 0.27,
+        "min": 0.27,
+        "max": 0.28
+      },
+      "resource.user_seconds": {
+        "median": 0.19,
+        "min": 0.17,
+        "max": 0.19
+      },
+      "resource.system_seconds": {
+        "median": 0.11,
+        "min": 0.1,
+        "max": 0.12
+      },
+      "resource.max_rss_kib": {
+        "median": 193980,
+        "min": 193564,
+        "max": 194132
+      },
+      "resource.voluntary_switches": {
+        "median": 5018,
+        "min": 4812,
+        "max": 5064
+      },
+      "resource.involuntary_switches": {
+        "median": 19,
+        "min": 16,
+        "max": 24
+      }
+    }
+  },
+  {
+    "case": "events-history-50000",
+    "args": [
+      "events",
+      "10000",
+      "8",
+      "32",
+      "50000",
+      "128",
+      "0",
+      "0"
+    ],
+    "repeats": 3,
+    "metrics": {
+      "result.broadcast_lagged": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.broadcast_received": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.delivered": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.elapsed_seconds": {
+        "median": 0.01514519,
+        "min": 0.014781999,
+        "max": 0.015974019
+      },
+      "result.events": {
+        "median": 10000,
+        "min": 10000,
+        "max": 10000
+      },
+      "result.expected_deliveries": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.payload_bytes": {
+        "median": 128,
+        "min": 128,
+        "max": 128
+      },
+      "result.publish.count": {
+        "median": 10000,
+        "min": 10000,
+        "max": 10000
+      },
+      "result.publish.max_us": {
+        "median": 109.283,
+        "min": 103.936,
+        "max": 118.138
+      },
+      "result.publish.mean_us": {
+        "median": 47.613362200000005,
+        "min": 46.673057899999996,
+        "max": 50.4298814
+      },
+      "result.publish.p50_us": {
+        "median": 43.897,
+        "min": 41.534,
+        "max": 49.95
+      },
+      "result.publish.p95_us": {
+        "median": 66.287,
+        "min": 63.171,
+        "max": 68.122
+      },
+      "result.publish.p99_us": {
+        "median": 79.823,
+        "min": 79.38,
+        "max": 87.885
+      },
+      "result.readers": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.records": {
+        "median": 50000,
+        "min": 50000,
+        "max": 50000
+      },
+      "result.serialized_bytes": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.snapshot.count": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.subscribers": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.throughput": {
+        "median": 660275.6386681184,
+        "min": 626016.533472259,
+        "max": 676498.4898185963
+      },
+      "result.users": {
+        "median": 8,
+        "min": 8,
+        "max": 8
+      },
+      "result.writers": {
+        "median": 32,
+        "min": 32,
+        "max": 32
+      },
+      "resource.wall_seconds": {
+        "median": 0.65,
+        "min": 0.65,
+        "max": 0.66
+      },
+      "resource.user_seconds": {
+        "median": 0.39,
+        "min": 0.38,
+        "max": 0.42
+      },
+      "resource.system_seconds": {
+        "median": 0.26,
+        "min": 0.24,
+        "max": 0.27
+      },
+      "resource.max_rss_kib": {
+        "median": 473992,
+        "min": 473968,
+        "max": 474292
+      },
+      "resource.voluntary_switches": {
+        "median": 2544,
+        "min": 2528,
+        "max": 2599
+      },
+      "resource.involuntary_switches": {
+        "median": 45,
+        "min": 34,
+        "max": 46
+      }
+    }
+  },
+  {
+    "case": "events-users-1",
+    "args": [
+      "events",
+      "100000",
+      "1",
+      "32",
+      "500",
+      "128",
+      "0",
+      "0"
+    ],
+    "repeats": 3,
+    "metrics": {
+      "result.broadcast_lagged": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.broadcast_received": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.delivered": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.elapsed_seconds": {
+        "median": 0.142263329,
+        "min": 0.139371082,
+        "max": 0.146030343
+      },
+      "result.events": {
+        "median": 100000,
+        "min": 100000,
+        "max": 100000
+      },
+      "result.expected_deliveries": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.payload_bytes": {
+        "median": 128,
+        "min": 128,
+        "max": 128
+      },
+      "result.publish.count": {
+        "median": 100000,
+        "min": 100000,
+        "max": 100000
+      },
+      "result.publish.max_us": {
+        "median": 291.032,
+        "min": 287.534,
+        "max": 3128.703
+      },
+      "result.publish.mean_us": {
+        "median": 45.10043821,
+        "min": 44.12579279,
+        "max": 46.24048966
+      },
+      "result.publish.p50_us": {
+        "median": 39.95,
+        "min": 38.148,
+        "max": 40.11
+      },
+      "result.publish.p95_us": {
+        "median": 60.929,
+        "min": 60.326,
+        "max": 62.159
+      },
+      "result.publish.p99_us": {
+        "median": 79.673,
+        "min": 72.198,
+        "max": 80.622
+      },
+      "result.readers": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.records": {
+        "median": 500,
+        "min": 500,
+        "max": 500
+      },
+      "result.serialized_bytes": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.snapshot.count": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.subscribers": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.throughput": {
+        "median": 702921.8330747765,
+        "min": 684789.1879566426,
+        "max": 717508.9592832464
+      },
+      "result.users": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      },
+      "result.writers": {
+        "median": 32,
+        "min": 32,
+        "max": 32
+      },
+      "resource.wall_seconds": {
+        "median": 0.14,
+        "min": 0.14,
+        "max": 0.15
+      },
+      "resource.user_seconds": {
+        "median": 0.16,
+        "min": 0.16,
+        "max": 0.17
+      },
+      "resource.system_seconds": {
+        "median": 0.06,
+        "min": 0.05,
+        "max": 0.06
+      },
+      "resource.max_rss_kib": {
+        "median": 9084,
+        "min": 9004,
+        "max": 9256
+      },
+      "resource.voluntary_switches": {
+        "median": 24286,
+        "min": 23945,
+        "max": 24679
+      },
+      "resource.involuntary_switches": {
+        "median": 50,
+        "min": 30,
+        "max": 56
+      }
+    }
+  },
+  {
+    "case": "events-users-32",
+    "args": [
+      "events",
+      "100000",
+      "32",
+      "32",
+      "500",
+      "128",
+      "0",
+      "0"
+    ],
+    "repeats": 3,
+    "metrics": {
+      "result.broadcast_lagged": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.broadcast_received": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.delivered": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.elapsed_seconds": {
+        "median": 0.155851999,
+        "min": 0.152259579,
+        "max": 0.167682694
+      },
+      "result.events": {
+        "median": 100000,
+        "min": 100000,
+        "max": 100000
+      },
+      "result.expected_deliveries": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.payload_bytes": {
+        "median": 128,
+        "min": 128,
+        "max": 128
+      },
+      "result.publish.count": {
+        "median": 100000,
+        "min": 100000,
+        "max": 100000
+      },
+      "result.publish.max_us": {
+        "median": 277.827,
+        "min": 231.998,
+        "max": 1392.664
+      },
+      "result.publish.mean_us": {
+        "median": 49.465179969999994,
+        "min": 48.25697857,
+        "max": 53.15915428
+      },
+      "result.publish.p50_us": {
+        "median": 43.428,
+        "min": 43.406,
+        "max": 48.535
+      },
+      "result.publish.p95_us": {
+        "median": 71.366,
+        "min": 67.09,
+        "max": 73.56
+      },
+      "result.publish.p99_us": {
+        "median": 95.809,
+        "min": 84.631,
+        "max": 97.02
+      },
+      "result.readers": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.records": {
+        "median": 500,
+        "min": 500,
+        "max": 500
+      },
+      "result.serialized_bytes": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.snapshot.count": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.subscribers": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.throughput": {
+        "median": 641634.3751869362,
+        "min": 596364.4644211167,
+        "max": 656773.1282115262
+      },
+      "result.users": {
+        "median": 32,
+        "min": 32,
+        "max": 32
+      },
+      "result.writers": {
+        "median": 32,
+        "min": 32,
+        "max": 32
+      },
+      "resource.wall_seconds": {
+        "median": 0.18,
+        "min": 0.17,
+        "max": 0.19
+      },
+      "resource.user_seconds": {
+        "median": 0.18,
+        "min": 0.17,
+        "max": 0.2
+      },
+      "resource.system_seconds": {
+        "median": 0.07,
+        "min": 0.06,
+        "max": 0.07
+      },
+      "resource.max_rss_kib": {
+        "median": 24988,
+        "min": 24932,
+        "max": 25040
+      },
+      "resource.voluntary_switches": {
+        "median": 23999,
+        "min": 23914,
+        "max": 24774
+      },
+      "resource.involuntary_switches": {
+        "median": 41,
+        "min": 17,
+        "max": 45
+      }
+    }
+  },
+  {
+    "case": "events-payload-4k",
+    "args": [
+      "events",
+      "100000",
+      "8",
+      "32",
+      "500",
+      "4096",
+      "0",
+      "0"
+    ],
+    "repeats": 3,
+    "metrics": {
+      "result.broadcast_lagged": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.broadcast_received": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.delivered": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.elapsed_seconds": {
+        "median": 0.283000621,
+        "min": 0.277188019,
+        "max": 0.287120843
+      },
+      "result.events": {
+        "median": 100000,
+        "min": 100000,
+        "max": 100000
+      },
+      "result.expected_deliveries": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.payload_bytes": {
+        "median": 4096,
+        "min": 4096,
+        "max": 4096
+      },
+      "result.publish.count": {
+        "median": 100000,
+        "min": 100000,
+        "max": 100000
+      },
+      "result.publish.max_us": {
+        "median": 493.649,
+        "min": 391.481,
+        "max": 790.823
+      },
+      "result.publish.mean_us": {
+        "median": 90.14383186,
+        "min": 88.30005684999999,
+        "max": 91.44453231
+      },
+      "result.publish.p50_us": {
+        "median": 77.506,
+        "min": 76.217,
+        "max": 78.168
+      },
+      "result.publish.p95_us": {
+        "median": 167.465,
+        "min": 157.682,
+        "max": 175.048
+      },
+      "result.publish.p99_us": {
+        "median": 217.102,
+        "min": 212.55,
+        "max": 221.711
+      },
+      "result.readers": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.records": {
+        "median": 500,
+        "min": 500,
+        "max": 500
+      },
+      "result.serialized_bytes": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.snapshot.count": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.subscribers": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.throughput": {
+        "median": 353356.11507368385,
+        "min": 348285.4081756788,
+        "max": 360765.9535962844
+      },
+      "result.users": {
+        "median": 8,
+        "min": 8,
+        "max": 8
+      },
+      "result.writers": {
+        "median": 32,
+        "min": 32,
+        "max": 32
+      },
+      "resource.wall_seconds": {
+        "median": 0.31,
+        "min": 0.3,
+        "max": 0.31
+      },
+      "resource.user_seconds": {
+        "median": 0.29,
+        "min": 0.28,
+        "max": 0.3
+      },
+      "resource.system_seconds": {
+        "median": 0.1,
+        "min": 0.1,
+        "max": 0.11
+      },
+      "resource.max_rss_kib": {
+        "median": 55352,
+        "min": 53228,
+        "max": 55792
+      },
+      "resource.voluntary_switches": {
+        "median": 26037,
+        "min": 25912,
+        "max": 26223
+      },
+      "resource.involuntary_switches": {
+        "median": 82,
+        "min": 53,
+        "max": 87
+      }
+    }
+  },
+  {
+    "case": "events-subscribers-8",
+    "args": [
+      "events",
+      "60000",
+      "8",
+      "32",
+      "500",
+      "128",
+      "8",
+      "0"
+    ],
+    "repeats": 3,
+    "metrics": {
+      "result.broadcast_lagged": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.broadcast_received": {
+        "median": 480000,
+        "min": 480000,
+        "max": 480000
+      },
+      "result.delivered": {
+        "median": 60000,
+        "min": 60000,
+        "max": 60000
+      },
+      "result.elapsed_seconds": {
+        "median": 0.23198295,
+        "min": 0.223355592,
+        "max": 0.254830149
+      },
+      "result.events": {
+        "median": 60000,
+        "min": 60000,
+        "max": 60000
+      },
+      "result.expected_deliveries": {
+        "median": 60000,
+        "min": 60000,
+        "max": 60000
+      },
+      "result.payload_bytes": {
+        "median": 128,
+        "min": 128,
+        "max": 128
+      },
+      "result.publish.count": {
+        "median": 60000,
+        "min": 60000,
+        "max": 60000
+      },
+      "result.publish.max_us": {
+        "median": 463.109,
+        "min": 440.065,
+        "max": 503.346
+      },
+      "result.publish.mean_us": {
+        "median": 123.09791133333334,
+        "min": 118.59597509999999,
+        "max": 135.35306496666666
+      },
+      "result.publish.p50_us": {
+        "median": 120.312,
+        "min": 115.416,
+        "max": 133.095
+      },
+      "result.publish.p95_us": {
+        "median": 152.037,
+        "min": 149.828,
+        "max": 177.473
+      },
+      "result.publish.p99_us": {
+        "median": 193.941,
+        "min": 183.138,
+        "max": 213.246
+      },
+      "result.readers": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.records": {
+        "median": 500,
+        "min": 500,
+        "max": 500
+      },
+      "result.serialized_bytes": {
+        "median": 20508689,
+        "min": 20508677,
+        "max": 20508743
+      },
+      "result.snapshot.count": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.subscribers": {
+        "median": 8,
+        "min": 8,
+        "max": 8
+      },
+      "result.throughput": {
+        "median": 258639.69744328194,
+        "min": 235450.947368084,
+        "max": 268629.94323419494
+      },
+      "result.users": {
+        "median": 8,
+        "min": 8,
+        "max": 8
+      },
+      "result.writers": {
+        "median": 32,
+        "min": 32,
+        "max": 32
+      },
+      "resource.wall_seconds": {
+        "median": 0.25,
+        "min": 0.24,
+        "max": 0.27
+      },
+      "resource.user_seconds": {
+        "median": 0.65,
+        "min": 0.65,
+        "max": 0.66
+      },
+      "resource.system_seconds": {
+        "median": 0.19,
+        "min": 0.17,
+        "max": 0.2
+      },
+      "resource.max_rss_kib": {
+        "median": 15148,
+        "min": 15056,
+        "max": 15688
+      },
+      "resource.voluntary_switches": {
+        "median": 43878,
+        "min": 42579,
+        "max": 45960
+      },
+      "resource.involuntary_switches": {
+        "median": 170,
+        "min": 166,
+        "max": 381
+      }
+    }
+  },
+  {
+    "case": "events-subscribers-32",
+    "args": [
+      "events",
+      "60000",
+      "8",
+      "32",
+      "500",
+      "128",
+      "32",
+      "0"
+    ],
+    "repeats": 3,
+    "metrics": {
+      "result.broadcast_lagged": {
+        "median": 0,
+        "min": 0,
+        "max": 162
+      },
+      "result.broadcast_received": {
+        "median": 1920000,
+        "min": 1919838,
+        "max": 1920000
+      },
+      "result.delivered": {
+        "median": 240000,
+        "min": 239979,
+        "max": 240000
+      },
+      "result.elapsed_seconds": {
+        "median": 0.435750016,
+        "min": 0.413989301,
+        "max": 0.4573902
+      },
+      "result.events": {
+        "median": 60000,
+        "min": 60000,
+        "max": 60000
+      },
+      "result.expected_deliveries": {
+        "median": 240000,
+        "min": 240000,
+        "max": 240000
+      },
+      "result.payload_bytes": {
+        "median": 128,
+        "min": 128,
+        "max": 128
+      },
+      "result.publish.count": {
+        "median": 60000,
+        "min": 60000,
+        "max": 60000
+      },
+      "result.publish.max_us": {
+        "median": 694.483,
+        "min": 629.908,
+        "max": 2237.825
+      },
+      "result.publish.mean_us": {
+        "median": 231.61352963333331,
+        "min": 220.11992333333333,
+        "max": 243.10993456666665
+      },
+      "result.publish.p50_us": {
+        "median": 218.517,
+        "min": 210.466,
+        "max": 237.087
+      },
+      "result.publish.p95_us": {
+        "median": 322.922,
+        "min": 296.571,
+        "max": 335.48
+      },
+      "result.publish.p99_us": {
+        "median": 422.98,
+        "min": 380.641,
+        "max": 428.284
+      },
+      "result.readers": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.records": {
+        "median": 500,
+        "min": 500,
+        "max": 500
+      },
+      "result.serialized_bytes": {
+        "median": 82034732,
+        "min": 82027679,
+        "max": 82034828
+      },
+      "result.snapshot.count": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.subscribers": {
+        "median": 32,
+        "min": 32,
+        "max": 32
+      },
+      "result.throughput": {
+        "median": 137693.62661365914,
+        "min": 131179.0239493544,
+        "max": 144931.28169029663
+      },
+      "result.users": {
+        "median": 8,
+        "min": 8,
+        "max": 8
+      },
+      "result.writers": {
+        "median": 32,
+        "min": 32,
+        "max": 32
+      },
+      "resource.wall_seconds": {
+        "median": 0.45,
+        "min": 0.43,
+        "max": 0.48
+      },
+      "resource.user_seconds": {
+        "median": 2.72,
+        "min": 2.52,
+        "max": 2.82
+      },
+      "resource.system_seconds": {
+        "median": 1.23,
+        "min": 0.94,
+        "max": 1.3
+      },
+      "resource.max_rss_kib": {
+        "median": 15704,
+        "min": 14632,
+        "max": 15764
+      },
+      "resource.voluntary_switches": {
+        "median": 92149,
+        "min": 88720,
+        "max": 106420
+      },
+      "resource.involuntary_switches": {
+        "median": 16816,
+        "min": 12981,
+        "max": 39237
+      }
+    }
+  },
+  {
+    "case": "events-readers-default",
+    "args": [
+      "events",
+      "60000",
+      "8",
+      "32",
+      "500",
+      "128",
+      "0",
+      "8"
+    ],
+    "repeats": 3,
+    "metrics": {
+      "result.broadcast_lagged": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.broadcast_received": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.delivered": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.elapsed_seconds": {
+        "median": 0.106082546,
+        "min": 0.104123596,
+        "max": 0.115214759
+      },
+      "result.events": {
+        "median": 60000,
+        "min": 60000,
+        "max": 60000
+      },
+      "result.expected_deliveries": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.payload_bytes": {
+        "median": 128,
+        "min": 128,
+        "max": 128
+      },
+      "result.publish.count": {
+        "median": 60000,
+        "min": 60000,
+        "max": 60000
+      },
+      "result.publish.max_us": {
+        "median": 2039.028,
+        "min": 2038.958,
+        "max": 2876.264
+      },
+      "result.publish.mean_us": {
+        "median": 56.13364801666667,
+        "min": 55.03893086666667,
+        "max": 60.79085466666667
+      },
+      "result.publish.p50_us": {
+        "median": 43.618,
+        "min": 43.597,
+        "max": 46.081
+      },
+      "result.publish.p95_us": {
+        "median": 67.521,
+        "min": 67.48,
+        "max": 76.235
+      },
+      "result.publish.p99_us": {
+        "median": 342.132,
+        "min": 301.253,
+        "max": 446.586
+      },
+      "result.readers": {
+        "median": 8,
+        "min": 8,
+        "max": 8
+      },
+      "result.records": {
+        "median": 500,
+        "min": 500,
+        "max": 500
+      },
+      "result.serialized_bytes": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.snapshot.count": {
+        "median": 80,
+        "min": 77,
+        "max": 83
+      },
+      "result.snapshot.max_us": {
+        "median": 2044.228,
+        "min": 2038.066,
+        "max": 2839.881
+      },
+      "result.snapshot.mean_us": {
+        "median": 640.8907624999999,
+        "min": 501.79081818181817,
+        "max": 661.3467108433734
+      },
+      "result.snapshot.p50_us": {
+        "median": 487.744,
+        "min": 400.627,
+        "max": 552.843
+      },
+      "result.snapshot.p95_us": {
+        "median": 1601.559,
+        "min": 1550.945,
+        "max": 2035.295
+      },
+      "result.snapshot.p99_us": {
+        "median": 2044.228,
+        "min": 2038.066,
+        "max": 2839.881
+      },
+      "result.subscribers": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.throughput": {
+        "median": 565597.2849671236,
+        "min": 520766.6146313772,
+        "max": 576238.2620746214
+      },
+      "result.users": {
+        "median": 8,
+        "min": 8,
+        "max": 8
+      },
+      "result.writers": {
+        "median": 32,
+        "min": 32,
+        "max": 32
+      },
+      "resource.wall_seconds": {
+        "median": 0.12,
+        "min": 0.12,
+        "max": 0.13
+      },
+      "resource.user_seconds": {
+        "median": 0.13,
+        "min": 0.11,
+        "max": 0.13
+      },
+      "resource.system_seconds": {
+        "median": 0.04,
+        "min": 0.04,
+        "max": 0.05
+      },
+      "resource.max_rss_kib": {
+        "median": 15288,
+        "min": 14780,
+        "max": 15804
+      },
+      "resource.voluntary_switches": {
+        "median": 14629,
+        "min": 14591,
+        "max": 14851
+      },
+      "resource.involuntary_switches": {
+        "median": 28,
+        "min": 16,
+        "max": 30
+      }
+    }
+  },
+  {
+    "case": "events-readers-20k",
+    "args": [
+      "events",
+      "10000",
+      "8",
+      "32",
+      "20000",
+      "128",
+      "0",
+      "8"
+    ],
+    "repeats": 3,
+    "metrics": {
+      "result.broadcast_lagged": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.broadcast_received": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.delivered": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.elapsed_seconds": {
+        "median": 15.799430665,
+        "min": 12.11373265,
+        "max": 21.717489352
+      },
+      "result.events": {
+        "median": 10000,
+        "min": 10000,
+        "max": 10000
+      },
+      "result.expected_deliveries": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.payload_bytes": {
+        "median": 128,
+        "min": 128,
+        "max": 128
+      },
+      "result.publish.count": {
+        "median": 10000,
+        "min": 10000,
+        "max": 10000
+      },
+      "result.publish.max_us": {
+        "median": 177123.067,
+        "min": 102997.673,
+        "max": 610469.315
+      },
+      "result.publish.mean_us": {
+        "median": 50373.9758813,
+        "min": 38622.6006911,
+        "max": 69166.5920085
+      },
+      "result.publish.p50_us": {
+        "median": 45287.065,
+        "min": 41792.177,
+        "max": 51997.008
+      },
+      "result.publish.p95_us": {
+        "median": 82498.892,
+        "min": 55619.253,
+        "max": 114189.75
+      },
+      "result.publish.p99_us": {
+        "median": 96627.191,
+        "min": 68449.703,
+        "max": 312640.15
+      },
+      "result.readers": {
+        "median": 8,
+        "min": 8,
+        "max": 8
+      },
+      "result.records": {
+        "median": 20000,
+        "min": 20000,
+        "max": 20000
+      },
+      "result.serialized_bytes": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.snapshot.count": {
+        "median": 1736,
+        "min": 1574,
+        "max": 1837
+      },
+      "result.snapshot.max_us": {
+        "median": 229666.274,
+        "min": 102954.127,
+        "max": 796899.331
+      },
+      "result.snapshot.mean_us": {
+        "median": 61848.66931912442,
+        "min": 50697.30576620076,
+        "max": 83630.00474088188
+      },
+      "result.snapshot.p50_us": {
+        "median": 56883.796,
+        "min": 52901.052,
+        "max": 83374.758
+      },
+      "result.snapshot.p95_us": {
+        "median": 94976.067,
+        "min": 66261.582,
+        "max": 133742.81
+      },
+      "result.snapshot.p99_us": {
+        "median": 112144.663,
+        "min": 83179.896,
+        "max": 417310.707
+      },
+      "result.subscribers": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.throughput": {
+        "median": 632.9341994678769,
+        "min": 460.45838162591673,
+        "max": 825.5093858291483
+      },
+      "result.users": {
+        "median": 8,
+        "min": 8,
+        "max": 8
+      },
+      "result.writers": {
+        "median": 32,
+        "min": 32,
+        "max": 32
+      },
+      "resource.wall_seconds": {
+        "median": 16.09,
+        "min": 12.42,
+        "max": 22.02
+      },
+      "resource.user_seconds": {
+        "median": 21.89,
+        "min": 19.74,
+        "max": 22.73
+      },
+      "resource.system_seconds": {
+        "median": 15.79,
+        "min": 14.21,
+        "max": 18.87
+      },
+      "resource.max_rss_kib": {
+        "median": 323440,
+        "min": 305452,
+        "max": 323536
+      },
+      "resource.voluntary_switches": {
+        "median": 6648,
+        "min": 6182,
+        "max": 6919
+      },
+      "resource.involuntary_switches": {
+        "median": 2397,
+        "min": 1844,
+        "max": 3293
+      }
+    }
+  },
+  {
+    "case": "snapshot-500",
+    "args": [
+      "snapshots",
+      "500",
+      "128",
+      "100"
+    ],
+    "repeats": 3,
+    "metrics": {
+      "result.payload_bytes": {
+        "median": 128,
+        "min": 128,
+        "max": 128
+      },
+      "result.records": {
+        "median": 500,
+        "min": 500,
+        "max": 500
+      },
+      "result.serialize_last_100.count": {
+        "median": 100,
+        "min": 100,
+        "max": 100
+      },
+      "result.serialize_last_100.max_us": {
+        "median": 71.477,
+        "min": 70.184,
+        "max": 129.318
+      },
+      "result.serialize_last_100.mean_us": {
+        "median": 44.137209999999996,
+        "min": 43.38353,
+        "max": 46.656589999999994
+      },
+      "result.serialize_last_100.p50_us": {
+        "median": 42.956,
+        "min": 42.796,
+        "max": 43.196
+      },
+      "result.serialize_last_100.p95_us": {
+        "median": 47.945,
+        "min": 47.243,
+        "max": 64.253
+      },
+      "result.serialize_last_100.p99_us": {
+        "median": 70.003,
+        "min": 49.638,
+        "max": 90.469
+      },
+      "result.snapshot.count": {
+        "median": 100,
+        "min": 100,
+        "max": 100
+      },
+      "result.snapshot.max_us": {
+        "median": 120.895,
+        "min": 119.78,
+        "max": 142.571
+      },
+      "result.snapshot.mean_us": {
+        "median": 82.47335000000001,
+        "min": 82.15738999999999,
+        "max": 86.25186
+      },
+      "result.snapshot.p50_us": {
+        "median": 80.824,
+        "min": 80.522,
+        "max": 81.354
+      },
+      "result.snapshot.p95_us": {
+        "median": 90.81,
+        "min": 86.273,
+        "max": 121.775
+      },
+      "result.snapshot.p99_us": {
+        "median": 116.265,
+        "min": 99.417,
+        "max": 140.398
+      },
+      "resource.wall_seconds": {
+        "median": 0.02,
+        "min": 0.02,
+        "max": 0.02
+      },
+      "resource.user_seconds": {
+        "median": 0.01,
+        "min": 0.01,
+        "max": 0.02
+      },
+      "resource.system_seconds": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "resource.max_rss_kib": {
+        "median": 7672,
+        "min": 7664,
+        "max": 7684
+      },
+      "resource.voluntary_switches": {
+        "median": 108,
+        "min": 104,
+        "max": 110
+      },
+      "resource.involuntary_switches": {
+        "median": 2,
+        "min": 0,
+        "max": 2
+      }
+    }
+  },
+  {
+    "case": "snapshot-5000",
+    "args": [
+      "snapshots",
+      "5000",
+      "128",
+      "100"
+    ],
+    "repeats": 3,
+    "metrics": {
+      "result.payload_bytes": {
+        "median": 128,
+        "min": 128,
+        "max": 128
+      },
+      "result.records": {
+        "median": 5000,
+        "min": 5000,
+        "max": 5000
+      },
+      "result.serialize_last_100.count": {
+        "median": 100,
+        "min": 100,
+        "max": 100
+      },
+      "result.serialize_last_100.max_us": {
+        "median": 85.773,
+        "min": 69.142,
+        "max": 92.263
+      },
+      "result.serialize_last_100.mean_us": {
+        "median": 45.329910000000005,
+        "min": 44.67196,
+        "max": 48.31892
+      },
+      "result.serialize_last_100.p50_us": {
+        "median": 44.028,
+        "min": 43.857,
+        "max": 44.789
+      },
+      "result.serialize_last_100.p95_us": {
+        "median": 52.884,
+        "min": 49.858,
+        "max": 71.837
+      },
+      "result.serialize_last_100.p99_us": {
+        "median": 66.407,
+        "min": 64.835,
+        "max": 87.714
+      },
+      "result.snapshot.count": {
+        "median": 100,
+        "min": 100,
+        "max": 100
+      },
+      "result.snapshot.max_us": {
+        "median": 1326.136,
+        "min": 1281.262,
+        "max": 1998.943
+      },
+      "result.snapshot.mean_us": {
+        "median": 679.30291,
+        "min": 666.78094,
+        "max": 713.05938
+      },
+      "result.snapshot.p50_us": {
+        "median": 655.514,
+        "min": 655.031,
+        "max": 679.359
+      },
+      "result.snapshot.p95_us": {
+        "median": 753.384,
+        "min": 710.642,
+        "max": 977.045
+      },
+      "result.snapshot.p99_us": {
+        "median": 832.664,
+        "min": 751.626,
+        "max": 1045.677
+      },
+      "resource.wall_seconds": {
+        "median": 0.14,
+        "min": 0.13,
+        "max": 0.14
+      },
+      "resource.user_seconds": {
+        "median": 0.13,
+        "min": 0.12,
+        "max": 0.14
+      },
+      "resource.system_seconds": {
+        "median": 0.01,
+        "min": 0,
+        "max": 0.01
+      },
+      "resource.max_rss_kib": {
+        "median": 16712,
+        "min": 16628,
+        "max": 16744
+      },
+      "resource.voluntary_switches": {
+        "median": 98,
+        "min": 96,
+        "max": 105
+      },
+      "resource.involuntary_switches": {
+        "median": 9,
+        "min": 5,
+        "max": 13
+      }
+    }
+  },
+  {
+    "case": "snapshot-20000",
+    "args": [
+      "snapshots",
+      "20000",
+      "128",
+      "100"
+    ],
+    "repeats": 3,
+    "metrics": {
+      "result.payload_bytes": {
+        "median": 128,
+        "min": 128,
+        "max": 128
+      },
+      "result.records": {
+        "median": 20000,
+        "min": 20000,
+        "max": 20000
+      },
+      "result.serialize_last_100.count": {
+        "median": 100,
+        "min": 100,
+        "max": 100
+      },
+      "result.serialize_last_100.max_us": {
+        "median": 90.561,
+        "min": 75.813,
+        "max": 96.48
+      },
+      "result.serialize_last_100.mean_us": {
+        "median": 49.200669999999995,
+        "min": 48.42121,
+        "max": 50.93417
+      },
+      "result.serialize_last_100.p50_us": {
+        "median": 46.833,
+        "min": 46.171,
+        "max": 48.325
+      },
+      "result.serialize_last_100.p95_us": {
+        "median": 66.267,
+        "min": 63.001,
+        "max": 66.908
+      },
+      "result.serialize_last_100.p99_us": {
+        "median": 84.8,
+        "min": 74.03,
+        "max": 92.644
+      },
+      "result.snapshot.count": {
+        "median": 100,
+        "min": 100,
+        "max": 100
+      },
+      "result.snapshot.max_us": {
+        "median": 7293.724,
+        "min": 7143.715,
+        "max": 8177.809
+      },
+      "result.snapshot.mean_us": {
+        "median": 3301.05719,
+        "min": 3275.7996200000002,
+        "max": 3331.072
+      },
+      "result.snapshot.p50_us": {
+        "median": 3210.138,
+        "min": 3176.853,
+        "max": 3218.787
+      },
+      "result.snapshot.p95_us": {
+        "median": 3668.908,
+        "min": 3665.101,
+        "max": 3684.493
+      },
+      "result.snapshot.p99_us": {
+        "median": 4075.498,
+        "min": 4028.362,
+        "max": 4500.78
+      },
+      "resource.wall_seconds": {
+        "median": 0.83,
+        "min": 0.83,
+        "max": 0.86
+      },
+      "resource.user_seconds": {
+        "median": 0.81,
+        "min": 0.8,
+        "max": 0.84
+      },
+      "resource.system_seconds": {
+        "median": 0.02,
+        "min": 0.02,
+        "max": 0.02
+      },
+      "resource.max_rss_kib": {
+        "median": 48068,
+        "min": 47992,
+        "max": 48188
+      },
+      "resource.voluntary_switches": {
+        "median": 99,
+        "min": 94,
+        "max": 101
+      },
+      "resource.involuntary_switches": {
+        "median": 18,
+        "min": 7,
+        "max": 20
+      }
+    }
+  },
+  {
+    "case": "snapshot-50000",
+    "args": [
+      "snapshots",
+      "50000",
+      "128",
+      "100"
+    ],
+    "repeats": 3,
+    "metrics": {
+      "result.payload_bytes": {
+        "median": 128,
+        "min": 128,
+        "max": 128
+      },
+      "result.records": {
+        "median": 50000,
+        "min": 50000,
+        "max": 50000
+      },
+      "result.serialize_last_100.count": {
+        "median": 100,
+        "min": 100,
+        "max": 100
+      },
+      "result.serialize_last_100.max_us": {
+        "median": 90.902,
+        "min": 86.784,
+        "max": 107.739
+      },
+      "result.serialize_last_100.mean_us": {
+        "median": 50.46792,
+        "min": 48.51766000000001,
+        "max": 50.54058
+      },
+      "result.serialize_last_100.p50_us": {
+        "median": 47.434,
+        "min": 46.703,
+        "max": 47.764
+      },
+      "result.serialize_last_100.p95_us": {
+        "median": 70.164,
+        "min": 53.145,
+        "max": 72.297
+      },
+      "result.serialize_last_100.p99_us": {
+        "median": 83.188,
+        "min": 80.021,
+        "max": 83.197
+      },
+      "result.snapshot.count": {
+        "median": 100,
+        "min": 100,
+        "max": 100
+      },
+      "result.snapshot.max_us": {
+        "median": 20789.539,
+        "min": 20064.26,
+        "max": 20899.257
+      },
+      "result.snapshot.mean_us": {
+        "median": 8504.73785,
+        "min": 8464.056480000001,
+        "max": 8637.52341
+      },
+      "result.snapshot.p50_us": {
+        "median": 8273.039,
+        "min": 8243.916,
+        "max": 8372.185
+      },
+      "result.snapshot.p95_us": {
+        "median": 9069.296,
+        "min": 8975.542,
+        "max": 9374.162
+      },
+      "result.snapshot.p99_us": {
+        "median": 9720.417,
+        "min": 9624.91,
+        "max": 10277.078
+      },
+      "resource.wall_seconds": {
+        "median": 2.22,
+        "min": 2.21,
+        "max": 2.26
+      },
+      "resource.user_seconds": {
+        "median": 2.17,
+        "min": 2.16,
+        "max": 2.19
+      },
+      "resource.system_seconds": {
+        "median": 0.05,
+        "min": 0.05,
+        "max": 0.06
+      },
+      "resource.max_rss_kib": {
+        "median": 110344,
+        "min": 110296,
+        "max": 110440
+      },
+      "resource.voluntary_switches": {
+        "median": 104,
+        "min": 99,
+        "max": 108
+      },
+      "resource.involuntary_switches": {
+        "median": 58,
+        "min": 23,
+        "max": 77
+      }
+    }
+  },
+  {
+    "case": "check-cold",
+    "args": [
+      "compiler",
+      "check-cold",
+      "50",
+      "1"
+    ],
+    "repeats": 3,
+    "metrics": {
+      "result.accepted_latency.count": {
+        "median": 50,
+        "min": 50,
+        "max": 50
+      },
+      "result.accepted_latency.max_us": {
+        "median": 24006.628,
+        "min": 23668.384,
+        "max": 32526.072
+      },
+      "result.accepted_latency.mean_us": {
+        "median": 22319.51094,
+        "min": 22182.25814,
+        "max": 22341.84236
+      },
+      "result.accepted_latency.p50_us": {
+        "median": 22171.59,
+        "min": 21986.888,
+        "max": 22504.856
+      },
+      "result.accepted_latency.p95_us": {
+        "median": 23853.537,
+        "min": 23221.158,
+        "max": 24184.588
+      },
+      "result.accepted_latency.p99_us": {
+        "median": 24006.628,
+        "min": 23668.384,
+        "max": 32526.072
+      },
+      "result.attempts": {
+        "median": 50,
+        "min": 50,
+        "max": 50
+      },
+      "result.cache_hits": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.elapsed_seconds": {
+        "median": 1.116138625,
+        "min": 1.109267749,
+        "max": 1.117269598
+      },
+      "result.rejected_busy": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.successful": {
+        "median": 50,
+        "min": 50,
+        "max": 50
+      },
+      "result.successful_throughput": {
+        "median": 44.797302843990366,
+        "min": 44.75195609860316,
+        "max": 45.074780227834786
+      },
+      "resource.wall_seconds": {
+        "median": 1.11,
+        "min": 1.11,
+        "max": 1.12
+      },
+      "resource.user_seconds": {
+        "median": 0.4,
+        "min": 0.36,
+        "max": 0.41
+      },
+      "resource.system_seconds": {
+        "median": 0.72,
+        "min": 0.71,
+        "max": 0.74
+      },
+      "resource.max_rss_kib": {
+        "median": 75228,
+        "min": 75228,
+        "max": 75248
+      },
+      "resource.voluntary_switches": {
+        "median": 477,
+        "min": 466,
+        "max": 527
+      },
+      "resource.involuntary_switches": {
+        "median": 115,
+        "min": 108,
+        "max": 177
+      }
+    }
+  },
+  {
+    "case": "check-warm",
+    "args": [
+      "compiler",
+      "check-warm",
+      "10000",
+      "1"
+    ],
+    "repeats": 3,
+    "metrics": {
+      "result.accepted_latency.count": {
+        "median": 10000,
+        "min": 10000,
+        "max": 10000
+      },
+      "result.accepted_latency.max_us": {
+        "median": 20.857,
+        "min": 9.978,
+        "max": 54.557
+      },
+      "result.accepted_latency.mean_us": {
+        "median": 0.6821248000000001,
+        "min": 0.6733582,
+        "max": 0.7204688
+      },
+      "result.accepted_latency.p50_us": {
+        "median": 0.641,
+        "min": 0.641,
+        "max": 0.641
+      },
+      "result.accepted_latency.p95_us": {
+        "median": 0.962,
+        "min": 0.952,
+        "max": 1.022
+      },
+      "result.accepted_latency.p99_us": {
+        "median": 1.041,
+        "min": 1.002,
+        "max": 1.222
+      },
+      "result.attempts": {
+        "median": 10000,
+        "min": 10000,
+        "max": 10000
+      },
+      "result.cache_hits": {
+        "median": 10000,
+        "min": 10000,
+        "max": 10000
+      },
+      "result.elapsed_seconds": {
+        "median": 0.007232816,
+        "min": 0.007157568,
+        "max": 0.007665425
+      },
+      "result.rejected_busy": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.successful": {
+        "median": 10000,
+        "min": 10000,
+        "max": 10000
+      },
+      "result.successful_throughput": {
+        "median": 1382587.3629302888,
+        "min": 1304559.107942482,
+        "max": 1397122.5980668294
+      },
+      "resource.wall_seconds": {
+        "median": 0.03,
+        "min": 0.03,
+        "max": 0.03
+      },
+      "resource.user_seconds": {
+        "median": 0.01,
+        "min": 0.01,
+        "max": 0.01
+      },
+      "resource.system_seconds": {
+        "median": 0.02,
+        "min": 0.01,
+        "max": 0.02
+      },
+      "resource.max_rss_kib": {
+        "median": 74888,
+        "min": 74856,
+        "max": 74932
+      },
+      "resource.voluntary_switches": {
+        "median": 116,
+        "min": 106,
+        "max": 116
+      },
+      "resource.involuntary_switches": {
+        "median": 10,
+        "min": 3,
+        "max": 13
+      }
+    }
+  },
+  {
+    "case": "check-burst32",
+    "args": [
+      "compiler",
+      "check-burst",
+      "20",
+      "32"
+    ],
+    "repeats": 3,
+    "metrics": {
+      "result.accepted_latency.count": {
+        "median": 40,
+        "min": 40,
+        "max": 40
+      },
+      "result.accepted_latency.max_us": {
+        "median": 23937.138,
+        "min": 23702.241,
+        "max": 24134.479
+      },
+      "result.accepted_latency.mean_us": {
+        "median": 21466.3497,
+        "min": 21448.468625,
+        "max": 22117.294775
+      },
+      "result.accepted_latency.p50_us": {
+        "median": 21378.798,
+        "min": 21218.352,
+        "max": 21835.319
+      },
+      "result.accepted_latency.p95_us": {
+        "median": 22803.318,
+        "min": 21880.336,
+        "max": 23188.27
+      },
+      "result.accepted_latency.p99_us": {
+        "median": 23937.138,
+        "min": 23702.241,
+        "max": 24134.479
+      },
+      "result.attempts": {
+        "median": 640,
+        "min": 640,
+        "max": 640
+      },
+      "result.cache_hits": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.elapsed_seconds": {
+        "median": 0.432378647,
+        "min": 0.432005395,
+        "max": 0.444938966
+      },
+      "result.rejected_busy": {
+        "median": 600,
+        "min": 600,
+        "max": 600
+      },
+      "result.successful": {
+        "median": 40,
+        "min": 40,
+        "max": 40
+      },
+      "result.successful_throughput": {
+        "median": 92.51150647131749,
+        "min": 89.89997068496807,
+        "max": 92.59143627129934
+      },
+      "resource.wall_seconds": {
+        "median": 0.43,
+        "min": 0.43,
+        "max": 0.44
+      },
+      "resource.user_seconds": {
+        "median": 0.29,
+        "min": 0.28,
+        "max": 0.31
+      },
+      "resource.system_seconds": {
+        "median": 0.55,
+        "min": 0.54,
+        "max": 0.56
+      },
+      "resource.max_rss_kib": {
+        "median": 72080,
+        "min": 71636,
+        "max": 74972
+      },
+      "resource.voluntary_switches": {
+        "median": 6616,
+        "min": 5998,
+        "max": 11621
+      },
+      "resource.involuntary_switches": {
+        "median": 78,
+        "min": 74,
+        "max": 83
+      }
+    }
+  },
+  {
+    "case": "complete-cold",
+    "args": [
+      "compiler",
+      "complete-cold",
+      "50",
+      "1"
+    ],
+    "repeats": 3,
+    "metrics": {
+      "result.accepted_latency.count": {
+        "median": 50,
+        "min": 50,
+        "max": 50
+      },
+      "result.accepted_latency.max_us": {
+        "median": 24025.704,
+        "min": 24019.523,
+        "max": 24920.803
+      },
+      "result.accepted_latency.mean_us": {
+        "median": 22211.2569,
+        "min": 21804.56698,
+        "max": 22232.367739999998
+      },
+      "result.accepted_latency.p50_us": {
+        "median": 22016.25,
+        "min": 21824.888,
+        "max": 22178.205
+      },
+      "result.accepted_latency.p95_us": {
+        "median": 23075.194,
+        "min": 23057.046,
+        "max": 24065.225
+      },
+      "result.accepted_latency.p99_us": {
+        "median": 24025.704,
+        "min": 24019.523,
+        "max": 24920.803
+      },
+      "result.attempts": {
+        "median": 50,
+        "min": 50,
+        "max": 50
+      },
+      "result.cache_hits": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.elapsed_seconds": {
+        "median": 1.110687565,
+        "min": 1.09034062,
+        "max": 1.111724847
+      },
+      "result.rejected_busy": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.successful": {
+        "median": 50,
+        "min": 50,
+        "max": 50
+      },
+      "result.successful_throughput": {
+        "median": 45.017160158806675,
+        "min": 44.97515741860539,
+        "max": 45.85722945917579
+      },
+      "resource.wall_seconds": {
+        "median": 1.11,
+        "min": 1.09,
+        "max": 1.11
+      },
+      "resource.user_seconds": {
+        "median": 0.38,
+        "min": 0.38,
+        "max": 0.38
+      },
+      "resource.system_seconds": {
+        "median": 0.73,
+        "min": 0.71,
+        "max": 0.73
+      },
+      "resource.max_rss_kib": {
+        "median": 74592,
+        "min": 74588,
+        "max": 74596
+      },
+      "resource.voluntary_switches": {
+        "median": 638,
+        "min": 620,
+        "max": 640
+      },
+      "resource.involuntary_switches": {
+        "median": 128,
+        "min": 96,
+        "max": 130
+      }
+    }
+  },
+  {
+    "case": "complete-warm",
+    "args": [
+      "compiler",
+      "complete-warm",
+      "10000",
+      "1"
+    ],
+    "repeats": 3,
+    "metrics": {
+      "result.accepted_latency.count": {
+        "median": 10000,
+        "min": 10000,
+        "max": 10000
+      },
+      "result.accepted_latency.max_us": {
+        "median": 19.114,
+        "min": 9.447,
+        "max": 27.809
+      },
+      "result.accepted_latency.mean_us": {
+        "median": 0.8085785,
+        "min": 0.7823801,
+        "max": 0.8156106
+      },
+      "result.accepted_latency.p50_us": {
+        "median": 0.761,
+        "min": 0.752,
+        "max": 0.771
+      },
+      "result.accepted_latency.p95_us": {
+        "median": 1.132,
+        "min": 0.811,
+        "max": 1.193
+      },
+      "result.accepted_latency.p99_us": {
+        "median": 1.202,
+        "min": 1.142,
+        "max": 1.312
+      },
+      "result.attempts": {
+        "median": 10000,
+        "min": 10000,
+        "max": 10000
+      },
+      "result.cache_hits": {
+        "median": 10000,
+        "min": 10000,
+        "max": 10000
+      },
+      "result.elapsed_seconds": {
+        "median": 0.008595101,
+        "min": 0.008231632,
+        "max": 0.008625179
+      },
+      "result.rejected_busy": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.successful": {
+        "median": 10000,
+        "min": 10000,
+        "max": 10000
+      },
+      "result.successful_throughput": {
+        "median": 1163453.460290926,
+        "min": 1159396.2281826267,
+        "max": 1214825.930022139
+      },
+      "resource.wall_seconds": {
+        "median": 0.03,
+        "min": 0.03,
+        "max": 0.03
+      },
+      "resource.user_seconds": {
+        "median": 0.01,
+        "min": 0.01,
+        "max": 0.02
+      },
+      "resource.system_seconds": {
+        "median": 0.01,
+        "min": 0.01,
+        "max": 0.02
+      },
+      "resource.max_rss_kib": {
+        "median": 74384,
+        "min": 74268,
+        "max": 74384
+      },
+      "resource.voluntary_switches": {
+        "median": 113,
+        "min": 112,
+        "max": 139
+      },
+      "resource.involuntary_switches": {
+        "median": 3,
+        "min": 2,
+        "max": 6
+      }
+    }
+  },
+  {
+    "case": "complete-burst32",
+    "args": [
+      "compiler",
+      "complete-burst",
+      "20",
+      "32"
+    ],
+    "repeats": 3,
+    "metrics": {
+      "result.accepted_latency.count": {
+        "median": 60,
+        "min": 60,
+        "max": 60
+      },
+      "result.accepted_latency.max_us": {
+        "median": 25800.814,
+        "min": 24922.079,
+        "max": 26429.176
+      },
+      "result.accepted_latency.mean_us": {
+        "median": 22093.47575,
+        "min": 21920.295583333333,
+        "max": 22536.215516666667
+      },
+      "result.accepted_latency.p50_us": {
+        "median": 21975.769,
+        "min": 21849.853,
+        "max": 22282.724
+      },
+      "result.accepted_latency.p95_us": {
+        "median": 22602.941,
+        "min": 22448.849,
+        "max": 23864.593
+      },
+      "result.accepted_latency.p99_us": {
+        "median": 25800.814,
+        "min": 24922.079,
+        "max": 26429.176
+      },
+      "result.attempts": {
+        "median": 640,
+        "min": 640,
+        "max": 640
+      },
+      "result.cache_hits": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "result.elapsed_seconds": {
+        "median": 0.447504289,
+        "min": 0.442415709,
+        "max": 0.455761763
+      },
+      "result.rejected_busy": {
+        "median": 580,
+        "min": 580,
+        "max": 580
+      },
+      "result.successful": {
+        "median": 60,
+        "min": 60,
+        "max": 60
+      },
+      "result.successful_throughput": {
+        "median": 134.07692724929393,
+        "min": 131.6477266654772,
+        "max": 135.61905415976085
+      },
+      "resource.wall_seconds": {
+        "median": 0.45,
+        "min": 0.44,
+        "max": 0.45
+      },
+      "resource.user_seconds": {
+        "median": 0.41,
+        "min": 0.41,
+        "max": 0.45
+      },
+      "resource.system_seconds": {
+        "median": 0.85,
+        "min": 0.85,
+        "max": 0.86
+      },
+      "resource.max_rss_kib": {
+        "median": 74468,
+        "min": 74232,
+        "max": 74500
+      },
+      "resource.voluntary_switches": {
+        "median": 15560,
+        "min": 13629,
+        "max": 21432
+      },
+      "resource.involuntary_switches": {
+        "median": 116,
+        "min": 65,
+        "max": 128
+      }
+    }
+  },
+  {
+    "case": "learning-recent-1000",
+    "args": [
+      "learning",
+      "recent",
+      "1000",
+      "1024",
+      "100"
+    ],
+    "repeats": 3,
+    "metrics": {
+      "result.file_bytes": {
+        "median": 1458545,
+        "min": 1458545,
+        "max": 1458548
+      },
+      "result.initial_rows": {
+        "median": 1000,
+        "min": 1000,
+        "max": 1000
+      },
+      "result.latency.count": {
+        "median": 100,
+        "min": 100,
+        "max": 100
+      },
+      "result.latency.max_us": {
+        "median": 22.98,
+        "min": 18.663,
+        "max": 25.024
+      },
+      "result.latency.mean_us": {
+        "median": 12.33535,
+        "min": 12.05365,
+        "max": 12.41374
+      },
+      "result.latency.p50_us": {
+        "median": 11.932,
+        "min": 11.851,
+        "max": 11.961
+      },
+      "result.latency.p95_us": {
+        "median": 13.754,
+        "min": 13.043,
+        "max": 13.875
+      },
+      "result.latency.p99_us": {
+        "median": 20.536,
+        "min": 16.57,
+        "max": 22.48
+      },
+      "result.source_bytes": {
+        "median": 1112,
+        "min": 1112,
+        "max": 1112
+      },
+      "result.students": {
+        "median": 30,
+        "min": 30,
+        "max": 30
+      },
+      "resource.wall_seconds": {
+        "median": 0.01,
+        "min": 0.01,
+        "max": 0.01
+      },
+      "resource.user_seconds": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "resource.system_seconds": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "resource.max_rss_kib": {
+        "median": 9692,
+        "min": 9664,
+        "max": 9928
+      },
+      "resource.voluntary_switches": {
+        "median": 103,
+        "min": 102,
+        "max": 108
+      },
+      "resource.involuntary_switches": {
+        "median": 1,
+        "min": 0,
+        "max": 2
+      }
+    }
+  },
+  {
+    "case": "learning-overview-1000",
+    "args": [
+      "learning",
+      "overview",
+      "1000",
+      "1024",
+      "10"
+    ],
+    "repeats": 3,
+    "metrics": {
+      "result.file_bytes": {
+        "median": 1458551,
+        "min": 1458548,
+        "max": 1458551
+      },
+      "result.initial_rows": {
+        "median": 1000,
+        "min": 1000,
+        "max": 1000
+      },
+      "result.latency.count": {
+        "median": 10,
+        "min": 10,
+        "max": 10
+      },
+      "result.latency.max_us": {
+        "median": 1338.571,
+        "min": 1237.965,
+        "max": 1449.975
+      },
+      "result.latency.mean_us": {
+        "median": 538.3556,
+        "min": 504.8051,
+        "max": 544.5303
+      },
+      "result.latency.p50_us": {
+        "median": 427.363,
+        "min": 415.246,
+        "max": 437.192
+      },
+      "result.latency.p95_us": {
+        "median": 1338.571,
+        "min": 1237.965,
+        "max": 1449.975
+      },
+      "result.latency.p99_us": {
+        "median": 1338.571,
+        "min": 1237.965,
+        "max": 1449.975
+      },
+      "result.source_bytes": {
+        "median": 1112,
+        "min": 1112,
+        "max": 1112
+      },
+      "result.students": {
+        "median": 30,
+        "min": 30,
+        "max": 30
+      },
+      "resource.wall_seconds": {
+        "median": 0.01,
+        "min": 0.01,
+        "max": 0.01
+      },
+      "resource.user_seconds": {
+        "median": 0,
+        "min": 0,
+        "max": 0.01
+      },
+      "resource.system_seconds": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "resource.max_rss_kib": {
+        "median": 11900,
+        "min": 11852,
+        "max": 12120
+      },
+      "resource.voluntary_switches": {
+        "median": 113,
+        "min": 107,
+        "max": 119
+      },
+      "resource.involuntary_switches": {
+        "median": 1,
+        "min": 1,
+        "max": 3
+      }
+    }
+  },
+  {
+    "case": "learning-record-1000",
+    "args": [
+      "learning",
+      "record",
+      "1000",
+      "1024",
+      "10"
+    ],
+    "repeats": 3,
+    "metrics": {
+      "result.file_bytes": {
+        "median": 1566782,
+        "min": 1566782,
+        "max": 1566782
+      },
+      "result.initial_rows": {
+        "median": 1000,
+        "min": 1000,
+        "max": 1000
+      },
+      "result.latency.count": {
+        "median": 10,
+        "min": 10,
+        "max": 10
+      },
+      "result.latency.max_us": {
+        "median": 13015.841,
+        "min": 4829.418,
+        "max": 14623.64
+      },
+      "result.latency.mean_us": {
+        "median": 5437.368,
+        "min": 2576.1845,
+        "max": 7353.2298
+      },
+      "result.latency.p50_us": {
+        "median": 2818.718,
+        "min": 2247.39,
+        "max": 3902.753
+      },
+      "result.latency.p95_us": {
+        "median": 13015.841,
+        "min": 4829.418,
+        "max": 14623.64
+      },
+      "result.latency.p99_us": {
+        "median": 13015.841,
+        "min": 4829.418,
+        "max": 14623.64
+      },
+      "result.source_bytes": {
+        "median": 1112,
+        "min": 1112,
+        "max": 1112
+      },
+      "result.students": {
+        "median": 30,
+        "min": 30,
+        "max": 30
+      },
+      "resource.wall_seconds": {
+        "median": 0.06,
+        "min": 0.03,
+        "max": 0.09
+      },
+      "resource.user_seconds": {
+        "median": 0.02,
+        "min": 0.02,
+        "max": 0.02
+      },
+      "resource.system_seconds": {
+        "median": 0.01,
+        "min": 0.01,
+        "max": 0.01
+      },
+      "resource.max_rss_kib": {
+        "median": 14976,
+        "min": 14796,
+        "max": 15120
+      },
+      "resource.voluntary_switches": {
+        "median": 178,
+        "min": 163,
+        "max": 180
+      },
+      "resource.involuntary_switches": {
+        "median": 9,
+        "min": 3,
+        "max": 21
+      }
+    }
+  },
+  {
+    "case": "learning-recent-10000",
+    "args": [
+      "learning",
+      "recent",
+      "10000",
+      "1024",
+      "100"
+    ],
+    "repeats": 3,
+    "metrics": {
+      "result.file_bytes": {
+        "median": 14595518,
+        "min": 14595512,
+        "max": 14595521
+      },
+      "result.initial_rows": {
+        "median": 10000,
+        "min": 10000,
+        "max": 10000
+      },
+      "result.latency.count": {
+        "median": 100,
+        "min": 100,
+        "max": 100
+      },
+      "result.latency.max_us": {
+        "median": 264.295,
+        "min": 201.856,
+        "max": 322.772
+      },
+      "result.latency.mean_us": {
+        "median": 141.81068,
+        "min": 137.08225,
+        "max": 148.77118
+      },
+      "result.latency.p50_us": {
+        "median": 134.568,
+        "min": 126.224,
+        "max": 140.648
+      },
+      "result.latency.p95_us": {
+        "median": 200.914,
+        "min": 149.413,
+        "max": 213.118
+      },
+      "result.latency.p99_us": {
+        "median": 230.787,
+        "min": 176.511,
+        "max": 308.838
+      },
+      "result.source_bytes": {
+        "median": 1112,
+        "min": 1112,
+        "max": 1112
+      },
+      "result.students": {
+        "median": 30,
+        "min": 30,
+        "max": 30
+      },
+      "resource.wall_seconds": {
+        "median": 0.08,
+        "min": 0.07,
+        "max": 0.08
+      },
+      "resource.user_seconds": {
+        "median": 0.04,
+        "min": 0.04,
+        "max": 0.04
+      },
+      "resource.system_seconds": {
+        "median": 0.03,
+        "min": 0.03,
+        "max": 0.03
+      },
+      "resource.max_rss_kib": {
+        "median": 37048,
+        "min": 36360,
+        "max": 37168
+      },
+      "resource.voluntary_switches": {
+        "median": 113,
+        "min": 103,
+        "max": 117
+      },
+      "resource.involuntary_switches": {
+        "median": 22,
+        "min": 2,
+        "max": 33
+      }
+    }
+  },
+  {
+    "case": "learning-overview-10000",
+    "args": [
+      "learning",
+      "overview",
+      "10000",
+      "1024",
+      "10"
+    ],
+    "repeats": 3,
+    "metrics": {
+      "result.file_bytes": {
+        "median": 14595515,
+        "min": 14595512,
+        "max": 14595527
+      },
+      "result.initial_rows": {
+        "median": 10000,
+        "min": 10000,
+        "max": 10000
+      },
+      "result.latency.count": {
+        "median": 10,
+        "min": 10,
+        "max": 10
+      },
+      "result.latency.max_us": {
+        "median": 14043.868,
+        "min": 13651.498,
+        "max": 14741.942
+      },
+      "result.latency.mean_us": {
+        "median": 7386.762,
+        "min": 6585.6132,
+        "max": 7456.151
+      },
+      "result.latency.p50_us": {
+        "median": 6647.952,
+        "min": 5840.157,
+        "max": 6713.71
+      },
+      "result.latency.p95_us": {
+        "median": 14043.868,
+        "min": 13651.498,
+        "max": 14741.942
+      },
+      "result.latency.p99_us": {
+        "median": 14043.868,
+        "min": 13651.498,
+        "max": 14741.942
+      },
+      "result.source_bytes": {
+        "median": 1112,
+        "min": 1112,
+        "max": 1112
+      },
+      "result.students": {
+        "median": 30,
+        "min": 30,
+        "max": 30
+      },
+      "resource.wall_seconds": {
+        "median": 0.13,
+        "min": 0.13,
+        "max": 0.14
+      },
+      "resource.user_seconds": {
+        "median": 0.09,
+        "min": 0.09,
+        "max": 0.09
+      },
+      "resource.system_seconds": {
+        "median": 0.04,
+        "min": 0.03,
+        "max": 0.05
+      },
+      "resource.max_rss_kib": {
+        "median": 56292,
+        "min": 56076,
+        "max": 56476
+      },
+      "resource.voluntary_switches": {
+        "median": 108,
+        "min": 103,
+        "max": 119
+      },
+      "resource.involuntary_switches": {
+        "median": 13,
+        "min": 6,
+        "max": 45
+      }
+    }
+  },
+  {
+    "case": "learning-record-10000",
+    "args": [
+      "learning",
+      "record",
+      "10000",
+      "1024",
+      "10"
+    ],
+    "repeats": 3,
+    "metrics": {
+      "result.file_bytes": {
+        "median": 15513749,
+        "min": 15513749,
+        "max": 15513758
+      },
+      "result.initial_rows": {
+        "median": 10000,
+        "min": 10000,
+        "max": 10000
+      },
+      "result.latency.count": {
+        "median": 10,
+        "min": 10,
+        "max": 10
+      },
+      "result.latency.max_us": {
+        "median": 43482.985,
+        "min": 43118.063,
+        "max": 58525.883
+      },
+      "result.latency.mean_us": {
+        "median": 28377.500600000003,
+        "min": 26220.6872,
+        "max": 35221.7252
+      },
+      "result.latency.p50_us": {
+        "median": 24649.27,
+        "min": 23564.439,
+        "max": 25799.529
+      },
+      "result.latency.p95_us": {
+        "median": 43482.985,
+        "min": 43118.063,
+        "max": 58525.883
+      },
+      "result.latency.p99_us": {
+        "median": 43482.985,
+        "min": 43118.063,
+        "max": 58525.883
+      },
+      "result.source_bytes": {
+        "median": 1112,
+        "min": 1112,
+        "max": 1112
+      },
+      "result.students": {
+        "median": 30,
+        "min": 30,
+        "max": 30
+      },
+      "resource.wall_seconds": {
+        "median": 0.35,
+        "min": 0.32,
+        "max": 0.42
+      },
+      "resource.user_seconds": {
+        "median": 0.2,
+        "min": 0.2,
+        "max": 0.21
+      },
+      "resource.system_seconds": {
+        "median": 0.12,
+        "min": 0.12,
+        "max": 0.13
+      },
+      "resource.max_rss_kib": {
+        "median": 84700,
+        "min": 84620,
+        "max": 84744
+      },
+      "resource.voluntary_switches": {
+        "median": 173,
+        "min": 170,
+        "max": 174
+      },
+      "resource.involuntary_switches": {
+        "median": 28,
+        "min": 12,
+        "max": 68
+      }
+    }
+  },
+  {
+    "case": "learning-recent-50000",
+    "args": [
+      "learning",
+      "recent",
+      "50000",
+      "1024",
+      "100"
+    ],
+    "repeats": 3,
+    "metrics": {
+      "result.file_bytes": {
+        "median": 73022056,
+        "min": 73022056,
+        "max": 73022071
+      },
+      "result.initial_rows": {
+        "median": 50000,
+        "min": 50000,
+        "max": 50000
+      },
+      "result.latency.count": {
+        "median": 100,
+        "min": 100,
+        "max": 100
+      },
+      "result.latency.max_us": {
+        "median": 2149.878,
+        "min": 2024.229,
+        "max": 4137.566
+      },
+      "result.latency.mean_us": {
+        "median": 1640.5761699999998,
+        "min": 1597.84079,
+        "max": 2255.3673900000003
+      },
+      "result.latency.p50_us": {
+        "median": 1628.567,
+        "min": 1577.599,
+        "max": 2215.286
+      },
+      "result.latency.p95_us": {
+        "median": 1955.067,
+        "min": 1878.489,
+        "max": 2852.47
+      },
+      "result.latency.p99_us": {
+        "median": 2112.201,
+        "min": 2005.585,
+        "max": 3757.074
+      },
+      "result.source_bytes": {
+        "median": 1112,
+        "min": 1112,
+        "max": 1112
+      },
+      "result.students": {
+        "median": 30,
+        "min": 30,
+        "max": 30
+      },
+      "resource.wall_seconds": {
+        "median": 0.49,
+        "min": 0.46,
+        "max": 0.58
+      },
+      "resource.user_seconds": {
+        "median": 0.32,
+        "min": 0.31,
+        "max": 0.39
+      },
+      "resource.system_seconds": {
+        "median": 0.17,
+        "min": 0.15,
+        "max": 0.19
+      },
+      "resource.max_rss_kib": {
+        "median": 155508,
+        "min": 155472,
+        "max": 155752
+      },
+      "resource.voluntary_switches": {
+        "median": 108,
+        "min": 102,
+        "max": 109
+      },
+      "resource.involuntary_switches": {
+        "median": 21,
+        "min": 5,
+        "max": 55
+      }
+    }
+  },
+  {
+    "case": "learning-overview-50000",
+    "args": [
+      "learning",
+      "overview",
+      "50000",
+      "1024",
+      "10"
+    ],
+    "repeats": 3,
+    "metrics": {
+      "result.file_bytes": {
+        "median": 73022068,
+        "min": 73022065,
+        "max": 73022104
+      },
+      "result.initial_rows": {
+        "median": 50000,
+        "min": 50000,
+        "max": 50000
+      },
+      "result.latency.count": {
+        "median": 10,
+        "min": 10,
+        "max": 10
+      },
+      "result.latency.max_us": {
+        "median": 71237.943,
+        "min": 70153.103,
+        "max": 82634.949
+      },
+      "result.latency.mean_us": {
+        "median": 38477.436,
+        "min": 36542.3027,
+        "max": 44067.2496
+      },
+      "result.latency.p50_us": {
+        "median": 33464.084,
+        "min": 32495.542,
+        "max": 40573.132
+      },
+      "result.latency.p95_us": {
+        "median": 71237.943,
+        "min": 70153.103,
+        "max": 82634.949
+      },
+      "result.latency.p99_us": {
+        "median": 71237.943,
+        "min": 70153.103,
+        "max": 82634.949
+      },
+      "result.source_bytes": {
+        "median": 1112,
+        "min": 1112,
+        "max": 1112
+      },
+      "result.students": {
+        "median": 30,
+        "min": 30,
+        "max": 30
+      },
+      "resource.wall_seconds": {
+        "median": 0.72,
+        "min": 0.68,
+        "max": 0.8
+      },
+      "resource.user_seconds": {
+        "median": 0.5,
+        "min": 0.48,
+        "max": 0.57
+      },
+      "resource.system_seconds": {
+        "median": 0.22,
+        "min": 0.2,
+        "max": 0.23
+      },
+      "resource.max_rss_kib": {
+        "median": 178728,
+        "min": 178384,
+        "max": 179164
+      },
+      "resource.voluntary_switches": {
+        "median": 104,
+        "min": 103,
+        "max": 104
+      },
+      "resource.involuntary_switches": {
+        "median": 29,
+        "min": 22,
+        "max": 54
+      }
+    }
+  },
+  {
+    "case": "learning-record-50000",
+    "args": [
+      "learning",
+      "record",
+      "50000",
+      "1024",
+      "10"
+    ],
+    "repeats": 3,
+    "metrics": {
+      "result.file_bytes": {
+        "median": 77540299,
+        "min": 77540293,
+        "max": 77540302
+      },
+      "result.initial_rows": {
+        "median": 50000,
+        "min": 50000,
+        "max": 50000
+      },
+      "result.latency.count": {
+        "median": 10,
+        "min": 10,
+        "max": 10
+      },
+      "result.latency.max_us": {
+        "median": 251698.372,
+        "min": 206579.93,
+        "max": 254973.594
+      },
+      "result.latency.mean_us": {
+        "median": 198144.8276,
+        "min": 190437.25,
+        "max": 200853.8353
+      },
+      "result.latency.p50_us": {
+        "median": 192758.286,
+        "min": 184901.771,
+        "max": 193869.412
+      },
+      "result.latency.p95_us": {
+        "median": 251698.372,
+        "min": 206579.93,
+        "max": 254973.594
+      },
+      "result.latency.p99_us": {
+        "median": 251698.372,
+        "min": 206579.93,
+        "max": 254973.594
+      },
+      "result.source_bytes": {
+        "median": 1112,
+        "min": 1112,
+        "max": 1112
+      },
+      "result.students": {
+        "median": 30,
+        "min": 30,
+        "max": 30
+      },
+      "resource.wall_seconds": {
+        "median": 2.33,
+        "min": 2.24,
+        "max": 2.34
+      },
+      "resource.user_seconds": {
+        "median": 1.11,
+        "min": 1.07,
+        "max": 1.12
+      },
+      "resource.system_seconds": {
+        "median": 1.04,
+        "min": 0.94,
+        "max": 1.07
+      },
+      "resource.max_rss_kib": {
+        "median": 303684,
+        "min": 303588,
+        "max": 304044
+      },
+      "resource.voluntary_switches": {
+        "median": 185,
+        "min": 170,
+        "max": 619
+      },
+      "resource.involuntary_switches": {
+        "median": 142,
+        "min": 48,
+        "max": 212
+      }
+    }
+  }
+]

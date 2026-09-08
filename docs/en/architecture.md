@@ -248,7 +248,7 @@ curl -sS -X POST http://127.0.0.1:8080/runner/agent/register \
   -d '{
     "agent_id":"lab-vm-01",
     "protocol_version":1,
-    "agent_version":"0.3.3",
+    "agent_version":"0.3.4",
     "isolation":"virtual_machine",
     "max_concurrent":2,
     "capabilities":["bpftool","btf","ringbuf"],
@@ -333,6 +333,15 @@ If enabled with `CYANREX_DB_FALLBACK`, individual services can degrade independe
 
 Fallback keeps a lab usable during a database outage, but memory-backed users, sessions, and events
 do not survive an Engine restart. Production-like classroom runs should monitor PostgreSQL health.
+
+### Event stream recovery
+
+`/ws/events` retains raw per-owner Event JSON frames. Its handshake uses session authentication and
+the Origin/Referer policy even though it is a GET. The route subscribes before finishing the upgrade,
+closes with `1013` on broadcast lag, and bounds socket sends. Both browser consumers share a bounded
+reconnect/snapshot controller; data gaps stay visible after recovery. This is a recent-history view,
+not a durable or exactly-once replay protocol. See [Event Stream Recovery](event-stream.md) for deadlines,
+client migration, snapshot races, and the limits of recovery from asynchronous persistence.
 
 ## 6. Deployment Topology
 

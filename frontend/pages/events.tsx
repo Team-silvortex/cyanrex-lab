@@ -2,19 +2,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import SidebarLayout from "../src/components/SidebarLayout";
 import { getEngineUrl, toWebSocketUrl } from "../src/config/runtime";
+import { startEventStream, type EngineEvent, type EventStreamState } from "../src/features/events/eventStream";
 import { useI18n } from "../src/i18n/context";
 import { loadPageState, savePageState } from "../src/utils/pageState";
-
-type EngineEvent = {
-  username: string;
-  timestamp: string;
-  source: string;
-  event_type: string;
-  category: "kernel" | "platform";
-  severity: "success" | "warning" | "error";
-  color: "green" | "yellow" | "red";
-  payload: Record<string, unknown>;
-};
 
 type SafetyTone = "ok" | "warn";
 
@@ -32,7 +22,9 @@ type EventFilterState = {
 export default function EventsPage() {
   const { t } = useI18n();
   const [events, setEvents] = useState<EngineEvent[]>([]);
-  const [connection, setConnection] = useState<"connecting" | "open" | "closed">("connecting");
+  const [connection, setConnection] = useState<EventStreamState>("connecting");
+  const [streamGap, setStreamGap] = useState(false);
+  const [streamRevision, setStreamRevision] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<"all" | "kernel" | "platform">(
     () => loadPageState<"all" | "kernel" | "platform">("events_category_v1") ?? "all",
@@ -48,26 +40,8 @@ export default function EventsPage() {
   const [exportFormat, setExportFormat] = useState<"json" | "csv">(
     () => loadPageState<"json" | "csv">("events_export_v1") ?? "json",
   );
-  const filterRef = useRef<EventFilterState>({
-    categoryFilter: "all",
-    severityFilter: "all",
-    rangePreset: "all",
-    startTime: "",
-    endTime: "",
-  });
-
   const engineUrl = useMemo(getEngineUrl, []);
   const markReadTimer = useRef<number | null>(null);
-
-  useEffect(() => {
-    filterRef.current = {
-      categoryFilter,
-      severityFilter,
-      rangePreset,
-      startTime,
-      endTime,
-    };
-  }, [categoryFilter, endTime, rangePreset, severityFilter, startTime]);
 
   const scheduleMarkRead = useCallback(() => {
     if (markReadTimer.current !== null) {
@@ -83,91 +57,26 @@ export default function EventsPage() {
     }, MARK_READ_DEBOUNCE_MS);
   }, [engineUrl]);
 
-  const loadSnapshot = useCallback(async () => {
-    const params = buildFilterParams({
-      categoryFilter,
-      severityFilter,
-      rangePreset,
-      startTime,
-      endTime,
-      limit: EVENT_LIST_LIMIT,
-    });
-
-    try {
-      const response = await fetch(`${engineUrl}/events?${params.toString()}`, {
-        credentials: "include",
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-      const snapshot = (await response.json()) as EngineEvent[];
-      setEvents(snapshot);
-      scheduleMarkRead();
-      setError(null);
-    } catch (err) {
-      setError((err as Error).message);
-    }
-  }, [categoryFilter, engineUrl, endTime, rangePreset, scheduleMarkRead, severityFilter, startTime]);
-
   useEffect(() => {
-    let ws: WebSocket | null = null;
-    let alive = true;
-
-    const openWs = () => {
-      const wsUrl = toWebSocketUrl(engineUrl, "/ws/events");
-      ws = new WebSocket(wsUrl);
-      setConnection("connecting");
-
-      ws.onopen = () => {
-        if (!alive) return;
-        setConnection("open");
-        setError(null);
-      };
-
-      ws.onmessage = (message) => {
-        try {
-          const event = JSON.parse(message.data as string) as EngineEvent;
-          if (!alive) return;
-          if (!matchesCurrentFilters(event, filterRef.current)) {
-            return;
-          }
-          setEvents((prev) => {
-            const next = prev.length >= EVENT_LIST_LIMIT ? prev.slice(1) : prev.slice();
-            next.push(event);
-            return next;
-          });
-          scheduleMarkRead();
-        } catch {
-          // ignore malformed event frame
-        }
-      };
-
-      ws.onerror = () => {
-        if (!alive) return;
-        setError(t("events.websocketError"));
-      };
-
-      ws.onclose = () => {
-        if (!alive) return;
-        setConnection("closed");
-      };
-    };
-
-    openWs();
-
+    const filters = { categoryFilter, severityFilter, rangePreset, startTime, endTime };
+    const params = buildFilterParams({ ...filters, limit: EVENT_LIST_LIMIT });
+    setEvents([]);
+    const dispose = startEventStream({
+      socketUrl: toWebSocketUrl(engineUrl, "/ws/events"),
+      snapshotUrl: `${engineUrl}/events?${params.toString()}`,
+      accepts: (event) => matchesCurrentFilters(event, filters),
+      onEvents: (rows) => { setEvents(rows); scheduleMarkRead(); },
+      onState: setConnection,
+      onGap: () => setStreamGap(true),
+    });
     return () => {
-      alive = false;
-      ws?.close();
+      dispose();
       if (markReadTimer.current !== null) {
         clearTimeout(markReadTimer.current);
         markReadTimer.current = null;
       }
     };
-  }, [engineUrl, scheduleMarkRead]);
-
-  useEffect(() => {
-    void loadSnapshot();
-  }, [loadSnapshot]);
+  }, [categoryFilter, engineUrl, endTime, rangePreset, scheduleMarkRead, severityFilter, startTime, streamRevision]);
 
   const activeFilterCount = useMemo(() => {
     let count = 0;
@@ -260,6 +169,8 @@ export default function EventsPage() {
       }
       setEvents([]);
       setError(null);
+      // Invalidate any in-flight snapshot so it cannot restore rows from before this deletion.
+      setStreamRevision((revision) => revision + 1);
     } catch (err) {
       setError((err as Error).message);
     }
@@ -270,8 +181,12 @@ export default function EventsPage() {
       <section className="panel">
         <h2>{t("events.title")}</h2>
         <p className="meta">
-          {t("events.status")}: {connection === "connecting" ? t("events.connectionConnecting") : connection === "open" ? t("events.connectionOpen") : t("events.connectionClosed")} | {t("events.total")}: {events.length} | {t("events.filtered")}: {events.length} | {t("events.activeFilters", { count: activeFilterCount })}
+          {t("events.status")}: {t(`events.connection${connection[0].toUpperCase()}${connection.slice(1)}`)} | {t("events.total")}: {events.length} | {t("events.filtered")}: {events.length} | {t("events.activeFilters", { count: activeFilterCount })}
         </p>
+        {streamGap && <p className="meta" role="status">{t("events.streamGap")}</p>}
+        {connection === "closed" && (
+          <button type="button" onClick={() => setStreamRevision((revision) => revision + 1)}>{t("events.retryStream")}</button>
+        )}
         <div className="row" style={{ marginTop: 10 }}>
           <label className="meta">
             {t("events.category")}:

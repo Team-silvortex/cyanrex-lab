@@ -190,7 +190,7 @@ function buildOperation(operation, method, routePath, access) {
 
 function responsesFor(operation) {
   if (operation === "GET /ws/events") {
-    return { 101: { description: "WebSocket protocol upgrade" } };
+    return { 101: { description: "Cookie-authenticated WebSocket; requires an allowed Origin/Referer (same CSRF policy as state changes). Text frames remain raw EventRecord JSON. Broadcast lag closes with code 1013 and reason 'event stream lagged; reload /events'. Sends time out after 5s (the peer may observe abnormal closure); close sends are bounded to 1s. Reconnect with backoff, then reload retained recent /events history. No durable cursor, exactly-once delivery, or complete gap recovery is guaranteed." } };
   }
   if (operation === "GET /events/export") {
     return {

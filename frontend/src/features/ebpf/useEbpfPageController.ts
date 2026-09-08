@@ -114,7 +114,7 @@ export function useEbpfPageController(
   const bootstrappedLabRef = useRef("");
   const engineUrl = getEngineUrl();
   const compileBackends = useCompileBackends(engineUrl);
-  const breakpointHits = useBreakpointHitStream(
+  const { hits: breakpointHits, streamGap: breakpointStreamGap, connection: breakpointConnection } = useBreakpointHitStream(
     engineUrl,
     result?.debug?.session_id ?? null,
   );
@@ -539,6 +539,8 @@ export function useEbpfPageController(
     savedScripts,
     debugBreakpoints,
     breakpointHits,
+    breakpointStreamGap,
+    breakpointConnection,
     lastBreakpointHit,
     activeLabProgress,
     clearDebugBreakpoints,

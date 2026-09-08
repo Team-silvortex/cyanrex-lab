@@ -97,6 +97,7 @@ jobs:
         working-directory: frontend
         run: |
           npm run test:performance-hotspots
+          npm run test:event-stream
           npm run test:security-headers
           npm run test:tooling
       - name: Audit frontend production dependencies

@@ -22,6 +22,9 @@ Docker 配置需要访问宿主机或虚拟机的 eBPF、tracefs、BTF 和 bpffs
 - 本地检查/补全缓存按用户区分；源码工作区在 Unix 使用 `0700`，返回或取消时执行清理守卫，
   清理失败会记录日志。这些措施不是独立内核边界；
 - 数据库保存会话令牌摘要，而不是可直接使用的明文令牌。
+- 携带会话的 `/ws/events` 握手也执行 Origin/Referer 来源策略；CORS 响应头本身不能保护
+  WebSocket。原生客户端必须提供允许的 Origin。已有的 `CYANREX_ALLOW_MISSING_ORIGIN` 豁免
+  也作用于此接口，局域网中应保持关闭，除非已明确接受风险。详见[事件流恢复](event-stream.md)。
 
 这些措施降低误暴露风险，但不能把特权 Engine 变成安全的共享执行平台。
 

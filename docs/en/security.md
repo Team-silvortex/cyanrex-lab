@@ -23,6 +23,10 @@ they can perform privileged kernel observation and loading. Do not expose Engine
   cleanup guards run on return or cancellation; failed cleanup is logged. These are hygiene measures,
   not an independent-kernel boundary.
 - DB stores session token hashes, not raw usable tokens.
+- Cookie-authenticated `/ws/events` handshakes also enforce the configured Origin/Referer policy;
+  CORS headers alone do not protect WebSocket connections. Native clients must send an allowed Origin.
+  The existing `CYANREX_ALLOW_MISSING_ORIGIN` override also affects this endpoint; keep it disabled on
+  a LAN unless its security tradeoff is explicitly accepted. See [Event Stream Recovery](event-stream.md).
 
 These measures reduce accidental exposure, but they do not make the privileged Engine a shared safe runtime.
 
