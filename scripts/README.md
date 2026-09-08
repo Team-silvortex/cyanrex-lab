@@ -20,6 +20,13 @@ Utility scripts for Cyanrex local operation.
   - `--security`: add the security audit to the default backend/frontend/SDK checks
   - `--security-only`: run common preflight + security audit check
   - `--no-npm-install`: skip `npm ci` during frontend and SDK checks
+- `check-npm-audit.mjs <package-directory>`: shared local/CI production-dependency audit with the
+  existing moderate severity threshold. Retries only transient connection errors, rate limits/server
+  failures, and npm's retired Quick fallback, at most three attempts with 1s/2s backoff and a 60s limit
+  per attempt. Vulnerability reports are never retried; authentication, certificate, lockfile, invalid
+  report, and persistent network errors still fail the gate. Does not install or fix dependencies.
+- `tests/npmAudit.test.mjs`: audit scope, timeout, retry, and fail-closed regressions, included in every
+  quality-gate mode. A loopback mock also exercises the real npm CLI without contacting external registries.
 - `check-security-audit.sh`: audit Rust dependencies against a tracked exception registry.
   - reads `scripts/security-audit-exceptions.json`
   - reports explicit exceptions and fails on unapproved advisories

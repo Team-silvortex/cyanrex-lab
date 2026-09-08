@@ -117,7 +117,7 @@ run_frontend_checks() {
   npm --prefix "$PROJECT_ROOT/frontend" run test:security-headers
   npm --prefix "$PROJECT_ROOT/frontend" run test:tooling
   npm --prefix "$PROJECT_ROOT/frontend" run test:ui-permissions
-  npm --prefix "$PROJECT_ROOT/frontend" audit --omit=dev --audit-level=moderate
+  node "$PROJECT_ROOT/scripts/check-npm-audit.mjs" "$PROJECT_ROOT/frontend"
 }
 
 run_frontend_dependencies() {
@@ -135,7 +135,7 @@ run_sdk_checks() {
     npm ci --prefix "$PROJECT_ROOT/sdk-js"
   fi
   npm --prefix "$PROJECT_ROOT/sdk-js" run check
-  npm --prefix "$PROJECT_ROOT/sdk-js" audit --omit=dev --audit-level=moderate
+  node "$PROJECT_ROOT/scripts/check-npm-audit.mjs" "$PROJECT_ROOT/sdk-js"
 }
 
 run_format_only() {

@@ -101,7 +101,7 @@ jobs:
           npm run test:tooling
       - name: Audit frontend production dependencies
         working-directory: frontend
-        run: npm audit --omit=dev --audit-level=moderate
+        run: node ../scripts/check-npm-audit.mjs .
 
   sdk:
     name: JavaScript SDK
@@ -121,7 +121,7 @@ jobs:
         run: npm run check
       - name: Audit production dependencies
         working-directory: sdk-js
-        run: npm audit --omit=dev --audit-level=moderate
+        run: node ../scripts/check-npm-audit.mjs .
 
   distribution:
     name: Distribution install smoke

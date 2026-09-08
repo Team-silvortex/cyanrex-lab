@@ -12,6 +12,9 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 - Frontend Docker builds now use a context-local metadata cleanup hook instead of depending on a
   parent-directory script; the repository-wide cleanup command remains available.
 - Added build-input and isolated frontend prebuild regressions to the common quality gate.
+- Local and CI npm audits now retry transient registry failures with bounded attempts and timeouts,
+  while preserving the production scope and moderate severity gate. Vulnerabilities and unusable
+  reports still fail; no dependency fixes or registry substitutions are performed automatically.
 
 ## [0.3.3] - 2026-09-06
 
