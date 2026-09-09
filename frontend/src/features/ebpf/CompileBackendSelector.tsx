@@ -22,13 +22,13 @@ export default function CompileBackendSelector({
   const missingTarget = Boolean(selectedAgentId && !selectedAgent);
 
   return (
-    <div style={{ marginTop: 10 }}>
-      <label className="meta">
-        {t("ebpf.compilerBackend")}:{" "}
+    <div className="compiler-backend-field">
+      <label className="field-label">
+        <span>{t("ebpf.compilerBackend")}</span>
         <select
+          aria-label={t("ebpf.compilerBackend")}
           value={target}
           onChange={(event) => setTarget(event.target.value as EbpfCompilerTarget)}
-          style={{ marginLeft: 6 }}
         >
           <option value="local">{t("ebpf.compilerBackendLocal")}</option>
           {missingTarget && (

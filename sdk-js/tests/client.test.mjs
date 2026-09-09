@@ -3,6 +3,26 @@ import test from "node:test";
 
 import { CyanrexApiError, CyanrexClient } from "../dist/index.js";
 
+test("learning resume convenience and generated operations read one owner-bound record", async () => {
+  const calls = [];
+  const controller = new AbortController();
+  const client = new CyanrexClient("http://localhost:8080", { fetch: async (url, init) => {
+    calls.push({ url, init });
+    return Response.json({ id: "attempt&username=other", source: "original source" });
+  } });
+  const result = await client.learning.attempt("attempt&username=other", { signal: controller.signal });
+  await client.operation("getLearningAttempt", { query: { attempt_id: "attempt&username=other" } });
+  assert.equal(result.source, "original source");
+  assert.equal(calls.length, 2);
+  for (const call of calls) {
+    assert.equal(call.url, "http://localhost:8080/learning/attempt?attempt_id=attempt%26username%3Dother");
+    assert.equal(call.init.method, "GET");
+    assert.equal(call.init.credentials, "include");
+    assert.equal(call.init.body, undefined);
+  }
+  assert.equal(calls[0].init.signal, controller.signal);
+});
+
 test("uses cookie credentials and serializes JSON requests", async () => {
   const calls = [];
   const client = new CyanrexClient("http://localhost:8080///", {

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useI18n } from "../../i18n/context";
 import { AttemptCard } from "./AttemptCard";
 import type { LabAttempt } from "./models";
+import { attemptEditorUrl } from "./resumeAttempt";
 
 export function AttemptHistory({ engineUrl }: { engineUrl: string }) {
   const { t } = useI18n();
@@ -32,10 +33,10 @@ export function AttemptHistory({ engineUrl }: { engineUrl: string }) {
   }, [engineUrl, refresh, t]);
 
   return (
-    <section className="panel" style={{ marginTop: 16 }}>
-      <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
+    <section className="panel learning-history" id="learning-history" tabIndex={-1} style={{ marginTop: 20 }}>
+      <div className="section-heading">
         <h2>{t("learn.historyTitle")}</h2>
-        <button type="button" disabled={loading} onClick={() => setRefresh((value) => value + 1)}>
+        <button type="button" className="button-secondary" disabled={loading} onClick={() => setRefresh((value) => value + 1)}>
           {loading ? t("common.checking") : t("common.refresh")}
         </button>
       </div>
@@ -45,7 +46,7 @@ export function AttemptHistory({ engineUrl }: { engineUrl: string }) {
       <div className="grid" style={{ gap: 16 }}>
         {attempts.slice(0, visibleCount).map((attempt) => <div key={attempt.id}>
           <AttemptCard attempt={attempt} />
-          <p><Link href={`/ebpf?lab=${encodeURIComponent(attempt.lab_id)}`}>{t("learn.openEditor")}</Link></p>
+          <p><Link href={attemptEditorUrl(attempt)}>{t("learn.resumeAttempt")}</Link></p>
         </div>)}
       </div>
       {visibleCount < attempts.length && <button type="button" style={{ marginTop: 16 }}

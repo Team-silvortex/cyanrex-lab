@@ -1,0 +1,26 @@
+.safety-dialog { width: min(560px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); margin: auto; overflow: auto; padding: 24px; border: 1px solid #6481ac; border-radius: 16px; background: #0e1b30; color: var(--text); box-shadow: 0 24px 80px #0009; }
+.safety-dialog::backdrop { background: #020710bf; }
+.content > .safety-dialog { margin: auto; }
+.safety-dialog h2 { margin: 8px 0 16px; font-size: 23px; }
+.safety-dialog p { line-height: 1.6; overflow-wrap: anywhere; }
+.safety-dialog .brand-kicker { color: #adc9f2; }
+.safety-targets { border: 1px solid var(--line); background: #081323; border-radius: 10px; padding: 12px; margin: 16px 0; }
+.safety-targets ul { max-height: 180px; overflow: auto; margin: 10px 0 0; padding-left: 22px; }
+.safety-targets li { padding: 4px 0; overflow-wrap: anywhere; }
+.safety-details { display: grid; gap: 12px; font-size: 14px; }
+.safety-details > div { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 12px; }
+.safety-details dt { color: var(--muted); }
+.safety-details dd { margin: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
+.safety-dialog pre { max-height: 220px; overflow: auto; }
+.safety-dialog summary { cursor: pointer; }
+.safety-phrase { margin-top: 20px; }
+.safety-actions { position: sticky; bottom: -24px; background: #0e1b30; display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 10px; margin-top: 20px; padding: 12px 0; }
+.safety-actions button { min-height: 44px; }
+.safety-dialog :focus-visible { outline: 2px solid #a1c8ff; outline-offset: 3px; }
+@media (max-width: 600px) {
+  .safety-dialog { padding: 18px; }
+  .safety-actions { bottom: -18px; }
+  .safety-actions button { flex: 1 1 100px; font-size: 13px; }
+  .safety-actions .button-secondary { flex: 0 0 auto; min-width: 76px; }
+  .safety-details > div { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+}

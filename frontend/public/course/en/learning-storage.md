@@ -23,6 +23,28 @@ thread or allocate a full encoded-file buffer. Reported encoding, write, flush o
 publish unsaved changes. Older arrays without `teacher_feedback` still load;
 no reference wrapper or migration is added to the file. API history responses remain independently owned.
 
+## Cold initialization
+
+The first local access acquires the same persistence lock before dispatching a blocking worker. File
+reading, whole-file UTF-8 validation and JSON decoding run there, not on the async executor. A private
+Serde sequence visitor wraps each decoded record directly in a shared pointer, avoiding an intermediate
+full `Vec<LabAttempt>`. Input is still a complete in-memory string, not streamed or size-bounded. Unknown
+fields, legacy records, record order and rejection of trailing/invalid input retain the previous behavior;
+even invalid UTF-8 inside an ignored field rejects the file.
+
+One initialization or commit per shared store may be queued/running. Concurrent first readers reuse a
+successful published snapshot. Cancellation while waiting for admission dispatches nothing; after
+dispatch, the worker retains admission and publishes the complete snapshot even without its caller.
+Readiness is set only after publication. Warm access checks readiness without dispatching another worker.
+This avoids relying on [cancellable OnceCell initialization](https://docs.rs/tokio/1.53.1/tokio/sync/struct.OnceCell.html#method.get_or_try_init)
+to own a detached blocking task.
+
+Only `NotFound` initializes an empty snapshot, without creating a file. Other I/O failures (including a
+parent path that is not a directory), invalid UTF-8 and malformed JSON leave readiness unset and memory
+unchanged. Later calls retry; failures are not cached or coalesced across waiting callers. A generic
+warning records load failure without logging stored values. Public reads retain their existing empty/default
+result on load errors; writes return storage errors. There is no new `.tmp` recovery or external-file watcher.
+
 ## Request cancellation and write completion
 
 The caller acquires the shared writer lock before constructing and handing off a replacement snapshot.
@@ -64,7 +86,8 @@ computed afresh rather than kept in a separately invalidated cache.
 
 ## Remaining boundaries
 
-- Records remain in memory without a new retention limit. Shared pointers add per-record bookkeeping,
+- Loading still holds a complete input string alongside decoded records, with no file-size cap.
+  Records remain in memory without a new retention limit. Shared pointers add per-record bookkeeping,
   and in-flight readers can keep older snapshots alive. Lower write peaks are not a general memory or
   classroom-capacity guarantee.
 - Writes still copy an `O(n)` pointer index and serialize/write the complete JSON file. The fixed encode
@@ -72,14 +95,16 @@ computed afresh rather than kept in a separately invalidated cache.
 - The existing path does not fsync files/directories, provide crash recovery or cross-process locking,
   or atomically publish to disk and memory across process failure. Request-cancellation completion does
   not cover process kill, panic, runtime teardown or power loss. Slow/stuck I/O retains one store's writer
-  lock and blocking thread and can delay runtime shutdown; there is no new write deadline or global queue
+  lock and blocking thread and can delay runtime shutdown; there is no new load/write deadline or global queue
   limit. Multiple Engine processes or independently constructed stores must not write the same file.
   A loaded store does not watch external edits; keep backups and do not edit a live store's file.
 - PostgreSQL queries/schema and fallback policy are unchanged. Successful DB queries still fetch the
   original fields, including source; no SQL-side aggregation or DB performance improvement is claimed.
   Failed PostgreSQL feedback writes still return errors instead of updating a stale local fallback.
 - HTTP, browser rendering, real PostgreSQL, kernel execution and power-loss behavior need separate
-  acceptance. This is not a new independently isolated runtime.
+  acceptance. The focused [2026-09-09 PostgreSQL acceptance](acceptance.md) covers migration, feedback
+  concurrency and owner-bound resume reads, not database performance or crash recovery. This is not a
+  new independently isolated runtime.
 
 ## Reproducing the local benchmark
 
@@ -106,3 +131,24 @@ concurrent feedback/appends, owner/order/limit behavior, differential aggregatio
 algorithm, cancellation before admission/while queued/after rename, stale retries, streaming before
 all rows are encoded, short/interrupted writes and explicit flush errors. The external PostgreSQL
 regression remains opt-in.
+
+For cold-process initialization, first build and freeze `learning_load_bench` against the baseline
+library using the exact same example source as the candidate. Record both library and harness provenance,
+copy the baseline binary outside the build output, then run:
+
+```sh
+node scripts/bench-learning-load.mjs <new-output-directory> <frozen-baseline-learning_load_bench>
+```
+
+Five rotated rounds over four fixtures give 40 measured processes, with alternating before/after order.
+The runner creates synthetic files outside the measured processes, verifies identical bytes after all
+reads, and removes only its own temporary fixtures. Freshly written files remain OS-page-cache warm:
+this measures a cold store/process, **not cold disk**. Each invocation measures first recent-20 latency,
+one warm recent-20 query, and maximum lateness of a 2 ms timer on a single-thread async runtime. Summaries
+are medians/ranges of five observations, not request percentiles. CPU/RSS includes loading, queries,
+overview validation and teardown, but not fixture generation. Timer results expose executor stalls, not
+production HTTP health latency or a scheduling guarantee. Keep regressing prototypes separately.
+
+Cold-load regressions cover cancelled queued/decoded initialization, concurrent first readers and writers,
+missing versus invalid paths, whole-file UTF-8, legacy/unknown fields, invalid/trailing JSON without partial
+publication, successful-load caching and retry after errors.

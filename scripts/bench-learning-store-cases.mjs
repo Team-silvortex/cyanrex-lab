@@ -16,3 +16,7 @@ export function learningPairs(round) {
     return { item, phases };
   });
 }
+
+export function learningLoadPairs(round) {
+  return learningPairs(round).filter(({ item }) => item.args[1] === "recent");
+}

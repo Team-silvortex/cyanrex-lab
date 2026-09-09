@@ -77,6 +77,14 @@ export interface OpenApiOperations {
     input: Record<string, never>;
     response: OpenApiSchemas["EnvironmentReport"];
   };
+  "getLearningAttempt": {
+    input: {
+      "query": {
+        "attempt_id": string;
+      };
+    };
+    response: OpenApiSchemas["LabAttempt"];
+  };
   "getLearningAttempts": {
     input: Record<string, never>;
     response: Array<OpenApiSchemas["LabAttempt"]>;
@@ -361,6 +369,7 @@ export const openApiOperations = {
   "getEventsUnreadCount": {"method":"GET","path":"/events/unread-count","access":"authenticated","transport":"json"},
   "getHealth": {"method":"GET","path":"/health","access":"public","transport":"json"},
   "getHelperEnvironment": {"method":"GET","path":"/helper/environment","access":"authenticated","transport":"json"},
+  "getLearningAttempt": {"method":"GET","path":"/learning/attempt","access":"authenticated","transport":"json"},
   "getLearningAttempts": {"method":"GET","path":"/learning/attempts","access":"authenticated","transport":"json"},
   "getLearningLabs": {"method":"GET","path":"/learning/labs","access":"authenticated","transport":"json"},
   "getLearningTeacherAttempts": {"method":"GET","path":"/learning/teacher/attempts","access":"staff","transport":"json"},

@@ -23,6 +23,40 @@ pub struct TeacherAttemptsQuery {
     limit: Option<usize>,
 }
 
+#[derive(Deserialize)]
+pub struct AttemptQuery {
+    attempt_id: String,
+}
+
+pub async fn get_attempt(
+    State(state): State<Arc<AppState>>,
+    headers: HeaderMap,
+    Query(query): Query<AttemptQuery>,
+) -> Response {
+    let Some(session) =
+        crate::routes::auth::current_session_from_headers(state.as_ref(), &headers).await
+    else {
+        return auth_error().into_response();
+    };
+    let response = if uuid::Uuid::parse_str(&query.attempt_id).is_err() {
+        learning_error(StatusCode::BAD_REQUEST, "invalid attempt id")
+    } else {
+        match state
+            .learning_store
+            .attempt_for_user(&session.username, &query.attempt_id)
+            .await
+        {
+            Ok(Some(attempt)) => Json(attempt).into_response(),
+            Ok(None) => learning_error(StatusCode::NOT_FOUND, "attempt not found"),
+            Err(_) => {
+                tracing::warn!("failed to load learning attempt");
+                learning_error(StatusCode::INTERNAL_SERVER_ERROR, "failed to load attempt")
+            }
+        }
+    };
+    ([("cache-control", "no-store")], response).into_response()
+}
+
 pub async fn list_labs(State(state): State<Arc<AppState>>, headers: HeaderMap) -> Response {
     let Some(session) =
         crate::routes::auth::current_session_from_headers(state.as_ref(), &headers).await

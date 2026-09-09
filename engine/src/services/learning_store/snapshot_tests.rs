@@ -4,6 +4,8 @@ use serde_json::json;
 
 #[path = "cancellation_tests.rs"]
 mod cancellation_tests;
+#[path = "load_tests.rs"]
+mod load_tests;
 
 struct Fixture(PathBuf);
 

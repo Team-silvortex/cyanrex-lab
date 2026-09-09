@@ -1,7 +1,12 @@
 import type { TranslationDict } from "../translations";
+import { safetyMessages } from "./safety";
 
 export const ja: TranslationDict = {
+    safety: safetyMessages.ja,
     layout: {
+      menu: "ナビゲーション",
+      navigation: "メインナビゲーション",
+      skipToContent: "メインコンテンツへ",
       controlPlane: "コントロールプレーン",
       checkingSession: "セッション確認中...",
       logout: "ログアウト",
@@ -234,6 +239,20 @@ export const ja: TranslationDict = {
       },
     },
     learn: {
+      resources: "学習資料",
+      pageSections: "学習セクション",
+      resumeAttempt: "この提出から続ける",
+      resumeTitle: "過去の提出を再開",
+      resumeHint: "まずソースとフィードバックを確認してください。確定すると現在の下書きを置き換えるため、必要なら先に保存してください。自動実行やアタッチは行いません。",
+      resumeLoading: "過去の提出を読み込み中…",
+      resumeInvalid: "提出リンクが無効です。現在の下書きは変更されていません。",
+      resumeFailed: "過去の提出を読み込めませんでした",
+      resumeApply: "現在の下書きを置き換えて続ける",
+      resumeKeep: "現在の下書きを保持",
+      resumeRetry: "読み込みを再試行",
+      resumeKept: "現在の下書きを保持しました。提出の読み込みや実行はしていません。",
+      resumeApplied: "提出を読み込みました。ソースを確認してから手動でコンパイル・実行してください。新しい試行として記録されます。",
+      resumeTemplateMissing: "テンプレート利用不可",
       historyTitle: "自分の実験履歴",
       historyHint: "各提出の自動判定と教師のコメントを確認し、エディターに戻って実験を続けましょう。",
       historyLoadFailed: "実験履歴を読み込めませんでした",
@@ -287,6 +306,7 @@ export const ja: TranslationDict = {
       sectionSecurityDetail: "個人実習、VM 分離、授業安全境界の設定。",
     },
     teaching: {
+      backToStudents: "学生一覧へ戻る",
       teacherFeedback: "教師のコメント",
       feedbackEdit: "コメントを書く",
       feedbackHint: "学生に公開されます。最大 2000 文字で、自動判定の結果は変更しません。",
@@ -380,6 +400,9 @@ export const ja: TranslationDict = {
       },
     },
     ebpf: {
+      importFile: "ファイルを読込",
+      runtimeSettings: "実行設定",
+      backToSource: "コードへ戻る",
       title: "eBPF ランナー",
       subtitle: "Monaco + C診断 + インラインメタデータ（軽量 clangd モード）。",
       compileRun: "コンパイルして実行",

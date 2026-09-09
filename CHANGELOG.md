@@ -5,6 +5,54 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.3.6] - 2026-09-09
+
+### Added
+
+- Retained source/binary-bound observations and native live-kernel evidence from an explicitly approved,
+  bounded QEMU/KVM acceptance guest: real Aya attach, matched ring-buffer event, exact detach, unchanged
+  kernel program/link inventories and a restricted-network canary. This is dev-build acceptance on one
+  guest kernel, not a shipped VM Runner or a tagged/offline release acceptance result.
+- Real PostgreSQL CI acceptance on a disposable loopback-only service, with an exact-test selection
+  guard. The learning integration now also checks owner-bound historical submission reads, persisted
+  source/current feedback, and storage failures without a local fallback. Documented the first local
+  PostgreSQL and signed Runner Agent/Clang acceptance results and the remaining privileged-host checks.
+- Shared, keyboard-accessible confirmations for kernel runs, attachment/script/header/event deletion,
+  source replacement, remote compiler selection and consequential account/admin controls. Bulk cleanup
+  requires an exact typed phrase; in-flight requests cannot be double-submitted or implicitly retried.
+- Students can resume an exact historical lab submission from Learning Center, preview current teacher
+  feedback, and explicitly replace or keep their editor draft. Pending/failed/cancelled requests and
+  late lab templates cannot overwrite the draft; loading never runs or attaches a program automatically.
+- Added owner-bound `GET /learning/attempt?attempt_id=...` with no-store responses, typed
+  `learning.attempt()` / `getLearningAttempt` SDK access, permission regressions and browser coverage.
+
+### Changed
+
+- Opening a lab now preserves the current editor draft. Its template is loaded through an explicit
+  review action, and an already-confirmed file import cannot replace a different page's draft after navigation.
+- Task-focused UI: persistent desktop navigation, an accessible compact-screen menu, a sticky editor
+  action bar, source/results beside runtime settings, and on-demand resource panels. Learning progress
+  now precedes documentation, with section shortcuts; classroom rows adapt to labelled mobile cards
+  and selected reviews receive focus. Existing permissions, drafts and manual execution stay intact.
+- Local LearningStore first-load I/O, whole-file UTF-8 validation and JSON parsing run on a blocking
+  worker with shared initialization/write admission. Records decode directly into shared pointers while
+  retaining the plain JSON format and full-input buffer. Added cold-load cancellation, concurrency,
+  legacy/invalid-input regressions and paired first-read, timer-responsiveness and process-RSS benchmarks.
+
+### Fixed
+
+- Raised the frontend Next.js floor to 15.5.24 and sharp override to 0.35.4 for the upstream Windows
+  server and AVIF/libheif security advisories found by the safety-workflow dependency audit.
+- Single detach cannot silently fall back to detach-all without a path. Event deletion reviews the full
+  filter scope with a fixed time cutoff, not a misleading 200-row preview count. Header batches check
+  every response, stop at the first failure and report partial completion without claiming rollback.
+- The editor's loaded Monaco view can shrink on narrow screens instead of forcing the page and
+  submission-resume confirmation beyond the viewport; stale lab progress cannot bootstrap another lab's template.
+- Cancelling an admitted cold-load request no longer discards successful initialization or permits
+  duplicate detached loads. A worker publishes the complete snapshot before marking the store ready.
+- Local learning path errors are no longer mistaken for an absent record file: only `NotFound` initializes
+  an empty store. Other read/decode failures remain retryable without publishing partial results.
+
 ## [0.3.5] - 2026-09-08
 
 ### Changed
@@ -170,7 +218,8 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 The canonical package metadata advanced directly from `0.2.9` to `0.3.1`. Version `0.3.0` identifies
 the frozen API compatibility snapshot only; it was not a package release and must not be tagged.
 
-[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.5...HEAD
+[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.6...HEAD
+[0.3.6]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.5...v0.3.6
 [0.3.5]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.4...v0.3.5
 [0.3.4]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.3...v0.3.4
 [0.3.3]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.2...v0.3.3

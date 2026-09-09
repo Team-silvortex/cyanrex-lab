@@ -1,7 +1,12 @@
 import type { TranslationDict } from "../translations";
+import { safetyMessages } from "./safety";
 
 export const es: TranslationDict = {
+    safety: safetyMessages.es,
     layout: {
+      menu: "Menú de navegación",
+      navigation: "Navegación principal",
+      skipToContent: "Saltar al contenido",
       controlPlane: "Plano de Control",
       checkingSession: "Verificando sesión...",
       logout: "Cerrar sesión",
@@ -234,6 +239,20 @@ export const es: TranslationDict = {
       },
     },
     learn: {
+      resources: "Recursos de aprendizaje",
+      pageSections: "Secciones de aprendizaje",
+      resumeAttempt: "Continuar desde este intento",
+      resumeTitle: "Retomar una entrega anterior",
+      resumeHint: "Revisa el código y los comentarios. Al confirmar se reemplaza el borrador actual; guárdalo antes si lo necesitas. No se ejecuta ni adjunta ningún programa automáticamente.",
+      resumeLoading: "Cargando la entrega anterior…",
+      resumeInvalid: "Enlace de entrega no válido. El borrador no ha cambiado.",
+      resumeFailed: "No se pudo cargar la entrega anterior",
+      resumeApply: "Reemplazar el borrador y continuar",
+      resumeKeep: "Conservar el borrador actual",
+      resumeRetry: "Reintentar carga",
+      resumeKept: "Borrador conservado. No se cargó ni ejecutó ninguna entrega.",
+      resumeApplied: "Entrega cargada. Revisa el código y elige Compilar y ejecutar cuando estés listo; se creará un nuevo intento.",
+      resumeTemplateMissing: "plantilla no disponible",
       historyTitle: "Mi historial de prácticas",
       historyHint: "Consulta la validación automática y los comentarios del docente de cada envío y vuelve al editor para continuar.",
       historyLoadFailed: "No se pudo cargar el historial",
@@ -287,6 +306,7 @@ export const es: TranslationDict = {
       sectionSecurityDetail: "Experimentos por usuario, aislamiento de VM y límites de seguridad de clase.",
     },
     teaching: {
+      backToStudents: "Volver a estudiantes",
       teacherFeedback: "Comentarios del docente",
       feedbackEdit: "Escribir comentarios",
       feedbackHint: "Visibles para el estudiante, hasta 2000 caracteres. No cambian la validación automática.",
@@ -380,6 +400,9 @@ export const es: TranslationDict = {
       },
     },
     ebpf: {
+      importFile: "Importar archivo",
+      runtimeSettings: "Configuración de ejecución",
+      backToSource: "Volver al código",
       title: "Ejecutor eBPF",
       subtitle: "Monaco + diagnóstico C + metadatos en línea (modo clangd ligero).",
       compileRun: "Compilar y ejecutar",

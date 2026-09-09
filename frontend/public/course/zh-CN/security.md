@@ -30,6 +30,14 @@ Docker 配置需要访问宿主机或虚拟机的 eBPF、tracefs、BTF 和 bpffs
 
 这些措施降低误暴露风险，但不能把特权 Engine 变成安全的共享执行平台。
 
+### 防误操作保护
+
+界面在内核运行、卸载、危险删除、草稿替换、管理状态变更及远程编译器选择前展示目标和影响；
+批量删除/清理需输入确认词，默认焦点放在“取消”。执行中阻止重复点击，失败后需核对状态并重新确认。
+事件删除固定时间截止点，不再把有上限的显示条数当作删除总数。这些措施是浏览器操作保护，
+不是服务端授权、幂等键、事务回滚或内核隔离。离开页面后已发出的请求仍可能完成；API 客户端仍依赖
+Engine 原有的 Session、角色、CSRF、密码和 OTP 策略，信任边界未放宽。
+
 ### Runner Agent 凭据边界
 
 远程 Agent 注册默认关闭；只有设置至少 32 个字符的 `CYANREX_RUNNER_AGENT_TOKEN` 才会启用。
@@ -127,6 +135,12 @@ ssh -L 3000:127.0.0.1:3000 \
 
 ## 依赖扫描治理
 
+- 前端依赖下限为 Next.js 15.5.24 和 sharp 0.35.4，对应上游的
+  [Windows 服务端](https://github.com/vercel/next.js/security/advisories/GHSA-p293-qw3h-jr36)、
+  [AVIF 图像优化](https://github.com/vercel/next.js/security/advisories/GHSA-2xp9-vwfh-vxw4) 和
+  [sharp/libheif](https://github.com/lovell/sharp/security/advisories/GHSA-rgj7-g3m4-5g8c) 安全公告。
+  需要重新构建并部署才能应用补丁，修改锁文件不会更新运行中的容器；自定义全局 libheif 也需至少
+  1.23.2，npm 审计不代表宿主机动态库验收。
 - 我们会对 Rust 后端执行 `cargo audit`，并将已接受的告警记录在
   `scripts/security-audit-exceptions.json`。
 - 当前已登记例外：

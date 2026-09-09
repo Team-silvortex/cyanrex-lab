@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
 import SidebarLayout from "../src/components/SidebarLayout";
+import { useConfirmedAction } from "../src/components/useConfirmedAction";
 import { getEngineUrl } from "../src/config/runtime";
 import {
   buildCommandRequest,
@@ -24,6 +25,8 @@ type CommandHistoryEntry = {
 
 export default function TerminalPage() {
   const { t } = useI18n();
+  const safety = useConfirmedAction();
+  const requestInFlight = useRef(false);
   const engineUrl = useMemo(getEngineUrl, []);
   const [commandType, setCommandType] = useState<CommandType>("ListModules");
   const [moduleName, setModuleName] = useState("");
@@ -53,6 +56,7 @@ export default function TerminalPage() {
 
   const runCommand = async (event: FormEvent) => {
     event.preventDefault();
+    if (requestInFlight.current || safety.isBusy()) return;
     setError("");
 
     let request: CommandRequest;
@@ -63,6 +67,17 @@ export default function TerminalPage() {
       return;
     }
 
+    if (commandNeedsModuleName(request.commandType)) {
+      safety.request({ action: t("terminal.run"), description: t("safety.module"), targets: [request.moduleName!],
+        details: [{ label: t("terminal.commandLabel"), value: request.commandType }] }, () => executeCommand(request));
+    } else {
+      void executeCommand(request).catch(() => {});
+    }
+  };
+
+  const executeCommand = async (request: CommandRequest) => {
+    if (requestInFlight.current) return;
+    requestInFlight.current = true;
     setLoading(true);
     const requestedAt = new Date().toISOString();
     try {
@@ -90,13 +105,16 @@ export default function TerminalPage() {
         { id: Date.now(), requestedAt, request, error: message },
         ...current,
       ].slice(0, 20));
+      throw reason;
     } finally {
+      requestInFlight.current = false;
       setLoading(false);
     }
   };
 
   return (
     <SidebarLayout title={t("terminal.title")}>
+      {safety.dialog}
       <section className="panel">
         <h2>{t("terminal.title")}</h2>
         <p className="meta">{t("terminal.subtitle")}</p>
@@ -133,7 +151,7 @@ export default function TerminalPage() {
             </label>
           </div>
           <div className="row" style={{ marginTop: 12 }}>
-            <button type="submit" disabled={loading}>
+            <button type="submit" disabled={loading || safety.busy}>
               {loading ? t("terminal.running") : t("terminal.run")}
             </button>
             <span className="meta">{t(`terminal.help.${commandType}`)}</span>

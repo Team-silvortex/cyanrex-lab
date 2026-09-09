@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import SidebarLayout from "../src/components/SidebarLayout";
+import { useConfirmedAction } from "../src/components/useConfirmedAction";
+import { buildEventDeleteParams } from "../src/features/events/deleteScope";
 import { getEngineUrl, toWebSocketUrl } from "../src/config/runtime";
 import { startEventStream, type EngineEvent, type EventStreamState } from "../src/features/events/eventStream";
 import { useI18n } from "../src/i18n/context";
@@ -21,6 +23,7 @@ type EventFilterState = {
 
 export default function EventsPage() {
   const { t } = useI18n();
+  const safety = useConfirmedAction();
   const [events, setEvents] = useState<EngineEvent[]>([]);
   const [connection, setConnection] = useState<EventStreamState>("connecting");
   const [streamGap, setStreamGap] = useState(false);
@@ -133,28 +136,25 @@ export default function EventsPage() {
     }
   };
 
-  const deleteFilteredEvents = async () => {
+  const deleteFilteredEvents = () => {
     const count = events.length;
     if (count === 0) {
       setError(t("events.noFilteredToDelete"));
       return;
     }
 
-    const confirmed = window.confirm(
-      t("events.deleteConfirm", { count }),
-    );
-    if (!confirmed) {
-      return;
-    }
+    let params: URLSearchParams;
+    try { params = buildEventDeleteParams({ categoryFilter, severityFilter, rangePreset, startTime, endTime }); }
+    catch { setError(t("safety.invalidRange")); return; }
+    safety.request({ action: t("events.deleteFiltered"), description: t("safety.deleteEvents"), phrase: "DELETE", details: [
+      { label: t("events.category"), value: t(`events.${categoryFilter}`) },
+      { label: t("events.severity"), value: t(`events.${severityFilter}`) },
+      { label: t("events.start"), value: params.get("start") || t("events.all") },
+      { label: t("events.end"), value: params.get("end")! },
+    ] }, () => performDelete(params));
+  };
 
-    const params = buildFilterParams({
-      categoryFilter,
-      severityFilter,
-      rangePreset,
-      startTime,
-      endTime,
-    });
-
+  const performDelete = async (params: URLSearchParams) => {
     try {
       const response = await fetch(`${engineUrl}/events/delete?${params.toString()}`, {
         method: "POST",
@@ -173,11 +173,13 @@ export default function EventsPage() {
       setStreamRevision((revision) => revision + 1);
     } catch (err) {
       setError((err as Error).message);
+      throw err;
     }
   };
 
   return (
     <SidebarLayout title={t("events.title")}>
+      {safety.dialog}
       <section className="panel">
         <h2>{t("events.title")}</h2>
         <p className="meta">
@@ -241,7 +243,8 @@ export default function EventsPage() {
             </select>
           </label>
           <button type="button" onClick={exportEvents}>{t("events.exportDownload")}</button>
-          <button type="button" onClick={deleteFilteredEvents}>{t("events.deleteFiltered")}</button>
+          <button type="button" className="button-danger" disabled={safety.busy || events.length === 0}
+            onClick={deleteFilteredEvents}>{t("events.deleteFiltered")}</button>
         </div>
         {error && <p className="error">{error}</p>}
       </section>

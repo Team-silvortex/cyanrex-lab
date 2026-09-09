@@ -16,7 +16,7 @@ export default function LanguageSwitcher({ compact = false }: LanguageSwitcherPr
   return (
     <label className="meta" style={{ display: "flex", alignItems: "center", gap: 8 }}>
       {!compact && `${t("layout.language")}:`}
-      <select value={locale} onChange={onChange} style={compact ? { minWidth: 110 } : {}}>
+      <select aria-label={t("layout.language")} value={locale} onChange={onChange} style={compact ? { minWidth: 110 } : {}}>
         {supportedLocales.map((entry) => (
           <option key={entry.code} value={entry.code}>
             {entry.label}

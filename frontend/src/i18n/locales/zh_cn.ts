@@ -1,7 +1,12 @@
 import type { TranslationDict } from "../translations";
+import { safetyMessages } from "./safety";
 
 export const zhCN: TranslationDict = {
+    safety: safetyMessages.zhCN,
     layout: {
+      menu: "导航菜单",
+      navigation: "主导航",
+      skipToContent: "跳到主要内容",
       controlPlane: "控制平面",
       checkingSession: "正在检查会话...",
       logout: "退出登录",
@@ -234,6 +239,20 @@ export const zhCN: TranslationDict = {
       },
     },
     learn: {
+      resources: "学习资料",
+      pageSections: "学习中心分区",
+      resumeAttempt: "从这次提交继续",
+      resumeTitle: "继续历史提交",
+      resumeHint: "先查看源码和评语。确认后会替换当前草稿，如需保留请先保存；不会自动运行或挂载程序。",
+      resumeLoading: "正在读取历史提交…",
+      resumeInvalid: "历史提交链接无效，当前草稿未变。",
+      resumeFailed: "历史提交加载失败",
+      resumeApply: "替换当前草稿并继续",
+      resumeKeep: "保留当前草稿",
+      resumeRetry: "重试加载",
+      resumeKept: "已保留当前草稿，没有加载或运行历史提交。",
+      resumeApplied: "已载入历史提交。请先检查源码，再手动编译并运行；运行会新增一条尝试记录。",
+      resumeTemplateMissing: "模板不可用",
       title: "学习中心",
       heading: "eBPF 学习中心",
       subtitle: "从第一个 XDP 程序开始，逐步掌握 Tracepoint、Map、Ring Buffer 和 Verifier。",
@@ -287,6 +306,7 @@ export const zhCN: TranslationDict = {
       sectionSecurityDetail: "个人实验、虚拟机隔离和课堂安全边界",
     },
     teaching: {
+      backToStudents: "返回学生列表",
       title: "课堂进度",
       subtitle: "查看由后端真实运行结果验证的学生实验尝试与完成情况。",
       loadFailed: "课堂进度加载失败",
@@ -380,6 +400,9 @@ export const zhCN: TranslationDict = {
       },
     },
     ebpf: {
+      importFile: "导入文件",
+      runtimeSettings: "运行配置",
+      backToSource: "返回源码",
       title: "eBPF 运行器",
       subtitle: "Monaco + C 规则诊断 + 内联元数据（轻量 clangd 模式）。",
       compileRun: "编译并运行",

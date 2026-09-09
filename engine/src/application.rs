@@ -123,6 +123,7 @@ fn authenticated_routes(state: Arc<AppState>) -> Router<Arc<AppState>> {
         .route("/scripts/delete", post(routes::scripts::delete_script))
         .route("/learning/labs", get(routes::learning::list_labs))
         .route("/learning/attempts", get(routes::learning::list_attempts))
+        .route("/learning/attempt", get(routes::learning::get_attempt))
         .route("/runner/status", get(routes::runner::status))
         .route("/ebpf/run", post(routes::ebpf::run_ebpf))
         .route("/ebpf/check", post(routes::ebpf::check_ebpf))

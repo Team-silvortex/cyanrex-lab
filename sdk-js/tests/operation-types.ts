@@ -16,6 +16,13 @@ async function verifyOperationTypes() {
   await client.operation("getLearningTeacherAttempts", {
     query: { username: "student", limit: 10 },
   });
+  const previous = await client.operation("getLearningAttempt", { query: { attempt_id: "id" } }, { signal });
+  previous.source.toUpperCase();
+  (await client.learning.attempt("id", { signal })).lab_id.toUpperCase();
+  // @ts-expect-error a single record requires its attempt id
+  await client.operation("getLearningAttempt", { query: {} });
+  // @ts-expect-error this endpoint never accepts a client-selected owner
+  await client.operation("getLearningAttempt", { query: { attempt_id: "id", username: "other" } });
   const feedback = await client.operation("postLearningTeacherFeedback", {
     body: { username: "student", attempt_id: "attempt", comment: "Check bounds", expected_revision: 0 },
   });

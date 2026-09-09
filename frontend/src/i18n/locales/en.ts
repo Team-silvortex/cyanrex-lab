@@ -1,7 +1,12 @@
 import type { TranslationDict } from "../translations";
+import { safetyMessages } from "./safety";
 
 export const en: TranslationDict = {
+    safety: safetyMessages.en,
     layout: {
+      menu: "Navigation menu",
+      navigation: "Main navigation",
+      skipToContent: "Skip to main content",
       controlPlane: "Control Plane",
       checkingSession: "Checking session...",
       logout: "Logout",
@@ -234,6 +239,20 @@ export const en: TranslationDict = {
       },
     },
     learn: {
+      resources: "Learning resources",
+      pageSections: "Learning sections",
+      resumeAttempt: "Continue from this attempt",
+      resumeTitle: "Resume a previous submission",
+      resumeHint: "Review the source and feedback first. Replacing will overwrite your current draft; save it first if needed. Nothing runs or attaches automatically.",
+      resumeLoading: "Loading previous submission…",
+      resumeInvalid: "Invalid submission link. Your current draft is unchanged.",
+      resumeFailed: "Failed to load previous submission",
+      resumeApply: "Replace current draft and continue",
+      resumeKeep: "Keep current draft",
+      resumeRetry: "Retry loading",
+      resumeKept: "Current draft kept. No submission was loaded or run.",
+      resumeApplied: "Submission loaded. Review it, then choose Compile and Run when ready; this creates a new attempt.",
+      resumeTemplateMissing: "template unavailable",
       historyTitle: "My lab history",
       historyHint: "Review automated acceptance and teacher feedback for each submission, then return to the editor to continue.",
       historyLoadFailed: "Failed to load lab history",
@@ -287,6 +306,7 @@ export const en: TranslationDict = {
       sectionSecurityDetail: "Per-user experiments, VM isolation, and classroom security boundaries.",
     },
     teaching: {
+      backToStudents: "Back to students",
       teacherFeedback: "Teacher feedback",
       feedbackEdit: "Write feedback",
       feedbackHint: "Visible to the student, up to 2000 characters. Automated acceptance is unchanged.",
@@ -380,6 +400,9 @@ export const en: TranslationDict = {
       },
     },
     ebpf: {
+      importFile: "Import file",
+      runtimeSettings: "Run settings",
+      backToSource: "Back to source",
       title: "eBPF Runner",
       subtitle: "Monaco + C diagnostics + inline metadata (light clangd mode).",
       compileRun: "Compile & Run",

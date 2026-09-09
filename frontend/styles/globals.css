@@ -130,6 +130,7 @@ a {
 }
 
 .content {
+  min-width: 0;
   padding: 26px;
 }
 
@@ -403,6 +404,20 @@ input[type="datetime-local"] {
   width: auto;
   min-width: 180px;
 }
+
+.learning-resume {
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid rgba(88, 166, 255, 0.45);
+  border-radius: 10px;
+  background: rgba(30, 79, 135, 0.12);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.learning-resume h3 { margin-top: 0; }
+.learning-resume pre { max-height: 240px; overflow: auto; white-space: pre-wrap; }
+.learning-resume button { white-space: normal; }
 
 .learning-context {
   display: flex;

@@ -1,13 +1,17 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { useRouter } from "next/router";
 
 import SidebarLayout from "../src/components/SidebarLayout";
+import { useConfirmedAction } from "../src/components/useConfirmedAction";
 import { getEngineUrl } from "../src/config/runtime";
 import { useI18n } from "../src/i18n/context";
 import { sanitizeForDisplay } from "../src/utils/security";
 
 export default function AccountPage() {
   const { t } = useI18n();
+  const safety = useConfirmedAction();
+  const requestInFlight = useRef(false);
+  const [busy, setBusy] = useState(false);
   const router = useRouter();
   const engineUrl = getEngineUrl();
 
@@ -24,6 +28,9 @@ export default function AccountPage() {
 
   const changePassword = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (requestInFlight.current || safety.isBusy()) return;
+    requestInFlight.current = true;
+    setBusy(true);
     setPasswordError(null);
     setPasswordMessage(null);
 
@@ -50,26 +57,37 @@ export default function AccountPage() {
       setOtpForPassword("");
     } catch (err) {
       setPasswordError((err as Error).message);
+    } finally {
+      requestInFlight.current = false;
+      setBusy(false);
     }
   };
 
   const deleteAccount = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (requestInFlight.current || safety.isBusy()) return;
     setDeleteError(null);
 
     if (deleteConfirm !== "DELETE") {
       setDeleteError(t("account.deleteConfirmMismatch"));
       return;
     }
+    safety.request({ action: t("account.deleteAction"), description: t("safety.deleteAccount") },
+      () => performDelete(deletePassword, deleteOtp));
+  };
 
+  const performDelete = async (password: string, otp: string) => {
+    if (requestInFlight.current) return;
+    requestInFlight.current = true;
+    setBusy(true);
     try {
       const response = await fetch(`${engineUrl}/auth/delete`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          password: deletePassword,
-          otp: deleteOtp,
+          password,
+          otp,
         }),
       });
 
@@ -81,11 +99,16 @@ export default function AccountPage() {
       router.replace("/register");
     } catch (err) {
       setDeleteError((err as Error).message);
+      throw err;
+    } finally {
+      requestInFlight.current = false;
+      setBusy(false);
     }
   };
 
   return (
     <SidebarLayout title={t("account.title")}>
+      {safety.dialog}
       <section className="panel">
         <h2>{t("account.title")}</h2>
         <p className="meta">{t("account.subtitle")}</p>
@@ -116,7 +139,7 @@ export default function AccountPage() {
               placeholder={t("auth.otp6")}
               required
             />
-            <button type="submit">{t("account.updatePassword")}</button>
+            <button type="submit" disabled={busy || safety.busy}>{t("account.updatePassword")}</button>
           </div>
         </form>
         {passwordMessage && <p className="meta" style={{ marginTop: 10 }}>{passwordMessage}</p>}
@@ -149,7 +172,8 @@ export default function AccountPage() {
               placeholder={t("account.confirmDeleteHint")}
               required
             />
-            <button type="submit" style={{ background: "linear-gradient(130deg, #662430, #a1394c)", borderColor: "#8b3c4b" }}>
+            <button type="submit" disabled={busy || safety.busy || deleteConfirm !== "DELETE"}
+              className="button-danger">
               {t("account.deleteAction")}
             </button>
           </div>

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 
 import SidebarLayout from "../src/components/SidebarLayout";
+import { useConfirmedAction } from "../src/components/useConfirmedAction";
 import { getEngineUrl } from "../src/config/runtime";
 import { DOCS_LINK_STYLE, DOCS_QUICK_LINKS } from "../src/config/settings";
 import RunnerAgentAdminPanel from "../src/features/runner/RunnerAgentAdminPanel";
@@ -24,6 +25,7 @@ type CompilerSettingsResponse = {
 
 export default function SettingsPage() {
   const { t } = useI18n();
+  const safety = useConfirmedAction();
   const engineUrl = useMemo(getEngineUrl, []);
   const performance = usePerformanceMetrics(engineUrl);
   const [maxRecords, setMaxRecords] = useState(
@@ -124,6 +126,7 @@ export default function SettingsPage() {
       setMessage(t("settings.saved"));
     } catch (err) {
       setError((err as Error).message);
+      throw err;
     } finally {
       setSaving(false);
     }
@@ -131,6 +134,7 @@ export default function SettingsPage() {
 
   return (
     <SidebarLayout title={t("settings.title")}>
+      {safety.dialog}
       <section className="panel">
         <h2>{t("settings.title")}</h2>
         <p className="meta">{t("settings.subtitle")}</p>
@@ -184,7 +188,13 @@ export default function SettingsPage() {
 
         <DocumentationLinks />
         <div className="row" style={{ marginTop: 12 }}>
-          <button type="button" onClick={save} disabled={saving || loading}>
+          <button type="button" disabled={saving || loading || safety.busy} onClick={() => safety.request({
+            action: t("settings.save"), description: t("safety.settings"), details: [
+              { label: t("settings.maxRecords"), value: String(Math.max(50, Math.min(50000, Number(maxRecords) || 500))) },
+              { label: t("settings.overflowPolicy"), value: overflowPolicy },
+              ...(compilerSettingsAvailable ? [{ label: t("settings.residentCompiler"), value: String(residentCompiler) }] : []),
+            ],
+          }, save)}>
             {saving ? t("settings.saving") : t("settings.save")}
           </button>
           <button

@@ -236,6 +236,8 @@ export class CyanrexClient {
       this.get<LabProgress[]>("/learning/labs", undefined, options),
     attempts: (options?: RequestOptions) =>
       this.get<LabAttempt[]>("/learning/attempts", undefined, options),
+    attempt: (attemptId: string, options?: RequestOptions) =>
+      this.get<LabAttempt>("/learning/attempt", { attempt_id: attemptId }, options),
     teacherOverview: (options?: RequestOptions) =>
       this.get<TeacherLearningOverview>("/learning/teacher/overview", undefined, options),
     teacherAttempts: (username: string, limit = 20, options?: RequestOptions) =>

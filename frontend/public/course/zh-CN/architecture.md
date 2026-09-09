@@ -59,6 +59,8 @@ src/utils/                分析器、安全与页面状态工具
   因而自部署时使用非默认 Engine 地址也不会被浏览器拦截。
 - 身份使用 HTTP-only Session Cookie，需要身份的请求必须带 `credentials: "include"`。
 - `SidebarLayout` 只负责前端导航可见性；最终权限始终由 Engine 判断。
+- `useConfirmedAction` 负责绑定目标的界面确认、键盘焦点和重复点击保护。导航会丢弃待确认操作
+  与过期的本地文件导入，但不能撤销已发给 Engine 的变更。进入实验保留草稿，加载模板需单独确认。
 - eBPF 编辑器行为放进 `src/features/ebpf/`，页面结构放在 `pages/ebpf.tsx`。
 - 设置页指标与 Agent 运维逻辑放在各自 feature 中，`pages/settings.tsx` 只协调事件/编译器设置并组合
   管理员面板。
@@ -127,6 +129,19 @@ flowchart LR
 大型服务可以拆成私有子模块或 `include!` 片段，但调用者只依赖公开服务类型，不得跨层引用内部文件。
 
 ## 5. 核心数据流
+
+### 从历史提交继续
+
+学习中心只把实验 ID 和提交 ID 带到编辑器。编辑器调用
+`GET /learning/attempt?attempt_id=...`，服务端按当前 Session 所有者查询，教师/管理员也不能
+通过该接口指定其他学生。返回原始提交与当前评语，并设置 `Cache-Control: no-store`；不存在和
+他人记录统一返回 `404`，非法 ID 返回 `400`，存储错误返回 `500`。启用中的 PostgreSQL 按所有者
+和 ID 绑定查询，失败不静默读取旧文件副本；本地沿用快照加载，记录、评语和存储格式不变。
+
+编辑器先预览记录，明确确认后才替换草稿并恢复实验/模板上下文，清除旧结果与断点，但不运行、
+挂载或卸载。之后手动运行沿用既有执行路径并新增尝试。界面状态绑定目标链接，取消和实验/记录
+匹配检查拒绝过期响应，实验模板不会因导航而自动加载。保留/重试和模板不可用的行为见
+[学生指南](student-guide.md)。
 
 ### 身份流程
 
@@ -222,7 +237,7 @@ curl -sS -X POST http://127.0.0.1:8080/runner/agent/register \
   -d '{
     "agent_id":"lab-vm-01",
     "protocol_version":1,
-    "agent_version":"0.3.5",
+    "agent_version":"0.3.6",
     "isolation":"virtual_machine",
     "max_concurrent":2,
     "capabilities":["bpftool","btf","ringbuf"],
@@ -298,7 +313,9 @@ PostgreSQL 优先保存用户、Session、事件、事件设置、脚本和学�
 降级可保证课堂在数据库短暂故障时继续运行，但内存用户、Session 和事件在 Engine 重启后会丢失。
 
 本地学习记录采用共享只读快照：读取不复制所有源码，新增共享未修改记录，评语只替换被编辑的
-记录。最近页先做有界选择再复制返回载荷，进度以单次遍历聚合；阻塞工作线程以 64 KiB 缓冲流式
+记录。首次加载的文件 I/O、UTF-8 校验和解析在阻塞工作线程执行，与提交共用同一写锁，交接后
+请求取消不丢弃成功初始化；仅缺失文件视为空记录，其余错误可以重试。仍需完整输入字符串和
+全部解码记录。最近页先做有界选择再复制返回载荷，进度以单次遍历聚合；阻塞工作线程以 64 KiB 缓冲流式
 写入整份 JSON，flush、rename 后发布内存，请求取消后仍持有写锁完成提交。未新增 fsync、
 崩溃恢复、跨进程协调、SQL 投影、HTTP 分页契约或保留策略。
 详见[学习记录存储](learning-storage.md)。

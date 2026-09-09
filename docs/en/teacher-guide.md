@@ -88,7 +88,15 @@ source. Use this evidence to distinguish a compile failure from a verifier/attac
 discuss the student's reasoning. The review API is restricted to teacher and administrator roles;
 students can only read their own attempt history.
 
+The compact summary keeps the student roster near the top. On narrow screens, each roster row becomes
+a labelled card, keeping **Review attempts** reachable without sideways scrolling. Selecting a student
+focuses and scrolls to the review heading when its request completes. Use **Back to students** to return
+to the roster; changing viewport size does not discard an open feedback draft.
+
 Write and save feedback below a submission. The student can read it under **Learn → My lab history**.
+Students can then choose **Continue from this attempt**, review the original source/current feedback,
+and explicitly replace their editor draft. Loading alone does not execute a program or change acceptance;
+a later manual run creates a new attempt and retains the original submission and its comment.
 Each attempt keeps one current comment with the last teacher/admin's identity and modification time;
 this is not a grade and never changes automated completion. Comments are plain text, trimmed before
 validation, and limited to 1–2000 Unicode characters. If another teacher edits the same comment, the
@@ -117,6 +125,14 @@ Do not only grade `success` state. Ask students to explain:
 5. How they verify program is fully detached.
 
 ## 7. Post-class Cleanup
+
+Destructive controls now show their targets and impact before execution. Header deletion affects this
+Engine's downloaded catalog and can disrupt other users' compilation; deleting selected headers requires
+`DELETE`. Batch header actions stop on the first failed response and report how many items completed;
+there is no rollback of earlier items. Check/refresh the catalog before retrying. Module Start/Stop,
+Runner job cancellation and event/compiler settings also require confirmation. Read-only commands,
+catalog refresh and health probes do not add a confirmation. Account password/OTP and Engine role/CSRF
+checks remain authoritative; a confirmation is only a protection against accidental clicks.
 
 Click “Detach All” in eBPF page and verify attached list is empty, then stop:
 

@@ -64,7 +64,11 @@ test("built ESM entry point works from a consumer-style import", async () => {
   });
 
   assert.deepEqual(await client.system.health(), { status: "ok" });
-  assert.equal(Object.keys(openApiOperations).length, 57);
+  assert.equal(Object.keys(openApiOperations).length, 58);
+  assert.equal(typeof client.learning.attempt, "function");
+  assert.deepEqual(openApiOperations.getLearningAttempt, {
+    method: "GET", path: "/learning/attempt", access: "authenticated", transport: "json",
+  });
   assert.equal(typeof client.learning.saveTeacherFeedback, "function");
   assert.deepEqual(openApiOperations.postLearningTeacherFeedback, {
     method: "POST",

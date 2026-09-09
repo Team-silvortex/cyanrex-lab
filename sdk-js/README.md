@@ -36,7 +36,7 @@ try {
 The client covers authentication, modules and the admin command bus, events, settings, scripts,
 learning, eBPF checks/runs/attachments, Runner status/admin jobs, and environment diagnostics. Every
 method accepts an optional `{ signal }` argument for cancellation. The generated `operation()` layer
-covers all 57 browser-facing operations and derives required bodies, query parameters, and response
+covers all 58 browser-facing operations and derives required bodies, query parameters, and response
 types from each OpenAPI operation. The five signed Runner Agent protocol operations remain isolated
 from the browser SDK. `client.request<T>()` remains available for forward-compatible calls.
 
@@ -72,6 +72,12 @@ Comments are trimmed plain text (1–2000 Unicode characters). The server assign
 students read them through `learning.attempts()`. A stale revision returns `CyanrexApiError` with status
 `409`: reload, compare, and explicitly resubmit instead of automatically retrying an overwrite.
 Feedback never modifies automated acceptance. Node clients must configure `csrfOrigin` as above.
+
+Read one of the current session user's submissions with `cyanrex.learning.attempt(attemptId, { signal })`
+or `cyanrex.operation("getLearningAttempt", { query: { attempt_id: attemptId } }, { signal })`. It returns
+the original source, lab/template context and current feedback without updating the attempt or executing
+code. There is no username override, including for staff; missing/other-owner attempts return `404`,
+invalid IDs `400`, and record-storage failures `500`. The response is marked `Cache-Control: no-store`.
 
 Public request and response models are generated from the Engine OpenAPI component schemas. The
 hand-designed client namespaces remain stable while the quality gate rejects stale generated types.

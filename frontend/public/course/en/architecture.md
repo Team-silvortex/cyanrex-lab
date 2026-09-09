@@ -67,6 +67,9 @@ Important rules:
 - `SidebarLayout` is the client-side navigation and route visibility gate. It improves the user
   experience, but the Engine remains the authoritative authorization boundary.
 - eBPF editing behavior belongs in `src/features/ebpf/`; route markup belongs in `pages/ebpf.tsx`.
+- `useConfirmedAction` owns target-bound UI confirmations, keyboard focus and duplicate-click guards.
+  Navigation discards pending confirmations and late local file imports, but cannot undo a dispatched
+  Engine mutation. Lab navigation preserves drafts; loading a template is a separate reviewed action.
 - Settings metrics and Agent operations stay in their feature modules; `pages/settings.tsx` only
   coordinates event/compiler settings and composes the administrator panels.
 - `docs/` is authoritative. `frontend/public/course/` is synchronized for builds whose Docker
@@ -140,6 +143,21 @@ Large service implementations may use private submodules or `include!` fragments
 continue to depend on the public service type rather than internal files.
 
 ## 5. Main Data Flows
+
+### Resuming a learning submission
+
+Learning Center links to the editor using only a lab ID and attempt ID. The editor reads
+`GET /learning/attempt?attempt_id=...`, which binds the lookup to the authenticated session owner,
+including for staff. The response contains one original submission and current teacher feedback with
+`Cache-Control: no-store`; missing/other-owner records share `404`, invalid IDs use `400`, and storage
+errors use `500`. The active PostgreSQL lookup binds both owner and ID and does not silently fall back on
+a failed query. Local loading uses the existing snapshot path; no record, feedback or schema format changes.
+
+The editor previews the record without replacing the current draft. Explicit confirmation restores source
+and lab/template context and clears old output/breakpoints, but does not run, attach or detach code. A later
+manual run records a new attempt through the existing execution path. Target-keyed UI state, cancellation
+and lab/attempt matching reject stale responses; lab templates are never loaded automatically on navigation.
+The [student guide](student-guide.md) describes keep/retry behavior and unavailable-template limitations.
 
 ### Authentication
 
@@ -248,7 +266,7 @@ curl -sS -X POST http://127.0.0.1:8080/runner/agent/register \
   -d '{
     "agent_id":"lab-vm-01",
     "protocol_version":1,
-    "agent_version":"0.3.5",
+    "agent_version":"0.3.6",
     "isolation":"virtual_machine",
     "max_concurrent":2,
     "capabilities":["bpftool","btf","ringbuf"],
@@ -335,7 +353,10 @@ Fallback keeps a lab usable during a database outage, but memory-backed users, s
 do not survive an Engine restart. Production-like classroom runs should monitor PostgreSQL health.
 
 Local learning records use shared immutable snapshots: reads avoid cloning all source, appends share
-unchanged records, and feedback replaces only the edited record. Recent selection is bounded before
+unchanged records, and feedback replaces only the edited record. First-load I/O, UTF-8 validation and
+decoding run on a blocking worker holding the same admission lock as commits; cancellation after dispatch
+does not discard successful initialization. Only a missing file is initialized as empty; other errors
+remain retryable. Loading still holds the full input string and all decoded records. Recent selection is bounded before
 copying response payloads; progress aggregates in one pass. A blocking worker streams the complete JSON
 file through a 64 KiB buffer, flushes, renames and publishes memory while retaining writer admission even
 after request cancellation. This is not fsync, crash recovery or cross-process coordination. There is no new

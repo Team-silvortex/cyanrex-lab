@@ -1,7 +1,7 @@
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { PropsWithChildren, useEffect, useMemo, useState } from "react";
+import { PropsWithChildren, useEffect, useMemo, useRef, useState } from "react";
 
 import { useI18n } from "../i18n/context";
 import { getEngineUrl } from "../config/runtime";
@@ -53,7 +53,18 @@ export default function SidebarLayout({ title, children }: SidebarLayoutProps) {
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [unreadEvents, setUnreadEvents] = useState(0);
   const [userRole, setUserRole] = useState<AuthRole>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuButton = useRef<HTMLButtonElement>(null);
   const engineUrl = useMemo(getEngineUrl, []);
+
+  useEffect(() => { setMenuOpen(false); }, [router.asPath]);
+
+  useEffect(() => {
+    const desktop = window.matchMedia("(min-width: 981px)");
+    const closeOnDesktop = () => { if (desktop.matches) setMenuOpen(false); };
+    desktop.addEventListener("change", closeOnDesktop);
+    return () => desktop.removeEventListener("change", closeOnDesktop);
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -197,41 +208,56 @@ export default function SidebarLayout({ title, children }: SidebarLayoutProps) {
       <Head>
         <title>{title}</title>
       </Head>
+      <a className="skip-link" href="#main-content">{t("layout.skipToContent")}</a>
       <div className="app-shell">
-        <aside className="sidebar">
+        <aside className={`sidebar${menuOpen ? " menu-open" : ""}`} onKeyDown={event => {
+          if (event.key === "Escape" && menuOpen) {
+            setMenuOpen(false);
+            menuButton.current?.focus();
+          }
+        }}>
           <div className="brand">
             <p className="brand-kicker">CYANREX</p>
             <h1>{t("layout.controlPlane")}</h1>
           </div>
-          <div style={{ marginBottom: 10 }}>
-            <LanguageSwitcher />
-          </div>
-          <nav className="nav-list">
-            {visibleNavItems.map((item) => {
-              const active = router.pathname === item.href
-                || router.asPath.startsWith(`${item.href}/`)
-                || (item.href === "/dashboard" && router.pathname === "/");
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={active ? "nav-link active" : "nav-link"}
-                >
-                  <span>{t(item.key)}</span>
-                  {item.href === "/events" && unreadEvents > 0 && (
-                    <span className="nav-badge">{unreadEvents > 99 ? "99+" : unreadEvents}</span>
-                  )}
-                </Link>
-              );
-            })}
-          </nav>
-          <div style={{ marginTop: 16 }}>
-            <button type="button" onClick={onLogout} style={{ width: "100%" }}>
-              {t("layout.logout")}
-            </button>
+          <span className="mobile-page-title">{title}</span>
+          <button type="button" className="menu-toggle button-secondary" ref={menuButton}
+            aria-label={t("layout.menu")} aria-expanded={menuOpen} aria-controls="workspace-navigation"
+            onClick={() => setMenuOpen(open => !open)}>
+            <span aria-hidden="true">{menuOpen ? "×" : "☰"}</span>
+            {t("layout.menu")}
+          </button>
+          <div className="sidebar-body" id="workspace-navigation">
+            <nav className="nav-list" aria-label={t("layout.navigation")}>
+              {visibleNavItems.map((item) => {
+                const active = router.pathname === item.href
+                  || router.asPath.startsWith(`${item.href}/`)
+                  || (item.href === "/dashboard" && router.pathname === "/");
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={active ? "nav-link active" : "nav-link"}
+                    aria-current={active ? "page" : undefined}
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    <span>{t(item.key)}</span>
+                    {item.href === "/events" && unreadEvents > 0 && (
+                      <span className="nav-badge">{unreadEvents > 99 ? "99+" : unreadEvents}</span>
+                    )}
+                  </Link>
+                );
+              })}
+            </nav>
+            <div className="sidebar-footer">
+              <LanguageSwitcher />
+              <button type="button" className="button-secondary" onClick={onLogout}>
+                {t("layout.logout")}
+              </button>
+            </div>
           </div>
         </aside>
-        <main className="content">{children}</main>
+        <main className="content" id="main-content" tabIndex={-1}>{children}</main>
       </div>
     </>
   );

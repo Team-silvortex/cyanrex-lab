@@ -68,21 +68,19 @@ export default function TeachingPage() {
 
   return (
     <SidebarLayout title={t("teaching.title")}>
-      <section className="panel">
-        <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
-          <div>
-            <p className="brand-kicker">CYANREX CLASSROOM</p>
-            <h2 style={{ marginTop: 4 }}>{t("teaching.title")}</h2>
-            <p className="meta">{t("teaching.subtitle")}</p>
-          </div>
-          <button type="button" onClick={loadOverview} disabled={loading}>
-            {loading ? t("common.checking") : t("common.refresh")}
-          </button>
+      <header className="page-header">
+        <div>
+          <p className="brand-kicker">CYANREX CLASSROOM</p>
+          <h2 style={{ marginTop: 4 }}>{t("teaching.title")}</h2>
+          <p className="meta">{t("teaching.subtitle")}</p>
         </div>
-        {error && <p className="error">{error}</p>}
-      </section>
+        <button type="button" className="button-secondary" onClick={loadOverview} disabled={loading}>
+          {loading ? t("common.checking") : t("common.refresh")}
+        </button>
+      </header>
+      {error && <p className="error" role="alert">{error}</p>}
 
-      <section className="grid cols-2" style={{ marginTop: 16 }}>
+      <section className="teaching-summary">
         <article className="panel">
           <p className="meta">{t("teaching.activeStudents")}</p>
           <strong className="metric-value">{overview?.active_students ?? 0}</strong>
@@ -93,59 +91,58 @@ export default function TeachingPage() {
         </article>
       </section>
 
-      <section className="panel" style={{ marginTop: 16 }}>
+      <section className="panel" id="student-progress" tabIndex={-1}>
         <h3>{t("teaching.studentProgress")}</h3>
         {!loading && overview?.students.length === 0 && (
           <p className="meta">{t("teaching.noActivity")}</p>
         )}
-        <div style={{ overflowX: "auto" }}>
-          <table>
-            <thead>
-              <tr>
-                <th>{t("teaching.student")}</th>
-                <th>{t("teaching.completed")}</th>
-                <th>{t("teaching.attempts")}</th>
-                <th>{t("teaching.lastActivity")}</th>
-                <th>{t("teaching.labStates")}</th>
-                <th>{t("teaching.action")}</th>
+        <table className="teaching-table" role="table" aria-label={t("teaching.studentProgress")}>
+          <thead role="rowgroup">
+            <tr role="row">
+              <th role="columnheader" scope="col">{t("teaching.student")}</th>
+              <th role="columnheader" scope="col">{t("teaching.completed")}</th>
+              <th role="columnheader" scope="col">{t("teaching.attempts")}</th>
+              <th role="columnheader" scope="col">{t("teaching.lastActivity")}</th>
+              <th role="columnheader" scope="col">{t("teaching.labStates")}</th>
+              <th role="columnheader" scope="col">{t("teaching.action")}</th>
+            </tr>
+          </thead>
+          <tbody role="rowgroup">
+            {overview?.students.map((student) => (
+              <tr key={student.username} role="row" className={selectedUsername === student.username ? "selected" : undefined}>
+                <td role="cell" data-label={t("teaching.student")}><strong>{student.username}</strong></td>
+                <td role="cell" data-label={t("teaching.completed")}>{student.completed_labs}/{student.total_labs}</td>
+                <td role="cell" data-label={t("teaching.attempts")}>{student.total_attempts}</td>
+                <td role="cell" data-label={t("teaching.lastActivity")}>{formatTime(student.last_activity_at)}</td>
+                <td role="cell" data-label={t("teaching.labStates")}>
+                  <div className="learning-status-row">
+                    {student.labs.map((progress) => (
+                      <span
+                        className={`learning-status ${progress.status}`}
+                        key={progress.lab.id}
+                        title={`${progress.lab.title}: ${progress.status}`}
+                      >
+                        {progress.lab.position}
+                      </span>
+                    ))}
+                  </div>
+                </td>
+                <td role="cell" data-label={t("teaching.action")}>
+                  <button
+                    type="button"
+                    className="button-secondary"
+                    onClick={() => void loadAttempts(student.username)}
+                    disabled={attemptLoading && selectedUsername === student.username}
+                  >
+                    {attemptLoading && selectedUsername === student.username
+                      ? t("teaching.reviewLoading")
+                      : t("teaching.reviewAction")}
+                  </button>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {overview?.students.map((student) => (
-                <tr key={student.username}>
-                  <td><strong>{student.username}</strong></td>
-                  <td>{student.completed_labs}/{student.total_labs}</td>
-                  <td>{student.total_attempts}</td>
-                  <td>{formatTime(student.last_activity_at)}</td>
-                  <td>
-                    <div className="learning-status-row">
-                      {student.labs.map((progress) => (
-                        <span
-                          className={`learning-status ${progress.status}`}
-                          key={progress.lab.id}
-                          title={`${progress.lab.title}: ${progress.status}`}
-                        >
-                          {progress.lab.position}
-                        </span>
-                      ))}
-                    </div>
-                  </td>
-                  <td>
-                    <button
-                      type="button"
-                      onClick={() => void loadAttempts(student.username)}
-                      disabled={attemptLoading && selectedUsername === student.username}
-                    >
-                      {attemptLoading && selectedUsername === student.username
-                        ? t("teaching.reviewLoading")
-                        : t("teaching.reviewAction")}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       </section>
 
       {selectedUsername && (
@@ -179,9 +176,19 @@ function AttemptReviewPanel({
   engineUrl: string;
   t: Translate;
 }) {
+  const heading = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    // Focus the selected review, not a disappearing loading control; feedback edits stay mounted.
+    heading.current?.focus({ preventScroll: true });
+    heading.current?.scrollIntoView({ block: "start" });
+  }, [username, loading]);
+
   return (
-    <section className="panel" style={{ marginTop: 16 }}>
-      <h3>{t("teaching.reviewTitle")} · {username}</h3>
+    <section className="panel attempt-review" aria-labelledby="attempt-review-title">
+      <div className="section-heading">
+        <h3 id="attempt-review-title" tabIndex={-1} ref={heading}>{t("teaching.reviewTitle")} · {username}</h3>
+        <a href="#student-progress">{t("teaching.backToStudents")}</a>
+      </div>
       {loading && <p className="meta">{t("teaching.reviewLoading")}</p>}
       {error && <p className="error">{error}</p>}
       {!loading && !error && review?.attempts.length === 0 && (

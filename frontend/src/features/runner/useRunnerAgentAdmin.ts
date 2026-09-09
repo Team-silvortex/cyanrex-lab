@@ -16,6 +16,7 @@ export function useRunnerAgentAdmin(engineUrl: string) {
   const [notice, setNotice] = useState<RunnerAdminNotice | null>(null);
   const mounted = useRef(true);
   const refreshInFlight = useRef(false);
+  const actionInFlight = useRef(false);
 
   const refresh = useCallback(async ({ silent = false }: { silent?: boolean } = {}) => {
     if (refreshInFlight.current) return;
@@ -65,6 +66,8 @@ export function useRunnerAgentAdmin(engineUrl: string) {
     body: Record<string, unknown>,
     nextNotice: RunnerAdminNotice,
   ) => {
+    if (actionInFlight.current) return;
+    actionInFlight.current = true;
     setActionId(actionKey);
     setError("");
     setNotice(null);
@@ -83,7 +86,9 @@ export function useRunnerAgentAdmin(engineUrl: string) {
       await refresh({ silent: true });
     } catch (err) {
       if (mounted.current) setError((err as Error).message);
+      throw err;
     } finally {
+      actionInFlight.current = false;
       if (mounted.current) setActionId("");
     }
   }, [engineUrl, refresh]);

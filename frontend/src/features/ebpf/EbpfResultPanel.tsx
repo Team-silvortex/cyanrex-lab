@@ -9,10 +9,10 @@ type Props = {
 
 export default function EbpfResultPanel({ result, error, t }: Props) {
   return (
-    <section className="panel" style={{ marginTop: 16 }}>
+    <section className="panel result-panel" style={{ marginTop: 16 }}>
       <h3>{t("ebpf.result")}</h3>
       {!result && !error && <p className="meta">{t("ebpf.noRunResult")}</p>}
-      {error && <p className="error">{sanitizeForDisplay(error)}</p>}
+      {error && <p className="error" role="alert">{sanitizeForDisplay(error)}</p>}
       {result && <>
         <p><strong>{t("ebpf.resultSuccess")}</strong> {String(result.success)}</p>
         <p><strong>{t("ebpf.resultStage")}</strong> {sanitizeForDisplay(result.stage)}</p>

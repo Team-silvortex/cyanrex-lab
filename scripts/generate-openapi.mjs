@@ -54,6 +54,7 @@ const responseSchemas = new Map([
   ["GET /health", ref("HealthResponse")],
   ["GET /helper/environment", ref("EnvironmentReport")],
   ["GET /learning/attempts", array(ref("LabAttempt"))],
+  ["GET /learning/attempt", ref("LabAttempt")],
   ["GET /learning/labs", array(ref("LabProgress"))],
   ["GET /learning/teacher/attempts", ref("TeacherStudentAttempts")],
   ["GET /learning/teacher/overview", ref("TeacherLearningOverview")],
@@ -114,6 +115,7 @@ const queryParameters = new Map([
   ["GET /events", [...eventFilters, query("limit", { type: "integer", minimum: 1, maximum: 500 })]],
   ["GET /events/export", [...eventFilters, query("format", { type: "string", enum: ["json", "csv"] })]],
   ["POST /events/delete", eventFilters],
+  ["GET /learning/attempt", [query("attempt_id", { type: "string", format: "uuid" }, true)]],
   ["GET /learning/teacher/attempts", [
     query("username", { type: "string" }, true),
     query("limit", { type: "integer", minimum: 1, maximum: 100 }),
@@ -172,6 +174,9 @@ function buildOperation(operation, method, routePath, access) {
     "x-cyanrex-access": access,
   };
   const roles = rolesFor(access);
+  if (operation === "GET /learning/attempt") {
+    result.description = "Read one previous submission belonging to the authenticated session owner, including source and current teacher feedback. No username override or write occurs. Missing/other-owner records return 404; invalid IDs return 400; storage errors return 500. Responses use Cache-Control: no-store.";
+  }
   if (roles) result["x-cyanrex-roles"] = roles;
   if (method === "POST" && access !== "public" && !access.startsWith("runner-agent")) {
     result["x-cyanrex-csrf"] = "Origin or Referer must match the configured frontend origin";

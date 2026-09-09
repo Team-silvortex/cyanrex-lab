@@ -1,6 +1,6 @@
 {
   "name": "@cyanrex/frontend",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "private": true,
   "scripts": {
     "postinstall": "node scripts/sync-monaco-assets.mjs",
@@ -16,14 +16,17 @@
     "test:event-stream-browser": "node --test tests/eventStream.browser.mjs",
     "test:security-headers": "node --test tests/securityHeaders.test.mjs",
     "test:tooling": "node --test tests/cleanMacosMetadata.test.mjs",
-    "test:ui-permissions": "node --experimental-strip-types --test tests/sidebarPermissions.test.mjs tests/teachingReview.test.mjs tests/terminalCommand.test.mjs",
+    "test:ui-permissions": "node --experimental-strip-types --test tests/sidebarPermissions.test.mjs tests/teachingReview.test.mjs tests/terminalCommand.test.mjs tests/learningResume.test.mjs tests/actionSafety.test.mjs",
     "test:learning-browser": "node --test tests/learningFeedback.browser.mjs",
+    "test:learning-resume-browser": "node --test tests/learningResume.browser.mjs",
+    "test:layout-browser": "node --test tests/workspaceLayout.browser.mjs",
+    "test:safety-browser": "node --test tests/actionSafety.browser.mjs",
     "lint": "next lint"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
     "monaco-editor": "^0.55.1",
-    "next": "^15.5.22",
+    "next": "^15.5.24",
     "qrcode": "^1.5.4",
     "react": "19.0.0",
     "react-dom": "19.0.0"
@@ -39,6 +42,6 @@
     "dompurify": "^3.4.13",
     "nanoid": "^3.3.18",
     "postcss": "^8.5.20",
-    "sharp": "^0.35.0"
+    "sharp": "^0.35.4"
   }
 }

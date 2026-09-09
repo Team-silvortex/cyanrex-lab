@@ -27,7 +27,43 @@ Do not share this file or secret.
 - **Scripts**: script save area inside eBPF page.
 - **Account**: change password and manage account.
 
+The desktop sidebar stays available while scrolling. On a narrow screen, use **Navigation menu**
+to expand it; Escape closes the menu and returns focus to its button. Navigation still follows your
+account's role. Keyboard users can use **Skip to main content** before the navigation links.
+
+Learning Center opens with lab progress and editor shortcuts. Use the section links to jump directly
+to **My lab history** or **Learning resources**, without scrolling through every card.
+
+### Confirm consequential actions
+
+Run, detach, script deletion and draft replacement show a confirmation with the reviewed target and
+impact. **Cancel** has initial focus; Escape cancels before execution, and clicking the backdrop does
+nothing. Template changes, loading a saved script and importing a file cannot replace your draft until
+you confirm (identical source needs no replacement). Saving a script and viewing panels stay immediate.
+Opening a lab preserves the draft; use **Load lab template** explicitly. Navigating away also discards
+late local file reads from a previously confirmed import so they cannot replace another lab's draft.
+Run confirmation is separate from source replacement and includes the backend, lab/template and source.
+Switching to a remote compiler Agent also asks you to acknowledge that automatic diagnostics send the
+current source and later edits to that node. Switching back to local requires no extra confirmation.
+
+**Detach All** requires `DETACH`; it affects all attachments owned by the current account at execution,
+not just a frozen copy of the displayed inventory. Single detach never falls back to detach-all when a
+path is absent. Event deletion requires `DELETE` and shows the full filters and absolute cutoff: it deletes
+all matching records, not just the latest 200 visible rows. Export important events before deleting them.
+
+While an operation is executing, duplicate submissions and dialog dismissal are blocked. A failure is
+not retried automatically: close the error, check current state, then start a fresh confirmation if needed.
+Leaving the page does not undo dispatched work. Account deletion still requires the account password,
+OTP and `DELETE`, followed by a final confirmation. These UI protections are not an authorization boundary.
+
 ## 3. Editor Capabilities
+
+The sticky action bar groups the script title, **Import file**, **Save Script**, and **Compile and Run**.
+Source, diagnostics, and results occupy the main column; runtime/compiler settings and attachment
+cleanup are alongside on a wide screen. On smaller screens, use **Run settings** and **Back to source**
+to move between them. **Result** jumps to output below the editor. Logs scroll within bounded panels.
+Saved scripts, inline metadata, injected headers, and breakpoint details expand on demand without
+recreating the editor or replacing the draft. Changing layout or opening these sections never runs code.
 
 The editor is more than syntax highlighting:
 
@@ -64,7 +100,8 @@ often than the UI reports, and an unattached or untriggered program produces no 
 ## 4. A Complete Lab Run
 
 1. Open Learning Center and choose a lab. Its card shows `not started`, `in progress`, or `completed`.
-2. Use **Open in editor** so the editor carries the lab context and loads its required template.
+2. Use **Open in editor** to carry the lab context while keeping your current draft. Select **Load lab
+   template** and confirm the replacement when you want to start from the required template.
 3. Open Environment Helper and run check, then return to the eBPF editor.
 4. Read the code and predict output.
 5. Wait for clang status to become `passed`, then click **Compile and Run**.
@@ -78,8 +115,23 @@ Automated completion validates the runtime portion; explanation questions still 
 **My lab history** in Learning Center shows each submission's stage, automated feedback, and original
 source, newest first. Teacher feedback includes its author and modification time. Use **Refresh** for
 new comments or **Load more attempts** for older submissions. Comments never change automated acceptance;
-revise your program and select the corresponding lab again to continue. Students can read only their
-own history and cannot write or edit teacher feedback.
+students can read only their own history and cannot write or edit teacher feedback.
+
+Choose **Continue from this attempt** to revisit that exact submission instead of reloading the lab
+template. The editor retrieves the original source and current teacher feedback for your authenticated
+account. The link contains only the lab and attempt IDs, not source or a username. Review the preview,
+save your current draft first if needed, then explicitly choose **Replace current draft and continue**.
+The source and original lab/template context are restored; old run output and source breakpoints are
+cleared. Runtime settings and existing attachments are not changed.
+
+**Keep current draft**, a failed request, or an invalid/mismatched link leaves the editor's code intact.
+Use **Retry loading** after a temporary failure. Changing links cancels/discards old requests; reloading
+the page asks for confirmation again. The lab template cannot overwrite a pending or restored submission.
+An unavailable template remains labelled as unavailable instead of silently choosing another. Loading
+does not execute, attach, detach, save a new attempt, or change teacher feedback. Automatic Clang diagnostics
+still work normally. Review/edit the source, then manually select **Compile and Run** to create a new
+attempt under the original lab; the old record remains unchanged. A retired lab still requires a currently
+supported lab context before it can be run successfully.
 
 ## 5. Lab Discipline
 

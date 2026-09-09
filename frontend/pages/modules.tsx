@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
+import { useConfirmedAction } from "../src/components/useConfirmedAction";
 import SidebarLayout from "../src/components/SidebarLayout";
 import { getEngineUrl } from "../src/config/runtime";
 import { useI18n } from "../src/i18n/context";
@@ -26,6 +27,9 @@ type ActionResponse = {
 
 export default function ModulesPage() {
   const { t } = useI18n();
+  const safety = useConfirmedAction();
+  const operationInFlight = useRef(false);
+  const [error, setError] = useState("");
   const [state, setState] = useState<HeaderState | null>(null);
   const [loading, setLoading] = useState(false);
   const [batching, setBatching] = useState(false);
@@ -48,6 +52,7 @@ export default function ModulesPage() {
       const response = await fetch(`${engineUrl}/modules/c-headers/catalog`, {
         credentials: "include",
       });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const json = (await response.json()) as HeaderState;
       setState(json);
     } finally {
@@ -66,219 +71,87 @@ export default function ModulesPage() {
       }
       const json = (await response.json()) as { role?: string };
       setCanManageModules(json.role === "admin");
-    } finally {
+    } catch { setCanManageModules(false); } finally {
       setRoleReady(true);
     }
   };
 
   useEffect(() => {
-    refresh();
-    refreshRole();
+    void refresh().catch(cause => setError((cause as Error).message));
+    void refreshRole();
   }, []);
 
   useEffect(() => {
     savePageState("modules_message_v1", message ?? "");
   }, [message]);
 
-  const download = async (id: string) => {
-    if (!canManageModules) {
-      return;
-    }
-    setMessage(null);
-    const response = await fetch(`${engineUrl}/modules/c-headers/download`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ id }),
-    });
-
-    const json = (await response.json()) as ActionResponse;
-    setMessage(json.message);
-    await refresh();
-  };
-
-  const toggle = async (id: string, selected: boolean) => {
-    if (!canManageModules) {
-      return;
-    }
-    setMessage(null);
-    const response = await fetch(`${engineUrl}/modules/c-headers/select`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ id, selected }),
-    });
-
-    const json = (await response.json()) as ActionResponse;
-    setMessage(json.message);
-    await refresh();
-  };
-
-  const deleteOne = async (id: string) => {
-    if (!canManageModules) {
-      return;
-    }
-    setMessage(null);
-    const response = await fetch(`${engineUrl}/modules/c-headers/delete`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ id }),
-    });
-
-    const json = (await response.json()) as ActionResponse;
-    setMessage(json.message);
-    await refresh();
-  };
-
-  const batchToggle = async (selected: boolean, onlyDownloaded: boolean) => {
-    if (!canManageModules) {
-      return;
-    }
-    if (!state?.headers?.length) return;
-
+  const performHeaders = async (
+    operation: "download" | "select" | "delete", targets: HeaderItem[], label: string, success: string, selected?: boolean,
+  ) => {
+    if (!canManageModules || operationInFlight.current || !targets.length) return;
+    operationInFlight.current = true;
     setBatching(true);
     setMessage(null);
-
-    const targets = state.headers.filter((header) =>
-      onlyDownloaded ? header.downloaded : true,
-    );
-
+    setError("");
+    let done = 0;
+    setProgress({ label, total: targets.length, done });
     try {
-      setProgress({
-        label: selected ? t("modules.progressSelecting") : t("modules.progressUnselecting"),
-        total: targets.length,
-        done: 0,
-      });
-
-      for (let idx = 0; idx < targets.length; idx += 1) {
-        const header = targets[idx];
-        await fetch(`${engineUrl}/modules/c-headers/select`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ id: header.id, selected }),
+      for (const header of targets) {
+        const response = await fetch(`${engineUrl}/modules/c-headers/${operation}`, {
+          method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include",
+          body: JSON.stringify({ id: header.id, ...(selected === undefined ? {} : { selected }) }),
         });
-        setProgress((prev) =>
-          prev
-            ? {
-                ...prev,
-                done: idx + 1,
-              }
-            : prev,
-        );
+        const payload = await response.json() as ActionResponse;
+        if (!response.ok || !payload.ok) throw new Error(payload.message || `HTTP ${response.status}`);
+        done += 1;
+        setProgress({ label, total: targets.length, done });
       }
-
-      setState((prev) =>
-        prev
-          ? {
-              headers: prev.headers.map((header) =>
-                targets.some((t) => t.id === header.id)
-                  ? { ...header, selected }
-                  : header,
-              ),
-            }
-          : prev,
-      );
-
-      setMessage(
-        selected
-          ? onlyDownloaded
-            ? t("modules.selectedAllDownloaded")
-            : t("modules.selectedAll")
-          : t("modules.unselectedAll"),
-      );
+      setMessage(success);
+    } catch (cause) {
+      const failure = `${t("safety.partial", { done, total: targets.length })} ${(cause as Error).message}`;
+      setError(failure);
+      throw new Error(failure);
     } finally {
+      try { await refresh(); } catch (cause) { setError((cause as Error).message); }
       setProgress(null);
       setBatching(false);
-      await refresh();
+      operationInFlight.current = false;
     }
   };
 
-  const batchDownloadSelected = async () => {
-    if (!canManageModules) {
-      return;
-    }
-    if (!state?.headers?.length) return;
-    setBatching(true);
-    setMessage(null);
-
-    const targets = state.headers.filter((header) => header.selected);
-    try {
-      setProgress({
-        label: t("modules.progressDownloading"),
-        total: targets.length,
-        done: 0,
-      });
-
-      for (let idx = 0; idx < targets.length; idx += 1) {
-        const header = targets[idx];
-        await fetch(`${engineUrl}/modules/c-headers/download`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ id: header.id }),
-        });
-        setProgress((prev) =>
-          prev
-            ? {
-                ...prev,
-                done: idx + 1,
-              }
-            : prev,
-        );
-      }
-      setMessage(t("modules.downloadedCount", { count: targets.length }));
-    } finally {
-      setProgress(null);
-      setBatching(false);
-      await refresh();
-    }
+  const download = (id: string) => {
+    if (safety.isBusy()) return;
+    const targets = state?.headers.filter(header => header.id === id) ?? [];
+    void performHeaders("download", targets, t("modules.progressDownloading"), t("modules.downloadedCount", { count: targets.length })).catch(() => {});
   };
-
-  const batchDeleteSelected = async () => {
-    if (!canManageModules) {
-      return;
-    }
-    if (!state?.headers?.length) return;
-    setBatching(true);
-    setMessage(null);
-
-    const targets = state.headers.filter((header) => header.selected);
-    try {
-      setProgress({
-        label: t("modules.progressDeleting"),
-        total: targets.length,
-        done: 0,
-      });
-
-      for (let idx = 0; idx < targets.length; idx += 1) {
-        const header = targets[idx];
-        await fetch(`${engineUrl}/modules/c-headers/delete`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ id: header.id }),
-        });
-        setProgress((prev) =>
-          prev
-            ? {
-                ...prev,
-                done: idx + 1,
-              }
-            : prev,
-        );
-      }
-      setMessage(t("modules.deletedCount", { count: targets.length }));
-    } finally {
-      setProgress(null);
-      setBatching(false);
-      await refresh();
-    }
+  const toggle = (id: string, selected: boolean) => {
+    if (safety.isBusy()) return;
+    const targets = state?.headers.filter(header => header.id === id) ?? [];
+    void performHeaders("select", targets, t("modules.progressSelecting"), "", selected).catch(() => {});
   };
+  const batchToggle = (selected: boolean, onlyDownloaded: boolean) => {
+    if (safety.isBusy()) return;
+    const targets = state?.headers.filter(header => !onlyDownloaded || header.downloaded) ?? [];
+    void performHeaders("select", targets, t(selected ? "modules.progressSelecting" : "modules.progressUnselecting"),
+      t(selected ? onlyDownloaded ? "modules.selectedAllDownloaded" : "modules.selectedAll" : "modules.unselectedAll"), selected).catch(() => {});
+  };
+  const batchDownloadSelected = () => {
+    if (safety.isBusy()) return;
+    const targets = state?.headers.filter(header => header.selected) ?? [];
+    void performHeaders("download", targets, t("modules.progressDownloading"), t("modules.downloadedCount", { count: targets.length })).catch(() => {});
+  };
+  const confirmDelete = (targets: HeaderItem[], batch = false) => {
+    if (!canManageModules || operationInFlight.current || !targets.length) return;
+    safety.request({ action: t(batch ? "modules.deleteSelected" : "modules.delete"), description: t("safety.deleteHeaders"),
+      targets: targets.map(header => header.id), phrase: batch ? "DELETE" : undefined },
+      () => performHeaders("delete", targets, t("modules.progressDeleting"), t("modules.deletedCount", { count: targets.length })));
+  };
+  const deleteOne = (id: string) => confirmDelete(state?.headers.filter(header => header.id === id) ?? []);
+  const batchDeleteSelected = () => confirmDelete(state?.headers.filter(header => header.selected) ?? [], true);
 
   return (
     <SidebarLayout title={t("layout.nav.modules")}>
+      {safety.dialog}
       <section className="panel">
         <h2>{t("modules.title")}</h2>
         <p className="meta">
@@ -286,41 +159,42 @@ export default function ModulesPage() {
         </p>
 
         <div className="row" style={{ marginTop: 12 }}>
-          <button type="button" onClick={refresh} disabled={loading || !roleReady}>
+          <button type="button" onClick={() => void refresh().catch(cause => setError((cause as Error).message))} disabled={loading || batching || safety.busy || !roleReady}>
             {loading ? t("modules.refreshing") : t("modules.refreshCatalog")}
           </button>
           <button
             type="button"
             onClick={() => batchToggle(true, false)}
-            disabled={batching || loading || !canManageModules}
+            disabled={safety.busy || batching || loading || !canManageModules}
           >
             {t("modules.selectAll")}
           </button>
           <button
             type="button"
             onClick={() => batchToggle(true, true)}
-            disabled={batching || loading || !canManageModules}
+            disabled={safety.busy || batching || loading || !canManageModules}
           >
             {t("modules.selectDownloaded")}
           </button>
           <button
             type="button"
             onClick={() => batchToggle(false, false)}
-            disabled={batching || loading || !canManageModules}
+            disabled={safety.busy || batching || loading || !canManageModules}
           >
             {t("modules.unselectAll")}
           </button>
           <button
             type="button"
             onClick={batchDownloadSelected}
-            disabled={batching || loading || !canManageModules}
+            disabled={safety.busy || batching || loading || !canManageModules}
           >
             {t("modules.downloadSelected")}
           </button>
           <button
             type="button"
+            className="button-danger"
             onClick={batchDeleteSelected}
-            disabled={batching || loading || !canManageModules}
+            disabled={safety.busy || batching || loading || !canManageModules}
           >
             {t("modules.deleteSelected")}
           </button>
@@ -332,6 +206,7 @@ export default function ModulesPage() {
           </p>
         )}
 
+        {error && <p className="error" role="alert">{error}</p>}
         {message && <p className="meta" style={{ marginTop: 10 }}>{message}</p>}
         {progress && (
           <div className="panel" style={{ marginTop: 10, background: "#0b1425" }}>
@@ -374,14 +249,15 @@ export default function ModulesPage() {
               <button
                 type="button"
                 onClick={() => download(header.id)}
-                disabled={!canManageModules}
+                disabled={safety.busy || batching || loading || !canManageModules}
               >
                 {t("modules.download")}
               </button>
               <button
                 type="button"
+                className="button-danger"
                 onClick={() => deleteOne(header.id)}
-                disabled={!canManageModules}
+                disabled={safety.busy || batching || loading || !canManageModules}
               >
                 {t("modules.delete")}
               </button>
@@ -390,7 +266,7 @@ export default function ModulesPage() {
                   type="checkbox"
                   checked={header.selected}
                   onChange={(event) => toggle(header.id, event.target.checked)}
-                  disabled={!canManageModules}
+                  disabled={safety.busy || batching || loading || !canManageModules}
                 />
                 {t("modules.injectMetadata")}
               </label>

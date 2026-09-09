@@ -33,6 +33,17 @@ they can perform privileged kernel observation and loading. Do not expose Engine
 
 These measures reduce accidental exposure, but they do not make the privileged Engine a shared safe runtime.
 
+### Accidental-action safeguards
+
+The UI asks for an explicit target/impact review before kernel runs, detach, destructive deletion,
+draft replacement, administrative state changes and remote compiler selection. Bulk deletion/cleanup
+requires a typed phrase; the default focus is Cancel. In-flight duplicate clicks are blocked, and failures
+require checking state before a new confirmation. Event deletion freezes its time cutoff and does not
+claim that the bounded visible count is the deletion total. These controls are browser-side ergonomics,
+not server authorization, idempotency keys, transactional rollback or kernel isolation. A dispatched
+request may complete even if the browser leaves the page. API clients still rely on the existing Engine
+session, role, CSRF, password and OTP policies; no trust boundary has been relaxed.
+
 ### Runner Agent credential boundary
 
 Remote Agent registration is disabled by default. Enabling it requires a secret
@@ -148,6 +159,12 @@ After class:
 
 ## Dependency Audit Policy
 
+- Frontend dependency floors are Next.js 15.5.24 and sharp 0.35.4. These address the upstream
+  [Windows server](https://github.com/vercel/next.js/security/advisories/GHSA-p293-qw3h-jr36),
+  [AVIF optimization](https://github.com/vercel/next.js/security/advisories/GHSA-2xp9-vwfh-vxw4) and
+  [sharp/libheif](https://github.com/lovell/sharp/security/advisories/GHSA-rgj7-g3m4-5g8c) advisories.
+  Rebuild and redeploy to apply updated dependencies; editing the lockfile does not update a running
+  container. A custom global libheif must also be at least 1.23.2; an npm audit is not host-library acceptance.
 - We run `cargo audit` for Rust backend dependencies and track accepted exceptions in
   `scripts/security-audit-exceptions.json`.
 - Current accepted exception:

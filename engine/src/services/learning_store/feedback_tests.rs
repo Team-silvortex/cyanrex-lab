@@ -94,6 +94,23 @@ async fn postgres_feedback_migrates_legacy_rows_and_serializes_updates() {
     assert_eq!(attempts[0].source, "original source");
     assert!(attempts[0].completed);
     assert_eq!(attempts[0].feedback, vec!["accepted"]);
+    let resumed = reloaded
+        .attempt_for_user("student", &request.attempt_id)
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(resumed.source, "original source");
+    assert_eq!(resumed.teacher_feedback.as_ref().unwrap().revision, 2);
+    assert!(reloaded
+        .attempt_for_user("other-student", &request.attempt_id)
+        .await
+        .unwrap()
+        .is_none());
+    assert!(reloaded
+        .attempt_for_user("student", &Uuid::new_v4().to_string())
+        .await
+        .unwrap()
+        .is_none());
     request.username = "other-student".into();
     assert!(matches!(
         store.save_teacher_feedback("teacher", &request).await,
@@ -122,7 +139,18 @@ async fn postgres_feedback_migrates_legacy_rows_and_serializes_updates() {
         .unwrap();
     assert!(new_attempt.teacher_feedback.is_none());
     assert_eq!(reloaded.attempts_for_user("student").await.len(), 2);
+    let resumed_new = reloaded
+        .attempt_for_user("student", &new_attempt.id)
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(resumed_new.source, "source");
+    assert_eq!(resumed_new.source_sha256, new_attempt.source_sha256);
     pool.close().await;
+    assert!(reloaded
+        .attempt_for_user("student", &new_attempt.id)
+        .await
+        .is_err());
     assert!(matches!(
         store.save_teacher_feedback("teacher", &request).await,
         Err(LearningFeedbackError::Storage(_))

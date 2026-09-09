@@ -17,7 +17,9 @@ use crate::services::learning_catalog::{assess_lab_run, find_lab};
 use crate::sqlx_compat as sqlx;
 use crate::sqlx_compat::{PgPool, PgPoolOptions, Row};
 
+mod attempt;
 mod feedback;
+mod loading;
 mod persistence;
 mod queries;
 #[cfg(test)]
@@ -318,26 +320,6 @@ impl LearningStore {
                 .execute(pool)
                 .await?;
                 Ok::<(), sqlx::Error>(())
-            })
-            .await
-            .map(|_| ())
-    }
-
-    async fn load_memory(&self) -> Result<(), String> {
-        let path = self.data_path.clone();
-        let memory = self.in_memory.clone();
-        self.memory_loaded
-            .get_or_try_init(|| async move {
-                if !path.exists() {
-                    return Ok::<(), String>(());
-                }
-                let content = tokio::fs::read_to_string(&path)
-                    .await
-                    .map_err(|error| format!("failed to read learning attempts: {error}"))?;
-                let attempts = serde_json::from_str::<Vec<LabAttempt>>(&content)
-                    .map_err(|error| format!("failed to parse learning attempts: {error}"))?;
-                *memory.write().await = Arc::new(attempts.into_iter().map(Arc::new).collect());
-                Ok(())
             })
             .await
             .map(|_| ())

@@ -46,22 +46,19 @@ export default function LearnIndexPage() {
 
   return (
     <SidebarLayout title={t("learn.title")}>
-      <section className="panel">
+      <header className="page-header learning-header">
         <p className="brand-kicker">CYANREX COURSE</p>
         <h2 style={{ marginTop: 4 }}>{t("learn.heading")}</h2>
         <p className="meta">{t("learn.subtitle")}</p>
-        <div className="grid cols-2" style={{ marginTop: 16 }}>
-          {sections.map((section) => (
-            <Link key={section.href} href={section.href} className="panel" style={{ display: "block", textDecoration: "none", background: "#0b1425" }}>
-              <strong>{t(section.titleKey)}</strong>
-              <p className="meta" style={{ marginBottom: 0 }}>{t(section.detailKey)}</p>
-            </Link>
-          ))}
-        </div>
-      </section>
+        <nav className="section-nav" aria-label={t("learn.pageSections")}>
+          <a href="#learning-progress">{t("learn.progressTitle")}</a>
+          <a href="#learning-history">{t("learn.historyTitle")}</a>
+          <a href="#learning-resources">{t("learn.resources")}</a>
+        </nav>
+      </header>
 
-      <section className="panel" style={{ marginTop: 16 }}>
-        <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
+      <section className="panel learning-progress" id="learning-progress" tabIndex={-1}>
+        <div className="section-heading">
           <div>
             <h2 style={{ marginBottom: 4 }}>{t("learn.progressTitle")}</h2>
             <p className="meta" style={{ margin: 0 }}>
@@ -70,11 +67,12 @@ export default function LearnIndexPage() {
           </div>
           {labs.length > 0 && <strong>{Math.round((completed / labs.length) * 100)}%</strong>}
         </div>
+        {labs.length > 0 && <progress value={completed} max={labs.length} aria-label={t("learn.progressTitle")} />}
         {loading && <p className="meta">{t("learn.progressLoading")}</p>}
         {error && <p className="error">{error}</p>}
         <div className="grid cols-2" style={{ marginTop: 16 }}>
           {labs.map((progress) => (
-            <article className="panel" key={progress.lab.id} style={{ background: "#0b1425" }}>
+            <article className="panel lab-card" key={progress.lab.id}>
               <div className="row" style={{ justifyContent: "space-between" }}>
                 <strong>{t(labTitleKey(progress.lab.id))}</strong>
                 <span className={`learning-status ${progress.status}`}>
@@ -90,8 +88,8 @@ export default function LearnIndexPage() {
                 <p className="meta">{progress.latest_feedback[0]}</p>
               )}
               <div className="row">
-                <Link href={`/learn/${progress.lab.doc_slug}`}>{t("learn.openLab")}</Link>
-                <Link href={`/ebpf?lab=${encodeURIComponent(progress.lab.id)}`}>
+                <Link href={`/learn/${progress.lab.doc_slug}`} className="button-link button-secondary">{t("learn.openLab")}</Link>
+                <Link href={`/ebpf?lab=${encodeURIComponent(progress.lab.id)}`} className="button-link">
                   {t("learn.openEditor")}
                 </Link>
               </div>
@@ -100,6 +98,15 @@ export default function LearnIndexPage() {
         </div>
       </section>
       <AttemptHistory engineUrl={engineUrl} />
+      <section className="panel learning-resources" id="learning-resources" tabIndex={-1}>
+        <div className="section-heading"><h2>{t("learn.resources")}</h2></div>
+        <div className="grid cols-2">
+          {sections.map(section => <Link key={section.href} href={section.href} className="panel resource-link">
+            <strong>{t(section.titleKey)}</strong>
+            <p className="meta">{t(section.detailKey)}</p>
+          </Link>)}
+        </div>
+      </section>
     </SidebarLayout>
   );
 }

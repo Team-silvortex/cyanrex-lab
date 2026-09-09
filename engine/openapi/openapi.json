@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Cyanrex Lab Engine API",
-    "version": "0.3.5",
+    "version": "0.3.6",
     "description": "Machine-readable contract for the Cyanrex teaching control and execution plane."
   },
   "servers": [
@@ -766,6 +766,60 @@
           "admin",
           "teacher",
           "student"
+        ]
+      }
+    },
+    "/learning/attempt": {
+      "get": {
+        "operationId": "getLearningAttempt",
+        "summary": "GET /learning/attempt",
+        "tags": [
+          "Learning"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabAttempt"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            }
+          }
+        },
+        "x-cyanrex-access": "authenticated",
+        "description": "Read one previous submission belonging to the authenticated session owner, including source and current teacher feedback. No username override or write occurs. Missing/other-owner records return 404; invalid IDs return 400; storage errors return 500. Responses use Cache-Control: no-store.",
+        "x-cyanrex-roles": [
+          "admin",
+          "teacher",
+          "student"
+        ],
+        "parameters": [
+          {
+            "name": "attempt_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
         ]
       }
     },

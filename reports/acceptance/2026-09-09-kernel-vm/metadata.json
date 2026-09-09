@@ -1,0 +1,89 @@
+{
+  "kind": "disposable-vm-source-level-kernel-acceptance",
+  "date": "2026-09-09",
+  "result": "passed",
+  "release_artifact_accepted": false,
+  "source": {
+    "version_line": "0.3.5",
+    "head": "5c663cccb3fa082222c5989d189f83561f344118",
+    "dirty": true,
+    "profile": "dev",
+    "source_manifest": "source-initial.sha256",
+    "source_manifest_files": 145,
+    "source_manifest_sha256": "796dcccd546477bd993f01838b668c668c673330133e9b680856db2b1df901dc",
+    "scope": "Engine source, OpenAPI, migrations and Cargo manifests only; not a hermetic build or full repository attestation",
+    "binaries": {
+      "cyanrex-engine": {
+        "build_sha256": "cb0665845439cb676300a60eee086746777951f12a69929694ecf538aaa8d3c7",
+        "transferred_debug_stripped_sha256": "40868cf42ad465e7292740093ad938fc9acb3845aaffd6d9c448a955ad5d4c97"
+      },
+      "cyanrex-release": {
+        "build_sha256": "a5a9ed31847f4afa8f052fb959e09fe2d81430110443d353fa51bdd976bd5dbd",
+        "transferred_debug_stripped_sha256": "0110c5e5648e1923f51878628f772dafb4fb44930bf6f0da31788cb067ce6689"
+      }
+    },
+    "transferred_hashes_verified_in_guest": true
+  },
+  "image": {
+    "url": "https://cloud-images.ubuntu.com/minimal/releases/noble/release-20260905/ubuntu-24.04-minimal-cloudimg-amd64.img",
+    "sha256": "46b0dbaffa6950a7da5ff2dc5ed34c46084610b3b6d1fae8f1ec2d7e953984a3",
+    "checksum_signature_verified": true,
+    "signing_key_fingerprint": "D2EB44626FDDC30B513D5BB71A5D6C4C7DB87C81",
+    "verification_keyring": "/usr/share/keyrings/ubuntu-cloudimage-keyring.gpg"
+  },
+  "environment": {
+    "hypervisor": "QEMU 8.2.2 with KVM, unprivileged host process",
+    "guest_os_after_updates": "Ubuntu 24.04.5 LTS",
+    "guest_kernel": "6.8.0-139-generic",
+    "physical_host_kernel": "7.0.0-30-generic",
+    "clang": "Ubuntu clang version 18.1.3 (1ubuntu1)",
+    "bpftool": "7.4.0 (using libbpf 1.4)",
+    "libbpf_dev_package": "1:1.3.0-2build2",
+    "engine_mode": "native-linux inside guest, guest loopback only",
+    "database_frontend_and_agent_included": false,
+    "product_managed_vm_runner": false
+  },
+  "limits": {
+    "vcpus": 2,
+    "guest_memory_mib": 3072,
+    "sparse_disk_bytes": 8589934592,
+    "qemu_cpu_quota_percent": 200,
+    "qemu_memory_max_bytes": 4294967296,
+    "qemu_swap_max_bytes": 0,
+    "qemu_tasks_max": 64,
+    "qemu_runtime_max_seconds": 7200,
+    "seccomp_enabled": true,
+    "host_filesystem_shares_or_device_passthrough": false
+  },
+  "network": {
+    "backend": "QEMU user networking",
+    "setup_restrict": false,
+    "kernel_test_restrict": true,
+    "ipv6_enabled": false,
+    "only_forward": "127.0.0.1:32222 to guest SSH port 22",
+    "ssh_host_key_pinned_from_serial_console": true,
+    "host_canary_reachable_during_setup": true,
+    "isolated_guest_canary_curl_exit": 7,
+    "host_canary_reachable_from_host_before_and_after_denial": true,
+    "scope": "specific guest-to-host canary plus launch configuration, not a comprehensive network isolation audit"
+  },
+  "kernel_evidence": {
+    "file": "live-kernel.json",
+    "sha256": "3da60d594b04399de3d9a7f007a6271d8935356ff408075ea6fc35ef51549d45",
+    "verified_in_guest_and_on_host": true,
+    "event_bytes": 24,
+    "program_ids_before_and_after": 12,
+    "link_ids_before_and_after": 1,
+    "kernel_ids_unchanged_while_engine_alive": true,
+    "bpffs_pinned_files_after": 0
+  },
+  "cleanup": {
+    "engine_stopped": true,
+    "canary_stopped": true,
+    "vm_powered_off": true,
+    "loopback_forward_removed": true,
+    "qemu_img_check_passed": true,
+    "private_vm_files_retained_outside_git": true,
+    "existing_vm_or_deployment_modified": false
+  }
+}

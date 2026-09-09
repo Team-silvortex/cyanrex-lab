@@ -1,7 +1,7 @@
 # Project Status
 
-Snapshot date: **2026-09-08**
-Current release line: **0.3.5**
+Snapshot date: **2026-09-09**
+Current release line: **0.3.6**
 
 This page is the capability-level progress baseline for Cyanrex Lab. It records what is usable now,
 what remains intentionally limited, and which decisions should drive the next development cycle.
@@ -13,38 +13,147 @@ The detailed trust boundaries and data flows remain in the [system architecture]
 |---|---|---|
 | Identity and authorization | Operational | Argon2 passwords, TOTP, cookie sessions, CSRF origin checks, and admin/teacher/student route guards |
 | eBPF workbench | Operational | Monaco editing, local Clang diagnostics/completion, bpftool execution, Aya tracepoint execution, attachments, source probes, and kernel event streaming |
-| Learning workflow | Operational | Five assessed labs, persisted attempts, student progress, teacher overview, bounded source review, and student-visible teacher feedback |
+| Learning workflow | Operational | Five assessed labs, persisted attempts, student progress, teacher overview, bounded source review, student-visible teacher feedback, and confirmed resume from a previous submission |
 | Events and persistence | Operational | User-scoped event center and live queues, shared lazy event JSON, FIFO retention, bounded filtered reads, explicit WebSocket lag closure and recent-history recovery, PostgreSQL storage, and documented memory/file fallbacks |
 | Local Runner | Operational | Replaceable driver boundary, global/per-user leases, timeout handling, and explicit `shared_kernel` reporting |
 | Runner Agent | Operational for remote checks | Signed registration, heartbeat, leases, cancellation, probes, and isolated compile-only diagnostics; remote eBPF loading is not enabled |
 | Deployment and distribution | Operational | Docker, WSL2, native Linux, hardened optional compiler Agent, and offline package/install tooling |
-| Release traceability | `0.3.5` version metadata prepared; artifact acceptance/publication pending | Changelog/version sync, annotated-tag preflight, checksum-bound source/archive metadata, per-image Docker content IDs, exact-image installation, and native Rust evidence/candidate verification with safe non-overwriting extraction; `0.3.0` is an API baseline only, and this snapshot does not claim an accepted `0.3.5` artifact or published tag |
+| Release traceability | `0.3.6` version metadata prepared; artifact acceptance/publication pending | Changelog/version sync, annotated-tag preflight, checksum-bound source/archive metadata, per-image Docker content IDs, exact-image installation, and native Rust evidence/candidate verification with safe non-overwriting extraction; `0.3.0` is an API baseline only, and this snapshot does not claim an accepted `0.3.6` artifact or published tag |
 | Module catalog | Operational, state-only | Versioned v1 manifests are discovered and validated at startup; lifecycle is in memory and never executes directory code |
-| JavaScript SDK | Operational internal package | Typed ESM client with 57 generated non-Agent operationId calls, a 77-member additive namespace baseline and deprecation policy, explicit `/openapi` and `/operations` exports, browser/Node sessions, cancellation, downloads, typed errors, and package-consumer smoke coverage |
+| JavaScript SDK | Operational internal package | Typed ESM client with 58 generated non-Agent operationId calls, a 77-member additive namespace baseline and deprecation policy, explicit `/openapi` and `/operations` exports, browser/Node sessions, cancellation, downloads, typed errors, and package-consumer smoke coverage |
 | API contract | Operational internal contract | Generated OpenAPI 3.1 served at `/openapi.json`; route/access/SDK/model drift and breaking changes against the frozen `0.3.0` baseline fail the quality gate |
 | Terminal page | Operational for admins | Permission-aware List/Start/Stop module commands, structured results/history, and a safe handoff to the eBPF experiment workspace; it is not a shell |
 
 ## Verified Baseline
 
-The following working-tree checks passed on the snapshot date, including the increments recorded in 0.3.5 below:
+The following checks cover the confirmation, layout, submission-resume and cold-load increments now
+included in 0.3.6 and the changes recorded in 0.3.5 below. Browser, real-integration, kernel and benchmark
+evidence was collected before the version bump; its original source and binary fingerprints remain
+unchanged and do not represent acceptance of a 0.3.6 release artifact.
 
-- Rust formatting and the locked Engine suite: 205 tests passed; 5 tests remain ignored in the default
+- Rust formatting and the locked Engine suite: 213 tests passed; 5 tests remain ignored in the default
   gate (external PostgreSQL and Runner Agent integrations, plus three explicitly manual benchmarks).
 - Next.js production build: 17 statically generated routes with TypeScript validation.
-- Frontend regressions: 29 tests covering permissions, Terminal commands, teacher review/feedback, event
-  recovery, performance hotspot logic, security headers, and macOS metadata cleanup; the SDK has 11 transport/operation
+- Frontend regressions: 37 tests covering permissions, Terminal commands, teacher review/feedback, submission
+  resume, safe action scopes, event recovery, performance hotspot logic, security headers, and macOS metadata cleanup; the SDK has 12 transport/operation
   regressions, a compile-time operation fixture, plus 3 package-manifest/import smoke checks.
+- Optional Chromium UI regressions: all 22 passed against the updated production build. The 12 safety
+  cases also passed in development Strict Mode before the dependency update. Four-locale 320 px bounds
+  passed automated checks, and the final Chinese dialog screenshot was visually checked.
 - File-length, version/changelog/course-copy sync, OpenAPI generation/route/access/model/compatibility checks
-  with 45 common tooling regressions, plus Runner Agent and distribution tooling checks.
+  with 47 common tooling regressions, plus Runner Agent and distribution tooling checks.
 - Production npm dependency audits and the RustSec audit passed, with no reported vulnerabilities.
+  Next.js 15.5.24 and sharp 0.35.4 (bundled libheif 1.23.2) replace the earlier vulnerable frontend lock.
+  Existing running deployments require a rebuild; see the [security guide](security.md).
 
-This local snapshot did not start the privileged Engine or run the destructive disposable-host offline
-installation smoke. The annotated-Tag candidate workflow now enables the packaged live Aya
+The portable quality gate did not start a privileged Engine or run the destructive disposable-host offline
+installation smoke. Separate source-level kernel acceptance ran inside an explicitly approved disposable
+VM, as recorded below; it does not establish release-artifact acceptance. The annotated-Tag candidate workflow enables the packaged live Aya
 attach/ring-buffer-event/exact-detach check and retains a candidate-bound report; its result is
 environment-level evidence and is not claimed by the local checks listed above. The packaged verifier
 can recheck v1/v2 schema, release metadata binding, event identity, and cleanup without kernel access;
 the repository verifier additionally checks the complete downloaded artifact and can manually extract
 only verified regular files without invoking `tar` or replacing an existing output.
+
+## Disposable-VM kernel acceptance (2026-09-09, included in 0.3.6)
+
+- Created an explicitly approved, resource-bounded QEMU/KVM guest from a signature/checksum-verified
+  Ubuntu image. Package setup was followed by a shutdown/restart into restricted user networking;
+  a dedicated canary confirmed guest-to-host access was blocked while loopback SSH remained usable.
+- The pre-bump native dev snapshot passed real Aya attach → matched ring-buffer event → exact detach
+  on Ubuntu 24.04.5 / Linux 6.8.0-139. No bpffs pins remained; kernel program/link ID inventories were
+  unchanged before/after, and the Rust evidence verifier passed in the guest and on the host.
+- The VM and test processes are stopped; existing VMs and deployments were not changed. Retained
+  source/binary hashes and `candidate: null` evidence are described in [Acceptance checklist](acceptance.md).
+  This does not ship a VM Runner, prove multi-student isolation, or accept an offline package/Tag/LAN flow.
+
+## First real integration acceptance (2026-09-09, included in 0.3.6)
+
+- Explicitly ran both external integrations skipped by the default gate: one passed against disposable
+  PostgreSQL 16.14 and one passed using real loopback HTTP, signed Runner Agent requests and Clang 18.
+- PostgreSQL coverage now includes owner-bound historical submission reads, current teacher feedback,
+  missing/foreign-owner records and read failures without local fallback, alongside legacy migration,
+  concurrent revision conflicts and persistence. This is service-level SQL acceptance, not a full browser flow.
+- Rust CI now provisions its own loopback-only PostgreSQL service and requires the exact ignored test
+  to exist before running it. A common regression checks this wiring. The configuration was checked
+  locally; the recorded PostgreSQL result is local acceptance, not a remote CI result.
+- The temporary database was removed; existing containers, data and kernel attachments were left alone.
+  This does not establish VM isolation, LAN security, packaged installation or live-kernel acceptance.
+  Evidence, reproduction and the remaining gates are in [Acceptance checklist](acceptance.md).
+
+## Consequential-action confirmations (2026-09-09, included in 0.3.6)
+
+- Kernel runs, detach, script/header/event deletion, draft replacement, remote compiler selection and
+  consequential account/admin controls share a target/impact review with Cancel focused by default.
+  Bulk cleanup requires an exact phrase. Duplicate clicks cannot resubmit a pending action; failures
+  require inspecting state and a fresh confirmation instead of an automatic retry. Read-only work stays direct.
+- Single detach requires an exact path and never falls back to all. Event deletion freezes its absolute
+  cutoff and explains that all matching records are affected, not just 200 visible rows. Header batches
+  stop at the first failure and report completed items without pretending to roll back earlier deletions.
+- Entering a lab preserves the draft; **Load lab template** is explicit and separate from running.
+  Navigation discards unconfirmed actions and late local file imports. Source transfer to a remote
+  diagnostic Agent also needs consent. Already-dispatched Engine mutations are not undone by navigation.
+- Three pure regressions cover exact detach targeting and deletion scopes; twelve optional Chromium
+  checks (`npm --prefix frontend run test:safety-browser`) cover keyboard focus, cancellation, duplicates,
+  failures, target binding, draft/navigation races, four locales and 320 px dialogs. Development Strict
+  Mode replay also preserves confirmation/focus. Tests use synthetic Engine responses, not real account,
+  database, kernel or LAN changes. Existing server authorization and runtime boundaries are unchanged.
+
+## Task-focused interface (2026-09-08, included in 0.3.6)
+
+- Desktop navigation stays available while scrolling; compact screens use an expandable menu with
+  Escape dismissal, active-page semantics and a skip link, retaining the same role-filtered routes.
+- The editor groups import/save/run in a sticky action bar, places diagnostics and results directly
+  below source, and puts runtime settings and attachment cleanup alongside on wide screens. Section
+  shortcuts work on smaller screens; saved scripts, metadata, headers and breakpoint details expand
+  without remounting Monaco. The same 1440 × 900 synthetic case moves source from about 623 to 315 px
+  below the page top. No runtime, session or API contract changes are introduced by the layout work.
+- Learning progress precedes reference material, with direct history/resource links. Classroom summaries
+  are compact, roster rows become labelled narrow-screen cards, and selecting a student focuses the review.
+- Five optional Chromium layout checks (`npm --prefix frontend run test:layout-browser`) cover source
+  position, sticky actions, 320–1440 px widths, four locales, menu/section navigation, review focus/draft
+  retention, and import/save/reload without execution. Existing resume, feedback and event browser checks
+  remain available. Browser Engine calls are synthetic; these are UI checks, not kernel/LAN acceptance.
+
+## Resume a historical submission (2026-09-08, included in 0.3.6)
+
+- **Learn → My lab history → Continue from this attempt** opens a source/current-feedback preview in
+  the editor. Explicit confirmation restores that submission's code and lab/template context; keeping
+  the draft, failed loads and cancelled/late responses do not replace it. Templates cannot overwrite
+  resume drafts, and visiting a target again requires a fresh decision. Nothing runs/attaches/detaches
+  automatically; editing and manually running creates a new attempt while preserving the old record.
+- Added owner-bound `GET /learning/attempt?attempt_id=...` with no-store responses and explicit storage
+  errors, plus typed `learning.attempt()` and generated `getLearningAttempt` SDK calls. Staff still use
+  the separate authorized review path for another student's source; the resume endpoint has no username
+  override. SQL/file formats and existing API contracts stay compatible.
+- Added 2 Rust permission/error regressions, 5 frontend request/validation regressions, 1 SDK transport
+  regression and typed/package checks; the full security-enabled quality gate passed. Four optional Chromium
+  checks passed, exercising confirmation, real Monaco
+  edits, manual mocked runs, retry/cancellation, same-page target races and desktop/mobile layout, alongside
+  the existing teacher feedback smoke. Only synthetic Engine responses are used in browser tests; this
+  does not claim real PostgreSQL, kernel or LAN execution acceptance. Usage is in the
+  [student guide](student-guide.md), with teacher and four-locale UI updates.
+
+## Cancellation-safe learning initialization (2026-09-08, included in 0.3.6)
+
+- First local reads validate UTF-8 and decode JSON on an admitted blocking worker, constructing shared
+  records directly. Initialization and commits share one lock; a queued/running load completes after its
+  caller is cancelled, and concurrent readers reuse the successful snapshot. Only `NotFound` initializes
+  an empty store; other I/O/decode failures remain retryable without partial publication.
+- Six Rust regressions cover cancellation, concurrent first reads/writes, invalid paths and differential
+  legacy decoding, including invalid UTF-8 in ignored fields. They also passed 20 consecutive focused
+  rounds. One JS regression validates five-round paired ordering; the full security-enabled gate passed.
+- The final 40-process comparison against the 0.3.5 library uses the same new read-only example and
+  identical synthetic files created outside measured processes. At 50,000 rows / 4,184-byte source,
+  median maximum 2 ms timer lateness fell 218.641 → 2.037 ms and peak RSS 461.7 → 448.9 MiB, but first
+  read latency rose 405.9 → 485.5 ms (+19.6%). The 10k and smaller-source 50k first reads also regressed;
+  this improves cancellation safety and executor responsiveness, not uniform initialization speed.
+- Measurements are cold-process/store with warm OS page cache, not cold disk, HTTP, PostgreSQL or LAN
+  acceptance. Input and decoded records still coexist in memory without a new size limit; whole-file writes,
+  crash recovery, fsync and cross-process coordination remain unchanged. Behavior and reproduction are in
+  [Learning Record Storage](learning-storage.md); evidence is in
+  `reports/benchmarks/2026-09-08-learning-cold-load-final`. The incompatible byte-slice prototype's separate
+  40-process dataset is retained without overwriting its hashes or results.
 
 ## Streaming local learning commits (2026-09-08, included in 0.3.5)
 

@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useConfirmedAction } from "../../components/useConfirmedAction";
 
 import { useI18n } from "../../i18n/context";
 import type {
@@ -30,6 +31,7 @@ const stateColors: Record<RunnerAgentState | RunnerJobState, string> = {
 
 export default function RunnerAgentAdminPanel({ engineUrl }: Props) {
   const { t } = useI18n();
+  const safety = useConfirmedAction();
   const admin = useRunnerAgentAdmin(engineUrl);
   const agents = admin.agents?.agents ?? [];
   const recentJobs = useMemo(
@@ -48,6 +50,7 @@ export default function RunnerAgentAdminPanel({ engineUrl }: Props) {
 
   return (
     <section className="panel" style={{ marginTop: 14 }}>
+      {safety.dialog}
       <div className="row" style={{ justifyContent: "space-between" }}>
         <div>
           <h3>{t("settings.runnerTitle")}</h3>
@@ -91,8 +94,8 @@ export default function RunnerAgentAdminPanel({ engineUrl }: Props) {
                 <AgentCard
                   key={agent.agent_id}
                   agent={agent}
-                  busy={admin.actionId === `probe:${agent.agent_id}`}
-                  onProbe={() => void admin.probeAgent(agent.agent_id)}
+                  busy={Boolean(admin.actionId) || safety.busy}
+                  onProbe={() => void admin.probeAgent(agent.agent_id).catch(() => {})}
                   t={t}
                 />
               ))}
@@ -117,8 +120,11 @@ export default function RunnerAgentAdminPanel({ engineUrl }: Props) {
                     <JobRow
                       key={job.job_id}
                       job={job}
-                      busy={admin.actionId === `cancel:${job.job_id}`}
-                      onCancel={() => void admin.cancelJob(job.job_id)}
+                      busy={Boolean(admin.actionId) || safety.busy}
+                      onCancel={() => safety.request({ action: t("settings.runnerCancel"), description: t("safety.cancelJob"),
+                        targets: [job.job_id], details: [{ label: t("settings.runnerOwner"), value: job.owner_username || "—" },
+                          { label: t("settings.runnerAgent"), value: job.assigned_agent_id || job.target_agent_id || "—" }],
+                      }, () => admin.cancelJob(job.job_id))}
                       t={t}
                     />
                   ))}

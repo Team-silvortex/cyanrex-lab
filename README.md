@@ -1,6 +1,6 @@
 # cyanrex-lab
 
-Version: `0.3.5`
+Version: `0.3.6`
 
 Cyanrex monorepo for eBPF experiments: Axum engine + Next.js dashboard + module utilities.
 
@@ -74,7 +74,7 @@ streaming. See the architecture document before adding a service, route, or depl
 - JavaScript SDK:
   - typed ESM package covering the browser-facing Engine API
   - public request/response models generated from 78 OpenAPI component schemas
-  - generated `client.operation(operationId, input)` layer and runtime metadata for all 57
+  - generated `client.operation(operationId, input)` layer and runtime metadata for all 58
     non-Agent operations, alongside the stable hand-designed namespaces
   - additive-only compatibility baseline for 77 public client namespace and method paths
   - browser credentials, Node session-cookie capture, Origin-based CSRF support, cancellation, and typed errors
@@ -147,12 +147,12 @@ privileged and must not be exposed to untrusted users.
 For classroom deployment or offline distribution, create a packaged artifact with prebuilt Docker images:
 
 ```bash
-./scripts/package-distribution.sh --version 0.3.5
+./scripts/package-distribution.sh --version 0.3.6
 ```
 
 This produces:
-- `dist/cyanrex-lab-0.3.5-<timestamp>.tar.gz`
-- `dist/cyanrex-lab-0.3.5-<timestamp>.tar.gz.sha256`
+- `dist/cyanrex-lab-0.3.6-<timestamp>.tar.gz`
+- `dist/cyanrex-lab-0.3.6-<timestamp>.tar.gz.sha256`
 
 The archive contains the PostgreSQL, Engine, and frontend images. On a disposable Docker host,
 verify the freshly extracted package end to end with `./install-smoke.sh`. It checks the package
@@ -187,10 +187,10 @@ For an artifact downloaded from the Tag workflow, place its four files in a dedi
 verify the complete candidate from a trusted checkout of the matching source Tag before extracting it:
 
 ```bash
-release_revision="$(git rev-list -n 1 v0.3.5)"
+release_revision="$(git rev-list -n 1 v0.3.6)"
 cargo run --quiet --manifest-path engine/Cargo.toml --locked --bin cyanrex-release -- \
   candidate verify /path/to/downloaded-candidate \
-  --expect-version 0.3.5 --expect-revision "$release_revision" --expect-tag v0.3.5 \
+  --expect-version 0.3.6 --expect-revision "$release_revision" --expect-tag v0.3.6 \
   --extract-to /path/to/new-output-directory
 ```
 

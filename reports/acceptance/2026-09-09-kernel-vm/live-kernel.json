@@ -1,0 +1,86 @@
+{
+  "candidate": null,
+  "cleanup": {
+    "exactPinDetached": true,
+    "remainingAttachments": 0
+  },
+  "environment": {
+    "checks": [
+      {
+        "detail": "Ubuntu clang version 18.1.3 (1ubuntu1)",
+        "name": "clang",
+        "ok": true
+      },
+      {
+        "detail": "bpftool v7.4.0",
+        "name": "bpftool",
+        "ok": true
+      },
+      {
+        "detail": "6.8.0-139-generic",
+        "name": "kernel",
+        "ok": true
+      },
+      {
+        "detail": "host-like runtime context",
+        "name": "runtime_context",
+        "ok": true
+      },
+      {
+        "detail": "/sys/kernel/btf/vmlinux exists",
+        "name": "kernel_btf",
+        "ok": true
+      },
+      {
+        "detail": "bpftool can dump /sys/kernel/btf/vmlinux",
+        "name": "btf_dump",
+        "ok": true
+      },
+      {
+        "detail": "/sys/fs/bpf exists",
+        "name": "bpffs",
+        "ok": true
+      },
+      {
+        "detail": "36 27 0:31 / /sys/fs/bpf rw,nosuid,nodev,noexec,relatime shared:11 - bpf bpf rw,mode=700",
+        "name": "bpffs_mount_type",
+        "ok": true
+      },
+      {
+        "detail": "supported (bpftool help includes autoattach)",
+        "name": "bpftool_autoattach",
+        "ok": true
+      },
+      {
+        "detail": "bpftool link show is available",
+        "name": "bpftool_link_show",
+        "ok": true
+      },
+      {
+        "detail": "Max locked memory         unlimited            unlimited            bytes",
+        "name": "memlock",
+        "ok": true
+      }
+    ],
+    "generated_at": "2026-09-09T01:47:41.865956950Z",
+    "overall_ok": true,
+    "runtime_guidance": "Native Linux backend; eBPF programs target the host kernel.",
+    "runtime_mode": "native-linux"
+  },
+  "exercise": {
+    "event": {
+      "bytes": 24,
+      "programName": "release-kernel-smoke-3d601be573714c07",
+      "timestamp": "2026-09-09T01:47:42.723382468Z",
+      "type": "ebpf.kernel_ringbuf"
+    },
+    "hook": "tracepoint/sched/sched_switch",
+    "pinPath": "/sys/fs/bpf/cyanrex/kernel-acceptance/8c6976e5b5410415/698_e2fc207b71354577bff72925ffcba552",
+    "programName": "release-kernel-smoke-3d601be573714c07",
+    "runtimeBackend": "aya",
+    "templateId": "ringbuf-hi-freq-sampler"
+  },
+  "generatedAt": "2026-09-09T01:47:42.968Z",
+  "result": "passed",
+  "schemaVersion": 2
+}
