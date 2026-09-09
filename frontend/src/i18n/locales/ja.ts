@@ -1,13 +1,17 @@
 import type { TranslationDict } from "../translations";
 import { safetyMessages } from "./safety";
+import { classroomMessages } from "./classroom";
 
 export const ja: TranslationDict = {
+    classroom: classroomMessages.ja,
     safety: safetyMessages.ja,
     layout: {
       menu: "ナビゲーション",
       navigation: "メインナビゲーション",
       skipToContent: "メインコンテンツへ",
       controlPlane: "コントロールプレーン",
+      roleTeacher: "教師 · 授業とデプロイ管理",
+      roleStudent: "学生",
       checkingSession: "セッション確認中...",
       logout: "ログアウト",
       language: "言語",
@@ -19,7 +23,7 @@ export const ja: TranslationDict = {
         helper: "ヘルパー",
         modules: "モジュール",
         events: "イベント",
-        settings: "設定",
+        settings: "デプロイと設定",
         terminal: "ターミナル",
         account: "アカウント",
       },
@@ -44,7 +48,7 @@ export const ja: TranslationDict = {
       usernamePlaceholder: "ユーザー名",
       passwordPlaceholder: "パスワード",
       otpSetupCta: "OTP セットアップ",
-      loginHintDefault: "デフォルトアカウントとパスワードは、自己ホスティング環境変数で設定します。",
+      loginHintDefault: "個人利用では、デプロイ用アカウントが教師としてインスタンスを管理します。既定のユーザー名は admin のままです。公開登録せず、非公開の認証情報と OTP でログインしてください。",
       confirmPassword: "パスワード確認",
       otp6: "6桁 OTP",
       usernamePlaceholderCreate: "ユーザー名（>=3）",
@@ -185,7 +189,7 @@ export const ja: TranslationDict = {
       hotspotNoAlert: "この操作にはアラートなし。",
       hotspotDetailTitle: "操作別詳細",
       runnerTitle: "Runner Agent 運用",
-      runnerSubtitle: "管理者専用のノード状態、コンパイラ容量、リモートジョブ管理です。",
+      runnerSubtitle: "教師がノード状態、コンパイラ容量、リモートジョブを一元管理します。",
       runnerRefresh: "Agent を更新",
       runnerRefreshing: "Agent を更新中...",
       runnerLoading: "Runner Agent 一覧を読み込み中...",
@@ -211,7 +215,7 @@ export const ja: TranslationDict = {
       runnerProbe: "ヘルスプローブを送信",
       runnerProbing: "プローブ送信中...",
       runnerProbeJob: "制御プローブ",
-      runnerSystemOwner: "管理者 / システム",
+      runnerSystemOwner: "教師 / システム",
       runnerCancel: "キャンセル",
       runnerCancelling: "キャンセル中...",
       runnerNotice: {
@@ -355,7 +359,7 @@ export const ja: TranslationDict = {
       updatePassword: "更新",
       passwordUpdated: "パスワードを更新しました",
       deleteAccount: "アカウント削除",
-      dangerous: "危険操作：削除後は復元できません。",
+      dangerous: "削除後は復元できません。管理を継続できるよう、デプロイ用の教師アカウントはここでは削除できません。",
       deleteAction: "アカウント削除",
       confirmDeleteText: "確認のため DELETE と入力",
       confirmDeleteHint: "DELETE を入力してください",
@@ -366,7 +370,7 @@ export const ja: TranslationDict = {
     },
     terminal: {
       title: "ターミナル",
-      subtitle: "管理者向けのモジュール操作と実験ワークスペースへのコマンドバスです。",
+      subtitle: "教師によるモジュール管理と実験ワークスペースへの入口です。",
       commandLabel: "コマンド",
       moduleNameLabel: "モジュール名",
       moduleNamePlaceholder: "module-network",
@@ -517,6 +521,7 @@ export const ja: TranslationDict = {
     },
     modules: {
       title: "C ヘッダーモジュール",
+      teacherReadonlyTip: "管理には認証済みの教師セッションが必要です。",
       subtitle: "よく使う C/eBPF ヘッダーをダウンロードし、エディタへ注入します。",
       refreshCatalog: "カタログ更新",
       refreshing: "更新中...",

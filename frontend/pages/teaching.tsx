@@ -10,6 +10,7 @@ import { buildTeacherAttemptsUrl } from "../src/features/learning/teacherReview"
 import { AttemptCard } from "../src/features/learning/AttemptCard";
 import { TeacherFeedbackEditor } from "../src/features/learning/TeacherFeedback";
 import { useI18n } from "../src/i18n/context";
+import { InvitationPanel } from "../src/features/classroom/InvitationPanel";
 
 export default function TeachingPage() {
   const { t } = useI18n();
@@ -79,6 +80,7 @@ export default function TeachingPage() {
         </button>
       </header>
       {error && <p className="error" role="alert">{error}</p>}
+      <InvitationPanel />
 
       <section className="teaching-summary">
         <article className="panel">

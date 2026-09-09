@@ -1,10 +1,11 @@
 # cyanrex-lab
 
-Version: `0.3.6`
+Version: `0.3.7`
 
 Cyanrex monorepo for eBPF experiments: Axum engine + Next.js dashboard + module utilities.
 
 Architecture: [English](docs/en/architecture.md) · [简体中文](docs/zh-CN/architecture.md)
+SSH deployment / Student entry: [English](docs/en/classroom-connection.md) · [简体中文](docs/zh-CN/classroom-connection.md)
 · Project status: [English](docs/en/project-status.md) · [简体中文](docs/zh-CN/project-status.md)
 · [Changelog](CHANGELOG.md)
 
@@ -52,7 +53,7 @@ streaming. See the architecture document before adding a service, route, or depl
   - event settings endpoint (`/settings/events`)
   - C header module endpoints (catalog/download/delete/select/inject metadata)
   - learning progress endpoints for student labs and teacher overview
-  - structured admin command bus (`/command`) for module lifecycle and experiment handoff
+  - structured teacher management command bus (`/command`) for module lifecycle and experiment handoff
   - generated OpenAPI 3.1 contract (`/openapi.json`) with Engine route/access and SDK coverage checks
 - Auth system:
   - register/login/logout/session (`HTTP cookie`)
@@ -69,12 +70,12 @@ streaming. See the architecture document before adding a service, route, or depl
   - fallback to in-memory if DB temporarily unavailable
 - Frontend pages:
   - `/dashboard`, `/ebpf`, `/learn`, `/teaching`, `/helper`, `/modules`, `/events`, `/terminal`
-  - `/login`, `/register`, `/otp-setup`, `/account`
-  - administrator-only Terminal with structured results, module snapshots, and session history
+  - `/login`, `/register`, `/join`, `/otp-setup`, `/account`
+  - teacher-managed Terminal with structured results, module snapshots, and session history
 - JavaScript SDK:
   - typed ESM package covering the browser-facing Engine API
-  - public request/response models generated from 78 OpenAPI component schemas
-  - generated `client.operation(operationId, input)` layer and runtime metadata for all 58
+  - public request/response models generated from 85 OpenAPI component schemas
+  - generated `client.operation(operationId, input)` layer and runtime metadata for all 63
     non-Agent operations, alongside the stable hand-designed namespaces
   - additive-only compatibility baseline for 77 public client namespace and method paths
   - browser credentials, Node session-cookie capture, Origin-based CSRF support, cancellation, and typed errors
@@ -147,12 +148,12 @@ privileged and must not be exposed to untrusted users.
 For classroom deployment or offline distribution, create a packaged artifact with prebuilt Docker images:
 
 ```bash
-./scripts/package-distribution.sh --version 0.3.6
+./scripts/package-distribution.sh --version 0.3.7
 ```
 
 This produces:
-- `dist/cyanrex-lab-0.3.6-<timestamp>.tar.gz`
-- `dist/cyanrex-lab-0.3.6-<timestamp>.tar.gz.sha256`
+- `dist/cyanrex-lab-0.3.7-<timestamp>.tar.gz`
+- `dist/cyanrex-lab-0.3.7-<timestamp>.tar.gz.sha256`
 
 The archive contains the PostgreSQL, Engine, and frontend images. On a disposable Docker host,
 verify the freshly extracted package end to end with `./install-smoke.sh`. It checks the package
@@ -187,10 +188,10 @@ For an artifact downloaded from the Tag workflow, place its four files in a dedi
 verify the complete candidate from a trusted checkout of the matching source Tag before extracting it:
 
 ```bash
-release_revision="$(git rev-list -n 1 v0.3.6)"
+release_revision="$(git rev-list -n 1 v0.3.7)"
 cargo run --quiet --manifest-path engine/Cargo.toml --locked --bin cyanrex-release -- \
   candidate verify /path/to/downloaded-candidate \
-  --expect-version 0.3.6 --expect-revision "$release_revision" --expect-tag v0.3.6 \
+  --expect-version 0.3.7 --expect-revision "$release_revision" --expect-tag v0.3.7 \
   --extract-to /path/to/new-output-directory
 ```
 
@@ -235,19 +236,20 @@ The package now includes a richer `deploy.sh` helper:
 If `.env` is missing or still contains placeholder values, startup will fail with an explicit
 prompt to initialize secrets first.
 
-### 3) Private development account
+### 3) Private deployment teacher account
 
 - username: `admin`
+- role: `teacher` — personal use makes you the teacher; teaching and deployment share one identity
 - password and TOTP secret: generated on first start in `docker/.env`
 - `docker/.env` is mode `0600` and ignored by Git; do not publish it
 
 You can override with environment variables before the first start:
 
-- `CYANREX_ADMIN_USERNAME`
+- `CYANREX_ADMIN_USERNAME` (direct Engine startup; supported launchers retain the username `admin`)
 - `CYANREX_ADMIN_PASSWORD`
 - `CYANREX_ADMIN_TOTP_SECRET`
-- `CYANREX_ADMIN_USERNAMES` (optional, comma/space-separated; defaults to `CYANREX_ADMIN_USERNAME`)
-- `CYANREX_TEACHER_USERNAMES` (optional, comma/space-separated)
+- `CYANREX_ADMIN_USERNAMES` (legacy optional teacher-authority allowlist, comma/space-separated)
+- `CYANREX_TEACHER_USERNAMES` (optional full teaching/deployment authority for verified existing accounts)
 - `CYANREX_ALLOW_MISSING_ORIGIN` (optional, default: disabled) — allow CSRF-protected state-changing routes without `Origin`/`Referer`
 - Event persistence tuning (optional):
   - `CYANREX_EVENT_PERSIST_QUEUE_WARNING_ENABLED` (default `true`)
@@ -257,9 +259,15 @@ You can override with environment variables before the first start:
 
 Registration and password-only TOTP bootstrap are disabled by default. Set
 `CYANREX_ALLOW_REGISTRATION=true` only for a supervised lab. Core eBPF and
-user scripts are available to authenticated users. Module browsing is available
-to admin/teacher roles, while module modification and system settings remain
-administrator-only.
+user scripts are available to authenticated users. Teachers manage modules, compiler settings, Runner
+Agents, teaching and Terminal; students cannot use those management routes. Existing administrator
+accounts/configuration remain compatible, but login and session roles now report `teacher`.
+
+Single-person use needs only the seeded teacher account, not public registration or an administrator
+switch. Public registration rejects reserved teacher/legacy-admin names and cannot choose a role.
+The deployment teacher cannot delete itself. Before upgrading, review both allowlists: previous
+teachers now gain full deployment authority. Upgrade frontend and Engine together; see the
+[teacher guide](docs/en/teacher-guide.md) for appointment, ownership and isolation limits.
 
 Module directories opt into discovery with a v1 `module.json` manifest. Engine startup rejects
 malformed manifests and lifecycle requests reject unknown names. Start/stop only update the
@@ -270,7 +278,7 @@ catalog root with `CYANREX_MODULES_DIR` when running outside the repository or p
 
 - `POST /auth/register`
 - `POST /auth/login`
-  - response includes `role` (`admin` / `teacher` / `student`) in addition to username/session fields
+  - response includes `role` (`teacher` / `student`; `admin` retained as a legacy schema value)
 - `POST /auth/totp/bootstrap`
 - `GET /auth/me`
   - response includes current authenticated `role`
@@ -313,13 +321,13 @@ catalog root with `CYANREX_MODULES_DIR` when running outside the repository or p
 ## Runner APIs (Implemented)
 
 - `GET /runner/status` — authenticated capacity and explicit isolation level
-- `GET /runner/overview` — administrator-only active lease owners and deadlines
+- `GET /runner/overview` — teacher-only active lease owners and deadlines
 - `POST /runner/agent/register` — optional token-authenticated remote node registration
 - `POST /runner/agent/heartbeat` — health and capacity heartbeat for a registered node
-- `GET /runner/agents` — administrator-only remote node inventory
-- `POST /runner/jobs/probe`, `/runner/jobs/compile-check`, `/runner/jobs/cancel` — administrator-only remote job lifecycle
+- `GET /runner/agents` — teacher-only remote node inventory
+- `POST /runner/jobs/probe`, `/runner/jobs/compile-check`, `/runner/jobs/cancel` — teacher-only remote job lifecycle
 - `POST /runner/agent/jobs/claim`, `/sync`, `/result` — signed Agent job protocol
-- `GET /runner/jobs` — administrator-only job inventory
+- `GET /runner/jobs` — teacher-only job inventory
 - `GET /ebpf/check/backends` — authenticated, sanitized local and eligible Agent compiler inventory
 - `POST`, `GET /ebpf/check/remote` and `POST /ebpf/check/remote/cancel` — user-scoped asynchronous remote diagnostics
 - `/ebpf/run` executes through the replaceable `RunnerDriver` boundary
@@ -330,7 +338,7 @@ catalog root with `CYANREX_MODULES_DIR` when running outside the repository or p
 - Optional compile jobs use restricted Clang and never load or return eBPF objects; `/ebpf/run` remote dispatch remains disabled
 - `cyanrex-runner-agent` connects trusted Linux, WSL2, and unprivileged container nodes to this protocol
 - `scripts/runner-agent.sh start` enables the optional hardened Compose Agent; the matching smoke script verifies the authenticated editor path
-- Administrators can inspect Agent health/capacity and probe or cancel recent jobs from **Settings → Runner Agent Operations**
+- Teachers can inspect Agent health/capacity and probe or cancel recent jobs from **Deployment & settings → Runner Agent Operations**
 
 ## Scripts APIs (Implemented)
 

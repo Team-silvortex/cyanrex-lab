@@ -1,13 +1,17 @@
 import type { TranslationDict } from "../translations";
 import { safetyMessages } from "./safety";
+import { classroomMessages } from "./classroom";
 
 export const en: TranslationDict = {
+    classroom: classroomMessages.en,
     safety: safetyMessages.en,
     layout: {
       menu: "Navigation menu",
       navigation: "Main navigation",
       skipToContent: "Skip to main content",
       controlPlane: "Control Plane",
+      roleTeacher: "Teacher · teaching & deployment",
+      roleStudent: "Student",
       checkingSession: "Checking session...",
       logout: "Logout",
       language: "Language",
@@ -19,7 +23,7 @@ export const en: TranslationDict = {
         helper: "Helper",
         modules: "Modules",
         events: "Events",
-        settings: "Settings",
+        settings: "Deployment & settings",
         terminal: "Terminal",
         account: "Account",
       },
@@ -44,7 +48,7 @@ export const en: TranslationDict = {
       usernamePlaceholder: "Username",
       passwordPlaceholder: "Password",
       otpSetupCta: "OTP Setup",
-      loginHintDefault: "Default credentials are set in environment variables in self-hosted deployments.",
+      loginHintDefault: "Personal use: your deployment account is the teacher and manages the instance. The default username remains admin; use your private deployment credentials and OTP, not public registration.",
       confirmPassword: "Confirm password",
       otp6: "6-digit OTP",
       usernamePlaceholderCreate: "username (>=3)",
@@ -185,7 +189,7 @@ export const en: TranslationDict = {
       hotspotNoAlert: "No alert items in this operation.",
       hotspotDetailTitle: "Operation details",
       runnerTitle: "Runner Agent Operations",
-      runnerSubtitle: "Administrator-only node health, compiler capacity, and remote job lifecycle.",
+      runnerSubtitle: "Teacher-managed node health, compiler capacity, and remote job lifecycle.",
       runnerRefresh: "Refresh Agents",
       runnerRefreshing: "Refreshing Agents...",
       runnerLoading: "Loading Runner Agent inventory...",
@@ -211,7 +215,7 @@ export const en: TranslationDict = {
       runnerProbe: "Send health probe",
       runnerProbing: "Submitting probe...",
       runnerProbeJob: "Control probe",
-      runnerSystemOwner: "Administrator / system",
+      runnerSystemOwner: "Teacher / system",
       runnerCancel: "Cancel",
       runnerCancelling: "Cancelling...",
       runnerNotice: {
@@ -355,7 +359,7 @@ export const en: TranslationDict = {
       updatePassword: "Update Password",
       passwordUpdated: "Password updated",
       deleteAccount: "Delete Account",
-      dangerous: "Dangerous: account deletion is irreversible.",
+      dangerous: "Account deletion is irreversible. The deployment teacher account cannot be deleted here; it keeps the instance manageable.",
       deleteAction: "Delete Account",
       confirmDeleteText: "Type DELETE to confirm",
       confirmDeleteHint: "Type DELETE to confirm",
@@ -366,7 +370,7 @@ export const en: TranslationDict = {
     },
     terminal: {
       title: "Terminal",
-      subtitle: "Admin command bus for module lifecycle operations and experiment handoff.",
+      subtitle: "Teacher controls for module lifecycle operations and experiment handoff.",
       commandLabel: "Command",
       moduleNameLabel: "Module name",
       moduleNamePlaceholder: "module-network",
@@ -526,7 +530,7 @@ export const en: TranslationDict = {
     modules: {
       title: "C Header Module",
       subtitle: "Download common C/eBPF headers and inject selected ones into editor metadata/diagnostics.",
-      teacherReadonlyTip: "Read-only mode: module edits/downloads are admin-only.",
+      teacherReadonlyTip: "Management is unavailable: a verified teacher session is required.",
       refreshCatalog: "Refresh Catalog",
       refreshing: "Refreshing...",
       selectAll: "Select All (All)",

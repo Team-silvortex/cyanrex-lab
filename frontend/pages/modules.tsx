@@ -5,6 +5,7 @@ import SidebarLayout from "../src/components/SidebarLayout";
 import { getEngineUrl } from "../src/config/runtime";
 import { useI18n } from "../src/i18n/context";
 import { loadPageState, savePageState } from "../src/utils/pageState";
+import { canManageDeployment } from "../src/utils/sidebarPermissions";
 
 type HeaderItem = {
   id: string;
@@ -69,8 +70,8 @@ export default function ModulesPage() {
         setCanManageModules(false);
         return;
       }
-      const json = (await response.json()) as { role?: string };
-      setCanManageModules(json.role === "admin");
+      const json = (await response.json()) as { authenticated?: boolean; role?: string };
+      setCanManageModules(json.authenticated === true && canManageDeployment(json.role));
     } catch { setCanManageModules(false); } finally {
       setRoleReady(true);
     }

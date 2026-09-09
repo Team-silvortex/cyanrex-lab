@@ -1,7 +1,7 @@
 # Project Status
 
 Snapshot date: **2026-09-09**
-Current release line: **0.3.6**
+Current release line: **0.3.7**
 
 This page is the capability-level progress baseline for Cyanrex Lab. It records what is usable now,
 what remains intentionally limited, and which decisions should drive the next development cycle.
@@ -11,20 +11,59 @@ The detailed trust boundaries and data flows remain in the [system architecture]
 
 | Area | State | Current scope |
 |---|---|---|
-| Identity and authorization | Operational | Argon2 passwords, TOTP, cookie sessions, CSRF origin checks, and admin/teacher/student route guards |
+| Identity and authorization | Operational | Argon2 passwords, TOTP, cookie sessions, CSRF origin checks, teacher teaching/deployment authority and student guards; legacy admin compatibility |
 | eBPF workbench | Operational | Monaco editing, local Clang diagnostics/completion, bpftool execution, Aya tracepoint execution, attachments, source probes, and kernel event streaming |
 | Learning workflow | Operational | Five assessed labs, persisted attempts, student progress, teacher overview, bounded source review, student-visible teacher feedback, and confirmed resume from a previous submission |
 | Events and persistence | Operational | User-scoped event center and live queues, shared lazy event JSON, FIFO retention, bounded filtered reads, explicit WebSocket lag closure and recent-history recovery, PostgreSQL storage, and documented memory/file fallbacks |
 | Local Runner | Operational | Replaceable driver boundary, global/per-user leases, timeout handling, and explicit `shared_kernel` reporting |
 | Runner Agent | Operational for remote checks | Signed registration, heartbeat, leases, cancellation, probes, and isolated compile-only diagnostics; remote eBPF loading is not enabled |
 | Deployment and distribution | Operational | Docker, WSL2, native Linux, hardened optional compiler Agent, and offline package/install tooling |
-| Release traceability | `0.3.6` version metadata prepared; artifact acceptance/publication pending | Changelog/version sync, annotated-tag preflight, checksum-bound source/archive metadata, per-image Docker content IDs, exact-image installation, and native Rust evidence/candidate verification with safe non-overwriting extraction; `0.3.0` is an API baseline only, and this snapshot does not claim an accepted `0.3.6` artifact or published tag |
+| Release traceability | `0.3.7` version metadata prepared; artifact acceptance/publication pending | Changelog/version sync, annotated-tag preflight, checksum-bound source/archive metadata, per-image Docker content IDs, exact-image installation, and native Rust evidence/candidate verification with safe non-overwriting extraction; `0.3.0` is an API baseline only, and this snapshot does not claim an accepted `0.3.7` artifact or published tag |
 | Module catalog | Operational, state-only | Versioned v1 manifests are discovered and validated at startup; lifecycle is in memory and never executes directory code |
-| JavaScript SDK | Operational internal package | Typed ESM client with 58 generated non-Agent operationId calls, a 77-member additive namespace baseline and deprecation policy, explicit `/openapi` and `/operations` exports, browser/Node sessions, cancellation, downloads, typed errors, and package-consumer smoke coverage |
+| JavaScript SDK | Operational internal package | Typed ESM client with 63 generated non-Agent operationId calls, a 77-member additive namespace baseline and deprecation policy, explicit `/openapi` and `/operations` exports, browser/Node sessions, cancellation, downloads, typed errors, and package-consumer smoke coverage |
 | API contract | Operational internal contract | Generated OpenAPI 3.1 served at `/openapi.json`; route/access/SDK/model drift and breaking changes against the frozen `0.3.0` baseline fail the quality gate |
-| Terminal page | Operational for admins | Permission-aware List/Start/Stop module commands, structured results/history, and a safe handoff to the eBPF experiment workspace; it is not a shell |
+| Terminal page | Operational for teachers | Permission-aware List/Start/Stop module commands, structured results/history, and a safe handoff to the eBPF experiment workspace; it is not a shell |
 
-## Verified Baseline
+## SSH and classroom entry (2026-09-09, included in 0.3.7)
+
+- Native SSH plan/apply manages pre-installed offline packages, with strict host verification,
+  target-bound confirmation, exact version/control-file checks and no retries or volume deletion.
+- Opt-in `/join` and minimal discovery metadata support teacher-approved student enrollment through
+  name-bound, single-use 10-minute invitations. Password/TOTP, confirmed teacher origins, CSRF,
+  independent protocol/capability checks, revocation and no-store handling are retained.
+- This is link-based discovery, not mDNS or network scanning. Package upload, bare-host installation,
+  certificate/ingress setup, classroom member removal and VM isolation remain pending.
+- OpenAPI/SDK now cover 68 Engine operations and 63 non-Agent generated/convenience operations.
+  Frontend builds accept an explicit Engine origin; old images require rebuilding for LAN use.
+  See [Classroom Connection](classroom-connection.md) for configuration and acceptance boundaries.
+- Verification: security-enabled full gate plus final backend regressions passed (233 Rust tests,
+  5 default-ignored integrations/benchmarks; 41 frontend regressions; 51 common checks; 13 SDK tests,
+  type checks and 3 package checks; 18 production routes). All 27 optional Chromium cases passed.
+  The first RustSec fetch failed and was not counted; subsequent RustSec/npm audits reported no
+  vulnerabilities. Compose configuration used synthetic inputs. No real SSH host, deployment,
+  network exposure, credentials or VM was changed; current SSH/browser coverage is synthetic.
+
+## Teacher authority (2026-09-09, earlier increment included in 0.3.7)
+
+- The seeded personal-use account and legacy administrator allowlist now return `teacher`. Teachers
+  manage modules/headers, settings, Runner Agents and Terminal without a separate admin session;
+  students remain excluded from management. Review teacher allowlists before upgrading: all entries
+  now confer full deployment authority. Credentials and historical records are not rewritten.
+- Public registration cannot claim reserved teacher/legacy-admin names or choose elevated roles.
+  The deployment owner cannot delete itself. TOTP, CSRF, owner-bound data and confirmations remain.
+- Docker, offline Compose and native/WSL pass both role allowlists. Four-locale navigation identifies
+  teacher/student authority, and OpenAPI retains legacy category identifiers with truthful role lists.
+- The security-enabled quality gate passed: 218 Rust tests (5 default-ignored integrations/benchmarks),
+  38 frontend regressions, 49 common checks, SDK checks and 17 production routes. All 24 optional
+  Chromium cases passed, including teacher management with confirmations, student navigation and
+  four-locale narrow layouts. Browser Engine responses are synthetic; no deployment was changed.
+- RustSec and production npm audits passed; the first RustSec fetch failed on a network error and
+  was not counted as a result. Both Compose configurations were validated with synthetic inputs only.
+- This is role/ownership consolidation, not a VM Runner, remote kernel loading, classroom enrollment,
+  browser role editor or deployment restart. Teacher-owned control remains the LAN architecture target.
+  See [Teacher Guide](teacher-guide.md) and [Classroom Isolation](classroom-isolation.md).
+
+## Verified 0.3.6 Baseline
 
 The following checks cover the confirmation, layout, submission-resume and cold-load increments now
 included in 0.3.6 and the changes recorded in 0.3.5 below. Browser, real-integration, kernel and benchmark

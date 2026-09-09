@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Cyanrex Lab Engine API",
-    "version": "0.3.6",
+    "version": "0.3.7",
     "description": "Machine-readable contract for the Cyanrex teaching control and execution plane."
   },
   "servers": [
@@ -17,6 +17,9 @@
     },
     {
       "name": "C Headers"
+    },
+    {
+      "name": "Classroom Connection"
     },
     {
       "name": "Command"
@@ -86,6 +89,40 @@
         "x-cyanrex-access": "public"
       }
     },
+    "/.well-known/cyanrex-classroom": {
+      "get": {
+        "operationId": "getWellKnownCyanrexClassroom",
+        "summary": "GET /.well-known/cyanrex-classroom",
+        "tags": [
+          "Classroom Connection"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassroomDiscovery"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            }
+          }
+        },
+        "x-cyanrex-access": "public",
+        "description": "Opt-in classroom onboarding; all responses are no-store. Discovery metadata is not proof of teacher identity. Use independently confirmed HTTPS origins (or trusted loopback SSH access). Invitations are student-name-bound, single-use, valid for 10 minutes and lost on restart. Join requires an invitation plus explicit classroom ID, compatible protocol and required capabilities, not a matching product patch. No automatic login, role promotion, Agent registration or eBPF execution occurs. Revoking an invitation does not revoke existing accounts or sessions."
+      }
+    },
     "/auth/me": {
       "get": {
         "operationId": "getAuthMe",
@@ -117,6 +154,99 @@
           }
         },
         "x-cyanrex-access": "public"
+      }
+    },
+    "/classroom/invitations": {
+      "get": {
+        "operationId": "getClassroomInvitations",
+        "summary": "GET /classroom/invitations",
+        "tags": [
+          "Classroom Connection"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassroomInvitations"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            }
+          }
+        },
+        "x-cyanrex-access": "admin",
+        "description": "Deployment management is teacher authority. The legacy admin access-tier label and role remain compatible aliases, not a separate higher-privilege identity. Requires a teacher session and the existing CSRF policy for writes. Opt-in classroom onboarding; all responses are no-store. Discovery metadata is not proof of teacher identity. Use independently confirmed HTTPS origins (or trusted loopback SSH access). Invitations are student-name-bound, single-use, valid for 10 minutes and lost on restart. Join requires an invitation plus explicit classroom ID, compatible protocol and required capabilities, not a matching product patch. No automatic login, role promotion, Agent registration or eBPF execution occurs. Revoking an invitation does not revoke existing accounts or sessions.",
+        "x-cyanrex-roles": [
+          "admin",
+          "teacher"
+        ]
+      },
+      "post": {
+        "operationId": "postClassroomInvitations",
+        "summary": "POST /classroom/invitations",
+        "tags": [
+          "Classroom Connection"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassroomInvitation"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            }
+          }
+        },
+        "x-cyanrex-access": "admin",
+        "description": "Deployment management is teacher authority. The legacy admin access-tier label and role remain compatible aliases, not a separate higher-privilege identity. Requires a teacher session and the existing CSRF policy for writes. Opt-in classroom onboarding; all responses are no-store. Discovery metadata is not proof of teacher identity. Use independently confirmed HTTPS origins (or trusted loopback SSH access). Invitations are student-name-bound, single-use, valid for 10 minutes and lost on restart. Join requires an invitation plus explicit classroom ID, compatible protocol and required capabilities, not a matching product patch. No automatic login, role promotion, Agent registration or eBPF execution occurs. Revoking an invitation does not revoke existing accounts or sessions.",
+        "x-cyanrex-roles": [
+          "admin",
+          "teacher"
+        ],
+        "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClassroomInviteRequest"
+              }
+            }
+          }
+        }
       }
     },
     "/ebpf/attachments": {
@@ -1235,8 +1365,10 @@
           }
         },
         "x-cyanrex-access": "admin",
+        "description": "Deployment management is teacher authority. The legacy admin access-tier label and role remain compatible aliases, not a separate higher-privilege identity. Requires a teacher session and the existing CSRF policy for writes.",
         "x-cyanrex-roles": [
-          "admin"
+          "admin",
+          "teacher"
         ]
       }
     },
@@ -1275,8 +1407,10 @@
           }
         },
         "x-cyanrex-access": "admin",
+        "description": "Deployment management is teacher authority. The legacy admin access-tier label and role remain compatible aliases, not a separate higher-privilege identity. Requires a teacher session and the existing CSRF policy for writes.",
         "x-cyanrex-roles": [
-          "admin"
+          "admin",
+          "teacher"
         ]
       }
     },
@@ -1315,8 +1449,10 @@
           }
         },
         "x-cyanrex-access": "admin",
+        "description": "Deployment management is teacher authority. The legacy admin access-tier label and role remain compatible aliases, not a separate higher-privilege identity. Requires a teacher session and the existing CSRF policy for writes.",
         "x-cyanrex-roles": [
-          "admin"
+          "admin",
+          "teacher"
         ]
       }
     },
@@ -1442,8 +1578,10 @@
           }
         },
         "x-cyanrex-access": "admin",
+        "description": "Deployment management is teacher authority. The legacy admin access-tier label and role remain compatible aliases, not a separate higher-privilege identity. Requires a teacher session and the existing CSRF policy for writes.",
         "x-cyanrex-roles": [
-          "admin"
+          "admin",
+          "teacher"
         ]
       },
       "post": {
@@ -1480,8 +1618,10 @@
           }
         },
         "x-cyanrex-access": "admin",
+        "description": "Deployment management is teacher authority. The legacy admin access-tier label and role remain compatible aliases, not a separate higher-privilege identity. Requires a teacher session and the existing CSRF policy for writes.",
         "x-cyanrex-roles": [
-          "admin"
+          "admin",
+          "teacher"
         ],
         "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin",
         "requestBody": {
@@ -1624,8 +1764,10 @@
           }
         },
         "x-cyanrex-access": "admin",
+        "description": "Deployment management is teacher authority. The legacy admin access-tier label and role remain compatible aliases, not a separate higher-privilege identity. Requires a teacher session and the existing CSRF policy for writes.",
         "x-cyanrex-roles": [
-          "admin"
+          "admin",
+          "teacher"
         ]
       }
     },
@@ -1928,6 +2070,129 @@
         }
       }
     },
+    "/classroom/invitations/revoke": {
+      "post": {
+        "operationId": "postClassroomInvitationsRevoke",
+        "summary": "POST /classroom/invitations/revoke",
+        "tags": [
+          "Classroom Connection"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            }
+          }
+        },
+        "x-cyanrex-access": "admin",
+        "description": "Deployment management is teacher authority. The legacy admin access-tier label and role remain compatible aliases, not a separate higher-privilege identity. Requires a teacher session and the existing CSRF policy for writes. Opt-in classroom onboarding; all responses are no-store. Discovery metadata is not proof of teacher identity. Use independently confirmed HTTPS origins (or trusted loopback SSH access). Invitations are student-name-bound, single-use, valid for 10 minutes and lost on restart. Join requires an invitation plus explicit classroom ID, compatible protocol and required capabilities, not a matching product patch. No automatic login, role promotion, Agent registration or eBPF execution occurs. Revoking an invitation does not revoke existing accounts or sessions.",
+        "x-cyanrex-roles": [
+          "admin",
+          "teacher"
+        ],
+        "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClassroomRevokeRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/classroom/join": {
+      "post": {
+        "operationId": "postClassroomJoin",
+        "summary": "POST /classroom/join",
+        "tags": [
+          "Classroom Connection"
+        ],
+        "security": [
+          {},
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TotpBootstrapResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Wrong classroom identity or account exists; inspect message before retrying.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            }
+          },
+          "426": {
+            "description": "Incompatible join protocol/required capabilities; invitation not consumed. No automatic downgrade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            }
+          }
+        },
+        "x-cyanrex-access": "optional-session-csrf",
+        "description": "Opt-in classroom onboarding; all responses are no-store. Discovery metadata is not proof of teacher identity. Use independently confirmed HTTPS origins (or trusted loopback SSH access). Invitations are student-name-bound, single-use, valid for 10 minutes and lost on restart. Join requires an invitation plus explicit classroom ID, compatible protocol and required capabilities, not a matching product patch. No automatic login, role promotion, Agent registration or eBPF execution occurs. Revoking an invitation does not revoke existing accounts or sessions.",
+        "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClassroomJoinRequest"
+              }
+            }
+          }
+        }
+      }
+    },
     "/command": {
       "post": {
         "operationId": "postCommand",
@@ -1963,8 +2228,10 @@
           }
         },
         "x-cyanrex-access": "admin",
+        "description": "Deployment management is teacher authority. The legacy admin access-tier label and role remain compatible aliases, not a separate higher-privilege identity. Requires a teacher session and the existing CSRF policy for writes.",
         "x-cyanrex-roles": [
-          "admin"
+          "admin",
+          "teacher"
         ],
         "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin",
         "requestBody": {
@@ -2494,8 +2761,10 @@
           }
         },
         "x-cyanrex-access": "admin",
+        "description": "Deployment management is teacher authority. The legacy admin access-tier label and role remain compatible aliases, not a separate higher-privilege identity. Requires a teacher session and the existing CSRF policy for writes.",
         "x-cyanrex-roles": [
-          "admin"
+          "admin",
+          "teacher"
         ],
         "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin",
         "requestBody": {
@@ -2545,8 +2814,10 @@
           }
         },
         "x-cyanrex-access": "admin",
+        "description": "Deployment management is teacher authority. The legacy admin access-tier label and role remain compatible aliases, not a separate higher-privilege identity. Requires a teacher session and the existing CSRF policy for writes.",
         "x-cyanrex-roles": [
-          "admin"
+          "admin",
+          "teacher"
         ],
         "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin",
         "requestBody": {
@@ -2596,8 +2867,10 @@
           }
         },
         "x-cyanrex-access": "admin",
+        "description": "Deployment management is teacher authority. The legacy admin access-tier label and role remain compatible aliases, not a separate higher-privilege identity. Requires a teacher session and the existing CSRF policy for writes.",
         "x-cyanrex-roles": [
-          "admin"
+          "admin",
+          "teacher"
         ],
         "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin",
         "requestBody": {
@@ -2647,8 +2920,10 @@
           }
         },
         "x-cyanrex-access": "admin",
+        "description": "Deployment management is teacher authority. The legacy admin access-tier label and role remain compatible aliases, not a separate higher-privilege identity. Requires a teacher session and the existing CSRF policy for writes.",
         "x-cyanrex-roles": [
-          "admin"
+          "admin",
+          "teacher"
         ],
         "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin",
         "requestBody": {
@@ -2698,8 +2973,10 @@
           }
         },
         "x-cyanrex-access": "admin",
+        "description": "Deployment management is teacher authority. The legacy admin access-tier label and role remain compatible aliases, not a separate higher-privilege identity. Requires a teacher session and the existing CSRF policy for writes.",
         "x-cyanrex-roles": [
-          "admin"
+          "admin",
+          "teacher"
         ],
         "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin",
         "requestBody": {
@@ -2996,8 +3273,10 @@
           }
         },
         "x-cyanrex-access": "admin",
+        "description": "Deployment management is teacher authority. The legacy admin access-tier label and role remain compatible aliases, not a separate higher-privilege identity. Requires a teacher session and the existing CSRF policy for writes.",
         "x-cyanrex-roles": [
-          "admin"
+          "admin",
+          "teacher"
         ],
         "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin",
         "requestBody": {
@@ -3047,8 +3326,10 @@
           }
         },
         "x-cyanrex-access": "admin",
+        "description": "Deployment management is teacher authority. The legacy admin access-tier label and role remain compatible aliases, not a separate higher-privilege identity. Requires a teacher session and the existing CSRF policy for writes.",
         "x-cyanrex-roles": [
-          "admin"
+          "admin",
+          "teacher"
         ],
         "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin",
         "requestBody": {
@@ -3098,8 +3379,10 @@
           }
         },
         "x-cyanrex-access": "admin",
+        "description": "Deployment management is teacher authority. The legacy admin access-tier label and role remain compatible aliases, not a separate higher-privilege identity. Requires a teacher session and the existing CSRF policy for writes.",
         "x-cyanrex-roles": [
-          "admin"
+          "admin",
+          "teacher"
         ],
         "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin",
         "requestBody": {
@@ -3254,6 +3537,202 @@
       }
     },
     "schemas": {
+      "ClassroomDiscovery": {
+        "type": "object",
+        "properties": {
+          "service": {
+            "type": "string",
+            "enum": [
+              "cyanrex-classroom"
+            ]
+          },
+          "classroom_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "display_name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "product_version": {
+            "type": "string"
+          },
+          "protocol_min": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "protocol_max": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "join_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "capabilities": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "service",
+          "classroom_id",
+          "display_name",
+          "product_version",
+          "protocol_min",
+          "protocol_max",
+          "join_url",
+          "capabilities"
+        ],
+        "additionalProperties": false
+      },
+      "ClassroomInviteRequest": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 64
+          }
+        },
+        "required": [
+          "username"
+        ],
+        "additionalProperties": false
+      },
+      "ClassroomInvitationView": {
+        "type": "object",
+        "properties": {
+          "invite_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "username": {
+            "type": "string"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "invite_id",
+          "username",
+          "expires_at"
+        ],
+        "additionalProperties": false
+      },
+      "ClassroomInvitation": {
+        "type": "object",
+        "properties": {
+          "invite_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "username": {
+            "type": "string"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "join_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Private one-time capability in the URL fragment. Do not log, cache or broadcast."
+          }
+        },
+        "required": [
+          "invite_id",
+          "username",
+          "expires_at",
+          "join_url"
+        ],
+        "additionalProperties": false
+      },
+      "ClassroomInvitations": {
+        "type": "object",
+        "properties": {
+          "invitations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClassroomInvitationView"
+            }
+          }
+        },
+        "required": [
+          "invitations"
+        ],
+        "additionalProperties": false
+      },
+      "ClassroomRevokeRequest": {
+        "type": "object",
+        "properties": {
+          "invite_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "invite_id"
+        ],
+        "additionalProperties": false
+      },
+      "ClassroomJoinRequest": {
+        "type": "object",
+        "properties": {
+          "classroom_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "protocol_version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 65535
+          },
+          "client_version": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "required_capabilities": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "invite_token": {
+            "type": "string",
+            "minLength": 64,
+            "maxLength": 64,
+            "writeOnly": true
+          },
+          "username": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 64
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 256,
+            "writeOnly": true
+          }
+        },
+        "required": [
+          "classroom_id",
+          "protocol_version",
+          "client_version",
+          "required_capabilities",
+          "invite_token",
+          "username",
+          "password"
+        ],
+        "additionalProperties": false
+      },
       "ApiMessage": {
         "type": "object",
         "properties": {

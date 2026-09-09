@@ -96,7 +96,7 @@ export function useRunnerAgentAdmin(engineUrl: string) {
   const probeAgent = (agentId: string) => postAction(
     `probe:${agentId}`,
     "/runner/jobs/probe",
-    { agent_id: agentId, message: "administrator health probe", timeout_seconds: 30 },
+    { agent_id: agentId, message: "teacher health probe", timeout_seconds: 30 },
     { kind: "probe_submitted", subject: agentId },
   );
 

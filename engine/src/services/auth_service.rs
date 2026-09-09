@@ -100,23 +100,32 @@ include!("auth_service/service.inc.rs");
 include!("auth_service/crypto.inc.rs");
 
 impl AuthService {
+    /// Compatibility constructor: the deployment owner now has teacher authority.
+    pub fn new_with_default_admin() -> Self {
+        Self::new_with_default_teacher()
+    }
+
     pub fn role_for_username(&self, username: &str) -> AuthRole {
         let normalized = normalize_role_username(username);
-        let mut admin_users = parse_role_usernames("CYANREX_ADMIN_USERNAMES");
-        admin_users.insert(self.default_admin.username.to_ascii_lowercase());
-        if admin_users.contains(&normalized) {
-            return AuthRole::Admin;
-        }
-
-        if parse_role_usernames("CYANREX_TEACHER_USERNAMES").contains(&normalized) {
+        if normalized == self.default_admin.username
+            || parse_role_usernames("CYANREX_ADMIN_USERNAMES").contains(&normalized)
+            || parse_role_usernames("CYANREX_TEACHER_USERNAMES").contains(&normalized)
+        {
             return AuthRole::Teacher;
         }
-
         AuthRole::Student
     }
 
+    pub fn is_teacher_username(&self, username: &str) -> bool {
+        matches!(
+            self.role_for_username(username),
+            AuthRole::Admin | AuthRole::Teacher
+        )
+    }
+
+    /// Legacy name retained for callers; deployment management belongs to teachers.
     pub fn is_admin_username(&self, username: &str) -> bool {
-        matches!(self.role_for_username(username), AuthRole::Admin)
+        self.is_teacher_username(username)
     }
 }
 

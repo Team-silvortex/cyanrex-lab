@@ -207,10 +207,10 @@ async fn post_auth_student_is_forbidden_from_admin_settings_route() {
 }
 
 #[tokio::test]
-async fn post_auth_teacher_is_forbidden_from_admin_settings_route() {
+async fn post_auth_teacher_can_manage_deployment_settings() {
     let state = test_state();
     let app = build_router(state.clone());
-    register_user(&app, "teacher", "teacher-pass-123").await;
+    state.auth_service.register("teacher", "teacher-pass-123").await.unwrap();
     let teacher_otp = state
         .auth_service
         .generate_current_totp_for_user("teacher")
@@ -229,5 +229,5 @@ async fn post_auth_teacher_is_forbidden_from_admin_settings_route() {
         .await
         .unwrap();
 
-    assert_eq!(response.status(), StatusCode::FORBIDDEN);
+    assert_eq!(response.status(), StatusCode::OK);
 }

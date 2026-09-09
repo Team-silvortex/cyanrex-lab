@@ -21,7 +21,11 @@ impl LearningFeedbackFixture {
         let app = build_router(state.clone());
         let mut cookies = Vec::new();
         for username in ["teacher", "feedback-student"] {
-            register_user(&app, username, "feedback-pass-123").await;
+            if username == "teacher" {
+                state.auth_service.register(username, "feedback-pass-123").await.unwrap();
+            } else {
+                register_user(&app, username, "feedback-pass-123").await;
+            }
             let otp = state
                 .auth_service
                 .generate_current_totp_for_user(username)

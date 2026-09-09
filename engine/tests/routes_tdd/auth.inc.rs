@@ -217,7 +217,7 @@ async fn post_auth_delete_should_remove_user_and_invalidate_login() {
 }
 
 #[tokio::test]
-async fn post_auth_login_returns_admin_role_for_admin_user() {
+async fn post_auth_login_returns_teacher_role_for_deployment_owner() {
     let state = test_state();
     let app = build_router(state.clone());
     let otp = state
@@ -247,14 +247,14 @@ async fn post_auth_login_returns_admin_role_for_admin_user() {
     assert_eq!(response.status(), StatusCode::OK);
     let body = response.into_body().collect().await.unwrap().to_bytes();
     let json: Value = serde_json::from_slice(&body).unwrap();
-    assert_eq!(json["role"], "admin");
+    assert_eq!(json["role"], "teacher");
 }
 
 #[tokio::test]
 async fn post_auth_login_returns_teacher_role_for_teacher_user() {
     let state = test_state();
     let app = build_router(state.clone());
-    register_user(&app, "teacher", "teacher-pass-123").await;
+    state.auth_service.register("teacher", "teacher-pass-123").await.unwrap();
     let teacher_otp = state
         .auth_service
         .generate_current_totp_for_user("teacher")

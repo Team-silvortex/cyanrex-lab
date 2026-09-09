@@ -9,6 +9,11 @@ import type {
   ApiDownload,
   ApiMessage,
   ChangePasswordRequest,
+  ClassroomDiscovery,
+  ClassroomInviteRequest,
+  ClassroomInvitation,
+  ClassroomInvitations,
+  ClassroomJoinRequest,
   CommandRequest,
   CommandResponse,
   CompilerSettings,
@@ -187,6 +192,19 @@ export class CyanrexClient {
     },
   };
 
+  readonly classroom = {
+    discovery: (options?: RequestOptions) =>
+      this.get<ClassroomDiscovery>("/.well-known/cyanrex-classroom", undefined, options),
+    invitations: (options?: RequestOptions) =>
+      this.get<ClassroomInvitations>("/classroom/invitations", undefined, options),
+    invite: (request: ClassroomInviteRequest, options?: RequestOptions) =>
+      this.post<ClassroomInvitation>("/classroom/invitations", request, options),
+    revoke: (inviteId: string, options?: RequestOptions) =>
+      this.post<ApiMessage>("/classroom/invitations/revoke", { invite_id: inviteId }, options),
+    join: (request: ClassroomJoinRequest, options?: RequestOptions) =>
+      this.post<TotpBootstrapResponse>("/classroom/join", request, options),
+  };
+
   readonly command = {
     dispatch: (request: CommandRequest, options?: RequestOptions) =>
       this.post<CommandResponse>("/command", request, options),
@@ -358,6 +376,16 @@ export class CyanrexClient {
   ): Promise<T> {
     const normalizedMethod = method.toUpperCase();
     const url = this.url(path, input.query);
+    const route = path.startsWith("/") ? path : `/${path}`;
+    const classroom = route.startsWith("/classroom/") || route === "/.well-known/cyanrex-classroom";
+    if (classroom) {
+      const target = new URL(this.baseUrl);
+      const loopback = ["localhost", "[::1]"].includes(target.hostname) || /^127(?:\.\d{1,3}){3}$/.test(target.hostname);
+      if (target.username || target.password || target.search || target.hash
+        || !(target.protocol === "https:" || target.protocol === "http:" && loopback)) {
+        throw new TypeError("Classroom connections require a confirmed HTTPS origin (HTTP only on loopback)");
+      }
+    }
     const headers: Record<string, string> = {
       Accept: "application/json",
       ...this.defaultHeaders,
@@ -378,6 +406,7 @@ export class CyanrexClient {
       headers,
       body: input.body === undefined ? undefined : JSON.stringify(input.body),
       signal: input.signal,
+      ...(classroom ? { redirect: "error" as const, cache: "no-store" as const, referrerPolicy: "no-referrer" as const } : {}),
     });
     this.captureSessionCookie(response);
     const details = await parseBody(response);

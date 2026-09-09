@@ -17,6 +17,9 @@ const object = (properties, required = Object.keys(properties), extra = {}) => (
 const enumString = (...values) => string({ enum: values });
 
 const messageProperties = { ok: boolean, message: string() };
+const invitationProperties = {
+  invite_id: string({ format: "uuid" }), username: string(), expires_at: timestamp,
+};
 const moduleInfo = object(
   {
     name: string(),
@@ -81,6 +84,23 @@ const runnerJobProperties = {
 };
 
 export const schemas = {
+  ClassroomDiscovery: object({
+    service: enumString("cyanrex-classroom"), classroom_id: string({ format: "uuid" }),
+    display_name: string({ minLength: 1, maxLength: 64 }), product_version: string(),
+    protocol_min: integer({ minimum: 1 }), protocol_max: integer({ minimum: 1 }),
+    join_url: string({ format: "uri" }), capabilities: array(string()),
+  }),
+  ClassroomInviteRequest: object({ username: string({ minLength: 3, maxLength: 64 }) }),
+  ClassroomInvitationView: object(invitationProperties),
+  ClassroomInvitation: object({ ...invitationProperties, join_url: string({ format: "uri", description: "Private one-time capability in the URL fragment. Do not log, cache or broadcast." }) }),
+  ClassroomInvitations: object({ invitations: array(ref("ClassroomInvitationView")) }),
+  ClassroomRevokeRequest: object({ invite_id: string({ format: "uuid" }) }),
+  ClassroomJoinRequest: object({
+    classroom_id: string({ format: "uuid" }), protocol_version: integer({ minimum: 1, maximum: 65535 }),
+    client_version: string({ minLength: 1, maxLength: 64 }), required_capabilities: array(string()),
+    invite_token: string({ minLength: 64, maxLength: 64, writeOnly: true }),
+    username: string({ minLength: 3, maxLength: 64 }), password: string({ minLength: 8, maxLength: 256, writeOnly: true }),
+  }),
   ApiMessage: object(messageProperties),
   SystemInfo: object({ name: string(), status: string() }),
   HealthResponse: object({ status: string() }),

@@ -3,6 +3,11 @@
 Decision date: 2026-09-06. This is the target architecture, not a deployment feature already shipped.
 The current release is still a privileged local Engine with an optional compile-only Agent.
 
+Authority clarification (2026-09-09): the teacher owns teaching policy and deployment management.
+Personal use seeds the owner as a teacher; classroom use keeps the teacher-managed control instance as
+the authority for identity, enrollment, records and trusted assessment. Students' personal teacher
+accounts confer no authority on that classroom. This is not a peer-to-peer or student-elected control plane.
+
 ## Deployment assumptions
 
 - No public Internet service is required. Multiple authenticated students submit their own eBPF source;
@@ -20,7 +25,8 @@ The current release is still a privileged local Engine with an optional compile-
 The target control service owns identity, courses, saved source, learning records, and teacher feedback.
 It must run without eBPF-loading privileges or host kernel mounts. PostgreSQL stays private to that
 service; an execution VM receives no database credentials, browser session tokens, or shared enrollment
-secret. A separately administered host supervisor provisions and resets VMs outside the student guest.
+secret. A teacher-managed host supervisor provisions and resets VMs outside the student guest. It is a
+separate technical privilege boundary, not a requirement for another human administrator or login role.
 
 Each active student gets an exclusive Linux experiment VM. All untrusted compilation, completion,
 program loading, attachment verification, and kernel event collection belong inside that VM. The

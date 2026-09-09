@@ -33,10 +33,10 @@ try {
 }
 ```
 
-The client covers authentication, modules and the admin command bus, events, settings, scripts,
-learning, eBPF checks/runs/attachments, Runner status/admin jobs, and environment diagnostics. Every
+The client covers authentication, modules and the teacher management command bus, events, settings, scripts,
+learning, eBPF checks/runs/attachments, Runner status/management jobs, and environment diagnostics. Every
 method accepts an optional `{ signal }` argument for cancellation. The generated `operation()` layer
-covers all 58 browser-facing operations and derives required bodies, query parameters, and response
+covers all 63 browser-facing operations and derives required bodies, query parameters, and response
 types from each OpenAPI operation. The five signed Runner Agent protocol operations remain isolated
 from the browser SDK. `client.request<T>()` remains available for forward-compatible calls.
 
@@ -53,7 +53,15 @@ Slow sends can instead end abnormally. Complete replay is not guaranteed; see
 The additive-only namespace baseline and deprecation window are defined in [STABILITY.md](STABILITY.md).
 The quality gate rejects removal or renaming of any captured public client path.
 
-Teachers and administrators can leave student-visible feedback on existing lab attempts:
+Classroom entry uses `classroom.discovery()`, `invitations()`, `invite({ username })`, `revoke(inviteId)`
+and `join(request)`, plus generated operation IDs. These requests require HTTPS except on loopback,
+disable caching/redirects and retain CSRF for writes. Independently confirm the teacher's exact origin;
+discovery metadata and compatible product patches do not prove identity. Invitations are name-bound,
+single-use and valid for 10 minutes; join creates only a student account, returns TOTP setup once and
+does not log in. Never log the private link or auto-retry a consumed/uncertain invitation. Revoking one
+does not revoke existing accounts/sessions. See [Classroom Connection](../docs/en/classroom-connection.md).
+
+Teachers (including compatible legacy administrators) can leave student-visible feedback on existing lab attempts:
 
 ```ts
 const { attempts } = await cyanrex.learning.teacherAttempts("student");
@@ -78,6 +86,13 @@ or `cyanrex.operation("getLearningAttempt", { query: { attempt_id: attemptId } }
 the original source, lab/template context and current feedback without updating the attempt or executing
 code. There is no username override, including for staff; missing/other-owner attempts return `404`,
 invalid IDs `400`, and record-storage failures `500`. The response is marked `Cache-Control: no-store`.
+
+Teachers now own teaching and deployment management, including the seeded personal-use account.
+Login/session responses report `teacher` for legacy administrator identities; the `admin` role remains
+in the schema for compatibility. Operation access labels `admin` and `staff` are stable historical
+categories, both requiring teacher authority; OpenAPI's `x-cyanrex-roles` records this explicitly.
+Existing namespaces, operation IDs and request/response shapes remain compatible. Clients must not
+hide deployment controls just because the session is `teacher` instead of `admin`.
 
 Public request and response models are generated from the Engine OpenAPI component schemas. The
 hand-designed client namespaces remain stable while the quality gate rejects stale generated types.

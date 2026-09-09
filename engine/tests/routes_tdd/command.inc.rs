@@ -170,10 +170,10 @@ async fn post_command_should_validate_module_name_and_describe_experiment_handof
 }
 
 #[tokio::test]
-async fn post_command_should_be_forbidden_for_teacher() {
+async fn post_command_should_be_allowed_for_teacher() {
     let state = test_state();
     let app = build_router(state.clone());
-    register_user(&app, "teacher", "teacher-pass-123").await;
+    state.auth_service.register("teacher", "teacher-pass-123").await.unwrap();
     let otp = state
         .auth_service
         .generate_current_totp_for_user("teacher")
@@ -194,5 +194,5 @@ async fn post_command_should_be_forbidden_for_teacher() {
         .await
         .unwrap();
 
-    assert_eq!(response.status(), StatusCode::FORBIDDEN);
+    assert_eq!(response.status(), StatusCode::OK);
 }

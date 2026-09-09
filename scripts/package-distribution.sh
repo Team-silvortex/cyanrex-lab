@@ -189,6 +189,7 @@ build_artifacts() {
   docker build -t "$frontend_image" -f "$ROOT_DIR/frontend/Dockerfile" \
     --build-arg NODE_IMAGE="${FRONTEND_NODE_IMAGE:-node:20}" \
     --build-arg NPM_REGISTRY="${FRONTEND_NPM_REGISTRY:-https://registry.npmjs.org}" \
+    --build-arg NEXT_PUBLIC_ENGINE_URL="${NEXT_PUBLIC_ENGINE_URL:-http://localhost:8080}" \
     "$ROOT_DIR/frontend"
   if ! docker image inspect "$postgres_image" >/dev/null 2>&1; then
     docker pull "$postgres_image"

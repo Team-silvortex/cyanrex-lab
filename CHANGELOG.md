@@ -5,6 +5,35 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.3.7] - 2026-09-09
+
+### Added
+
+- Two explicit entry paths: native SSH plan/apply for teacher-managed, pre-installed offline packages,
+  and opt-in student discovery links with teacher-issued, username-bound, single-use 10-minute invitations.
+  Teacher identity confirmation, independent join protocol/capability checks, password/TOTP enrollment,
+  revocation, no-store secret handling, four-locale UI and typed SDK coverage. No automatic network scan,
+  package upload, public exposure, VM isolation or remote kernel execution is implied.
+
+### Changed
+
+- Teacher-authoritative ownership: the seeded personal-use account and legacy administrator allowlist
+  now report `teacher`; teachers manage deployment settings, modules/headers, Runner Agents and Terminal
+  with the same session used for teaching. Legacy usernames, credential keys, API tier labels and wire
+  schemas remain compatible. Review existing teacher allowlists before upgrading: they now grant full
+  deployment authority. Updated role-aware navigation, four locales, launchers and architecture guides.
+
+### Fixed
+
+- Frontend Docker/package builds now accept an explicit Engine URL instead of fixing LAN browsers to
+  localhost. Supported launchers forward classroom/CORS configuration; changing a distribution runtime
+  environment still requires a frontend rebuild to update its baked-in API URL.
+
+- Public registration cannot claim configured teacher/legacy-admin names or choose elevated roles.
+  The seeded deployment teacher cannot delete itself and leave a student-only instance. Session, TOTP,
+  CSRF, owner-scoped data and consequential-action confirmations remain enforced; remote loading and
+  kernel isolation are unchanged. Added role, registration, owner-retention and browser regressions.
+
 ## [0.3.6] - 2026-09-09
 
 ### Added
@@ -218,7 +247,8 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 The canonical package metadata advanced directly from `0.2.9` to `0.3.1`. Version `0.3.0` identifies
 the frozen API compatibility snapshot only; it was not a package release and must not be tagged.
 
-[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.6...HEAD
+[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.7...HEAD
+[0.3.7]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.6...v0.3.7
 [0.3.6]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.5...v0.3.6
 [0.3.5]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.4...v0.3.5
 [0.3.4]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.3...v0.3.4

@@ -1,7 +1,7 @@
 # Runner Agent Guide
 
 The standalone `cyanrex-runner-agent` connects a trusted Linux, WSL2, or container node to the
-Engine control plane. Version 0.3.6 executes built-in `control_probe` jobs and can optionally run
+Engine control plane. Version 0.3.7 executes built-in `control_probe` jobs and can optionally run
 compile-only `ebpf_compile_check` jobs. Compile checking is disabled by default. Neither mode
 accepts shell commands or arbitrary executable payloads, and neither needs root or Linux
 capabilities. A compile job never loads eBPF or returns its object file.
@@ -85,7 +85,7 @@ CYANREX_AGENT_ISOLATION=virtual_machine \
 ```
 
 Use `shared_kernel`, `container`, `virtual_machine`, or `dedicated_host` only when that value
-truthfully describes the node boundary. The label is displayed to administrators; it does not
+truthfully describes the node boundary. The label is displayed to teachers; it does not
 create isolation.
 
 ## External Container
@@ -102,7 +102,7 @@ docker run --rm --name cyanrex-runner-agent \
   --entrypoint cyanrex-runner-agent \
   --env-file ./runner-agent.env \
   --mount type=bind,src="$PWD/agent-token",dst=/run/secrets/cyanrex-agent-token,ro \
-  cyanrex/cyanrex-engine:0.3.6
+  cyanrex/cyanrex-engine:0.3.7
 ```
 
 Start from [`docker/runner-agent.env.example`](../../docker/runner-agent.env.example). Rebuild the
@@ -144,9 +144,9 @@ so registration credentials cannot be forwarded to another endpoint accidentally
 7. Re-register automatically when the Engine loses in-memory Agent state.
 8. Send a best-effort `draining` heartbeat on Ctrl-C.
 
-## Administrator Operations
+## Teacher Deployment Operations
 
-Open **Settings → Runner Agent Operations** with an administrator account. The panel refreshes every
+Open **Deployment & settings → Runner Agent Operations** with a teacher account. The panel refreshes every
 10 seconds and can also be refreshed manually. It distinguishes a disabled control plane from an
 enabled control plane with no registered nodes, then shows:
 
@@ -156,11 +156,11 @@ enabled control plane with no registered nodes, then shows:
   and the bounded result message;
 - explicit health-probe submission for healthy Agents and cancellation for queued or claimed jobs.
 
-The panel never renders job output or source code. It is backed by administrator-only inventory and
-action routes; teachers and students continue to receive only the sanitized compiler backend list in
-the editor.
+The panel never renders job output or source code. Inventory and management routes require teacher
+authority, including compatible legacy administrator accounts. Students receive only the sanitized
+compiler backend list in the editor; no separate administrator login is needed for teachers.
 
-Administrators submit explicit compile-only jobs with `POST /runner/jobs/compile-check` and inspect
+Teachers submit explicit compile-only jobs with `POST /runner/jobs/compile-check` and inspect
 them through `GET /runner/agents` or `GET /runner/jobs`. Authenticated editor users see a sanitized
 compiler inventory at `GET /ebpf/check/backends`. After explicitly selecting an Agent, the editor
 submits `POST /ebpf/check/remote`, polls `GET /ebpf/check/remote?job_id=...`, and cancels stale work

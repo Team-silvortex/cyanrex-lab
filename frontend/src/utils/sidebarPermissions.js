@@ -16,6 +16,12 @@ export const normalizeAuthRole = (raw) => {
   return "student";
 };
 
+/** Teachers manage teaching and deployment; admin is a legacy wire alias.
+ * @param {unknown} role
+ * @returns {boolean}
+ */
+export const canManageDeployment = (role) => role === "teacher" || role === "admin";
+
 /**
  * Return whether a role is in a permitted list.
  *
@@ -41,7 +47,7 @@ export const isRoleAllowed = (roles, userRole) => {
  */
 export const getRequiredRolesForRoute = (pathname) => {
   if (pathname.startsWith("/settings") || pathname.startsWith("/terminal")) {
-    return ["admin"];
+    return ["admin", "teacher"];
   }
   if (pathname.startsWith("/modules") || pathname.startsWith("/teaching")) {
     return ["admin", "teacher"];

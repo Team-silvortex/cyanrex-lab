@@ -11,6 +11,34 @@ Use Cyanrex for 4–8 hour beginner eBPF classes. It is suitable for teaching:
 
 It is not a production-grade multi-tenant sandbox. Do not let untrusted students share one privileged Engine.
 
+### One teacher identity for teaching and deployment
+
+The teacher owns classroom review **and** deployment management. The same session can use Modules,
+Deployment & settings (compiler settings and Runner Agent operations), and Terminal. No separate admin
+login is needed. For personal use, sign in with the seeded deployment account: you are the teacher and
+can also work through Learn/eBPF yourself. This is the default ownership model, not an auth bypass or a
+new execution mode. Host installation/start/stop still uses the existing launcher, not a browser shell.
+
+The default username remains `admin` for compatibility, but `/auth/login` and `/auth/me` report
+`role: teacher`. Existing passwords, TOTP, sessions and `CYANREX_ADMIN_*` configuration keys remain;
+this change does not rotate credentials or migrate saved records. Before upgrading a classroom, review
+`CYANREX_TEACHER_USERNAMES` and the legacy `CYANREX_ADMIN_USERNAMES`: every listed account now has full
+deployment authority, not read-only teaching access. Remove anyone who is not a trusted operator.
+
+To appoint another teacher, first verify an **existing** account and its owner, then add its username
+to `CYANREX_TEACHER_USERNAMES` in private deployment configuration and restart the Engine. Docker,
+offline Compose and native/WSL launchers pass both allowlists. Unlisted registrations remain students;
+public registration rejects reserved teacher/legacy-admin names rather than letting someone claim them.
+Do not put a desired but unprovisioned username in the allowlist and ask someone to register it publicly.
+There is no browser role editor. Optional [student invitations](classroom-connection.md) support
+teacher-approved enrollment without opening public registration/bootstrap; they never appoint teachers.
+Single-person use needs neither registration nor invitations.
+
+The seeded deployment teacher cannot delete itself through Account Security, even if students exist.
+There is no ownership-transfer workflow yet. Teaching authority does not remove OTP, CSRF, confirmation,
+owner-scoped histories or kernel-isolation requirements. A student-administered personal instance does
+not become authoritative for a teacher's classroom; trusted assessment must use teacher-owned execution.
+
 ## 2. Recommended Topology
 
 The safest approach is one instance per student:
@@ -23,6 +51,10 @@ If you must use a centralized server, prepare one VM per student instead of only
 Engine containers require privileged kernel access; application account isolation cannot replace VM isolation.
 
 ## 3. Pre-class Preparation
+
+For the two entry paths, see [SSH deployment and student classroom entry](classroom-connection.md).
+SSH currently manages pre-installed offline packages, while the student page checks teacher identity
+and protocol compatibility before accepting a private invitation. Neither path provisions isolated VMs.
 
 On each lab host:
 
@@ -77,7 +109,7 @@ For each lab, use cycle: predict → run → explain → modify. Ask students to
 
 ## 6. Checkpoints
 
-Open **Classroom** as a teacher or administrator to review active students, attempt counts, and the
+Open **Classroom** as a teacher to review active students, attempt counts, and the
 five lab states. A student attempt is recorded only when the eBPF editor was opened with a lab
 context and `/ebpf/run` reached the Engine. Completion therefore cannot be set by a browser-only
 checkbox.
@@ -85,7 +117,7 @@ checkbox.
 Select **Review attempts** beside a student to inspect up to 20 recent submissions. Each record
 shows the backend stage, run and attachment result, automated feedback, and the exact submitted
 source. Use this evidence to distinguish a compile failure from a verifier/attach failure and to
-discuss the student's reasoning. The review API is restricted to teacher and administrator roles;
+discuss the student's reasoning. The review API is restricted to teacher authority (including legacy admins);
 students can only read their own attempt history.
 
 The compact summary keeps the student roster near the top. On narrow screens, each roster row becomes

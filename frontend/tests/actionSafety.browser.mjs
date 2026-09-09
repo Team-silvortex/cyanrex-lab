@@ -78,6 +78,49 @@ async function setup(role = "admin") {
 const dialog = page => page.getByRole("dialog", { name: "确认操作", exact: true });
 const approve = page => dialog(page).getByRole("button", { name: /^确认/ });
 
+test("teachers manage modules, deployment settings and terminal without switching role, keeping confirmations", { timeout: 45000 }, async () => {
+  const f = await setup("teacher");
+  try {
+    await f.page.goto(`${baseUrl}/modules`);
+    await f.page.getByTestId("workspace-role").waitFor();
+    assert.equal((await f.page.getByTestId("workspace-role").textContent()).trim(), "教师 · 教学与部署管理");
+    await f.page.getByRole("button", { name: "删除", exact: true }).first().click();
+    await dialog(f.page).waitFor();
+    assert.equal(f.writes.length, 0);
+    await f.page.keyboard.press("Escape");
+    await f.page.locator('nav a[href="/settings"]').click();
+    await f.page.getByRole("heading", { name: "Runner Agent 运维", exact: true }).waitFor();
+    await f.page.getByRole("button", { name: "保存设置", exact: true }).click();
+    await dialog(f.page).waitFor();
+    assert.equal(f.writes.length, 0);
+    await approve(f.page).click();
+    await dialog(f.page).waitFor({ state: "detached" });
+    assert.deepEqual(f.writes.map(item => item.path), ["/settings/events", "/settings/compiler"]);
+    if (process.env.CYANREX_AUTHORITY_SCREENSHOT) await f.page.screenshot({ path: process.env.CYANREX_AUTHORITY_SCREENSHOT });
+    await f.page.locator('nav a[href="/terminal"]').click();
+    await f.page.getByRole("button", { name: "执行命令", exact: true }).click();
+    await f.page.getByText("done", { exact: false }).first().waitFor();
+    assert.equal(f.writes[2].body.commandType, "ListModules");
+    assert.equal(f.writes.length, 3);
+    assert.deepEqual(f.errors, []);
+  } finally { await f.browser.close(); }
+});
+
+test("students keep experiment access without teacher deployment navigation", { timeout: 45000 }, async () => {
+  const f = await setup("student");
+  try {
+    await f.page.goto(`${baseUrl}/ebpf`);
+    await f.page.getByTestId("workspace-role").waitFor();
+    assert.equal((await f.page.getByTestId("workspace-role").textContent()).trim(), "学生");
+    for (const route of ["/settings", "/terminal", "/modules", "/teaching"]) {
+      assert.equal(await f.page.locator(`nav a[href="${route}"]`).count(), 0);
+    }
+    await f.page.locator(".monaco-editor").waitFor();
+    assert.equal(f.writes.length, 0);
+    assert.deepEqual(f.errors, []);
+  } finally { await f.browser.close(); }
+});
+
 test("single deletion focuses cancel, Escape/Enter cancel safely, and failures cannot be double-submitted", { timeout: 45000 }, async () => {
   const f = await setup();
   try {

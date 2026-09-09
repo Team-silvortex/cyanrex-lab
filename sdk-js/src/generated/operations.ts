@@ -9,6 +9,10 @@ export interface OpenApiOperations {
     input: Record<string, never>;
     response: OpenApiSchemas["SessionResponse"];
   };
+  "getClassroomInvitations": {
+    input: Record<string, never>;
+    response: OpenApiSchemas["ClassroomInvitations"];
+  };
   "getEbpfAttachments": {
     input: Record<string, never>;
     response: {
@@ -162,6 +166,10 @@ export interface OpenApiOperations {
     input: Record<string, never>;
     response: OpenApiSchemas["PerformanceMetrics"];
   };
+  "getWellKnownCyanrexClassroom": {
+    input: Record<string, never>;
+    response: OpenApiSchemas["ClassroomDiscovery"];
+  };
   "getWsEvents": {
     input: Record<string, never>;
     response: string;
@@ -197,6 +205,24 @@ export interface OpenApiOperations {
   "postAuthTotpBootstrap": {
     input: {
       "body": OpenApiSchemas["TotpBootstrapRequest"];
+    };
+    response: OpenApiSchemas["TotpBootstrapResponse"];
+  };
+  "postClassroomInvitations": {
+    input: {
+      "body": OpenApiSchemas["ClassroomInviteRequest"];
+    };
+    response: OpenApiSchemas["ClassroomInvitation"];
+  };
+  "postClassroomInvitationsRevoke": {
+    input: {
+      "body": OpenApiSchemas["ClassroomRevokeRequest"];
+    };
+    response: OpenApiSchemas["ApiMessage"];
+  };
+  "postClassroomJoin": {
+    input: {
+      "body": OpenApiSchemas["ClassroomJoinRequest"];
     };
     response: OpenApiSchemas["TotpBootstrapResponse"];
   };
@@ -359,6 +385,7 @@ export interface OpenApiOperationDescriptor {
 
 export const openApiOperations = {
   "getAuthMe": {"method":"GET","path":"/auth/me","access":"public","transport":"json"},
+  "getClassroomInvitations": {"method":"GET","path":"/classroom/invitations","access":"admin","transport":"json"},
   "getEbpfAttachments": {"method":"GET","path":"/ebpf/attachments","access":"authenticated","transport":"json"},
   "getEbpfAttachmentsDetails": {"method":"GET","path":"/ebpf/attachments/details","access":"authenticated","transport":"json"},
   "getEbpfCheckBackends": {"method":"GET","path":"/ebpf/check/backends","access":"authenticated","transport":"json"},
@@ -387,6 +414,7 @@ export const openApiOperations = {
   "getSettingsCompiler": {"method":"GET","path":"/settings/compiler","access":"admin","transport":"json"},
   "getSettingsEvents": {"method":"GET","path":"/settings/events","access":"authenticated","transport":"json"},
   "getSettingsPerformance": {"method":"GET","path":"/settings/performance","access":"admin","transport":"json"},
+  "getWellKnownCyanrexClassroom": {"method":"GET","path":"/.well-known/cyanrex-classroom","access":"public","transport":"json"},
   "getWsEvents": {"method":"GET","path":"/ws/events","access":"authenticated","transport":"websocket"},
   "postAuthDelete": {"method":"POST","path":"/auth/delete","access":"authenticated","transport":"json"},
   "postAuthLogin": {"method":"POST","path":"/auth/login","access":"public","transport":"json"},
@@ -394,6 +422,9 @@ export const openApiOperations = {
   "postAuthPasswordChange": {"method":"POST","path":"/auth/password/change","access":"authenticated","transport":"json"},
   "postAuthRegister": {"method":"POST","path":"/auth/register","access":"public","transport":"json"},
   "postAuthTotpBootstrap": {"method":"POST","path":"/auth/totp/bootstrap","access":"public","transport":"json"},
+  "postClassroomInvitations": {"method":"POST","path":"/classroom/invitations","access":"admin","transport":"json"},
+  "postClassroomInvitationsRevoke": {"method":"POST","path":"/classroom/invitations/revoke","access":"admin","transport":"json"},
+  "postClassroomJoin": {"method":"POST","path":"/classroom/join","access":"optional-session-csrf","transport":"json"},
   "postCommand": {"method":"POST","path":"/command","access":"admin","transport":"json"},
   "postEbpfCheck": {"method":"POST","path":"/ebpf/check","access":"authenticated","transport":"json"},
   "postEbpfCheckRemote": {"method":"POST","path":"/ebpf/check/remote","access":"authenticated","transport":"json"},

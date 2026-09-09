@@ -1,7 +1,4 @@
-use crate::{
-    models::auth::AuthRole,
-    services::auth_service::SessionRecord,
-};
+use crate::services::auth_service::SessionRecord;
 
 pub async fn require_authenticated(
     state: &AppState,
@@ -49,24 +46,8 @@ pub async fn admin_guard(
     request: Request,
     next: Next,
 ) -> Response {
-    let Some(session) = current_session_from_headers(state.as_ref(), request.headers()).await else {
-        return (
-            StatusCode::UNAUTHORIZED,
-            Json(serde_json::json!({"ok": false, "message": "invalid auth session"})),
-        )
-            .into_response();
-    };
-    if !matches!(
-        state.auth_service.role_for_username(&session.username),
-        AuthRole::Admin
-    ) {
-        return (
-            StatusCode::FORBIDDEN,
-            Json(serde_json::json!({"ok": false, "message": "administrator access required"})),
-        )
-            .into_response();
-    }
-    next.run(request).await
+    // Compatibility entry point; there is no separate administrator authority.
+    teacher_or_admin_guard(State(state), request, next).await
 }
 
 pub async fn teacher_or_admin_guard(
@@ -82,13 +63,10 @@ pub async fn teacher_or_admin_guard(
             .into_response();
     };
 
-    if !matches!(
-        state.auth_service.role_for_username(&session.username),
-        AuthRole::Admin | AuthRole::Teacher
-    ) {
+    if !state.auth_service.is_teacher_username(&session.username) {
         return (
             StatusCode::FORBIDDEN,
-            Json(serde_json::json!({"ok": false, "message": "insufficient module privileges"})),
+            Json(serde_json::json!({"ok": false, "message": "teacher access required"})),
         )
             .into_response();
     }
@@ -147,26 +125,8 @@ pub async fn admin_and_csrf_guard(
     request: Request,
     next: Next,
 ) -> Response {
-    let Some(session) = current_session_from_headers(state.as_ref(), request.headers()).await else {
-        return (
-            StatusCode::UNAUTHORIZED,
-            Json(serde_json::json!({"ok": false, "message": "invalid auth session"})),
-        )
-            .into_response();
-    };
-
-    if !matches!(
-        state.auth_service.role_for_username(&session.username),
-        AuthRole::Admin
-    ) {
-        return (
-            StatusCode::FORBIDDEN,
-            Json(serde_json::json!({"ok": false, "message": "administrator access required"})),
-        )
-            .into_response();
-    }
-
-    csrf_guard(State(state), request, next).await
+    // Compatibility entry point, including the same state-changing request protections.
+    teacher_or_admin_and_csrf_guard(State(state), request, next).await
 }
 
 pub async fn teacher_or_admin_and_csrf_guard(
@@ -182,13 +142,10 @@ pub async fn teacher_or_admin_and_csrf_guard(
             .into_response();
     };
 
-    if !matches!(
-        state.auth_service.role_for_username(&session.username),
-        AuthRole::Admin | AuthRole::Teacher
-    ) {
+    if !state.auth_service.is_teacher_username(&session.username) {
         return (
             StatusCode::FORBIDDEN,
-            Json(serde_json::json!({"ok": false, "message": "insufficient module privileges"})),
+            Json(serde_json::json!({"ok": false, "message": "teacher access required"})),
         )
             .into_response();
     }

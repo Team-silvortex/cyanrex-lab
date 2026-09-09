@@ -7,6 +7,7 @@ export interface NavItem {
 }
 
 export function normalizeAuthRole(raw: unknown): AuthRole;
+export function canManageDeployment(role: unknown): boolean;
 export function isRoleAllowed(roles: readonly AuthRole[] | undefined, userRole: AuthRole): boolean;
 export function getRequiredRolesForRoute(pathname: string): AuthRole[] | null;
 export function isRouteAllowed(pathname: string, userRole: AuthRole): boolean;

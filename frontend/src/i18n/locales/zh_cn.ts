@@ -1,13 +1,17 @@
 import type { TranslationDict } from "../translations";
 import { safetyMessages } from "./safety";
+import { classroomMessages } from "./classroom";
 
 export const zhCN: TranslationDict = {
+    classroom: classroomMessages.zhCN,
     safety: safetyMessages.zhCN,
     layout: {
       menu: "导航菜单",
       navigation: "主导航",
       skipToContent: "跳到主要内容",
       controlPlane: "控制平面",
+      roleTeacher: "教师 · 教学与部署管理",
+      roleStudent: "学生",
       checkingSession: "正在检查会话...",
       logout: "退出登录",
       language: "语言",
@@ -19,7 +23,7 @@ export const zhCN: TranslationDict = {
         helper: "环境助手",
         modules: "模块中心",
         events: "事件中心",
-        settings: "设置",
+        settings: "部署与设置",
         terminal: "终端",
         account: "账号",
       },
@@ -44,7 +48,7 @@ export const zhCN: TranslationDict = {
       usernamePlaceholder: "用户名",
       passwordPlaceholder: "密码",
       otpSetupCta: "OTP 绑定",
-      loginHintDefault: "默认账号与默认密码请在自建环境变量中配置。",
+      loginHintDefault: "单人使用时，部署账号就是教师，负责教学和实例管理。默认用户名仍为 admin；请使用私有部署凭据与 OTP 登录，无需公开注册。",
       confirmPassword: "确认密码",
       otp6: "6位 OTP",
       usernamePlaceholderCreate: "用户名（>=3）",
@@ -185,7 +189,7 @@ export const zhCN: TranslationDict = {
       hotspotNoAlert: "指标正常，无告警项。",
       hotspotDetailTitle: "按接口明细",
       runnerTitle: "Runner Agent 运维",
-      runnerSubtitle: "仅管理员可见的节点健康、编译容量与远程作业生命周期。",
+      runnerSubtitle: "由教师统一管理节点健康、编译容量与远程作业生命周期。",
       runnerRefresh: "刷新 Agent",
       runnerRefreshing: "正在刷新 Agent...",
       runnerLoading: "正在加载 Runner Agent 清单...",
@@ -211,7 +215,7 @@ export const zhCN: TranslationDict = {
       runnerProbe: "发送健康探针",
       runnerProbing: "正在提交探针...",
       runnerProbeJob: "控制探针",
-      runnerSystemOwner: "管理员 / 系统",
+      runnerSystemOwner: "教师 / 系统",
       runnerCancel: "取消",
       runnerCancelling: "正在取消...",
       runnerNotice: {
@@ -355,7 +359,7 @@ export const zhCN: TranslationDict = {
       updatePassword: "更新密码",
       passwordUpdated: "密码已更新",
       deleteAccount: "删除账号",
-      dangerous: "危险操作：删除后账号不可恢复。",
+      dangerous: "删除后账号不可恢复。默认部署教师不能在此删除，以免实例失去管理入口。",
       deleteAction: "删除账号",
       confirmDeleteText: "请输入 DELETE 确认",
       confirmDeleteHint: "输入 DELETE 进行确认",
@@ -366,7 +370,7 @@ export const zhCN: TranslationDict = {
     },
     terminal: {
       title: "终端",
-      subtitle: "面向管理员的模块生命周期命令总线与实验入口。",
+      subtitle: "教师的模块生命周期管理与实验入口。",
       commandLabel: "命令",
       moduleNameLabel: "模块名",
       moduleNamePlaceholder: "module-network",
@@ -522,7 +526,7 @@ export const zhCN: TranslationDict = {
     modules: {
       title: "C 头文件模块",
       subtitle: "下载常用 C/eBPF 头文件到本地，并勾选注入编辑器元数据与诊断。",
-      teacherReadonlyTip: "只读模式：头文件模块的下载/删除/选择仅管理员可操作。",
+      teacherReadonlyTip: "暂不能管理：需要已验证的教师会话。",
       refreshCatalog: "刷新目录",
       refreshing: "刷新中...",
       selectAll: "全选（全部）",

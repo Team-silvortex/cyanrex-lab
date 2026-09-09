@@ -12,6 +12,45 @@ export interface OpenApiSchemas {
     "new_password": string;
     "otp": string;
   };
+  "ClassroomDiscovery": {
+    "service": "cyanrex-classroom";
+    "classroom_id": string;
+    "display_name": string;
+    "product_version": string;
+    "protocol_min": number;
+    "protocol_max": number;
+    "join_url": string;
+    "capabilities": Array<string>;
+  };
+  "ClassroomInvitation": {
+    "invite_id": string;
+    "username": string;
+    "expires_at": string;
+    "join_url": string;
+  };
+  "ClassroomInvitationView": {
+    "invite_id": string;
+    "username": string;
+    "expires_at": string;
+  };
+  "ClassroomInvitations": {
+    "invitations": Array<OpenApiSchemas["ClassroomInvitationView"]>;
+  };
+  "ClassroomInviteRequest": {
+    "username": string;
+  };
+  "ClassroomJoinRequest": {
+    "classroom_id": string;
+    "protocol_version": number;
+    "client_version": string;
+    "required_capabilities": Array<string>;
+    "invite_token": string;
+    "username": string;
+    "password": string;
+  };
+  "ClassroomRevokeRequest": {
+    "invite_id": string;
+  };
   "CommandRequest": {
     "commandType": "ListModules" | "StartModule" | "StopModule" | "RunExperiment";
     "moduleName"?: string;

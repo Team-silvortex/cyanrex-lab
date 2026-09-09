@@ -4,18 +4,22 @@
 
 Cyanrex Engine is a privileged kernel experimentation environment, not a multi-tenant safe sandbox.
 
-Docker requires access to host/VM eBPF, tracefs, BTF, and bpffs. If a user gains admin access to the Engine,
-they can perform privileged kernel observation and loading. Do not expose Engine to untrusted networks.
+Docker requires access to host/VM eBPF, tracefs, BTF, and bpffs. Authenticated users, including students,
+can perform kernel experiments; teachers also control deployment settings. Do not expose Engine to
+untrusted networks or treat application roles as kernel isolation.
 
 ## Default Protections
 
 - Docker published ports default to `127.0.0.1`. The native/WSL launcher currently sets
   `ENGINE_HOST=0.0.0.0`; verify actual listeners and restrict access before starting that mode on a LAN.
-- First startup generates random DB, admin, and TOTP secrets.
+- First startup generates random DB, deployment-teacher, and TOTP secrets (legacy `CYANREX_ADMIN_*` keys).
 - `.env` permissions are `0600` and ignored by git.
 - User registration and OTP bootstrap are disabled by default.
 - eBPF checks, semantic completion, script list/save/delete, and session-bound operations are available to authenticated users.
-- Module browsing is available to admin/teacher roles; module modification and system-level settings remain administrator-only.
+- Teachers own module changes, system settings, Runner Agent management and teaching; students cannot
+  use these management APIs. Old administrator identities are compatible teacher identities.
+- Public registration cannot select a role or claim a configured teacher/legacy-admin name. The seeded
+  deployment teacher cannot delete itself, preventing a student-only, unmanaged instance.
 - Temporary lockout after repeated login failures.
 - Global and per-user Runner capacity, source size, and execution time limits are enforced for eBPF tasks.
 - Runner status reports `shared_kernel`; local quotas do not claim tenant isolation.
@@ -33,6 +37,14 @@ they can perform privileged kernel observation and loading. Do not expose Engine
 
 These measures reduce accidental exposure, but they do not make the privileged Engine a shared safe runtime.
 
+### Teacher-authority upgrade
+
+All existing teacher allowlist entries now grant deployment management, not merely teaching reads.
+Review both `CYANREX_TEACHER_USERNAMES` and `CYANREX_ADMIN_USERNAMES` before deploying this change.
+The default deployment account is the teacher in personal use; this never promotes the first public
+registrant, trusts a client-supplied role, bypasses TOTP, or changes kernel/Agent privileges. Configure
+additional teachers only after verifying an existing account's owner; see the [teacher guide](teacher-guide.md).
+
 ### Accidental-action safeguards
 
 The UI asks for an explicit target/impact review before kernel runs, detach, destructive deletion,
@@ -42,7 +54,19 @@ require checking state before a new confirmation. Event deletion freezes its tim
 claim that the bounded visible count is the deletion total. These controls are browser-side ergonomics,
 not server authorization, idempotency keys, transactional rollback or kernel isolation. A dispatched
 request may complete even if the browser leaves the page. API clients still rely on the existing Engine
-session, role, CSRF, password and OTP policies; no trust boundary has been relaxed.
+session, teacher/student role, CSRF, password and OTP policies. Role consolidation does not replace
+these server-side checks.
+
+### Classroom connection boundary
+
+Classroom onboarding uses a separate [discovery/invitation boundary](classroom-connection.md).
+Discovery labels and IDs are not certificates; verify the exact HTTPS teacher origin independently.
+Never send the shared Agent bootstrap token to students. Invitations are opt-in, short-lived,
+name-bound and atomically single-use, with no automatic login or teacher promotion. Compatibility
+checks the join protocol and required capabilities, not merely matching product patch numbers.
+SSH management stays in the native operator CLI with strict host checking and explicit target review;
+it cannot be triggered by a student invitation or discovered command. Neither entry changes kernel
+isolation or listener exposure, or removes the need for trusted ingress and per-student isolation.
 
 ### Runner Agent credential boundary
 
@@ -78,7 +102,7 @@ The optional managed Compose profile applies that baseline automatically: numeri
 read-only root filesystem, no published ports, all capabilities dropped, `no-new-privileges`, a
 `noexec` temporary workspace, and PID/CPU/memory caps. Its manager writes the bootstrap value to a
 mode-0600 host file mounted as a Docker Secret and never prints it. The profile remains disabled
-until an administrator explicitly starts it. A dedicated internal network permits Engine control
+until the teacher explicitly starts it. A dedicated internal network permits Engine control
 traffic but blocks direct access to the default database/frontend network and external networks.
 
 ## Recommended Isolation

@@ -109,6 +109,7 @@ export default function LoginPage() {
           </Link>
         </div>
         <p style={{ marginTop: 10 }}>
+          <Link href="/join" className="meta">{t("classroom.join")}</Link>{" · "}
           <Link href="/register" className="meta">{t("auth.noAccount")}</Link>
         </p>
       </section>

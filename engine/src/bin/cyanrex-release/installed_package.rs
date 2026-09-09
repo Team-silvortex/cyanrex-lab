@@ -117,6 +117,22 @@ pub fn verify_loaded_images(root: &Path) -> Result<(), String> {
         .block_on(crate::installed_images::verify(&metadata))
 }
 
+pub fn verify_deployment_controls(root: &Path, version: &str) -> Result<(), String> {
+    let metadata = load_control_metadata(root)?;
+    if metadata["package"]["version"].as_str() != Some(version) {
+        return Err("installed package version mismatch; no remote deployment started".into());
+    }
+    let (_, manifest, _) = hash_regular_file(&root.join("checksums.sha256"), true)?;
+    let manifest = parse_manifest(&manifest.expect("captured checksum manifest"))?;
+    for name in ["deploy.sh", "docker-compose.yml", "cyanrex-release"] {
+        let (actual, _, _) = hash_regular_file(&root.join(name), false)?;
+        if manifest.get(name) != Some(&actual) {
+            return Err(format!("deployment control checksum mismatch: {name}"));
+        }
+    }
+    Ok(())
+}
+
 fn load_control_metadata(root: &Path) -> Result<Value, String> {
     let (root, package_name, archive_name) = package_identity(root)?;
     let manifest_path = root.join("checksums.sha256");

@@ -9,6 +9,9 @@ const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "
 const outputPath = path.join(projectRoot, "engine/openapi/openapi.json");
 
 const requestSchemas = new Map(Object.entries({
+  "POST /classroom/invitations": "ClassroomInviteRequest",
+  "POST /classroom/invitations/revoke": "ClassroomRevokeRequest",
+  "POST /classroom/join": "ClassroomJoinRequest",
   "POST /auth/delete": "DeleteAccountRequest",
   "POST /auth/login": "LoginRequest",
   "POST /auth/password/change": "ChangePasswordRequest",
@@ -42,6 +45,11 @@ const requestSchemas = new Map(Object.entries({
 }));
 
 const responseSchemas = new Map([
+  ["GET /.well-known/cyanrex-classroom", ref("ClassroomDiscovery")],
+  ["GET /classroom/invitations", ref("ClassroomInvitations")],
+  ["POST /classroom/invitations", ref("ClassroomInvitation")],
+  ["POST /classroom/invitations/revoke", ref("ApiMessage")],
+  ["POST /classroom/join", ref("TotpBootstrapResponse")],
   ["GET /", ref("SystemInfo")],
   ["GET /auth/me", ref("SessionResponse")],
   ["GET /ebpf/attachments", objectWithArray("pin_paths", { type: "string" })],
@@ -124,6 +132,8 @@ const queryParameters = new Map([
 ]);
 
 const createdOperations = new Set([
+  "POST /classroom/invitations",
+  "POST /classroom/join",
   "POST /auth/register",
   "POST /runner/jobs/compile-check",
   "POST /runner/jobs/probe",
@@ -174,8 +184,14 @@ function buildOperation(operation, method, routePath, access) {
     "x-cyanrex-access": access,
   };
   const roles = rolesFor(access);
+  if (access === "admin") {
+    result.description = "Deployment management is teacher authority. The legacy admin access-tier label and role remain compatible aliases, not a separate higher-privilege identity. Requires a teacher session and the existing CSRF policy for writes.";
+  }
   if (operation === "GET /learning/attempt") {
     result.description = "Read one previous submission belonging to the authenticated session owner, including source and current teacher feedback. No username override or write occurs. Missing/other-owner records return 404; invalid IDs return 400; storage errors return 500. Responses use Cache-Control: no-store.";
+  }
+  if (routePath.startsWith("/classroom/") || routePath === "/.well-known/cyanrex-classroom") {
+    result.description = `${result.description ?? ""} Opt-in classroom onboarding; all responses are no-store. Discovery metadata is not proof of teacher identity. Use independently confirmed HTTPS origins (or trusted loopback SSH access). Invitations are student-name-bound, single-use, valid for 10 minutes and lost on restart. Join requires an invitation plus explicit classroom ID, compatible protocol and required capabilities, not a matching product patch. No automatic login, role promotion, Agent registration or eBPF execution occurs. Revoking an invitation does not revoke existing accounts or sessions.`.trim();
   }
   if (roles) result["x-cyanrex-roles"] = roles;
   if (method === "POST" && access !== "public" && !access.startsWith("runner-agent")) {
@@ -221,6 +237,10 @@ function responsesFor(operation) {
       content: { "application/json": { schema } },
     },
     default: errorResponse(),
+    ...(operation === "POST /classroom/join" ? {
+      409: { ...errorResponse(), description: "Wrong classroom identity or account exists; inspect message before retrying." },
+      426: { ...errorResponse(), description: "Incompatible join protocol/required capabilities; invitation not consumed. No automatic downgrade." },
+    } : {}),
   };
 }
 
@@ -235,13 +255,14 @@ function securityFor(access) {
 }
 
 function rolesFor(access) {
-  if (access === "admin") return ["admin"];
+  if (access === "admin") return ["admin", "teacher"];
   if (access === "staff") return ["admin", "teacher"];
   if (access === "authenticated") return ["admin", "teacher", "student"];
   return null;
 }
 
 function tagFor(routePath) {
+  if (routePath.startsWith("/classroom/") || routePath === "/.well-known/cyanrex-classroom") return "Classroom Connection";
   if (routePath === "/" || routePath === "/health" || routePath === "/openapi.json") return "System";
   if (routePath.startsWith("/auth")) return "Authentication";
   if (routePath.startsWith("/ebpf")) return "eBPF";

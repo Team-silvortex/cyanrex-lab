@@ -31,7 +31,7 @@ async fn get_c_headers_catalog_should_return_header_module_items() {
 async fn get_modules_catalog_allowed_for_teacher() {
     let state = test_state();
     let app = build_router(state.clone());
-    register_user(&app, "teacher", "teacher-pass-123").await;
+    state.auth_service.register("teacher", "teacher-pass-123").await.unwrap();
     let teacher_otp = state
         .auth_service
         .generate_current_totp_for_user("teacher")
@@ -56,10 +56,10 @@ async fn get_modules_catalog_allowed_for_teacher() {
 }
 
 #[tokio::test]
-async fn post_modules_download_forbidden_for_teacher() {
+async fn post_modules_download_for_teacher_reaches_header_validation() {
     let state = test_state();
     let app = build_router(state.clone());
-    register_user(&app, "teacher", "teacher-pass-123").await;
+    state.auth_service.register("teacher", "teacher-pass-123").await.unwrap();
     let teacher_otp = state
         .auth_service
         .generate_current_totp_for_user("teacher")
@@ -80,7 +80,7 @@ async fn post_modules_download_forbidden_for_teacher() {
         .await
         .unwrap();
 
-    assert_eq!(response.status(), StatusCode::FORBIDDEN);
+    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
 }
 
 #[tokio::test]
@@ -120,7 +120,7 @@ async fn get_modules_list_allowed_for_admin() {
 async fn get_modules_list_allowed_for_teacher() {
     let state = test_state();
     let app = build_router(state.clone());
-    register_user(&app, "teacher", "teacher-pass-123").await;
+    state.auth_service.register("teacher", "teacher-pass-123").await.unwrap();
     let teacher_otp = state
         .auth_service
         .generate_current_totp_for_user("teacher")

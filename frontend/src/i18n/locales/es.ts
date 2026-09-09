@@ -1,13 +1,17 @@
 import type { TranslationDict } from "../translations";
 import { safetyMessages } from "./safety";
+import { classroomMessages } from "./classroom";
 
 export const es: TranslationDict = {
+    classroom: classroomMessages.es,
     safety: safetyMessages.es,
     layout: {
       menu: "Menú de navegación",
       navigation: "Navegación principal",
       skipToContent: "Saltar al contenido",
       controlPlane: "Plano de Control",
+      roleTeacher: "Docente · clases y despliegue",
+      roleStudent: "Estudiante",
       checkingSession: "Verificando sesión...",
       logout: "Cerrar sesión",
       language: "Idioma",
@@ -19,7 +23,7 @@ export const es: TranslationDict = {
         helper: "Asistente",
         modules: "Módulos",
         events: "Eventos",
-        settings: "Configuración",
+        settings: "Despliegue y configuración",
         terminal: "Terminal",
         account: "Cuenta",
       },
@@ -44,7 +48,7 @@ export const es: TranslationDict = {
       usernamePlaceholder: "Usuario",
       passwordPlaceholder: "Contraseña",
       otpSetupCta: "Configurar OTP",
-      loginHintDefault: "Las credenciales predeterminadas se configuran en las variables de entorno del despliegue autohospedado.",
+      loginHintDefault: "En uso individual, tu cuenta de despliegue es el docente y administra la instancia. El usuario predeterminado sigue siendo admin; usa tus credenciales privadas y OTP, sin registro público.",
       confirmPassword: "Confirmar contraseña",
       otp6: "OTP de 6 dígitos",
       usernamePlaceholderCreate: "nombre de usuario (>=3)",
@@ -185,7 +189,7 @@ export const es: TranslationDict = {
       hotspotNoAlert: "Sin alertas en esta operación.",
       hotspotDetailTitle: "Detalles por operación",
       runnerTitle: "Operaciones de Runner Agent",
-      runnerSubtitle: "Salud de nodos, capacidad y ciclo de trabajos remotos, solo para administradores.",
+      runnerSubtitle: "Salud de nodos, capacidad y trabajos remotos gestionados por el docente.",
       runnerRefresh: "Actualizar Agents",
       runnerRefreshing: "Actualizando Agents...",
       runnerLoading: "Cargando inventario de Runner Agent...",
@@ -211,7 +215,7 @@ export const es: TranslationDict = {
       runnerProbe: "Enviar sonda de salud",
       runnerProbing: "Enviando sonda...",
       runnerProbeJob: "Sonda de control",
-      runnerSystemOwner: "Administrador / sistema",
+      runnerSystemOwner: "Docente / sistema",
       runnerCancel: "Cancelar",
       runnerCancelling: "Cancelando...",
       runnerNotice: {
@@ -355,7 +359,7 @@ export const es: TranslationDict = {
       updatePassword: "Actualizar contraseña",
       passwordUpdated: "Contraseña actualizada",
       deleteAccount: "Eliminar cuenta",
-      dangerous: "Peligroso: eliminar la cuenta es irreversible.",
+      dangerous: "Eliminar la cuenta es irreversible. La cuenta docente del despliegue no se puede eliminar aquí para conservar la administración de la instancia.",
       deleteAction: "Eliminar cuenta",
       confirmDeleteText: "Escribe DELETE para confirmar",
       confirmDeleteHint: "Escribe DELETE para confirmar",
@@ -366,7 +370,7 @@ export const es: TranslationDict = {
     },
     terminal: {
       title: "Terminal",
-      subtitle: "Bus de comandos para administradores y acceso al espacio de experimentos.",
+      subtitle: "Controles del docente para módulos y acceso al espacio de experimentos.",
       commandLabel: "Comando",
       moduleNameLabel: "Nombre del módulo",
       moduleNamePlaceholder: "module-network",
@@ -517,6 +521,7 @@ export const es: TranslationDict = {
     },
     modules: {
       title: "Módulo de Headers C",
+      teacherReadonlyTip: "Gestión no disponible: se requiere una sesión docente verificada.",
       subtitle: "Descarga headers C/eBPF comunes y selecciona los que se inyectan al editor.",
       refreshCatalog: "Actualizar catálogo",
       refreshing: "Actualizando...",

@@ -10,6 +10,7 @@ import {
   getRequiredRolesForRoute,
   isRoleAllowed,
   normalizeAuthRole,
+  canManageDeployment,
   type AuthRole,
 } from "../utils/sidebarPermissions";
 import { parseSafeRedirectPath } from "../utils/security";
@@ -37,8 +38,8 @@ const navItems: NavItem[] = [
     allowedRoles: ["admin", "teacher"] as const,
   },
   { href: "/events", key: "layout.nav.events" },
-  { href: "/settings", key: "layout.nav.settings", allowedRoles: ["admin"] as const },
-  { href: "/terminal", key: "layout.nav.terminal", allowedRoles: ["admin"] as const },
+  { href: "/settings", key: "layout.nav.settings", allowedRoles: ["admin", "teacher"] as const },
+  { href: "/terminal", key: "layout.nav.terminal", allowedRoles: ["admin", "teacher"] as const },
   { href: "/account", key: "layout.nav.account" },
 ];
 
@@ -250,6 +251,9 @@ export default function SidebarLayout({ title, children }: SidebarLayoutProps) {
               })}
             </nav>
             <div className="sidebar-footer">
+              <p className="meta" data-testid="workspace-role">
+                {t(canManageDeployment(userRole) ? "layout.roleTeacher" : "layout.roleStudent")}
+              </p>
               <LanguageSwitcher />
               <button type="button" className="button-secondary" onClick={onLogout}>
                 {t("layout.logout")}

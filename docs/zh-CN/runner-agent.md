@@ -1,6 +1,6 @@
 # Runner Agent 使用指南
 
-独立的 `cyanrex-runner-agent` 用于把可信 Linux、WSL2 或容器节点接入 Engine 控制面。0.3.6 版本
+独立的 `cyanrex-runner-agent` 用于把可信 Linux、WSL2 或容器节点接入 Engine 控制面。0.3.7 版本
 执行内置 `control_probe`，并可选择开启只编译的 `ebpf_compile_check`。编译检查默认关闭；两种模式
 都不接受 Shell 命令或任意可执行载荷，也不需要 root 和 Linux Capability。编译作业不会加载 eBPF，
 也不会返回目标文件。
@@ -80,7 +80,7 @@ CYANREX_AGENT_ISOLATION=virtual_machine \
 ```
 
 `shared_kernel`、`container`、`virtual_machine`、`dedicated_host` 必须如实描述节点边界。该字段只用于
-管理员观察，不会凭空创建隔离。
+教师观察，不会凭空创建隔离。
 
 ## 外部容器
 
@@ -96,7 +96,7 @@ docker run --rm --name cyanrex-runner-agent \
   --entrypoint cyanrex-runner-agent \
   --env-file ./runner-agent.env \
   --mount type=bind,src="$PWD/agent-token",dst=/run/secrets/cyanrex-agent-token,ro \
-  cyanrex/cyanrex-engine:0.3.6
+  cyanrex/cyanrex-engine:0.3.7
 ```
 
 配置可以从 [`docker/runner-agent.env.example`](../../docker/runner-agent.env.example) 开始。源码更新后
@@ -136,19 +136,19 @@ docker run --rm --name cyanrex-runner-agent \
 7. Engine 丢失内存注册状态后自动重新注册；
 8. 收到 Ctrl-C 时尽力发送 `draining` 心跳。
 
-## 管理员运维
+## 教师部署运维
 
-管理员可进入 **设置 → Runner Agent 运维**。面板每 10 秒自动刷新，也支持手动刷新，并会明确区分
+教师可进入 **部署与设置 → Runner Agent 运维**。面板每 10 秒自动刷新，也支持手动刷新，并会明确区分
 “控制面未启用”和“控制面已启用但暂无节点”两种状态。面板展示：
 
 - 在线与保留 Agent 数、健康空闲容量、隔离类型、版本、能力、标签、内核版本和最后心跳；
 - 最近 12 个远程作业的状态、目标或执行 Agent、所有者、创建时间与有上限的结果消息；
 - 对健康 Agent 显式发送健康探针，以及取消排队中或已领取的作业。
 
-面板不会渲染作业输出或源码。节点清单和操作接口只允许管理员使用；教师与学生仍只能在编辑器中
-取得脱敏后的编译后端清单。
+面板不会渲染作业输出或源码。节点清单和管理接口要求教师权威，兼容旧管理员账号；学生仍只能
+在编辑器中取得脱敏后的编译后端清单。教师无需另登管理员账号。
 
-管理员通过 `POST /runner/jobs/compile-check` 显式提交只编译作业，并用 `GET /runner/agents` 和
+教师通过 `POST /runner/jobs/compile-check` 显式提交只编译作业，并用 `GET /runner/agents` 和
 `GET /runner/jobs` 查看状态。已登录的编辑器用户通过 `GET /ebpf/check/backends` 获取脱敏后的编译
 后端清单；显式选择 Agent 后，编辑器用 `POST /ebpf/check/remote` 提交、用带 `job_id` 的同名 GET
 接口轮询，并通过 `POST /ebpf/check/remote/cancel` 取消过期请求。作业绑定当前用户，每个用户最多

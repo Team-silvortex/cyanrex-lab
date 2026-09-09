@@ -58,6 +58,7 @@ pub fn build_router(state: Arc<AppState>) -> Router {
         .merge(staff_routes(state.clone()))
         .merge(admin_routes(state.clone()))
         .layer(cors_layer())
+        .layer(middleware::from_fn(routes::classroom::no_store))
         .with_state(state)
 }
 
@@ -82,6 +83,10 @@ fn runner_agent_routes() -> Router<Arc<AppState>> {
 
 fn public_routes() -> Router<Arc<AppState>> {
     Router::new()
+        .route(
+            "/.well-known/cyanrex-classroom",
+            get(routes::classroom::discovery),
+        )
         .route("/", get(routes::index::index))
         .route("/health", get(routes::health::health))
         .route("/openapi.json", get(routes::openapi::document))
@@ -93,6 +98,10 @@ fn public_routes() -> Router<Arc<AppState>> {
 
 fn csrf_protected_public_routes(state: Arc<AppState>) -> Router<Arc<AppState>> {
     Router::new()
+        .route(
+            "/classroom/join",
+            post(routes::classroom::join).layer(DefaultBodyLimit::max(4096)),
+        )
         .route("/auth/logout", post(routes::auth::logout))
         .layer(middleware::from_fn_with_state(
             state,
@@ -180,7 +189,18 @@ fn staff_routes(state: Arc<AppState>) -> Router<Arc<AppState>> {
 }
 
 fn admin_routes(state: Arc<AppState>) -> Router<Arc<AppState>> {
+    // The historical API tier name stays stable; teachers own deployment management.
     Router::new()
+        .route(
+            "/classroom/invitations",
+            get(routes::classroom::invitations)
+                .post(routes::classroom::issue)
+                .layer(DefaultBodyLimit::max(4096)),
+        )
+        .route(
+            "/classroom/invitations/revoke",
+            post(routes::classroom::revoke).layer(DefaultBodyLimit::max(4096)),
+        )
         .route(
             "/settings/compiler",
             get(routes::settings::get_compiler_settings)
@@ -216,7 +236,7 @@ fn admin_routes(state: Arc<AppState>) -> Router<Arc<AppState>> {
         )
         .layer(middleware::from_fn_with_state(
             state,
-            routes::auth::admin_and_csrf_guard,
+            routes::auth::teacher_or_admin_and_csrf_guard,
         ))
 }
 

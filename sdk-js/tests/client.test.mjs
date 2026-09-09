@@ -3,6 +3,31 @@ import test from "node:test";
 
 import { CyanrexApiError, CyanrexClient } from "../dist/index.js";
 
+test("classroom SDK access uses secure origins, no redirects/caching and explicit invitation data", async () => {
+  const calls = [];
+  const fetch = async (url, init) => { calls.push({ url, init }); return Response.json({ ok: true }); };
+  const client = new CyanrexClient("https://teacher.example", { fetch, csrfOrigin: "https://classroom.example" });
+  await client.classroom.discovery();
+  await client.classroom.invitations();
+  await client.classroom.invite({ username: "student" });
+  await client.classroom.revoke("invitation-id");
+  const body = { classroom_id: "teacher-id", protocol_version: 1, client_version: "0.3.99",
+    required_capabilities: ["student-invite-v1"], invite_token: "a".repeat(64), username: "student", password: "private-pass-123" };
+  await client.classroom.join(body);
+  await client.operation("postClassroomJoin", { body });
+  for (const call of calls) {
+    assert.equal(call.init.redirect, "error");
+    assert.equal(call.init.cache, "no-store");
+    assert.equal(call.url.includes(body.invite_token), false);
+  }
+  assert.equal(calls[4].init.headers.Origin, "https://classroom.example");
+  assert.deepEqual(JSON.parse(calls[4].init.body), body);
+  const insecure = new CyanrexClient("http://192.168.1.5:8080", { fetch });
+  await assert.rejects(insecure.classroom.join(body), /HTTPS/);
+  await assert.rejects(insecure.request("POST", "classroom/join", { body }), /HTTPS/);
+  assert.equal(calls.length, 6);
+});
+
 test("learning resume convenience and generated operations read one owner-bound record", async () => {
   const calls = [];
   const controller = new AbortController();

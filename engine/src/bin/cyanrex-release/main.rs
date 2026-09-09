@@ -15,6 +15,7 @@ mod smoke_health;
 mod smoke_http;
 mod smoke_live_kernel;
 mod smoke_runner_agent;
+mod ssh_cli;
 mod strict_json;
 
 use std::env;
@@ -44,6 +45,8 @@ fn run(arguments: Vec<String>) -> Result<(), String> {
         "evidence" => evidence_cli::run(&arguments[1..]),
         "package" => package_cli::run(&arguments[1..]),
         "smoke" => smoke_cli::run(&arguments[1..]),
+        "ssh" => ssh_cli::run(&arguments[1..]),
+        "ssh-target" => ssh_cli::run_target(&arguments[1..]),
         _ => Err(format!("unknown command {command:?}; run with --help")),
     }
 }
@@ -57,6 +60,7 @@ fn print_help() {
            cyanrex-release evidence <create|verify> [options]\n\
            cyanrex-release package <extract|verify|verify-loaded-images> [options]\n\
            cyanrex-release smoke <health|live-kernel|runner-agent> [options]\n\
+           cyanrex-release ssh <plan|apply> [options]\n\
            cyanrex-release --version\n\
          \n\
          Commands:\n\

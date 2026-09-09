@@ -202,12 +202,14 @@ pub async fn register(
     State(state): State<Arc<AppState>>,
     Json(request): Json<RegisterRequest>,
 ) -> Response {
-    if !env_flag("CYANREX_ALLOW_REGISTRATION") {
+    if !env_flag("CYANREX_ALLOW_REGISTRATION")
+        || state.auth_service.is_teacher_username(&request.username)
+    {
         return (
             StatusCode::FORBIDDEN,
             Json(RegisterResponse {
                 ok: false,
-                message: "registration is disabled".to_string(),
+                message: "registration is disabled or username is reserved".to_string(),
                 account_name: None,
                 issuer: None,
                 secret: None,
@@ -401,7 +403,7 @@ pub async fn delete_account(
             .into_response(),
         Err(AuthError::Forbidden) => (
             StatusCode::CONFLICT,
-            Json(serde_json::json!({"ok": false, "message": "cannot delete the last user"})),
+            Json(serde_json::json!({"ok": false, "message": "cannot delete the deployment teacher or last user"})),
         )
             .into_response(),
         Err(

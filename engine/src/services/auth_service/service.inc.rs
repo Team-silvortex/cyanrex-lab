@@ -1,5 +1,5 @@
 impl AuthService {
-    pub fn new_with_default_admin() -> Self {
+    pub fn new_with_default_teacher() -> Self {
         let username = std::env::var("CYANREX_ADMIN_USERNAME")
             .ok()
             .filter(|v| !v.trim().is_empty())
@@ -398,6 +398,10 @@ impl AuthService {
         }
         if !verify_totp(&user.totp_secret, otp) {
             return Err(AuthError::InvalidOtp);
+        }
+
+        if user.username == self.default_admin.username {
+            return Err(AuthError::Forbidden);
         }
 
         if let Some(pool) = self.active_pool() {

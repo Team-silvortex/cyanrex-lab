@@ -7,7 +7,7 @@
 
 ```mermaid
 flowchart LR
-    U["学生 / 教师 / 管理员"] -->|HTTP + WebSocket| F["Next.js 前端"]
+    U["学生 / 教师（教学与部署管理）"] -->|HTTP + WebSocket| F["Next.js 前端"]
     F -->|Cookie 身份 API| E["Rust / Axum Engine"]
     E -->|用户、会话、脚本、事件| P[(PostgreSQL)]
     E -->|clang 与 bpftool| T["Linux 工具链"]
@@ -19,6 +19,31 @@ flowchart LR
 浏览器是控制面，不直接执行任何内核特权操作。Engine 是执行面，负责身份、权限、编译、
 加载、挂载、事件投递与持久化。PostgreSQL 保存持久数据，Linux 工具链和内核组成特权执行边界，
 不是多学生安全沙箱。
+
+### 教师权威与单人使用
+
+教师是本实例的教学和部署权威：课堂审阅、模块/头文件、编译设置、Runner Agent 运维和管理终端
+共用同一教师会话，不再需要切换管理员身份。单人使用时，初始化的部署账号默认就是教师，也能
+直接做实验，无需注册或切换课堂模式；登录验证和重要操作确认仍然保留。
+
+为兼容已有部署，默认用户名 `admin` 和 `CYANREX_ADMIN_*` 凭据配置保留；登录/会话返回的角色
+改为 `teacher`。教师名单和旧管理员名单都授予完整教师权威。公开注册不能抢占这些预留用户名，
+也不能选择角色；默认部署教师不能通过删号接口删除自己。开通和升级注意事项见[教师指南](teacher-guide.md)。
+
+权威由当前 Engine 的服务端配置决定，不接受浏览器开关或远程 Agent 自报身份。学生自管的个人
+实例中拥有教师身份，不代表获得另一课堂实例的教师权限。[局域网目标](classroom-isolation.md)
+仍由教师控制教学与可信验收；本轮角色统一不等于已经实现无特权独立控制服务或受管 VM 生命周期。
+
+### 接入入口（0.3.7）
+
+教师工作站通过 Rust `cyanrex-release ssh plan/apply` 管理 Linux 目标机上已安装的离线包；
+学生通过教师发布的 `/join` 链接和 Engine `/.well-known/cyanrex-classroom` 最小描述找到
+教师。发现不等于认证，绑定学生用户名的教师邀请、已核实的 HTTPS 地址、独立接入协议/能力检查，
+以及正常密码/TOTP 登录分别执行。`ClassroomService` 管理可选配置和有界临时邀请摘要，账号与
+会话仍由 `AuthService` 管理。
+
+SSH 凭据留在系统客户端，不进入 Engine/浏览器；没有新增 Runner 或特权执行模式。自动组播
+发现、安装包上传、独立控制服务和 VM 生命周期尚未实现，详见[课堂接入指南](classroom-connection.md)。
 
 ## 2. 仓库边界
 
@@ -43,7 +68,7 @@ Engine 启动时会发现直接子目录中的合法 v1 `module.json`。`ModuleM
 pages/                    页面路由与流程编排
 src/components/           共享界面和导航组件
 src/features/ebpf/        eBPF 编辑器状态与工作流
-src/features/runner/      Runner Agent 清单与管理员运维
+src/features/runner/      Runner Agent 清单与教师部署运维
 src/features/settings/    设置页指标轮询、热点分析与面板
 src/config/               运行端点和产品级设置
 src/i18n/                 翻译目录与语言上下文
@@ -63,7 +88,7 @@ src/utils/                分析器、安全与页面状态工具
   与过期的本地文件导入，但不能撤销已发给 Engine 的变更。进入实验保留草稿，加载模板需单独确认。
 - eBPF 编辑器行为放进 `src/features/ebpf/`，页面结构放在 `pages/ebpf.tsx`。
 - 设置页指标与 Agent 运维逻辑放在各自 feature 中，`pages/settings.tsx` 只协调事件/编译器设置并组合
-  管理员面板。
+  教师部署管理面板。
 - `docs/` 是文档源；`frontend/public/course/` 是为 Docker 构建保留的同步副本。
 
 ## 4. Engine 架构
@@ -107,10 +132,13 @@ flowchart LR
 | 公共 | `/health`、`/auth/login`、`/auth/me` | 无需 Session |
 | 公共状态修改 | `/auth/logout` | CSRF 来源检查 |
 | 已登录 | `/ebpf/*`、`/events*`、`/scripts*`、`/learning/labs` | Session，写操作附加 CSRF |
-| 教师或管理员 | 模块/头文件读取、`/learning/teacher/overview` | 角色守卫 |
-| 管理员 | 模块修改、编译设置、命令分发 | 管理员守卫 |
+| 教师（旧 `staff` 层） | 模块/头文件读取、`/learning/teacher/overview` | 教师角色守卫 |
+| 教师部署管理（旧 `admin` 层） | 模块修改、编译设置、命令分发、Runner 管理 | 同一教师角色守卫 |
 
 新增端点必须准确放入其中一层。隐藏前端菜单不能替代 Engine 权限检查。
+
+`staff` / `admin` 保留为稳定的 API/SDK 分类标识，不代表两级教师权威；这两类的 OpenAPI
+`x-cyanrex-roles` 都列出 `admin`（旧兼容值）与 `teacher`。
 
 ### 服务职责
 
@@ -186,7 +214,7 @@ flowchart LR
 最广的路径，Aya 当前负责已支持的 tracepoint 路径。
 
 `RunnerManager` 为每次运行创建唯一租约，执行全局和单用户容量限制，并在成功、失败、超时或
-任务取消时释放租约。用户可通过 `GET /runner/status` 查看当前容量；管理员专用的
+任务取消时释放租约。用户可通过 `GET /runner/status` 查看当前容量；教师专用的
 `GET /runner/overview` 还会列出活动租约的所有者和截止时间。本地 Runner 会明确报告
 `isolation=shared_kernel`：配额属于资源控制，不是安全隔离边界。临时工作区和 bpffs pin 按实例
 及匿名化用户命名空间分开，运行作用域结束后会删除临时编译文件。
@@ -219,7 +247,7 @@ Runner 模式由 `CYANREX_RUNNER_MODE` 配置（当前为 `local_process`）；�
 可选的内存 Agent 注册表连接远程 VM 或容器编译节点，但不会让远程执行变成隐式行为。
 `POST /runner/agent/register` 登记协议版本、真实隔离类型、容量、能力和标签；
 `POST /runner/agent/heartbeat` 更新健康状态与空闲容量。节点超过 TTL 后显示为 `offline`，超过保留期
-后自动删除。`GET /runner/agents` 仅允许管理员读取节点清单，并明确返回控制面是否启用。设置页将它
+后自动删除。`GET /runner/agents` 仅允许教师读取节点清单，并明确返回控制面是否启用。设置页将它
 与 `GET /runner/jobs` 组合为每 10 秒刷新的运维面板，且不展示源码或作业输出。注册表不会持久化，
 Engine 重启后需要 Agent 重新注册。注册请求体上限为 64 KiB，注册表最多保存 256 个节点。
 
@@ -237,7 +265,7 @@ curl -sS -X POST http://127.0.0.1:8080/runner/agent/register \
   -d '{
     "agent_id":"lab-vm-01",
     "protocol_version":1,
-    "agent_version":"0.3.6",
+    "agent_version":"0.3.7",
     "isolation":"virtual_machine",
     "max_concurrent":2,
     "capabilities":["bpftool","btf","ringbuf"],
@@ -269,7 +297,7 @@ lab-vm-01\n
 `POST /runner/agent/jobs/sync` 和 `POST /runner/agent/jobs/result` 都使用相同签名格式。计算摘要的
 正文必须与实际发送字节完全一致。签名超过时效、正文被修改或 Nonce 被重复使用都会返回 `401`。
 
-管理员可以通过 `POST /runner/jobs/probe` 投递探针，通过 `POST /runner/jobs/compile-check` 显式投递
+教师可以通过 `POST /runner/jobs/probe` 投递探针，通过 `POST /runner/jobs/compile-check` 显式投递
 只编译作业，还可请求取消并查看队列。健康 Agent 按容量和能力领取作业，取得 256-bit Lease 和截止
 时间，通过 `/sync` 获取取消请求，最后回传有大小限制的结果。内存队列最多保留 512 个作业，终态
 保留 15 分钟。编译源码只出现在带签名的领取响应中，清单只记录字节数。
@@ -286,7 +314,7 @@ HTTPS 客户端，禁用重定向和环境代理，只在内存保存签发凭�
 [Runner Agent 使用指南](runner-agent.md)。
 
 打包产物包含相同 Agent 二进制和显式启用的 `runner-agent` Compose Profile。独立管理脚本准备私有
-Bootstrap Secret，并启动加固后的无特权编译容器；配套冒烟测试使用已配置管理员身份登录、发现脱敏
+Bootstrap Secret，并启动加固后的无特权编译容器；配套冒烟测试使用已配置的部署教师身份登录、发现脱敏
 后端、提交用户私有编译作业、轮询并验证归一化结果。
 
 Engine 重启或记录被回收后，Agent 必须重新注册；使用相同 ID 注册会替换旧记录。凭据错误返回

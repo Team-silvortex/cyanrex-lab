@@ -9,6 +9,11 @@ export type {
 type Schema<Name extends keyof OpenApiSchemas> = OpenApiSchemas[Name];
 
 export type AuthRole = Schema<"AuthRole">;
+export type ClassroomDiscovery = Schema<"ClassroomDiscovery">;
+export type ClassroomInviteRequest = Schema<"ClassroomInviteRequest">;
+export type ClassroomInvitation = Schema<"ClassroomInvitation">;
+export type ClassroomInvitations = Schema<"ClassroomInvitations">;
+export type ClassroomJoinRequest = Schema<"ClassroomJoinRequest">;
 export type CommandType = Schema<"CommandRequest">["commandType"];
 export type EventCategory = Schema<"EventRecord">["category"];
 export type EventSeverity = Schema<"EventRecord">["severity"];

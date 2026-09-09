@@ -8,7 +8,7 @@ eBPF teaching system intended for a trusted workstation, classroom machine, or p
 
 ```mermaid
 flowchart LR
-    U["Student / Teacher / Administrator"] -->|HTTP + WebSocket| F["Next.js frontend"]
+    U["Student / Teacher (teaching + deployment)"] -->|HTTP + WebSocket| F["Next.js frontend"]
     F -->|Cookie-authenticated API| E["Rust / Axum Engine"]
     E -->|users, sessions, scripts, events| P[(PostgreSQL)]
     E -->|clang and bpftool| T["Linux toolchain"]
@@ -21,6 +21,39 @@ The browser is the control plane. It never performs privileged kernel work itsel
 the execution plane and owns authentication, authorization, compilation, loading, attachment,
 event delivery, and persistence. PostgreSQL stores durable application data. The Linux toolchain
 and kernel form a privileged execution boundary, not a multi-student security sandbox.
+
+### Teacher authority and personal use
+
+The teacher is the instance's teaching and deployment authority: classroom review, module/header
+management, compiler settings, Runner Agent operations, and the management terminal use the same
+teacher session. There is no separate administrator role to switch into. In personal use, the seeded
+deployment account is already the teacher and can also perform the labs; no registration or classroom
+mode switch is required. Authentication and consequential-action confirmations still apply.
+
+The default username `admin` and `CYANREX_ADMIN_*` credential settings remain for existing deployments;
+login/session responses now identify that account as `teacher`. Both configured teacher names and the
+legacy administrator allowlist confer the same full authority. Public registration cannot claim those
+reserved names or choose a role. The seeded deployment teacher cannot delete itself through the account
+API. See the [teacher guide](teacher-guide.md) for provisioning, upgrade review and remaining limits.
+
+Authority belongs to this Engine's server configuration, never a browser flag or a remote Agent's claim.
+A personal teacher on a student-owned instance is not thereby a teacher on another classroom instance.
+Teacher-owned control and trusted assessment remain the [LAN target](classroom-isolation.md); the
+separate unprivileged control service and managed VM lifecycle are not implemented by this role change.
+
+### Connection entry points (0.3.7)
+
+Teacher deployment uses native `cyanrex-release ssh plan/apply` from the teacher workstation to a
+pre-installed Linux offline package. Student entry uses a teacher-published `/join` link and the minimal
+Engine `/.well-known/cyanrex-classroom` descriptor. Discovery is not authentication: teacher-issued
+student-name-bound invitations, confirmed HTTPS origins, independent join protocol/capability checks,
+and normal password/TOTP login are separate steps. `ClassroomService` owns optional configuration and
+bounded ephemeral invitation digests; `AuthService` remains the account/session authority.
+
+SSH credentials stay with the OS client, never in the Engine/browser. No new Runner or privileged
+execution mode is created. Automatic multicast discovery, package upload, independent control service
+and VM lifecycle remain pending. See [Classroom Connection](classroom-connection.md) for deployment,
+version compatibility, enrollment failure semantics and limitations.
 
 ## 2. Repository Boundaries
 
@@ -48,7 +81,7 @@ The frontend follows four practical layers:
 pages/                    Route-level screens and orchestration
 src/components/           Shared visual and navigation components
 src/features/ebpf/        eBPF editor feature state and workflows
-src/features/runner/      Runner Agent inventory and administrator operations
+src/features/runner/      Runner Agent inventory and teacher deployment operations
 src/features/settings/    Settings metrics polling, hotspot analysis, and panels
 src/config/               Runtime endpoints and product-level settings
 src/i18n/                 Locale catalogs and language context
@@ -71,7 +104,7 @@ Important rules:
   Navigation discards pending confirmations and late local file imports, but cannot undo a dispatched
   Engine mutation. Lab navigation preserves drafts; loading a template is a separate reviewed action.
 - Settings metrics and Agent operations stay in their feature modules; `pages/settings.tsx` only
-  coordinates event/compiler settings and composes the administrator panels.
+  coordinates event/compiler settings and composes the teacher deployment panels.
 - `docs/` is authoritative. `frontend/public/course/` is synchronized for builds whose Docker
   context cannot access the repository-level documentation directory.
 
@@ -119,11 +152,14 @@ input and output; reusable behavior belongs in services.
 | Public | `/health`, `/auth/login`, `/auth/me` | No session required |
 | Public state change | `/auth/logout` | CSRF origin check |
 | Authenticated | `/ebpf/*`, `/events*`, `/scripts*`, `/learning/labs` | Session plus CSRF for state changes |
-| Teacher or admin | module/header reads, `/learning/teacher/overview` | Role guard |
-| Admin | module changes, compiler settings, command dispatch | Admin role guard |
+| Teacher (legacy `staff` tier) | module/header reads, `/learning/teacher/overview` | Teacher role guard |
+| Teacher deployment (legacy `admin` tier) | module changes, compiler settings, command dispatch, Runner management | Same teacher role guard |
 
 When adding an endpoint, place it in exactly one tier. UI visibility is never a substitute for the
 corresponding Engine guard.
+
+`staff`/`admin` remain stable API/SDK access-category identifiers, not two different levels of teacher
+authority. OpenAPI's `x-cyanrex-roles` lists `admin` (legacy compatibility) and `teacher` for both.
 
 ### Service ownership
 
@@ -204,7 +240,7 @@ the supported tracepoint path.
 
 `RunnerManager` gives every run a unique lease, enforces global and per-user capacity, and releases
 the lease on success, failure, timeout, or task cancellation. `GET /runner/status` shows a user the
-current capacity; the admin-only `GET /runner/overview` also lists active lease owners and deadlines.
+current capacity; the teacher-only `GET /runner/overview` also lists active lease owners and deadlines.
 The local runner reports `isolation=shared_kernel` deliberately: its quotas are resource controls,
 not a security boundary. Workspaces and bpffs pins are separated by instance plus a hashed user
 namespace, and transient compile files are removed when a run scope ends.
@@ -244,7 +280,7 @@ An optional in-memory Agent registry connects remote VM or container compiler no
 remote execution implicit. `POST /runner/agent/register` records protocol version, truthful isolation type,
 capacity, capabilities, and labels. `POST /runner/agent/heartbeat` updates health and free capacity;
 after the configured TTL a node is reported as `offline`, then removed after the retention window.
-`GET /runner/agents` exposes the inventory to administrators only and reports whether the control
+`GET /runner/agents` exposes the inventory to teachers only and reports whether the control
 plane is enabled. The Settings page combines it with `GET /runner/jobs` into a 10-second polling
 operations panel; it does not render source or job output. Registry state is intentionally
 ephemeral and is rebuilt after an Engine restart. Registration bodies are capped at 64 KiB and the
@@ -266,7 +302,7 @@ curl -sS -X POST http://127.0.0.1:8080/runner/agent/register \
   -d '{
     "agent_id":"lab-vm-01",
     "protocol_version":1,
-    "agent_version":"0.3.6",
+    "agent_version":"0.3.7",
     "isolation":"virtual_machine",
     "max_concurrent":2,
     "capabilities":["bpftool","btf","ringbuf"],
@@ -299,7 +335,7 @@ The same signature format protects `POST /runner/agent/heartbeat`,
 `POST /runner/agent/jobs/result`. The body bytes used for hashing must exactly match the transmitted
 body. A signature outside the freshness window, a changed body, or a reused nonce returns `401`.
 
-Administrators can submit a bounded probe with `POST /runner/jobs/probe`, an explicit compile-only
+Teachers can submit a bounded probe with `POST /runner/jobs/probe`, an explicit compile-only
 job with `POST /runner/jobs/compile-check`, request cancellation, and inspect `GET /runner/jobs`.
 A healthy Agent claims work according to capacity and capability, receives a 256-bit lease and
 deadline, checks cancellation, then posts a bounded result. The in-memory queue holds at most 512
@@ -322,7 +358,7 @@ and server reject compile capability on `shared_kernel`. See the [Runner Agent G
 
 Packaging includes the same Agent binary and an opt-in `runner-agent` Compose profile. A dedicated
 manager prepares its private bootstrap Secret and starts the hardened, unprivileged compiler
-container. A companion smoke test authenticates as the configured administrator, discovers the
+container. A companion smoke test authenticates as the configured deployment teacher, discovers the
 sanitized backend, submits a user-owned compile job, polls it, and verifies the normalized result.
 
 An Agent must register again after Engine restart or after its record is removed. Registration with

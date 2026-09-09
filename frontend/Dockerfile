@@ -8,6 +8,8 @@ RUN npm config set registry "$NPM_REGISTRY" && npm ci
 
 ARG NODE_IMAGE=node:20
 FROM ${NODE_IMAGE} AS builder
+ARG NEXT_PUBLIC_ENGINE_URL=http://localhost:8080
+ENV NEXT_PUBLIC_ENGINE_URL=${NEXT_PUBLIC_ENGINE_URL}
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
