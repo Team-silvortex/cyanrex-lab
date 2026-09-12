@@ -1,0 +1,714 @@
+STAGE M00-rust-lib
+COMMAND env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --lib -- --exact 'metrics::tests::records_check_and_completion_metrics_independently' 'services::environment_checker::tests::runtime_mode_aliases_are_parsed' --test-threads=4 --nocapture
+EXIT 0
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.29s
+     Running unittests src/lib.rs (engine/target/debug/deps/cyanrex_engine-2383cc0f893617d7)
+
+running 2 tests
+test metrics::tests::records_check_and_completion_metrics_independently ... ok
+test services::environment_checker::tests::runtime_mode_aliases_are_parsed ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 143 filtered out; finished in 0.00s
+
+STAGE M00-rust-routes_tdd
+COMMAND env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --test routes_tdd -- --exact 'get_health_should_return_ok_status' 'get_helper_environment_should_return_check_report' 'get_index_should_return_homepage_payload' 'options_ebpf_run_should_allow_cors_preflight' --test-threads=4 --nocapture
+EXIT 0
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.12s
+     Running tests/routes_tdd.rs (engine/target/debug/deps/routes_tdd-1051e577747ee428)
+
+running 4 tests
+test options_ebpf_run_should_allow_cors_preflight ... ok
+test get_index_should_return_homepage_payload ... ok
+test get_health_should_return_ok_status ... ok
+test get_helper_environment_should_return_check_report ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 79 filtered out; finished in 1.11s
+
+STAGE M01-rust-lib
+COMMAND env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --lib -- --exact 'services::auth_service::tests::account_mutations_use_the_same_normalized_identity_as_login' 'services::auth_service::tests::concurrent_memory_password_changes_have_one_winner' 'services::auth_service::tests::concurrent_registration_during_schema_failure_has_exactly_one_winner' 'services::auth_service::tests::registration_after_schema_failure_returns_a_usable_fallback_account' 'services::auth_service::tests::schema_failure_cannot_reissue_secrets_for_an_existing_memory_account' 'services::auth_service::tests::totp_uri_encodes_issuer_and_label_without_altering_credentials_or_parameters' 'services::auth_service::postgres_mutation_tests::configured_auth_storage_outage_cannot_turn_mutations_into_memory_success' --test-threads=4 --nocapture
+EXIT 0
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.11s
+     Running unittests src/lib.rs (engine/target/debug/deps/cyanrex_engine-2383cc0f893617d7)
+
+running 7 tests
+test services::auth_service::tests::concurrent_registration_during_schema_failure_has_exactly_one_winner ... ok
+test services::auth_service::tests::concurrent_memory_password_changes_have_one_winner ... ok
+test services::auth_service::tests::account_mutations_use_the_same_normalized_identity_as_login ... ok
+test services::auth_service::tests::totp_uri_encodes_issuer_and_label_without_altering_credentials_or_parameters ... ok
+test services::auth_service::tests::registration_after_schema_failure_returns_a_usable_fallback_account ... ok
+test services::auth_service::tests::schema_failure_cannot_reissue_secrets_for_an_existing_memory_account ... ok
+test services::auth_service::postgres_mutation_tests::configured_auth_storage_outage_cannot_turn_mutations_into_memory_success ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 138 filtered out; finished in 4.94s
+
+STAGE M01-rust-routes_tdd
+COMMAND env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --test routes_tdd -- --exact 'get_auth_me_returns_role_for_student_user' 'get_auth_me_should_return_authenticated_after_login' 'learning_labs_require_auth_and_return_progress_catalog' 'post_auth_change_password_should_require_valid_otp_and_update_login_password' 'post_auth_delete_should_remove_user_and_invalidate_login' 'post_auth_login_rejects_invalid_username' 'post_auth_login_returns_teacher_role_for_deployment_owner' 'post_auth_login_returns_teacher_role_for_teacher_user' 'post_auth_login_should_fail_with_invalid_totp' 'post_auth_login_should_succeed_with_valid_password_and_totp' 'post_auth_logout_allows_request_with_allowed_origin' 'post_auth_logout_is_blocked_by_csrf_origin_restriction' 'post_auth_register_rejects_invalid_username' 'post_auth_register_should_create_user_with_totp_bootstrap_payload' 'post_auth_student_can_access_ebpf_endpoints' 'post_auth_student_can_blocked_by_csrf_origin_restriction' 'post_auth_student_is_allowed_when_csrf_origin_is_missing_with_override' 'post_auth_student_is_blocked_when_csrf_origin_is_missing' 'post_auth_student_is_forbidden_from_admin_settings_route' 'post_auth_teacher_can_manage_deployment_settings' 'post_auth_totp_bootstrap_should_fail_with_invalid_credentials' 'post_auth_totp_bootstrap_should_return_otpauth_uri_for_valid_credentials' 'runner_lifecycle_tests::attachment_routes_keep_auth_and_csrf_guards_before_driver' 'runner_status_requires_auth_and_reports_shared_kernel_boundary' 'teacher_authority_default_and_legacy_accounts_report_teacher' 'teacher_authority_deployment_owner_cannot_delete_itself_with_students_present' 'teacher_authority_manages_deployment_and_retains_csrf' 'teacher_authority_public_registration_cannot_claim_reserved_names_or_roles' 'teacher_authority_students_and_anonymous_cannot_manage_deployment' --test-threads=4 --nocapture
+EXIT 0
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.25s
+     Running tests/routes_tdd.rs (engine/target/debug/deps/routes_tdd-1051e577747ee428)
+
+running 29 tests
+test learning_labs_require_auth_and_return_progress_catalog ... ok
+test get_auth_me_should_return_authenticated_after_login ... ok
+test get_auth_me_returns_role_for_student_user ... ok
+test post_auth_login_rejects_invalid_username ... ok
+test post_auth_login_returns_teacher_role_for_deployment_owner ... ok
+test post_auth_delete_should_remove_user_and_invalidate_login ... ok
+test post_auth_change_password_should_require_valid_otp_and_update_login_password ... ok
+test post_auth_login_returns_teacher_role_for_teacher_user ... ok
+test post_auth_login_should_fail_with_invalid_totp ... ok
+test post_auth_login_should_succeed_with_valid_password_and_totp ... ok
+test post_auth_register_rejects_invalid_username ... ok
+test post_auth_register_should_create_user_with_totp_bootstrap_payload ... ok
+test post_auth_logout_allows_request_with_allowed_origin ... ok
+test post_auth_logout_is_blocked_by_csrf_origin_restriction ... ok
+test post_auth_student_can_access_ebpf_endpoints ... ok
+test post_auth_student_can_blocked_by_csrf_origin_restriction ... ok
+test post_auth_student_is_allowed_when_csrf_origin_is_missing_with_override ... ok
+test post_auth_student_is_forbidden_from_admin_settings_route ... ok
+test post_auth_totp_bootstrap_should_fail_with_invalid_credentials ... ok
+test post_auth_teacher_can_manage_deployment_settings ... ok
+test post_auth_student_is_blocked_when_csrf_origin_is_missing ... ok
+test post_auth_totp_bootstrap_should_return_otpauth_uri_for_valid_credentials ... ok
+test runner_status_requires_auth_and_reports_shared_kernel_boundary ... ok
+test runner_lifecycle_tests::attachment_routes_keep_auth_and_csrf_guards_before_driver ... ok
+test teacher_authority_manages_deployment_and_retains_csrf ... ok
+test teacher_authority_deployment_owner_cannot_delete_itself_with_students_present ... ok
+test teacher_authority_public_registration_cannot_claim_reserved_names_or_roles ... ok
+test teacher_authority_default_and_legacy_accounts_report_teacher ... ok
+test teacher_authority_students_and_anonymous_cannot_manage_deployment ... ok
+
+test result: ok. 29 passed; 0 failed; 0 ignored; 0 measured; 54 filtered out; finished in 20.00s
+
+STAGE M01-node-unit
+COMMAND env PATH='<node-runtime>/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' node --experimental-strip-types --test tests/authSession.test.mjs tests/sidebarPermissions.test.mjs tests/securityHeaders.test.mjs
+EXIT 0
+(node:4192042) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file://<repo>/frontend/src/utils/authSession.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to <repo>/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ logout requires an explicit successful response and uses private non-redirecting transport (118.127129ms)
+✔ logout propagates network failure without retrying (1.036063ms)
+✔ logout combines navigation cancellation with a bounded request deadline (1.711861ms)
+✔ CSP permits the configured Engine origin (1.527677ms)
+✔ invalid or non-http Engine URLs fall back without injecting CSP (0.481895ms)
+(node:4192066) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file://<repo>/frontend/src/utils/sidebarPermissions.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to <repo>/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ normalizeAuthRole accepts only supported roles (4.422663ms)
+✔ getRequiredRolesForRoute returns route-specific role policies (1.45853ms)
+✔ isRoleAllowed handles allowlists and unauthenticated role (1.889534ms)
+✔ isRouteAllowed enforces route policy end-to-end (3.031015ms)
+✔ filterNavItemsByRole only shows modules/settings per role (0.639677ms)
+✔ deployment management belongs to teachers with legacy admin compatibility, never unknown roles (0.341737ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 531.978088
+
+STAGE M02-rust-lib
+COMMAND env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --lib -- --exact 'services::classroom::tests::classroom_configuration_fails_closed' 'services::classroom::tests::classroom_invitations_are_bounded_expire_and_do_not_survive_restart' --test-threads=4 --nocapture
+EXIT 0
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.40s
+     Running unittests src/lib.rs (engine/target/debug/deps/cyanrex_engine-2383cc0f893617d7)
+
+running 2 tests
+test services::classroom::tests::classroom_configuration_fails_closed ... ok
+test services::classroom::tests::classroom_invitations_are_bounded_expire_and_do_not_survive_restart ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 143 filtered out; finished in 0.02s
+
+STAGE M02-rust-classroom_tdd
+COMMAND env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --test classroom_tdd -- --exact 'classroom_concurrent_redemption_is_once_and_oversized_requests_are_rejected' 'classroom_disabled_by_default_and_discovery_is_minimal' 'classroom_disabled_join_does_not_reveal_reserved_teacher_names' 'classroom_existing_account_is_not_reset_and_failed_creation_consumes_invitation' 'classroom_invitation_joins_student_without_open_registration_or_automatic_login' 'classroom_management_is_teacher_only_and_csrf_protected' 'classroom_revocation_and_inventory_do_not_leak_invitation_secrets' 'classroom_wrong_identity_protocol_capability_origin_or_username_cannot_redeem' --test-threads=4 --nocapture
+EXIT 0
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.30s
+     Running tests/classroom_tdd.rs (engine/target/debug/deps/classroom_tdd-0cd185424aa675cc)
+
+running 8 tests
+test classroom_disabled_join_does_not_reveal_reserved_teacher_names ... ok
+test classroom_concurrent_redemption_is_once_and_oversized_requests_are_rejected ... ok
+test classroom_disabled_by_default_and_discovery_is_minimal ... ok
+test classroom_existing_account_is_not_reset_and_failed_creation_consumes_invitation ... ok
+test classroom_revocation_and_inventory_do_not_leak_invitation_secrets ... ok
+test classroom_invitation_joins_student_without_open_registration_or_automatic_login ... ok
+test classroom_wrong_identity_protocol_capability_origin_or_username_cannot_redeem ... ok
+test classroom_management_is_teacher_only_and_csrf_protected ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 8.00s
+
+STAGE M02-node-unit
+COMMAND env PATH='<node-runtime>/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' node --experimental-strip-types --test tests/classroomConnection.test.mjs
+EXIT 0
+(node:4194035) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file://<repo>/frontend/src/features/classroom/connection.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to <repo>/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ classroom invitation fragments are strictly parsed without accepting query/redirect overrides (6.353528ms)
+✔ classroom discovery is data, not a redirect or authority to switch API origins (5.340431ms)
+✔ join compatibility uses protocol and required capability, never matching patch strings (0.779464ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 188.151093
+
+STAGE M03-rust-module_boundaries_tdd
+COMMAND env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --test module_boundaries_tdd -- --exact 'storage::scripts_bind_http_identity_csrf_and_file_reload_without_cross_owner_deletion' 'storage::script_failed_file_save_must_not_publish_an_unsaved_record' 'storage::script_failed_file_delete_must_retain_the_previously_saved_record' 'storage::script_corrupt_snapshot_must_not_be_overwritten_by_a_successful_save' --test-threads=4 --nocapture
+EXIT 101
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.33s
+     Running tests/module_boundaries_tdd.rs (engine/target/debug/deps/module_boundaries_tdd-616316cce3f5044a)
+
+running 4 tests
+
+thread 'storage::script_failed_file_delete_must_retain_the_previously_saved_record' (4194221) panicked at tests/module_boundaries/storage.rs:123:5:
+assertion `left == right` failed: failed deletion hid the saved script from the API cache
+  left: 0
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test storage::script_failed_file_delete_must_retain_the_previously_saved_record ... FAILED
+test storage::scripts_bind_http_identity_csrf_and_file_reload_without_cross_owner_deletion ... ok
+
+thread 'storage::script_corrupt_snapshot_must_not_be_overwritten_by_a_successful_save' (4194220) panicked at tests/module_boundaries/storage.rs:149:5:
+unreadable snapshot was overwritten: status=200 OK, original_preserved=false
+test storage::script_corrupt_snapshot_must_not_be_overwritten_by_a_successful_save ... FAILED
+test storage::script_failed_file_save_must_not_publish_an_unsaved_record ... FAILED
+
+failures:
+
+failures:
+    storage::script_corrupt_snapshot_must_not_be_overwritten_by_a_successful_save
+    storage::script_failed_file_delete_must_retain_the_previously_saved_record
+    storage::script_failed_file_save_must_not_publish_an_unsaved_record
+
+test result: FAILED. 1 passed; 3 failed; 0 ignored; 0 measured; 3 filtered out; finished in 11.16s
+
+
+thread 'storage::script_failed_file_save_must_not_publish_an_unsaved_record' (4194222) panicked at tests/module_boundaries/storage.rs:86:5:
+failed file write published an unsaved script in the API cache
+error: test failed, to rerun pass `--test module_boundaries_tdd`
+
+STAGE M04-rust-lib
+COMMAND env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --lib -- --exact 'services::module_manager::tests::discovers_versioned_manifests_and_manages_only_known_modules' 'services::module_manager::tests::rejects_missing_catalog_and_invalid_manifest_values' 'services::module_manager::tests::rejects_unsupported_or_directory_mismatched_manifests' --test-threads=4 --nocapture
+EXIT 0
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.64s
+     Running unittests src/lib.rs (engine/target/debug/deps/cyanrex_engine-2383cc0f893617d7)
+
+running 3 tests
+test services::module_manager::tests::discovers_versioned_manifests_and_manages_only_known_modules ... ok
+test services::module_manager::tests::rejects_missing_catalog_and_invalid_manifest_values ... ok
+test services::module_manager::tests::rejects_unsupported_or_directory_mismatched_manifests ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 142 filtered out; finished in 0.01s
+
+STAGE M04-rust-routes_tdd
+COMMAND env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --test routes_tdd -- --exact 'get_c_headers_catalog_should_return_header_module_items' 'get_modules_catalog_allowed_for_teacher' 'get_modules_list_allowed_for_admin' 'get_modules_list_allowed_for_teacher' 'get_modules_list_forbidden_for_student' 'post_command_should_be_allowed_for_teacher' 'post_command_should_return_structured_module_results_for_admin' 'post_command_should_validate_module_name_and_describe_experiment_handoff' 'post_modules_download_for_teacher_reaches_header_validation' 'post_modules_lifecycle_updates_a_discovered_catalog_entry' 'post_modules_start_rejects_unknown_catalog_entries' --test-threads=4 --nocapture
+EXIT 0
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.37s
+     Running tests/routes_tdd.rs (engine/target/debug/deps/routes_tdd-1051e577747ee428)
+
+running 11 tests
+test get_c_headers_catalog_should_return_header_module_items ... ok
+test get_modules_list_allowed_for_admin ... ok
+test get_modules_list_allowed_for_teacher ... ok
+test get_modules_catalog_allowed_for_teacher ... ok
+test post_command_should_return_structured_module_results_for_admin ... ok
+test get_modules_list_forbidden_for_student ... ok
+test post_command_should_validate_module_name_and_describe_experiment_handoff ... ok
+test post_command_should_be_allowed_for_teacher ... ok
+test post_modules_start_rejects_unknown_catalog_entries ... ok
+test post_modules_lifecycle_updates_a_discovered_catalog_entry ... ok
+test post_modules_download_for_teacher_reaches_header_validation ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 72 filtered out; finished in 5.17s
+
+STAGE M04-rust-module_boundaries_tdd
+COMMAND env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --test module_boundaries_tdd -- --exact 'storage::teacher_header_selection_reloads_and_is_readable_but_not_mutable_by_students' 'storage::header_download_checksum_failure_cannot_publish_a_downloaded_resource' --test-threads=4 --nocapture
+EXIT 0
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.82s
+     Running tests/module_boundaries_tdd.rs (engine/target/debug/deps/module_boundaries_tdd-616316cce3f5044a)
+
+running 2 tests
+test storage::teacher_header_selection_reloads_and_is_readable_but_not_mutable_by_students ... ok
+test storage::header_download_checksum_failure_cannot_publish_a_downloaded_resource ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 5.13s
+
+STAGE M04-node-unit
+COMMAND env PATH='<node-runtime>/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' node --experimental-strip-types --test tests/terminalCommand.test.mjs
+EXIT 0
+(node:2765) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file://<repo>/frontend/src/features/terminal/command.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to <repo>/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ module lifecycle commands require a normalized module name (1.963958ms)
+✔ command responses have a stable human-readable summary (0.21741ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 119.543152
+
+STAGE M05-rust-lib
+COMMAND env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --lib -- --exact 'routes::ebpf::breakpoint_trace_tests::parses_only_the_requested_debug_session' 'routes::ebpf::debug_backend_fallback_tests::fallback_requires_bpftool_tracepoint_and_active_debug_probe' 'services::ebpf_loader::compiler_diagnostic_tests::parses_clang_error_locations' 'services::ebpf_loader::compiler_scope_tests::compiler_check_cache_is_scoped_to_owner' 'services::ebpf_loader::compiler_scope_tests::compiler_completion_cache_is_scoped_to_owner_and_cursor' 'services::ebpf_loader::compiler_workspace::tests::compiler_workspace_is_private_and_removed_on_drop' 'services::ebpf_loader::compiler_workspace::tests::compiler_workspace_is_removed_when_operation_is_cancelled' 'services::ebpf_loader::completion_parser_tests::parses_clang_completion_item' 'services::ebpf_loader::debug_tests::does_not_treat_map_initializer_as_a_function' 'services::ebpf_loader::debug_tests::enforces_breakpoint_limit' 'services::ebpf_loader::debug_tests::ignores_braces_and_assignments_in_preprocessor_macros' 'services::ebpf_loader::debug_tests::instruments_function_entry_and_statement_without_changing_line_count' 'services::ebpf_loader::debug_tests::rejects_global_comment_and_out_of_range_lines' 'services::ebpf_loader::workspace_tests::owner_namespace_is_stable_distinct_and_path_safe' 'services::ebpf_loader::workspace_tests::workspace_is_removed_when_lease_scope_ends' --test-threads=4 --nocapture
+EXIT 0
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.18s
+     Running unittests src/lib.rs (engine/target/debug/deps/cyanrex_engine-2383cc0f893617d7)
+
+running 15 tests
+test routes::ebpf::breakpoint_trace_tests::parses_only_the_requested_debug_session ... ok
+test routes::ebpf::debug_backend_fallback_tests::fallback_requires_bpftool_tracepoint_and_active_debug_probe ... ok
+test services::ebpf_loader::compiler_diagnostic_tests::parses_clang_error_locations ... ok
+test services::ebpf_loader::compiler_workspace::tests::compiler_workspace_is_private_and_removed_on_drop ... ok
+test services::ebpf_loader::completion_parser_tests::parses_clang_completion_item ... ok
+test services::ebpf_loader::compiler_workspace::tests::compiler_workspace_is_removed_when_operation_is_cancelled ... ok
+test services::ebpf_loader::debug_tests::does_not_treat_map_initializer_as_a_function ... ok
+test services::ebpf_loader::debug_tests::ignores_braces_and_assignments_in_preprocessor_macros ... ok
+test services::ebpf_loader::debug_tests::instruments_function_entry_and_statement_without_changing_line_count ... ok
+test services::ebpf_loader::debug_tests::enforces_breakpoint_limit ... ok
+test services::ebpf_loader::debug_tests::rejects_global_comment_and_out_of_range_lines ... ok
+test services::ebpf_loader::workspace_tests::owner_namespace_is_stable_distinct_and_path_safe ... ok
+test services::ebpf_loader::workspace_tests::workspace_is_removed_when_lease_scope_ends ... ok
+test services::ebpf_loader::compiler_scope_tests::compiler_check_cache_is_scoped_to_owner ... ok
+test services::ebpf_loader::compiler_scope_tests::compiler_completion_cache_is_scoped_to_owner_and_cursor ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 130 filtered out; finished in 0.23s
+
+STAGE M05-rust-routes_tdd
+COMMAND env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --test routes_tdd -- --exact 'get_ebpf_templates_should_return_template_catalog' 'post_ebpf_check_empty_code_should_return_validation_error' 'post_ebpf_check_with_oversized_code_should_return_payload_too_large' 'post_ebpf_run_with_empty_code_should_fail_validation' 'post_ebpf_run_with_oversized_code_should_fail_validation' --test-threads=4 --nocapture
+EXIT 0
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.17s
+     Running tests/routes_tdd.rs (engine/target/debug/deps/routes_tdd-1051e577747ee428)
+
+running 5 tests
+test get_ebpf_templates_should_return_template_catalog ... ok
+test post_ebpf_check_empty_code_should_return_validation_error ... ok
+test post_ebpf_run_with_empty_code_should_fail_validation ... ok
+test post_ebpf_check_with_oversized_code_should_return_payload_too_large ... ok
+test post_ebpf_run_with_oversized_code_should_fail_validation ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 78 filtered out; finished in 1.82s
+
+STAGE M06-rust-lib
+COMMAND env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --lib -- --exact 'services::runner_agent_authenticator::tests::tampering_rotation_and_stale_timestamps_are_rejected' 'services::runner_agent_authenticator::tests::valid_signature_is_accepted_once' 'services::runner_agent_client::compile_check_requires_a_real_isolation_boundary' 'services::runner_agent_client::engine_url_rejects_redirectable_or_ambiguous_components' 'services::runner_agent_client::engine_url_requires_tls_outside_loopback' 'services::runner_agent_executor::tests::capped_reader_drains_but_bounds_output' 'services::runner_agent_executor::tests::executor_rejects_ambiguous_paths' 'services::runner_agent_executor::tests::installed_clang_produces_a_bounded_report_and_leaves_no_job_files' 'services::runner_agent_executor::tests::source_policy_allows_system_headers_and_rejects_file_reads' 'services::runner_agent_executor::tests::workspaces_are_private_and_removed' 'services::runner_agent_registry::tests::heartbeat_cannot_overstate_registered_capacity' 'services::runner_agent_registry::tests::identifiers_cannot_contain_whitespace' 'services::runner_agent_registry::tests::registry_has_a_hard_agent_count_limit' 'services::runner_agent_registry::tests::shared_kernel_agents_cannot_advertise_the_compiler' 'services::runner_agent_registry::tests::short_tokens_and_invalid_retention_are_rejected' 'services::runner_agent_registry::tests::stale_agents_become_offline_and_are_then_pruned' 'services::runner_agent_registry::tests::token_authentication_is_disabled_or_constant_time_checked' 'services::runner_driver::tests::local_attachment_lifecycle_preserves_empty_inventory_and_cleanup' 'services::runner_driver::tests::local_detach_rejects_untracked_paths_without_touching_them' 'services::runner_job_queue::tests::claim_respects_agent_active_capacity' 'services::runner_job_queue::tests::claimed_probe_requires_cancel_acknowledgement' 'services::runner_job_queue::tests::compile_checks_require_the_clang_capability_and_hide_source_from_inventory' 'services::runner_job_queue::tests::probe_can_be_claimed_completed_and_listed_without_exposing_lease' 'services::runner_job_queue::tests::user_compile_jobs_are_private_cancellable_and_quota_limited' 'services::runner_manager::tests::compiler_operations_require_an_owner_before_dispatch' 'services::runner_manager::tests::enforces_per_user_capacity_and_releases_on_drop' 'services::runner_manager::tests::execution_delegates_to_driver_and_updates_runtime_metadata' 'services::runner_manager::tests::execution_rejects_another_owner_before_calling_driver_or_changing_lease' 'services::runner_manager::tests::reports_global_capacity_without_exposing_other_user_count' 'services::runner_manager::tests::unsupported_driver_mode_fails_closed' --test-threads=4 --nocapture
+EXIT 0
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.12s
+     Running unittests src/lib.rs (engine/target/debug/deps/cyanrex_engine-2383cc0f893617d7)
+
+running 30 tests
+test services::runner_agent_client::compile_check_requires_a_real_isolation_boundary ... ok
+test services::runner_agent_client::engine_url_rejects_redirectable_or_ambiguous_components ... ok
+test services::runner_agent_client::engine_url_requires_tls_outside_loopback ... ok
+test services::runner_agent_executor::tests::executor_rejects_ambiguous_paths ... ok
+test services::runner_agent_executor::tests::capped_reader_drains_but_bounds_output ... ok
+test services::runner_agent_authenticator::tests::tampering_rotation_and_stale_timestamps_are_rejected ... ok
+test services::runner_agent_authenticator::tests::valid_signature_is_accepted_once ... ok
+test services::runner_agent_executor::tests::source_policy_allows_system_headers_and_rejects_file_reads ... ok
+test services::runner_agent_executor::tests::workspaces_are_private_and_removed ... ok
+test services::runner_agent_registry::tests::identifiers_cannot_contain_whitespace ... ok
+test services::runner_agent_registry::tests::shared_kernel_agents_cannot_advertise_the_compiler ... ok
+test services::runner_agent_registry::tests::short_tokens_and_invalid_retention_are_rejected ... ok
+test services::runner_agent_registry::tests::heartbeat_cannot_overstate_registered_capacity ... ok
+test services::runner_agent_registry::tests::stale_agents_become_offline_and_are_then_pruned ... ok
+test services::runner_agent_registry::tests::token_authentication_is_disabled_or_constant_time_checked ... ok
+test services::runner_driver::tests::local_attachment_lifecycle_preserves_empty_inventory_and_cleanup ... ok
+test services::runner_job_queue::tests::claim_respects_agent_active_capacity ... ok
+test services::runner_job_queue::tests::claimed_probe_requires_cancel_acknowledgement ... ok
+test services::runner_job_queue::tests::compile_checks_require_the_clang_capability_and_hide_source_from_inventory ... ok
+test services::runner_job_queue::tests::probe_can_be_claimed_completed_and_listed_without_exposing_lease ... ok
+test services::runner_job_queue::tests::user_compile_jobs_are_private_cancellable_and_quota_limited ... ok
+test services::runner_manager::tests::compiler_operations_require_an_owner_before_dispatch ... ok
+test services::runner_manager::tests::enforces_per_user_capacity_and_releases_on_drop ... ok
+test services::runner_driver::tests::local_detach_rejects_untracked_paths_without_touching_them ... ok
+test services::runner_manager::tests::execution_delegates_to_driver_and_updates_runtime_metadata ... ok
+test services::runner_manager::tests::execution_rejects_another_owner_before_calling_driver_or_changing_lease ... ok
+test services::runner_manager::tests::reports_global_capacity_without_exposing_other_user_count ... ok
+test services::runner_manager::tests::unsupported_driver_mode_fails_closed ... ok
+test services::runner_agent_registry::tests::registry_has_a_hard_agent_count_limit ... ok
+test services::runner_agent_executor::tests::installed_clang_produces_a_bounded_report_and_leaves_no_job_files ... ok
+
+test result: ok. 30 passed; 0 failed; 0 ignored; 0 measured; 115 filtered out; finished in 0.05s
+
+STAGE M06-rust-routes_tdd
+COMMAND env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --test routes_tdd -- --exact 'admin_can_submit_a_capability_matched_compile_check_without_inventory_source_leak' 'authenticated_remote_check_is_user_scoped_and_normalizes_agent_diagnostics' 'runner_agent_can_register_heartbeat_and_appear_in_admin_inventory' 'runner_agent_registration_rejects_oversized_payloads' 'runner_agent_registration_requires_bearer_token' 'runner_agent_signed_requests_cannot_be_replayed' 'runner_compiler_tests::compiler_backend_failure_and_timeout_never_fall_back_to_local_compiler' 'runner_compiler_tests::compiler_capacity_is_per_manager_and_cancel_releases_slots_and_metrics' 'runner_compiler_tests::compiler_guards_and_validation_run_before_driver_dispatch' 'runner_compiler_tests::compiler_routes_delegate_source_owner_headers_cursor_and_cache_status' 'runner_lifecycle_tests::attachment_backend_unavailability_never_falls_back_to_local_loader' 'runner_lifecycle_tests::attachment_inventory_uses_session_owner_and_outlives_execution_lease' 'runner_lifecycle_tests::attachment_operations_have_bounded_deadlines' 'runner_lifecycle_tests::detach_uses_driver_ownership_and_cleanup_report_without_host_inspection' 'runner_overview_is_admin_only' 'runner_probe_job_supports_claim_cancel_sync_and_result' --test-threads=4 --nocapture
+EXIT 0
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.12s
+     Running tests/routes_tdd.rs (engine/target/debug/deps/routes_tdd-1051e577747ee428)
+
+running 16 tests
+test runner_agent_registration_rejects_oversized_payloads ... ok
+test runner_agent_registration_requires_bearer_token ... ok
+test runner_agent_can_register_heartbeat_and_appear_in_admin_inventory ... ok
+test authenticated_remote_check_is_user_scoped_and_normalizes_agent_diagnostics ... ok
+test admin_can_submit_a_capability_matched_compile_check_without_inventory_source_leak ... ok
+test runner_agent_signed_requests_cannot_be_replayed ... ok
+test runner_compiler_tests::compiler_guards_and_validation_run_before_driver_dispatch ... ok
+test runner_compiler_tests::compiler_routes_delegate_source_owner_headers_cursor_and_cache_status ... ok
+test runner_lifecycle_tests::attachment_backend_unavailability_never_falls_back_to_local_loader ... ok
+test runner_lifecycle_tests::attachment_inventory_uses_session_owner_and_outlives_execution_lease ... ok
+test runner_compiler_tests::compiler_backend_failure_and_timeout_never_fall_back_to_local_compiler ... ok
+test runner_lifecycle_tests::attachment_operations_have_bounded_deadlines ... ok
+test runner_lifecycle_tests::detach_uses_driver_ownership_and_cleanup_report_without_host_inspection ... ok
+test runner_probe_job_supports_claim_cancel_sync_and_result ... ok
+test runner_overview_is_admin_only ... ok
+test runner_compiler_tests::compiler_capacity_is_per_manager_and_cancel_releases_slots_and_metrics ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 67 filtered out; finished in 9.55s
+
+STAGE M07-rust-lib
+COMMAND env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --lib -- --exact 'routes::ebpf::learning_template_assessment_tests::bundled_beginner_templates_satisfy_structural_assessment' 'services::learning_catalog::tests::catalog_has_ordered_unique_labs' 'services::learning_catalog::tests::comments_and_strings_do_not_satisfy_source_requirements' 'services::learning_catalog::tests::equivalent_null_guard_is_accepted_for_map_lab' 'services::learning_catalog::tests::helper_name_substrings_do_not_satisfy_call_requirements' 'services::learning_catalog::tests::success_flag_without_runtime_stage_does_not_complete_lab' 'services::learning_catalog::tests::tracepoint_lab_requires_real_success_template_and_attach' 'services::learning_store::persistence::tests::partial_write_and_final_flush_failures_are_returned' 'services::learning_store::persistence::tests::pretty_json_is_written_before_all_rows_are_serialized' 'services::learning_store::persistence::tests::serializer_errors_are_not_successful_writes' 'services::learning_store::persistence::tests::short_and_interrupted_writes_preserve_large_source_and_empty_arrays' 'services::learning_store::queries::tests::bounded_selection_matches_stable_sort_with_ties_and_arbitrary_input_order' 'services::learning_store::queries::tests::single_pass_aggregates_match_previous_progress_and_overview_semantics' 'services::learning_store::queries::tests::zero_limit_does_not_scan_and_a_limited_query_visits_each_input_at_most_once' 'services::learning_store::snapshot_tests::appends_share_existing_sources_and_do_not_mutate_old_snapshots' 'services::learning_store::snapshot_tests::cancellation_tests::cancelled_append_finishes_publication_before_releasing_the_writer_lock' 'services::learning_store::snapshot_tests::cancellation_tests::cancelled_failing_worker_preserves_old_data_and_releases_admission' 'services::learning_store::snapshot_tests::cancellation_tests::cancelled_feedback_keeps_the_saved_revision_and_rejects_a_stale_retry' 'services::learning_store::snapshot_tests::cancellation_tests::cancelled_request_does_not_drop_an_admitted_but_not_started_worker' 'services::learning_store::snapshot_tests::cancellation_tests::cancelling_queued_writers_does_not_change_disk_or_memory' 'services::learning_store::snapshot_tests::concurrent_appends_and_feedback_keep_every_success_after_reload' 'services::learning_store::snapshot_tests::failed_final_rename_does_not_change_the_in_memory_snapshot' 'services::learning_store::snapshot_tests::failed_writes_do_not_publish_a_new_snapshot_and_remain_retryable' 'services::learning_store::snapshot_tests::feedback_copies_only_the_changed_record_and_preserves_old_snapshots' 'services::learning_store::snapshot_tests::legacy_json_array_still_loads_and_writes_identical_pretty_encoding' 'services::learning_store::snapshot_tests::load_tests::cancelled_decoded_load_publishes_once_and_does_not_reread_changed_input' 'services::learning_store::snapshot_tests::load_tests::cancelled_queued_load_keeps_admission_and_finishes_initialization' 'services::learning_store::snapshot_tests::load_tests::cold_decoder_matches_legacy_serde_and_never_publishes_partial_input' 'services::learning_store::snapshot_tests::load_tests::concurrent_cold_appends_and_feedback_preserve_initial_and_new_rows' 'services::learning_store::snapshot_tests::load_tests::concurrent_cold_readers_share_one_published_snapshot' 'services::learning_store::snapshot_tests::load_tests::only_not_found_is_initialized_as_empty_and_path_errors_remain_retryable' 'services::learning_store::snapshot_tests::progress_and_overview_stay_fresh_without_exposing_or_copying_source' 'services::learning_store::snapshot_tests::recent_pages_keep_timestamp_order_and_stable_ties_without_leaking_owners' 'services::learning_store::snapshot_tests::snapshot_reads_share_the_collection_and_source_allocations' 'services::learning_store::tests::progress_prefers_completed_state_over_later_failures' --test-threads=4 --nocapture
+EXIT 0
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.11s
+     Running unittests src/lib.rs (engine/target/debug/deps/cyanrex_engine-2383cc0f893617d7)
+
+running 35 tests
+test services::learning_catalog::tests::catalog_has_ordered_unique_labs ... ok
+test services::learning_catalog::tests::comments_and_strings_do_not_satisfy_source_requirements ... ok
+test services::learning_catalog::tests::equivalent_null_guard_is_accepted_for_map_lab ... ok
+test services::learning_catalog::tests::helper_name_substrings_do_not_satisfy_call_requirements ... ok
+test services::learning_catalog::tests::success_flag_without_runtime_stage_does_not_complete_lab ... ok
+test services::learning_catalog::tests::tracepoint_lab_requires_real_success_template_and_attach ... ok
+test routes::ebpf::learning_template_assessment_tests::bundled_beginner_templates_satisfy_structural_assessment ... ok
+test services::learning_store::persistence::tests::serializer_errors_are_not_successful_writes ... ok
+test services::learning_store::persistence::tests::short_and_interrupted_writes_preserve_large_source_and_empty_arrays ... ok
+test services::learning_store::queries::tests::bounded_selection_matches_stable_sort_with_ties_and_arbitrary_input_order ... ok
+test services::learning_store::persistence::tests::partial_write_and_final_flush_failures_are_returned ... ok
+test services::learning_store::snapshot_tests::appends_share_existing_sources_and_do_not_mutate_old_snapshots ... ok
+test services::learning_store::queries::tests::zero_limit_does_not_scan_and_a_limited_query_visits_each_input_at_most_once ... ok
+test services::learning_store::snapshot_tests::cancellation_tests::cancelled_failing_worker_preserves_old_data_and_releases_admission ... ok
+test services::learning_store::queries::tests::single_pass_aggregates_match_previous_progress_and_overview_semantics ... ok
+test services::learning_store::snapshot_tests::cancellation_tests::cancelled_append_finishes_publication_before_releasing_the_writer_lock ... ok
+test services::learning_store::snapshot_tests::cancellation_tests::cancelled_request_does_not_drop_an_admitted_but_not_started_worker ... ok
+test services::learning_store::snapshot_tests::cancellation_tests::cancelling_queued_writers_does_not_change_disk_or_memory ... ok
+test services::learning_store::snapshot_tests::cancellation_tests::cancelled_feedback_keeps_the_saved_revision_and_rejects_a_stale_retry ... ok
+test services::learning_store::snapshot_tests::concurrent_appends_and_feedback_keep_every_success_after_reload ... ok
+test services::learning_store::snapshot_tests::failed_final_rename_does_not_change_the_in_memory_snapshot ... ok
+test services::learning_store::snapshot_tests::failed_writes_do_not_publish_a_new_snapshot_and_remain_retryable ... ok
+test services::learning_store::snapshot_tests::feedback_copies_only_the_changed_record_and_preserves_old_snapshots ... ok
+test services::learning_store::snapshot_tests::legacy_json_array_still_loads_and_writes_identical_pretty_encoding ... ok
+test services::learning_store::snapshot_tests::load_tests::cancelled_queued_load_keeps_admission_and_finishes_initialization ... ok
+test services::learning_store::snapshot_tests::load_tests::cancelled_decoded_load_publishes_once_and_does_not_reread_changed_input ... ok
+test services::learning_store::snapshot_tests::load_tests::cold_decoder_matches_legacy_serde_and_never_publishes_partial_input ... ok
+test services::learning_store::snapshot_tests::load_tests::only_not_found_is_initialized_as_empty_and_path_errors_remain_retryable ... ok
+test services::learning_store::snapshot_tests::load_tests::concurrent_cold_appends_and_feedback_preserve_initial_and_new_rows ... ok
+test services::learning_store::snapshot_tests::progress_and_overview_stay_fresh_without_exposing_or_copying_source ... ok
+test services::learning_store::snapshot_tests::snapshot_reads_share_the_collection_and_source_allocations ... ok
+test services::learning_store::tests::progress_prefers_completed_state_over_later_failures ... ok
+test services::learning_store::persistence::tests::pretty_json_is_written_before_all_rows_are_serialized ... ok
+test services::learning_store::snapshot_tests::load_tests::concurrent_cold_readers_share_one_published_snapshot ... ok
+test services::learning_store::snapshot_tests::recent_pages_keep_timestamp_order_and_stable_ties_without_leaking_owners ... ok
+
+test result: ok. 35 passed; 0 failed; 0 ignored; 0 measured; 110 filtered out; finished in 0.07s
+
+STAGE M07-rust-routes_tdd
+COMMAND env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --test routes_tdd -- --exact 'get_ebpf_templates_should_include_categorized_learning_paths' 'learning_single_attempt_is_read_only_and_bound_to_the_session_owner' 'learning_single_attempt_reports_storage_errors_without_exposing_source' 'learning_teacher_feedback_and_new_runs_preserve_both_updates' 'learning_teacher_feedback_enforces_staff_and_csrf' 'learning_teacher_feedback_failure_does_not_publish_unsaved_changes' 'learning_teacher_feedback_is_saved_and_visible_to_its_student' 'learning_teacher_feedback_loads_legacy_attempts_without_feedback' 'learning_teacher_feedback_rejects_missing_revision_and_spoofed_author' 'learning_teacher_feedback_rejects_stale_and_concurrent_edits' 'learning_teacher_feedback_validates_comment_and_attempt_owner' 'teacher_attempt_review_is_limited_and_students_cannot_read_it' 'teacher_learning_overview_is_staff_only' --test-threads=4 --nocapture
+EXIT 0
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.12s
+     Running tests/routes_tdd.rs (engine/target/debug/deps/routes_tdd-1051e577747ee428)
+
+running 13 tests
+test learning_single_attempt_reports_storage_errors_without_exposing_source ... ok
+test get_ebpf_templates_should_include_categorized_learning_paths ... ok
+test learning_single_attempt_is_read_only_and_bound_to_the_session_owner ... ok
+test learning_teacher_feedback_and_new_runs_preserve_both_updates ... ok
+test learning_teacher_feedback_failure_does_not_publish_unsaved_changes ... ok
+test learning_teacher_feedback_enforces_staff_and_csrf ... ok
+test learning_teacher_feedback_is_saved_and_visible_to_its_student ... ok
+test learning_teacher_feedback_loads_legacy_attempts_without_feedback ... ok
+test learning_teacher_feedback_rejects_missing_revision_and_spoofed_author ... ok
+test learning_teacher_feedback_rejects_stale_and_concurrent_edits ... ok
+test teacher_attempt_review_is_limited_and_students_cannot_read_it ... ok
+test learning_teacher_feedback_validates_comment_and_attempt_owner ... ok
+test teacher_learning_overview_is_staff_only ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 70 filtered out; finished in 7.89s
+
+STAGE M07-rust-module_boundaries_tdd
+COMMAND env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --test module_boundaries_tdd -- --exact 'learning_flow::saved_source_flows_through_runner_events_feedback_and_owner_bound_resume' --test-threads=4 --nocapture
+EXIT 0
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.12s
+     Running tests/module_boundaries_tdd.rs (engine/target/debug/deps/module_boundaries_tdd-616316cce3f5044a)
+
+running 1 test
+test learning_flow::saved_source_flows_through_runner_events_feedback_and_owner_bound_resume ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 2.67s
+
+STAGE M07-node-unit
+COMMAND env PATH='<node-runtime>/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' node --experimental-strip-types --test tests/teachingReview.test.mjs tests/learningResume.test.mjs
+EXIT 0
+(node:5690) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file://<repo>/frontend/src/features/learning/resumeAttempt.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to <repo>/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ resume links carry only the lab and attempt identifiers, not submitted source or usernames (1.142616ms)
+✔ resume targets distinguish absent, valid and malformed queries (1.575848ms)
+✔ resume reads one owner-bound attempt with credentials, no-store and cancellation (25.905667ms)
+✔ resume rejects missing, cross-lab, mismatched and oversized records without applying them (4.658344ms)
+✔ an aborted resume discards even a late successful response (0.424133ms)
+(node:5696) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file://<repo>/frontend/src/features/learning/teacherReview.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to <repo>/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ teacher review URL encodes the student and uses the bounded default (0.794578ms)
+✔ teacher feedback request binds the attempt and the displayed revision (0.632838ms)
+✔ teacher feedback rejects empty and oversized comments but accepts Unicode (0.517032ms)
+✔ teacher review URL clamps requested history size (0.315312ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 123.580767
+
+STAGE M08-rust-lib
+COMMAND env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --lib -- --exact 'routes::events::stream::tests::closed_channel_produces_a_normal_shutdown_close' 'routes::events::stream::tests::stalled_send_is_bounded_and_cancelled' 'services::event_bus::subscriptions::tests::cancelling_recv_preserves_delivery_and_aborting_releases_the_subscription' 'services::event_bus::subscriptions::tests::concurrent_publishers_and_connection_churn_preserve_owner_and_writer_order' 'services::event_bus::subscriptions::tests::event_bus_keeps_global_compatibility_and_drop_new_semantics' 'services::event_bus::subscriptions::tests::json_is_lazy_and_encoded_once_across_concurrent_receivers' 'services::event_bus::subscriptions::tests::matching_receivers_share_one_event_allocation' 'services::event_bus::subscriptions::tests::receivers_do_not_keep_the_registry_or_sender_alive' 'services::event_bus::subscriptions::tests::stale_drop_cannot_remove_a_replacement_generation' 'services::event_bus::subscriptions::tests::subscriptions_are_live_only_and_cleanup_after_the_last_connection' 'services::event_bus::subscriptions::tests::unrelated_traffic_cannot_lag_an_owner_but_own_slow_receivers_still_lag' 'services::event_bus::tests::bounded_reads_during_publication_remain_ordered_and_user_scoped' 'services::event_bus::tests::concurrent_users_retain_independent_ordered_histories' 'services::event_bus::tests::drop_new_does_not_change_history_broadcast_or_unread_after_full' 'services::event_bus::tests::drop_oldest_preserves_fifo_after_repeated_wraparound' 'services::event_bus::tests::filtered_snapshots_keep_latest_matching_events_in_fifo_order' 'services::event_bus::tests::limited_queries_handle_empty_zero_oversized_and_full_export_results' 'services::event_bus::tests::replacement_and_clear_remain_user_scoped_and_reset_unread' 'services::event_bus::tests::selected_result_storage_does_not_grow_past_the_known_output_bound' 'services::event_bus::tests::shrinking_and_growing_a_wrapped_history_preserves_the_newest_events' 'services::event_bus::tests::steady_state_eviction_does_not_grow_or_relocate_retained_events' 'services::event_bus_filter::tests::borrowed_selection_matches_legacy_filters_across_wrapped_histories' 'services::event_bus_filter::tests::latest_page_stops_visiting_after_its_limit_and_returns_borrowed_events' 'services::event_bus_filter::tests::retention_is_applied_before_filtering_older_matches' 'services::event_bus_filter::tests::selective_page_stops_after_enough_matches_not_enough_scanned_events' 'services::event_bus_filter::tests::time_bounds_are_inclusive_and_do_not_assume_timestamp_order' 'services::event_bus_filter::tests::zero_limit_does_not_visit_history' --test-threads=4 --nocapture
+EXIT 0
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.11s
+     Running unittests src/lib.rs (engine/target/debug/deps/cyanrex_engine-2383cc0f893617d7)
+
+running 27 tests
+test routes::events::stream::tests::closed_channel_produces_a_normal_shutdown_close ... ok
+test services::event_bus::subscriptions::tests::event_bus_keeps_global_compatibility_and_drop_new_semantics ... ok
+test services::event_bus::subscriptions::tests::json_is_lazy_and_encoded_once_across_concurrent_receivers ... ok
+test services::event_bus::subscriptions::tests::cancelling_recv_preserves_delivery_and_aborting_releases_the_subscription ... ok
+test services::event_bus::subscriptions::tests::matching_receivers_share_one_event_allocation ... ok
+test services::event_bus::subscriptions::tests::stale_drop_cannot_remove_a_replacement_generation ... ok
+test services::event_bus::subscriptions::tests::receivers_do_not_keep_the_registry_or_sender_alive ... ok
+test services::event_bus::subscriptions::tests::unrelated_traffic_cannot_lag_an_owner_but_own_slow_receivers_still_lag ... ok
+test services::event_bus::subscriptions::tests::subscriptions_are_live_only_and_cleanup_after_the_last_connection ... ok
+test routes::events::stream::tests::stalled_send_is_bounded_and_cancelled ... ok
+test services::event_bus::tests::drop_new_does_not_change_history_broadcast_or_unread_after_full ... ok
+test services::event_bus::tests::drop_oldest_preserves_fifo_after_repeated_wraparound ... ok
+test services::event_bus::tests::filtered_snapshots_keep_latest_matching_events_in_fifo_order ... ok
+test services::event_bus::tests::concurrent_users_retain_independent_ordered_histories ... ok
+test services::event_bus::tests::bounded_reads_during_publication_remain_ordered_and_user_scoped ... ok
+test services::event_bus::tests::limited_queries_handle_empty_zero_oversized_and_full_export_results ... ok
+test services::event_bus::tests::replacement_and_clear_remain_user_scoped_and_reset_unread ... ok
+test services::event_bus::tests::steady_state_eviction_does_not_grow_or_relocate_retained_events ... ok
+test services::event_bus::tests::shrinking_and_growing_a_wrapped_history_preserves_the_newest_events ... ok
+test services::event_bus_filter::tests::latest_page_stops_visiting_after_its_limit_and_returns_borrowed_events ... ok
+test services::event_bus_filter::tests::retention_is_applied_before_filtering_older_matches ... ok
+test services::event_bus_filter::tests::selective_page_stops_after_enough_matches_not_enough_scanned_events ... ok
+test services::event_bus_filter::tests::time_bounds_are_inclusive_and_do_not_assume_timestamp_order ... ok
+test services::event_bus_filter::tests::zero_limit_does_not_visit_history ... ok
+test services::event_bus::tests::selected_result_storage_does_not_grow_past_the_known_output_bound ... ok
+test services::event_bus::subscriptions::tests::concurrent_publishers_and_connection_churn_preserve_owner_and_writer_order ... ok
+test services::event_bus_filter::tests::borrowed_selection_matches_legacy_filters_across_wrapped_histories ... ok
+
+test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 118 filtered out; finished in 0.13s
+
+STAGE M08-rust-routes_tdd
+COMMAND env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --test routes_tdd -- --exact 'event_websocket_keeps_raw_event_frames_and_owner_isolation' 'event_websocket_lag_closes_with_resync_code_instead_of_silent_loss' 'event_websocket_other_owner_burst_does_not_force_resync' 'event_websocket_requires_a_session_and_allowed_origin' --test-threads=4 --nocapture
+EXIT 0
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.11s
+     Running tests/routes_tdd.rs (engine/target/debug/deps/routes_tdd-1051e577747ee428)
+
+running 4 tests
+test event_websocket_keeps_raw_event_frames_and_owner_isolation ... ok
+test event_websocket_lag_closes_with_resync_code_instead_of_silent_loss ... ok
+test event_websocket_other_owner_burst_does_not_force_resync ... ok
+test event_websocket_requires_a_session_and_allowed_origin ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 79 filtered out; finished in 3.87s
+
+STAGE M08-node-unit
+COMMAND env PATH='<node-runtime>/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' node --experimental-strip-types --test tests/eventStream.test.mjs
+EXIT 0
+(node:6003) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file://<repo>/frontend/src/features/events/eventStream.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to <repo>/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ subscribes before snapshot and merges in-flight rows without erasing live data (2.214255ms)
+✔ snapshot merging keeps repeated identical events and insertion order (0.337071ms)
+✔ frames already present in a snapshot may arrive after the HTTP response without duplication (1.505803ms)
+✔ lag triggers a gap notice, backoff, and a fresh snapshot on reconnect (0.535442ms)
+✔ old connection callbacks and late aborted snapshots cannot overwrite a new generation (0.289626ms)
+✔ snapshot buffer overflow is visible and bounded, including under a sustained burst (7.983192ms)
+✔ filtering applies to both snapshot and live rows before consuming the bounded buffer (0.740366ms)
+✔ failed snapshot never reports open; retries do not overlap and stop on HTTP auth failure (0.416993ms)
+✔ handshake and snapshot deadlines cancel stalled work (0.245696ms)
+✔ repeated rapid disconnects back off to at most 30s instead of resetting at each handshake (0.551694ms)
+✔ malformed frames and cleanup cannot mutate state or leave timers/requests alive (0.251238ms)
+✔ disposal during snapshot aborts it; a new filter controller does not inherit its data (0.225797ms)
+✔ an invalid snapshot retries; policy closure is terminal; limit one remains bounded (0.244894ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 13
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 105.472308
+
+STAGE M09-node-unit
+COMMAND env PATH='<node-runtime>/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' node --experimental-strip-types --test tests/actionSafety.test.mjs tests/performanceHotspots.test.mjs tests/cleanMacosMetadata.test.mjs
+EXIT 0
+(node:6023) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file://<repo>/frontend/src/features/ebpf/detachTarget.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to <repo>/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ only an explicit null can select detach-all; missing or blank targets fail closed (1.284916ms)
+✔ event deletion freezes an absolute upper bound and never uses the visible list limit (4.305631ms)
+✔ custom deletion keeps an earlier end, caps future ranges and rejects malformed scopes (0.391952ms)
+✔ cleanMacosMetadata removes Finder sidecars without touching source files (7.770481ms)
+(node:6030) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file://<repo>/frontend/src/features/settings/hotspots.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to <repo>/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ zero-sample metrics are safe instead of false critical hotspots (1.221749ms)
+✔ real low cache-hit samples remain critical (0.304144ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 98.744883
+
+STAGE M10-rust-routes_tdd
+COMMAND env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --test routes_tdd -- --exact 'get_openapi_should_return_versioned_machine_readable_contract' --test-threads=4 --nocapture
+EXIT 0
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.11s
+     Running tests/routes_tdd.rs (engine/target/debug/deps/routes_tdd-1051e577747ee428)
+
+running 1 test
+test get_openapi_should_return_versioned_machine_readable_contract ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 82 filtered out; finished in 0.40s
+
+STAGE M11-rust-src-bin-cyanrex-release-main.rs
+COMMAND env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --bin cyanrex-release -- --exact 'smoke_health::tests::health_probe_requires_an_ok_payload' 'smoke_http::tests::admin_credentials_require_https_or_loopback' 'smoke_http::tests::totp_matches_the_rfc_sha1_vector_truncated_to_six_digits' 'smoke_live_kernel::tests::native_live_kernel_smoke_detaches_when_no_matching_event_arrives' 'smoke_live_kernel::tests::native_live_kernel_smoke_reports_unproven_failure_cleanup' 'smoke_live_kernel::tests::native_live_kernel_smoke_writes_evidence_after_exact_cleanup' 'smoke_runner_agent::tests::native_runner_smoke_authenticates_submits_and_accepts_a_real_result' 'smoke_runner_agent::tests::native_runner_smoke_cancels_a_job_that_does_not_finish' 'strict_json::tests::accepts_each_json_value_kind' 'strict_json::tests::rejects_duplicate_keys_at_any_depth' --test-threads=4 --nocapture
+EXIT 0
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.11s
+     Running unittests src/bin/cyanrex-release/main.rs (engine/target/debug/deps/cyanrex_release-f42b81af09550a78)
+
+running 10 tests
+test smoke_http::tests::admin_credentials_require_https_or_loopback ... ok
+test smoke_http::tests::totp_matches_the_rfc_sha1_vector_truncated_to_six_digits ... ok
+[cyanrex] Authenticating privileged live-kernel acceptance...
+[cyanrex] Authenticating privileged live-kernel acceptance...
+[cyanrex] Authenticating privileged live-kernel acceptance...
+[cyanrex] Loading and attaching the release kernel smoke program...
+[cyanrex] Loading and attaching the release kernel smoke program...
+[cyanrex] Loading and attaching the release kernel smoke program...
+test smoke_health::tests::health_probe_requires_an_ok_payload ... ok
+[cyanrex] Logging in for the user-scoped remote-check smoke test...
+[cyanrex] Waiting for a real kernel ringbuf event...
+[cyanrex] Waiting for a real kernel ringbuf event...
+[cyanrex] Waiting for a real kernel ringbuf event...
+[cyanrex] Waiting for compile Agent 'native-agent'...
+test smoke_live_kernel::tests::native_live_kernel_smoke_detaches_when_no_matching_event_arrives ... ok
+[cyanrex] Logging in for the user-scoped remote-check smoke test...
+test smoke_live_kernel::tests::native_live_kernel_smoke_reports_unproven_failure_cleanup ... ok
+test strict_json::tests::accepts_each_json_value_kind ... ok
+[cyanrex] Waiting for remote compile job job-native-smoke...
+test strict_json::tests::rejects_duplicate_keys_at_any_depth ... ok
+[cyanrex] Waiting for compile Agent 'native-agent'...
+test smoke_runner_agent::tests::native_runner_smoke_authenticates_submits_and_accepts_a_real_result ... ok
+[cyanrex] Waiting for remote compile job job-native-smoke...
+test smoke_live_kernel::tests::native_live_kernel_smoke_writes_evidence_after_exact_cleanup ... ok
+test smoke_runner_agent::tests::native_runner_smoke_cancels_a_job_that_does_not_finish ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+STAGE M11-rust-release_candidate_tdd
+COMMAND env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --test release_candidate_tdd -- --exact 'native_candidate_verifier_passes_the_complete_bundle_regression_suite' --test-threads=4 --nocapture
+EXIT 0
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.12s
+     Running tests/release_candidate_tdd.rs (engine/target/debug/deps/release_candidate_tdd-690947c970c6c3e9)
+
+running 1 test
+test native_candidate_verifier_passes_the_complete_bundle_regression_suite ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.58s
+
+STAGE M11-rust-release_package_tdd
+COMMAND env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --test release_package_tdd -- --exact 'installed_tests::installation_checks_the_bundled_binary_before_execution' 'installed_tests::installation_preflight_preserves_preexisting_configuration_and_tokens' 'installed_tests::installation_uses_native_probes_without_python_and_cleans_owned_state' 'installed_tests::installed_image_probe_checks_all_images_and_fails_closed' 'installed_tests::installed_verifier_rejects_links_missing_files_and_duplicate_metadata' 'native_extractor_rejects_outer_checksum_tampering' 'native_extractor_rejects_unsafe_or_unverified_members' 'native_installed_package_verifier_rejects_tampering_and_unlisted_files' 'rust_and_python_extract_the_same_verified_package' --test-threads=4 --nocapture
+EXIT 0
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.11s
+     Running tests/release_package_tdd.rs (engine/target/debug/deps/release_package_tdd-c249164c8e1c2c59)
+
+running 9 tests
+test installed_tests::installation_checks_the_bundled_binary_before_execution ... ok
+test installed_tests::installation_preflight_preserves_preexisting_configuration_and_tokens ... ok
+test native_extractor_rejects_outer_checksum_tampering ... ok
+test installed_tests::installed_verifier_rejects_links_missing_files_and_duplicate_metadata ... ok
+test installed_tests::installed_image_probe_checks_all_images_and_fails_closed ... ok
+test native_installed_package_verifier_rejects_tampering_and_unlisted_files ... ok
+test native_extractor_rejects_unsafe_or_unverified_members ... ok
+test rust_and_python_extract_the_same_verified_package ... ok
+test installed_tests::installation_uses_native_probes_without_python_and_cleans_owned_state ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+
+STAGE M11-rust-release_tool_tdd
+COMMAND env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --test release_tool_tdd -- --exact 'native_verifier_accepts_v1_and_rejects_tampering' 'native_writer_rejects_duplicates_and_existing_outputs' 'python_and_rust_evidence_are_mutually_compatible' --test-threads=4 --nocapture
+EXIT 0
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.12s
+     Running tests/release_tool_tdd.rs (engine/target/debug/deps/release_tool_tdd-57cdfb7cd13c8077)
+
+running 3 tests
+test native_writer_rejects_duplicates_and_existing_outputs ... ok
+test native_verifier_accepts_v1_and_rejects_tampering ... ok
+test python_and_rust_evidence_are_mutually_compatible ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+STAGE M11-rust-ssh_deploy_tdd
+COMMAND env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --test ssh_deploy_tdd -- --exact 'ssh_apply_uses_reviewed_arguments_once_and_does_not_retry_failure' 'ssh_arguments_reject_injection_and_unknown_actions' 'ssh_plan_is_offline_strict_and_target_bound' 'ssh_target_checks_package_controls_and_private_configuration_before_execution' 'ssh_target_refuses_version_mismatch_before_touching_deployment' --test-threads=4 --nocapture
+EXIT 0
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.13s
+     Running tests/ssh_deploy_tdd.rs (engine/target/debug/deps/ssh_deploy_tdd-16edbc3ba1e4ec4a)
+
+running 5 tests
+test ssh_plan_is_offline_strict_and_target_bound ... ok
+test ssh_target_refuses_version_mismatch_before_touching_deployment ... ok
+test ssh_apply_uses_reviewed_arguments_once_and_does_not_retry_failure ... ok
+test ssh_target_checks_package_controls_and_private_configuration_before_execution ... ok
+test ssh_arguments_reject_injection_and_unknown_actions ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+STAGE B06-events-http
+COMMAND env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL cargo test --manifest-path engine/Cargo.toml --locked --test module_boundaries_tdd -- events:: --nocapture --test-threads=1
+EXIT 101
+   Compiling cyanrex-engine v0.3.7 (<repo>/engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.94s
+     Running tests/module_boundaries_tdd.rs (engine/target/debug/deps/module_boundaries_tdd-616316cce3f5044a)
+
+running 4 tests
+test events::event_history_export_and_unread_remain_session_scoped ... ok
+test events::event_settings_http_retention_and_overflow_policy_do_not_cross_users ... ok
+test events::filtered_event_deletion_removes_matches_not_the_complement ... 
+thread 'events::filtered_event_deletion_removes_matches_not_the_complement' (39364) panicked at tests/module_boundaries/events.rs:170:5:
+filtered deletion selected the wrong side: ["severity=error: status=200 OK, deleted=1, remaining=[1], expected_deleted=1, expected_remaining=[2]", "category=platform: status=200 OK, deleted=2, remaining=[], expected_deleted=0, expected_remaining=[1, 2]", "category=kernel: status=200 OK, deleted=0, remaining=[1, 2], expected_deleted=2, expected_remaining=[]"]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+test events::invalid_event_delete_filters_must_not_widen_into_delete_all ... 
+thread 'events::invalid_event_delete_filters_must_not_widen_into_delete_all' (39368) panicked at tests/module_boundaries/events.rs:215:5:
+invalid destructive filters were accepted: ["severity=errror: status=200 OK, deleted=2, remaining=0", "category=kernell: status=200 OK, deleted=2, remaining=0", "start=not-a-date: status=200 OK, deleted=2, remaining=0", "end=not-a-date: status=200 OK, deleted=2, remaining=0"]
+FAILED
+
+failures:
+
+failures:
+    events::filtered_event_deletion_removes_matches_not_the_complement
+    events::invalid_event_delete_filters_must_not_widen_into_delete_all
+
+test result: FAILED. 2 passed; 2 failed; 0 ignored; 0 measured; 8 filtered out; finished in 6.54s
+
+error: test failed, to rerun pass `--test module_boundaries_tdd`

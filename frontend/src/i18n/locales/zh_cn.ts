@@ -14,6 +14,8 @@ export const zhCN: TranslationDict = {
       roleStudent: "学生",
       checkingSession: "正在检查会话...",
       logout: "退出登录",
+      loggingOut: "正在退出…",
+      logoutFailed: "无法确认退出成功，会话可能仍然有效。请检查连接并手动重试，确认成功后再离开这台设备。",
       language: "语言",
       nav: {
         dashboard: "仪表盘",

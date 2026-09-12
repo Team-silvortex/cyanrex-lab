@@ -1,0 +1,15 @@
+   Compiling cyanrex-engine v0.3.7 (<repo>/engine)
+error[E0603]: module `sqlx_compat` is private
+ --> tests/module_boundaries/script_postgres.rs:2:59
+  |
+2 | use cyanrex_engine::{services::script_store::ScriptStore, sqlx_compat as sqlx};
+  |                                                           ^^^^^^^^^^^ private module
+  |
+note: the module `sqlx_compat` is defined here
+ --> src/lib.rs:7:1
+  |
+7 | mod sqlx_compat;
+  | ^^^^^^^^^^^^^^^
+
+For more information about this error, try `rustc --explain E0603`.
+error: could not compile `cyanrex-engine` (test "module_boundaries_tdd") due to 1 previous error

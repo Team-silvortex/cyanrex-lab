@@ -98,6 +98,50 @@ jobs:
           task_pg_case=services::learning_store::feedback::tests::postgres_feedback_migrates_legacy_rows_and_serializes_updates
           cargo test --manifest-path engine/Cargo.toml --locked --lib "$task_pg_case" -- --ignored --list | grep -Fx "$task_pg_case: test"
           cargo test --manifest-path engine/Cargo.toml --locked --lib "$task_pg_case" -- --ignored --exact --nocapture
+      - name: Run real PostgreSQL authentication integration
+        env:
+          CYANREX_DB_FALLBACK: "true"
+          CYANREX_TEST_DATABASE_URL: postgres://cyanrex_test:cyanrex-ci-only@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test
+        run: |
+          set -euo pipefail
+          for task_auth_pg_case in \
+            services::auth_service::postgres_tests::postgres_registration_persists_accounts_and_serializes_duplicates \
+            services::auth_service::postgres_tests::postgres_revoked_session_cannot_revive_in_fallback \
+            services::auth_service::postgres_tests::postgres_expired_session_cannot_revive_in_fallback \
+            services::auth_service::postgres_tests::postgres_deleted_account_cannot_revive_in_fallback \
+            services::auth_service::postgres_mutation_tests::postgres_logout_write_failure_is_not_success \
+            services::auth_service::postgres_mutation_tests::postgres_logout_zero_row_deletion_is_not_success \
+            services::auth_service::postgres_mutation_tests::postgres_password_write_failure_is_not_success \
+            services::auth_service::postgres_mutation_tests::postgres_account_deletion_failure_is_atomic \
+            services::auth_service::postgres_mutation_tests::postgres_password_zero_row_update_is_not_success \
+            services::auth_service::postgres_mutation_tests::postgres_account_zero_row_deletion_is_not_success \
+            services::auth_service::postgres_mutation_tests::postgres_account_mutations_normalize_identity_and_persist \
+            services::auth_service::postgres_mutation_tests::postgres_concurrent_password_changes_cannot_overwrite_newer_credentials \
+            services::auth_service::postgres_boundary_tests::postgres_delete_session_step_failure_preserves_account_and_session \
+            services::auth_service::postgres_boundary_tests::postgres_delete_deferred_commit_failure_rolls_back_account_and_sessions \
+            services::auth_service::postgres_boundary_tests::postgres_delete_suppressed_session_cascade_cannot_report_success \
+            services::auth_service::postgres_boundary_tests::postgres_cancelled_account_deletion_rolls_back_the_earlier_session_delete \
+            services::auth_service::postgres_boundary_tests::postgres_login_cannot_report_success_after_its_account_was_deleted \
+            services::auth_service::postgres_boundary_tests::postgres_old_login_cannot_authenticate_as_a_recreated_account \
+            services::auth_service::postgres_boundary_tests::postgres_login_zero_row_session_insert_cannot_report_success \
+            services::auth_service::postgres_boundary_tests::postgres_cancelled_classroom_join_never_reopens_its_consumed_invitation \
+            services::auth_service::postgres_boundary_tests::postgres_cancelled_login_rolls_back_without_publishing_a_session \
+            services::auth_service::postgres_boundary_tests::postgres_login_cannot_publish_after_concurrent_password_change; do
+            cargo test --manifest-path engine/Cargo.toml --locked --lib "$task_auth_pg_case" -- --ignored --list | grep -Fx "$task_auth_pg_case: test"
+            cargo test --manifest-path engine/Cargo.toml --locked --lib "$task_auth_pg_case" -- --ignored --exact --nocapture
+          done
+      - name: Run real PostgreSQL event and script boundaries
+        env:
+          CYANREX_DB_FALLBACK: "true"
+          CYANREX_TEST_DATABASE_URL: postgres://cyanrex_test:cyanrex-ci-only@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test
+        run: |
+          set -euo pipefail
+          task_event_pg_case=services::event_bus::tests::deletion::postgres_filtered_delete_preserves_uncached_rows_and_read_flags
+          cargo test --manifest-path engine/Cargo.toml --locked --lib "$task_event_pg_case" -- --ignored --list | grep -Fx "$task_event_pg_case: test"
+          cargo test --manifest-path engine/Cargo.toml --locked --lib "$task_event_pg_case" -- --ignored --exact --nocapture
+          task_script_pg_case=script_postgres::scripts_use_postgres_without_file_fallback_and_keep_owner_boundaries_after_reload
+          cargo test --manifest-path engine/Cargo.toml --locked --test module_boundaries_tdd "$task_script_pg_case" -- --ignored --list | grep -Fx "$task_script_pg_case: test"
+          cargo test --manifest-path engine/Cargo.toml --locked --test module_boundaries_tdd "$task_script_pg_case" -- --ignored --exact --nocapture
       - name: Run real Runner Agent compile integration
         run: cargo test --manifest-path engine/Cargo.toml --locked --test runner_agent_client_tdd -- --ignored --nocapture
 

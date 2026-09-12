@@ -36,6 +36,21 @@ pub struct EventsExportQuery {
     pub end: Option<String>,
 }
 
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct EventsDeleteQuery {
+    pub category: Option<String>,
+    pub severity: Option<String>,
+    pub since_minutes: Option<i64>,
+    pub start: Option<String>,
+    pub end: Option<String>,
+    // Retain these legacy ignored fields; neither can select another owner's data.
+    #[serde(rename = "username")]
+    pub ignored_username: Option<String>,
+    #[serde(rename = "format")]
+    pub ignored_format: Option<String>,
+}
+
 pub async fn list_events(
     State(state): State<Arc<AppState>>,
     headers: HeaderMap,
@@ -109,20 +124,55 @@ pub async fn export_events(
 pub async fn delete_events(
     State(state): State<Arc<AppState>>,
     headers: HeaderMap,
-    Query(query): Query<EventsExportQuery>,
-) -> Json<serde_json::Value> {
+    Query(query): Query<EventsDeleteQuery>,
+) -> Response {
     let username = current_username_from_headers(&state, &headers).await;
     let category_filter = sanitize_category(&query.category);
     let severity_filter = sanitize_severity(&query.severity);
+    let mut start = parse_rfc3339(query.start.as_deref());
+    let end = parse_rfc3339(query.end.as_deref());
+    let bad_filter = (query.category.is_some() && category_filter.is_none())
+        || (query.severity.is_some() && severity_filter.is_none())
+        || (query.start.is_some() && start.is_none())
+        || (query.end.is_some() && end.is_none());
+    let bad_request = || {
+        (
+            StatusCode::BAD_REQUEST,
+            Json(serde_json::json!({
+                "ok": false, "message": "invalid event deletion filter or time range"
+            })),
+        )
+            .into_response()
+    };
+    if bad_filter {
+        return bad_request();
+    }
+    if let Some(minutes) = query.since_minutes {
+        if minutes < 0 {
+            return bad_request();
+        }
+        if minutes > 0 {
+            // Freeze one checked cutoff for SQL and memory. Zero retains its legacy no-range meaning.
+            let cutoff = chrono::Duration::try_minutes(minutes)
+                .and_then(|duration| chrono::Utc::now().checked_sub_signed(duration));
+            let Some(cutoff) = cutoff else {
+                return bad_request();
+            };
+            start = Some(start.map_or(cutoff, |value| value.max(cutoff)));
+        }
+    }
+    if start.zip(end).is_some_and(|(start, end)| start > end) {
+        return bad_request();
+    }
     let deleted_count = state
         .event_bus
         .delete_user_events_filtered(
             &username,
             category_filter.as_deref(),
             severity_filter.as_deref(),
-            query.since_minutes,
-            parse_rfc3339(query.start.as_deref()),
-            parse_rfc3339(query.end.as_deref()),
+            None,
+            start,
+            end,
         )
         .await;
 
@@ -130,6 +180,7 @@ pub async fn delete_events(
         "ok": true,
         "deleted": deleted_count,
     }))
+    .into_response()
 }
 
 pub async fn ws_events(

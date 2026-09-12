@@ -51,6 +51,7 @@ pub async fn login(
 
             response
         }
+        Err(AuthError::StorageUnavailable) => storage_unavailable(),
         Err(AuthError::InvalidCredentials) => (
             StatusCode::UNAUTHORIZED,
             Json(LoginResponse {
@@ -153,6 +154,7 @@ pub async fn bootstrap_totp(
             otpauth_uri: Some(payload.otpauth_uri),
         })
         .into_response(),
+        Err(AuthError::StorageUnavailable) => storage_unavailable(),
         Err(AuthError::InvalidCredentials) => (
             StatusCode::UNAUTHORIZED,
             Json(TotpBootstrapResponse {
@@ -235,6 +237,7 @@ pub async fn register(
             }),
         )
             .into_response(),
+        Err(AuthError::StorageUnavailable) => storage_unavailable(),
         Err(AuthError::UserAlreadyExists) => (
             StatusCode::CONFLICT,
             Json(RegisterResponse {
@@ -293,7 +296,9 @@ pub async fn register(
 
 pub async fn logout(State(state): State<Arc<AppState>>, headers: HeaderMap) -> Response {
     if let Some(token) = extract_session_token(&headers) {
-        state.auth_service.logout(&token).await;
+        if state.auth_service.logout(&token).await.is_err() {
+            return storage_unavailable();
+        }
     }
 
     let mut response =
@@ -305,6 +310,13 @@ pub async fn logout(State(state): State<Arc<AppState>>, headers: HeaderMap) -> R
     );
 
     response
+}
+
+fn storage_unavailable() -> Response {
+    (
+        StatusCode::SERVICE_UNAVAILABLE,
+        Json(serde_json::json!({"ok": false, "message": "authentication storage unavailable; completion is unconfirmed, restore storage and verify account/session state before retrying"})),
+    ).into_response()
 }
 
 pub async fn change_password(
@@ -332,6 +344,7 @@ pub async fn change_password(
     .await
     {
         Ok(()) => Json(serde_json::json!({"ok": true, "message": "password changed"})).into_response(),
+        Err(AuthError::StorageUnavailable) => storage_unavailable(),
         Err(AuthError::InvalidCredentials) => (
             StatusCode::UNAUTHORIZED,
             Json(serde_json::json!({"ok": false, "message": "invalid current password"})),
@@ -391,6 +404,7 @@ pub async fn delete_account(
             );
             response
         }
+        Err(AuthError::StorageUnavailable) => storage_unavailable(),
         Err(AuthError::InvalidCredentials) => (
             StatusCode::UNAUTHORIZED,
             Json(serde_json::json!({"ok": false, "message": "invalid password"})),

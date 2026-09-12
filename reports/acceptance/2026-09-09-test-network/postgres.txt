@@ -1,0 +1,76 @@
+STAGE B01-postgres-auth
+COMMAND env -u DATABASE_URL CYANREX_DB_FALLBACK=true CYANREX_DATA_DIR='<test-data>' CYANREX_TEST_DATABASE_URL='<disposable-postgres-url>' cargo test --manifest-path engine/Cargo.toml --locked --lib services::auth_service:: -- --ignored --nocapture --test-threads=4
+EXIT 101
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.14s
+     Running unittests src/lib.rs (engine/target/debug/deps/cyanrex_engine-2383cc0f893617d7)
+
+running 20 tests
+test services::auth_service::postgres_boundary_tests::postgres_cancelled_account_deletion_rolls_back_the_earlier_session_delete ... ok
+test services::auth_service::postgres_boundary_tests::postgres_delete_session_step_failure_preserves_account_and_session ... ok
+test services::auth_service::postgres_boundary_tests::postgres_delete_deferred_commit_failure_rolls_back_account_and_sessions ... ok
+cancelled enrollment: durable_account_present=true, invitation_reusable=false
+test services::auth_service::postgres_boundary_tests::postgres_cancelled_classroom_join_never_reopens_its_consumed_invitation ... ok
+
+thread 'services::auth_service::postgres_boundary_tests::postgres_login_zero_row_session_insert_cannot_report_success' (10661) panicked at src/services/auth_service/postgres_boundary_tests.rs:294:5:
+zero-row session insertion: login_success=true, new_session_valid=false
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test services::auth_service::postgres_boundary_tests::postgres_login_zero_row_session_insert_cannot_report_success ... FAILED
+
+thread 'services::auth_service::postgres_boundary_tests::postgres_delete_suppressed_session_cascade_cannot_report_success' (10655) panicked at src/services/auth_service/postgres_boundary_tests.rs:127:5:
+a partial/failed deletion must not be acknowledged: Ok(()); snapshot=(false, 1, false, false); session_valid=true
+test services::auth_service::postgres_boundary_tests::postgres_delete_suppressed_session_cascade_cannot_report_success ... FAILED
+
+thread 'services::auth_service::postgres_boundary_tests::postgres_login_cannot_report_success_after_its_account_was_deleted' (10659) panicked at src/services/auth_service/postgres_boundary_tests.rs:258:5:
+stale login: status=200 OK, authenticated=false, cookie=true, db_disabled=true, recreated=false, snapshot=(false, 0, false, false)
+test services::auth_service::postgres_boundary_tests::postgres_login_cannot_report_success_after_its_account_was_deleted ... FAILED
+
+thread 'services::auth_service::postgres_boundary_tests::postgres_old_login_cannot_authenticate_as_a_recreated_account' (10666) panicked at src/services/auth_service/postgres_boundary_tests.rs:258:5:
+stale login: status=200 OK, authenticated=true, cookie=true, db_disabled=false, recreated=true, snapshot=(true, 1, true, false)
+test services::auth_service::postgres_boundary_tests::postgres_old_login_cannot_authenticate_as_a_recreated_account ... FAILED
+test services::auth_service::postgres_mutation_tests::postgres_account_deletion_failure_is_atomic ... ok
+test services::auth_service::postgres_mutation_tests::postgres_account_mutations_normalize_identity_and_persist ... ok
+test services::auth_service::postgres_mutation_tests::postgres_account_zero_row_deletion_is_not_success ... ok
+test services::auth_service::postgres_mutation_tests::postgres_concurrent_password_changes_cannot_overwrite_newer_credentials ... ok
+test services::auth_service::postgres_mutation_tests::postgres_logout_write_failure_is_not_success ... ok
+test services::auth_service::postgres_mutation_tests::postgres_logout_zero_row_deletion_is_not_success ... ok
+test services::auth_service::postgres_mutation_tests::postgres_password_write_failure_is_not_success ... ok
+test services::auth_service::postgres_tests::postgres_deleted_account_cannot_revive_in_fallback ... ok
+test services::auth_service::postgres_tests::postgres_expired_session_cannot_revive_in_fallback ... ok
+test services::auth_service::postgres_mutation_tests::postgres_password_zero_row_update_is_not_success ... ok
+test services::auth_service::postgres_tests::postgres_revoked_session_cannot_revive_in_fallback ... ok
+test services::auth_service::postgres_tests::postgres_registration_persists_accounts_and_serializes_duplicates ... ok
+
+failures:
+
+failures:
+    services::auth_service::postgres_boundary_tests::postgres_delete_suppressed_session_cascade_cannot_report_success
+    services::auth_service::postgres_boundary_tests::postgres_login_cannot_report_success_after_its_account_was_deleted
+    services::auth_service::postgres_boundary_tests::postgres_login_zero_row_session_insert_cannot_report_success
+    services::auth_service::postgres_boundary_tests::postgres_old_login_cannot_authenticate_as_a_recreated_account
+
+test result: FAILED. 16 passed; 4 failed; 0 ignored; 0 measured; 125 filtered out; finished in 14.84s
+
+error: test failed, to rerun pass `--lib`
+
+STAGE B03-postgres-learning
+COMMAND env -u DATABASE_URL CYANREX_DB_FALLBACK=true CYANREX_DATA_DIR='<test-data>' CYANREX_TEST_DATABASE_URL='<disposable-postgres-url>' cargo test --manifest-path engine/Cargo.toml --locked --lib -- --ignored --exact services::learning_store::feedback::tests::postgres_feedback_migrates_legacy_rows_and_serializes_updates --nocapture
+EXIT 0
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.12s
+     Running unittests src/lib.rs (engine/target/debug/deps/cyanrex_engine-2383cc0f893617d7)
+
+running 1 test
+test services::learning_store::feedback::tests::postgres_feedback_migrates_legacy_rows_and_serializes_updates ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 144 filtered out; finished in 0.14s
+
+STAGE B02-postgres-scripts
+COMMAND env -u DATABASE_URL CYANREX_DB_FALLBACK=true CYANREX_DATA_DIR='<test-data>' CYANREX_TEST_DATABASE_URL='<disposable-postgres-url>' cargo test --manifest-path engine/Cargo.toml --locked --test module_boundaries_tdd -- --ignored --exact script_postgres::scripts_use_postgres_without_file_fallback_and_keep_owner_boundaries_after_reload --nocapture
+EXIT 0
+   Compiling cyanrex-engine v0.3.7 (<repo>/engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.57s
+     Running tests/module_boundaries_tdd.rs (engine/target/debug/deps/module_boundaries_tdd-616316cce3f5044a)
+
+running 1 test
+test script_postgres::scripts_use_postgres_without_file_fallback_and_keep_owner_boundaries_after_reload ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 7 filtered out; finished in 0.70s

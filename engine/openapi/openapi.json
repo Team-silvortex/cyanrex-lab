@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Cyanrex Lab Engine API",
-    "version": "0.3.7",
+    "version": "0.3.8",
     "description": "Machine-readable contract for the Cyanrex teaching control and execution plane."
   },
   "servers": [
@@ -1819,6 +1819,16 @@
               }
             }
           },
+          "503": {
+            "description": "Authentication storage unavailable; mutation completion is unconfirmed. Session cookie is retained for verification and an explicit retry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            }
+          },
           "default": {
             "description": "Error response",
             "content": {
@@ -1831,6 +1841,7 @@
           }
         },
         "x-cyanrex-access": "authenticated",
+        "description": "Configured PostgreSQL authentication must confirm the durable mutation before reporting success; no silent memory-only change or revocation on storage failure. Unconfirmed persistence returns 503 without clearing the session cookie; restore storage and verify state before an explicit retry. A lost commit/response acknowledgement can be ambiguous. Account deletion and its sessions share one transaction. Password/account writes bind the verified credentials and normalized identity; zero affected rows are rejected. Intentionally memory-only instances retain volatile behavior. After a read failure permanently disables auth persistence, these mutations remain blocked until storage is restored and Engine restarted.",
         "x-cyanrex-roles": [
           "admin",
           "teacher",
@@ -1868,6 +1879,16 @@
               }
             }
           },
+          "503": {
+            "description": "Authentication storage unavailable; session insertion or commit is unconfirmed. No new session cookie is issued.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            }
+          },
           "default": {
             "description": "Error response",
             "content": {
@@ -1880,6 +1901,7 @@
           }
         },
         "x-cyanrex-access": "public",
+        "description": "A login admitted against active PostgreSQL must confirm exactly one session insertion and recheck the verified credentials in the same transaction before publishing a session cookie. Concurrent account deletion/recreation or password changes cannot issue a stale login. Unconfirmed storage writes return 503 without issuing a cookie or switching this write to memory-only success. Intentionally volatile login remains available after previously established read/registration fallback; this is not distributed revocation.",
         "requestBody": {
           "required": true,
           "content": {
@@ -1916,6 +1938,16 @@
               }
             }
           },
+          "503": {
+            "description": "Authentication storage unavailable; mutation completion is unconfirmed. Session cookie is retained for verification and an explicit retry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            }
+          },
           "default": {
             "description": "Error response",
             "content": {
@@ -1928,6 +1960,7 @@
           }
         },
         "x-cyanrex-access": "optional-session-csrf",
+        "description": "Configured PostgreSQL authentication must confirm the durable mutation before reporting success; no silent memory-only change or revocation on storage failure. Unconfirmed persistence returns 503 without clearing the session cookie; restore storage and verify state before an explicit retry. A lost commit/response acknowledgement can be ambiguous. Account deletion and its sessions share one transaction. Password/account writes bind the verified credentials and normalized identity; zero affected rows are rejected. Intentionally memory-only instances retain volatile behavior. After a read failure permanently disables auth persistence, these mutations remain blocked until storage is restored and Engine restarted.",
         "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin"
       }
     },
@@ -1954,6 +1987,16 @@
               }
             }
           },
+          "503": {
+            "description": "Authentication storage unavailable; mutation completion is unconfirmed. Session cookie is retained for verification and an explicit retry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            }
+          },
           "default": {
             "description": "Error response",
             "content": {
@@ -1966,6 +2009,7 @@
           }
         },
         "x-cyanrex-access": "authenticated",
+        "description": "Configured PostgreSQL authentication must confirm the durable mutation before reporting success; no silent memory-only change or revocation on storage failure. Unconfirmed persistence returns 503 without clearing the session cookie; restore storage and verify state before an explicit retry. A lost commit/response acknowledgement can be ambiguous. Account deletion and its sessions share one transaction. Password/account writes bind the verified credentials and normalized identity; zero affected rows are rejected. Intentionally memory-only instances retain volatile behavior. After a read failure permanently disables auth persistence, these mutations remain blocked until storage is restored and Engine restarted.",
         "x-cyanrex-roles": [
           "admin",
           "teacher",
@@ -2548,6 +2592,21 @@
               }
             }
           },
+          "400": {
+            "description": "Invalid deletion filter/query or time range; no events are deleted. Query extraction errors can be plain text.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
           "default": {
             "description": "Error response",
             "content": {
@@ -2560,6 +2619,7 @@
           }
         },
         "x-cyanrex-access": "authenticated",
+        "description": "Delete only events matching all supplied filters for the authenticated session owner. No filters explicitly means delete all of that owner's events; since_minutes=0 adds no time restriction. Invalid/empty filter values, unknown query keys, negative or overflowing time windows, and reversed effective time ranges return 400 without deleting events. Legacy username and format query keys are ignored, never identity overrides. Surviving records retain their unread state.",
         "x-cyanrex-roles": [
           "admin",
           "teacher",

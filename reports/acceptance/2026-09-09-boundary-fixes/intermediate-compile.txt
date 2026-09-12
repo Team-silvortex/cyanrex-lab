@@ -1,0 +1,39 @@
+## fixEventsFirst
+Exit code: 101
+
+error[E0624]: method `delete_from_history_filtered` is private
+   --> src/services/event_bus.rs:296:34
+    |
+296 |   ...                   self.delete_from_history_filtered(
+    |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ private method
+    |
+   ::: src/services/event_bus/deletion.rs:7:5
+    |
+  7 | /     async fn delete_from_history_filtered(
+  8 | |         &self,
+  9 | |         username: &str,
+ 10 | |         category: Option<&str>,
+...   |
+ 14 | |         end: Option<DateTime<Utc>>,
+ 15 | |     ) -> usize {
+    | |______________- private method defined here
+
+error[E0624]: method `delete_from_history_filtered` is private
+   --> src/services/event_bus.rs:315:14
+    |
+315 |           self.delete_from_history_filtered(username, category, severity, since_minutes, start, end)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ private method
+    |
+   ::: src/services/event_bus/deletion.rs:7:5
+    |
+  7 | /     async fn delete_from_history_filtered(
+  8 | |         &self,
+  9 | |         username: &str,
+ 10 | |         category: Option<&str>,
+...   |
+ 14 | |         end: Option<DateTime<Utc>>,
+ 15 | |     ) -> usize {
+    | |______________- private method defined here
+
+For more information about this error, try `rustc --explain E0624`.
+error: could not compile `cyanrex-engine` (lib) due to 2 previous errors

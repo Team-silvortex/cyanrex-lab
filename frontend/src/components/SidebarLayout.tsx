@@ -14,6 +14,7 @@ import {
   type AuthRole,
 } from "../utils/sidebarPermissions";
 import { parseSafeRedirectPath } from "../utils/security";
+import { logoutSession } from "../utils/authSession";
 import LanguageSwitcher from "./LanguageSwitcher";
 
 type NavItem = {
@@ -55,10 +56,22 @@ export default function SidebarLayout({ title, children }: SidebarLayoutProps) {
   const [unreadEvents, setUnreadEvents] = useState(0);
   const [userRole, setUserRole] = useState<AuthRole>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [logoutFailed, setLogoutFailed] = useState(false);
+  const logoutRequest = useRef<AbortController | null>(null);
   const menuButton = useRef<HTMLButtonElement>(null);
   const engineUrl = useMemo(getEngineUrl, []);
 
   useEffect(() => { setMenuOpen(false); }, [router.asPath]);
+
+  useEffect(() => {
+    setLoggingOut(false);
+    setLogoutFailed(false);
+    return () => {
+      logoutRequest.current?.abort();
+      logoutRequest.current = null;
+    };
+  }, [router.asPath]);
 
   useEffect(() => {
     const desktop = window.matchMedia("(min-width: 981px)");
@@ -155,11 +168,22 @@ export default function SidebarLayout({ title, children }: SidebarLayoutProps) {
   }, [authReady, engineUrl, router.pathname]);
 
   const onLogout = async () => {
-    await fetch(`${engineUrl}/auth/logout`, {
-      method: "POST",
-      credentials: "include",
-    });
-    router.replace("/login");
+    if (logoutRequest.current) return;
+    const controller = new AbortController();
+    logoutRequest.current = controller;
+    setLoggingOut(true);
+    setLogoutFailed(false);
+    try {
+      await logoutSession(engineUrl, controller.signal);
+      if (!controller.signal.aborted) await router.replace("/login");
+    } catch {
+      if (!controller.signal.aborted) setLogoutFailed(true);
+    } finally {
+      if (logoutRequest.current === controller) {
+        logoutRequest.current = null;
+        if (!controller.signal.aborted) setLoggingOut(false);
+      }
+    }
   };
 
   const visibleNavItems = useMemo(() => filterNavItemsByRole(navItems, userRole), [userRole]);
@@ -255,9 +279,10 @@ export default function SidebarLayout({ title, children }: SidebarLayoutProps) {
                 {t(canManageDeployment(userRole) ? "layout.roleTeacher" : "layout.roleStudent")}
               </p>
               <LanguageSwitcher />
-              <button type="button" className="button-secondary" onClick={onLogout}>
-                {t("layout.logout")}
+              <button type="button" className="button-secondary" onClick={onLogout} disabled={loggingOut}>
+                {t(loggingOut ? "layout.loggingOut" : "layout.logout")}
               </button>
+              {logoutFailed && <p className="error" role="alert">{t("layout.logoutFailed")}</p>}
             </div>
           </div>
         </aside>

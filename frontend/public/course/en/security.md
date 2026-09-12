@@ -57,6 +57,42 @@ request may complete even if the browser leaves the page. API clients still rely
 session, teacher/student role, CSRF, password and OTP policies. Role consolidation does not replace
 these server-side checks.
 
+### Sessions and database outages
+
+Logout ends the current session, not every device's session or running kernel experiments. The browser
+opens the login page only after an HTTP-success response explicitly confirms logout. Rejection, an
+invalid response, timeout or network failure instead shows that the session may still be active and
+requires a manual retry. Repeated clicks are blocked while waiting. Navigating away discards late UI
+callbacks, but does not undo a request already received by Engine.
+
+For PostgreSQL-backed authentication, logout, password change and account deletion require confirmed
+storage writes. Failures return `503` without clearing the session cookie or publishing a memory-only
+mutation. Session removal and account deletion commit in one transaction. Password/account writes use
+the verified normalized username and credential snapshot; zero affected rows are rejected rather than
+reported as success. A concurrent password change cannot silently overwrite newer credentials.
+Logout with no affected row succeeds only after confirming the session is already absent.
+Account deletion also verifies no session survived, including a suppressed cascade.
+
+Login admitted while PostgreSQL is active must insert exactly one session and recheck its verified
+credentials in the same transaction before publishing a cache token/cookie. A deleted/recreated
+account or concurrent password change cannot accept the old pending login. An unconfirmed login write
+returns `503` without a new cookie or memory-only success; cancellation before commit rolls back.
+An already committed but unacknowledged login can leave a session until expiry. This does not remove
+the existing read/registration fallback or provide distributed revocation.
+
+A `503` or lost response is not proof that nothing committed: restore storage and verify the current
+account/session state before explicitly retrying. A failed write alone does not disable persistence;
+if an earlier read failure already latched permanent auth DB fallback, restore PostgreSQL and restart
+Engine before these mutations. This also applies to temporary accounts registered during that outage.
+Intentionally memory-only instances keep volatile account/session behavior. Do not switch a durable
+deployment into memory-only mode merely to bypass an authentication storage error.
+
+When PostgreSQL reports a missing or expired session, Engine also removes its memory fallback entry.
+A missing account lookup removes that cached account and its cached sessions. Those observed
+invalidations cannot reappear merely because a subsequent query fails. The existing volatile memory
+fallback still cannot discover revocations or credential changes made elsewhere while the database is
+unavailable; this is not a distributed revocation guarantee or a replacement for incident recovery.
+
 ### Classroom connection boundary
 
 Classroom onboarding uses a separate [discovery/invitation boundary](classroom-connection.md).

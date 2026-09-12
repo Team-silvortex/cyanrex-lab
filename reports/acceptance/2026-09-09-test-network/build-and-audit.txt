@@ -1,0 +1,202 @@
+STAGE BUILD-frontend
+COMMAND env PATH='<node-runtime>/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' NEXT_PUBLIC_ENGINE_URL=http://127.0.0.1:43181 npm --prefix frontend run build
+EXIT 0
+
+> @cyanrex/frontend@0.3.7 prebuild
+> node scripts/clean-macos-metadata.mjs && node scripts/sync-course-docs.mjs
+
+[metadata] removed 0 macOS filesystem metadata entries
+[course] synchronized locale copies: en, zh-CN
+
+> @cyanrex/frontend@0.3.7 build
+> next build
+
+   ▲ Next.js 15.5.24
+
+   Linting and checking validity of types ...
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 2.3s
+   Collecting page data ...
+   Generating static pages (0/18) ...
+   Generating static pages (4/18) 
+   Generating static pages (8/18) 
+   Generating static pages (13/18) 
+ ✓ Generating static pages (18/18)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (pages)                                 Size  First Load JS
+┌ ○ /                                        304 B         134 kB
+├   /_app                                      0 B         134 kB
+├ ○ /404                                     180 B         134 kB
+├ ○ /account                               2.43 kB         141 kB
+├ ○ /dashboard                               513 B         139 kB
+├ ○ /ebpf                                  25.7 kB         165 kB
+├ ○ /events                                5.39 kB         144 kB
+├ ○ /helper                                1.33 kB         140 kB
+├ ○ /join                                   4.3 kB         140 kB
+├ ○ /learn                                 3.91 kB         143 kB
+├ ○ /learn/[...slug]                       2.08 kB         141 kB
+├ ○ /login                                 1.87 kB         138 kB
+├ ○ /modules                               3.31 kB         142 kB
+├ ○ /otp-setup                             1.88 kB         138 kB
+├ ○ /register                              1.89 kB         138 kB
+├ ○ /settings                              6.68 kB         146 kB
+├ ○ /teaching                              6.19 kB         145 kB
+└ ○ /terminal                              3.21 kB         142 kB
++ First Load JS shared by all               139 kB
+  ├ chunks/framework-372c62845e5ba996.js   57.5 kB
+  ├ chunks/main-7f338c3961cdd4b9.js          37 kB
+  ├ chunks/pages/_app-11cec58fbdea72b4.js  37.5 kB
+  └ other shared chunks (total)             6.8 kB
+
+○  (Static)  prerendered as static content
+
+STAGE TYPECHECK-frontend
+COMMAND env PATH='<node-runtime>/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' node frontend/node_modules/typescript/bin/tsc --noEmit --project frontend/tsconfig.json
+EXIT 0
+
+
+STAGE SDK-check
+COMMAND env PATH='<node-runtime>/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' npm --prefix sdk-js run check
+EXIT 0
+
+> @cyanrex/sdk-js@0.3.7 check
+> npm run check:compatibility && npm run check:surface && npm test && npm run test:types && npm run test:package
+
+
+> @cyanrex/sdk-js@0.3.7 check:compatibility
+> node ../scripts/api-compatibility.mjs
+
+API compatibility passed against 0.3.0: 61 operations remain compatible with 0.3.7.
+
+> @cyanrex/sdk-js@0.3.7 check:surface
+> node ../scripts/sdk-surface-compatibility.mjs
+
+SDK public surface is compatible: 85 members, 8 additive.
+
+> @cyanrex/sdk-js@0.3.7 pretest
+> npm run build
+
+
+> @cyanrex/sdk-js@0.3.7 prebuild
+> npm run check:generated
+
+
+> @cyanrex/sdk-js@0.3.7 check:generated
+> node ../scripts/generate-sdk-types.mjs --check && node ../scripts/generate-sdk-operations.mjs --check
+
+Generated SDK types are current (85 schemas).
+Generated SDK operations are current (63 operations).
+
+> @cyanrex/sdk-js@0.3.7 build
+> tsc -p tsconfig.json
+
+
+> @cyanrex/sdk-js@0.3.7 test
+> node --test tests/*.test.mjs
+
+✔ classroom SDK access uses secure origins, no redirects/caching and explicit invitation data (23.057722ms)
+✔ learning resume convenience and generated operations read one owner-bound record (0.781ms)
+✔ uses cookie credentials and serializes JSON requests (0.517731ms)
+✔ builds queries and sends command bus payloads (0.685478ms)
+✔ throws a typed API error with parsed response details (0.456094ms)
+✔ supports empty responses and caller cancellation signals (0.280782ms)
+✔ captures a Node session cookie and adds the configured CSRF origin (0.726075ms)
+✔ loads the public OpenAPI contract through the system namespace (1.021986ms)
+✔ dispatches generated JSON operations with typed body and query inputs (0.474689ms)
+✔ dispatches generated download and WebSocket transports (1.463332ms)
+✔ rejects unknown generated operation names at runtime (0.169882ms)
+✔ teacher feedback convenience and generated APIs preserve revisions and CSRF (21.233917ms)
+✔ teacher feedback conflicts are exposed without retrying an overwrite (0.773565ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 13
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 85.370102
+
+> @cyanrex/sdk-js@0.3.7 test:types
+> tsc -p tsconfig.type-tests.json
+
+
+> @cyanrex/sdk-js@0.3.7 test:package
+> node --test tests/package-smoke.mjs
+
+✔ package manifest contains the runtime and generated declaration closure (243.754093ms)
+✔ packed JavaScript and declarations have no dangling relative imports (3.501673ms)
+✔ built ESM entry point works from a consumer-style import (22.438087ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 326.621629
+
+STAGE AUDIT-rust
+COMMAND ./scripts/check-security-audit.sh
+EXIT 0
+✅ cargo audit reported no vulnerabilities.
+
+STAGE AUDIT-frontend
+COMMAND env PATH='<node-runtime>/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' node scripts/check-npm-audit.mjs frontend
+EXIT 0
+[npm-audit] Auditing production dependencies in <repo>/frontend (moderate or higher blocks).
+[npm-audit] Attempt 1/3 failed: the Quick Audit fallback is retired; retrying a fresh audit.
+{
+  "auditReportVersion": 2,
+  "vulnerabilities": {},
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0
+    },
+    "dependencies": {
+      "prod": 50,
+      "dev": 7,
+      "optional": 40,
+      "peer": 0,
+      "peerOptional": 0,
+      "total": 96
+    }
+  }
+}
+(node:26403) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+STAGE AUDIT-sdk
+COMMAND env PATH='<node-runtime>/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' node scripts/check-npm-audit.mjs sdk-js
+EXIT 0
+[npm-audit] Auditing production dependencies in <repo>/sdk-js (moderate or higher blocks).
+{
+  "auditReportVersion": 2,
+  "vulnerabilities": {},
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0
+    },
+    "dependencies": {
+      "prod": 1,
+      "dev": 1,
+      "optional": 0,
+      "peer": 0,
+      "peerOptional": 0,
+      "total": 1
+    }
+  }
+}
+(node:26501) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)

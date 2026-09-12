@@ -121,7 +121,24 @@ fn hotp_code(secret: &[u8], counter: u64) -> String {
 }
 
 fn build_otpauth_uri(issuer: &str, account_name: &str, secret: &str) -> String {
+    let issuer = encode_uri_component(issuer);
+    let account_name = encode_uri_component(account_name);
+    let secret = encode_uri_component(secret);
     format!(
         "otpauth://totp/{issuer}:{account_name}?secret={secret}&issuer={issuer}&algorithm=SHA1&digits={TOTP_DIGITS}&period={TOTP_STEP_SECONDS}"
     )
+}
+
+fn encode_uri_component(value: &str) -> String {
+    use std::fmt::Write;
+
+    let mut encoded = String::with_capacity(value.len());
+    for byte in value.bytes() {
+        if byte.is_ascii_alphanumeric() || b"-._~".contains(&byte) {
+            encoded.push(char::from(byte));
+        } else {
+            write!(&mut encoded, "%{byte:02X}").expect("writing to a String cannot fail");
+        }
+    }
+    encoded
 }

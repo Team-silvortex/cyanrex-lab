@@ -1,0 +1,1397 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-09-09T07:35:46.399Z",
+  "snapshot_date": "2026-09-09",
+  "version": "0.3.7",
+  "branch": "main",
+  "head": "f3f9faf585721df5e208c18da99652b040e35d50",
+  "working_tree_dirty": true,
+  "overall": "failed-unresolved",
+  "business_implementation_changed_by_this_run": false,
+  "new_test_cases": 12,
+  "new_unresolved_failures": 5,
+  "retained_unresolved_auth_failures": 4,
+  "commit_or_push_performed": false,
+  "environment": {
+    "os": "Linux 7.0.0-30-generic",
+    "cargo": "1.95.0",
+    "node": "24.19.0",
+    "clang": "18.1.3",
+    "chromium": "152.0.7977.82",
+    "rust_profile": "debug",
+    "postgres_image": "sha256:44cbf408c5417a24daf1b1ec94625f34251ee99af8c3a51e73900a8769457038",
+    "postgres_isolation": "new disposable container; loopback only; tmpfs; no host mounts or volumes"
+  },
+  "totals": {
+    "rust_inventory": 277,
+    "rust_distinct_executed": 275,
+    "rust_distinct_passed": 266,
+    "rust_distinct_failed": 9,
+    "rust_not_run_performance_only": 2,
+    "rust_portable": {
+      "executed": 251,
+      "passed": 246,
+      "failed": 5
+    },
+    "postgres": {
+      "executed": 22,
+      "passed": 18,
+      "failed": 4
+    },
+    "agent_http_clang": {
+      "executed": 1,
+      "passed": 1
+    },
+    "websocket_pressure": {
+      "unique_tests": 1,
+      "scenario_executions": 3,
+      "passed": 3
+    },
+    "frontend_units": {
+      "executed": 44,
+      "passed": 44
+    },
+    "production_browser": {
+      "executed": 35,
+      "passed": 35
+    },
+    "sdk_runtime_and_package": {
+      "executed": 16,
+      "passed": 16
+    },
+    "tooling_node": {
+      "executed": 53,
+      "passed": 53
+    }
+  },
+  "counting_notes": [
+    "The 3 WebSocket scenarios execute one distinct ignored test; no double counting of repeated runs.",
+    "SDK/build/type/contract checks and shell wrapper checks are separate from runtime case counts.",
+    "The final common/format-only gate passed; the overall functional test result remains failed.",
+    "Mapped API operations do not establish exhaustive endpoint or branch coverage."
+  ],
+  "source_manifest": "source-inputs.json",
+  "source_manifest_sha256": "5cc8d7347ce35702789d58bfa30447d5a954eb4c4e8f438ab673f32e336893f2",
+  "plan": "plan.json",
+  "failures": [
+    {
+      "id": "TN-AUTH-01",
+      "priority": "P1",
+      "module": "M01",
+      "test": "services::auth_service::postgres_boundary_tests::postgres_old_login_cannot_authenticate_as_a_recreated_account",
+      "observed": "Old pending login authenticates a recreated same-name account.",
+      "new_in_this_run": false,
+      "status": "unresolved"
+    },
+    {
+      "id": "TN-AUTH-02",
+      "priority": "P2",
+      "module": "M01",
+      "test": "services::auth_service::postgres_boundary_tests::postgres_login_cannot_report_success_after_its_account_was_deleted",
+      "observed": "Deleted-account pending login returns success/invalid cookie and disables DB.",
+      "new_in_this_run": false,
+      "status": "unresolved"
+    },
+    {
+      "id": "TN-AUTH-03",
+      "priority": "P2",
+      "module": "M01",
+      "test": "services::auth_service::postgres_boundary_tests::postgres_delete_suppressed_session_cascade_cannot_report_success",
+      "observed": "Fault-injected suppressed session cascade reports success but leaves a valid durable session.",
+      "new_in_this_run": false,
+      "status": "unresolved"
+    },
+    {
+      "id": "TN-AUTH-04",
+      "priority": "P2",
+      "module": "M01",
+      "test": "services::auth_service::postgres_boundary_tests::postgres_login_zero_row_session_insert_cannot_report_success",
+      "observed": "Fault-injected zero-row session INSERT is reported as successful login.",
+      "new_in_this_run": false,
+      "status": "unresolved"
+    },
+    {
+      "id": "TN-SCRIPT-01",
+      "priority": "P1",
+      "module": "M03",
+      "test": "storage::script_corrupt_snapshot_must_not_be_overwritten_by_a_successful_save",
+      "observed": "Unreadable JSON snapshot overwritten with a successful response.",
+      "new_in_this_run": true,
+      "status": "unresolved"
+    },
+    {
+      "id": "TN-SCRIPT-02",
+      "priority": "P2",
+      "module": "M03",
+      "test": "storage::script_failed_file_save_must_not_publish_an_unsaved_record",
+      "observed": "Failed file save publishes unsaved memory state.",
+      "new_in_this_run": true,
+      "status": "unresolved"
+    },
+    {
+      "id": "TN-SCRIPT-03",
+      "priority": "P2",
+      "module": "M03",
+      "test": "storage::script_failed_file_delete_must_retain_the_previously_saved_record",
+      "observed": "Failed file deletion removes the memory record.",
+      "new_in_this_run": true,
+      "status": "unresolved"
+    },
+    {
+      "id": "TN-EVENT-01",
+      "priority": "P1",
+      "module": "M08",
+      "test": "events::filtered_event_deletion_removes_matches_not_the_complement",
+      "observed": "In-memory filtered deletion deletes the complement; zero matches deletes all.",
+      "new_in_this_run": true,
+      "status": "unresolved"
+    },
+    {
+      "id": "TN-EVENT-02",
+      "priority": "P1",
+      "module": "M08",
+      "test": "events::invalid_event_delete_filters_must_not_widen_into_delete_all",
+      "observed": "Invalid categorical/date delete filters become unfiltered deletion.",
+      "new_in_this_run": true,
+      "status": "unresolved"
+    }
+  ],
+  "stages": [
+    {
+      "id": "00-foundation",
+      "module": "M00",
+      "kind": "check",
+      "layer": "tooling",
+      "started_at": null,
+      "finished_at": null,
+      "command": "./scripts/quality-gate.sh --format-only --no-npm-install",
+      "working_directory": "<repo>",
+      "exit_code": 0,
+      "rust_results": [],
+      "node_results": [
+        {
+          "tests": 53,
+          "passed": 53,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0
+        }
+      ],
+      "log": "tooling.txt"
+    },
+    {
+      "id": "M00-rust-lib",
+      "module": "M00",
+      "kind": "test",
+      "layer": "rust-portable",
+      "expected": 2,
+      "started_at": null,
+      "finished_at": null,
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --lib -- --exact 'metrics::tests::records_check_and_completion_metrics_independently' 'services::environment_checker::tests::runtime_mode_aliases_are_parsed' --test-threads=4 --nocapture",
+      "working_directory": "<repo>",
+      "exit_code": 0,
+      "selection_count_valid": true,
+      "rust_results": [
+        {
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "duration_seconds": 0
+        }
+      ],
+      "node_results": [],
+      "log": "portable.txt"
+    },
+    {
+      "id": "M00-rust-routes_tdd",
+      "module": "M00",
+      "kind": "test",
+      "layer": "rust-portable",
+      "expected": 4,
+      "started_at": "2026-09-09T07:11:06.754Z",
+      "finished_at": "2026-09-09T07:11:08.130Z",
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --test routes_tdd -- --exact 'get_health_should_return_ok_status' 'get_helper_environment_should_return_check_report' 'get_index_should_return_homepage_payload' 'options_ebpf_run_should_allow_cors_preflight' --test-threads=4 --nocapture",
+      "working_directory": "<repo>",
+      "exit_code": 0,
+      "selection_count_valid": true,
+      "rust_results": [
+        {
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "duration_seconds": 1.11
+        }
+      ],
+      "node_results": [],
+      "log": "portable.txt"
+    },
+    {
+      "id": "M01-rust-lib",
+      "module": "M01",
+      "kind": "test",
+      "layer": "rust-portable",
+      "expected": 7,
+      "started_at": "2026-09-09T07:11:08.130Z",
+      "finished_at": "2026-09-09T07:11:13.373Z",
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --lib -- --exact 'services::auth_service::tests::account_mutations_use_the_same_normalized_identity_as_login' 'services::auth_service::tests::concurrent_memory_password_changes_have_one_winner' 'services::auth_service::tests::concurrent_registration_during_schema_failure_has_exactly_one_winner' 'services::auth_service::tests::registration_after_schema_failure_returns_a_usable_fallback_account' 'services::auth_service::tests::schema_failure_cannot_reissue_secrets_for_an_existing_memory_account' 'services::auth_service::tests::totp_uri_encodes_issuer_and_label_without_altering_credentials_or_parameters' 'services::auth_service::postgres_mutation_tests::configured_auth_storage_outage_cannot_turn_mutations_into_memory_success' --test-threads=4 --nocapture",
+      "working_directory": "<repo>",
+      "exit_code": 0,
+      "selection_count_valid": true,
+      "rust_results": [
+        {
+          "passed": 7,
+          "failed": 0,
+          "ignored": 0,
+          "duration_seconds": 4.94
+        }
+      ],
+      "node_results": [],
+      "log": "portable.txt"
+    },
+    {
+      "id": "M01-rust-routes_tdd",
+      "module": "M01",
+      "kind": "test",
+      "layer": "rust-portable",
+      "expected": 29,
+      "started_at": "2026-09-09T07:11:13.373Z",
+      "finished_at": "2026-09-09T07:11:33.528Z",
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --test routes_tdd -- --exact 'get_auth_me_returns_role_for_student_user' 'get_auth_me_should_return_authenticated_after_login' 'learning_labs_require_auth_and_return_progress_catalog' 'post_auth_change_password_should_require_valid_otp_and_update_login_password' 'post_auth_delete_should_remove_user_and_invalidate_login' 'post_auth_login_rejects_invalid_username' 'post_auth_login_returns_teacher_role_for_deployment_owner' 'post_auth_login_returns_teacher_role_for_teacher_user' 'post_auth_login_should_fail_with_invalid_totp' 'post_auth_login_should_succeed_with_valid_password_and_totp' 'post_auth_logout_allows_request_with_allowed_origin' 'post_auth_logout_is_blocked_by_csrf_origin_restriction' 'post_auth_register_rejects_invalid_username' 'post_auth_register_should_create_user_with_totp_bootstrap_payload' 'post_auth_student_can_access_ebpf_endpoints' 'post_auth_student_can_blocked_by_csrf_origin_restriction' 'post_auth_student_is_allowed_when_csrf_origin_is_missing_with_override' 'post_auth_student_is_blocked_when_csrf_origin_is_missing' 'post_auth_student_is_forbidden_from_admin_settings_route' 'post_auth_teacher_can_manage_deployment_settings' 'post_auth_totp_bootstrap_should_fail_with_invalid_credentials' 'post_auth_totp_bootstrap_should_return_otpauth_uri_for_valid_credentials' 'runner_lifecycle_tests::attachment_routes_keep_auth_and_csrf_guards_before_driver' 'runner_status_requires_auth_and_reports_shared_kernel_boundary' 'teacher_authority_default_and_legacy_accounts_report_teacher' 'teacher_authority_deployment_owner_cannot_delete_itself_with_students_present' 'teacher_authority_manages_deployment_and_retains_csrf' 'teacher_authority_public_registration_cannot_claim_reserved_names_or_roles' 'teacher_authority_students_and_anonymous_cannot_manage_deployment' --test-threads=4 --nocapture",
+      "working_directory": "<repo>",
+      "exit_code": 0,
+      "selection_count_valid": true,
+      "rust_results": [
+        {
+          "passed": 29,
+          "failed": 0,
+          "ignored": 0,
+          "duration_seconds": 20
+        }
+      ],
+      "node_results": [],
+      "log": "portable.txt"
+    },
+    {
+      "id": "M01-node-unit",
+      "module": "M01",
+      "kind": "test",
+      "layer": "node-unit",
+      "started_at": "2026-09-09T07:11:33.529Z",
+      "finished_at": "2026-09-09T07:11:34.668Z",
+      "command": "env PATH='<node-runtime>/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' node --experimental-strip-types --test tests/authSession.test.mjs tests/sidebarPermissions.test.mjs tests/securityHeaders.test.mjs",
+      "working_directory": "<repo>/frontend",
+      "exit_code": 0,
+      "rust_results": [],
+      "node_results": [
+        {
+          "tests": 11,
+          "passed": 11,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0
+        }
+      ],
+      "log": "portable.txt"
+    },
+    {
+      "id": "M02-rust-lib",
+      "module": "M02",
+      "kind": "test",
+      "layer": "rust-portable",
+      "expected": 2,
+      "started_at": "2026-09-09T07:11:34.669Z",
+      "finished_at": "2026-09-09T07:11:35.491Z",
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --lib -- --exact 'services::classroom::tests::classroom_configuration_fails_closed' 'services::classroom::tests::classroom_invitations_are_bounded_expire_and_do_not_survive_restart' --test-threads=4 --nocapture",
+      "working_directory": "<repo>",
+      "exit_code": 0,
+      "selection_count_valid": true,
+      "rust_results": [
+        {
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "duration_seconds": 0.02
+        }
+      ],
+      "node_results": [],
+      "log": "portable.txt"
+    },
+    {
+      "id": "M02-rust-classroom_tdd",
+      "module": "M02",
+      "kind": "test",
+      "layer": "rust-portable",
+      "expected": 8,
+      "started_at": "2026-09-09T07:11:35.492Z",
+      "finished_at": "2026-09-09T07:11:44.129Z",
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --test classroom_tdd -- --exact 'classroom_concurrent_redemption_is_once_and_oversized_requests_are_rejected' 'classroom_disabled_by_default_and_discovery_is_minimal' 'classroom_disabled_join_does_not_reveal_reserved_teacher_names' 'classroom_existing_account_is_not_reset_and_failed_creation_consumes_invitation' 'classroom_invitation_joins_student_without_open_registration_or_automatic_login' 'classroom_management_is_teacher_only_and_csrf_protected' 'classroom_revocation_and_inventory_do_not_leak_invitation_secrets' 'classroom_wrong_identity_protocol_capability_origin_or_username_cannot_redeem' --test-threads=4 --nocapture",
+      "working_directory": "<repo>",
+      "exit_code": 0,
+      "selection_count_valid": true,
+      "rust_results": [
+        {
+          "passed": 8,
+          "failed": 0,
+          "ignored": 0,
+          "duration_seconds": 8
+        }
+      ],
+      "node_results": [],
+      "log": "portable.txt"
+    },
+    {
+      "id": "M02-node-unit",
+      "module": "M02",
+      "kind": "test",
+      "layer": "node-unit",
+      "started_at": "2026-09-09T07:11:44.130Z",
+      "finished_at": "2026-09-09T07:11:44.716Z",
+      "command": "env PATH='<node-runtime>/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' node --experimental-strip-types --test tests/classroomConnection.test.mjs",
+      "working_directory": "<repo>/frontend",
+      "exit_code": 0,
+      "rust_results": [],
+      "node_results": [
+        {
+          "tests": 3,
+          "passed": 3,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0
+        }
+      ],
+      "log": "portable.txt"
+    },
+    {
+      "id": "M03-rust-module_boundaries_tdd",
+      "module": "M03",
+      "kind": "test",
+      "layer": "real-router-file-synthetic-driver",
+      "expected": 4,
+      "started_at": "2026-09-09T07:11:44.726Z",
+      "finished_at": "2026-09-09T07:11:56.573Z",
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --test module_boundaries_tdd -- --exact 'storage::scripts_bind_http_identity_csrf_and_file_reload_without_cross_owner_deletion' 'storage::script_failed_file_save_must_not_publish_an_unsaved_record' 'storage::script_failed_file_delete_must_retain_the_previously_saved_record' 'storage::script_corrupt_snapshot_must_not_be_overwritten_by_a_successful_save' --test-threads=4 --nocapture",
+      "working_directory": "<repo>",
+      "exit_code": 101,
+      "selection_count_valid": true,
+      "rust_results": [
+        {
+          "passed": 1,
+          "failed": 3,
+          "ignored": 0,
+          "duration_seconds": 11.16
+        }
+      ],
+      "node_results": [],
+      "log": "portable.txt"
+    },
+    {
+      "id": "M04-rust-lib",
+      "module": "M04",
+      "kind": "test",
+      "layer": "rust-portable",
+      "expected": 3,
+      "started_at": "2026-09-09T07:11:56.574Z",
+      "finished_at": "2026-09-09T07:11:57.741Z",
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --lib -- --exact 'services::module_manager::tests::discovers_versioned_manifests_and_manages_only_known_modules' 'services::module_manager::tests::rejects_missing_catalog_and_invalid_manifest_values' 'services::module_manager::tests::rejects_unsupported_or_directory_mismatched_manifests' --test-threads=4 --nocapture",
+      "working_directory": "<repo>",
+      "exit_code": 0,
+      "selection_count_valid": true,
+      "rust_results": [
+        {
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "duration_seconds": 0.01
+        }
+      ],
+      "node_results": [],
+      "log": "portable.txt"
+    },
+    {
+      "id": "M04-rust-routes_tdd",
+      "module": "M04",
+      "kind": "test",
+      "layer": "rust-portable",
+      "expected": 11,
+      "started_at": "2026-09-09T07:11:57.742Z",
+      "finished_at": "2026-09-09T07:12:04.792Z",
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --test routes_tdd -- --exact 'get_c_headers_catalog_should_return_header_module_items' 'get_modules_catalog_allowed_for_teacher' 'get_modules_list_allowed_for_admin' 'get_modules_list_allowed_for_teacher' 'get_modules_list_forbidden_for_student' 'post_command_should_be_allowed_for_teacher' 'post_command_should_return_structured_module_results_for_admin' 'post_command_should_validate_module_name_and_describe_experiment_handoff' 'post_modules_download_for_teacher_reaches_header_validation' 'post_modules_lifecycle_updates_a_discovered_catalog_entry' 'post_modules_start_rejects_unknown_catalog_entries' --test-threads=4 --nocapture",
+      "working_directory": "<repo>",
+      "exit_code": 0,
+      "selection_count_valid": true,
+      "rust_results": [
+        {
+          "passed": 11,
+          "failed": 0,
+          "ignored": 0,
+          "duration_seconds": 5.17
+        }
+      ],
+      "node_results": [],
+      "log": "portable.txt"
+    },
+    {
+      "id": "M04-rust-module_boundaries_tdd",
+      "module": "M04",
+      "kind": "test",
+      "layer": "real-router-file-synthetic-driver",
+      "expected": 2,
+      "started_at": "2026-09-09T07:12:04.810Z",
+      "finished_at": "2026-09-09T07:12:11.196Z",
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --test module_boundaries_tdd -- --exact 'storage::teacher_header_selection_reloads_and_is_readable_but_not_mutable_by_students' 'storage::header_download_checksum_failure_cannot_publish_a_downloaded_resource' --test-threads=4 --nocapture",
+      "working_directory": "<repo>",
+      "exit_code": 0,
+      "selection_count_valid": true,
+      "rust_results": [
+        {
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "duration_seconds": 5.13
+        }
+      ],
+      "node_results": [],
+      "log": "portable.txt"
+    },
+    {
+      "id": "M04-node-unit",
+      "module": "M04",
+      "kind": "test",
+      "layer": "node-unit",
+      "started_at": "2026-09-09T07:12:11.197Z",
+      "finished_at": "2026-09-09T07:12:11.578Z",
+      "command": "env PATH='<node-runtime>/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' node --experimental-strip-types --test tests/terminalCommand.test.mjs",
+      "working_directory": "<repo>/frontend",
+      "exit_code": 0,
+      "rust_results": [],
+      "node_results": [
+        {
+          "tests": 2,
+          "passed": 2,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0
+        }
+      ],
+      "log": "portable.txt"
+    },
+    {
+      "id": "M05-rust-lib",
+      "module": "M05",
+      "kind": "test",
+      "layer": "rust-portable",
+      "expected": 15,
+      "started_at": "2026-09-09T07:12:11.579Z",
+      "finished_at": "2026-09-09T07:12:12.158Z",
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --lib -- --exact 'routes::ebpf::breakpoint_trace_tests::parses_only_the_requested_debug_session' 'routes::ebpf::debug_backend_fallback_tests::fallback_requires_bpftool_tracepoint_and_active_debug_probe' 'services::ebpf_loader::compiler_diagnostic_tests::parses_clang_error_locations' 'services::ebpf_loader::compiler_scope_tests::compiler_check_cache_is_scoped_to_owner' 'services::ebpf_loader::compiler_scope_tests::compiler_completion_cache_is_scoped_to_owner_and_cursor' 'services::ebpf_loader::compiler_workspace::tests::compiler_workspace_is_private_and_removed_on_drop' 'services::ebpf_loader::compiler_workspace::tests::compiler_workspace_is_removed_when_operation_is_cancelled' 'services::ebpf_loader::completion_parser_tests::parses_clang_completion_item' 'services::ebpf_loader::debug_tests::does_not_treat_map_initializer_as_a_function' 'services::ebpf_loader::debug_tests::enforces_breakpoint_limit' 'services::ebpf_loader::debug_tests::ignores_braces_and_assignments_in_preprocessor_macros' 'services::ebpf_loader::debug_tests::instruments_function_entry_and_statement_without_changing_line_count' 'services::ebpf_loader::debug_tests::rejects_global_comment_and_out_of_range_lines' 'services::ebpf_loader::workspace_tests::owner_namespace_is_stable_distinct_and_path_safe' 'services::ebpf_loader::workspace_tests::workspace_is_removed_when_lease_scope_ends' --test-threads=4 --nocapture",
+      "working_directory": "<repo>",
+      "exit_code": 0,
+      "selection_count_valid": true,
+      "rust_results": [
+        {
+          "passed": 15,
+          "failed": 0,
+          "ignored": 0,
+          "duration_seconds": 0.23
+        }
+      ],
+      "node_results": [],
+      "log": "portable.txt"
+    },
+    {
+      "id": "M05-rust-routes_tdd",
+      "module": "M05",
+      "kind": "test",
+      "layer": "rust-portable",
+      "expected": 5,
+      "started_at": "2026-09-09T07:12:12.159Z",
+      "finished_at": "2026-09-09T07:12:14.327Z",
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --test routes_tdd -- --exact 'get_ebpf_templates_should_return_template_catalog' 'post_ebpf_check_empty_code_should_return_validation_error' 'post_ebpf_check_with_oversized_code_should_return_payload_too_large' 'post_ebpf_run_with_empty_code_should_fail_validation' 'post_ebpf_run_with_oversized_code_should_fail_validation' --test-threads=4 --nocapture",
+      "working_directory": "<repo>",
+      "exit_code": 0,
+      "selection_count_valid": true,
+      "rust_results": [
+        {
+          "passed": 5,
+          "failed": 0,
+          "ignored": 0,
+          "duration_seconds": 1.82
+        }
+      ],
+      "node_results": [],
+      "log": "portable.txt"
+    },
+    {
+      "id": "M06-rust-lib",
+      "module": "M06",
+      "kind": "test",
+      "layer": "rust-portable",
+      "expected": 30,
+      "started_at": "2026-09-09T07:12:14.329Z",
+      "finished_at": "2026-09-09T07:12:14.673Z",
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --lib -- --exact 'services::runner_agent_authenticator::tests::tampering_rotation_and_stale_timestamps_are_rejected' 'services::runner_agent_authenticator::tests::valid_signature_is_accepted_once' 'services::runner_agent_client::compile_check_requires_a_real_isolation_boundary' 'services::runner_agent_client::engine_url_rejects_redirectable_or_ambiguous_components' 'services::runner_agent_client::engine_url_requires_tls_outside_loopback' 'services::runner_agent_executor::tests::capped_reader_drains_but_bounds_output' 'services::runner_agent_executor::tests::executor_rejects_ambiguous_paths' 'services::runner_agent_executor::tests::installed_clang_produces_a_bounded_report_and_leaves_no_job_files' 'services::runner_agent_executor::tests::source_policy_allows_system_headers_and_rejects_file_reads' 'services::runner_agent_executor::tests::workspaces_are_private_and_removed' 'services::runner_agent_registry::tests::heartbeat_cannot_overstate_registered_capacity' 'services::runner_agent_registry::tests::identifiers_cannot_contain_whitespace' 'services::runner_agent_registry::tests::registry_has_a_hard_agent_count_limit' 'services::runner_agent_registry::tests::shared_kernel_agents_cannot_advertise_the_compiler' 'services::runner_agent_registry::tests::short_tokens_and_invalid_retention_are_rejected' 'services::runner_agent_registry::tests::stale_agents_become_offline_and_are_then_pruned' 'services::runner_agent_registry::tests::token_authentication_is_disabled_or_constant_time_checked' 'services::runner_driver::tests::local_attachment_lifecycle_preserves_empty_inventory_and_cleanup' 'services::runner_driver::tests::local_detach_rejects_untracked_paths_without_touching_them' 'services::runner_job_queue::tests::claim_respects_agent_active_capacity' 'services::runner_job_queue::tests::claimed_probe_requires_cancel_acknowledgement' 'services::runner_job_queue::tests::compile_checks_require_the_clang_capability_and_hide_source_from_inventory' 'services::runner_job_queue::tests::probe_can_be_claimed_completed_and_listed_without_exposing_lease' 'services::runner_job_queue::tests::user_compile_jobs_are_private_cancellable_and_quota_limited' 'services::runner_manager::tests::compiler_operations_require_an_owner_before_dispatch' 'services::runner_manager::tests::enforces_per_user_capacity_and_releases_on_drop' 'services::runner_manager::tests::execution_delegates_to_driver_and_updates_runtime_metadata' 'services::runner_manager::tests::execution_rejects_another_owner_before_calling_driver_or_changing_lease' 'services::runner_manager::tests::reports_global_capacity_without_exposing_other_user_count' 'services::runner_manager::tests::unsupported_driver_mode_fails_closed' --test-threads=4 --nocapture",
+      "working_directory": "<repo>",
+      "exit_code": 0,
+      "selection_count_valid": true,
+      "rust_results": [
+        {
+          "passed": 30,
+          "failed": 0,
+          "ignored": 0,
+          "duration_seconds": 0.05
+        }
+      ],
+      "node_results": [],
+      "log": "portable.txt"
+    },
+    {
+      "id": "M06-rust-routes_tdd",
+      "module": "M06",
+      "kind": "test",
+      "layer": "rust-portable",
+      "expected": 16,
+      "started_at": "2026-09-09T07:12:14.674Z",
+      "finished_at": "2026-09-09T07:12:24.556Z",
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --test routes_tdd -- --exact 'admin_can_submit_a_capability_matched_compile_check_without_inventory_source_leak' 'authenticated_remote_check_is_user_scoped_and_normalizes_agent_diagnostics' 'runner_agent_can_register_heartbeat_and_appear_in_admin_inventory' 'runner_agent_registration_rejects_oversized_payloads' 'runner_agent_registration_requires_bearer_token' 'runner_agent_signed_requests_cannot_be_replayed' 'runner_compiler_tests::compiler_backend_failure_and_timeout_never_fall_back_to_local_compiler' 'runner_compiler_tests::compiler_capacity_is_per_manager_and_cancel_releases_slots_and_metrics' 'runner_compiler_tests::compiler_guards_and_validation_run_before_driver_dispatch' 'runner_compiler_tests::compiler_routes_delegate_source_owner_headers_cursor_and_cache_status' 'runner_lifecycle_tests::attachment_backend_unavailability_never_falls_back_to_local_loader' 'runner_lifecycle_tests::attachment_inventory_uses_session_owner_and_outlives_execution_lease' 'runner_lifecycle_tests::attachment_operations_have_bounded_deadlines' 'runner_lifecycle_tests::detach_uses_driver_ownership_and_cleanup_report_without_host_inspection' 'runner_overview_is_admin_only' 'runner_probe_job_supports_claim_cancel_sync_and_result' --test-threads=4 --nocapture",
+      "working_directory": "<repo>",
+      "exit_code": 0,
+      "selection_count_valid": true,
+      "rust_results": [
+        {
+          "passed": 16,
+          "failed": 0,
+          "ignored": 0,
+          "duration_seconds": 9.55
+        }
+      ],
+      "node_results": [],
+      "log": "portable.txt"
+    },
+    {
+      "id": "M07-rust-lib",
+      "module": "M07",
+      "kind": "test",
+      "layer": "rust-portable",
+      "expected": 35,
+      "started_at": "2026-09-09T07:12:24.557Z",
+      "finished_at": "2026-09-09T07:12:24.881Z",
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --lib -- --exact 'routes::ebpf::learning_template_assessment_tests::bundled_beginner_templates_satisfy_structural_assessment' 'services::learning_catalog::tests::catalog_has_ordered_unique_labs' 'services::learning_catalog::tests::comments_and_strings_do_not_satisfy_source_requirements' 'services::learning_catalog::tests::equivalent_null_guard_is_accepted_for_map_lab' 'services::learning_catalog::tests::helper_name_substrings_do_not_satisfy_call_requirements' 'services::learning_catalog::tests::success_flag_without_runtime_stage_does_not_complete_lab' 'services::learning_catalog::tests::tracepoint_lab_requires_real_success_template_and_attach' 'services::learning_store::persistence::tests::partial_write_and_final_flush_failures_are_returned' 'services::learning_store::persistence::tests::pretty_json_is_written_before_all_rows_are_serialized' 'services::learning_store::persistence::tests::serializer_errors_are_not_successful_writes' 'services::learning_store::persistence::tests::short_and_interrupted_writes_preserve_large_source_and_empty_arrays' 'services::learning_store::queries::tests::bounded_selection_matches_stable_sort_with_ties_and_arbitrary_input_order' 'services::learning_store::queries::tests::single_pass_aggregates_match_previous_progress_and_overview_semantics' 'services::learning_store::queries::tests::zero_limit_does_not_scan_and_a_limited_query_visits_each_input_at_most_once' 'services::learning_store::snapshot_tests::appends_share_existing_sources_and_do_not_mutate_old_snapshots' 'services::learning_store::snapshot_tests::cancellation_tests::cancelled_append_finishes_publication_before_releasing_the_writer_lock' 'services::learning_store::snapshot_tests::cancellation_tests::cancelled_failing_worker_preserves_old_data_and_releases_admission' 'services::learning_store::snapshot_tests::cancellation_tests::cancelled_feedback_keeps_the_saved_revision_and_rejects_a_stale_retry' 'services::learning_store::snapshot_tests::cancellation_tests::cancelled_request_does_not_drop_an_admitted_but_not_started_worker' 'services::learning_store::snapshot_tests::cancellation_tests::cancelling_queued_writers_does_not_change_disk_or_memory' 'services::learning_store::snapshot_tests::concurrent_appends_and_feedback_keep_every_success_after_reload' 'services::learning_store::snapshot_tests::failed_final_rename_does_not_change_the_in_memory_snapshot' 'services::learning_store::snapshot_tests::failed_writes_do_not_publish_a_new_snapshot_and_remain_retryable' 'services::learning_store::snapshot_tests::feedback_copies_only_the_changed_record_and_preserves_old_snapshots' 'services::learning_store::snapshot_tests::legacy_json_array_still_loads_and_writes_identical_pretty_encoding' 'services::learning_store::snapshot_tests::load_tests::cancelled_decoded_load_publishes_once_and_does_not_reread_changed_input' 'services::learning_store::snapshot_tests::load_tests::cancelled_queued_load_keeps_admission_and_finishes_initialization' 'services::learning_store::snapshot_tests::load_tests::cold_decoder_matches_legacy_serde_and_never_publishes_partial_input' 'services::learning_store::snapshot_tests::load_tests::concurrent_cold_appends_and_feedback_preserve_initial_and_new_rows' 'services::learning_store::snapshot_tests::load_tests::concurrent_cold_readers_share_one_published_snapshot' 'services::learning_store::snapshot_tests::load_tests::only_not_found_is_initialized_as_empty_and_path_errors_remain_retryable' 'services::learning_store::snapshot_tests::progress_and_overview_stay_fresh_without_exposing_or_copying_source' 'services::learning_store::snapshot_tests::recent_pages_keep_timestamp_order_and_stable_ties_without_leaking_owners' 'services::learning_store::snapshot_tests::snapshot_reads_share_the_collection_and_source_allocations' 'services::learning_store::tests::progress_prefers_completed_state_over_later_failures' --test-threads=4 --nocapture",
+      "working_directory": "<repo>",
+      "exit_code": 0,
+      "selection_count_valid": true,
+      "rust_results": [
+        {
+          "passed": 35,
+          "failed": 0,
+          "ignored": 0,
+          "duration_seconds": 0.07
+        }
+      ],
+      "node_results": [],
+      "log": "portable.txt"
+    },
+    {
+      "id": "M07-rust-routes_tdd",
+      "module": "M07",
+      "kind": "test",
+      "layer": "rust-portable",
+      "expected": 13,
+      "started_at": "2026-09-09T07:12:24.883Z",
+      "finished_at": "2026-09-09T07:12:33.052Z",
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --test routes_tdd -- --exact 'get_ebpf_templates_should_include_categorized_learning_paths' 'learning_single_attempt_is_read_only_and_bound_to_the_session_owner' 'learning_single_attempt_reports_storage_errors_without_exposing_source' 'learning_teacher_feedback_and_new_runs_preserve_both_updates' 'learning_teacher_feedback_enforces_staff_and_csrf' 'learning_teacher_feedback_failure_does_not_publish_unsaved_changes' 'learning_teacher_feedback_is_saved_and_visible_to_its_student' 'learning_teacher_feedback_loads_legacy_attempts_without_feedback' 'learning_teacher_feedback_rejects_missing_revision_and_spoofed_author' 'learning_teacher_feedback_rejects_stale_and_concurrent_edits' 'learning_teacher_feedback_validates_comment_and_attempt_owner' 'teacher_attempt_review_is_limited_and_students_cannot_read_it' 'teacher_learning_overview_is_staff_only' --test-threads=4 --nocapture",
+      "working_directory": "<repo>",
+      "exit_code": 0,
+      "selection_count_valid": true,
+      "rust_results": [
+        {
+          "passed": 13,
+          "failed": 0,
+          "ignored": 0,
+          "duration_seconds": 7.89
+        }
+      ],
+      "node_results": [],
+      "log": "portable.txt"
+    },
+    {
+      "id": "M07-rust-module_boundaries_tdd",
+      "module": "M07",
+      "kind": "test",
+      "layer": "real-router-file-synthetic-driver",
+      "expected": 1,
+      "started_at": "2026-09-09T07:12:33.053Z",
+      "finished_at": "2026-09-09T07:12:36.004Z",
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --test module_boundaries_tdd -- --exact 'learning_flow::saved_source_flows_through_runner_events_feedback_and_owner_bound_resume' --test-threads=4 --nocapture",
+      "working_directory": "<repo>",
+      "exit_code": 0,
+      "selection_count_valid": true,
+      "rust_results": [
+        {
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "duration_seconds": 2.67
+        }
+      ],
+      "node_results": [],
+      "log": "portable.txt"
+    },
+    {
+      "id": "M07-node-unit",
+      "module": "M07",
+      "kind": "test",
+      "layer": "node-unit",
+      "started_at": "2026-09-09T07:12:36.005Z",
+      "finished_at": "2026-09-09T07:12:36.272Z",
+      "command": "env PATH='<node-runtime>/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' node --experimental-strip-types --test tests/teachingReview.test.mjs tests/learningResume.test.mjs",
+      "working_directory": "<repo>/frontend",
+      "exit_code": 0,
+      "rust_results": [],
+      "node_results": [
+        {
+          "tests": 9,
+          "passed": 9,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0
+        }
+      ],
+      "log": "portable.txt"
+    },
+    {
+      "id": "M08-rust-lib",
+      "module": "M08",
+      "kind": "test",
+      "layer": "rust-portable",
+      "expected": 27,
+      "started_at": "2026-09-09T07:12:36.273Z",
+      "finished_at": "2026-09-09T07:12:36.668Z",
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --lib -- --exact 'routes::events::stream::tests::closed_channel_produces_a_normal_shutdown_close' 'routes::events::stream::tests::stalled_send_is_bounded_and_cancelled' 'services::event_bus::subscriptions::tests::cancelling_recv_preserves_delivery_and_aborting_releases_the_subscription' 'services::event_bus::subscriptions::tests::concurrent_publishers_and_connection_churn_preserve_owner_and_writer_order' 'services::event_bus::subscriptions::tests::event_bus_keeps_global_compatibility_and_drop_new_semantics' 'services::event_bus::subscriptions::tests::json_is_lazy_and_encoded_once_across_concurrent_receivers' 'services::event_bus::subscriptions::tests::matching_receivers_share_one_event_allocation' 'services::event_bus::subscriptions::tests::receivers_do_not_keep_the_registry_or_sender_alive' 'services::event_bus::subscriptions::tests::stale_drop_cannot_remove_a_replacement_generation' 'services::event_bus::subscriptions::tests::subscriptions_are_live_only_and_cleanup_after_the_last_connection' 'services::event_bus::subscriptions::tests::unrelated_traffic_cannot_lag_an_owner_but_own_slow_receivers_still_lag' 'services::event_bus::tests::bounded_reads_during_publication_remain_ordered_and_user_scoped' 'services::event_bus::tests::concurrent_users_retain_independent_ordered_histories' 'services::event_bus::tests::drop_new_does_not_change_history_broadcast_or_unread_after_full' 'services::event_bus::tests::drop_oldest_preserves_fifo_after_repeated_wraparound' 'services::event_bus::tests::filtered_snapshots_keep_latest_matching_events_in_fifo_order' 'services::event_bus::tests::limited_queries_handle_empty_zero_oversized_and_full_export_results' 'services::event_bus::tests::replacement_and_clear_remain_user_scoped_and_reset_unread' 'services::event_bus::tests::selected_result_storage_does_not_grow_past_the_known_output_bound' 'services::event_bus::tests::shrinking_and_growing_a_wrapped_history_preserves_the_newest_events' 'services::event_bus::tests::steady_state_eviction_does_not_grow_or_relocate_retained_events' 'services::event_bus_filter::tests::borrowed_selection_matches_legacy_filters_across_wrapped_histories' 'services::event_bus_filter::tests::latest_page_stops_visiting_after_its_limit_and_returns_borrowed_events' 'services::event_bus_filter::tests::retention_is_applied_before_filtering_older_matches' 'services::event_bus_filter::tests::selective_page_stops_after_enough_matches_not_enough_scanned_events' 'services::event_bus_filter::tests::time_bounds_are_inclusive_and_do_not_assume_timestamp_order' 'services::event_bus_filter::tests::zero_limit_does_not_visit_history' --test-threads=4 --nocapture",
+      "working_directory": "<repo>",
+      "exit_code": 0,
+      "selection_count_valid": true,
+      "rust_results": [
+        {
+          "passed": 27,
+          "failed": 0,
+          "ignored": 0,
+          "duration_seconds": 0.13
+        }
+      ],
+      "node_results": [],
+      "log": "portable.txt"
+    },
+    {
+      "id": "M08-rust-routes_tdd",
+      "module": "M08",
+      "kind": "test",
+      "layer": "rust-portable",
+      "expected": 4,
+      "started_at": "2026-09-09T07:12:36.669Z",
+      "finished_at": "2026-09-09T07:12:40.805Z",
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --test routes_tdd -- --exact 'event_websocket_keeps_raw_event_frames_and_owner_isolation' 'event_websocket_lag_closes_with_resync_code_instead_of_silent_loss' 'event_websocket_other_owner_burst_does_not_force_resync' 'event_websocket_requires_a_session_and_allowed_origin' --test-threads=4 --nocapture",
+      "working_directory": "<repo>",
+      "exit_code": 0,
+      "selection_count_valid": true,
+      "rust_results": [
+        {
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "duration_seconds": 3.87
+        }
+      ],
+      "node_results": [],
+      "log": "portable.txt"
+    },
+    {
+      "id": "M08-node-unit",
+      "module": "M08",
+      "kind": "test",
+      "layer": "node-unit",
+      "started_at": "2026-09-09T07:12:40.807Z",
+      "finished_at": "2026-09-09T07:12:41.054Z",
+      "command": "env PATH='<node-runtime>/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' node --experimental-strip-types --test tests/eventStream.test.mjs",
+      "working_directory": "<repo>/frontend",
+      "exit_code": 0,
+      "rust_results": [],
+      "node_results": [
+        {
+          "tests": 13,
+          "passed": 13,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0
+        }
+      ],
+      "log": "portable.txt"
+    },
+    {
+      "id": "M09-node-unit",
+      "module": "M09",
+      "kind": "test",
+      "layer": "node-unit",
+      "started_at": "2026-09-09T07:12:41.056Z",
+      "finished_at": "2026-09-09T07:12:41.320Z",
+      "command": "env PATH='<node-runtime>/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' node --experimental-strip-types --test tests/actionSafety.test.mjs tests/performanceHotspots.test.mjs tests/cleanMacosMetadata.test.mjs",
+      "working_directory": "<repo>/frontend",
+      "exit_code": 0,
+      "rust_results": [],
+      "node_results": [
+        {
+          "tests": 6,
+          "passed": 6,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0
+        }
+      ],
+      "log": "portable.txt"
+    },
+    {
+      "id": "M10-rust-routes_tdd",
+      "module": "M10",
+      "kind": "test",
+      "layer": "rust-portable",
+      "expected": 1,
+      "started_at": "2026-09-09T07:12:41.321Z",
+      "finished_at": "2026-09-09T07:12:41.977Z",
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --test routes_tdd -- --exact 'get_openapi_should_return_versioned_machine_readable_contract' --test-threads=4 --nocapture",
+      "working_directory": "<repo>",
+      "exit_code": 0,
+      "selection_count_valid": true,
+      "rust_results": [
+        {
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "duration_seconds": 0.4
+        }
+      ],
+      "node_results": [],
+      "log": "portable.txt"
+    },
+    {
+      "id": "M11-rust-src-bin-cyanrex-release-main.rs",
+      "module": "M11",
+      "kind": "test",
+      "layer": "rust-portable",
+      "expected": 10,
+      "started_at": "2026-09-09T07:12:41.980Z",
+      "finished_at": "2026-09-09T07:12:42.260Z",
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --bin cyanrex-release -- --exact 'smoke_health::tests::health_probe_requires_an_ok_payload' 'smoke_http::tests::admin_credentials_require_https_or_loopback' 'smoke_http::tests::totp_matches_the_rfc_sha1_vector_truncated_to_six_digits' 'smoke_live_kernel::tests::native_live_kernel_smoke_detaches_when_no_matching_event_arrives' 'smoke_live_kernel::tests::native_live_kernel_smoke_reports_unproven_failure_cleanup' 'smoke_live_kernel::tests::native_live_kernel_smoke_writes_evidence_after_exact_cleanup' 'smoke_runner_agent::tests::native_runner_smoke_authenticates_submits_and_accepts_a_real_result' 'smoke_runner_agent::tests::native_runner_smoke_cancels_a_job_that_does_not_finish' 'strict_json::tests::accepts_each_json_value_kind' 'strict_json::tests::rejects_duplicate_keys_at_any_depth' --test-threads=4 --nocapture",
+      "working_directory": "<repo>",
+      "exit_code": 0,
+      "selection_count_valid": true,
+      "rust_results": [
+        {
+          "passed": 10,
+          "failed": 0,
+          "ignored": 0,
+          "duration_seconds": 0.02
+        }
+      ],
+      "node_results": [],
+      "log": "portable.txt"
+    },
+    {
+      "id": "M11-rust-release_candidate_tdd",
+      "module": "M11",
+      "kind": "test",
+      "layer": "rust-portable",
+      "expected": 1,
+      "started_at": "2026-09-09T07:12:42.261Z",
+      "finished_at": "2026-09-09T07:12:43.117Z",
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --test release_candidate_tdd -- --exact 'native_candidate_verifier_passes_the_complete_bundle_regression_suite' --test-threads=4 --nocapture",
+      "working_directory": "<repo>",
+      "exit_code": 0,
+      "selection_count_valid": true,
+      "rust_results": [
+        {
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "duration_seconds": 0.58
+        }
+      ],
+      "node_results": [],
+      "log": "portable.txt"
+    },
+    {
+      "id": "M11-rust-release_package_tdd",
+      "module": "M11",
+      "kind": "test",
+      "layer": "rust-portable",
+      "expected": 9,
+      "started_at": "2026-09-09T07:12:43.119Z",
+      "finished_at": "2026-09-09T07:12:43.586Z",
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --test release_package_tdd -- --exact 'installed_tests::installation_checks_the_bundled_binary_before_execution' 'installed_tests::installation_preflight_preserves_preexisting_configuration_and_tokens' 'installed_tests::installation_uses_native_probes_without_python_and_cleans_owned_state' 'installed_tests::installed_image_probe_checks_all_images_and_fails_closed' 'installed_tests::installed_verifier_rejects_links_missing_files_and_duplicate_metadata' 'native_extractor_rejects_outer_checksum_tampering' 'native_extractor_rejects_unsafe_or_unverified_members' 'native_installed_package_verifier_rejects_tampering_and_unlisted_files' 'rust_and_python_extract_the_same_verified_package' --test-threads=4 --nocapture",
+      "working_directory": "<repo>",
+      "exit_code": 0,
+      "selection_count_valid": true,
+      "rust_results": [
+        {
+          "passed": 9,
+          "failed": 0,
+          "ignored": 0,
+          "duration_seconds": 0.21
+        }
+      ],
+      "node_results": [],
+      "log": "portable.txt"
+    },
+    {
+      "id": "M11-rust-release_tool_tdd",
+      "module": "M11",
+      "kind": "test",
+      "layer": "rust-portable",
+      "expected": 3,
+      "started_at": "2026-09-09T07:12:43.588Z",
+      "finished_at": "2026-09-09T07:12:43.946Z",
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --test release_tool_tdd -- --exact 'native_verifier_accepts_v1_and_rejects_tampering' 'native_writer_rejects_duplicates_and_existing_outputs' 'python_and_rust_evidence_are_mutually_compatible' --test-threads=4 --nocapture",
+      "working_directory": "<repo>",
+      "exit_code": 0,
+      "selection_count_valid": true,
+      "rust_results": [
+        {
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "duration_seconds": 0.09
+        }
+      ],
+      "node_results": [],
+      "log": "portable.txt"
+    },
+    {
+      "id": "M11-rust-ssh_deploy_tdd",
+      "module": "M11",
+      "kind": "test",
+      "layer": "rust-portable",
+      "expected": 5,
+      "started_at": "2026-09-09T07:12:43.947Z",
+      "finished_at": "2026-09-09T07:12:44.259Z",
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --test ssh_deploy_tdd -- --exact 'ssh_apply_uses_reviewed_arguments_once_and_does_not_retry_failure' 'ssh_arguments_reject_injection_and_unknown_actions' 'ssh_plan_is_offline_strict_and_target_bound' 'ssh_target_checks_package_controls_and_private_configuration_before_execution' 'ssh_target_refuses_version_mismatch_before_touching_deployment' --test-threads=4 --nocapture",
+      "working_directory": "<repo>",
+      "exit_code": 0,
+      "selection_count_valid": true,
+      "rust_results": [
+        {
+          "passed": 5,
+          "failed": 0,
+          "ignored": 0,
+          "duration_seconds": 0.03
+        }
+      ],
+      "node_results": [],
+      "log": "portable.txt"
+    },
+    {
+      "id": "B01-postgres-auth",
+      "module": "M01",
+      "kind": "test",
+      "layer": "real-postgres-fault-injection",
+      "expected": 20,
+      "started_at": "2026-09-09T07:14:41.781Z",
+      "finished_at": "2026-09-09T07:14:56.931Z",
+      "command": "env -u DATABASE_URL CYANREX_DB_FALLBACK=true CYANREX_DATA_DIR='<test-data>' CYANREX_TEST_DATABASE_URL='<disposable-postgres-url>' cargo test --manifest-path engine/Cargo.toml --locked --lib services::auth_service:: -- --ignored --nocapture --test-threads=4",
+      "working_directory": "<repo>",
+      "exit_code": 101,
+      "selection_count_valid": true,
+      "rust_results": [
+        {
+          "passed": 16,
+          "failed": 4,
+          "ignored": 0,
+          "duration_seconds": 14.84
+        }
+      ],
+      "node_results": [],
+      "log": "postgres.txt"
+    },
+    {
+      "id": "B03-postgres-learning",
+      "module": "M07",
+      "kind": "test",
+      "layer": "real-postgres",
+      "expected": 1,
+      "started_at": "2026-09-09T07:14:57.650Z",
+      "finished_at": "2026-09-09T07:14:58.059Z",
+      "command": "env -u DATABASE_URL CYANREX_DB_FALLBACK=true CYANREX_DATA_DIR='<test-data>' CYANREX_TEST_DATABASE_URL='<disposable-postgres-url>' cargo test --manifest-path engine/Cargo.toml --locked --lib -- --ignored --exact services::learning_store::feedback::tests::postgres_feedback_migrates_legacy_rows_and_serializes_updates --nocapture",
+      "working_directory": "<repo>",
+      "exit_code": 0,
+      "selection_count_valid": true,
+      "rust_results": [
+        {
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "duration_seconds": 0.14
+        }
+      ],
+      "node_results": [],
+      "log": "postgres.txt"
+    },
+    {
+      "id": "B02-postgres-scripts",
+      "module": "M03",
+      "kind": "test",
+      "layer": "real-postgres",
+      "expected": 1,
+      "started_at": "2026-09-09T07:15:41.654Z",
+      "finished_at": "2026-09-09T07:15:44.074Z",
+      "command": "env -u DATABASE_URL CYANREX_DB_FALLBACK=true CYANREX_DATA_DIR='<test-data>' CYANREX_TEST_DATABASE_URL='<disposable-postgres-url>' cargo test --manifest-path engine/Cargo.toml --locked --test module_boundaries_tdd -- --ignored --exact script_postgres::scripts_use_postgres_without_file_fallback_and_keep_owner_boundaries_after_reload --nocapture",
+      "working_directory": "<repo>",
+      "exit_code": 0,
+      "selection_count_valid": true,
+      "rust_results": [
+        {
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "duration_seconds": 0.7
+        }
+      ],
+      "node_results": [],
+      "log": "postgres.txt"
+    },
+    {
+      "id": "B04-agent-http-clang",
+      "module": "M06",
+      "kind": "test",
+      "layer": "real-loopback-http-clang-no-kernel",
+      "expected": 1,
+      "started_at": "2026-09-09T07:15:44.075Z",
+      "finished_at": "2026-09-09T07:15:44.805Z",
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' cargo test --manifest-path engine/Cargo.toml --locked --test runner_agent_client_tdd -- --ignored --exact runner_agent_client_completes_signed_probe_and_compile_jobs_over_http --nocapture",
+      "working_directory": "<repo>",
+      "exit_code": 0,
+      "selection_count_valid": true,
+      "rust_results": [
+        {
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "duration_seconds": 0.47
+        }
+      ],
+      "node_results": [],
+      "log": "transport.txt"
+    },
+    {
+      "id": "B05-websocket-paced",
+      "module": "M08",
+      "kind": "test",
+      "layer": "real-loopback-websocket-debug-functional-pressure",
+      "expected": 1,
+      "started_at": "2026-09-09T07:15:44.807Z",
+      "finished_at": "2026-09-09T07:15:45.599Z",
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' CYANREX_WS_BENCH_KIND=paced cargo test --manifest-path engine/Cargo.toml --locked --lib -- --ignored --exact routes::events::stream::pressure_tests::measure --nocapture",
+      "working_directory": "<repo>",
+      "exit_code": 0,
+      "selection_count_valid": true,
+      "rust_results": [
+        {
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "duration_seconds": 0.54
+        }
+      ],
+      "node_results": [],
+      "log": "transport.txt"
+    },
+    {
+      "id": "B05-websocket-burst",
+      "module": "M08",
+      "kind": "test",
+      "layer": "real-loopback-websocket-debug-functional-pressure",
+      "expected": 1,
+      "started_at": "2026-09-09T07:15:45.600Z",
+      "finished_at": "2026-09-09T07:15:45.949Z",
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' CYANREX_WS_BENCH_KIND=burst cargo test --manifest-path engine/Cargo.toml --locked --lib -- --ignored --exact routes::events::stream::pressure_tests::measure --nocapture",
+      "working_directory": "<repo>",
+      "exit_code": 0,
+      "selection_count_valid": true,
+      "rust_results": [
+        {
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "duration_seconds": 0.08
+        }
+      ],
+      "node_results": [],
+      "log": "transport.txt"
+    },
+    {
+      "id": "B05-websocket-stalled",
+      "module": "M08",
+      "kind": "test",
+      "layer": "real-loopback-websocket-debug-functional-pressure",
+      "expected": 1,
+      "started_at": "2026-09-09T07:15:45.950Z",
+      "finished_at": "2026-09-09T07:15:51.260Z",
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<test-data>' CYANREX_WS_BENCH_KIND=stalled cargo test --manifest-path engine/Cargo.toml --locked --lib -- --ignored --exact routes::events::stream::pressure_tests::measure --nocapture",
+      "working_directory": "<repo>",
+      "exit_code": 0,
+      "selection_count_valid": true,
+      "rust_results": [
+        {
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "duration_seconds": 5.06
+        }
+      ],
+      "node_results": [],
+      "log": "transport.txt"
+    },
+    {
+      "id": "BUILD-frontend",
+      "module": "M09",
+      "kind": "check",
+      "layer": "production-build",
+      "started_at": "2026-09-09T07:19:45.611Z",
+      "finished_at": "2026-09-09T07:19:58.720Z",
+      "command": "env PATH='<node-runtime>/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' NEXT_PUBLIC_ENGINE_URL=http://127.0.0.1:43181 npm --prefix frontend run build",
+      "working_directory": "<repo>",
+      "exit_code": 0,
+      "rust_results": [],
+      "node_results": [],
+      "log": "build-and-audit.txt"
+    },
+    {
+      "id": "TYPECHECK-frontend",
+      "module": "M09",
+      "kind": "check",
+      "layer": "typescript",
+      "started_at": "2026-09-09T07:19:58.721Z",
+      "finished_at": "2026-09-09T07:20:01.184Z",
+      "command": "env PATH='<node-runtime>/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' node frontend/node_modules/typescript/bin/tsc --noEmit --project frontend/tsconfig.json",
+      "working_directory": "<repo>",
+      "exit_code": 0,
+      "rust_results": [],
+      "node_results": [],
+      "log": "build-and-audit.txt"
+    },
+    {
+      "id": "SDK-check",
+      "module": "M10",
+      "kind": "test-and-check",
+      "layer": "sdk-contract-types-package",
+      "started_at": "2026-09-09T07:20:01.185Z",
+      "finished_at": "2026-09-09T07:20:04.605Z",
+      "command": "env PATH='<node-runtime>/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' npm --prefix sdk-js run check",
+      "working_directory": "<repo>",
+      "exit_code": 0,
+      "rust_results": [],
+      "node_results": [
+        {
+          "tests": 13,
+          "passed": 13,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0
+        },
+        {
+          "tests": 3,
+          "passed": 3,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0
+        }
+      ],
+      "log": "build-and-audit.txt"
+    },
+    {
+      "id": "AUDIT-rust",
+      "module": "M11",
+      "kind": "check",
+      "layer": "dependency-advisory",
+      "started_at": "2026-09-09T07:20:04.606Z",
+      "finished_at": "2026-09-09T07:20:07.665Z",
+      "command": "./scripts/check-security-audit.sh",
+      "working_directory": "<repo>",
+      "exit_code": 0,
+      "rust_results": [],
+      "node_results": [],
+      "log": "build-and-audit.txt"
+    },
+    {
+      "id": "AUDIT-frontend",
+      "module": "M11",
+      "kind": "check",
+      "layer": "dependency-advisory-production",
+      "started_at": "2026-09-09T07:20:07.666Z",
+      "finished_at": "2026-09-09T07:20:18.455Z",
+      "command": "env PATH='<node-runtime>/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' node scripts/check-npm-audit.mjs frontend",
+      "working_directory": "<repo>",
+      "exit_code": 0,
+      "rust_results": [],
+      "node_results": [],
+      "log": "build-and-audit.txt"
+    },
+    {
+      "id": "AUDIT-sdk",
+      "module": "M11",
+      "kind": "check",
+      "layer": "dependency-advisory-production",
+      "started_at": "2026-09-09T07:20:18.457Z",
+      "finished_at": "2026-09-09T07:20:18.793Z",
+      "command": "env PATH='<node-runtime>/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' node scripts/check-npm-audit.mjs sdk-js",
+      "working_directory": "<repo>",
+      "exit_code": 0,
+      "rust_results": [],
+      "node_results": [],
+      "log": "build-and-audit.txt"
+    },
+    {
+      "id": "UI-authSession",
+      "module": "M01",
+      "kind": "test",
+      "layer": "real-chromium-production-ui-mocked-engine",
+      "expected": 3,
+      "started_at": "2026-09-09T07:21:18.743Z",
+      "finished_at": "2026-09-09T07:21:22.847Z",
+      "command": "env CYANREX_UI_BASE_URL=http://127.0.0.1:3317 CYANREX_UI_ENGINE_URL=http://127.0.0.1:43181 CYANREX_PLAYWRIGHT_MODULE=<node-runtime>/node_modules/playwright/index.mjs CYANREX_CHROMIUM_PATH=/usr/bin/google-chrome <node-runtime>/bin/node --test tests/authSession.browser.mjs",
+      "working_directory": "<repo>/frontend",
+      "exit_code": 0,
+      "selection_count_valid": true,
+      "rust_results": [],
+      "node_results": [
+        {
+          "tests": 3,
+          "passed": 3,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0
+        }
+      ],
+      "log": "browser.txt"
+    },
+    {
+      "id": "UI-classroomConnection",
+      "module": "M02",
+      "kind": "test",
+      "layer": "real-chromium-production-ui-mocked-engine",
+      "expected": 8,
+      "started_at": "2026-09-09T07:21:22.848Z",
+      "finished_at": "2026-09-09T07:21:29.515Z",
+      "command": "env CYANREX_UI_BASE_URL=http://127.0.0.1:3317 CYANREX_UI_ENGINE_URL=http://127.0.0.1:43181 CYANREX_PLAYWRIGHT_MODULE=<node-runtime>/node_modules/playwright/index.mjs CYANREX_CHROMIUM_PATH=/usr/bin/google-chrome <node-runtime>/bin/node --test tests/classroomConnection.browser.mjs",
+      "working_directory": "<repo>/frontend",
+      "exit_code": 0,
+      "selection_count_valid": true,
+      "rust_results": [],
+      "node_results": [
+        {
+          "tests": 8,
+          "passed": 8,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0
+        }
+      ],
+      "log": "browser.txt"
+    },
+    {
+      "id": "UI-learningFeedback",
+      "module": "M07",
+      "kind": "test",
+      "layer": "real-chromium-production-ui-mocked-engine",
+      "expected": 1,
+      "started_at": "2026-09-09T07:21:29.516Z",
+      "finished_at": "2026-09-09T07:21:31.710Z",
+      "command": "env CYANREX_UI_BASE_URL=http://127.0.0.1:3317 CYANREX_UI_ENGINE_URL=http://127.0.0.1:43181 CYANREX_PLAYWRIGHT_MODULE=<node-runtime>/node_modules/playwright/index.mjs CYANREX_CHROMIUM_PATH=/usr/bin/google-chrome <node-runtime>/bin/node --test tests/learningFeedback.browser.mjs",
+      "working_directory": "<repo>/frontend",
+      "exit_code": 0,
+      "selection_count_valid": true,
+      "rust_results": [],
+      "node_results": [
+        {
+          "tests": 1,
+          "passed": 1,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0
+        }
+      ],
+      "log": "browser.txt"
+    },
+    {
+      "id": "UI-learningResume",
+      "module": "M07",
+      "kind": "test",
+      "layer": "real-chromium-production-ui-mocked-engine",
+      "expected": 3,
+      "started_at": "2026-09-09T07:21:31.712Z",
+      "finished_at": "2026-09-09T07:21:35.762Z",
+      "command": "env CYANREX_UI_BASE_URL=http://127.0.0.1:3317 CYANREX_UI_ENGINE_URL=http://127.0.0.1:43181 CYANREX_PLAYWRIGHT_MODULE=<node-runtime>/node_modules/playwright/index.mjs CYANREX_CHROMIUM_PATH=/usr/bin/google-chrome <node-runtime>/bin/node --test tests/learningResume.browser.mjs",
+      "working_directory": "<repo>/frontend",
+      "exit_code": 0,
+      "selection_count_valid": true,
+      "rust_results": [],
+      "node_results": [
+        {
+          "tests": 3,
+          "passed": 3,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0
+        }
+      ],
+      "log": "browser.txt"
+    },
+    {
+      "id": "UI-eventStream",
+      "module": "M08",
+      "kind": "test",
+      "layer": "real-chromium-production-ui-mocked-engine",
+      "expected": 1,
+      "started_at": "2026-09-09T07:21:35.763Z",
+      "finished_at": "2026-09-09T07:21:37.518Z",
+      "command": "env CYANREX_UI_BASE_URL=http://127.0.0.1:3317 CYANREX_UI_ENGINE_URL=http://127.0.0.1:43181 CYANREX_PLAYWRIGHT_MODULE=<node-runtime>/node_modules/playwright/index.mjs CYANREX_CHROMIUM_PATH=/usr/bin/google-chrome <node-runtime>/bin/node --test tests/eventStream.browser.mjs",
+      "working_directory": "<repo>/frontend",
+      "exit_code": 0,
+      "selection_count_valid": true,
+      "rust_results": [],
+      "node_results": [
+        {
+          "tests": 1,
+          "passed": 1,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0
+        }
+      ],
+      "log": "browser.txt"
+    },
+    {
+      "id": "UI-workspaceLayout",
+      "module": "M09",
+      "kind": "test",
+      "layer": "real-chromium-production-ui-mocked-engine",
+      "expected": 5,
+      "started_at": "2026-09-09T07:21:37.519Z",
+      "finished_at": "2026-09-09T07:21:43.914Z",
+      "command": "env CYANREX_UI_BASE_URL=http://127.0.0.1:3317 CYANREX_UI_ENGINE_URL=http://127.0.0.1:43181 CYANREX_PLAYWRIGHT_MODULE=<node-runtime>/node_modules/playwright/index.mjs CYANREX_CHROMIUM_PATH=/usr/bin/google-chrome <node-runtime>/bin/node --test tests/workspaceLayout.browser.mjs",
+      "working_directory": "<repo>/frontend",
+      "exit_code": 0,
+      "selection_count_valid": true,
+      "rust_results": [],
+      "node_results": [
+        {
+          "tests": 5,
+          "passed": 5,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0
+        }
+      ],
+      "log": "browser.txt"
+    },
+    {
+      "id": "UI-actionSafety",
+      "module": "M09",
+      "kind": "test",
+      "layer": "real-chromium-production-ui-mocked-engine",
+      "expected": 14,
+      "started_at": "2026-09-09T07:21:43.916Z",
+      "finished_at": "2026-09-09T07:21:56.970Z",
+      "command": "env CYANREX_UI_BASE_URL=http://127.0.0.1:3317 CYANREX_UI_ENGINE_URL=http://127.0.0.1:43181 CYANREX_PLAYWRIGHT_MODULE=<node-runtime>/node_modules/playwright/index.mjs CYANREX_CHROMIUM_PATH=/usr/bin/google-chrome <node-runtime>/bin/node --test tests/actionSafety.browser.mjs",
+      "working_directory": "<repo>/frontend",
+      "exit_code": 0,
+      "selection_count_valid": true,
+      "rust_results": [],
+      "node_results": [
+        {
+          "tests": 14,
+          "passed": 14,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0
+        }
+      ],
+      "log": "browser.txt"
+    },
+    {
+      "id": "B06-events-http",
+      "module": "M08",
+      "kind": "test",
+      "layer": "real-router-event-store",
+      "expected": 4,
+      "started_at": "2026-09-09T07:25:10.981Z",
+      "finished_at": "2026-09-09T07:25:40.759Z",
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL cargo test --manifest-path engine/Cargo.toml --locked --test module_boundaries_tdd -- events:: --nocapture --test-threads=1",
+      "working_directory": "<repo>",
+      "exit_code": 101,
+      "selection_count_valid": true,
+      "rust_results": [
+        {
+          "passed": 2,
+          "failed": 2,
+          "ignored": 0,
+          "duration_seconds": 6.54
+        }
+      ],
+      "node_results": [],
+      "log": "portable.txt"
+    }
+  ],
+  "rechecks": {
+    "new_boundary_suite": {
+      "exit_code": 101,
+      "results": [
+        {
+          "passed": 6,
+          "failed": 5,
+          "ignored": 1,
+          "duration_seconds": 17.68
+        }
+      ],
+      "log": "rechecks.txt"
+    },
+    "common_format_gate": {
+      "exit_code": 0,
+      "log": "rechecks.txt"
+    }
+  },
+  "harness_notes": {
+    "development_browser": {
+      "passed": 34,
+      "failed": 1,
+      "failed_test": "UI-eventStream",
+      "log": "development-browser.txt",
+      "resolution": "Unmodified fixture passed against the production build; all production browser cases passed. Global WebSocket replacement also affects development HMR, so development failure is not counted as a confirmed product defect."
+    },
+    "test_only_compile_corrections": "Incorrect LearningStore method name and private SQL compatibility import in new test harness were corrected before the respective cases ran; no application API visibility changes.",
+    "sql_import_attempt_log": "harness-compile.txt"
+  },
+  "unproven": [
+    "real browser + Engine + PostgreSQL classroom flow over TLS LAN",
+    "trust changes, version skew and partitions in a real multi-host deployment",
+    "PostgreSQL event worker/queue/restart/failover; script SQL fault/cancellation paths",
+    "current-source kernel attach/event/detach and multi-kernel/desktop OS matrix",
+    "actual container/VM security isolation or escape resistance",
+    "actual SSH deployment, offline installation and candidate-bound kernel evidence",
+    "two release-profile event microbenchmarks"
+  ],
+  "cleanup": {
+    "disposable_postgres_removed": true,
+    "disposable_postgres_persistent_volumes": false,
+    "disposable_schema_count_before_removal": 0,
+    "temporary_frontend_stopped": true,
+    "temporary_data_directory_removed": true,
+    "new_boundary_fixture_directories_remaining": 0,
+    "test_ports_closed": [
+      3317,
+      43181,
+      32773
+    ],
+    "deployment_container_start_times_unchanged": true,
+    "deployment_engine_health": "ok",
+    "deployment_frontend_login_http": 200,
+    "tracked_typescript_build_cache_restored": true,
+    "log": "resources.txt"
+  }
+}

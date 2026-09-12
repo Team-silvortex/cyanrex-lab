@@ -1,0 +1,100 @@
+## fixAuthFinal
+Command: env -u DATABASE_URL CYANREX_DB_FALLBACK=true CYANREX_DATA_DIR='<TEST_DATA_DIR>' CYANREX_TEST_DATABASE_URL='<DISPOSABLE_POSTGRES_URL>' cargo test --manifest-path engine/Cargo.toml --locked --lib services::auth_service:: -- --ignored --nocapture --test-threads=4
+Exit code: 0
+
+   Compiling cyanrex-engine v0.3.7 (<WORKSPACE>/engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 9.10s
+     Running unittests src/lib.rs (engine/target/debug/deps/cyanrex_engine-2383cc0f893617d7)
+
+running 22 tests
+test services::auth_service::postgres_boundary_tests::postgres_cancelled_login_rolls_back_without_publishing_a_session ... ok
+test services::auth_service::postgres_boundary_tests::postgres_cancelled_account_deletion_rolls_back_the_earlier_session_delete ... ok
+test services::auth_service::postgres_boundary_tests::postgres_delete_deferred_commit_failure_rolls_back_account_and_sessions ... ok
+cancelled enrollment: durable_account_present=true, invitation_reusable=false
+test services::auth_service::postgres_boundary_tests::postgres_cancelled_classroom_join_never_reopens_its_consumed_invitation ... ok
+test services::auth_service::postgres_boundary_tests::postgres_delete_session_step_failure_preserves_account_and_session ... ok
+test services::auth_service::postgres_boundary_tests::postgres_delete_suppressed_session_cascade_cannot_report_success ... ok
+test services::auth_service::postgres_boundary_tests::postgres_login_cannot_publish_after_concurrent_password_change ... ok
+test services::auth_service::postgres_boundary_tests::postgres_login_cannot_report_success_after_its_account_was_deleted ... ok
+test services::auth_service::postgres_boundary_tests::postgres_login_zero_row_session_insert_cannot_report_success ... ok
+test services::auth_service::postgres_boundary_tests::postgres_old_login_cannot_authenticate_as_a_recreated_account ... ok
+test services::auth_service::postgres_mutation_tests::postgres_account_deletion_failure_is_atomic ... ok
+test services::auth_service::postgres_mutation_tests::postgres_account_mutations_normalize_identity_and_persist ... ok
+test services::auth_service::postgres_mutation_tests::postgres_account_zero_row_deletion_is_not_success ... ok
+test services::auth_service::postgres_mutation_tests::postgres_logout_write_failure_is_not_success ... ok
+test services::auth_service::postgres_mutation_tests::postgres_logout_zero_row_deletion_is_not_success ... ok
+test services::auth_service::postgres_mutation_tests::postgres_concurrent_password_changes_cannot_overwrite_newer_credentials ... ok
+test services::auth_service::postgres_mutation_tests::postgres_password_write_failure_is_not_success ... ok
+test services::auth_service::postgres_tests::postgres_expired_session_cannot_revive_in_fallback ... ok
+test services::auth_service::postgres_tests::postgres_deleted_account_cannot_revive_in_fallback ... ok
+test services::auth_service::postgres_mutation_tests::postgres_password_zero_row_update_is_not_success ... ok
+test services::auth_service::postgres_tests::postgres_revoked_session_cannot_revive_in_fallback ... ok
+test services::auth_service::postgres_tests::postgres_registration_persists_accounts_and_serializes_duplicates ... ok
+
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 138 filtered out; finished in 14.60s
+
+
+
+## fixAuthSerial
+Command: env -u DATABASE_URL CYANREX_DB_FALLBACK=true CYANREX_DATA_DIR='<TEST_DATA_DIR>/auth-serial' CYANREX_TEST_DATABASE_URL='<DISPOSABLE_POSTGRES_URL>' cargo test --manifest-path engine/Cargo.toml --locked --lib services::auth_service::postgres_boundary_tests:: -- --ignored --nocapture --test-threads=1
+Exit code: 0
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.14s
+     Running unittests src/lib.rs (engine/target/debug/deps/cyanrex_engine-2383cc0f893617d7)
+
+running 10 tests
+test services::auth_service::postgres_boundary_tests::postgres_cancelled_account_deletion_rolls_back_the_earlier_session_delete ... ok
+test services::auth_service::postgres_boundary_tests::postgres_cancelled_classroom_join_never_reopens_its_consumed_invitation ... cancelled enrollment: durable_account_present=true, invitation_reusable=false
+ok
+test services::auth_service::postgres_boundary_tests::postgres_cancelled_login_rolls_back_without_publishing_a_session ... ok
+test services::auth_service::postgres_boundary_tests::postgres_delete_deferred_commit_failure_rolls_back_account_and_sessions ... ok
+test services::auth_service::postgres_boundary_tests::postgres_delete_session_step_failure_preserves_account_and_session ... ok
+test services::auth_service::postgres_boundary_tests::postgres_delete_suppressed_session_cascade_cannot_report_success ... ok
+test services::auth_service::postgres_boundary_tests::postgres_login_cannot_publish_after_concurrent_password_change ... ok
+test services::auth_service::postgres_boundary_tests::postgres_login_cannot_report_success_after_its_account_was_deleted ... ok
+test services::auth_service::postgres_boundary_tests::postgres_login_zero_row_session_insert_cannot_report_success ... ok
+test services::auth_service::postgres_boundary_tests::postgres_old_login_cannot_authenticate_as_a_recreated_account ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 150 filtered out; finished in 24.87s
+
+
+
+## fixEventPg
+Command: env -u DATABASE_URL CYANREX_DB_FALLBACK=true CYANREX_DATA_DIR='<TEST_DATA_DIR>' CYANREX_TEST_DATABASE_URL='<DISPOSABLE_POSTGRES_URL>' cargo test --manifest-path engine/Cargo.toml --locked --lib services::event_bus::tests::deletion::postgres_filtered_delete_preserves_uncached_rows_and_read_flags -- --ignored --exact --nocapture
+Exit code: 0
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.14s
+     Running unittests src/lib.rs (engine/target/debug/deps/cyanrex_engine-2383cc0f893617d7)
+
+running 1 test
+test services::event_bus::tests::deletion::postgres_filtered_delete_preserves_uncached_rows_and_read_flags ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 159 filtered out; finished in 0.10s
+
+
+
+## fixScriptPg
+Command: env -u DATABASE_URL CYANREX_DB_FALLBACK=true CYANREX_DATA_DIR='<TEST_DATA_DIR>/fixScriptPg' CYANREX_TEST_DATABASE_URL='<DISPOSABLE_POSTGRES_URL>' cargo test --manifest-path engine/Cargo.toml --locked --test module_boundaries_tdd script_postgres::scripts_use_postgres_without_file_fallback_and_keep_owner_boundaries_after_reload -- --ignored --exact --nocapture
+Exit code: 0
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.12s
+     Running tests/module_boundaries_tdd.rs (engine/target/debug/deps/module_boundaries_tdd-616316cce3f5044a)
+
+running 1 test
+test script_postgres::scripts_use_postgres_without_file_fallback_and_keep_owner_boundaries_after_reload ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 11 filtered out; finished in 0.72s
+
+
+
+## fixLearningPg
+Command: env -u DATABASE_URL CYANREX_DB_FALLBACK=true CYANREX_DATA_DIR='<TEST_DATA_DIR>/fixLearningPg' CYANREX_TEST_DATABASE_URL='<DISPOSABLE_POSTGRES_URL>' cargo test --manifest-path engine/Cargo.toml --locked --lib services::learning_store::feedback::tests::postgres_feedback_migrates_legacy_rows_and_serializes_updates -- --ignored --exact --nocapture
+Exit code: 0
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.12s
+     Running unittests src/lib.rs (engine/target/debug/deps/cyanrex_engine-2383cc0f893617d7)
+
+running 1 test
+test services::learning_store::feedback::tests::postgres_feedback_migrates_legacy_rows_and_serializes_updates ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 159 filtered out; finished in 0.14s

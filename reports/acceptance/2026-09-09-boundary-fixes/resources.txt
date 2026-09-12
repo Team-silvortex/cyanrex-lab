@@ -1,0 +1,18 @@
+## fixResources
+Exit code: 0
+
+c71d19c3144a04cb235fb8ad5d8b9b6accbe7a01e62e864af41134de63519e00 2026-08-31T10:31:16.558201829Z running
+3cf844f9a06513d51e7523b8cd6ff37b05380cf5f7a4f41a9cb33fd22c3b8b5b 2026-08-31T10:31:16.558661761Z running
+784691ba1a93a419044064d961a6a507237c2b576ea60f0e14fa0c0d7a9d1518 2026-08-31T10:31:16.557605841Z running
+Engine health HTTP 200
+Frontend login HTTP 200
+State Recv-Q Send-Q Local Address:Port Peer Address:PortProcess
+
+## Final evidence and cleanup checks
+Exit code: 0
+
+399 input hashes verified; 292 tests assigned once; owned test resources removed; build cache restored.
+File length limits passed.
+[course] committed frontend course copy matches docs.
+main
+f3f9faf585721df5e208c18da99652b040e35d50

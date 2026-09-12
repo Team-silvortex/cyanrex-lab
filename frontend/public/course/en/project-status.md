@@ -1,7 +1,7 @@
 # Project Status
 
-Snapshot date: **2026-09-09**
-Current release line: **0.3.7**
+Snapshot date: **2026-09-12**
+Current release line: **0.3.8**
 
 This page is the capability-level progress baseline for Cyanrex Lab. It records what is usable now,
 what remains intentionally limited, and which decisions should drive the next development cycle.
@@ -18,11 +18,25 @@ The detailed trust boundaries and data flows remain in the [system architecture]
 | Local Runner | Operational | Replaceable driver boundary, global/per-user leases, timeout handling, and explicit `shared_kernel` reporting |
 | Runner Agent | Operational for remote checks | Signed registration, heartbeat, leases, cancellation, probes, and isolated compile-only diagnostics; remote eBPF loading is not enabled |
 | Deployment and distribution | Operational | Docker, WSL2, native Linux, hardened optional compiler Agent, and offline package/install tooling |
-| Release traceability | `0.3.7` version metadata prepared; artifact acceptance/publication pending | Changelog/version sync, annotated-tag preflight, checksum-bound source/archive metadata, per-image Docker content IDs, exact-image installation, and native Rust evidence/candidate verification with safe non-overwriting extraction; `0.3.0` is an API baseline only, and this snapshot does not claim an accepted `0.3.7` artifact or published tag |
+| Release traceability | `0.3.8` synchronized source metadata; artifact acceptance remains separate | Changelog/version sync, annotated-tag preflight, checksum-bound source/archive metadata, per-image Docker content IDs, exact-image installation, and native Rust evidence/candidate verification with safe non-overwriting extraction; `0.3.0` is an API baseline only; publishing a source tag does not establish artifact acceptance |
 | Module catalog | Operational, state-only | Versioned v1 manifests are discovered and validated at startup; lifecycle is in memory and never executes directory code |
 | JavaScript SDK | Operational internal package | Typed ESM client with 63 generated non-Agent operationId calls, a 77-member additive namespace baseline and deprecation policy, explicit `/openapi` and `/operations` exports, browser/Node sessions, cancellation, downloads, typed errors, and package-consumer smoke coverage |
 | API contract | Operational internal contract | Generated OpenAPI 3.1 served at `/openapi.json`; route/access/SDK/model drift and breaking changes against the frozen `0.3.0` baseline fail the quality gate |
 | Terminal page | Operational for teachers | Permission-aware List/Start/Stop module commands, structured results/history, and a safe handoff to the eBPF experiment workspace; it is not a shell |
+
+## Authentication and persistence fixes (included in 0.3.8)
+
+- All nine findings from the [module/boundary network](testing-network.md) are fixed: four auth,
+  three local-script consistency, and two destructive event-filter cases. Login/session creation and
+  account deletion require confirmed transactional state; local scripts commit atomically before cache
+  publication; event deletion removes matches, rejects unsafe filters, and preserves SQL-only rows.
+- Registration/TOTP encoding, observed session revocation, normalized account mutations and four-locale
+  logout error/retry handling are covered. Auth, event and script SQL boundaries now run explicitly in CI.
+- Pre-bump verification on 2026-09-09 passed 290 distinct Rust cases, 35 mocked-Engine browser cases,
+  44 frontend units, 55 tooling cases and 16 SDK/package cases; two performance-only tests were not run.
+  [Original reports](acceptance.md) retain their 0.3.7 inputs/hashes, not 0.3.8 artifact acceptance claims.
+- Real LAN/TLS onboarding, current-source kernel acceptance, actual SSH deployment and asynchronous
+  event queue/restart/failover validation remain separate. No running deployment is changed by this patch.
 
 ## SSH and classroom entry (2026-09-09, included in 0.3.7)
 

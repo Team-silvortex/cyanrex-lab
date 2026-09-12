@@ -1,0 +1,56 @@
+## fixAgent
+Command: env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<TEST_DATA_DIR>/agent' cargo test --manifest-path engine/Cargo.toml --locked --test runner_agent_client_tdd runner_agent_client_completes_signed_probe_and_compile_jobs_over_http -- --ignored --exact --nocapture
+Exit code: 0
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.18s
+     Running tests/runner_agent_client_tdd.rs (engine/target/debug/deps/runner_agent_client_tdd-b194fc85839577cc)
+
+running 1 test
+test runner_agent_client_completes_signed_probe_and_compile_jobs_over_http ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.92s
+
+
+
+## fixWspaced
+Command: env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<TEST_DATA_DIR>/ws-paced' CYANREX_WS_BENCH_KIND=paced cargo test --manifest-path engine/Cargo.toml --locked --lib routes::events::stream::pressure_tests::measure -- --ignored --exact --nocapture
+Exit code: 0
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.12s
+     Running unittests src/lib.rs (engine/target/debug/deps/cyanrex_engine-2383cc0f893617d7)
+
+running 1 test
+CYANREX_WS_BENCH={"delivered_copies":8000,"elapsed_seconds":0.515953958,"expected_matching_copies":8000,"owner_channel_capacity":1024,"published":2000,"resync_closes":0,"scenario":"paced","subscribers":32,"users":8}
+test routes::events::stream::pressure_tests::measure ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 159 filtered out; finished in 0.56s
+
+
+
+## fixWsburst
+Command: env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<TEST_DATA_DIR>/ws-burst' CYANREX_WS_BENCH_KIND=burst cargo test --manifest-path engine/Cargo.toml --locked --lib routes::events::stream::pressure_tests::measure -- --ignored --exact --nocapture
+Exit code: 0
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.40s
+     Running unittests src/lib.rs (engine/target/debug/deps/cyanrex_engine-2383cc0f893617d7)
+
+running 1 test
+CYANREX_WS_BENCH={"delivered_copies":0,"elapsed_seconds":0.109807003,"expected_matching_copies":240000,"owner_channel_capacity":8,"published":60000,"resync_closes":32,"scenario":"burst","subscribers":32,"users":8}
+test routes::events::stream::pressure_tests::measure ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 159 filtered out; finished in 0.25s
+
+
+
+## fixWsstalled
+Command: env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<TEST_DATA_DIR>/ws-stalled' CYANREX_WS_BENCH_KIND=stalled cargo test --manifest-path engine/Cargo.toml --locked --lib routes::events::stream::pressure_tests::measure -- --ignored --exact --nocapture
+Exit code: 0
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.35s
+     Running unittests src/lib.rs (engine/target/debug/deps/cyanrex_engine-2383cc0f893617d7)
+
+running 1 test
+CYANREX_WS_BENCH={"handler_seconds":5.186878042,"owner_channel_capacity":128,"payload_bytes":262144,"published":64,"remaining_owner_queues":0,"remaining_subscribers":0,"requested_receive_buffer_bytes":4096,"scenario":"stalled"}
+test routes::events::stream::pressure_tests::measure ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 159 filtered out; finished in 5.21s

@@ -14,6 +14,8 @@ export const en: TranslationDict = {
       roleStudent: "Student",
       checkingSession: "Checking session...",
       logout: "Logout",
+      loggingOut: "Logging out…",
+      logoutFailed: "Logout could not be confirmed. Your session may still be active; check your connection and retry explicitly before leaving this device.",
       language: "Language",
       nav: {
         dashboard: "Dashboard",

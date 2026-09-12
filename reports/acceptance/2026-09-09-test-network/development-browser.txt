@@ -1,0 +1,131 @@
+STAGE UI-authSession
+COMMAND env CYANREX_UI_BASE_URL=http://127.0.0.1:3317 CYANREX_UI_ENGINE_URL=http://127.0.0.1:43181 CYANREX_PLAYWRIGHT_MODULE=<node-runtime>/node_modules/playwright/index.mjs CYANREX_CHROMIUM_PATH=/usr/bin/google-chrome <node-runtime>/bin/node --test tests/authSession.browser.mjs
+EXIT 0
+✔ failed logout stays on the current page, reports uncertainty and permits an explicit retry (3299.547ms)
+✔ logout ignores duplicate clicks while pending and does not redirect until confirmed (1012.218249ms)
+✔ navigating away discards late logout UI callbacks without claiming server rollback (1179.974535ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5550.585032
+
+STAGE UI-classroomConnection
+COMMAND env CYANREX_UI_BASE_URL=http://127.0.0.1:3317 CYANREX_UI_ENGINE_URL=http://127.0.0.1:43181 CYANREX_PLAYWRIGHT_MODULE=<node-runtime>/node_modules/playwright/index.mjs CYANREX_CHROMIUM_PATH=/usr/bin/google-chrome <node-runtime>/bin/node --test tests/classroomConnection.browser.mjs
+EXIT 0
+✔ uncertain classroom enrollment (network) clears secrets and cannot replay the invitation (1991.713941ms)
+✔ uncertain classroom enrollment (malformed) clears secrets and cannot replay the invitation (1594.521148ms)
+✔ uncertain classroom enrollment (storage) clears secrets and cannot replay the invitation (1613.203493ms)
+✔ uncertain classroom enrollment (incomplete) clears secrets and cannot replay the invitation (1522.087785ms)
+✔ leaving an in-flight classroom enrollment discards the late secret without replay (1602.865462ms)
+✔ student confirms teacher identity before one-time join, keeps secrets out of history and storage (1712.568594ms)
+✔ incompatible discovery never offers enrollment or follows another classroom (2833.393532ms)
+✔ teacher confirms exact student invitation and revocation; folding hides the private link (1550.984628ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 14483.484277
+
+STAGE UI-learningFeedback
+COMMAND env CYANREX_UI_BASE_URL=http://127.0.0.1:3317 CYANREX_UI_ENGINE_URL=http://127.0.0.1:43181 CYANREX_PLAYWRIGHT_MODULE=<node-runtime>/node_modules/playwright/index.mjs CYANREX_CHROMIUM_PATH=/usr/bin/google-chrome <node-runtime>/bin/node --test tests/learningFeedback.browser.mjs
+EXIT 0
+✔ teacher feedback editing, conflict recovery, and student history (3039.124504ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3097.418096
+
+STAGE UI-learningResume
+COMMAND env CYANREX_UI_BASE_URL=http://127.0.0.1:3317 CYANREX_UI_ENGINE_URL=http://127.0.0.1:43181 CYANREX_PLAYWRIGHT_MODULE=<node-runtime>/node_modules/playwright/index.mjs CYANREX_CHROMIUM_PATH=/usr/bin/google-chrome <node-runtime>/bin/node --test tests/learningResume.browser.mjs
+EXIT 0
+✔ resume previews feedback, preserves the draft, and restores source only after confirmation (2994.468956ms)
+✔ client-side target changes discard late source and require a fresh confirmation on revisit (1521.457358ms)
+✔ failed, malformed and cancelled resume requests never replace the editor draft (2511.31723ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7100.516793
+
+STAGE UI-eventStream
+COMMAND env CYANREX_UI_BASE_URL=http://127.0.0.1:3317 CYANREX_UI_ENGINE_URL=http://127.0.0.1:43181 CYANREX_PLAYWRIGHT_MODULE=<node-runtime>/node_modules/playwright/index.mjs CYANREX_CHROMIUM_PATH=/usr/bin/google-chrome <node-runtime>/bin/node --test tests/eventStream.browser.mjs
+EXIT 1
+✖ event page recovers visibly, preserves live rows across snapshots, and changes filters safely (31273.61874ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 31714.942506
+
+✖ failing tests:
+
+test at tests/eventStream.browser.mjs:13:1
+✖ event page recovers visibly, preserves live rows across snapshots, and changes filters safely (31273.61874ms)
+  locator.waitFor: Timeout 30000ms exceeded.
+  Call log:
+    - waiting for getByText('fixture.1', { exact: true }) to be visible
+  
+      at TestContext.<anonymous> (<repo>/frontend/tests/eventStream.browser.mjs:55:56) {
+    name: 'TimeoutError',
+    log: [ "  - waiting for getByText('fixture.1', { exact: true }) to be visible" ]
+  }
+
+STAGE UI-workspaceLayout
+COMMAND env CYANREX_UI_BASE_URL=http://127.0.0.1:3317 CYANREX_UI_ENGINE_URL=http://127.0.0.1:43181 CYANREX_PLAYWRIGHT_MODULE=<node-runtime>/node_modules/playwright/index.mjs CYANREX_CHROMIUM_PATH=/usr/bin/google-chrome <node-runtime>/bin/node --test tests/workspaceLayout.browser.mjs
+EXIT 0
+✔ desktop workspace prioritizes source, keeps run actions nearby, and preserves the editor when inspecting resources (2379.548659ms)
+✔ compact navigation supports keyboard dismissal, closes on navigation, and leaves learning work above the fold (2278.014143ms)
+✔ classroom roster fits narrow screens and selecting a student brings the review into view (1075.761137ms)
+✔ all four interface languages fit a compact editor and navigation (1949.495736ms)
+✔ import, save and reload remain reachable without running the program (2120.07302ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 9865.65018
+
+STAGE UI-actionSafety
+COMMAND env CYANREX_UI_BASE_URL=http://127.0.0.1:3317 CYANREX_UI_ENGINE_URL=http://127.0.0.1:43181 CYANREX_PLAYWRIGHT_MODULE=<node-runtime>/node_modules/playwright/index.mjs CYANREX_CHROMIUM_PATH=/usr/bin/google-chrome <node-runtime>/bin/node --test tests/actionSafety.browser.mjs
+EXIT 0
+✔ teachers manage modules, deployment settings and terminal without switching role, keeping confirmations (2268.575826ms)
+✔ students keep experiment access without teacher deployment navigation (1404.628299ms)
+✔ single deletion focuses cancel, Escape/Enter cancel safely, and failures cannot be double-submitted (1567.913058ms)
+✔ module lifecycle commands require confirmation but read-only commands do not (1134.97681ms)
+✔ account deletion keeps credential and typed gates, cancels without writes, and reports failure (1209.150717ms)
+✔ job cancellation binds the full job id and settings need explicit review (1351.215644ms)
+✔ confirmation stays usable in every language on mobile and navigation discards an unconfirmed action (2038.044193ms)
+✔ detach-all requires a typed phrase and single detach can never fall back to all (1562.378099ms)
+✔ template/source replacement and kernel runs require separate explicit decisions (2120.522997ms)
+✔ remote diagnostics require acknowledging source transfer before switching agents (1786.291361ms)
+✔ a confirmed file import cannot replace a different lab's draft after navigation (1907.911387ms)
+✔ entering a lab preserves the draft until its template is explicitly loaded (1487.097215ms)
+✔ header batch deletion stops at failure and reports partial completion, never false success (1085.852212ms)
+✔ event deletion explains the complete filter scope and freezes the cutoff before confirmation (1059.296207ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 22054.859029

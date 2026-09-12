@@ -55,6 +55,8 @@ impl AuthService {
         otp: &str,
     ) -> Result<LoginOk, AuthError> {
         let normalized_username = sanitize_username(username).map_err(|_| AuthError::InvalidCredentials)?;
+        // A login admitted against durable auth cannot turn an unconfirmed INSERT into memory success.
+        let login_pool = self.active_pool().cloned();
         let attempt_key = normalized_username.clone();
         {
             let attempts = self
@@ -102,26 +104,7 @@ impl AuthService {
             expires_at,
         };
 
-        {
-            let mut sessions = self.sessions.write().expect("auth sessions lock poisoned");
-            sessions.insert(token.clone(), session);
-        }
-
-        if let Some(pool) = self.active_pool() {
-            if let Err(error) = self.ensure_schema_and_seed().await {
-                tracing::warn!("auth db unavailable, fallback to memory: {error}");
-            } else if let Err(error) = sqlx::query(
-                "INSERT INTO sessions (token, username, expires_at) VALUES ($1, $2, $3)",
-            )
-            .bind(hash_session_token(&token))
-            .bind(&user.username)
-            .bind(expires_at)
-            .execute(pool)
-            .await
-            {
-                self.disable_db(&format!("insert session failed: {error}"));
-            }
-        }
+        self.issue_verified_session(&user, session, login_pool.as_ref()).await?;
 
         Ok(LoginOk {
             token,
@@ -145,70 +128,6 @@ impl AuthService {
         if attempt.failures >= MAX_FAILURES {
             attempt.blocked_until = Some(Utc::now() + Duration::minutes(LOCK_MINUTES));
             attempt.failures = 0;
-        }
-    }
-
-    pub async fn validate_session(&self, token: &str) -> Option<SessionRecord> {
-        let token_hash = hash_session_token(token);
-        if let Some(pool) = self.active_pool() {
-            if self.ensure_schema_and_seed().await.is_ok() {
-                match sqlx::query(
-                    "SELECT token, username, expires_at FROM sessions WHERE token = $1",
-                )
-                .bind(&token_hash)
-                .fetch_optional(pool)
-                .await
-                {
-                    Ok(Some(row)) => {
-                        let expires_at: DateTime<Utc> = row.get("expires_at");
-                        if expires_at <= Utc::now() {
-                            let _ = sqlx::query("DELETE FROM sessions WHERE token = $1")
-                                .bind(&token_hash)
-                                .execute(pool)
-                                .await;
-                            return None;
-                        }
-
-                        return Some(SessionRecord {
-                            token: token.to_string(),
-                            username: row.get("username"),
-                            expires_at,
-                        });
-                    }
-                    Ok(None) => return None,
-                    Err(error) => self.disable_db(&format!("validate session failed: {error}")),
-                }
-            }
-        }
-
-        let mut sessions = self.sessions.write().expect("auth sessions lock poisoned");
-        if let Some(session) = sessions.get(token).cloned() {
-            if session.expires_at > Utc::now() {
-                return Some(session);
-            }
-            sessions.remove(token);
-        }
-
-        None
-    }
-
-    pub async fn logout(&self, token: &str) {
-        let token_hash = hash_session_token(token);
-        {
-            let mut sessions = self.sessions.write().expect("auth sessions lock poisoned");
-            sessions.remove(token);
-        }
-
-        if let Some(pool) = self.active_pool() {
-            if self.ensure_schema_and_seed().await.is_ok() {
-                if let Err(error) = sqlx::query("DELETE FROM sessions WHERE token = $1")
-                    .bind(&token_hash)
-                    .execute(pool)
-                    .await
-                {
-                    self.disable_db(&format!("logout delete session failed: {error}"));
-                }
-            }
         }
     }
 
@@ -270,7 +189,9 @@ impl AuthService {
         let otpauth_uri = build_otpauth_uri(&issuer, &account_name, &totp_secret);
 
         if let Some(pool) = self.active_pool() {
-            if self.ensure_schema_and_seed().await.is_ok() {
+            if let Err(error) = self.ensure_schema_and_seed().await {
+                self.disable_db(&format!("register schema initialization failed: {error}"));
+            } else {
                 let inserted = sqlx::query(
                     "INSERT INTO users (username, password_salt, password_hash, totp_secret, created_at, updated_at)
                      VALUES ($1, $2, $3, $4, NOW(), NOW())
@@ -327,133 +248,6 @@ impl AuthService {
             secret: totp_secret,
             otpauth_uri,
         })
-    }
-
-    pub async fn change_password(
-        &self,
-        username: &str,
-        current_password: &str,
-        new_password: &str,
-        otp: &str,
-    ) -> Result<(), AuthError> {
-        if new_password.len() < 8 {
-            return Err(AuthError::WeakPassword);
-        }
-
-        let user = self
-            .get_user(username)
-            .await
-            .ok_or(AuthError::InvalidCredentials)?;
-
-        if !verify_password_async(current_password, &user.password_salt, &user.password_hash).await {
-            return Err(AuthError::InvalidCredentials);
-        }
-        if !verify_totp(&user.totp_secret, otp) {
-            return Err(AuthError::InvalidOtp);
-        }
-
-        let new_salt = generate_password_salt();
-        let new_hash = derive_password_hash_async(new_password, &new_salt)
-            .await
-            .ok_or(AuthError::InvalidInput)?;
-
-        if let Some(pool) = self.active_pool() {
-            if self.ensure_schema_and_seed().await.is_ok() {
-                if let Err(error) = sqlx::query(
-                    "UPDATE users SET password_salt = $1, password_hash = $2, updated_at = NOW() WHERE username = $3",
-                )
-                .bind(&new_salt)
-                .bind(&new_hash)
-                .bind(username)
-                .execute(pool)
-                .await
-                {
-                    self.disable_db(&format!("change password update failed: {error}"));
-                }
-            }
-        }
-
-        let mut users = self.users.write().expect("auth users lock poisoned");
-        if let Some(record) = users.get_mut(username) {
-            record.password_salt = new_salt;
-            record.password_hash = new_hash;
-        }
-
-        Ok(())
-    }
-
-    pub async fn delete_account(
-        &self,
-        username: &str,
-        password: &str,
-        otp: &str,
-    ) -> Result<(), AuthError> {
-        let user = self
-            .get_user(username)
-            .await
-            .ok_or(AuthError::InvalidCredentials)?;
-
-        if !verify_password_async(password, &user.password_salt, &user.password_hash).await {
-            return Err(AuthError::InvalidCredentials);
-        }
-        if !verify_totp(&user.totp_secret, otp) {
-            return Err(AuthError::InvalidOtp);
-        }
-
-        if user.username == self.default_admin.username {
-            return Err(AuthError::Forbidden);
-        }
-
-        if let Some(pool) = self.active_pool() {
-            if self.ensure_schema_and_seed().await.is_ok() {
-                let count = sqlx::query("SELECT COUNT(*) AS count FROM users")
-                    .fetch_one(pool)
-                    .await
-                    .map(|row| row.get::<i64, _>("count"));
-
-                match count {
-                    Ok(total) if total <= 1 => return Err(AuthError::Forbidden),
-                    Ok(_) => {
-                        if let Err(error) = sqlx::query("DELETE FROM sessions WHERE username = $1")
-                            .bind(username)
-                            .execute(pool)
-                            .await
-                        {
-                            self.disable_db(&format!(
-                                "delete account clear sessions failed: {error}"
-                            ));
-                        }
-                        if let Err(error) = sqlx::query("DELETE FROM users WHERE username = $1")
-                            .bind(username)
-                            .execute(pool)
-                            .await
-                        {
-                            self.disable_db(&format!("delete account delete user failed: {error}"));
-                        }
-                    }
-                    Err(error) => {
-                        self.disable_db(&format!("delete account count failed: {error}"));
-                    }
-                }
-            }
-        } else {
-            let users = self.users.read().expect("auth users lock poisoned");
-            if users.len() <= 1 {
-                return Err(AuthError::Forbidden);
-            }
-            drop(users);
-        }
-
-        {
-            let mut users = self.users.write().expect("auth users lock poisoned");
-            users.remove(username);
-        }
-        {
-            let mut sessions = self.sessions.write().expect("auth sessions lock poisoned");
-            sessions.retain(|_, session| session.username != username);
-        }
-
-        Ok(())
     }
 
     fn active_pool(&self) -> Option<&PgPool> {
@@ -583,7 +377,18 @@ impl AuthService {
                         users.insert(record.username.clone(), record.clone());
                         return Some(record);
                     }
-                    Ok(None) => return None,
+                    Ok(None) => {
+                        // Authoritative deletion also invalidates this account's memory fallback.
+                        self.users
+                            .write()
+                            .expect("auth users lock poisoned")
+                            .remove(&username);
+                        self.sessions
+                            .write()
+                            .expect("auth sessions lock poisoned")
+                            .retain(|_, session| session.username != username);
+                        return None;
+                    }
                     Err(error) => self.disable_db(&format!("get user failed: {error}")),
                 }
             }

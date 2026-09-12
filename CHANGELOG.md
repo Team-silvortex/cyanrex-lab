@@ -5,6 +5,43 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.3.8] - 2026-09-12
+
+### Fixed
+
+- Resolved the nine module/boundary findings: login confirms session insertion and verified account
+  credentials in one transaction; account deletion rejects surviving sessions. Stale login, suppressed
+  writes and cancellation cannot publish premature cache tokens.
+- Local scripts preserve corrupt/unreadable snapshots and failed-write cache state. Shared admission,
+  private temporary files and atomic replacement serialize saves/deletes and finish admitted commits
+  after cancellation; the existing JSON format remains unchanged (no fsync guarantee).
+- Event deletion removes matches rather than their complement, rejects invalid/empty/unknown filters
+  and unsafe time ranges, preserves unread state, and never replaces SQL history from a partial cache.
+  Added concurrency/cancellation and SQL regressions; promoted auth, script and event database
+  boundaries into guarded CI steps with explicit OpenAPI failure responses.
+- Registration no longer reports success without creating an account when authentication schema
+  initialization fails. The existing memory fallback now stores the account atomically, rejects
+  duplicate names, and returns usable TOTP credentials. Fallback is still volatile.
+- TOTP enrollment links encode issuer, account and secret components so custom issuer names containing
+  Unicode or URL delimiters cannot corrupt the QR code's label, secret or authentication parameters.
+- Added offline-failure/concurrent-registration regressions and real PostgreSQL authentication CI
+  acceptance covering durable accounts, hashed sessions, duplicate registration and later DB failure.
+- A database-observed revoked/expired session or deleted account now evicts its stale in-memory
+  fallback, so a later database outage cannot revive that observed invalidation. Added real PostgreSQL
+  regressions; this does not provide cross-process revocation while persistence is unavailable.
+- Logout waits for explicit server success before navigating. Rejected, malformed, timed-out and
+  network-failed responses show a four-locale warning and require a manual retry. Duplicate clicks and
+  late navigation callbacks are guarded, with request-level and browser regressions.
+- PostgreSQL-backed logout, password changes and account deletion no longer report memory-only success
+  after a failed durable write or a latched database fallback. Unconfirmed writes return 503 without
+  clearing the session cookie. Account/session deletion is transactional; rejected or zero-row account
+  writes do not publish cache changes. Intentionally memory-only instances retain volatile operation.
+  Repeated logout remains idempotent, but a suppressed deletion cannot leave a live durable session
+  behind a success response.
+- Account mutations use the verified normalized username and credential snapshot. Concurrent password
+  changes cannot silently overwrite a newer password; added database fault/rollback, retry, zero-row,
+  case-normalization and concurrent-writer regressions plus explicit OpenAPI failure documentation.
+
 ## [0.3.7] - 2026-09-09
 
 ### Added
@@ -247,7 +284,8 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 The canonical package metadata advanced directly from `0.2.9` to `0.3.1`. Version `0.3.0` identifies
 the frozen API compatibility snapshot only; it was not a package release and must not be tagged.
 
-[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.7...HEAD
+[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.8...HEAD
+[0.3.8]: https://github.com/Team-silvortex/cyanrex-lab/compare/f3f9faf585721df5e208c18da99652b040e35d50...v0.3.8
 [0.3.7]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.6...v0.3.7
 [0.3.6]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.5...v0.3.6
 [0.3.5]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.4...v0.3.5

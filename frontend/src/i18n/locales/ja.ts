@@ -14,6 +14,8 @@ export const ja: TranslationDict = {
       roleStudent: "学生",
       checkingSession: "セッション確認中...",
       logout: "ログアウト",
+      loggingOut: "ログアウト中…",
+      logoutFailed: "ログアウトの完了を確認できません。セッションが有効な可能性があります。接続を確認して手動で再試行し、完了を確認してから端末を離れてください。",
       language: "言語",
       nav: {
         dashboard: "ダッシュボード",

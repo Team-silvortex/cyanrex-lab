@@ -379,7 +379,7 @@ program, the run removes the inactive pin and retries through Aya.
 PostgreSQL is the preferred durable store for users, sessions, events, event settings, scripts, and learning attempts.
 If enabled with `CYANREX_DB_FALLBACK`, individual services can degrade independently:
 
-- authentication falls back to process memory;
+- account/session reads, registration and login can fall back to process memory;
 - events fall back to bounded per-user memory;
 - scripts fall back to per-instance JSON files under `CYANREX_DATA_DIR`;
 - learning attempts fall back to per-instance JSON files under `CYANREX_DATA_DIR`;
@@ -387,6 +387,28 @@ If enabled with `CYANREX_DB_FALLBACK`, individual services can degrade independe
 
 Fallback keeps a lab usable during a database outage, but memory-backed users, sessions, and events
 do not survive an Engine restart. Production-like classroom runs should monitor PostgreSQL health.
+
+Configured durable authentication does not acknowledge memory-only logout, password changes or account
+deletion. Unconfirmed storage writes return `503` and retain the cookie; account/session deletion is
+transactional. These operations remain blocked after a read failure latches auth DB fallback until
+storage is restored and Engine restarted. Explicit memory-only instances retain volatile behavior.
+See the [security guide](security.md#sessions-and-database-outages) for retry and revocation limits.
+
+A login admitted against active SQL inserts its session and rechecks the verified credential snapshot
+within one transaction before cache/cookie publication. It cannot silently change to a memory-only
+write if SQL fails or the account is deleted/recreated during login. Prior fallback remains volatile.
+
+Local scripts keep their JSON array format. Cloned stores share writer admission across cold load,
+private same-directory temporary file creation, flush/atomic rename and cache publication. Cancelled
+admitted requests finish this sequence; queued cancellation changes nothing. Only missing files
+initialize empty; corrupt, unreadable or foreign-owner snapshots are not overwritten or cached as empty.
+New Unix files/directories use 0600/0700. This is not fsync durability or cross-process locking.
+
+Event deletion retains nonmatches in place without replacing SQL rows from the bounded cache.
+History/unread updates share one lock order; surviving read flags are preserved. HTTP deletion rejects
+invalid values, unknown keys and invalid time ranges before mutation; SQL and memory share one frozen
+cutoff. No filters explicitly means delete all for the session owner. Async event persistence still
+is not a transactional, cross-process or crash-recovery guarantee.
 
 Local learning records use shared immutable snapshots: reads avoid cloning all source, appends share
 unchanged records, and feedback replaces only the edited record. First-load I/O, UTF-8 validation and

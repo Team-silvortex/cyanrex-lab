@@ -1,0 +1,991 @@
+{
+  "schema_version": 1,
+  "snapshot_date": "2026-09-09",
+  "version": "0.3.7",
+  "inventory_validation": {
+    "total": 292,
+    "assigned": 292,
+    "unassigned": 0,
+    "duplicate_assignments": 0
+  },
+  "counting_note": "Each Rust test is assigned once. Operation mapping is ownership/surface inventory, not a claim of endpoint branch coverage.",
+  "modules": [
+    {
+      "id": "M00",
+      "name": "基础配置与健康检查",
+      "node": [],
+      "rust": {
+        "lib": [
+          "metrics::tests::records_check_and_completion_metrics_independently",
+          "services::environment_checker::tests::runtime_mode_aliases_are_parsed"
+        ],
+        "routes_tdd": [
+          "get_health_should_return_ok_status",
+          "get_helper_environment_should_return_check_report",
+          "get_index_should_return_homepage_payload",
+          "options_ebpf_run_should_allow_cors_preflight"
+        ]
+      },
+      "ignored": []
+    },
+    {
+      "id": "M01",
+      "name": "认证与教师权限",
+      "node": [
+        "authSession",
+        "sidebarPermissions",
+        "securityHeaders"
+      ],
+      "rust": {
+        "lib": [
+          "services::auth_service::tests::account_mutations_use_the_same_normalized_identity_as_login",
+          "services::auth_service::tests::concurrent_memory_password_changes_have_one_winner",
+          "services::auth_service::tests::concurrent_registration_during_schema_failure_has_exactly_one_winner",
+          "services::auth_service::tests::registration_after_schema_failure_returns_a_usable_fallback_account",
+          "services::auth_service::tests::schema_failure_cannot_reissue_secrets_for_an_existing_memory_account",
+          "services::auth_service::tests::totp_uri_encodes_issuer_and_label_without_altering_credentials_or_parameters",
+          "services::auth_service::postgres_mutation_tests::configured_auth_storage_outage_cannot_turn_mutations_into_memory_success",
+          "services::auth_service::tests::verified_memory_login_cannot_publish_after_credentials_change_or_removal"
+        ],
+        "routes_tdd": [
+          "get_auth_me_returns_role_for_student_user",
+          "get_auth_me_should_return_authenticated_after_login",
+          "learning_labs_require_auth_and_return_progress_catalog",
+          "post_auth_change_password_should_require_valid_otp_and_update_login_password",
+          "post_auth_delete_should_remove_user_and_invalidate_login",
+          "post_auth_login_rejects_invalid_username",
+          "post_auth_login_returns_teacher_role_for_deployment_owner",
+          "post_auth_login_returns_teacher_role_for_teacher_user",
+          "post_auth_login_should_fail_with_invalid_totp",
+          "post_auth_login_should_succeed_with_valid_password_and_totp",
+          "post_auth_logout_allows_request_with_allowed_origin",
+          "post_auth_logout_is_blocked_by_csrf_origin_restriction",
+          "post_auth_register_rejects_invalid_username",
+          "post_auth_register_should_create_user_with_totp_bootstrap_payload",
+          "post_auth_student_can_access_ebpf_endpoints",
+          "post_auth_student_can_blocked_by_csrf_origin_restriction",
+          "post_auth_student_is_allowed_when_csrf_origin_is_missing_with_override",
+          "post_auth_student_is_blocked_when_csrf_origin_is_missing",
+          "post_auth_student_is_forbidden_from_admin_settings_route",
+          "post_auth_teacher_can_manage_deployment_settings",
+          "post_auth_totp_bootstrap_should_fail_with_invalid_credentials",
+          "post_auth_totp_bootstrap_should_return_otpauth_uri_for_valid_credentials",
+          "runner_lifecycle_tests::attachment_routes_keep_auth_and_csrf_guards_before_driver",
+          "runner_status_requires_auth_and_reports_shared_kernel_boundary",
+          "teacher_authority_default_and_legacy_accounts_report_teacher",
+          "teacher_authority_deployment_owner_cannot_delete_itself_with_students_present",
+          "teacher_authority_manages_deployment_and_retains_csrf",
+          "teacher_authority_public_registration_cannot_claim_reserved_names_or_roles",
+          "teacher_authority_students_and_anonymous_cannot_manage_deployment"
+        ]
+      },
+      "ignored": [
+        {
+          "target": "lib",
+          "name": "services::auth_service::postgres_boundary_tests::postgres_cancelled_account_deletion_rolls_back_the_earlier_session_delete"
+        },
+        {
+          "target": "lib",
+          "name": "services::auth_service::postgres_boundary_tests::postgres_cancelled_classroom_join_never_reopens_its_consumed_invitation"
+        },
+        {
+          "target": "lib",
+          "name": "services::auth_service::postgres_boundary_tests::postgres_delete_deferred_commit_failure_rolls_back_account_and_sessions"
+        },
+        {
+          "target": "lib",
+          "name": "services::auth_service::postgres_boundary_tests::postgres_delete_session_step_failure_preserves_account_and_session"
+        },
+        {
+          "target": "lib",
+          "name": "services::auth_service::postgres_boundary_tests::postgres_delete_suppressed_session_cascade_cannot_report_success"
+        },
+        {
+          "target": "lib",
+          "name": "services::auth_service::postgres_boundary_tests::postgres_login_cannot_report_success_after_its_account_was_deleted"
+        },
+        {
+          "target": "lib",
+          "name": "services::auth_service::postgres_boundary_tests::postgres_login_zero_row_session_insert_cannot_report_success"
+        },
+        {
+          "target": "lib",
+          "name": "services::auth_service::postgres_boundary_tests::postgres_old_login_cannot_authenticate_as_a_recreated_account"
+        },
+        {
+          "target": "lib",
+          "name": "services::auth_service::postgres_mutation_tests::postgres_account_deletion_failure_is_atomic"
+        },
+        {
+          "target": "lib",
+          "name": "services::auth_service::postgres_mutation_tests::postgres_account_mutations_normalize_identity_and_persist"
+        },
+        {
+          "target": "lib",
+          "name": "services::auth_service::postgres_mutation_tests::postgres_account_zero_row_deletion_is_not_success"
+        },
+        {
+          "target": "lib",
+          "name": "services::auth_service::postgres_mutation_tests::postgres_concurrent_password_changes_cannot_overwrite_newer_credentials"
+        },
+        {
+          "target": "lib",
+          "name": "services::auth_service::postgres_mutation_tests::postgres_logout_write_failure_is_not_success"
+        },
+        {
+          "target": "lib",
+          "name": "services::auth_service::postgres_mutation_tests::postgres_logout_zero_row_deletion_is_not_success"
+        },
+        {
+          "target": "lib",
+          "name": "services::auth_service::postgres_mutation_tests::postgres_password_write_failure_is_not_success"
+        },
+        {
+          "target": "lib",
+          "name": "services::auth_service::postgres_mutation_tests::postgres_password_zero_row_update_is_not_success"
+        },
+        {
+          "target": "lib",
+          "name": "services::auth_service::postgres_tests::postgres_deleted_account_cannot_revive_in_fallback"
+        },
+        {
+          "target": "lib",
+          "name": "services::auth_service::postgres_tests::postgres_expired_session_cannot_revive_in_fallback"
+        },
+        {
+          "target": "lib",
+          "name": "services::auth_service::postgres_tests::postgres_registration_persists_accounts_and_serializes_duplicates"
+        },
+        {
+          "target": "lib",
+          "name": "services::auth_service::postgres_tests::postgres_revoked_session_cannot_revive_in_fallback"
+        },
+        {
+          "target": "lib",
+          "name": "services::auth_service::postgres_boundary_tests::postgres_cancelled_login_rolls_back_without_publishing_a_session"
+        },
+        {
+          "target": "lib",
+          "name": "services::auth_service::postgres_boundary_tests::postgres_login_cannot_publish_after_concurrent_password_change"
+        }
+      ]
+    },
+    {
+      "id": "M02",
+      "name": "课堂发现与加入",
+      "node": [
+        "classroomConnection"
+      ],
+      "rust": {
+        "lib": [
+          "services::classroom::tests::classroom_configuration_fails_closed",
+          "services::classroom::tests::classroom_invitations_are_bounded_expire_and_do_not_survive_restart"
+        ],
+        "classroom_tdd": [
+          "classroom_concurrent_redemption_is_once_and_oversized_requests_are_rejected",
+          "classroom_disabled_by_default_and_discovery_is_minimal",
+          "classroom_disabled_join_does_not_reveal_reserved_teacher_names",
+          "classroom_existing_account_is_not_reset_and_failed_creation_consumes_invitation",
+          "classroom_invitation_joins_student_without_open_registration_or_automatic_login",
+          "classroom_management_is_teacher_only_and_csrf_protected",
+          "classroom_revocation_and_inventory_do_not_leak_invitation_secrets",
+          "classroom_wrong_identity_protocol_capability_origin_or_username_cannot_redeem"
+        ]
+      },
+      "ignored": []
+    },
+    {
+      "id": "M03",
+      "name": "脚本与文件持久化",
+      "node": [],
+      "rust": {
+        "module_boundaries_tdd": [
+          "storage::scripts_bind_http_identity_csrf_and_file_reload_without_cross_owner_deletion",
+          "storage::script_failed_file_save_must_not_publish_an_unsaved_record",
+          "storage::script_failed_file_delete_must_retain_the_previously_saved_record",
+          "storage::script_corrupt_snapshot_must_not_be_overwritten_by_a_successful_save"
+        ],
+        "lib": [
+          "services::script_store::tests::cancelled_commit_retains_admission_until_disk_and_cache_are_published",
+          "services::script_store::tests::cancelling_a_queued_commit_does_not_write_or_publish",
+          "services::script_store::tests::cold_snapshot_with_another_owner_is_not_exposed_or_overwritten",
+          "services::script_store::tests::concurrent_local_commits_survive_reload_without_lost_updates",
+          "services::script_store::tests::failed_rename_keeps_old_snapshot_and_removes_only_its_temporary_file",
+          "services::script_store::tests::malformed_cold_snapshot_is_preserved_and_can_be_retried_after_repair",
+          "services::script_store::tests::persisted_scripts_have_private_file_permissions"
+        ]
+      },
+      "ignored": [
+        {
+          "target": "module_boundaries_tdd",
+          "name": "script_postgres::scripts_use_postgres_without_file_fallback_and_keep_owner_boundaries_after_reload"
+        }
+      ]
+    },
+    {
+      "id": "M04",
+      "name": "模块、头文件与终端",
+      "node": [
+        "terminalCommand"
+      ],
+      "rust": {
+        "lib": [
+          "services::module_manager::tests::discovers_versioned_manifests_and_manages_only_known_modules",
+          "services::module_manager::tests::rejects_missing_catalog_and_invalid_manifest_values",
+          "services::module_manager::tests::rejects_unsupported_or_directory_mismatched_manifests"
+        ],
+        "routes_tdd": [
+          "get_c_headers_catalog_should_return_header_module_items",
+          "get_modules_catalog_allowed_for_teacher",
+          "get_modules_list_allowed_for_admin",
+          "get_modules_list_allowed_for_teacher",
+          "get_modules_list_forbidden_for_student",
+          "post_command_should_be_allowed_for_teacher",
+          "post_command_should_return_structured_module_results_for_admin",
+          "post_command_should_validate_module_name_and_describe_experiment_handoff",
+          "post_modules_download_for_teacher_reaches_header_validation",
+          "post_modules_lifecycle_updates_a_discovered_catalog_entry",
+          "post_modules_start_rejects_unknown_catalog_entries"
+        ],
+        "module_boundaries_tdd": [
+          "storage::teacher_header_selection_reloads_and_is_readable_but_not_mutable_by_students",
+          "storage::header_download_checksum_failure_cannot_publish_a_downloaded_resource"
+        ]
+      },
+      "ignored": []
+    },
+    {
+      "id": "M05",
+      "name": "编译、补全、调试与模板",
+      "node": [],
+      "rust": {
+        "lib": [
+          "routes::ebpf::breakpoint_trace_tests::parses_only_the_requested_debug_session",
+          "routes::ebpf::debug_backend_fallback_tests::fallback_requires_bpftool_tracepoint_and_active_debug_probe",
+          "services::ebpf_loader::compiler_diagnostic_tests::parses_clang_error_locations",
+          "services::ebpf_loader::compiler_scope_tests::compiler_check_cache_is_scoped_to_owner",
+          "services::ebpf_loader::compiler_scope_tests::compiler_completion_cache_is_scoped_to_owner_and_cursor",
+          "services::ebpf_loader::compiler_workspace::tests::compiler_workspace_is_private_and_removed_on_drop",
+          "services::ebpf_loader::compiler_workspace::tests::compiler_workspace_is_removed_when_operation_is_cancelled",
+          "services::ebpf_loader::completion_parser_tests::parses_clang_completion_item",
+          "services::ebpf_loader::debug_tests::does_not_treat_map_initializer_as_a_function",
+          "services::ebpf_loader::debug_tests::enforces_breakpoint_limit",
+          "services::ebpf_loader::debug_tests::ignores_braces_and_assignments_in_preprocessor_macros",
+          "services::ebpf_loader::debug_tests::instruments_function_entry_and_statement_without_changing_line_count",
+          "services::ebpf_loader::debug_tests::rejects_global_comment_and_out_of_range_lines",
+          "services::ebpf_loader::workspace_tests::owner_namespace_is_stable_distinct_and_path_safe",
+          "services::ebpf_loader::workspace_tests::workspace_is_removed_when_lease_scope_ends"
+        ],
+        "routes_tdd": [
+          "get_ebpf_templates_should_return_template_catalog",
+          "post_ebpf_check_empty_code_should_return_validation_error",
+          "post_ebpf_check_with_oversized_code_should_return_payload_too_large",
+          "post_ebpf_run_with_empty_code_should_fail_validation",
+          "post_ebpf_run_with_oversized_code_should_fail_validation"
+        ]
+      },
+      "ignored": []
+    },
+    {
+      "id": "M06",
+      "name": "Runner 与 Agent",
+      "node": [],
+      "rust": {
+        "lib": [
+          "services::runner_agent_authenticator::tests::tampering_rotation_and_stale_timestamps_are_rejected",
+          "services::runner_agent_authenticator::tests::valid_signature_is_accepted_once",
+          "services::runner_agent_client::compile_check_requires_a_real_isolation_boundary",
+          "services::runner_agent_client::engine_url_rejects_redirectable_or_ambiguous_components",
+          "services::runner_agent_client::engine_url_requires_tls_outside_loopback",
+          "services::runner_agent_executor::tests::capped_reader_drains_but_bounds_output",
+          "services::runner_agent_executor::tests::executor_rejects_ambiguous_paths",
+          "services::runner_agent_executor::tests::installed_clang_produces_a_bounded_report_and_leaves_no_job_files",
+          "services::runner_agent_executor::tests::source_policy_allows_system_headers_and_rejects_file_reads",
+          "services::runner_agent_executor::tests::workspaces_are_private_and_removed",
+          "services::runner_agent_registry::tests::heartbeat_cannot_overstate_registered_capacity",
+          "services::runner_agent_registry::tests::identifiers_cannot_contain_whitespace",
+          "services::runner_agent_registry::tests::registry_has_a_hard_agent_count_limit",
+          "services::runner_agent_registry::tests::shared_kernel_agents_cannot_advertise_the_compiler",
+          "services::runner_agent_registry::tests::short_tokens_and_invalid_retention_are_rejected",
+          "services::runner_agent_registry::tests::stale_agents_become_offline_and_are_then_pruned",
+          "services::runner_agent_registry::tests::token_authentication_is_disabled_or_constant_time_checked",
+          "services::runner_driver::tests::local_attachment_lifecycle_preserves_empty_inventory_and_cleanup",
+          "services::runner_driver::tests::local_detach_rejects_untracked_paths_without_touching_them",
+          "services::runner_job_queue::tests::claim_respects_agent_active_capacity",
+          "services::runner_job_queue::tests::claimed_probe_requires_cancel_acknowledgement",
+          "services::runner_job_queue::tests::compile_checks_require_the_clang_capability_and_hide_source_from_inventory",
+          "services::runner_job_queue::tests::probe_can_be_claimed_completed_and_listed_without_exposing_lease",
+          "services::runner_job_queue::tests::user_compile_jobs_are_private_cancellable_and_quota_limited",
+          "services::runner_manager::tests::compiler_operations_require_an_owner_before_dispatch",
+          "services::runner_manager::tests::enforces_per_user_capacity_and_releases_on_drop",
+          "services::runner_manager::tests::execution_delegates_to_driver_and_updates_runtime_metadata",
+          "services::runner_manager::tests::execution_rejects_another_owner_before_calling_driver_or_changing_lease",
+          "services::runner_manager::tests::reports_global_capacity_without_exposing_other_user_count",
+          "services::runner_manager::tests::unsupported_driver_mode_fails_closed"
+        ],
+        "routes_tdd": [
+          "admin_can_submit_a_capability_matched_compile_check_without_inventory_source_leak",
+          "authenticated_remote_check_is_user_scoped_and_normalizes_agent_diagnostics",
+          "runner_agent_can_register_heartbeat_and_appear_in_admin_inventory",
+          "runner_agent_registration_rejects_oversized_payloads",
+          "runner_agent_registration_requires_bearer_token",
+          "runner_agent_signed_requests_cannot_be_replayed",
+          "runner_compiler_tests::compiler_backend_failure_and_timeout_never_fall_back_to_local_compiler",
+          "runner_compiler_tests::compiler_capacity_is_per_manager_and_cancel_releases_slots_and_metrics",
+          "runner_compiler_tests::compiler_guards_and_validation_run_before_driver_dispatch",
+          "runner_compiler_tests::compiler_routes_delegate_source_owner_headers_cursor_and_cache_status",
+          "runner_lifecycle_tests::attachment_backend_unavailability_never_falls_back_to_local_loader",
+          "runner_lifecycle_tests::attachment_inventory_uses_session_owner_and_outlives_execution_lease",
+          "runner_lifecycle_tests::attachment_operations_have_bounded_deadlines",
+          "runner_lifecycle_tests::detach_uses_driver_ownership_and_cleanup_report_without_host_inspection",
+          "runner_overview_is_admin_only",
+          "runner_probe_job_supports_claim_cancel_sync_and_result"
+        ]
+      },
+      "ignored": [
+        {
+          "target": "runner_agent_client_tdd",
+          "name": "runner_agent_client_completes_signed_probe_and_compile_jobs_over_http"
+        }
+      ]
+    },
+    {
+      "id": "M07",
+      "name": "学习记录、反馈与恢复",
+      "node": [
+        "teachingReview",
+        "learningResume"
+      ],
+      "rust": {
+        "lib": [
+          "routes::ebpf::learning_template_assessment_tests::bundled_beginner_templates_satisfy_structural_assessment",
+          "services::learning_catalog::tests::catalog_has_ordered_unique_labs",
+          "services::learning_catalog::tests::comments_and_strings_do_not_satisfy_source_requirements",
+          "services::learning_catalog::tests::equivalent_null_guard_is_accepted_for_map_lab",
+          "services::learning_catalog::tests::helper_name_substrings_do_not_satisfy_call_requirements",
+          "services::learning_catalog::tests::success_flag_without_runtime_stage_does_not_complete_lab",
+          "services::learning_catalog::tests::tracepoint_lab_requires_real_success_template_and_attach",
+          "services::learning_store::persistence::tests::partial_write_and_final_flush_failures_are_returned",
+          "services::learning_store::persistence::tests::pretty_json_is_written_before_all_rows_are_serialized",
+          "services::learning_store::persistence::tests::serializer_errors_are_not_successful_writes",
+          "services::learning_store::persistence::tests::short_and_interrupted_writes_preserve_large_source_and_empty_arrays",
+          "services::learning_store::queries::tests::bounded_selection_matches_stable_sort_with_ties_and_arbitrary_input_order",
+          "services::learning_store::queries::tests::single_pass_aggregates_match_previous_progress_and_overview_semantics",
+          "services::learning_store::queries::tests::zero_limit_does_not_scan_and_a_limited_query_visits_each_input_at_most_once",
+          "services::learning_store::snapshot_tests::appends_share_existing_sources_and_do_not_mutate_old_snapshots",
+          "services::learning_store::snapshot_tests::cancellation_tests::cancelled_append_finishes_publication_before_releasing_the_writer_lock",
+          "services::learning_store::snapshot_tests::cancellation_tests::cancelled_failing_worker_preserves_old_data_and_releases_admission",
+          "services::learning_store::snapshot_tests::cancellation_tests::cancelled_feedback_keeps_the_saved_revision_and_rejects_a_stale_retry",
+          "services::learning_store::snapshot_tests::cancellation_tests::cancelled_request_does_not_drop_an_admitted_but_not_started_worker",
+          "services::learning_store::snapshot_tests::cancellation_tests::cancelling_queued_writers_does_not_change_disk_or_memory",
+          "services::learning_store::snapshot_tests::concurrent_appends_and_feedback_keep_every_success_after_reload",
+          "services::learning_store::snapshot_tests::failed_final_rename_does_not_change_the_in_memory_snapshot",
+          "services::learning_store::snapshot_tests::failed_writes_do_not_publish_a_new_snapshot_and_remain_retryable",
+          "services::learning_store::snapshot_tests::feedback_copies_only_the_changed_record_and_preserves_old_snapshots",
+          "services::learning_store::snapshot_tests::legacy_json_array_still_loads_and_writes_identical_pretty_encoding",
+          "services::learning_store::snapshot_tests::load_tests::cancelled_decoded_load_publishes_once_and_does_not_reread_changed_input",
+          "services::learning_store::snapshot_tests::load_tests::cancelled_queued_load_keeps_admission_and_finishes_initialization",
+          "services::learning_store::snapshot_tests::load_tests::cold_decoder_matches_legacy_serde_and_never_publishes_partial_input",
+          "services::learning_store::snapshot_tests::load_tests::concurrent_cold_appends_and_feedback_preserve_initial_and_new_rows",
+          "services::learning_store::snapshot_tests::load_tests::concurrent_cold_readers_share_one_published_snapshot",
+          "services::learning_store::snapshot_tests::load_tests::only_not_found_is_initialized_as_empty_and_path_errors_remain_retryable",
+          "services::learning_store::snapshot_tests::progress_and_overview_stay_fresh_without_exposing_or_copying_source",
+          "services::learning_store::snapshot_tests::recent_pages_keep_timestamp_order_and_stable_ties_without_leaking_owners",
+          "services::learning_store::snapshot_tests::snapshot_reads_share_the_collection_and_source_allocations",
+          "services::learning_store::tests::progress_prefers_completed_state_over_later_failures"
+        ],
+        "routes_tdd": [
+          "get_ebpf_templates_should_include_categorized_learning_paths",
+          "learning_single_attempt_is_read_only_and_bound_to_the_session_owner",
+          "learning_single_attempt_reports_storage_errors_without_exposing_source",
+          "learning_teacher_feedback_and_new_runs_preserve_both_updates",
+          "learning_teacher_feedback_enforces_staff_and_csrf",
+          "learning_teacher_feedback_failure_does_not_publish_unsaved_changes",
+          "learning_teacher_feedback_is_saved_and_visible_to_its_student",
+          "learning_teacher_feedback_loads_legacy_attempts_without_feedback",
+          "learning_teacher_feedback_rejects_missing_revision_and_spoofed_author",
+          "learning_teacher_feedback_rejects_stale_and_concurrent_edits",
+          "learning_teacher_feedback_validates_comment_and_attempt_owner",
+          "teacher_attempt_review_is_limited_and_students_cannot_read_it",
+          "teacher_learning_overview_is_staff_only"
+        ],
+        "module_boundaries_tdd": [
+          "learning_flow::saved_source_flows_through_runner_events_feedback_and_owner_bound_resume"
+        ]
+      },
+      "ignored": [
+        {
+          "target": "lib",
+          "name": "services::learning_store::feedback::tests::postgres_feedback_migrates_legacy_rows_and_serializes_updates"
+        }
+      ]
+    },
+    {
+      "id": "M08",
+      "name": "事件流与背压",
+      "node": [
+        "eventStream"
+      ],
+      "rust": {
+        "lib": [
+          "routes::events::stream::tests::closed_channel_produces_a_normal_shutdown_close",
+          "routes::events::stream::tests::stalled_send_is_bounded_and_cancelled",
+          "services::event_bus::subscriptions::tests::cancelling_recv_preserves_delivery_and_aborting_releases_the_subscription",
+          "services::event_bus::subscriptions::tests::concurrent_publishers_and_connection_churn_preserve_owner_and_writer_order",
+          "services::event_bus::subscriptions::tests::event_bus_keeps_global_compatibility_and_drop_new_semantics",
+          "services::event_bus::subscriptions::tests::json_is_lazy_and_encoded_once_across_concurrent_receivers",
+          "services::event_bus::subscriptions::tests::matching_receivers_share_one_event_allocation",
+          "services::event_bus::subscriptions::tests::receivers_do_not_keep_the_registry_or_sender_alive",
+          "services::event_bus::subscriptions::tests::stale_drop_cannot_remove_a_replacement_generation",
+          "services::event_bus::subscriptions::tests::subscriptions_are_live_only_and_cleanup_after_the_last_connection",
+          "services::event_bus::subscriptions::tests::unrelated_traffic_cannot_lag_an_owner_but_own_slow_receivers_still_lag",
+          "services::event_bus::tests::bounded_reads_during_publication_remain_ordered_and_user_scoped",
+          "services::event_bus::tests::concurrent_users_retain_independent_ordered_histories",
+          "services::event_bus::tests::drop_new_does_not_change_history_broadcast_or_unread_after_full",
+          "services::event_bus::tests::drop_oldest_preserves_fifo_after_repeated_wraparound",
+          "services::event_bus::tests::filtered_snapshots_keep_latest_matching_events_in_fifo_order",
+          "services::event_bus::tests::limited_queries_handle_empty_zero_oversized_and_full_export_results",
+          "services::event_bus::tests::replacement_and_clear_remain_user_scoped_and_reset_unread",
+          "services::event_bus::tests::selected_result_storage_does_not_grow_past_the_known_output_bound",
+          "services::event_bus::tests::shrinking_and_growing_a_wrapped_history_preserves_the_newest_events",
+          "services::event_bus::tests::steady_state_eviction_does_not_grow_or_relocate_retained_events",
+          "services::event_bus_filter::tests::borrowed_selection_matches_legacy_filters_across_wrapped_histories",
+          "services::event_bus_filter::tests::latest_page_stops_visiting_after_its_limit_and_returns_borrowed_events",
+          "services::event_bus_filter::tests::retention_is_applied_before_filtering_older_matches",
+          "services::event_bus_filter::tests::selective_page_stops_after_enough_matches_not_enough_scanned_events",
+          "services::event_bus_filter::tests::time_bounds_are_inclusive_and_do_not_assume_timestamp_order",
+          "services::event_bus_filter::tests::zero_limit_does_not_visit_history",
+          "services::event_bus::tests::deletion::cancelled_deletion_never_splits_history_and_unread",
+          "services::event_bus::tests::deletion::deletion_cannot_erase_concurrent_nonmatching_publications",
+          "services::event_bus::tests::deletion::deletion_preserves_read_state_and_other_users",
+          "services::event_bus::tests::deletion::invalid_service_filters_never_widen_deletion"
+        ],
+        "routes_tdd": [
+          "event_websocket_keeps_raw_event_frames_and_owner_isolation",
+          "event_websocket_lag_closes_with_resync_code_instead_of_silent_loss",
+          "event_websocket_other_owner_burst_does_not_force_resync",
+          "event_websocket_requires_a_session_and_allowed_origin"
+        ],
+        "module_boundaries_tdd": [
+          "events::event_history_export_and_unread_remain_session_scoped",
+          "events::filtered_event_deletion_removes_matches_not_the_complement",
+          "events::invalid_event_delete_filters_must_not_widen_into_delete_all",
+          "events::event_settings_http_retention_and_overflow_policy_do_not_cross_users"
+        ]
+      },
+      "ignored": [
+        {
+          "target": "lib",
+          "name": "routes::events::stream::pressure_tests::measure"
+        },
+        {
+          "target": "lib",
+          "name": "services::event_bus::read_bench::measure"
+        },
+        {
+          "target": "lib",
+          "name": "services::event_bus::subscriptions::bench::measure"
+        },
+        {
+          "target": "lib",
+          "name": "services::event_bus::tests::deletion::postgres_filtered_delete_preserves_uncached_rows_and_read_flags"
+        }
+      ]
+    },
+    {
+      "id": "M09",
+      "name": "UI 操作与构建",
+      "node": [
+        "actionSafety",
+        "performanceHotspots",
+        "cleanMacosMetadata"
+      ],
+      "rust": {},
+      "ignored": []
+    },
+    {
+      "id": "M10",
+      "name": "API 与 SDK",
+      "node": [],
+      "rust": {
+        "routes_tdd": [
+          "get_openapi_should_return_versioned_machine_readable_contract"
+        ]
+      },
+      "ignored": []
+    },
+    {
+      "id": "M11",
+      "name": "部署、发布与审计",
+      "node": [],
+      "rust": {
+        "src/bin/cyanrex-release/main.rs": [
+          "smoke_health::tests::health_probe_requires_an_ok_payload",
+          "smoke_http::tests::admin_credentials_require_https_or_loopback",
+          "smoke_http::tests::totp_matches_the_rfc_sha1_vector_truncated_to_six_digits",
+          "smoke_live_kernel::tests::native_live_kernel_smoke_detaches_when_no_matching_event_arrives",
+          "smoke_live_kernel::tests::native_live_kernel_smoke_reports_unproven_failure_cleanup",
+          "smoke_live_kernel::tests::native_live_kernel_smoke_writes_evidence_after_exact_cleanup",
+          "smoke_runner_agent::tests::native_runner_smoke_authenticates_submits_and_accepts_a_real_result",
+          "smoke_runner_agent::tests::native_runner_smoke_cancels_a_job_that_does_not_finish",
+          "strict_json::tests::accepts_each_json_value_kind",
+          "strict_json::tests::rejects_duplicate_keys_at_any_depth"
+        ],
+        "release_candidate_tdd": [
+          "native_candidate_verifier_passes_the_complete_bundle_regression_suite"
+        ],
+        "release_package_tdd": [
+          "installed_tests::installation_checks_the_bundled_binary_before_execution",
+          "installed_tests::installation_preflight_preserves_preexisting_configuration_and_tokens",
+          "installed_tests::installation_uses_native_probes_without_python_and_cleans_owned_state",
+          "installed_tests::installed_image_probe_checks_all_images_and_fails_closed",
+          "installed_tests::installed_verifier_rejects_links_missing_files_and_duplicate_metadata",
+          "native_extractor_rejects_outer_checksum_tampering",
+          "native_extractor_rejects_unsafe_or_unverified_members",
+          "native_installed_package_verifier_rejects_tampering_and_unlisted_files",
+          "rust_and_python_extract_the_same_verified_package"
+        ],
+        "release_tool_tdd": [
+          "native_verifier_accepts_v1_and_rejects_tampering",
+          "native_writer_rejects_duplicates_and_existing_outputs",
+          "python_and_rust_evidence_are_mutually_compatible"
+        ],
+        "ssh_deploy_tdd": [
+          "ssh_apply_uses_reviewed_arguments_once_and_does_not_retry_failure",
+          "ssh_arguments_reject_injection_and_unknown_actions",
+          "ssh_plan_is_offline_strict_and_target_bound",
+          "ssh_target_checks_package_controls_and_private_configuration_before_execution",
+          "ssh_target_refuses_version_mismatch_before_touching_deployment"
+        ]
+      },
+      "ignored": []
+    }
+  ],
+  "openapi_operation_count": 68,
+  "openapi_operations": [
+    {
+      "method": "GET",
+      "path": "/",
+      "operation_id": "getRoot",
+      "module": "M00"
+    },
+    {
+      "method": "GET",
+      "path": "/.well-known/cyanrex-classroom",
+      "operation_id": "getWellKnownCyanrexClassroom",
+      "module": "M02"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/me",
+      "operation_id": "getAuthMe",
+      "module": "M01"
+    },
+    {
+      "method": "GET",
+      "path": "/classroom/invitations",
+      "operation_id": "getClassroomInvitations",
+      "module": "M02"
+    },
+    {
+      "method": "POST",
+      "path": "/classroom/invitations",
+      "operation_id": "postClassroomInvitations",
+      "module": "M02"
+    },
+    {
+      "method": "GET",
+      "path": "/ebpf/attachments",
+      "operation_id": "getEbpfAttachments",
+      "module": "M06"
+    },
+    {
+      "method": "GET",
+      "path": "/ebpf/attachments/details",
+      "operation_id": "getEbpfAttachmentsDetails",
+      "module": "M06"
+    },
+    {
+      "method": "GET",
+      "path": "/ebpf/check/backends",
+      "operation_id": "getEbpfCheckBackends",
+      "module": "M06"
+    },
+    {
+      "method": "GET",
+      "path": "/ebpf/check/remote",
+      "operation_id": "getEbpfCheckRemote",
+      "module": "M06"
+    },
+    {
+      "method": "POST",
+      "path": "/ebpf/check/remote",
+      "operation_id": "postEbpfCheckRemote",
+      "module": "M06"
+    },
+    {
+      "method": "GET",
+      "path": "/ebpf/templates",
+      "operation_id": "getEbpfTemplates",
+      "module": "M05"
+    },
+    {
+      "method": "GET",
+      "path": "/events",
+      "operation_id": "getEvents",
+      "module": "M08"
+    },
+    {
+      "method": "GET",
+      "path": "/events/export",
+      "operation_id": "getEventsExport",
+      "module": "M08"
+    },
+    {
+      "method": "GET",
+      "path": "/events/unread-count",
+      "operation_id": "getEventsUnreadCount",
+      "module": "M08"
+    },
+    {
+      "method": "GET",
+      "path": "/health",
+      "operation_id": "getHealth",
+      "module": "M00"
+    },
+    {
+      "method": "GET",
+      "path": "/helper/environment",
+      "operation_id": "getHelperEnvironment",
+      "module": "M00"
+    },
+    {
+      "method": "GET",
+      "path": "/learning/attempt",
+      "operation_id": "getLearningAttempt",
+      "module": "M07"
+    },
+    {
+      "method": "GET",
+      "path": "/learning/attempts",
+      "operation_id": "getLearningAttempts",
+      "module": "M07"
+    },
+    {
+      "method": "GET",
+      "path": "/learning/labs",
+      "operation_id": "getLearningLabs",
+      "module": "M07"
+    },
+    {
+      "method": "GET",
+      "path": "/learning/teacher/attempts",
+      "operation_id": "getLearningTeacherAttempts",
+      "module": "M07"
+    },
+    {
+      "method": "GET",
+      "path": "/learning/teacher/overview",
+      "operation_id": "getLearningTeacherOverview",
+      "module": "M07"
+    },
+    {
+      "method": "GET",
+      "path": "/modules",
+      "operation_id": "getModules",
+      "module": "M04"
+    },
+    {
+      "method": "GET",
+      "path": "/modules/c-headers/catalog",
+      "operation_id": "getModulesCHeadersCatalog",
+      "module": "M04"
+    },
+    {
+      "method": "GET",
+      "path": "/modules/c-headers/selected-metadata",
+      "operation_id": "getModulesCHeadersSelectedMetadata",
+      "module": "M04"
+    },
+    {
+      "method": "GET",
+      "path": "/openapi.json",
+      "operation_id": "getOpenapiJson",
+      "module": "M10"
+    },
+    {
+      "method": "GET",
+      "path": "/runner/agents",
+      "operation_id": "getRunnerAgents",
+      "module": "M06"
+    },
+    {
+      "method": "GET",
+      "path": "/runner/jobs",
+      "operation_id": "getRunnerJobs",
+      "module": "M06"
+    },
+    {
+      "method": "GET",
+      "path": "/runner/overview",
+      "operation_id": "getRunnerOverview",
+      "module": "M06"
+    },
+    {
+      "method": "GET",
+      "path": "/runner/status",
+      "operation_id": "getRunnerStatus",
+      "module": "M06"
+    },
+    {
+      "method": "GET",
+      "path": "/scripts",
+      "operation_id": "getScripts",
+      "module": "M03"
+    },
+    {
+      "method": "GET",
+      "path": "/settings/compiler",
+      "operation_id": "getSettingsCompiler",
+      "module": "M05"
+    },
+    {
+      "method": "POST",
+      "path": "/settings/compiler",
+      "operation_id": "postSettingsCompiler",
+      "module": "M05"
+    },
+    {
+      "method": "GET",
+      "path": "/settings/events",
+      "operation_id": "getSettingsEvents",
+      "module": "M08"
+    },
+    {
+      "method": "POST",
+      "path": "/settings/events",
+      "operation_id": "postSettingsEvents",
+      "module": "M08"
+    },
+    {
+      "method": "GET",
+      "path": "/settings/performance",
+      "operation_id": "getSettingsPerformance",
+      "module": "M00"
+    },
+    {
+      "method": "GET",
+      "path": "/ws/events",
+      "operation_id": "getWsEvents",
+      "module": "M08"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/delete",
+      "operation_id": "postAuthDelete",
+      "module": "M01"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/login",
+      "operation_id": "postAuthLogin",
+      "module": "M01"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/logout",
+      "operation_id": "postAuthLogout",
+      "module": "M01"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/password/change",
+      "operation_id": "postAuthPasswordChange",
+      "module": "M01"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/register",
+      "operation_id": "postAuthRegister",
+      "module": "M01"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/totp/bootstrap",
+      "operation_id": "postAuthTotpBootstrap",
+      "module": "M01"
+    },
+    {
+      "method": "POST",
+      "path": "/classroom/invitations/revoke",
+      "operation_id": "postClassroomInvitationsRevoke",
+      "module": "M02"
+    },
+    {
+      "method": "POST",
+      "path": "/classroom/join",
+      "operation_id": "postClassroomJoin",
+      "module": "M02"
+    },
+    {
+      "method": "POST",
+      "path": "/command",
+      "operation_id": "postCommand",
+      "module": "M04"
+    },
+    {
+      "method": "POST",
+      "path": "/ebpf/check",
+      "operation_id": "postEbpfCheck",
+      "module": "M05"
+    },
+    {
+      "method": "POST",
+      "path": "/ebpf/check/remote/cancel",
+      "operation_id": "postEbpfCheckRemoteCancel",
+      "module": "M06"
+    },
+    {
+      "method": "POST",
+      "path": "/ebpf/complete",
+      "operation_id": "postEbpfComplete",
+      "module": "M05"
+    },
+    {
+      "method": "POST",
+      "path": "/ebpf/detach",
+      "operation_id": "postEbpfDetach",
+      "module": "M06"
+    },
+    {
+      "method": "POST",
+      "path": "/ebpf/run",
+      "operation_id": "postEbpfRun",
+      "module": "M05"
+    },
+    {
+      "method": "POST",
+      "path": "/events/delete",
+      "operation_id": "postEventsDelete",
+      "module": "M08"
+    },
+    {
+      "method": "POST",
+      "path": "/events/mark-read",
+      "operation_id": "postEventsMarkRead",
+      "module": "M08"
+    },
+    {
+      "method": "POST",
+      "path": "/learning/teacher/feedback",
+      "operation_id": "postLearningTeacherFeedback",
+      "module": "M07"
+    },
+    {
+      "method": "POST",
+      "path": "/modules/c-headers/delete",
+      "operation_id": "postModulesCHeadersDelete",
+      "module": "M04"
+    },
+    {
+      "method": "POST",
+      "path": "/modules/c-headers/download",
+      "operation_id": "postModulesCHeadersDownload",
+      "module": "M04"
+    },
+    {
+      "method": "POST",
+      "path": "/modules/c-headers/select",
+      "operation_id": "postModulesCHeadersSelect",
+      "module": "M04"
+    },
+    {
+      "method": "POST",
+      "path": "/modules/start",
+      "operation_id": "postModulesStart",
+      "module": "M04"
+    },
+    {
+      "method": "POST",
+      "path": "/modules/stop",
+      "operation_id": "postModulesStop",
+      "module": "M04"
+    },
+    {
+      "method": "POST",
+      "path": "/runner/agent/heartbeat",
+      "operation_id": "postRunnerAgentHeartbeat",
+      "module": "M06"
+    },
+    {
+      "method": "POST",
+      "path": "/runner/agent/jobs/claim",
+      "operation_id": "postRunnerAgentJobsClaim",
+      "module": "M06"
+    },
+    {
+      "method": "POST",
+      "path": "/runner/agent/jobs/result",
+      "operation_id": "postRunnerAgentJobsResult",
+      "module": "M06"
+    },
+    {
+      "method": "POST",
+      "path": "/runner/agent/jobs/sync",
+      "operation_id": "postRunnerAgentJobsSync",
+      "module": "M06"
+    },
+    {
+      "method": "POST",
+      "path": "/runner/agent/register",
+      "operation_id": "postRunnerAgentRegister",
+      "module": "M06"
+    },
+    {
+      "method": "POST",
+      "path": "/runner/jobs/cancel",
+      "operation_id": "postRunnerJobsCancel",
+      "module": "M06"
+    },
+    {
+      "method": "POST",
+      "path": "/runner/jobs/compile-check",
+      "operation_id": "postRunnerJobsCompileCheck",
+      "module": "M06"
+    },
+    {
+      "method": "POST",
+      "path": "/runner/jobs/probe",
+      "operation_id": "postRunnerJobsProbe",
+      "module": "M06"
+    },
+    {
+      "method": "POST",
+      "path": "/scripts/delete",
+      "operation_id": "postScriptsDelete",
+      "module": "M03"
+    },
+    {
+      "method": "POST",
+      "path": "/scripts/save",
+      "operation_id": "postScriptsSave",
+      "module": "M03"
+    }
+  ],
+  "phase_order": [
+    "foundation",
+    "M00-M11 portable groups",
+    "isolated PostgreSQL",
+    "loopback Agent HTTP/Clang",
+    "loopback WebSocket paced/burst/stalled",
+    "production build, SDK, audit",
+    "production-browser groups in module order",
+    "uncovered event HTTP routes",
+    "full new-boundary recheck"
+  ],
+  "not_run": [
+    "services::event_bus::read_bench::measure",
+    "services::event_bus::subscriptions::bench::measure"
+  ],
+  "note": "Post-fix inventory extends the original network without rewriting its evidence. New tests are assigned to their owning module. Repeated runs do not add coverage."
+}

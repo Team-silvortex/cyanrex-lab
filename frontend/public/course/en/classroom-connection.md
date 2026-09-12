@@ -132,6 +132,14 @@ normal login. If a created account's OTP response was lost, inspect it and follo
 there is no new teacher account/OTP reset UI. Existing account persistence/fallback rules still apply,
 including loss of memory-only accounts on restart.
 
+Database initialization failure follows the same fallback: registration success requires a stored,
+usable memory account, and duplicate names still conflict. This is not durable enrollment.
+In a DB-backed deployment, later logout/password-change/account-deletion requests are blocked while
+auth persistence remains unavailable, including for these temporary accounts; see [session outage
+handling](security.md#sessions-and-database-outages). Memory login is not proof of durable recovery.
+Custom `CYANREX_TOTP_ISSUER` text is URL-encoded in enrollment links so Unicode and URL delimiters
+do not alter the secret or TOTP parameters.
+
 ## Compatibility and limits
 
 The join protocol is independent of product releases and Runner Agent v1. Current range is `1..1`,

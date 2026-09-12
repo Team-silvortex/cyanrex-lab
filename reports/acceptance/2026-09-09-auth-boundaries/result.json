@@ -1,0 +1,119 @@
+{
+  "kind": "uncovered-path-test-report",
+  "date": "2026-09-09",
+  "version_line": "0.3.7",
+  "overall": "failed-unresolved",
+  "source": {
+    "head": "f3f9faf585721df5e208c18da99652b040e35d50",
+    "sha256": {
+      "engine/src/services/auth_service.rs": "2f7b149de97a2ac075ef1b854751a93417dc666e43c7f74036a237c9dd6e5c71",
+      "engine/src/services/auth_service/service.inc.rs": "955baff3572b6accaff6f9053f61db9cbfebb06c642631201c5f73f8b81d234c",
+      "engine/src/services/auth_service/account_mutations.inc.rs": "3730c4f8eb3a5387d87185e5ad2b1944c0c8cd33e9361e1744567a98811fb6c6",
+      "engine/src/services/auth_service/sessions.inc.rs": "b31f44e85dd935d6a32dfe2f105f79c7608ce596678a4830e1af381e64fd70f1",
+      "engine/src/services/auth_service/crypto.inc.rs": "a8df3c47bc914656453ae19328378b4563ede376449f9df2032ce193d409f97f",
+      "engine/src/services/auth_service/postgres_boundary_tests.rs": "abf2c2b51676a6cd0cc0ff544043e799ea593adba6a2d86f9ede85de26030745",
+      "engine/src/services/classroom.rs": "4722100b5d8b615a4b98b459d7f777620889f4feab891a5525deb39c1f137f63",
+      "engine/src/routes/auth.rs": "c5f9553a45d2ab9f359fd3e8620004653d102924faf07c51033e0b40c9e0c520",
+      "engine/src/routes/classroom.rs": "65a02e3bb9ac06f6afbe428a24073cb39721f0b472088c48572a8ff7ddb468f5",
+      "engine/Cargo.lock": "9d5385898443ea5b14e136668810c737b9cda42ce5bf62fbfb1955d059c8a323",
+      "frontend/pages/join.tsx": "48a8dd7dda98f7085b73ba7cb36789901891a0545cf02a8cd35e6a52def5ff66",
+      "frontend/tests/classroomConnection.browser.mjs": "b087e736e535c4d5d7c28d36cf5632fe69b476560515fcf2c7904fc519797a1c"
+    },
+    "dirty": true,
+    "fingerprints_scope": "selected files only; not a complete manifest or release artifact"
+  },
+  "environment": {
+    "postgres": "16.14 (Debian 16.14-1.pgdg13+1)",
+    "postgres_image_id": "sha256:44cbf408c5417a24daf1b1ec94625f34251ee99af8c3a51e73900a8769457038",
+    "database_scope": "new tmpfs container, no host data mount/volume, ephemeral loopback port, synthetic credentials",
+    "browser_scope": "real Chromium, local Next.js dev server, all Engine responses mocked; no real classroom browser-to-database flow"
+  },
+  "results": {
+    "portable_backend_gate": {
+      "command": "./scripts/quality-gate.sh --backend-only --no-npm-install",
+      "exit_code": 0,
+      "warning": "Does not execute the new opt-in PostgreSQL probes; this does not change overall failed-unresolved status."
+    },
+    "frontend_transport_and_parsing_units": {
+      "passed": 6,
+      "failed": 0
+    },
+    "new_postgres_boundary_cases": {
+      "passed": 4,
+      "failed": 4,
+      "repeated_runs": 3,
+      "scheduling": [
+        "4 test threads",
+        "1 test thread",
+        "4 test threads including prior regressions"
+      ],
+      "exit_code": 101
+    },
+    "combined_postgres_auth": {
+      "passed": 16,
+      "failed": 4,
+      "prior_regressions_passed": 12,
+      "exit_code": 101,
+      "output_excerpt": "postgres.txt"
+    },
+    "new_browser_cases": {
+      "passed": 5,
+      "failed": 0
+    },
+    "combined_browser": {
+      "passed": 25,
+      "failed": 0,
+      "exit_code": 0,
+      "output_excerpt": "browser.txt"
+    }
+  },
+  "unresolved_findings": [
+    {
+      "priority": "P1",
+      "test": "postgres_old_login_cannot_authenticate_as_a_recreated_account",
+      "observed": "A login paused after old-credential verification resumes after same-instance deletion and same-name registration; HTTP 200 sets a cookie and /auth/me reports authenticated=true for that username.",
+      "condition": "Controlled SQL scheduling barrier, normal delete/register/login business operations; no business-logic patch.",
+      "cause": "Session insertion binds username only, not the verified account generation."
+    },
+    {
+      "priority": "P2",
+      "test": "postgres_login_cannot_report_success_after_its_account_was_deleted",
+      "observed": "Without recreation, the in-flight login returns HTTP 200 with a cookie but /auth/me is false; the foreign-key rejection latches auth DB fallback for the service.",
+      "condition": "Controlled SQL scheduling barrier within the same AuthService."
+    },
+    {
+      "priority": "P2",
+      "test": "postgres_delete_suppressed_session_cascade_cannot_report_success",
+      "observed": "A synthetic BEFORE DELETE trigger suppresses session deletion and its cascade; account deletion reports success, the user is absent, one durable session remains and still validates.",
+      "condition": "Fault injection: non-default session-delete trigger returning NULL. This does not establish that the shipped schema triggers this spontaneously."
+    },
+    {
+      "priority": "P2",
+      "test": "postgres_login_zero_row_session_insert_cannot_report_success",
+      "observed": "A synthetic BEFORE INSERT trigger skips session insertion; login reports success but its new session fails validation.",
+      "condition": "Fault injection: non-default session-insert trigger returning NULL."
+    }
+  ],
+  "passed_boundaries": [
+    "Session-removal step error rolls back account deletion without cache publication.",
+    "Deferred constraint-trigger error during COMMIT rolls back user/session deletion.",
+    "Cancelling deletion after session removal but before user deletion rolls back both.",
+    "Cancelled classroom enrollment never restores/replays its consumed invitation.",
+    "Browser enrollment network loss, invalid JSON, 503 and incomplete-success payload clear secrets and cannot replay.",
+    "Navigation during enrollment discards late TOTP UI output."
+  ],
+  "observations": [
+    "The cancelled enrollment INSERT did commit in the database in all three runs, despite absent cache publication. Invitation consumption passed; cancellation is explicitly not an account-creation rollback guarantee."
+  ],
+  "execution_notes": [
+    "New database probes require --ignored and a disposable CYANREX_TEST_DATABASE_URL; four deliberately failing assertions remain unresolved.",
+    "The portable gate and existing CI exact-name list do not execute these new database probes. A green portable gate cannot supersede this failed report.",
+    "Only test wiring, test cases and reports changed in this round; no business-logic fixes, commits, pushes or deployment changes.",
+    "No live-kernel, SSH deployment, TLS/LAN or candidate-package acceptance was performed."
+  ],
+  "cleanup": {
+    "temporary_postgres_container_removed": true,
+    "temporary_frontend_stopped": true,
+    "existing_deployment_modified": false
+  }
+}

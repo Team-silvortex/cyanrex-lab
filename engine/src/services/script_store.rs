@@ -13,6 +13,10 @@ use chrono::Utc;
 use tokio::sync::{OnceCell, RwLock};
 use uuid::Uuid;
 
+mod local;
+#[cfg(test)]
+mod tests;
+
 use crate::config::runtime_instance_id;
 use crate::models::script::UserScript;
 
@@ -23,6 +27,7 @@ pub struct ScriptStore {
     db_pool: Option<PgPool>,
     schema_ready: Arc<OnceCell<()>>,
     db_disabled: Arc<AtomicBool>,
+    local_writer: Arc<tokio::sync::Mutex<()>>,
 }
 
 impl Default for ScriptStore {
@@ -52,6 +57,7 @@ impl Default for ScriptStore {
             db_pool,
             schema_ready: Arc::new(OnceCell::new()),
             db_disabled: Arc::new(AtomicBool::new(false)),
+            local_writer: Arc::new(tokio::sync::Mutex::new(())),
         }
     }
 }
@@ -94,9 +100,12 @@ impl ScriptStore {
             }
         }
 
-        let _ = self.load_memory_user(&username).await;
-        let cache = self.in_memory.read().await;
-        cache.get(&username).cloned().unwrap_or_default()
+        self.read_local_scripts(&username)
+            .await
+            .unwrap_or_else(|error| {
+                tracing::warn!("local script read failed: {error}");
+                Vec::new()
+            })
     }
 
     pub async fn save_for_user(
@@ -149,14 +158,8 @@ impl ScriptStore {
             }
         }
 
-        self.ensure_data_dir().await?;
-        let _ = self.load_memory_user(&username).await;
-        {
-            let mut cache = self.in_memory.write().await;
-            let bucket = cache.entry(username.to_string()).or_default();
-            bucket.insert(0, record.clone());
-        }
-        self.persist_memory_user(&username).await?;
+        self.commit_local_scripts(&username, local::Mutation::Save(record.clone()))
+            .await?;
         Ok(record)
     }
 
@@ -180,15 +183,9 @@ impl ScriptStore {
             }
         }
 
-        self.ensure_data_dir().await?;
-        let _ = self.load_memory_user(&username).await;
-        {
-            let mut cache = self.in_memory.write().await;
-            if let Some(bucket) = cache.get_mut(&username) {
-                bucket.retain(|script| script.id != id);
-            }
-        }
-        self.persist_memory_user(&username).await
+        self.commit_local_scripts(&username, local::Mutation::Delete(id.to_string()))
+            .await
+            .map(|_| ())
     }
 
     fn active_pool(&self) -> Option<&PgPool> {
@@ -238,49 +235,6 @@ impl ScriptStore {
             })
             .await
             .map(|_| ())
-    }
-
-    async fn ensure_data_dir(&self) -> Result<(), String> {
-        tokio::fs::create_dir_all(&self.data_dir)
-            .await
-            .map_err(|error| format!("failed to prepare script data dir: {error}"))
-    }
-
-    async fn persist_memory_user(&self, username: &str) -> Result<(), String> {
-        let path = self.data_dir.join(format!("{username}.json"));
-        let bucket = {
-            let cache = self.in_memory.read().await;
-            cache.get(username).cloned().unwrap_or_default()
-        };
-        let content = serde_json::to_string_pretty(&bucket)
-            .map_err(|error| format!("failed to encode scripts: {error}"))?;
-        tokio::fs::write(path, content)
-            .await
-            .map_err(|error| format!("failed to persist scripts: {error}"))
-    }
-
-    async fn load_memory_user(&self, username: &str) -> Result<(), String> {
-        {
-            let cache = self.in_memory.read().await;
-            if cache.contains_key(username) {
-                return Ok(());
-            }
-        }
-
-        let path = self.data_dir.join(format!("{username}.json"));
-        if !path.exists() {
-            return Ok(());
-        }
-
-        let content = tokio::fs::read_to_string(path)
-            .await
-            .map_err(|error| format!("failed to read persisted scripts: {error}"))?;
-        let records = serde_json::from_str::<Vec<UserScript>>(&content)
-            .map_err(|error| format!("failed to parse persisted scripts: {error}"))?;
-
-        let mut cache = self.in_memory.write().await;
-        cache.insert(username.to_string(), records);
-        Ok(())
     }
 
     fn sanitize_script_username(username: &str) -> Option<String> {

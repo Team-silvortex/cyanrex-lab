@@ -1,0 +1,384 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-09-09T08:11:07.238Z",
+  "snapshot_date": "2026-09-09",
+  "version": "0.3.7",
+  "branch": "main",
+  "head": "f3f9faf585721df5e208c18da99652b040e35d50",
+  "working_tree_dirty": true,
+  "overall": "passed-with-explicit-scope-limits",
+  "business_implementation_changed_by_this_run": true,
+  "prior_report": "../2026-09-09-test-network/result.json",
+  "resolved_findings": 9,
+  "new_rust_test_cases": 15,
+  "new_node_contract_cases": 2,
+  "commit_or_push_performed": false,
+  "deployment_changed": false,
+  "source_manifest": "source-inputs.json",
+  "source_manifest_sha256": "063baee3952d80c96860d9406da691b26a7a5d0907217b22140032d5f588134f",
+  "plan": "plan.json",
+  "totals": {
+    "rust_inventory": 292,
+    "rust_portable": {
+      "passed": 263,
+      "failed": 0,
+      "ignored": 29
+    },
+    "postgres": {
+      "distinct_passed": 25,
+      "failed": 0,
+      "auth": 22,
+      "scripts": 1,
+      "learning": 1,
+      "events": 1
+    },
+    "agent_http_clang": {
+      "passed": 1,
+      "failed": 0
+    },
+    "websocket_pressure": {
+      "distinct_tests": 1,
+      "scenarios_passed": 3,
+      "failed": 0
+    },
+    "rust_distinct_executed": 290,
+    "rust_distinct_passed": 290,
+    "rust_distinct_failed": 0,
+    "rust_not_run_performance_only": 2,
+    "frontend_units": {
+      "passed": 44,
+      "failed": 0
+    },
+    "production_browser": {
+      "passed": 35,
+      "failed": 0
+    },
+    "tooling_node": {
+      "passed": 55,
+      "failed": 0
+    },
+    "sdk_runtime_package": {
+      "passed": 16,
+      "failed": 0
+    }
+  },
+  "checks": {
+    "full_quality_gate": "passed including --security",
+    "rustfmt": "passed",
+    "typescript": "passed",
+    "production_build": "passed",
+    "openapi_and_sdk_drift": "passed; 68 OpenAPI operations / 63 generated SDK operations",
+    "version_sync": "passed; no bump",
+    "ci_yaml_and_selection_guards": "passed locally; not run on GitHub Actions",
+    "course_document_mirrors": "passed",
+    "cargo_audit": "no reported vulnerabilities",
+    "frontend_and_sdk_production_audits": "no reported vulnerabilities",
+    "auth_race_repeat": "10 boundary cases also passed serially after the 22-case concurrent run"
+  },
+  "modules": [
+    {
+      "id": "M00",
+      "name": "基础配置与健康检查",
+      "portable_passed": 6,
+      "external_distinct_passed": 0,
+      "not_run": []
+    },
+    {
+      "id": "M01",
+      "name": "认证与教师权限",
+      "portable_passed": 37,
+      "external_distinct_passed": 22,
+      "not_run": []
+    },
+    {
+      "id": "M02",
+      "name": "课堂发现与加入",
+      "portable_passed": 10,
+      "external_distinct_passed": 0,
+      "not_run": []
+    },
+    {
+      "id": "M03",
+      "name": "脚本与文件持久化",
+      "portable_passed": 11,
+      "external_distinct_passed": 1,
+      "not_run": []
+    },
+    {
+      "id": "M04",
+      "name": "模块、头文件与终端",
+      "portable_passed": 16,
+      "external_distinct_passed": 0,
+      "not_run": []
+    },
+    {
+      "id": "M05",
+      "name": "编译、补全、调试与模板",
+      "portable_passed": 20,
+      "external_distinct_passed": 0,
+      "not_run": []
+    },
+    {
+      "id": "M06",
+      "name": "Runner 与 Agent",
+      "portable_passed": 46,
+      "external_distinct_passed": 1,
+      "not_run": []
+    },
+    {
+      "id": "M07",
+      "name": "学习记录、反馈与恢复",
+      "portable_passed": 49,
+      "external_distinct_passed": 1,
+      "not_run": []
+    },
+    {
+      "id": "M08",
+      "name": "事件流与背压",
+      "portable_passed": 39,
+      "external_distinct_passed": 2,
+      "not_run": [
+        "services::event_bus::read_bench::measure",
+        "services::event_bus::subscriptions::bench::measure"
+      ]
+    },
+    {
+      "id": "M09",
+      "name": "UI 操作与构建",
+      "portable_passed": 0,
+      "external_distinct_passed": 0,
+      "not_run": []
+    },
+    {
+      "id": "M10",
+      "name": "API 与 SDK",
+      "portable_passed": 1,
+      "external_distinct_passed": 0,
+      "not_run": []
+    },
+    {
+      "id": "M11",
+      "name": "部署、发布与审计",
+      "portable_passed": 28,
+      "external_distinct_passed": 0,
+      "not_run": []
+    }
+  ],
+  "findings": [
+    {
+      "id": "TN-AUTH-01",
+      "priority": "P1",
+      "module": "M01",
+      "test": "services::auth_service::postgres_boundary_tests::postgres_old_login_cannot_authenticate_as_a_recreated_account",
+      "observed": "Old pending login authenticates a recreated same-name account.",
+      "new_in_this_run": false,
+      "status": "fixed-and-regression-passed",
+      "fix": "Confirm session insertion/credential snapshot in one transaction before publishing; reject surviving sessions before account-delete commit."
+    },
+    {
+      "id": "TN-AUTH-02",
+      "priority": "P2",
+      "module": "M01",
+      "test": "services::auth_service::postgres_boundary_tests::postgres_login_cannot_report_success_after_its_account_was_deleted",
+      "observed": "Deleted-account pending login returns success/invalid cookie and disables DB.",
+      "new_in_this_run": false,
+      "status": "fixed-and-regression-passed",
+      "fix": "Confirm session insertion/credential snapshot in one transaction before publishing; reject surviving sessions before account-delete commit."
+    },
+    {
+      "id": "TN-AUTH-03",
+      "priority": "P2",
+      "module": "M01",
+      "test": "services::auth_service::postgres_boundary_tests::postgres_delete_suppressed_session_cascade_cannot_report_success",
+      "observed": "Fault-injected suppressed session cascade reports success but leaves a valid durable session.",
+      "new_in_this_run": false,
+      "status": "fixed-and-regression-passed",
+      "fix": "Confirm session insertion/credential snapshot in one transaction before publishing; reject surviving sessions before account-delete commit."
+    },
+    {
+      "id": "TN-AUTH-04",
+      "priority": "P2",
+      "module": "M01",
+      "test": "services::auth_service::postgres_boundary_tests::postgres_login_zero_row_session_insert_cannot_report_success",
+      "observed": "Fault-injected zero-row session INSERT is reported as successful login.",
+      "new_in_this_run": false,
+      "status": "fixed-and-regression-passed",
+      "fix": "Confirm session insertion/credential snapshot in one transaction before publishing; reject surviving sessions before account-delete commit."
+    },
+    {
+      "id": "TN-SCRIPT-01",
+      "priority": "P1",
+      "module": "M03",
+      "test": "storage::script_corrupt_snapshot_must_not_be_overwritten_by_a_successful_save",
+      "observed": "Unreadable JSON snapshot overwritten with a successful response.",
+      "new_in_this_run": true,
+      "status": "fixed-and-regression-passed",
+      "fix": "Serialize load/write/atomic rename/cache publication; preserve failed/corrupt snapshots; admitted cancellation finishes safely."
+    },
+    {
+      "id": "TN-SCRIPT-02",
+      "priority": "P2",
+      "module": "M03",
+      "test": "storage::script_failed_file_save_must_not_publish_an_unsaved_record",
+      "observed": "Failed file save publishes unsaved memory state.",
+      "new_in_this_run": true,
+      "status": "fixed-and-regression-passed",
+      "fix": "Serialize load/write/atomic rename/cache publication; preserve failed/corrupt snapshots; admitted cancellation finishes safely."
+    },
+    {
+      "id": "TN-SCRIPT-03",
+      "priority": "P2",
+      "module": "M03",
+      "test": "storage::script_failed_file_delete_must_retain_the_previously_saved_record",
+      "observed": "Failed file deletion removes the memory record.",
+      "new_in_this_run": true,
+      "status": "fixed-and-regression-passed",
+      "fix": "Serialize load/write/atomic rename/cache publication; preserve failed/corrupt snapshots; admitted cancellation finishes safely."
+    },
+    {
+      "id": "TN-EVENT-01",
+      "priority": "P1",
+      "module": "M08",
+      "test": "events::filtered_event_deletion_removes_matches_not_the_complement",
+      "observed": "In-memory filtered deletion deletes the complement; zero matches deletes all.",
+      "new_in_this_run": true,
+      "status": "fixed-and-regression-passed",
+      "fix": "Delete matches in place, retain unread state, reject unsafe filters and never replace SQL data from a bounded cache."
+    },
+    {
+      "id": "TN-EVENT-02",
+      "priority": "P1",
+      "module": "M08",
+      "test": "events::invalid_event_delete_filters_must_not_widen_into_delete_all",
+      "observed": "Invalid categorical/date delete filters become unfiltered deletion.",
+      "new_in_this_run": true,
+      "status": "fixed-and-regression-passed",
+      "fix": "Delete matches in place, retain unread state, reject unsafe filters and never replace SQL data from a bounded cache."
+    }
+  ],
+  "new_tests": [
+    "services::auth_service::postgres_boundary_tests::postgres_cancelled_login_rolls_back_without_publishing_a_session",
+    "services::auth_service::postgres_boundary_tests::postgres_login_cannot_publish_after_concurrent_password_change",
+    "services::auth_service::tests::verified_memory_login_cannot_publish_after_credentials_change_or_removal",
+    "services::event_bus::tests::deletion::cancelled_deletion_never_splits_history_and_unread",
+    "services::event_bus::tests::deletion::deletion_cannot_erase_concurrent_nonmatching_publications",
+    "services::event_bus::tests::deletion::deletion_preserves_read_state_and_other_users",
+    "services::event_bus::tests::deletion::invalid_service_filters_never_widen_deletion",
+    "services::event_bus::tests::deletion::postgres_filtered_delete_preserves_uncached_rows_and_read_flags",
+    "services::script_store::tests::cancelled_commit_retains_admission_until_disk_and_cache_are_published",
+    "services::script_store::tests::cancelling_a_queued_commit_does_not_write_or_publish",
+    "services::script_store::tests::cold_snapshot_with_another_owner_is_not_exposed_or_overwritten",
+    "services::script_store::tests::concurrent_local_commits_survive_reload_without_lost_updates",
+    "services::script_store::tests::failed_rename_keeps_old_snapshot_and_removes_only_its_temporary_file",
+    "services::script_store::tests::malformed_cold_snapshot_is_preserved_and_can_be_retried_after_repair",
+    "services::script_store::tests::persisted_scripts_have_private_file_permissions"
+  ],
+  "not_run": [
+    "services::event_bus::read_bench::measure",
+    "services::event_bus::subscriptions::bench::measure"
+  ],
+  "verification_stages": [
+    {
+      "stage": "fixQuality",
+      "exit_code": 0,
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL PATH='<NODE_RUNTIME>/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' CYANREX_DATA_DIR='<TEST_DATA_DIR>' NEXT_PUBLIC_ENGINE_URL=http://127.0.0.1:43181 ./scripts/quality-gate.sh --no-npm-install --security"
+    },
+    {
+      "stage": "fixAuthFinal",
+      "exit_code": 0,
+      "command": "env -u DATABASE_URL CYANREX_DB_FALLBACK=true CYANREX_DATA_DIR='<TEST_DATA_DIR>' CYANREX_TEST_DATABASE_URL='<DISPOSABLE_POSTGRES_URL>' cargo test --manifest-path engine/Cargo.toml --locked --lib services::auth_service:: -- --ignored --nocapture --test-threads=4"
+    },
+    {
+      "stage": "fixAuthSerial",
+      "exit_code": 0,
+      "command": "env -u DATABASE_URL CYANREX_DB_FALLBACK=true CYANREX_DATA_DIR='<TEST_DATA_DIR>/auth-serial' CYANREX_TEST_DATABASE_URL='<DISPOSABLE_POSTGRES_URL>' cargo test --manifest-path engine/Cargo.toml --locked --lib services::auth_service::postgres_boundary_tests:: -- --ignored --nocapture --test-threads=1"
+    },
+    {
+      "stage": "fixEventPg",
+      "exit_code": 0,
+      "command": "env -u DATABASE_URL CYANREX_DB_FALLBACK=true CYANREX_DATA_DIR='<TEST_DATA_DIR>' CYANREX_TEST_DATABASE_URL='<DISPOSABLE_POSTGRES_URL>' cargo test --manifest-path engine/Cargo.toml --locked --lib services::event_bus::tests::deletion::postgres_filtered_delete_preserves_uncached_rows_and_read_flags -- --ignored --exact --nocapture"
+    },
+    {
+      "stage": "fixScriptPg",
+      "exit_code": 0,
+      "command": "env -u DATABASE_URL CYANREX_DB_FALLBACK=true CYANREX_DATA_DIR='<TEST_DATA_DIR>/fixScriptPg' CYANREX_TEST_DATABASE_URL='<DISPOSABLE_POSTGRES_URL>' cargo test --manifest-path engine/Cargo.toml --locked --test module_boundaries_tdd script_postgres::scripts_use_postgres_without_file_fallback_and_keep_owner_boundaries_after_reload -- --ignored --exact --nocapture"
+    },
+    {
+      "stage": "fixLearningPg",
+      "exit_code": 0,
+      "command": "env -u DATABASE_URL CYANREX_DB_FALLBACK=true CYANREX_DATA_DIR='<TEST_DATA_DIR>/fixLearningPg' CYANREX_TEST_DATABASE_URL='<DISPOSABLE_POSTGRES_URL>' cargo test --manifest-path engine/Cargo.toml --locked --lib services::learning_store::feedback::tests::postgres_feedback_migrates_legacy_rows_and_serializes_updates -- --ignored --exact --nocapture"
+    },
+    {
+      "stage": "fixAgent",
+      "exit_code": 0,
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<TEST_DATA_DIR>/agent' cargo test --manifest-path engine/Cargo.toml --locked --test runner_agent_client_tdd runner_agent_client_completes_signed_probe_and_compile_jobs_over_http -- --ignored --exact --nocapture"
+    },
+    {
+      "stage": "fixWspaced",
+      "exit_code": 0,
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<TEST_DATA_DIR>/ws-paced' CYANREX_WS_BENCH_KIND=paced cargo test --manifest-path engine/Cargo.toml --locked --lib routes::events::stream::pressure_tests::measure -- --ignored --exact --nocapture"
+    },
+    {
+      "stage": "fixWsburst",
+      "exit_code": 0,
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<TEST_DATA_DIR>/ws-burst' CYANREX_WS_BENCH_KIND=burst cargo test --manifest-path engine/Cargo.toml --locked --lib routes::events::stream::pressure_tests::measure -- --ignored --exact --nocapture"
+    },
+    {
+      "stage": "fixWsstalled",
+      "exit_code": 0,
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CYANREX_DATA_DIR='<TEST_DATA_DIR>/ws-stalled' CYANREX_WS_BENCH_KIND=stalled cargo test --manifest-path engine/Cargo.toml --locked --lib routes::events::stream::pressure_tests::measure -- --ignored --exact --nocapture"
+    },
+    {
+      "stage": "fixBrowser",
+      "exit_code": 0,
+      "command": "for task_ui_suite in authSession classroomConnection learningFeedback learningResume eventStream workspaceLayout actionSafety; do env PATH='<NODE_RUNTIME>/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' CYANREX_UI_BASE_URL=http://127.0.0.1:3317 CYANREX_UI_ENGINE_URL=http://127.0.0.1:43181 CYANREX_PLAYWRIGHT_MODULE=<NODE_RUNTIME>/node_modules/playwright/index.mjs CYANREX_CHROMIUM_PATH=/usr/bin/google-chrome node --test \"frontend/tests/${task_ui_suite}.browser.mjs\" || exit; done"
+    },
+    {
+      "stage": "fixInventory",
+      "exit_code": 0,
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL cargo test --manifest-path engine/Cargo.toml --locked -- --list"
+    }
+  ],
+  "evidence": {
+    "before-fix.txt": "Same-turn reproduction: portable boundaries 6 passed / 5 failed / 1 ignored; auth SQL 16 passed / 4 failed.",
+    "intermediate-compile.txt": "New event helper initially lacked pub(super) visibility; fixed before all final passing runs.",
+    "quality-gate.txt": "Complete successful common, portable Rust, production build, frontend, SDK and audit output.",
+    "postgres.txt": "Final 22 auth cases, serial repeat of 10 boundaries, and script/learning/event SQL checks.",
+    "transport.txt": "Real signed loopback Agent/Clang and paced/burst/stalled WebSocket checks.",
+    "browser.txt": "All seven suites against a separate production Next server; Engine responses are mocked.",
+    "inventory.txt": "Fresh 292-case inventory; every case assigned once in plan.json.",
+    "resources.txt": "Existing deployment start times unchanged and read-only health/login HTTP 200."
+  },
+  "environment": {
+    "rust_profile": "debug",
+    "node": "24.19.0",
+    "cargo": "1.95.0",
+    "clang": "18.1.3",
+    "chromium": "152.0.7977.82",
+    "postgres_image": "sha256:44cbf408c5417a24daf1b1ec94625f34251ee99af8c3a51e73900a8769457038",
+    "postgres_isolation": "New loopback-only, tmpfs-only disposable container; no host mounts or volumes; per-case private schema."
+  },
+  "cleanup": {
+    "disposable_postgres_removed": true,
+    "remaining_test_schemas_before_removal": 0,
+    "temporary_next_server_stopped": true,
+    "temporary_data_directory_removed": true,
+    "test_ports_released": [
+      32774,
+      3317,
+      43181
+    ],
+    "tracked_typescript_cache_restored": true,
+    "existing_deployment_restarted": false
+  },
+  "limitations": [
+    "This is a source/worktree test checkpoint, not an immutable candidate/release or running-deployment acceptance.",
+    "Browser Engine responses are mocked; real LAN teacher/student TLS, trust changes, version skew and network partitions are not exercised.",
+    "No real SSH deployment, package install, current-source kernel attach/event/detach, VM isolation or escape-resistance acceptance was performed.",
+    "Async event persistence queue/restart/failover consistency remains unproven; the new SQL test covers partial-cache deletion and read flags only.",
+    "Local script atomic rename is not fsync/power-loss durability or cross-process coordination; SQL script fault/cancellation semantics beyond existing tests are unchanged.",
+    "Established volatile auth fallback is retained and cannot discover unobserved cross-process revocation during an outage.",
+    "The two performance-only cases were not run; functional WebSocket pressure does not constitute a release-profile benchmark.",
+    "Cancelled enrollment can leave an already-committed account; its consumed invitation does not become reusable."
+  ]
+}

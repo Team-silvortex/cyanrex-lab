@@ -94,10 +94,22 @@ pub enum AuthError {
     WeakPassword,
     Forbidden,
     RateLimited,
+    StorageUnavailable,
 }
 
 include!("auth_service/service.inc.rs");
+include!("auth_service/account_mutations.inc.rs");
+include!("auth_service/sessions.inc.rs");
 include!("auth_service/crypto.inc.rs");
+
+#[cfg(test)]
+mod postgres_boundary_tests;
+#[cfg(test)]
+mod postgres_mutation_tests;
+#[cfg(test)]
+mod postgres_tests;
+#[cfg(test)]
+mod tests;
 
 impl AuthService {
     /// Compatibility constructor: the deployment owner now has teacher authority.

@@ -1,0 +1,10 @@
+{"5432/tcp":[{"HostIp":"127.0.0.1","HostPort":"32773"}]} mounts=[] label=test-network-postgres
+/var/run/postgresql:5432 - accepting connections
+
+Owned fixture PostgreSQL schemas remaining before disposal: 0
+Disposed of container d27a48381cbebfd8d9c09052b14866573d776b60425aebb1165d053289fe4661 (tmpfs, no volumes/binds); exit=0
+State Recv-Q Send-Q Local Address:Port Peer Address:PortProcess
+c71d19c3144a04cb235fb8ad5d8b9b6accbe7a01e62e864af41134de63519e00 running 2026-08-31T10:31:16.558201829Z healthy
+3cf844f9a06513d51e7523b8cd6ff37b05380cf5f7a4f41a9cb33fd22c3b8b5b running 2026-08-31T10:31:16.558661761Z healthcheck-not-configured
+784691ba1a93a419044064d961a6a507237c2b576ea60f0e14fa0c0d7a9d1518 running 2026-08-31T10:31:16.557605841Z healthy
+{"status":"ok"}frontend_login_http=200

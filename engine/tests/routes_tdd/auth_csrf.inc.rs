@@ -162,14 +162,16 @@ async fn post_auth_logout_allows_request_with_allowed_origin() {
         .generate_current_totp_for_user("alice")
         .expect("alice otp should exist");
     let session_cookie = login_for_user(&app, "alice", "alice-pass-123", &alice_otp).await;
+    let other_cookie = login_for_user(&app, "alice", "alice-pass-123", &alice_otp).await;
 
     let response = app
+        .clone()
         .oneshot(
             Request::builder()
                 .method("POST")
                 .uri("/auth/logout")
                 .header(header::ORIGIN, "http://localhost:3000")
-                .header(header::COOKIE, session_cookie)
+                .header(header::COOKIE, session_cookie.clone())
                 .body(Body::empty())
                 .unwrap(),
         )
@@ -177,6 +179,13 @@ async fn post_auth_logout_allows_request_with_allowed_origin() {
         .unwrap();
 
     assert_eq!(response.status(), StatusCode::OK);
+    assert!(response.headers()[header::SET_COOKIE].to_str().unwrap().contains("Max-Age=0"));
+    for (cookie, authenticated) in [(session_cookie, false), (other_cookie, true)] {
+        let response = app.clone().oneshot(Request::builder().uri("/auth/me")
+            .header(header::COOKIE, cookie).body(Body::empty()).unwrap()).await.unwrap();
+        let body = response.into_body().collect().await.unwrap().to_bytes();
+        assert_eq!(serde_json::from_slice::<Value>(&body).unwrap()["authenticated"], authenticated);
+    }
 }
 
 #[tokio::test]

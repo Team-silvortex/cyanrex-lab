@@ -14,6 +14,8 @@ export const es: TranslationDict = {
       roleStudent: "Estudiante",
       checkingSession: "Verificando sesión...",
       logout: "Cerrar sesión",
+      loggingOut: "Cerrando sesión…",
+      logoutFailed: "No se pudo confirmar el cierre de sesión. Puede seguir activa; comprueba la conexión y vuelve a intentarlo antes de dejar este dispositivo.",
       language: "Idioma",
       nav: {
         dashboard: "Panel",

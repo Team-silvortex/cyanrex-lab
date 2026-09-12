@@ -1,6 +1,6 @@
 # cyanrex-lab
 
-Version: `0.3.7`
+Version: `0.3.8`
 
 Cyanrex monorepo for eBPF experiments: Axum engine + Next.js dashboard + module utilities.
 
@@ -148,12 +148,12 @@ privileged and must not be exposed to untrusted users.
 For classroom deployment or offline distribution, create a packaged artifact with prebuilt Docker images:
 
 ```bash
-./scripts/package-distribution.sh --version 0.3.7
+./scripts/package-distribution.sh --version 0.3.8
 ```
 
 This produces:
-- `dist/cyanrex-lab-0.3.7-<timestamp>.tar.gz`
-- `dist/cyanrex-lab-0.3.7-<timestamp>.tar.gz.sha256`
+- `dist/cyanrex-lab-0.3.8-<timestamp>.tar.gz`
+- `dist/cyanrex-lab-0.3.8-<timestamp>.tar.gz.sha256`
 
 The archive contains the PostgreSQL, Engine, and frontend images. On a disposable Docker host,
 verify the freshly extracted package end to end with `./install-smoke.sh`. It checks the package
@@ -188,10 +188,10 @@ For an artifact downloaded from the Tag workflow, place its four files in a dedi
 verify the complete candidate from a trusted checkout of the matching source Tag before extracting it:
 
 ```bash
-release_revision="$(git rev-list -n 1 v0.3.7)"
+release_revision="$(git rev-list -n 1 v0.3.8)"
 cargo run --quiet --manifest-path engine/Cargo.toml --locked --bin cyanrex-release -- \
   candidate verify /path/to/downloaded-candidate \
-  --expect-version 0.3.7 --expect-revision "$release_revision" --expect-tag v0.3.7 \
+  --expect-version 0.3.8 --expect-revision "$release_revision" --expect-tag v0.3.8 \
   --extract-to /path/to/new-output-directory
 ```
 

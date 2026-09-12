@@ -11,13 +11,27 @@ async function setup(descriptor = {}) {
   const { chromium } = await import(process.env.CYANREX_PLAYWRIGHT_MODULE || "playwright");
   const browser = await chromium.launch({ executablePath: process.env.CYANREX_CHROMIUM_PATH });
   const context = await browser.newContext({ viewport: { width: 1280, height: 1000 } });
-  await context.addInitScript(() => localStorage.setItem("cyanrex_locale", "zh-CN"));
+  await context.addInitScript(() => {
+    localStorage.setItem("cyanrex_locale", "zh-CN");
+    window.joinSettled = 0;
+    const originalFetch = window.fetch;
+    window.fetch = async (...args) => {
+      try { return await originalFetch(...args); }
+      finally { if (String(args[0]).endsWith("/classroom/join")) window.joinSettled += 1; }
+    };
+  });
   const page = await context.newPage();
   const writes = [], errors = [], urls = [];
+  const state = { joinFailure: null, hold: null };
   const invitation = { invite_id: id, username: "student-one", expires_at: "2099-09-09T12:10:00Z", join_url: joinUrl };
   let inventory = [];
   page.on("pageerror", error => errors.push(error.message));
   page.on("request", request => urls.push(request.url()));
+  await context.route("**/*", route => {
+    if (new URL(route.request().url()).origin === new URL(baseUrl).origin) return route.continue();
+    errors.push("Blocked an unmocked external request");
+    return route.abort();
+  });
   await context.route(`${engineUrl}/**`, async route => {
     const req = route.request();
     const headers = { "access-control-allow-origin": new URL(baseUrl).origin, "access-control-allow-credentials": "true",
@@ -29,7 +43,14 @@ async function setup(descriptor = {}) {
     if (path === "/.well-known/cyanrex-classroom") return reply({ service: "cyanrex-classroom", classroom_id: id,
       display_name: "教师测试课堂", product_version: "0.3.99", protocol_min: 1, protocol_max: 1,
       join_url: `${baseUrl}/join`, capabilities: ["student-invite-v1"], ...descriptor });
-    if (path === "/classroom/join") return reply({ ok: true, account_name: "student-one", secret: "JBSWY3DPEHPK3PXP", otpauth_uri: "otpauth://totp/Test:student-one?secret=JBSWY3DPEHPK3PXP&issuer=Test" }, 201);
+    if (path === "/classroom/join") {
+      if (state.hold) await state.hold;
+      if (state.joinFailure === "network") return route.abort("failed");
+      if (state.joinFailure === "malformed") return route.fulfill({ body: "invalid JSON", headers, status: 200 });
+      if (state.joinFailure === "storage") return reply({ ok: false, message: "synthetic unconfirmed storage" }, 503);
+      if (state.joinFailure === "incomplete") return reply({ ok: true, account_name: "student-one" }, 201);
+      return reply({ ok: true, account_name: "student-one", secret: "JBSWY3DPEHPK3PXP", otpauth_uri: "otpauth://totp/Test:student-one?secret=JBSWY3DPEHPK3PXP&issuer=Test" }, 201);
+    }
     if (path === "/classroom/invitations" && req.method() === "POST") { inventory = [invitation]; return reply(invitation, 201); }
     if (path === "/classroom/invitations") return reply({ invitations: inventory.map(({ join_url, ...safe }) => safe) });
     if (path === "/classroom/invitations/revoke") { inventory = []; return reply({ ok: true }); }
@@ -38,8 +59,63 @@ async function setup(descriptor = {}) {
     if (path === "/learning/teacher/overview") return reply({ active_students: 0, total_labs: 5, students: [] });
     return reply({});
   });
-  return { browser, page, writes, errors, urls };
+  return { browser, page, writes, errors, urls, state };
 }
+
+async function confirmJoin(f) {
+  await f.page.goto(joinUrl);
+  await f.page.getByTestId("classroom-identity").waitFor();
+  await f.page.getByLabel("用户名", { exact: true }).fill("student-one");
+  await f.page.getByLabel("密码", { exact: true }).fill("student-password-123");
+  await f.page.getByLabel("确认密码", { exact: true }).fill("student-password-123");
+  await f.page.getByRole("checkbox").check();
+  await f.page.getByRole("button", { name: "加入教师课堂", exact: true }).click();
+  await f.page.getByRole("dialog").getByRole("button", { name: "确认加入教师课堂", exact: true })
+    .evaluate(button => { button.click(); button.click(); });
+}
+
+for (const failure of ["network", "malformed", "storage", "incomplete"]) {
+  test(`uncertain classroom enrollment (${failure}) clears secrets and cannot replay the invitation`, { timeout: 30000 }, async () => {
+    const f = await setup();
+    try {
+      f.state.joinFailure = failure;
+      await confirmJoin(f);
+      await f.page.getByRole("dialog").getByRole("alert").waitFor();
+      assert.equal(f.writes.length, 1, "duplicate confirmation and errors never replay the request");
+      assert.equal(await f.page.getByTestId("classroom-enrolled").count(), 0);
+      assert.equal(await f.page.locator('input[type="password"]').count(), 0);
+      await f.page.getByRole("dialog").getByRole("button", { name: "关闭", exact: true }).click();
+      await f.page.getByText(/请向教师领取新的私密单次邀请链接/).waitFor();
+      assert.equal(await f.page.getByRole("button", { name: "加入教师课堂", exact: true }).count(), 0);
+      assert.equal(await f.page.evaluate(token => JSON.stringify([history.state, localStorage, sessionStorage]).includes(token), token), false);
+      await f.page.reload();
+      await f.page.getByText(/请向教师领取新的私密单次邀请链接/).waitFor();
+      assert.equal(f.writes.length, 1);
+      assert.equal(f.urls.some(url => url.includes(token)), false);
+      assert.deepEqual(f.errors, []);
+    } finally { await f.browser.close(); }
+  });
+}
+
+test("leaving an in-flight classroom enrollment discards the late secret without replay", { timeout: 30000 }, async () => {
+  const f = await setup();
+  let release;
+  try {
+    f.state.hold = new Promise(resolve => { release = resolve; });
+    await confirmJoin(f);
+    await f.page.getByRole("dialog").getByRole("status").waitFor();
+    await f.page.evaluate(() => { void window.next.router.push("/login"); });
+    await f.page.waitForURL(`${baseUrl}/login`);
+    release();
+    await f.page.waitForFunction(() => window.joinSettled === 1);
+    assert.equal(await f.page.getByTestId("classroom-enrolled").count(), 0);
+    assert.equal(await f.page.evaluate(() => JSON.stringify([history.state, localStorage, sessionStorage, document.body.textContent]).includes("JBSWY3DPEHPK3PXP")), false);
+    await f.page.goto(`${baseUrl}/join`);
+    await f.page.getByText(/请向教师领取新的私密单次邀请链接/).waitFor();
+    assert.equal(f.writes.length, 1);
+    assert.deepEqual(f.errors, []);
+  } finally { release?.(); await f.browser.close(); }
+});
 
 test("student confirms teacher identity before one-time join, keeps secrets out of history and storage", { timeout: 45000 }, async () => {
   const f = await setup();

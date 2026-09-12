@@ -100,6 +100,7 @@ pub(crate) fn matches_event_filters(
     true
 }
 
+#[cfg(test)]
 pub(crate) fn filter_events(
     mut events: Vec<Event>,
     category: Option<&str>,

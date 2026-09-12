@@ -1,0 +1,33 @@
+✔ teachers manage modules, deployment settings and terminal without switching role, keeping confirmations (3499.937126ms)
+✔ students keep experiment access without teacher deployment navigation (2664.382487ms)
+✔ single deletion focuses cancel, Escape/Enter cancel safely, and failures cannot be double-submitted (1865.489996ms)
+✔ module lifecycle commands require confirmation but read-only commands do not (1303.47022ms)
+✔ account deletion keeps credential and typed gates, cancels without writes, and reports failure (1318.376451ms)
+✔ job cancellation binds the full job id and settings need explicit review (1441.16214ms)
+✔ confirmation stays usable in every language on mobile and navigation discards an unconfirmed action (2598.779771ms)
+✔ detach-all requires a typed phrase and single detach can never fall back to all (1630.750601ms)
+✔ template/source replacement and kernel runs require separate explicit decisions (2470.114221ms)
+✔ remote diagnostics require acknowledging source transfer before switching agents (1741.099166ms)
+✔ a confirmed file import cannot replace a different lab's draft after navigation (1850.61135ms)
+✔ entering a lab preserves the draft until its template is explicitly loaded (1504.00512ms)
+✔ header batch deletion stops at failure and reports partial completion, never false success (1021.309478ms)
+✔ event deletion explains the complete filter scope and freezes the cutoff before confirmation (1318.647216ms)
+✔ failed logout stays on the current page, reports uncertainty and permits an explicit retry (2658.127538ms)
+✔ logout ignores duplicate clicks while pending and does not redirect until confirmed (1717.956772ms)
+✔ navigating away discards late logout UI callbacks without claiming server rollback (1726.908601ms)
+✔ uncertain classroom enrollment (network) clears secrets and cannot replay the invitation (3090.227231ms)
+✔ uncertain classroom enrollment (malformed) clears secrets and cannot replay the invitation (2563.787268ms)
+✔ uncertain classroom enrollment (storage) clears secrets and cannot replay the invitation (1920.083344ms)
+✔ uncertain classroom enrollment (incomplete) clears secrets and cannot replay the invitation (1753.429271ms)
+✔ leaving an in-flight classroom enrollment discards the late secret without replay (1914.610672ms)
+✔ student confirms teacher identity before one-time join, keeps secrets out of history and storage (1867.458098ms)
+✔ incompatible discovery never offers enrollment or follows another classroom (3152.354682ms)
+✔ teacher confirms exact student invitation and revocation; folding hides the private link (1782.41001ms)
+ℹ tests 25
+ℹ suites 0
+ℹ pass 25
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 26297.662186

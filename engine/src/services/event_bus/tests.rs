@@ -3,6 +3,8 @@ use crate::models::event::{EventCategory, EventSeverity};
 use serde_json::json;
 use tokio::sync::broadcast::error::TryRecvError;
 
+mod deletion;
+
 fn memory_bus() -> EventBus {
     let bus = EventBus::new(1024);
     // Keep these tests on the memory path even if the caller configured a database.

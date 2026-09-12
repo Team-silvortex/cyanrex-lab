@@ -131,6 +131,8 @@ const queryParameters = new Map([
   ["GET /ebpf/check/remote", [query("job_id", { type: "string" }, true)]],
 ]);
 
+const authMutationOperations = new Set(["POST /auth/logout", "POST /auth/password/change", "POST /auth/delete"]);
+
 const createdOperations = new Set([
   "POST /classroom/invitations",
   "POST /classroom/join",
@@ -190,6 +192,15 @@ function buildOperation(operation, method, routePath, access) {
   if (operation === "GET /learning/attempt") {
     result.description = "Read one previous submission belonging to the authenticated session owner, including source and current teacher feedback. No username override or write occurs. Missing/other-owner records return 404; invalid IDs return 400; storage errors return 500. Responses use Cache-Control: no-store.";
   }
+  if (authMutationOperations.has(operation)) {
+    result.description = "Configured PostgreSQL authentication must confirm the durable mutation before reporting success; no silent memory-only change or revocation on storage failure. Unconfirmed persistence returns 503 without clearing the session cookie; restore storage and verify state before an explicit retry. A lost commit/response acknowledgement can be ambiguous. Account deletion and its sessions share one transaction. Password/account writes bind the verified credentials and normalized identity; zero affected rows are rejected. Intentionally memory-only instances retain volatile behavior. After a read failure permanently disables auth persistence, these mutations remain blocked until storage is restored and Engine restarted.";
+  }
+  if (operation === "POST /auth/login") {
+    result.description = "A login admitted against active PostgreSQL must confirm exactly one session insertion and recheck the verified credentials in the same transaction before publishing a session cookie. Concurrent account deletion/recreation or password changes cannot issue a stale login. Unconfirmed storage writes return 503 without issuing a cookie or switching this write to memory-only success. Intentionally volatile login remains available after previously established read/registration fallback; this is not distributed revocation.";
+  }
+  if (operation === "POST /events/delete") {
+    result.description = "Delete only events matching all supplied filters for the authenticated session owner. No filters explicitly means delete all of that owner's events; since_minutes=0 adds no time restriction. Invalid/empty filter values, unknown query keys, negative or overflowing time windows, and reversed effective time ranges return 400 without deleting events. Legacy username and format query keys are ignored, never identity overrides. Surviving records retain their unread state.";
+  }
   if (routePath.startsWith("/classroom/") || routePath === "/.well-known/cyanrex-classroom") {
     result.description = `${result.description ?? ""} Opt-in classroom onboarding; all responses are no-store. Discovery metadata is not proof of teacher identity. Use independently confirmed HTTPS origins (or trusted loopback SSH access). Invitations are student-name-bound, single-use, valid for 10 minutes and lost on restart. Join requires an invitation plus explicit classroom ID, compatible protocol and required capabilities, not a matching product patch. No automatic login, role promotion, Agent registration or eBPF execution occurs. Revoking an invitation does not revoke existing accounts or sessions.`.trim();
   }
@@ -237,6 +248,18 @@ function responsesFor(operation) {
       content: { "application/json": { schema } },
     },
     default: errorResponse(),
+    ...(authMutationOperations.has(operation) ? {
+      503: { ...errorResponse(), description: "Authentication storage unavailable; mutation completion is unconfirmed. Session cookie is retained for verification and an explicit retry." },
+    } : {}),
+    ...(operation === "POST /auth/login" ? {
+      503: { ...errorResponse(), description: "Authentication storage unavailable; session insertion or commit is unconfirmed. No new session cookie is issued." },
+    } : {}),
+    ...(operation === "POST /events/delete" ? {
+      400: {
+        description: "Invalid deletion filter/query or time range; no events are deleted. Query extraction errors can be plain text.",
+        content: { ...errorResponse().content, "text/plain": { schema: { type: "string" } } },
+      },
+    } : {}),
     ...(operation === "POST /classroom/join" ? {
       409: { ...errorResponse(), description: "Wrong classroom identity or account exists; inspect message before retrying." },
       426: { ...errorResponse(), description: "Incompatible join protocol/required capabilities; invitation not consumed. No automatic downgrade." },

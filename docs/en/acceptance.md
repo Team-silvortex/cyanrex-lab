@@ -6,6 +6,13 @@ remain bound to their pre-bump snapshots; they have not been rewritten as 0.3.6 
 This is a local integration checkpoint, not an accepted release artifact or a claim that the running
 deployment contains this source. See [project status](project-status.md) for the broader test baseline.
 
+The 0.3.7 [test network](testing-network.md) originally found **9 failures** (4 auth, 3 script
+persistence, 2 event deletion). These are now fixed with the original assertions passing; see the
+separate [fix verification](../../reports/acceptance/2026-09-09-boundary-fixes/result.json).
+Historical failed evidence below is retained, not rewritten. No deployment update is implied.
+These fixes are recorded in **0.3.8**; the reports retain their pre-bump **0.3.7** inputs and hashes,
+not 0.3.8 artifact acceptance claims.
+
 ## First round: passed
 
 | Check | Observed result | Boundary |
@@ -67,6 +74,43 @@ The evidence deliberately has `candidate: null`: this is **source-level acceptan
 not an optimized release build, an offline package, a tagged candidate or a full teaching/LAN flow.
 Its `native-linux` runtime description refers to the guest kernel, not the physical host kernel.
 The manually managed VM is not a new selectable Runner mode or per-student VM lifecycle feature.
+
+## Additional 0.3.7 auth boundary probes: not passed
+
+On 2026-09-09, the uncommitted 0.3.7 working tree was tested without changing business logic or the
+running deployment. Eight previously uncovered PostgreSQL cases produced **4 passes and 4 failures**
+in three runs, including serial and parallel scheduling. The previous 12 authentication regressions
+still passed. Five new classroom-browser failure/cancellation cases passed; the combined browser suite
+passed all 25 cases using mocked Engine responses, not a live classroom end-to-end connection.
+
+Unresolved findings, highest priority first:
+
+- **P1 — account generation:** an old-credential login paused before session insertion can resume
+  after same-name account deletion/recreation and obtain a valid session for that username.
+- **P2 — login/deletion race:** deletion without recreation still lets the pending login return 200
+  and a cookie, although that cookie is invalid; a foreign-key rejection also disables auth persistence.
+- **P2 — suppressed session cascade:** with a synthetic `BEFORE DELETE` trigger returning `NULL`,
+  deletion reports success but leaves a valid durable session without its user.
+- **P2 — suppressed session insert:** with a synthetic `BEFORE INSERT` trigger returning `NULL`,
+  login reports success without a valid new session. Both trigger cases are fault-injection boundaries,
+  not evidence that the default schema spontaneously suppresses writes.
+
+Session-step errors, deferred COMMIT errors and cancellation between the deletion steps correctly
+rolled back account/session deletion. Cancelled classroom joining did not restore its invitation, but
+the already-dispatched account INSERT did commit in these runs: cancellation is not rollback.
+Browser network errors, invalid JSON, 503, incomplete enrollment responses and navigation discarded
+secrets without automatic retries. This does not establish that an interrupted enrollment needs no
+manual account recovery.
+
+Reproductions are in `engine/src/services/auth_service/postgres_boundary_tests.rs`; selected source
+hashes and test excerpts are retained in `reports/acceptance/2026-09-09-auth-boundaries/`. Against a
+**new disposable database only**, select `services::auth_service::postgres_boundary_tests::` with
+`cargo test --manifest-path engine/Cargo.toml --locked --lib` and pass `-- --ignored --nocapture`.
+Keep `DATABASE_URL` unset and configure only `CYANREX_TEST_DATABASE_URL` with `CYANREX_DB_FALLBACK=true`.
+These new probes are not in the current CI exact-name list and remain opt-in for database isolation;
+four are still failing. A green portable/default gate must not be interpreted as passing these probes.
+The disposable database was removed and the temporary frontend was stopped; no deployment or
+live-kernel work was performed. This checkpoint is not release acceptance.
 
 ## Repeat the non-kernel integrations
 

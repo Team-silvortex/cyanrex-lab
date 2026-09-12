@@ -1,0 +1,47 @@
+Combined real PostgreSQL authentication tests; disposable database only.
+test services::auth_service::postgres_boundary_tests::postgres_cancelled_account_deletion_rolls_back_the_earlier_session_delete ... ok
+test services::auth_service::postgres_boundary_tests::postgres_delete_session_step_failure_preserves_account_and_session ... ok
+test services::auth_service::postgres_boundary_tests::postgres_delete_deferred_commit_failure_rolls_back_account_and_sessions ... ok
+cancelled enrollment: durable_account_present=true, invitation_reusable=false
+test services::auth_service::postgres_boundary_tests::postgres_cancelled_classroom_join_never_reopens_its_consumed_invitation ... ok
+
+thread 'services::auth_service::postgres_boundary_tests::postgres_login_zero_row_session_insert_cannot_report_success' (4122417) panicked at src/services/auth_service/postgres_boundary_tests.rs:294:5:
+zero-row session insertion: login_success=true, new_session_valid=false
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test services::auth_service::postgres_boundary_tests::postgres_login_zero_row_session_insert_cannot_report_success ... FAILED
+
+thread 'services::auth_service::postgres_boundary_tests::postgres_delete_suppressed_session_cascade_cannot_report_success' (4122389) panicked at src/services/auth_service/postgres_boundary_tests.rs:127:5:
+a partial/failed deletion must not be acknowledged: Ok(()); snapshot=(false, 1, false, false); session_valid=true
+test services::auth_service::postgres_boundary_tests::postgres_delete_suppressed_session_cascade_cannot_report_success ... FAILED
+
+thread 'services::auth_service::postgres_boundary_tests::postgres_login_cannot_report_success_after_its_account_was_deleted' (4122412) panicked at src/services/auth_service/postgres_boundary_tests.rs:258:5:
+stale login: status=200 OK, authenticated=false, cookie=true, db_disabled=true, recreated=false, snapshot=(false, 0, false, false)
+test services::auth_service::postgres_boundary_tests::postgres_login_cannot_report_success_after_its_account_was_deleted ... FAILED
+
+thread 'services::auth_service::postgres_boundary_tests::postgres_old_login_cannot_authenticate_as_a_recreated_account' (4122436) panicked at src/services/auth_service/postgres_boundary_tests.rs:258:5:
+stale login: status=200 OK, authenticated=true, cookie=true, db_disabled=false, recreated=true, snapshot=(true, 1, true, false)
+test services::auth_service::postgres_boundary_tests::postgres_old_login_cannot_authenticate_as_a_recreated_account ... FAILED
+test services::auth_service::postgres_mutation_tests::postgres_account_deletion_failure_is_atomic ... ok
+test services::auth_service::postgres_mutation_tests::postgres_account_zero_row_deletion_is_not_success ... ok
+test services::auth_service::postgres_mutation_tests::postgres_account_mutations_normalize_identity_and_persist ... ok
+test services::auth_service::postgres_mutation_tests::postgres_concurrent_password_changes_cannot_overwrite_newer_credentials ... ok
+test services::auth_service::postgres_mutation_tests::postgres_logout_write_failure_is_not_success ... ok
+test services::auth_service::postgres_mutation_tests::postgres_logout_zero_row_deletion_is_not_success ... ok
+test services::auth_service::postgres_mutation_tests::postgres_password_write_failure_is_not_success ... ok
+test services::auth_service::postgres_tests::postgres_deleted_account_cannot_revive_in_fallback ... ok
+test services::auth_service::postgres_mutation_tests::postgres_password_zero_row_update_is_not_success ... ok
+test services::auth_service::postgres_tests::postgres_expired_session_cannot_revive_in_fallback ... ok
+test services::auth_service::postgres_tests::postgres_revoked_session_cannot_revive_in_fallback ... ok
+test services::auth_service::postgres_tests::postgres_registration_persists_accounts_and_serializes_duplicates ... ok
+
+failures:
+
+failures:
+    services::auth_service::postgres_boundary_tests::postgres_delete_suppressed_session_cascade_cannot_report_success
+    services::auth_service::postgres_boundary_tests::postgres_login_cannot_report_success_after_its_account_was_deleted
+    services::auth_service::postgres_boundary_tests::postgres_login_zero_row_session_insert_cannot_report_success
+    services::auth_service::postgres_boundary_tests::postgres_old_login_cannot_authenticate_as_a_recreated_account
+
+test result: FAILED. 16 passed; 4 failed; 0 ignored; 0 measured; 125 filtered out; finished in 17.17s
+
+error: test failed, to rerun pass `--lib`

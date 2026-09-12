@@ -1,0 +1,106 @@
+## fixBaselinePortable
+Exit code: 101
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.14s
+     Running tests/module_boundaries_tdd.rs (engine/target/debug/deps/module_boundaries_tdd-616316cce3f5044a)
+
+running 12 tests
+
+thread 'events::invalid_event_delete_filters_must_not_widen_into_delete_all' (69776) panicked at tests/module_boundaries/events.rs:215:5:
+invalid destructive filters were accepted: ["severity=errror: status=200 OK, deleted=2, remaining=0", "category=kernell: status=200 OK, deleted=2, remaining=0", "start=not-a-date: status=200 OK, deleted=2, remaining=0", "end=not-a-date: status=200 OK, deleted=2, remaining=0"]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test events::invalid_event_delete_filters_must_not_widen_into_delete_all ... FAILED
+test events::event_history_export_and_unread_remain_session_scoped ... ok
+test script_postgres::scripts_use_postgres_without_file_fallback_and_keep_owner_boundaries_after_reload ... ignored, requires CYANREX_TEST_DATABASE_URL pointing to disposable PostgreSQL
+
+thread 'events::filtered_event_deletion_removes_matches_not_the_complement' (69775) panicked at tests/module_boundaries/events.rs:170:5:
+filtered deletion selected the wrong side: ["severity=error: status=200 OK, deleted=1, remaining=[1], expected_deleted=1, expected_remaining=[2]", "category=platform: status=200 OK, deleted=2, remaining=[], expected_deleted=0, expected_remaining=[1, 2]", "category=kernel: status=200 OK, deleted=0, remaining=[1, 2], expected_deleted=2, expected_remaining=[]"]
+test events::filtered_event_deletion_removes_matches_not_the_complement ... FAILED
+test events::event_settings_http_retention_and_overflow_policy_do_not_cross_users ... ok
+test learning_flow::saved_source_flows_through_runner_events_feedback_and_owner_bound_resume ... ok
+test storage::header_download_checksum_failure_cannot_publish_a_downloaded_resource ... ok
+
+thread 'storage::script_corrupt_snapshot_must_not_be_overwritten_by_a_successful_save' (70071) panicked at tests/module_boundaries/storage.rs:149:5:
+unreadable snapshot was overwritten: status=200 OK, original_preserved=false
+test storage::script_corrupt_snapshot_must_not_be_overwritten_by_a_successful_save ... FAILED
+
+thread 'storage::script_failed_file_delete_must_retain_the_previously_saved_record' (70093) panicked at tests/module_boundaries/storage.rs:123:5:
+assertion `left == right` failed: failed deletion hid the saved script from the API cache
+  left: 0
+ right: 1
+test storage::script_failed_file_delete_must_retain_the_previously_saved_record ... FAILED
+
+thread 'storage::script_failed_file_save_must_not_publish_an_unsaved_record' (70132) panicked at tests/module_boundaries/storage.rs:86:5:
+failed file write published an unsaved script in the API cache
+test storage::script_failed_file_save_must_not_publish_an_unsaved_record ... FAILED
+test storage::scripts_bind_http_identity_csrf_and_file_reload_without_cross_owner_deletion ... ok
+test storage::teacher_header_selection_reloads_and_is_readable_but_not_mutable_by_students ... ok
+
+failures:
+
+failures:
+    events::filtered_event_deletion_removes_matches_not_the_complement
+    events::invalid_event_delete_filters_must_not_widen_into_delete_all
+    storage::script_corrupt_snapshot_must_not_be_overwritten_by_a_successful_save
+    storage::script_failed_file_delete_must_retain_the_previously_saved_record
+    storage::script_failed_file_save_must_not_publish_an_unsaved_record
+
+test result: FAILED. 6 passed; 5 failed; 1 ignored; 0 measured; 0 filtered out; finished in 17.35s
+
+error: test failed, to rerun pass `--test module_boundaries_tdd`
+
+
+## fixBaselineAuth
+Command: env -u DATABASE_URL CYANREX_DB_FALLBACK=true CYANREX_DATA_DIR=<TEST_DATA_DIR> CYANREX_TEST_DATABASE_URL=<DISPOSABLE_POSTGRES_URL> cargo test --manifest-path engine/Cargo.toml --locked --lib services::auth_service:: -- --ignored --nocapture --test-threads=4
+Exit code: 101
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.11s
+     Running unittests src/lib.rs (engine/target/debug/deps/cyanrex_engine-2383cc0f893617d7)
+
+running 20 tests
+test services::auth_service::postgres_boundary_tests::postgres_cancelled_account_deletion_rolls_back_the_earlier_session_delete ... ok
+test services::auth_service::postgres_boundary_tests::postgres_delete_deferred_commit_failure_rolls_back_account_and_sessions ... ok
+test services::auth_service::postgres_boundary_tests::postgres_delete_session_step_failure_preserves_account_and_session ... ok
+cancelled enrollment: durable_account_present=true, invitation_reusable=false
+test services::auth_service::postgres_boundary_tests::postgres_cancelled_classroom_join_never_reopens_its_consumed_invitation ... ok
+
+thread 'services::auth_service::postgres_boundary_tests::postgres_login_zero_row_session_insert_cannot_report_success' (70445) panicked at src/services/auth_service/postgres_boundary_tests.rs:294:5:
+zero-row session insertion: login_success=true, new_session_valid=false
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test services::auth_service::postgres_boundary_tests::postgres_login_zero_row_session_insert_cannot_report_success ... FAILED
+
+thread 'services::auth_service::postgres_boundary_tests::postgres_delete_suppressed_session_cascade_cannot_report_success' (70439) panicked at src/services/auth_service/postgres_boundary_tests.rs:127:5:
+a partial/failed deletion must not be acknowledged: Ok(()); snapshot=(false, 1, false, false); session_valid=true
+test services::auth_service::postgres_boundary_tests::postgres_delete_suppressed_session_cascade_cannot_report_success ... FAILED
+
+thread 'services::auth_service::postgres_boundary_tests::postgres_login_cannot_report_success_after_its_account_was_deleted' (70442) panicked at src/services/auth_service/postgres_boundary_tests.rs:258:5:
+stale login: status=200 OK, authenticated=false, cookie=true, db_disabled=true, recreated=false, snapshot=(false, 0, false, false)
+test services::auth_service::postgres_boundary_tests::postgres_login_cannot_report_success_after_its_account_was_deleted ... FAILED
+
+thread 'services::auth_service::postgres_boundary_tests::postgres_old_login_cannot_authenticate_as_a_recreated_account' (70449) panicked at src/services/auth_service/postgres_boundary_tests.rs:258:5:
+stale login: status=200 OK, authenticated=true, cookie=true, db_disabled=false, recreated=true, snapshot=(true, 1, true, false)
+test services::auth_service::postgres_boundary_tests::postgres_old_login_cannot_authenticate_as_a_recreated_account ... FAILED
+test services::auth_service::postgres_mutation_tests::postgres_account_deletion_failure_is_atomic ... ok
+test services::auth_service::postgres_mutation_tests::postgres_account_mutations_normalize_identity_and_persist ... ok
+test services::auth_service::postgres_mutation_tests::postgres_account_zero_row_deletion_is_not_success ... ok
+test services::auth_service::postgres_mutation_tests::postgres_concurrent_password_changes_cannot_overwrite_newer_credentials ... ok
+test services::auth_service::postgres_mutation_tests::postgres_logout_write_failure_is_not_success ... ok
+test services::auth_service::postgres_mutation_tests::postgres_logout_zero_row_deletion_is_not_success ... ok
+test services::auth_service::postgres_mutation_tests::postgres_password_write_failure_is_not_success ... ok
+test services::auth_service::postgres_tests::postgres_deleted_account_cannot_revive_in_fallback ... ok
+test services::auth_service::postgres_tests::postgres_expired_session_cannot_revive_in_fallback ... ok
+test services::auth_service::postgres_mutation_tests::postgres_password_zero_row_update_is_not_success ... ok
+test services::auth_service::postgres_tests::postgres_revoked_session_cannot_revive_in_fallback ... ok
+test services::auth_service::postgres_tests::postgres_registration_persists_accounts_and_serializes_duplicates ... ok
+
+failures:
+
+failures:
+    services::auth_service::postgres_boundary_tests::postgres_delete_suppressed_session_cascade_cannot_report_success
+    services::auth_service::postgres_boundary_tests::postgres_login_cannot_report_success_after_its_account_was_deleted
+    services::auth_service::postgres_boundary_tests::postgres_login_zero_row_session_insert_cannot_report_success
+    services::auth_service::postgres_boundary_tests::postgres_old_login_cannot_authenticate_as_a_recreated_account
+
+test result: FAILED. 16 passed; 4 failed; 0 ignored; 0 measured; 125 filtered out; finished in 13.71s
+
+error: test failed, to rerun pass `--lib`

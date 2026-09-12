@@ -1,6 +1,6 @@
 {
   "name": "@cyanrex/frontend",
-  "version": "0.3.7",
+  "version": "0.3.8",
   "private": true,
   "scripts": {
     "postinstall": "node scripts/sync-monaco-assets.mjs",
@@ -16,7 +16,8 @@
     "test:event-stream-browser": "node --test tests/eventStream.browser.mjs",
     "test:security-headers": "node --test tests/securityHeaders.test.mjs",
     "test:tooling": "node --test tests/cleanMacosMetadata.test.mjs",
-    "test:ui-permissions": "node --experimental-strip-types --test tests/sidebarPermissions.test.mjs tests/teachingReview.test.mjs tests/terminalCommand.test.mjs tests/learningResume.test.mjs tests/actionSafety.test.mjs tests/classroomConnection.test.mjs",
+    "test:ui-permissions": "node --experimental-strip-types --test tests/sidebarPermissions.test.mjs tests/teachingReview.test.mjs tests/terminalCommand.test.mjs tests/learningResume.test.mjs tests/actionSafety.test.mjs tests/classroomConnection.test.mjs tests/authSession.test.mjs",
+    "test:auth-session-browser": "node --test tests/authSession.browser.mjs",
     "test:classroom-browser": "node --test tests/classroomConnection.browser.mjs",
     "test:learning-browser": "node --test tests/learningFeedback.browser.mjs",
     "test:learning-resume-browser": "node --test tests/learningResume.browser.mjs",
