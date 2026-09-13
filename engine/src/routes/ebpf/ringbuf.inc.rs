@@ -114,16 +114,18 @@ async fn stream_kernel_trace_events(
 }
 
 fn parse_debug_breakpoint_hit(line: &str, session_id: &str) -> Option<u32> {
+    if session_id.is_empty() {
+        return None;
+    }
     let marker = format!("cyanrex_bp:{session_id}:");
     let suffix = line.split_once(&marker)?.1;
     let digits = suffix
-        .chars()
-        .take_while(|character| character.is_ascii_digit())
-        .collect::<String>();
-    if digits.is_empty() {
+        .split_once(char::is_whitespace)
+        .map_or(suffix, |(digits, _)| digits);
+    if digits.is_empty() || !digits.bytes().all(|byte| byte.is_ascii_digit()) {
         return None;
     }
-    digits.parse().ok()
+    digits.parse::<u32>().ok().filter(|line| *line > 0)
 }
 
 #[cfg(test)]
@@ -135,6 +137,29 @@ mod breakpoint_trace_tests {
         let line = "worker-12 [001] bpf_trace_printk: cyanrex_bp:abc123:47";
         assert_eq!(parse_debug_breakpoint_hit(line, "abc123"), Some(47));
         assert_eq!(parse_debug_breakpoint_hit(line, "other"), None);
+    }
+
+    #[test]
+    fn rejects_zero_and_non_integral_breakpoint_markers() {
+        for value in ["0", "47abc", "47.5", "47:extra", "-1", "4294967296"] {
+            let line = format!("bpf_trace_printk: cyanrex_bp:abc123:{value}");
+            assert_eq!(parse_debug_breakpoint_hit(&line, "abc123"), None, "{value}");
+        }
+    }
+
+    #[test]
+    fn rejects_empty_debug_session_and_whitespace_before_the_line() {
+        assert_eq!(parse_debug_breakpoint_hit("cyanrex_bp::47", ""), None);
+        assert_eq!(parse_debug_breakpoint_hit("cyanrex_bp:abc123: 47", "abc123"), None);
+    }
+
+    #[test]
+    fn preserves_exact_decimal_markers_with_normal_trace_suffixes() {
+        for suffix in ["", "\n", "\r\n", " trailing trace text"] {
+            let line = format!("worker-12 [001] bpf_trace_printk: cyanrex_bp:abc123:47{suffix}");
+            assert_eq!(parse_debug_breakpoint_hit(&line, "abc123"), Some(47));
+        }
+        assert_eq!(parse_debug_breakpoint_hit("cyanrex_bp:abc123:1", "abc123"), Some(1));
     }
 }
 

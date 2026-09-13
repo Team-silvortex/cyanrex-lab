@@ -1,0 +1,26 @@
+✔ teachers manage modules, deployment settings and terminal without switching role, keeping confirmations (1464.649334ms)
+✔ students keep experiment access without teacher deployment navigation (1269.356328ms)
+✔ single deletion focuses cancel, Escape/Enter cancel safely, and failures cannot be double-submitted (1165.550169ms)
+✔ module lifecycle commands require confirmation but read-only commands do not (722.616812ms)
+✔ account deletion keeps credential and typed gates, cancels without writes, and reports failure (633.008233ms)
+✔ job cancellation binds the full job id and settings need explicit review (756.113728ms)
+✔ confirmation stays usable in every language on mobile and navigation discards an unconfirmed action (1420.194969ms)
+✔ detach-all requires a typed phrase and single detach can never fall back to all (1061.179964ms)
+✔ template/source replacement and kernel runs require separate explicit decisions (1600.159967ms)
+✔ remote diagnostics require acknowledging source transfer before switching agents (1296.496496ms)
+✔ remote cancellation and expiry show unavailable in the real editor without running or replacing its draft (3356.125232ms)
+✔ a confirmed file import cannot replace a different lab's draft after navigation (1036.780708ms)
+✔ entering a lab preserves the draft until its template is explicitly loaded (958.811085ms)
+✔ header batch deletion stops at failure and reports partial completion, never false success (552.320951ms)
+✔ event deletion explains the complete filter scope and freezes the cutoff before confirmation (567.9096ms)
+✔ failed logout stays on the current page, reports uncertainty and permits an explicit retry (1420.178224ms)
+✔ logout ignores duplicate clicks while pending and does not redirect until confirmed (721.591534ms)
+✔ navigating away discards late logout UI callbacks without claiming server rollback (711.965954ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 18
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 17938.266637

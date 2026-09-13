@@ -45,11 +45,11 @@ async fn cancelled_append_finishes_publication_before_releasing_the_writer_lock(
         "cancellation must not release the commit's lock"
     );
     assert_disk_matches_memory(&store).await;
-    assert_eq!(store.attempts_for_user("alice").await.len(), 2);
+    assert_eq!(store.attempts_for_user("alice").await.unwrap().len(), 2);
     store.record_run("bob", outcome()).await.unwrap();
     let loaded = LearningStore::with_local_data_path(store.data_path.clone());
-    assert_eq!(loaded.attempts_for_user("alice").await.len(), 2);
-    assert_eq!(loaded.attempts_for_user("bob").await.len(), 1);
+    assert_eq!(loaded.attempts_for_user("alice").await.unwrap().len(), 2);
+    assert_eq!(loaded.attempts_for_user("bob").await.unwrap().len(), 1);
 }
 
 #[tokio::test]
@@ -136,22 +136,23 @@ async fn cancelling_queued_writers_does_not_change_disk_or_memory() {
     drop(feedback);
     drop(writer_lock);
     assert_eq!(tokio::fs::read(&store.data_path).await.unwrap(), original);
-    assert!(!store.data_path.with_extension("json.tmp").exists());
+    assert_eq!(std::fs::read_dir(&fixture.0).unwrap().count(), 1);
     assert_disk_matches_memory(&store).await;
     assert_eq!(
         store.record_run("bob", outcome()).await.unwrap().username,
         "bob"
     );
-    assert_eq!(store.attempts_for_user("alice").await.len(), 1);
+    assert_eq!(store.attempts_for_user("alice").await.unwrap().len(), 1);
 }
 
 async fn cancelled_blocking_queue_commit(fail_write: bool) {
     let fixture = Fixture::new();
     let store = fixture.store(&[attempt("alice", 0)]).await;
     let original = std::fs::read(&store.data_path).unwrap();
-    let temp = store.data_path.with_extension("json.tmp");
+    let backup = fixture.0.join("original.json");
     if fail_write {
-        std::fs::create_dir(&temp).unwrap();
+        std::fs::rename(&store.data_path, &backup).unwrap();
+        std::fs::create_dir(&store.data_path).unwrap();
     }
     let (started_tx, started_rx) = tokio::sync::oneshot::channel();
     let (release_tx, release_rx) = std::sync::mpsc::channel();
@@ -169,7 +170,12 @@ async fn cancelled_blocking_queue_commit(fail_write: bool) {
     .await;
     drop(request);
     let admission_retained = store.persist_lock.try_lock().is_err();
-    let before_start = std::fs::read(&store.data_path).unwrap();
+    let before_start = std::fs::read(if fail_write {
+        &backup
+    } else {
+        &store.data_path
+    })
+    .unwrap();
     release_tx.send(()).unwrap();
     blocker.await.unwrap();
     drop(
@@ -185,15 +191,18 @@ async fn cancelled_blocking_queue_commit(fail_write: bool) {
         before_start, original,
         "queued work has not touched the file"
     );
+    if fail_write {
+        assert_eq!(std::fs::read(&backup).unwrap(), original);
+        assert_eq!(std::fs::read_dir(&fixture.0).unwrap().count(), 2);
+        std::fs::remove_dir(&store.data_path).unwrap();
+        std::fs::rename(&backup, &store.data_path).unwrap();
+    }
+    assert_eq!(std::fs::read_dir(&fixture.0).unwrap().count(), 1);
     assert_disk_matches_memory(&store).await;
     assert_eq!(
-        store.attempts_for_user("alice").await.len(),
+        store.attempts_for_user("alice").await.unwrap().len(),
         if fail_write { 1 } else { 2 }
     );
-    if fail_write {
-        assert_eq!(std::fs::read(&store.data_path).unwrap(), original);
-        std::fs::remove_dir(&temp).unwrap();
-    }
     store.record_run("bob", outcome()).await.unwrap();
     assert_disk_matches_memory(&store).await;
 }

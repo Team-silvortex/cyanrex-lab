@@ -54,7 +54,7 @@ async fn postgres_feedback_migrates_legacy_rows_and_serializes_updates() {
         store.active_pool().is_some(),
         "CYANREX_DB_FALLBACK must be enabled"
     );
-    let legacy = store.attempts_for_user("student").await;
+    let legacy = store.attempts_for_user("student").await.unwrap();
     assert_eq!(legacy.len(), 1);
     assert!(legacy[0].teacher_feedback.is_none());
     let request = SaveTeacherFeedbackRequest {
@@ -81,7 +81,7 @@ async fn postgres_feedback_migrates_legacy_rows_and_serializes_updates() {
         .unwrap();
     let mut reloaded = LearningStore::with_local_data_path(path.clone());
     reloaded.db_pool = Some(pool.clone());
-    let attempts = reloaded.attempts_for_user("student").await;
+    let attempts = reloaded.attempts_for_user("student").await.unwrap();
     let feedback = attempts[0].teacher_feedback.as_ref().unwrap();
     assert_eq!(feedback.comment, "Updated");
     assert_eq!(feedback.reviewer, "teacher");
@@ -138,7 +138,10 @@ async fn postgres_feedback_migrates_legacy_rows_and_serializes_updates() {
         .await
         .unwrap();
     assert!(new_attempt.teacher_feedback.is_none());
-    assert_eq!(reloaded.attempts_for_user("student").await.len(), 2);
+    assert_eq!(
+        reloaded.attempts_for_user("student").await.unwrap().len(),
+        2
+    );
     let resumed_new = reloaded
         .attempt_for_user("student", &new_attempt.id)
         .await

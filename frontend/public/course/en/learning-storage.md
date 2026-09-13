@@ -1,8 +1,9 @@
 # Learning Record Storage and Query Costs
 
 Learning attempts retain submitted source, automated feedback, completion evidence and the current
-teacher comment. These increments change local-memory ownership, query work and file writing, not learning acceptance,
-authorization, HTTP/SDK schemas, PostgreSQL queries, or the stored JSON format.
+teacher comment. Local-memory ownership, query work and file writing retain learning acceptance,
+authorization, successful HTTP/SDK payloads, PostgreSQL queries and the stored JSON format. The
+2026-09-13 chain-guided fixes make read errors explicit and harden local snapshot creation.
 
 ## Local snapshots
 
@@ -17,11 +18,17 @@ revisions are rejected before constructing replacements. This is internal copy-o
 response cache: subsequent requests see the latest published snapshot.
 
 Local writers share one persistence mutex. A blocking worker streams the complete new array as the same
-pretty JSON through a 64 KiB buffer into `attempts.json.tmp`, explicitly flushes, closes the file, renames
+pretty JSON through a 64 KiB buffer into a random same-directory `.learning-<uuid>.tmp`, explicitly flushes, closes the file, renames
 it over `attempts.json`, then publishes memory. Encoding and file I/O no longer occupy an async executor
 thread or allocate a full encoded-file buffer. Reported encoding, write, flush or rename failures do not
 publish unsaved changes. Older arrays without `teacher_feedback` still load;
 no reference wrapper or migration is added to the file. API history responses remain independently owned.
+
+Temporary files are created exclusively, without truncating or following a pre-existing temporary path.
+New Unix directories/files use 0700/0600; an existing parent directory is not chmodded. Reported failures
+attempt cleanup of only this commit's temporary file, with cleanup failures logged. Legacy fixed-name
+temporary paths are left untouched. Keep the data directory and its parents under trusted ownership;
+this is not protection against a hostile parent-directory replacement or a migration of old permissions.
 
 ## Cold initialization
 
@@ -42,8 +49,25 @@ to own a detached blocking task.
 Only `NotFound` initializes an empty snapshot, without creating a file. Other I/O failures (including a
 parent path that is not a directory), invalid UTF-8 and malformed JSON leave readiness unset and memory
 unchanged. Later calls retry; failures are not cached or coalesced across waiting callers. A generic
-warning records load failure without logging stored values. Public reads retain their existing empty/default
-result on load errors; writes return storage errors. There is no new `.tmp` recovery or external-file watcher.
+warning records load failure without logging stored values. Public reads propagate these failures instead
+of returning empty/default success; writes also return storage errors. There is no new `.tmp` recovery or
+external-file watcher.
+
+## Read failures and backend selection
+
+`GET /learning/attempts`, `/learning/labs`, `/learning/teacher/overview` and
+`/learning/teacher/attempts` now return a generic `500` on storage read failure, as owner-bound single
+attempt resume already did. They cannot turn unreadable data into an empty history, zero progress or
+an empty classroom. Their successful reads and storage-failure responses use `Cache-Control: no-store`.
+Permissions and successful payloads are unchanged; errors expose neither stored source nor file paths.
+Only a genuinely missing local file represents a new, empty classroom.
+
+Once a read selects an active PostgreSQL pool, schema/query errors are returned without disabling that
+pool or silently reading a stale local snapshot for this request. This applies to cold and warm local
+snapshots and repeated failures. It does not remove the existing run-record write fallback or undo a
+fallback already established by a previous write/configuration. The Rust projection methods now return
+`Result`, so callers must handle errors. File-load repair is retryable before successful initialization;
+an already loaded store still does not watch external edits.
 
 ## Request cancellation and write completion
 
@@ -61,8 +85,9 @@ This behavior relies on [Tokio's blocking-task lifecycle](https://docs.rs/tokio/
 and [detached join handles](https://docs.rs/tokio/1.53.1/tokio/task/struct.JoinHandle.html).
 
 Explicit [buffer flushing](https://doc.rust-lang.org/std/io/struct.BufWriter.html) checks errors before
-rename; it is not file/directory fsync. Failed writes may leave a partial `.tmp` file. Loading ignores it;
-the next write truncates/replaces it. There is no recovery from that temporary file.
+rename; it is not file/directory fsync. Normal failed writes clean up their temporary file. Process kill,
+power loss or a cleanup error can still leave a partial temporary file; loading ignores it and later
+commits use different exclusive names. There is no recovery from that temporary file.
 
 ## Query behavior
 
@@ -98,7 +123,7 @@ computed afresh rather than kept in a separately invalidated cache.
   lock and blocking thread and can delay runtime shutdown; there is no new load/write deadline or global queue
   limit. Multiple Engine processes or independently constructed stores must not write the same file.
   A loaded store does not watch external edits; keep backups and do not edit a live store's file.
-- PostgreSQL queries/schema and fallback policy are unchanged. Successful DB queries still fetch the
+- PostgreSQL queries/schema are unchanged; the read-failure policy above is explicit. Successful DB queries still fetch the
   original fields, including source; no SQL-side aggregation or DB performance improvement is claimed.
   Failed PostgreSQL feedback writes still return errors instead of updating a stale local fallback.
 - HTTP, browser rendering, real PostgreSQL, kernel execution and power-loss behavior need separate
@@ -152,3 +177,7 @@ production HTTP health latency or a scheduling guarantee. Keep regressing protot
 Cold-load regressions cover cancelled queued/decoded initialization, concurrent first readers and writers,
 missing versus invalid paths, whole-file UTF-8, legacy/unknown fields, invalid/trailing JSON without partial
 publication, successful-load caching and retry after errors.
+
+The first [chain-guided bug hunt](functional-network-bug-hunt-01.md) adds route-level corruption/repair,
+no-store/access checks, closed-pool fault injection (not real PostgreSQL acceptance), new-file permissions,
+temporary-symlink preservation and failed-rename cleanup regressions.

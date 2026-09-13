@@ -1,0 +1,13 @@
+[functional-network] source drift engine/openapi/openapi.json
+source drift engine/src/routes/learning.rs
+source drift engine/src/routes/runner_job.rs
+source drift engine/src/services/learning_store.rs
+source drift engine/src/services/learning_store/persistence.rs
+source drift engine/src/services/runner_agent_client.rs
+source drift engine/src/services/runner_job_queue.rs
+source drift frontend/pages/ebpf.tsx
+source drift frontend/src/features/ebpf/useCompilerDiagnostics.ts
+source drift frontend/src/features/ebpf/useEbpfPageController.ts
+source drift frontend/src/features/ebpf/useEbpfSafetyActions.ts
+source drift frontend/src/utils/cEbpfIntelligence.ts
+source drift scripts/quality-gate.sh

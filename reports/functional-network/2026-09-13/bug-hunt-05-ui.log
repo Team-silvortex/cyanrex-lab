@@ -1,0 +1,33 @@
+✔ teachers manage modules, deployment settings and terminal without switching role, keeping confirmations (2972.066771ms)
+✔ students keep experiment access without teacher deployment navigation (1348.114628ms)
+✔ single deletion focuses cancel, Escape/Enter cancel safely, and failures cannot be double-submitted (1296.737311ms)
+✔ module lifecycle commands require confirmation but read-only commands do not (766.900791ms)
+✔ account deletion keeps credential and typed gates, cancels without writes, and reports failure (692.482968ms)
+✔ job cancellation binds the full job id and settings need explicit review (725.876208ms)
+✔ confirmation stays usable in every language on mobile and navigation discards an unconfirmed action (1438.697133ms)
+✔ detach-all requires a typed phrase and single detach can never fall back to all (1159.490243ms)
+✔ template/source replacement and kernel runs require separate explicit decisions (1665.356476ms)
+✔ remote diagnostics require acknowledging source transfer before switching agents (1333.651689ms)
+✔ remote cancellation and expiry show unavailable in the real editor without running or replacing its draft (3387.210442ms)
+✔ a confirmed file import cannot replace a different lab's draft after navigation (1043.632095ms)
+✔ entering a lab preserves the draft until its template is explicitly loaded (984.239386ms)
+✔ header batch deletion stops at failure and reports partial completion, never false success (557.173476ms)
+✔ event deletion explains the complete filter scope and freezes the cutoff before confirmation (547.711785ms)
+✔ real Monaco accepts semantic suggestions and multiline SEC snippets without executing code (1320.43175ms)
+✔ header refresh errors remain visible while an explicit local self-check still works (1410.917973ms)
+✔ failed logout stays on the current page, reports uncertainty and permits an explicit retry (2992.236379ms)
+✔ logout ignores duplicate clicks while pending and does not redirect until confirmed (807.83463ms)
+✔ navigating away discards late logout UI callbacks without claiming server rollback (849.048208ms)
+✔ real editor hides stale run output without detaching, and confirmed cleanup retires its quick action (2868.958007ms)
+✔ failed inventory is not empty success and must be refreshed before cleanup controls enable (909.344085ms)
+✔ unclean and missing cleanup confirmation remain failures without an automatic retry (1317.410108ms)
+✔ a failed run transport stays in the confirmation failure view with an uncertainty notice (803.406887ms)
+✔ navigation discards an in-flight run result without claiming kernel rollback (733.276303ms)
+ℹ tests 25
+ℹ suites 0
+ℹ pass 25
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 22723.341421

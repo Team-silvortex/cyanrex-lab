@@ -1,0 +1,50 @@
+
+> @cyanrex/frontend@0.3.8 prebuild
+> node scripts/clean-macos-metadata.mjs && node scripts/sync-course-docs.mjs
+
+[metadata] removed 0 macOS filesystem metadata entries
+[course] synchronized locale copies: en, zh-CN
+
+> @cyanrex/frontend@0.3.8 build
+> next build
+
+   ▲ Next.js 15.5.24
+
+   Linting and checking validity of types ...
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 1544ms
+   Collecting page data ...
+   Generating static pages (0/18) ...
+   Generating static pages (4/18) 
+   Generating static pages (8/18) 
+   Generating static pages (13/18) 
+ ✓ Generating static pages (18/18)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (pages)                                 Size  First Load JS
+┌ ○ /                                        304 B         134 kB
+├   /_app                                      0 B         134 kB
+├ ○ /404                                     180 B         134 kB
+├ ○ /account                               2.43 kB         141 kB
+├ ○ /dashboard                               513 B         139 kB
+├ ○ /ebpf                                  25.8 kB         165 kB
+├ ○ /events                                5.39 kB         144 kB
+├ ○ /helper                                1.33 kB         140 kB
+├ ○ /join                                  4.32 kB         140 kB
+├ ○ /learn                                 3.91 kB         143 kB
+├ ○ /learn/[...slug]                       2.08 kB         141 kB
+├ ○ /login                                 1.89 kB         138 kB
+├ ○ /modules                               3.31 kB         142 kB
+├ ○ /otp-setup                             1.91 kB         138 kB
+├ ○ /register                              1.91 kB         138 kB
+├ ○ /settings                              6.68 kB         146 kB
+├ ○ /teaching                              6.19 kB         145 kB
+└ ○ /terminal                              3.21 kB         142 kB
++ First Load JS shared by all               139 kB
+  ├ chunks/framework-372c62845e5ba996.js   57.5 kB
+  ├ chunks/main-7f338c3961cdd4b9.js          37 kB
+  ├ chunks/pages/_app-11cec58fbdea72b4.js  37.5 kB
+  └ other shared chunks (total)             6.8 kB
+
+○  (Static)  prerendered as static content

@@ -1,0 +1,12 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.15s
+     Running tests/routes_tdd.rs (engine/target/debug/deps/routes_tdd-6f48ff5b14a5af5c)
+
+running 5 tests
+test runner_lifecycle_tests::attachment_backend_unavailability_never_falls_back_to_local_loader ... ok
+test runner_lifecycle_tests::attachment_inventory_uses_session_owner_and_outlives_execution_lease ... ok
+test runner_lifecycle_tests::attachment_operations_have_bounded_deadlines ... ok
+test runner_lifecycle_tests::attachment_routes_keep_auth_and_csrf_guards_before_driver ... ok
+test runner_lifecycle_tests::detach_uses_driver_ownership_and_cleanup_report_without_host_inspection ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 81 filtered out; finished in 10.10s
+

@@ -47,11 +47,18 @@ Utility scripts for Cyanrex local operation.
   access rules, and maintained component schemas; use `--check` to reject stale output.
 - `openapi-contract.mjs`: checks exact Engine/OpenAPI route and access-tier parity, expected Engine/SDK
   coverage, operation metadata, version sync, and schema references.
+- `check-functional-network.mjs`: read-only validation of the dated
+  [functional-network inventory](../docs/en/functional-network.md). Checks unique API ownership,
+  module/workflow connections, all current pages, catalog IDs and referenced source fingerprints.
+  Run explicitly after reviewing a source snapshot; drift means the inventory needs review, not
+  that runtime acceptance passed or failed. It never refreshes hashes or changes a service.
+- `tests/functionalNetwork.test.mjs`: positive/negative inventory and drift-checker regressions,
+  included in the common tooling tests. These do not dynamically execute product workflows.
 - `tests/openapiContract.test.mjs`: parser and drift-reporting regressions for the contract checks.
 - `generate-sdk-types.mjs`: converts OpenAPI component schemas into the committed
   `sdk-js/src/generated/openapi.ts` type map; use `--check` to reject stale SDK models.
 - `tests/sdkTypeGenerator.test.mjs`: JSON Schema-to-TypeScript rendering regressions.
-- `generate-sdk-operations.mjs`: generates the 56 browser-facing SDK operation inputs, responses,
+- `generate-sdk-operations.mjs`: generates the 63 browser-facing SDK operation inputs, responses,
   access/transport metadata, and operationId registry while excluding the signed Runner Agent protocol.
 - `tests/sdkOperationGenerator.test.mjs`: operation transport, parameter, response, and Agent-boundary
   generation regressions.

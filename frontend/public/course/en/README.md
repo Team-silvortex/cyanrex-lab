@@ -3,6 +3,9 @@
 Cyanrex is an eBPF teaching system for beginners. It brings source editing, clang diagnostics,
 semantic completion, kernel loading, event observation, and program detach into one Web interface.
 
+For a source-backed map of current features and their connections, see the
+[Functional Network](functional-network.md), including all pages, APIs and persistence boundaries.
+
 ## Recommended Reading Order
 
 ### Teacher

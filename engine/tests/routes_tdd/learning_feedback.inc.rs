@@ -171,7 +171,7 @@ async fn learning_teacher_feedback_is_saved_and_visible_to_its_student() {
         fixture.path.clone(),
     );
     let persisted =
-        serde_json::to_value(reloaded.attempts_for_user("feedback-student").await).unwrap();
+        serde_json::to_value(reloaded.attempts_for_user("feedback-student").await.unwrap()).unwrap();
     assert_eq!(persisted[0]["teacher_feedback"], feedback);
 }
 
@@ -371,7 +371,7 @@ async fn learning_teacher_feedback_loads_legacy_attempts_without_feedback() {
     let reloaded = cyanrex_engine::services::learning_store::LearningStore::with_local_data_path(
         fixture.path.clone(),
     );
-    let attempts = reloaded.attempts_for_user("feedback-student").await;
+    let attempts = reloaded.attempts_for_user("feedback-student").await.unwrap();
     assert_eq!(attempts.len(), 1);
     assert!(serde_json::to_value(&attempts[0]).unwrap()["teacher_feedback"].is_null());
 }
@@ -453,7 +453,7 @@ async fn learning_teacher_feedback_and_new_runs_preserve_both_updates() {
     let reloaded = cyanrex_engine::services::learning_store::LearningStore::with_local_data_path(
         fixture.path.clone(),
     );
-    let attempts = reloaded.attempts_for_user("feedback-student").await;
+    let attempts = reloaded.attempts_for_user("feedback-student").await.unwrap();
     assert_eq!(attempts.len(), 2);
     assert!(attempts.iter().any(|attempt| attempt.id == new_attempt.id));
     let reviewed = attempts

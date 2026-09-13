@@ -1,0 +1,52 @@
+✖ malformed metadata rows are a visible failure without crashing the editor (1345.525135ms)
+✖ owner disposal unregisters every language provider (257.2206ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 0
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3031.475412
+
+✖ failing tests:
+
+test at frontend/tests/editorIntelligence.browser.mjs:133:1
+✖ malformed metadata rows are a visible failure without crashing the editor (1345.525135ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + [
+  +   "Cannot read properties of null (reading 'id')"
+  + ]
+  - []
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/editorIntelligence.browser.mjs:136:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/editorIntelligence.browser.mjs:19:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ "Cannot read properties of null (reading 'id')" ],
+    expected: [],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/editorIntelligence.browser.mjs:139:1
+✖ owner disposal unregisters every language provider (257.2206ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  6 !== 0
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/editorIntelligence.browser.mjs:141:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/editorIntelligence.browser.mjs:19:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 6,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

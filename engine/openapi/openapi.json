@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Cyanrex Lab Engine API",
-    "version": "0.3.8",
+    "version": "0.3.9",
     "description": "Machine-readable contract for the Cyanrex teaching control and execution plane."
   },
   "servers": [
@@ -434,6 +434,7 @@
           }
         },
         "x-cyanrex-access": "authenticated",
+        "description": "Owner-bound remote compile-only checks have a 35-second queue wait limit from submission. An unclaimed check becomes expired on the next queue interaction, releasing its source and per-user active quota. The claimed execution deadline is unchanged and begins at claim; this does not expire staff-managed unowned jobs or kill a running compiler. Queued cancellation is immediate; claimed cancellation requires acknowledgement or lease expiry. Missing/other-owner jobs return 404. No remote loading or silent local fallback is added.",
         "x-cyanrex-roles": [
           "admin",
           "teacher",
@@ -484,6 +485,7 @@
           }
         },
         "x-cyanrex-access": "authenticated",
+        "description": "Owner-bound remote compile-only checks have a 35-second queue wait limit from submission. An unclaimed check becomes expired on the next queue interaction, releasing its source and per-user active quota. The claimed execution deadline is unchanged and begins at claim; this does not expire staff-managed unowned jobs or kill a running compiler. Queued cancellation is immediate; claimed cancellation requires acknowledgement or lease expiry. Missing/other-owner jobs return 404. No remote loading or silent local fallback is added.",
         "x-cyanrex-roles": [
           "admin",
           "teacher",
@@ -977,6 +979,34 @@
                   }
                 }
               }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "Do not cache learning records or storage-failure responses.",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Learning storage read failed; not empty success. No storage details are exposed and no learning records are changed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "Do not cache learning records or storage-failure responses.",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
             }
           },
           "default": {
@@ -991,6 +1021,7 @@
           }
         },
         "x-cyanrex-access": "authenticated",
+        "description": "Read learning records/projections without writing or executing a lab. A selected PostgreSQL schema/query failure returns 500 with no silent local fallback for this read. Invalid or unreadable local snapshots also return 500, not a successful empty history, zero progress or empty classroom. Missing local files remain valid empty state. Local load failures remain retryable after repair. Successful reads and storage failures use Cache-Control: no-store; errors omit stored values and paths.",
         "x-cyanrex-roles": [
           "admin",
           "teacher",
@@ -1022,6 +1053,34 @@
                   }
                 }
               }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "Do not cache learning records or storage-failure responses.",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Learning storage read failed; not empty success. No storage details are exposed and no learning records are changed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "Do not cache learning records or storage-failure responses.",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
             }
           },
           "default": {
@@ -1036,6 +1095,7 @@
           }
         },
         "x-cyanrex-access": "authenticated",
+        "description": "Read learning records/projections without writing or executing a lab. A selected PostgreSQL schema/query failure returns 500 with no silent local fallback for this read. Invalid or unreadable local snapshots also return 500, not a successful empty history, zero progress or empty classroom. Missing local files remain valid empty state. Local load failures remain retryable after repair. Successful reads and storage failures use Cache-Control: no-store; errors omit stored values and paths.",
         "x-cyanrex-roles": [
           "admin",
           "teacher",
@@ -1064,6 +1124,34 @@
                   "$ref": "#/components/schemas/TeacherStudentAttempts"
                 }
               }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "Do not cache learning records or storage-failure responses.",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Learning storage read failed; not empty success. No storage details are exposed and no learning records are changed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "Do not cache learning records or storage-failure responses.",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
             }
           },
           "default": {
@@ -1078,6 +1166,7 @@
           }
         },
         "x-cyanrex-access": "staff",
+        "description": "Read learning records/projections without writing or executing a lab. A selected PostgreSQL schema/query failure returns 500 with no silent local fallback for this read. Invalid or unreadable local snapshots also return 500, not a successful empty history, zero progress or empty classroom. Missing local files remain valid empty state. Local load failures remain retryable after repair. Successful reads and storage failures use Cache-Control: no-store; errors omit stored values and paths.",
         "x-cyanrex-roles": [
           "admin",
           "teacher"
@@ -1125,6 +1214,34 @@
                   "$ref": "#/components/schemas/TeacherLearningOverview"
                 }
               }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "Do not cache learning records or storage-failure responses.",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Learning storage read failed; not empty success. No storage details are exposed and no learning records are changed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "Do not cache learning records or storage-failure responses.",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
             }
           },
           "default": {
@@ -1139,6 +1256,7 @@
           }
         },
         "x-cyanrex-access": "staff",
+        "description": "Read learning records/projections without writing or executing a lab. A selected PostgreSQL schema/query failure returns 500 with no silent local fallback for this read. Invalid or unreadable local snapshots also return 500, not a successful empty history, zero progress or empty classroom. Missing local files remain valid empty state. Local load failures remain retryable after repair. Successful reads and storage failures use Cache-Control: no-store; errors omit stored values and paths.",
         "x-cyanrex-roles": [
           "admin",
           "teacher"
@@ -2378,6 +2496,7 @@
           }
         },
         "x-cyanrex-access": "authenticated",
+        "description": "Owner-bound remote compile-only checks have a 35-second queue wait limit from submission. An unclaimed check becomes expired on the next queue interaction, releasing its source and per-user active quota. The claimed execution deadline is unchanged and begins at claim; this does not expire staff-managed unowned jobs or kill a running compiler. Queued cancellation is immediate; claimed cancellation requires acknowledgement or lease expiry. Missing/other-owner jobs return 404. No remote loading or silent local fallback is added.",
         "x-cyanrex-roles": [
           "admin",
           "teacher",
@@ -3139,6 +3258,7 @@
           }
         },
         "x-cyanrex-access": "runner-agent-signed",
+        "description": "Signed claim requires a healthy Agent with a nonzero free-slot report. Total usable capacity is active_jobs + available_slots, already bounded by the registered maximum. Outstanding claimed and cancel-requested leases count once against that total; reserved capacity is not implicitly re-enabled. The claim response is no-store and includes the source and per-claim lease only for the assigned Agent.",
         "requestBody": {
           "required": true,
           "content": {
@@ -3239,6 +3359,7 @@
           }
         },
         "x-cyanrex-access": "runner-agent-signed",
+        "description": "Signed lease synchronization reports cancellations and lost_job_ids. The bundled Agent discards its job before execution or result submission if that job is listed as lost, even if a cancellation instruction also names it. This rejects the stale job without stopping later polling; it is not continuous mid-execution lease monitoring.",
         "requestBody": {
           "required": true,
           "content": {

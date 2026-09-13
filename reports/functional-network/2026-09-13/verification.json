@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-13",
+  "status": "passed-source-inventory-only",
+  "source": {
+    "version": "0.3.8",
+    "commit": "c26a529aecc0ab64d0a1743be10972e5d8ac137b"
+  },
+  "inventory": "docs/functional-network.json",
+  "counts": {
+    "modules": 12,
+    "workflows": 40,
+    "edges": 69,
+    "api_operations": 68,
+    "pages": 16,
+    "templates": 48,
+    "labs": 5,
+    "bundled_modules": 2,
+    "sdk_operations": 63,
+    "source_inputs": 135
+  },
+  "checks": [
+    {
+      "command": "node scripts/check-functional-network.mjs",
+      "exit_code": 0,
+      "result": "Exact API ownership/access, pages, catalog IDs, graph references/counts and referenced source hashes match."
+    },
+    {
+      "command": "node --test scripts/tests/functionalNetwork.test.mjs",
+      "exit_code": 0,
+      "passed": 7,
+      "failed": 0
+    },
+    {
+      "command": "./scripts/quality-gate.sh --format-only",
+      "exit_code": 0,
+      "common_node_tests": {
+        "passed": 62,
+        "failed": 0
+      },
+      "scope": "File lengths, version/course/OpenAPI/SDK drift, compatibility, common Node tests, fixture-based Agent/distribution/kernel-smoke/candidate-tool checks and Rust formatting. Not the full backend/frontend runtime gate."
+    },
+    {
+      "check": "EN/ZH document parity and local source links",
+      "result": "Each document has 40 workflow sections, 69 edge rows, 68 matching operation/access/owner rows, two fenced Mermaid diagrams, and existing relative-link targets. Mermaid rendering was not browser-tested."
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0
+    }
+  ],
+  "not_run": [
+    "PostgreSQL integration",
+    "Real teacher/student LAN flow",
+    "Real SSH deployment",
+    "Kernel attach/event/detach",
+    "Browser-to-Engine acceptance",
+    "Fresh performance benchmark"
+  ],
+  "changes": "Documentation, static source inventory, course mirrors and a read-only drift checker/tests only; no runtime business implementation, commit, push or deployment change."
+}

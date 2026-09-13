@@ -1,0 +1,397 @@
+✖ run admission closes the same-turn duplicate dispatch gap (1376.807362ms)
+✖ pre-cancelled confirmations never dispatch a kernel run (276.072333ms)
+✖ unmount cancels a run and late completion starts no follow-up reads (283.829365ms)
+✖ late run results cannot populate another lab after navigation (296.881325ms)
+✖ editing a completed run's source hides its old result and explains retained kernel state (291.417619ms)
+✖ slow attachment refresh cannot keep a completed run stuck in running state (303.361262ms)
+✖ run transport failure is unconfirmed and reaches the confirmation failure path without retry (277.097834ms)
+✖ a stalled runtime mutation is bounded including its response body (345.77835ms)
+✖ UTF-8 oversized source never crosses the run boundary (320.977464ms)
+✖ an old startup inventory cannot resurrect a pin after post-run refresh (304.204831ms)
+✖ failed inventory refresh keeps the last list but cannot claim ready or empty success (297.981616ms)
+✖ malformed attachment rows cannot crash the controller (284.807297ms)
+✖ attachment reads have a deadline and cancel on unmount (276.388569ms)
+✖ detach admission prevents duplicate mutations and simultaneous runs (279.409336ms)
+✖ missing clean confirmation or unclean empty notes must not be successful cleanup (276.322926ms)
+✖ verified detach retires the old result pin instead of leaving its quick action live (317.673164ms)
+✖ late detach after navigation cannot rewrite a new run or clear its busy state (300.863231ms)
+✖ malformed successful run bodies cannot be published as runtime results (298.166215ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 0
+ℹ fail 18
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6579.083255
+
+✖ failing tests:
+
+test at frontend/tests/runtimeLifecycle.browser.mjs:25:1
+✖ run admission closes the same-turn duplicate dispatch gap (1376.807362ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  2 !== 1
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runtimeLifecycle.browser.mjs:27:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runtimeLifecycle.browser.mjs:21:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 2,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/runtimeLifecycle.browser.mjs:30:1
+✖ pre-cancelled confirmations never dispatch a kernel run (276.072333ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runtimeLifecycle.browser.mjs:32:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runtimeLifecycle.browser.mjs:21:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/runtimeLifecycle.browser.mjs:35:1
+✖ unmount cancels a run and late completion starts no follow-up reads (283.829365ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - true
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runtimeLifecycle.browser.mjs:39:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runtimeLifecycle.browser.mjs:21:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/runtimeLifecycle.browser.mjs:43:1
+✖ late run results cannot populate another lab after navigation (296.881325ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + {
+  +   compile_stderr: '',
+  +   compile_stdout: '',
+  +   load_stderr: '',
+  +   load_stdout: '',
+  +   message: 'fixture loaded',
+  +   pin_path: '/sys/fs/bpf/fixture/program-a',
+  +   stage: 'run',
+  +   success: true
+  + }
+  - null
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runtimeLifecycle.browser.mjs:46:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runtimeLifecycle.browser.mjs:21:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { success: true, stage: 'run', message: 'fixture loaded', compile_stdout: '', compile_stderr: '', load_stdout: '', load_stderr: '', pin_path: '/sys/fs/bpf/fixture/program-a' },
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/runtimeLifecycle.browser.mjs:49:1
+✖ editing a completed run's source hides its old result and explains retained kernel state (291.417619ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + {
+  +   compile_stderr: '',
+  +   compile_stdout: '',
+  +   load_stderr: '',
+  +   load_stdout: '',
+  +   message: 'fixture loaded',
+  +   pin_path: '/sys/fs/bpf/fixture/program-a',
+  +   stage: 'run',
+  +   success: true
+  + }
+  - null
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runtimeLifecycle.browser.mjs:53:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runtimeLifecycle.browser.mjs:21:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { success: true, stage: 'run', message: 'fixture loaded', compile_stdout: '', compile_stderr: '', load_stdout: '', load_stderr: '', pin_path: '/sys/fs/bpf/fixture/program-a' },
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/runtimeLifecycle.browser.mjs:56:1
+✖ slow attachment refresh cannot keep a completed run stuck in running state (303.361262ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runtimeLifecycle.browser.mjs:59:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runtimeLifecycle.browser.mjs:21:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/runtimeLifecycle.browser.mjs:62:1
+✖ run transport failure is unconfirmed and reaches the confirmation failure path without retry (277.097834ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok((await f.outcome("runEbpf"))?.rejected)
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runtimeLifecycle.browser.mjs:64:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runtimeLifecycle.browser.mjs:21:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at frontend/tests/runtimeLifecycle.browser.mjs:68:1
+✖ a stalled runtime mutation is bounded including its response body (345.77835ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - true
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runtimeLifecycle.browser.mjs:71:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runtimeLifecycle.browser.mjs:21:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/runtimeLifecycle.browser.mjs:75:1
+✖ UTF-8 oversized source never crosses the run boundary (320.977464ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runtimeLifecycle.browser.mjs:78:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runtimeLifecycle.browser.mjs:21:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/runtimeLifecycle.browser.mjs:81:1
+✖ an old startup inventory cannot resurrect a pin after post-run refresh (304.204831ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + [
+  +   '/sys/fs/bpf/fixture/program-a'
+  + ]
+  - []
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runtimeLifecycle.browser.mjs:87:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runtimeLifecycle.browser.mjs:21:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ '/sys/fs/bpf/fixture/program-a' ],
+    expected: [],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/runtimeLifecycle.browser.mjs:90:1
+✖ failed inventory refresh keeps the last list but cannot claim ready or empty success (297.981616ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  '' !== 'error'
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runtimeLifecycle.browser.mjs:94:69
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runtimeLifecycle.browser.mjs:21:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '',
+    expected: 'error',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/runtimeLifecycle.browser.mjs:97:1
+✖ malformed attachment rows cannot crash the controller (284.807297ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + [
+  +   "Cannot read properties of null (reading 'pin_path')"
+  + ]
+  - []
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runtimeLifecycle.browser.mjs:99:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runtimeLifecycle.browser.mjs:21:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ "Cannot read properties of null (reading 'pin_path')" ],
+    expected: [],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/runtimeLifecycle.browser.mjs:102:1
+✖ attachment reads have a deadline and cancel on unmount (276.388569ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - true
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runtimeLifecycle.browser.mjs:105:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runtimeLifecycle.browser.mjs:21:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/runtimeLifecycle.browser.mjs:108:1
+✖ detach admission prevents duplicate mutations and simultaneous runs (279.409336ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  3 !== 1
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runtimeLifecycle.browser.mjs:110:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runtimeLifecycle.browser.mjs:21:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 3,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/runtimeLifecycle.browser.mjs:113:1
+✖ missing clean confirmation or unclean empty notes must not be successful cleanup (276.322926ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok((await f.outcome("detach-" + index))?.rejected)
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runtimeLifecycle.browser.mjs:118:12
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runtimeLifecycle.browser.mjs:21:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at frontend/tests/runtimeLifecycle.browser.mjs:122:1
+✖ verified detach retires the old result pin instead of leaving its quick action live (317.673164ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + '/sys/fs/bpf/fixture/program-a'
+  - null
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runtimeLifecycle.browser.mjs:125:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runtimeLifecycle.browser.mjs:21:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '/sys/fs/bpf/fixture/program-a',
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/runtimeLifecycle.browser.mjs:128:1
+✖ late detach after navigation cannot rewrite a new run or clear its busy state (300.863231ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - true
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runtimeLifecycle.browser.mjs:133:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runtimeLifecycle.browser.mjs:21:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/runtimeLifecycle.browser.mjs:136:1
+✖ malformed successful run bodies cannot be published as runtime results (298.166215ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + {
+  +   debug: {},
+  +   success: true
+  + }
+  - null
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runtimeLifecycle.browser.mjs:138:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runtimeLifecycle.browser.mjs:21:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { success: true, debug: {} },
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

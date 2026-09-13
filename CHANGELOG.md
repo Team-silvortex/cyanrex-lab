@@ -5,6 +5,70 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.3.9] - 2026-09-13
+
+### Added
+
+- Saved a bilingual functional-network map covering 12 modules, 40 workflows and 69 links, with a
+  machine-readable inventory, source-drift checker and six linked bug-hunt reports. Original 0.3.8
+  snapshots, fingerprints and pre-release test evidence remain unchanged; they are not 0.3.9 artifact
+  acceptance. The fixes below preserve existing teacher authority and API compatibility.
+
+### Fixed
+
+- Breakpoint views now bind hits to the Engine, debug session and declared instrumented lines before
+  rendering, rejecting malformed/out-of-scope line numbers. Editor/model ownership also governs glyphs,
+  keyboard callbacks and disposal; obsolete callbacks cannot alter a replacement editor or model.
+- Event recovery snapshots now request no-store and reject redirects. Malformed live frames leave a
+  visible possible-gap notice without fabricating events or forcing reconnects. Trace markers require
+  a complete positive decimal line number instead of accepting numeric prefixes. Added isolated browser,
+  production-Monaco, transport and Rust parser regressions; raw Event format and server authority remain.
+
+- Manual run and detach share a synchronous admission guard and navigation-bound cancellation. Draft
+  changes hide obsolete results without unloading programs; completed runs no longer await supplementary
+  inventory/progress reads. UTF-8 source limits and structured runtime responses are checked before use.
+- Attachment reads are latest-wins and bounded, retaining the last successful inventory with an explicit
+  warning on failure. Cleanup requires an explicit `clean: true`; verified removal retires result actions.
+  Transport uncertainty reaches the confirmation failure view without retries, while normal compiler/
+  validation reports and explicit authorization failures retain their meaning. Added four-locale notices
+  and isolated portable/controller/production-UI regressions; server authority and bulk scope are unchanged.
+
+- Semantic completion is now owned by its editor/model and exact header context, with independent
+  cancellation, a ten-second whole-request deadline and bounded five-second caching. Late callbacks,
+  malformed items and request failures cannot leak results or unhandled rejections; disposed editors
+  unregister all language providers. Three SEC snippets now insert real line breaks.
+- Manual header self-checks reject duplicates, cancel on input/context changes and distinguish service
+  failure from compiler issues. Header refreshes are latest-wins and deadline-bounded, invalidate checks
+  even when filenames stay unchanged, and retain the last successful list with a four-locale error notice.
+  Diagnostic markers target the owned editor rather than Monaco's first global model. Added portable,
+  real-React and production-Monaco regressions without changing teacher/student permissions or Run behavior.
+
+- Browser compiler diagnostics now use editor-local, exact Engine/target/source/header cache keys;
+  remounts and separate editors do not share cached results or cancellation ownership. Stale successes,
+  errors and markers cannot overwrite the current draft, including during debounce.
+- Inline checks bound the whole request to 20 seconds locally or 35 seconds remotely, including remote
+  submission and polling. Late known job IDs receive best-effort cancellation, without retries or local
+  fallback. Cancelled/expired remote jobs show unavailable rather than code issues. Added portable
+  transport regressions, real-React browser lifecycle tests and production-editor confirmation coverage.
+
+- Runner Agent claim admission no longer subtracts reported active jobs twice, while retaining reserved
+  capacity and counting cancellation-pending leases. Lost leases stop the bundled client before execution
+  or result submission without stopping subsequent polling.
+- User-owned remote checks expire after 35 unclaimed seconds on the next queue interaction, releasing
+  source and active-user quota. Claimed execution deadlines and staff-managed queue semantics stay unchanged.
+- Agent response bodies enforce the 640 KiB limit incrementally, including chunked success/error bodies
+  without Content-Length; oversized streams are rejected without waiting for EOF. Added lifecycle,
+  signed capacity/owner/CSRF and loopback protocol regressions, with explicit OpenAPI behavior notes.
+
+- Chain-guided learning-history, progress and teacher reads no longer hide corrupt/unreadable local
+  snapshots or selected PostgreSQL read errors behind empty success. Errors are generic and retryable;
+  selected SQL reads do not silently switch to stale local data. Successful payloads/access stay compatible,
+  and successful learning projections/storage errors use no-store responses with explicit OpenAPI coverage.
+- Local learning commits use exclusive, random same-directory temporary files, new Unix 0600/0700
+  file/directory permissions and failure cleanup. Existing temporary symlinks are not followed or removed;
+  failed commits preserve the published snapshot. Cancellation and feedback revision guarantees remain;
+  this does not add fsync/crash recovery or change permissions of existing parents.
+
 ## [0.3.8] - 2026-09-12
 
 ### Fixed

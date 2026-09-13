@@ -1,0 +1,9 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.11s
+     Running tests/module_boundaries_tdd.rs (engine/target/debug/deps/module_boundaries_tdd-d6cd286d0e8e44fd)
+
+running 2 tests
+test storage::header_download_checksum_failure_cannot_publish_a_downloaded_resource ... ok
+test storage::teacher_header_selection_reloads_and_is_readable_but_not_mutable_by_students ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 17 filtered out; finished in 3.09s
+

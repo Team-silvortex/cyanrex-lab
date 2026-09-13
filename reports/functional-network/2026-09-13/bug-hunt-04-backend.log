@@ -1,0 +1,11 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.20s
+     Running tests/routes_tdd.rs (engine/target/debug/deps/routes_tdd-6f48ff5b14a5af5c)
+
+running 4 tests
+test runner_compiler_tests::compiler_backend_failure_and_timeout_never_fall_back_to_local_compiler ... ok
+test runner_compiler_tests::compiler_capacity_is_per_manager_and_cancel_releases_slots_and_metrics ... ok
+test runner_compiler_tests::compiler_guards_and_validation_run_before_driver_dispatch ... ok
+test runner_compiler_tests::compiler_routes_delegate_source_owner_headers_cursor_and_cache_status ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 82 filtered out; finished in 17.05s
+

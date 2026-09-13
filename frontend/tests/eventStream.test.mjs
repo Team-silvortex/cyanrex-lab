@@ -29,6 +29,7 @@ function harness(overrides = {}) {
   });
   return {
     sockets, requests, updates, states, gaps, timers, dispose,
+    elapse: milliseconds => { clock += milliseconds; },
     open: () => sockets.at(-1).onopen(),
     message: (row) => sockets.at(-1).onmessage({ data: typeof row === "string" ? row : JSON.stringify(row) }),
     close: (code = 1013) => sockets.at(-1).onclose({ code }),
@@ -163,4 +164,33 @@ test("an invalid snapshot retries; policy closure is terminal; limit one remains
   h.requests[1].resolve([event(1)]); await flush(); h.message(event(2));
   assert.deepEqual(h.updates.at(-1), [event(2)]);
   h.close(1008); assert.equal(h.states.at(-1), "closed"); assert.equal(h.timers.size, 0); h.dispose();
+});
+
+test("malformed live input marks a gap without retrying or discarding valid recent rows", async () => {
+  const h = harness(); h.open(); h.requests[0].resolve([event(1)]); await flush();
+  h.message("{"); h.message("null"); h.message({ ...event(2), payload: [] });
+  h.sockets.at(-1).onmessage({ data: new Uint8Array([1, 2]) });
+  assert.equal(h.gaps.length, 4); assert.equal(h.states.at(-1), "open");
+  assert.deepEqual(h.updates.at(-1), [event(1)]); assert.equal(h.sockets.length, 1);
+  assert.equal(h.requests.length, 1); assert.equal(h.timers.size, 0); h.dispose();
+});
+
+test("valid filtered-out frames are not misreported as data gaps", async () => {
+  const h = harness({ accepts: row => row.category === "kernel" }); h.open();
+  h.message(event(1, { category: "platform" })); h.requests[0].resolve([]); await flush();
+  h.message(event(2, { category: "platform" })); assert.equal(h.gaps.length, 0);
+  assert.deepEqual(h.updates.at(-1), []); h.dispose();
+});
+
+test("explicit forbidden snapshots stop retries just like unauthorized snapshots", async () => {
+  const h = harness(); h.open(); h.requests[0].reject(Object.assign(new Error("forbidden"), { status: 403 })); await flush();
+  assert.equal(h.states.at(-1), "closed"); assert.equal(h.timers.size, 0);
+  assert.equal(h.sockets[0].closeCount, 1); h.dispose();
+});
+
+test("backoff resets only after a thirty-second stable live period", async () => {
+  const h = harness(); h.open(); h.requests[0].resolve([]); await flush(); h.close();
+  assert.equal(h.tick(), 625); h.open(); h.requests[1].resolve([]); await flush(); h.elapse(29999); h.close();
+  assert.equal(h.tick(), 1250); h.open(); h.requests[2].resolve([]); await flush(); h.elapse(30000); h.close();
+  assert.equal(h.tick(), 625); h.dispose();
 });

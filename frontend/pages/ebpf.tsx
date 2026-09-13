@@ -31,13 +31,17 @@ export default function EbpfPage() {
     const value = router.query.lab;
     return typeof value === "string" && /^\d{2}-[a-z0-9-]+$/.test(value) ? value : "";
   }, [router.query.lab]);
-  const controller = useEbpfPageController(t, activeLabId, !router.isReady || resumePending);
+  const controller = useEbpfPageController(t, activeLabId, !router.isReady || resumePending, router.asPath);
   const safety = useEbpfSafetyActions(controller, t, activeLabId);
   const {
     analysis,
     attachments,
     injectedMetadata,
+    injectedMetadataError,
+    injectedMetadataLoading,
     attachmentDetails,
+    attachmentState,
+    refreshAttachments,
     code,
     compiler,
     compileBackends,
@@ -49,6 +53,8 @@ export default function EbpfPage() {
     onEditorChange,
     onEditorMount,
     result,
+    runtimeNotice,
+    detaching,
     refreshInjectedMetadata,
     runtimeBackend,
     saveCurrentScript,
@@ -73,6 +79,7 @@ export default function EbpfPage() {
     streamSeconds,
     templates,
   } = controller;
+  const runtimeBusy = running || detaching;
 
   return (
     <SidebarLayout title={t("ebpf.title")}>
@@ -86,7 +93,7 @@ export default function EbpfPage() {
           </div>
         </header>
         {router.isReady && hasResume && <AttemptResumePanel key={resumeKey}
-          engineUrl={getEngineUrl()} attemptId={router.query.attempt} labId={router.query.lab} running={running}
+          engineUrl={getEngineUrl()} attemptId={router.query.attempt} labId={router.query.lab} running={runtimeBusy}
           onKeep={() => setResumeDecision({ key: resumeKey, decided: true })} onApply={attempt => {
             if (!applyLearningAttempt(attempt)) return false;
             setResumeDecision({ key: resumeKey, decided: true });
@@ -106,7 +113,7 @@ export default function EbpfPage() {
             </div>
             <div className="workspace-links">
               {!hasResume && <button type="button" className="button-secondary" onClick={safety.loadLabTemplate}
-                disabled={running || safety.busy || !safety.labTemplateAvailable}>{t("safety.loadLabTemplate")}</button>}
+                disabled={runtimeBusy || safety.busy || !safety.labTemplateAvailable}>{t("safety.loadLabTemplate")}</button>}
               <Link href={`/learn/${activeLabProgress.lab.doc_slug}`}>{t("learn.openLab")}</Link>
             </div>
           </div>
@@ -120,14 +127,14 @@ export default function EbpfPage() {
           </label>
           <div className="editor-actions">
             <input ref={uploadInput} hidden type="file" accept=".c,.h,.txt" onChange={safety.upload} />
-            <button type="button" className="button-secondary" disabled={running || safety.busy} onClick={() => uploadInput.current?.click()}>
+            <button type="button" className="button-secondary" disabled={runtimeBusy || safety.busy} onClick={() => uploadInput.current?.click()}>
               {t("ebpf.importFile")}
             </button>
-            <button type="button" className="button-secondary" onClick={saveCurrentScript} disabled={running || safety.busy}>
+            <button type="button" className="button-secondary" onClick={saveCurrentScript} disabled={runtimeBusy || safety.busy}>
               {t("ebpf.saveScript")}
             </button>
             <button type="button" className="button-primary" onClick={safety.run}
-              disabled={running || safety.busy || !router.isReady || resumePending}>
+              disabled={runtimeBusy || safety.busy || !router.isReady || resumePending}>
               {running ? t("ebpf.running") : t("ebpf.compileRun")}
             </button>
           </div>
@@ -140,7 +147,7 @@ export default function EbpfPage() {
                 <label className="template-field">
                   <span className="meta">{t("ebpf.templateLabel")}</span>
                   <EbpfTemplateSelector templates={templates} selectedTemplate={selectedTemplate}
-                    onChange={safety.selectTemplate} disabled={running || safety.busy} t={t} />
+                    onChange={safety.selectTemplate} disabled={runtimeBusy || safety.busy} t={t} />
                 </label>
                 <div className="workspace-links">
                   <a href="#runtime-settings">{t("ebpf.runtimeSettings")}</a>
@@ -183,7 +190,7 @@ export default function EbpfPage() {
               </div>
             </section>
             <div id="ebpf-output" tabIndex={-1}>
-              <EbpfResultPanel result={result} error={error} t={t} />
+              <EbpfResultPanel result={result} error={error} notice={runtimeNotice} t={t} />
             </div>
           </div>
 
@@ -223,12 +230,17 @@ export default function EbpfPage() {
             <section className="panel attachments-panel">
               <h3>{t("ebpf.attachedPrograms")} <span className="count-badge">{attachments.length}</span></h3>
               <div className="row">
+                <button type="button" className="button-secondary" onClick={() => void refreshAttachments()}
+                  disabled={runtimeBusy || safety.busy}>{t("ebpf.refreshAttachments")}</button>
                 <button type="button" className="button-secondary" onClick={() => result?.pin_path && safety.detachOne(result.pin_path)}
-                  disabled={running || safety.busy || !result?.pin_path}>{t("ebpf.detach")}</button>
+                  disabled={runtimeBusy || safety.busy || attachmentState !== "ready" || !result?.pin_path || !attachments.includes(result.pin_path)}>{t("ebpf.detach")}</button>
                 <button type="button" className="button-danger" onClick={safety.detachAll}
-                  disabled={running || safety.busy || attachments.length === 0}>{t("ebpf.detachAll")}</button>
+                  disabled={runtimeBusy || safety.busy || attachmentState !== "ready" || attachments.length === 0}>{t("ebpf.detachAll")}</button>
               </div>
-              {attachments.length === 0 && <p className="meta">{t("ebpf.noAttachedPrograms")}</p>}
+              {attachmentState === "loading" && <p className="meta" role="status">{t("common.checking")}</p>}
+              {attachmentState === "stale" && <p className="meta" role="status">{t("ebpf.attachmentsStale")}</p>}
+              {attachmentState === "error" && <p className="error" role="alert">{t("ebpf.attachmentsUnavailable")}</p>}
+              {attachmentState === "ready" && attachments.length === 0 && <p className="meta">{t("ebpf.noAttachedPrograms")}</p>}
               {attachmentDetails.map((item) => (
                 <details key={item.pin_path} className="panel" style={{ marginBottom: 10, background: "#0b1425" }}>
                   <summary className="row" style={{ cursor: "pointer", listStyle: "none" }}>
@@ -237,7 +249,7 @@ export default function EbpfPage() {
                     <button
                       type="button"
                       className="button-secondary"
-                      disabled={running || safety.busy}
+                      disabled={runtimeBusy || safety.busy || attachmentState !== "ready"}
                       onClick={(event) => {
                         event.preventDefault();
                         safety.detachOne(item.pin_path);
@@ -266,7 +278,7 @@ export default function EbpfPage() {
                   <div className="row" style={{ marginTop: 8 }}>
                     <button
                       type="button"
-                      disabled={running || safety.busy}
+                      disabled={runtimeBusy || safety.busy}
                       onClick={() => safety.loadScript(item)}
                     >
                       {t("ebpf.load")}
@@ -299,12 +311,14 @@ export default function EbpfPage() {
                 <button
                   type="button"
                   onClick={runHeaderInjectionSelfCheck}
-                  disabled={headerInjectionCheck.status === "checking"}
+                  disabled={headerInjectionCheck.status === "checking" || injectedMetadataLoading}
                 >
                   {t("ebpf.headerInjectionDryRun")}
                 </button>
               </div>
-              {injectedMetadata.length === 0 && <p className="meta">{t("ebpf.noInjectedMetadata")}</p>}
+              {injectedMetadataLoading && <p className="meta" role="status">{t("common.checking")}</p>}
+              {injectedMetadataError && <p className="error-text" role="alert">{t("ebpf.injectedHeadersUnavailable")}</p>}
+              {!injectedMetadataLoading && !injectedMetadataError && injectedMetadata.length === 0 && <p className="meta">{t("ebpf.noInjectedMetadata")}</p>}
               {injectedMetadata.map((item) => (
                 <p key={item.id} className="meta">
                   <span style={{ fontWeight: 700, marginRight: 8 }}>{item.id}</span>

@@ -1,10 +1,11 @@
 # cyanrex-lab
 
-Version: `0.3.8`
+Version: `0.3.9`
 
 Cyanrex monorepo for eBPF experiments: Axum engine + Next.js dashboard + module utilities.
 
 Architecture: [English](docs/en/architecture.md) · [简体中文](docs/zh-CN/architecture.md)
+Functional network: [English](docs/en/functional-network.md) · [简体中文](docs/zh-CN/functional-network.md) · [JSON inventory](docs/functional-network.json)
 SSH deployment / Student entry: [English](docs/en/classroom-connection.md) · [简体中文](docs/zh-CN/classroom-connection.md)
 · Project status: [English](docs/en/project-status.md) · [简体中文](docs/zh-CN/project-status.md)
 · [Changelog](CHANGELOG.md)
@@ -148,12 +149,12 @@ privileged and must not be exposed to untrusted users.
 For classroom deployment or offline distribution, create a packaged artifact with prebuilt Docker images:
 
 ```bash
-./scripts/package-distribution.sh --version 0.3.8
+./scripts/package-distribution.sh --version 0.3.9
 ```
 
 This produces:
-- `dist/cyanrex-lab-0.3.8-<timestamp>.tar.gz`
-- `dist/cyanrex-lab-0.3.8-<timestamp>.tar.gz.sha256`
+- `dist/cyanrex-lab-0.3.9-<timestamp>.tar.gz`
+- `dist/cyanrex-lab-0.3.9-<timestamp>.tar.gz.sha256`
 
 The archive contains the PostgreSQL, Engine, and frontend images. On a disposable Docker host,
 verify the freshly extracted package end to end with `./install-smoke.sh`. It checks the package
@@ -188,10 +189,10 @@ For an artifact downloaded from the Tag workflow, place its four files in a dedi
 verify the complete candidate from a trusted checkout of the matching source Tag before extracting it:
 
 ```bash
-release_revision="$(git rev-list -n 1 v0.3.8)"
+release_revision="$(git rev-list -n 1 v0.3.9)"
 cargo run --quiet --manifest-path engine/Cargo.toml --locked --bin cyanrex-release -- \
   candidate verify /path/to/downloaded-candidate \
-  --expect-version 0.3.8 --expect-revision "$release_revision" --expect-tag v0.3.8 \
+  --expect-version 0.3.9 --expect-revision "$release_revision" --expect-tag v0.3.9 \
   --extract-to /path/to/new-output-directory
 ```
 

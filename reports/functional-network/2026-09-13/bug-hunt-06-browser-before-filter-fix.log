@@ -1,0 +1,103 @@
+✔ a new debug session never renders the previous session's hits, even before effects (1578.385371ms)
+✖ clearing the debug session immediately removes old hits and gap state (365.23781ms)
+✔ an Engine switch cannot render hits from a same-named session on the previous Engine (352.838208ms)
+✔ snapshot hits accept only positive integral instrumented line numbers (436.757978ms)
+✔ live hits reject other categories and non-instrumented lines (410.447097ms)
+✔ changing the instrumented set invalidates the old subscription and pending snapshot (484.512878ms)
+✔ event recovery snapshots are private credentialed reads that reject redirects (404.609792ms)
+✔ malformed live frames leave a visible gap without manufacturing hits or reconnecting (501.937804ms)
+✔ replacing the editor removes decorations from the old owning model (450.859921ms)
+✔ late keyboard callbacks from a replaced editor cannot toggle the current editor's breakpoints (526.388992ms)
+✔ out-of-model and fractional hit lines never create editor decorations (457.018389ms)
+✔ model replacement retires the previous model's decorations and clamps current breakpoints (477.556886ms)
+✔ editor disposal unregisters keyboard callbacks before the controller unmounts (501.125377ms)
+✔ cached diagnostics never cross Engine URLs (1608.061393ms)
+✔ remounting an editor does not reuse the previous editor or account's cache (395.345775ms)
+✔ source and header context use unambiguous cache identities (377.986005ms)
+✔ equal-length sources with the same old 32-bit hash do not share diagnostics (396.773ms)
+✔ late success cannot replace current diagnostics or populate a stale cache (505.025506ms)
+✔ late errors cannot erase the current diagnostics (527.526442ms)
+✔ changing source removes old markers and status during debounce (450.091052ms)
+✔ one editor's cancellation does not own another editor's request (467.957702ms)
+✔ cancelled and expired remote jobs are unavailable even when they carry a result (583.866542ms)
+✔ remote submission and a stalled poll each have a bounded 35-second total wait (505.064212ms)
+✔ late remote submission after a target switch only cancels its job, without polling or fallback (484.942056ms)
+✔ completed remote compiler results retain issue/note mapping and never trigger a local run (440.021038ms)
+✔ same-editor cache reuse stops at the exact eight-second expiry (445.546191ms)
+✔ cache retains at most 24 entries per editor (631.07536ms)
+✔ rapid edits, blank drafts and pre-debounce unmounts dispatch no obsolete checks (391.297971ms)
+✔ failed checks are not cached and local requests cannot wait beyond 20 seconds (363.649616ms)
+✔ completion providers never send another editor's model to their Engine (1929.330981ms)
+✔ disposing a provider aborts pending completions and discards late items (411.947857ms)
+✔ model edits and replacements invalidate completion callbacks even without token cancellation (539.3207ms)
+✔ completion cache cannot survive provider/header-context replacement (514.842619ms)
+✔ pre-cancelled completion tokens never return cached semantic suggestions (494.44334ms)
+✔ separate completion providers do not share cancellation ownership (505.437297ms)
+✔ completion network failures retain snippets without unhandled promise rejections (512.924365ms)
+✔ stalled completion is aborted after ten seconds while static snippets remain available (531.825962ms)
+✔ section snippets insert actual line breaks, not literal backslash-n text (530.322554ms)
+✔ manual header checks discard late results after source changes (547.954562ms)
+✔ duplicate manual-check calls dispatch only once (557.109632ms)
+✔ manual header checks abort on unmount and have a complete-request deadline (492.476851ms)
+✔ manual HTTP failures are infrastructure errors rather than compiler issues (452.61227ms)
+✔ overlapping metadata refreshes cannot replace a newer header selection (434.198357ms)
+✔ metadata refresh failure is visible without silently claiming an empty selection (396.851161ms)
+✔ an unrelated first Monaco model never receives this editor's diagnostic markers (328.528551ms)
+✔ malformed metadata rows are a visible failure without crashing the editor (349.185177ms)
+✔ owner disposal unregisters every language provider (360.872457ms)
+✔ refreshing unchanged headers invalidates pending checks and the mounted completion provider (364.469653ms)
+✔ metadata deadlines end loading without losing the last selection and unmount aborts refresh (375.449437ms)
+✔ late manual-check errors cannot erase a newer successful result (352.400754ms)
+✔ normal manual compiler rejection remains issues and sends only source to the local check (339.211805ms)
+✔ run admission closes the same-turn duplicate dispatch gap (2013.988009ms)
+✔ pre-cancelled confirmations never dispatch a kernel run (480.573242ms)
+✔ unmount cancels a run and late completion starts no follow-up reads (543.452506ms)
+✔ late run results cannot populate another lab after navigation (574.551347ms)
+✔ editing a completed run's source hides its old result and explains retained kernel state (596.646752ms)
+✔ slow attachment refresh cannot keep a completed run stuck in running state (562.913022ms)
+✔ run transport failure is unconfirmed and reaches the confirmation failure path without retry (554.123776ms)
+✔ a stalled runtime mutation is bounded including its response body (695.214127ms)
+✔ UTF-8 oversized source never crosses the run boundary (681.517251ms)
+✔ an old startup inventory cannot resurrect a pin after post-run refresh (545.962876ms)
+✔ failed inventory refresh keeps the last list but cannot claim ready or empty success (492.976277ms)
+✔ malformed attachment rows cannot crash the controller (444.68016ms)
+✔ attachment reads have a deadline and cancel on unmount (429.984542ms)
+✔ detach admission prevents duplicate mutations and simultaneous runs (382.678804ms)
+✔ missing clean confirmation or unclean empty notes must not be successful cleanup (389.411199ms)
+✔ verified detach retires the old result pin instead of leaving its quick action live (397.546244ms)
+✔ late detach after navigation cannot rewrite a new run or clear its busy state (355.904165ms)
+✔ malformed successful run bodies cannot be published as runtime results (336.634843ms)
+✔ structured validation rejection remains a normal run report (340.50615ms)
+✔ explicit authentication rejection is not mislabeled as an uncertain kernel mutation (340.977233ms)
+✔ ordinary compiler rejection keeps the report and no automatic retry or detach (331.534034ms)
+✔ source edits during a dispatched run discard its output but still reconcile owner inventory (319.697767ms)
+✔ a cancelled old run cannot clear the new run's busy flag or replace its error (323.134784ms)
+✔ inventory refresh remains latest-wins and aborts when leaving the editor (322.215665ms)
+ℹ tests 75
+ℹ suites 0
+ℹ pass 74
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 12643.150371
+
+✖ failing tests:
+
+test at frontend/tests/breakpointLifecycle.browser.mjs:30:1
+✖ clearing the debug session immediately removes old hits and gap state (365.23781ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok((await f.act(() => fixture.history)).every(row => row.hits.length === 0 && !row.streamGap))
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/breakpointLifecycle.browser.mjs:33:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/breakpointLifecycle.browser.mjs:20:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

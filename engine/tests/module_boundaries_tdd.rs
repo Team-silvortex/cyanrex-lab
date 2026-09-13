@@ -3,6 +3,10 @@
 mod events;
 #[path = "module_boundaries/learning_flow.rs"]
 mod learning_flow;
+#[path = "module_boundaries/learning_persistence.rs"]
+mod learning_persistence;
+#[path = "module_boundaries/learning_reads.rs"]
+mod learning_reads;
 
 #[path = "module_boundaries/script_postgres.rs"]
 mod script_postgres;

@@ -84,7 +84,7 @@ async fn cancelled_decoded_load_publishes_once_and_does_not_reread_changed_input
     );
     assert!(store.memory_loaded.initialized());
     store.load_memory().await.unwrap();
-    assert_eq!(store.attempts_for_user("alice").await.len(), 1);
+    assert_eq!(store.attempts_for_user("alice").await.unwrap().len(), 1);
 }
 
 #[tokio::test]
@@ -115,7 +115,7 @@ async fn only_not_found_is_initialized_as_empty_and_path_errors_remain_retryable
     )
     .unwrap();
     store.load_memory().await.unwrap();
-    assert_eq!(store.attempts_for_user("alice").await.len(), 1);
+    assert_eq!(store.attempts_for_user("alice").await.unwrap().len(), 1);
 
     let directory = LearningStore::with_local_data_path(fixture.0.clone());
     assert!(directory.load_memory().await.is_err());
@@ -252,8 +252,8 @@ async fn concurrent_cold_appends_and_feedback_preserve_initial_and_new_rows() {
         writer.await.unwrap();
     }
     let loaded = LearningStore::with_local_data_path(store.data_path.clone());
-    assert_eq!(loaded.attempts_for_user("bob").await.len(), 8);
-    let alice = loaded.attempts_for_user("alice").await;
+    assert_eq!(loaded.attempts_for_user("bob").await.unwrap().len(), 8);
+    let alice = loaded.attempts_for_user("alice").await.unwrap();
     assert_eq!(alice.len(), 1);
     assert_eq!(alice[0].teacher_feedback.as_ref().unwrap().revision, 1);
 }

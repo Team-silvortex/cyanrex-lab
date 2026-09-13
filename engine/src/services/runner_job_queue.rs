@@ -18,6 +18,7 @@ const COMPILE_JOB_KIND: &str = "ebpf_compile_check";
 const COMPILE_CAPABILITY: &str = "clang_check";
 const MAX_JOBS: usize = 512;
 const MAX_USER_ACTIVE_CHECKS: usize = 2;
+const USER_CHECK_QUEUE_TIMEOUT: Duration = Duration::from_secs(35);
 const TERMINAL_RETENTION: Duration = Duration::from_secs(15 * 60);
 
 #[derive(Clone, Default)]
@@ -454,12 +455,18 @@ fn lease_matches(job: &JobRecord, agent_id: &str, lease_token: &str) -> bool {
 }
 
 fn reap(jobs: &mut HashMap<String, JobRecord>, now: DateTime<Utc>) {
+    let queue_timeout = chrono::Duration::from_std(USER_CHECK_QUEUE_TIMEOUT).unwrap();
     for job in jobs.values_mut() {
-        if matches!(
+        // A lost submission response/cancellation must not occupy a user's two slots forever.
+        // Staff-managed unowned jobs retain their existing explicit queue/cancel semantics.
+        let abandoned_user_check = job.state == RunnerJobState::Queued
+            && job.owner_username.is_some()
+            && now - job.created_at >= queue_timeout;
+        let lease_expired = matches!(
             job.state,
             RunnerJobState::Claimed | RunnerJobState::CancelRequested
-        ) && job.deadline.is_some_and(|deadline| now > deadline)
-        {
+        ) && job.deadline.is_some_and(|deadline| now > deadline);
+        if abandoned_user_check || lease_expired {
             job.state = RunnerJobState::Expired;
             job.source = None;
             job.completed_at = Some(now);

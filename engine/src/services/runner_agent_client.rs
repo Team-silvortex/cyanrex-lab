@@ -220,6 +220,13 @@ impl RunnerAgentClient {
         job: &RunnerJobClaim,
     ) -> Result<RunnerJobView, RunnerAgentClientError> {
         let sync = self.sync(job).await?;
+        if sync.lost_job_ids.iter().any(|id| id == &job.job_id) {
+            // A lost lease grants no authority to execute or even acknowledge cancellation.
+            return Err(RunnerAgentClientError::Server {
+                status: StatusCode::CONFLICT,
+                message: "runner job lease was lost before execution".to_string(),
+            });
+        }
         let cancelled = sync.cancel_job_ids.iter().any(|id| id == &job.job_id);
         let execution = if cancelled {
             crate::services::runner_agent_executor::RunnerJobExecution {
@@ -384,7 +391,7 @@ pub async fn run_runner_agent(
 }
 
 async fn decode_response<T: DeserializeOwned>(
-    response: reqwest::Response,
+    mut response: reqwest::Response,
 ) -> Result<T, RunnerAgentClientError> {
     let status = response.status();
     if response
@@ -395,11 +402,14 @@ async fn decode_response<T: DeserializeOwned>(
             "server response exceeds 640 KiB".to_string(),
         ));
     }
-    let bytes = response.bytes().await?;
-    if bytes.len() as u64 > MAX_RESPONSE_BYTES {
-        return Err(RunnerAgentClientError::Protocol(
-            "server response exceeds 640 KiB".to_string(),
-        ));
+    let mut bytes = Vec::new();
+    while let Some(chunk) = response.chunk().await? {
+        if chunk.len() > MAX_RESPONSE_BYTES as usize - bytes.len() {
+            return Err(RunnerAgentClientError::Protocol(
+                "server response exceeds 640 KiB".to_string(),
+            ));
+        }
+        bytes.extend_from_slice(&chunk);
     }
     if !status.is_success() {
         let message = serde_json::from_slice::<serde_json::Value>(&bytes)
@@ -566,3 +576,6 @@ fn config_error<T>(message: &str) -> Result<T, RunnerAgentClientError> {
 
 #[cfg(test)]
 include!("runner_agent_client/tests.inc.rs");
+#[cfg(test)]
+#[path = "runner_agent_client/boundary_tests.rs"]
+mod boundary_tests;

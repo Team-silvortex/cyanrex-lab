@@ -1,7 +1,7 @@
 # Runner Agent Guide
 
 The standalone `cyanrex-runner-agent` connects a trusted Linux, WSL2, or container node to the
-Engine control plane. Version 0.3.8 executes built-in `control_probe` jobs and can optionally run
+Engine control plane. Version 0.3.9 executes built-in `control_probe` jobs and can optionally run
 compile-only `ebpf_compile_check` jobs. Compile checking is disabled by default. Neither mode
 accepts shell commands or arbitrary executable payloads, and neither needs root or Linux
 capabilities. A compile job never loads eBPF or returns its object file.
@@ -102,7 +102,7 @@ docker run --rm --name cyanrex-runner-agent \
   --entrypoint cyanrex-runner-agent \
   --env-file ./runner-agent.env \
   --mount type=bind,src="$PWD/agent-token",dst=/run/secrets/cyanrex-agent-token,ro \
-  cyanrex/cyanrex-engine:0.3.8
+  cyanrex/cyanrex-engine:0.3.9
 ```
 
 Start from [`docker/runner-agent.env.example`](../../docker/runner-agent.env.example). Rebuild the
@@ -137,12 +137,28 @@ so registration credentials cannot be forwarded to another endpoint accidentally
 1. Register using the bootstrap token and receive a per-node HMAC credential.
 2. Send signed health/capacity heartbeat.
 3. Claim at most the advertised free capacity.
-4. Synchronize the job lease to observe cancellation.
+4. Synchronize the job lease to observe cancellation or loss; never start a job whose lease is lost.
 5. Execute a built-in probe, or invoke Clang with fixed arguments for an enabled compile check.
 6. For compilation, enforce resource and output limits, hash the object, then delete the workspace
    without loading or returning the object.
 7. Re-register automatically when the Engine loses in-memory Agent state.
 8. Send a best-effort `draining` heartbeat on Ctrl-C.
+
+Claim capacity uses the heartbeat's `active_jobs + available_slots`, capped by registration validation;
+the queue counts claimed and cancellation-pending leases against that total exactly once. Free slots
+already exclude reported active work. Intentionally reserved capacity is not taken from the registered
+maximum, and a stale heartbeat cannot bypass the queue's outstanding-lease count. The bundled client
+still processes one job at a time; this fix does not add client-side parallel execution.
+
+If synchronization lists this job in `lost_job_ids`, the bundled Agent discards it before execution or
+result submission, even if it also appears in `cancel_job_ids`. That job is treated as a retryable
+conflict so the polling loop can continue. Valid cancellations still acknowledge without execution.
+This is a pre-execution check, not continuous lease monitoring or immediate interruption of Clang.
+
+Engine response bodies are checked incrementally while receiving data, including chunked responses and
+error responses without `Content-Length`. The client rejects as soon as the retained body would exceed
+640 KiB, without waiting for the sender to finish; exactly 640 KiB remains valid input. Existing request
+timeouts still apply. This bounds response buffering, not all transport or process memory.
 
 ## Teacher Deployment Operations
 
@@ -167,6 +183,25 @@ submits `POST /ebpf/check/remote`, polls `GET /ebpf/check/remote?job_id=...`, an
 through `POST /ebpf/check/remote/cancel`. Jobs are bound to the current user, and each user may have
 at most two non-terminal remote checks.
 
+The editor's entire remote check has a 35-second active-browser deadline starting when submission is
+dispatched, including response bodies and polls; local inline checks use 20 seconds. Changing source,
+headers, Engine or target aborts obsolete work and hides stale markers. Cancelled/expired jobs display
+`unavailable`, while a completed compiler rejection remains `issues`. Requests use credentials, no-store
+and reject redirects; they never automatically retry or switch to local compilation. Known unfinished
+job IDs are cancelled best-effort with a separate 10-second request deadline, including late submission
+responses after a switch. Unknown IDs remain subject to the server queue/lease policy below. Browser
+suspension or navigation does not prove the server stopped, and cancellation is not a rollback guarantee.
+The eight-second/24-entry cache belongs to one editor mount; it does not survive navigation or share
+requests between editors, and it is not a cross-tab session-revocation mechanism.
+
+User-owned checks that remain unclaimed for 35 seconds expire at the next queue interaction (submission,
+claim, status, cancellation, sync, result or inventory). Reaping releases their source and active-user
+quota; terminal metadata retains the existing 15-minute retention window. There is no background timer,
+so an otherwise idle queue is only cleaned when accessed. This prevents a lost submission response or
+failed best-effort cancellation from permanently consuming a user's two slots. The claimed execution
+deadline still begins at claim. Staff-managed unowned probe/compile jobs keep their explicit queue/cancel
+policy; they are not subject to this new user-check waiting limit. Wire shapes and owner checks are unchanged.
+
 The editor defaults to local checking and never silently falls back when the selected Agent is
 unavailable. `/ebpf/run` remains local, so remote loading is still disabled. Inventory records source
 size, not source text. This protocol accepts only literal safe system-header includes; quoted,
@@ -180,7 +215,9 @@ macro-generated, parent-relative, `include_next`, `embed`, and include-probing f
 - non-loopback HTTP rejected: configure HTTPS, or set the insecure override only on a trusted,
   firewalled lab network.
 - repeated signature failures: synchronize clocks before rotating credentials.
-- compile jobs remain queued: enable compile checking on an isolated Agent and confirm its
-  inventory includes `clang_check`.
+- user checks expire before claim: confirm Agent health/free capacity and `clang_check`, then explicitly
+  retry; no local fallback occurs. Staff-managed jobs can remain queued until claimed/cancelled.
 - compile configuration rejected: use `container`, `virtual_machine`, or `dedicated_host`, an
   existing absolute Clang path, and a private disposable work directory.
+
+See [chain-guided bug hunt 02](functional-network-bug-hunt-02.md) for reproductions and test scope.

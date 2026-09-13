@@ -1,6 +1,6 @@
 {
   "name": "@cyanrex/frontend",
-  "version": "0.3.8",
+  "version": "0.3.9",
   "private": true,
   "scripts": {
     "postinstall": "node scripts/sync-monaco-assets.mjs",
@@ -13,6 +13,15 @@
     "start": "next start",
     "test:performance-hotspots": "node --experimental-strip-types --test tests/performanceHotspots.test.mjs",
     "test:event-stream": "node --experimental-strip-types --test tests/eventStream.test.mjs",
+    "test:compiler-check": "node --experimental-strip-types --test tests/compilerCheck.test.mjs",
+    "test:semantic-completion": "node --experimental-strip-types --test tests/semanticCompletion.test.mjs",
+    "test:runtime-request": "node --experimental-strip-types --test tests/runtimeRequest.test.mjs",
+    "test:runtime-lifecycle-browser": "node --test tests/runtimeLifecycle.browser.mjs",
+    "test:runtime-safety-browser": "node --test tests/runtimeSafety.browser.mjs",
+    "test:breakpoint-lifecycle-browser": "node --test tests/breakpointLifecycle.browser.mjs",
+    "test:breakpoint-safety-browser": "node --test tests/breakpointSafety.browser.mjs",
+    "test:editor-intelligence-browser": "node --test tests/editorIntelligence.browser.mjs",
+    "test:compiler-diagnostics-browser": "node --test tests/compilerDiagnostics.browser.mjs",
     "test:event-stream-browser": "node --test tests/eventStream.browser.mjs",
     "test:security-headers": "node --test tests/securityHeaders.test.mjs",
     "test:tooling": "node --test tests/cleanMacosMetadata.test.mjs",

@@ -169,11 +169,15 @@ impl LearningStore {
         Ok(attempt)
     }
 
-    pub async fn attempts_for_user(&self, username: &str) -> Vec<LabAttempt> {
+    pub async fn attempts_for_user(&self, username: &str) -> Result<Vec<LabAttempt>, String> {
         self.attempts_for_user_with_limit(username, None).await
     }
 
-    pub async fn recent_attempts_for_user(&self, username: &str, limit: usize) -> Vec<LabAttempt> {
+    pub async fn recent_attempts_for_user(
+        &self,
+        username: &str,
+        limit: usize,
+    ) -> Result<Vec<LabAttempt>, String> {
         self.attempts_for_user_with_limit(username, Some(limit.clamp(1, 50)))
             .await
     }
@@ -182,40 +186,41 @@ impl LearningStore {
         &self,
         username: &str,
         limit: Option<usize>,
-    ) -> Vec<LabAttempt> {
+    ) -> Result<Vec<LabAttempt>, String> {
         let Some(username) = sanitize_username(username) else {
-            return Vec::new();
+            return Ok(Vec::new());
         };
         if let Some(pool) = self.active_pool() {
-            if self.ensure_schema().await.is_ok() {
-                let fetched = match limit {
-                    Some(limit) => sqlx::query(
+            // As with single-attempt resume, a failed authoritative read is not empty success.
+            self.ensure_schema()
+                .await
+                .map_err(|error| error.to_string())?;
+            let fetched = match limit {
+                Some(limit) => {
+                    sqlx::query(
                         "SELECT * FROM learning_attempts WHERE username = $1
                          ORDER BY created_at DESC LIMIT $2",
                     )
                     .bind(&username)
                     .bind(limit as i64)
                     .fetch_all(pool)
-                    .await,
-                    None => sqlx::query(
-                        "SELECT * FROM learning_attempts WHERE username = $1 ORDER BY created_at DESC",
-                    )
-                    .bind(&username)
-                    .fetch_all(pool)
-                    .await,
-                };
-                match fetched {
-                    Ok(rows) => return rows.into_iter().map(decode_attempt).collect(),
-                    Err(error) => {
-                        self.disable_db(&format!("list learning attempts failed: {error}"))
-                    }
+                    .await
                 }
-            }
+                None => sqlx::query(
+                    "SELECT * FROM learning_attempts WHERE username = $1 ORDER BY created_at DESC",
+                )
+                .bind(&username)
+                .fetch_all(pool)
+                .await,
+            };
+            return fetched
+                .map(|rows| rows.into_iter().map(decode_attempt).collect())
+                .map_err(|error| error.to_string());
         }
 
-        let _ = self.load_memory().await;
+        self.load_memory().await?;
         let snapshot = self.in_memory.read().await.clone();
-        select_recent(
+        Ok(select_recent(
             snapshot
                 .iter()
                 .map(Arc::as_ref)
@@ -224,50 +229,48 @@ impl LearningStore {
         )
         .into_iter()
         .cloned()
-        .collect()
+        .collect())
     }
 
-    pub async fn progress_for_user(&self, username: &str) -> Vec<LabProgress> {
+    pub async fn progress_for_user(&self, username: &str) -> Result<Vec<LabProgress>, String> {
         if self.active_pool().is_some() {
-            // Keep the database query/fallback behavior unchanged; optimize local projections here.
-            return progress_from_attempts(&self.attempts_for_user(username).await);
+            return Ok(progress_from_attempts(
+                &self.attempts_for_user(username).await?,
+            ));
         }
         let Some(username) = sanitize_username(username) else {
-            return progress_from_attempts(std::iter::empty());
+            return Ok(progress_from_attempts(std::iter::empty()));
         };
-        let _ = self.load_memory().await;
+        self.load_memory().await?;
         let snapshot = self.in_memory.read().await.clone();
-        progress_from_attempts(
+        Ok(progress_from_attempts(
             snapshot
                 .iter()
                 .map(Arc::as_ref)
                 .filter(|row| row.username == username),
-        )
+        ))
     }
 
-    pub async fn teacher_overview(&self) -> TeacherLearningOverview {
-        let attempts = self.all_attempts().await;
-        teacher_overview_from_attempts(attempts.iter().map(Arc::as_ref))
+    pub async fn teacher_overview(&self) -> Result<TeacherLearningOverview, String> {
+        let attempts = self.all_attempts().await?;
+        Ok(teacher_overview_from_attempts(
+            attempts.iter().map(Arc::as_ref),
+        ))
     }
 
-    async fn all_attempts(&self) -> AttemptSnapshot {
+    async fn all_attempts(&self) -> Result<AttemptSnapshot, String> {
         if let Some(pool) = self.active_pool() {
-            if self.ensure_schema().await.is_ok() {
-                match sqlx::query("SELECT * FROM learning_attempts ORDER BY created_at DESC")
-                    .fetch_all(pool)
-                    .await
-                {
-                    Ok(rows) => {
-                        return Arc::new(
-                            rows.into_iter().map(decode_attempt).map(Arc::new).collect(),
-                        )
-                    }
-                    Err(error) => self.disable_db(&format!("learning overview failed: {error}")),
-                }
-            }
+            self.ensure_schema()
+                .await
+                .map_err(|error| error.to_string())?;
+            return sqlx::query("SELECT * FROM learning_attempts ORDER BY created_at DESC")
+                .fetch_all(pool)
+                .await
+                .map(|rows| Arc::new(rows.into_iter().map(decode_attempt).map(Arc::new).collect()))
+                .map_err(|error| error.to_string());
         }
-        let _ = self.load_memory().await;
-        self.in_memory.read().await.clone()
+        self.load_memory().await?;
+        Ok(self.in_memory.read().await.clone())
     }
 
     fn active_pool(&self) -> Option<&PgPool> {

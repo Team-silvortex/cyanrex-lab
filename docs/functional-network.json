@@ -1,0 +1,3512 @@
+{
+  "schema_version": 1,
+  "snapshot": {
+    "date": "2026-09-13",
+    "version": "0.3.8",
+    "source_commit": "c26a529aecc0ab64d0a1743be10972e5d8ac137b",
+    "branch": "main",
+    "clean_worktree_at_start": true,
+    "scope": "Source-level, finite user-visible functional workflows and their direct handoffs/dependencies; not an enumeration of every execution path, internal function or deployed service.",
+    "verification": "source-enumeration; no new database, LAN, SSH, browser-to-Engine or kernel execution tests"
+  },
+  "counts": {
+    "modules": 12,
+    "workflows": 40,
+    "edges": 69,
+    "api_operations": 68,
+    "pages": 16,
+    "templates": 48,
+    "labs": 5,
+    "bundled_modules": 2
+  },
+  "modules": [
+    {
+      "id": "M00",
+      "name": {
+        "en": "Foundation and diagnostics",
+        "zh-CN": "基础与诊断"
+      }
+    },
+    {
+      "id": "M01",
+      "name": {
+        "en": "Identity and account lifecycle",
+        "zh-CN": "认证与账户生命周期"
+      }
+    },
+    {
+      "id": "M02",
+      "name": {
+        "en": "Classroom connection",
+        "zh-CN": "课堂接入"
+      }
+    },
+    {
+      "id": "M03",
+      "name": {
+        "en": "Saved scripts",
+        "zh-CN": "脚本存储"
+      }
+    },
+    {
+      "id": "M04",
+      "name": {
+        "en": "Module and header management",
+        "zh-CN": "模块与头文件管理"
+      }
+    },
+    {
+      "id": "M05",
+      "name": {
+        "en": "Editor and local eBPF pipeline",
+        "zh-CN": "编辑器与本地 eBPF 链路"
+      }
+    },
+    {
+      "id": "M06",
+      "name": {
+        "en": "Runner and Agent jobs",
+        "zh-CN": "Runner 与 Agent 作业"
+      }
+    },
+    {
+      "id": "M07",
+      "name": {
+        "en": "Learning and teacher feedback",
+        "zh-CN": "学习与教师反馈"
+      }
+    },
+    {
+      "id": "M08",
+      "name": {
+        "en": "Events and recovery",
+        "zh-CN": "事件与恢复"
+      }
+    },
+    {
+      "id": "M09",
+      "name": {
+        "en": "UI shell and operation safety",
+        "zh-CN": "UI 导航与操作安全"
+      }
+    },
+    {
+      "id": "M10",
+      "name": {
+        "en": "API contract and SDK",
+        "zh-CN": "API 契约与 SDK"
+      }
+    },
+    {
+      "id": "M11",
+      "name": {
+        "en": "Deployment and release tooling",
+        "zh-CN": "部署与发行工具"
+      }
+    }
+  ],
+  "workflows": [
+    {
+      "id": "F01",
+      "module": "M00",
+      "name": {
+        "en": "Start and health",
+        "zh-CN": "启动与健康检查"
+      },
+      "actor": "teacher/operator",
+      "chain": {
+        "en": "launcher → config validation → AppState → routes → health",
+        "zh-CN": "启动器 → 配置校验 → AppState → 路由 → 健康检查"
+      },
+      "boundary": {
+        "en": "Invalid mode/catalog/config fails startup; health is not proof of kernel readiness.",
+        "zh-CN": "模式、清单或配置非法会阻止启动；健康响应不证明内核可运行。"
+      },
+      "sources": [
+        "start.sh",
+        "engine/src/state.rs",
+        "engine/src/application.rs",
+        "engine/src/routes/health.rs"
+      ],
+      "api": [
+        "GET /",
+        "GET /health"
+      ],
+      "implementation": "implemented",
+      "verification": "source-enumerated-not-executed"
+    },
+    {
+      "id": "F02",
+      "module": "M00",
+      "name": {
+        "en": "Environment readiness",
+        "zh-CN": "环境就绪诊断"
+      },
+      "actor": "authenticated",
+      "chain": {
+        "en": "helper → environment tools/kernel checks + user Runner status → report",
+        "zh-CN": "帮助页 → 工具链/内核检查 + 用户 Runner 状态 → 报告"
+      },
+      "boundary": {
+        "en": "Read-only diagnostics; no automatic installation or privilege repair.",
+        "zh-CN": "只读诊断，不自动安装工具或修复权限。"
+      },
+      "sources": [
+        "frontend/pages/helper.tsx",
+        "engine/src/routes/helper.rs",
+        "engine/src/services/environment_checker.rs"
+      ],
+      "api": [
+        "GET /helper/environment"
+      ],
+      "implementation": "implemented",
+      "verification": "source-enumerated-not-executed"
+    },
+    {
+      "id": "F03",
+      "module": "M00",
+      "name": {
+        "en": "Compiler strategy and metrics",
+        "zh-CN": "编译策略与性能指标"
+      },
+      "actor": "teacher",
+      "chain": {
+        "en": "settings → resident/on-demand mode + check/completion metrics → bounded polling",
+        "zh-CN": "设置页 → 常驻缓存/按需模式 + 检查/补全指标 → 有界轮询"
+      },
+      "boundary": {
+        "en": "Compiler setting is instance-wide runtime state; metrics are not full distributed tracing.",
+        "zh-CN": "编译模式是实例级运行时状态；指标不是全链路分布式追踪。"
+      },
+      "sources": [
+        "frontend/pages/settings.tsx",
+        "engine/src/routes/settings.rs",
+        "engine/src/metrics.rs"
+      ],
+      "api": [
+        "GET /settings/compiler",
+        "POST /settings/compiler",
+        "GET /settings/performance"
+      ],
+      "implementation": "implemented",
+      "verification": "source-enumerated-not-executed"
+    },
+    {
+      "id": "F04",
+      "module": "M01",
+      "name": {
+        "en": "Self-registration",
+        "zh-CN": "自主注册"
+      },
+      "actor": "guest",
+      "chain": {
+        "en": "register form → server policy/password validation → AuthService → TOTP enrollment",
+        "zh-CN": "注册页 → 服务端策略/密码校验 → AuthService → TOTP 绑定信息"
+      },
+      "boundary": {
+        "en": "Policy-gated; cannot select teacher authority or obtain a login session from registration.",
+        "zh-CN": "受注册开关限制；不能自选教师身份，注册不自动登录。"
+      },
+      "sources": [
+        "frontend/pages/register.tsx",
+        "engine/src/routes/auth.rs",
+        "engine/src/services/auth_service/service.inc.rs"
+      ],
+      "api": [
+        "POST /auth/register"
+      ],
+      "implementation": "implemented",
+      "verification": "source-enumerated-not-executed"
+    },
+    {
+      "id": "F05",
+      "module": "M01",
+      "name": {
+        "en": "TOTP bootstrap",
+        "zh-CN": "TOTP 初始化"
+      },
+      "actor": "guest with account credentials",
+      "chain": {
+        "en": "OTP setup → bootstrap policy → password verification → QR/secret",
+        "zh-CN": "OTP 设置页 → 初始化开关 → 密码验证 → 二维码/密钥"
+      },
+      "boundary": {
+        "en": "Opt-in bootstrap, not arbitrary credential reset; sensitive response must not enter this inventory.",
+        "zh-CN": "初始化需显式启用，不是任意凭据重置；本清单不收集敏感响应。"
+      },
+      "sources": [
+        "frontend/pages/otp-setup.tsx",
+        "engine/src/routes/auth.rs"
+      ],
+      "api": [
+        "POST /auth/totp/bootstrap"
+      ],
+      "implementation": "implemented",
+      "verification": "source-enumerated-not-executed"
+    },
+    {
+      "id": "F06",
+      "module": "M01",
+      "name": {
+        "en": "Login and session authority",
+        "zh-CN": "登录与会话权威"
+      },
+      "actor": "guest/authenticated",
+      "chain": {
+        "en": "password + TOTP → throttle/verification → session persistence → cookie → me/route guard",
+        "zh-CN": "密码 + TOTP → 限流/验证 → 会话持久化 → Cookie → me/路由鉴权"
+      },
+      "boundary": {
+        "en": "Teacher role is server-owned, including solo default teacher; active-SQL login needs confirmed session insertion before cookie publication.",
+        "zh-CN": "教师身份由服务端决定，单人默认教师；活跃 SQL 登录必须确认会话写入后才发 Cookie。"
+      },
+      "sources": [
+        "engine/src/routes/auth.rs",
+        "engine/src/routes/auth_session.rs",
+        "engine/src/services/auth_service/sessions.inc.rs"
+      ],
+      "api": [
+        "POST /auth/login",
+        "GET /auth/me"
+      ],
+      "implementation": "implemented",
+      "verification": "source-enumerated-not-executed"
+    },
+    {
+      "id": "F07",
+      "module": "M01",
+      "name": {
+        "en": "Logout",
+        "zh-CN": "退出登录"
+      },
+      "actor": "optional-session-csrf",
+      "chain": {
+        "en": "logout → Origin policy → revoke session → clear cookie → login page",
+        "zh-CN": "退出 → Origin 检查 → 撤销会话 → 清 Cookie → 登录页"
+      },
+      "boundary": {
+        "en": "Unconfirmed storage mutation must not report success; logout does not detach kernel programs.",
+        "zh-CN": "存储变更未确认不得报成功；退出不会卸载内核程序。"
+      },
+      "sources": [
+        "frontend/src/utils/authSession.ts",
+        "engine/src/routes/auth.rs",
+        "engine/src/services/auth_service/sessions.inc.rs"
+      ],
+      "api": [
+        "POST /auth/logout"
+      ],
+      "implementation": "implemented",
+      "verification": "source-enumerated-not-executed"
+    },
+    {
+      "id": "F08",
+      "module": "M01",
+      "name": {
+        "en": "Change password",
+        "zh-CN": "修改密码"
+      },
+      "actor": "authenticated",
+      "chain": {
+        "en": "account confirmation → current password + OTP → conditional durable credential update → cache",
+        "zh-CN": "账户确认 → 当前密码 + OTP → 条件式持久化凭据更新 → 缓存"
+      },
+      "boundary": {
+        "en": "Storage failure fails closed for the mutation; changing a password currently does not revoke existing sessions.",
+        "zh-CN": "存储失败拒绝确认变更；当前修改密码不会撤销既有会话。"
+      },
+      "sources": [
+        "frontend/pages/account.tsx",
+        "engine/src/services/auth_service/account_mutations.inc.rs"
+      ],
+      "api": [
+        "POST /auth/password/change"
+      ],
+      "implementation": "implemented",
+      "verification": "source-enumerated-not-executed"
+    },
+    {
+      "id": "F09",
+      "module": "M01",
+      "name": {
+        "en": "Delete account",
+        "zh-CN": "删除账户"
+      },
+      "actor": "authenticated",
+      "chain": {
+        "en": "destructive confirmation → password + OTP → delete account and sessions → clear cookie",
+        "zh-CN": "危险操作确认 → 密码 + OTP → 删除账户及会话 → 清 Cookie"
+      },
+      "boundary": {
+        "en": "Default teacher/last-account deletion is rejected. Deleting auth data is not a cross-service purge of scripts, attempts, events or kernel attachments.",
+        "zh-CN": "拒绝删除默认教师/最后账户。删除认证数据不是脚本、提交、事件或内核挂载的跨服务清理。"
+      },
+      "sources": [
+        "frontend/pages/account.tsx",
+        "engine/src/routes/auth.rs",
+        "engine/src/services/auth_service/account_mutations.inc.rs"
+      ],
+      "api": [
+        "POST /auth/delete"
+      ],
+      "implementation": "implemented",
+      "verification": "source-enumerated-not-executed"
+    },
+    {
+      "id": "F10",
+      "module": "M02",
+      "name": {
+        "en": "Discover and confirm teacher",
+        "zh-CN": "发现并确认教师"
+      },
+      "actor": "guest",
+      "chain": {
+        "en": "teacher link → well-known document → origin/classroom/protocol/capability checks → confirmation",
+        "zh-CN": "教师链接 → well-known 文档 → 来源/课堂/协议/能力校验 → 确认"
+      },
+      "boundary": {
+        "en": "Opt-in discovery; no LAN scan/mDNS. Non-loopback enrollment requires HTTPS at the browser boundary.",
+        "zh-CN": "发现需启用；没有局域网扫描/mDNS。浏览器端非回环接入要求 HTTPS。"
+      },
+      "sources": [
+        "frontend/pages/join.tsx",
+        "frontend/src/features/classroom/connection.js",
+        "engine/src/routes/classroom.rs"
+      ],
+      "api": [
+        "GET /.well-known/cyanrex-classroom"
+      ],
+      "implementation": "implemented",
+      "verification": "source-enumerated-not-executed"
+    },
+    {
+      "id": "F11",
+      "module": "M02",
+      "name": {
+        "en": "Issue and revoke invitation",
+        "zh-CN": "签发与撤销邀请"
+      },
+      "actor": "teacher",
+      "chain": {
+        "en": "teaching page → named student invitation → one-time token → list/revoke",
+        "zh-CN": "教学页 → 绑定学生名的邀请 → 一次性令牌 → 列表/撤销"
+      },
+      "boundary": {
+        "en": "Short-lived in-memory invitation digests; reserved teacher names rejected; revocation does not revoke existing accounts/sessions.",
+        "zh-CN": "短期邀请摘要存内存；拒绝教师保留名；撤销邀请不撤销已建立账户/会话。"
+      },
+      "sources": [
+        "frontend/src/features/classroom/InvitationPanel.tsx",
+        "engine/src/routes/classroom.rs",
+        "engine/src/services/classroom.rs"
+      ],
+      "api": [
+        "GET /classroom/invitations",
+        "POST /classroom/invitations",
+        "POST /classroom/invitations/revoke"
+      ],
+      "implementation": "implemented",
+      "verification": "source-enumerated-not-executed"
+    },
+    {
+      "id": "F12",
+      "module": "M02",
+      "name": {
+        "en": "Enroll student",
+        "zh-CN": "学生加入课堂"
+      },
+      "actor": "guest with invitation",
+      "chain": {
+        "en": "confirmed identity + invitation + username/password → redeem → account creation → save TOTP → normal login",
+        "zh-CN": "确认身份 + 邀请 + 用户名/密码 → 核销 → 创建账户 → 保存 TOTP → 正常登录"
+      },
+      "boundary": {
+        "en": "Invitation is consumed before registration; conflict/failure does not restore it. No auto-login, role promotion, Agent enrollment or transactional rollback across both services.",
+        "zh-CN": "先核销再注册；冲突/失败不返还邀请。不自动登录、提权、注册 Agent，也没有两服务整体回滚。"
+      },
+      "sources": [
+        "frontend/pages/join.tsx",
+        "engine/src/routes/classroom.rs",
+        "engine/src/services/classroom.rs"
+      ],
+      "api": [
+        "POST /classroom/join"
+      ],
+      "implementation": "implemented",
+      "verification": "source-enumerated-not-executed"
+    },
+    {
+      "id": "F13",
+      "module": "M03",
+      "name": {
+        "en": "Saved script lifecycle",
+        "zh-CN": "已保存脚本生命周期"
+      },
+      "actor": "authenticated owner",
+      "chain": {
+        "en": "editor → list/save/delete → owner-bound ScriptStore → SQL or local JSON → explicit draft load",
+        "zh-CN": "编辑器 → 列表/保存/删除 → 按所有者隔离的 ScriptStore → SQL 或本地 JSON → 显式载入草稿"
+      },
+      "boundary": {
+        "en": "Save is not execution. Local persistence completes before cache publication; corrupt snapshots are not overwritten.",
+        "zh-CN": "保存不是执行。本地持久化完成后才发布缓存；损坏快照不被覆盖。"
+      },
+      "sources": [
+        "frontend/src/features/ebpf/useEbpfPageController.ts",
+        "engine/src/routes/scripts.rs",
+        "engine/src/services/script_store.rs",
+        "engine/src/services/script_store/local.rs"
+      ],
+      "api": [
+        "GET /scripts",
+        "POST /scripts/save",
+        "POST /scripts/delete"
+      ],
+      "implementation": "implemented",
+      "verification": "source-enumerated-not-executed"
+    },
+    {
+      "id": "F14",
+      "module": "M04",
+      "name": {
+        "en": "Module catalog and lifecycle",
+        "zh-CN": "模块目录与生命周期"
+      },
+      "actor": "teacher",
+      "chain": {
+        "en": "startup manifest discovery → module inventory → start/stop state",
+        "zh-CN": "启动时发现 manifest → 模块清单 → start/stop 状态"
+      },
+      "boundary": {
+        "en": "Two bundled manifests; lifecycle only changes in-memory state, not process execution or eBPF authorization.",
+        "zh-CN": "内置两个 manifest；生命周期只改内存状态，不启动进程，也不作为 eBPF 执行授权开关。"
+      },
+      "sources": [
+        "engine/src/routes/modules.rs",
+        "engine/src/services/module_manager.rs",
+        "modules/README.md"
+      ],
+      "api": [
+        "GET /modules",
+        "POST /modules/start",
+        "POST /modules/stop"
+      ],
+      "implementation": "implemented",
+      "verification": "source-enumerated-not-executed"
+    },
+    {
+      "id": "F15",
+      "module": "M04",
+      "name": {
+        "en": "Structured terminal commands",
+        "zh-CN": "结构化终端命令"
+      },
+      "actor": "teacher",
+      "chain": {
+        "en": "terminal parser → typed command → dispatcher → module action or editor navigation",
+        "zh-CN": "终端解析 → 类型化命令 → 分发器 → 模块操作或跳转编辑器"
+      },
+      "boundary": {
+        "en": "Not a shell; run_experiment returns an editor path and does not run code.",
+        "zh-CN": "不是 Shell；run_experiment 只返回编辑器路径，不执行代码。"
+      },
+      "sources": [
+        "frontend/pages/terminal.tsx",
+        "frontend/src/features/terminal/command.ts",
+        "engine/src/services/command_dispatcher.rs"
+      ],
+      "api": [
+        "POST /command"
+      ],
+      "implementation": "implemented",
+      "verification": "source-enumerated-not-executed"
+    },
+    {
+      "id": "F16",
+      "module": "M04",
+      "name": {
+        "en": "Trusted C headers",
+        "zh-CN": "可信 C 头文件"
+      },
+      "actor": "teacher manages; authenticated reads metadata",
+      "chain": {
+        "en": "catalog → verified download/select/delete → selected metadata → local check/completion/run injection",
+        "zh-CN": "目录 → 校验下载/选择/删除 → 已选元数据 → 本地检查/补全/运行注入"
+      },
+      "boundary": {
+        "en": "Allowlisted artifact and digest verification precede publication; selection is shared within an instance, not automatically transferred to remote Agents.",
+        "zh-CN": "允许列表和摘要验证先于发布；选择为实例共享，不会自动传输到远程 Agent。"
+      },
+      "sources": [
+        "frontend/pages/modules.tsx",
+        "engine/src/routes/c_headers.rs",
+        "engine/src/services/c_header_module.rs",
+        "engine/src/services/ebpf_loader/compiler_workspace.rs"
+      ],
+      "api": [
+        "GET /modules/c-headers/catalog",
+        "GET /modules/c-headers/selected-metadata",
+        "POST /modules/c-headers/download",
+        "POST /modules/c-headers/delete",
+        "POST /modules/c-headers/select"
+      ],
+      "implementation": "implemented",
+      "verification": "source-enumerated-not-executed"
+    },
+    {
+      "id": "F17",
+      "module": "M05",
+      "name": {
+        "en": "Templates, imports and editor drafts",
+        "zh-CN": "模板、导入与编辑草稿"
+      },
+      "actor": "authenticated",
+      "chain": {
+        "en": "48-template catalog/local file/session draft → preview or selection → confirmed replacement → editor",
+        "zh-CN": "48 个模板/本地文件/会话草稿 → 预览或选择 → 确认替换 → 编辑器"
+      },
+      "boundary": {
+        "en": "Changing lab/template/source never implicitly runs code; late imports and unconfirmed navigation are guarded.",
+        "zh-CN": "切换实验、模板或源码不会隐式执行；过期导入与未确认导航受保护。"
+      },
+      "sources": [
+        "frontend/src/features/ebpf/useEbpfSafetyActions.ts",
+        "frontend/src/features/ebpf/useEbpfPageController.ts",
+        "frontend/src/utils/pageState.ts",
+        "engine/src/routes/ebpf/template_catalog.inc.rs"
+      ],
+      "api": [
+        "GET /ebpf/templates"
+      ],
+      "implementation": "implemented",
+      "verification": "source-enumerated-not-executed"
+    },
+    {
+      "id": "F18",
+      "module": "M05",
+      "name": {
+        "en": "Local compile-only diagnostics",
+        "zh-CN": "本地仅编译诊断"
+      },
+      "actor": "authenticated",
+      "chain": {
+        "en": "editor debounce/manual check → source validation → Runner check permit/driver → clang → diagnostics",
+        "zh-CN": "编辑器防抖/手动检查 → 源码校验 → Runner 检查许可/驱动 → clang → 诊断"
+      },
+      "boundary": {
+        "en": "No kernel load; check capacity, timeout and unavailable backend are explicit. Local static hints are advisory.",
+        "zh-CN": "不加载内核；容量、超时、后端不可用显式返回。本地静态提示仅作辅助。"
+      },
+      "sources": [
+        "frontend/src/features/ebpf/useCompilerDiagnostics.ts",
+        "engine/src/routes/ebpf/check.inc.rs",
+        "engine/src/services/runner_manager.rs",
+        "engine/src/services/ebpf_loader/check.inc.rs"
+      ],
+      "api": [
+        "POST /ebpf/check"
+      ],
+      "implementation": "implemented",
+      "verification": "source-enumerated-not-executed"
+    },
+    {
+      "id": "F19",
+      "module": "M05",
+      "name": {
+        "en": "Semantic completion",
+        "zh-CN": "语义补全"
+      },
+      "actor": "authenticated",
+      "chain": {
+        "en": "Monaco cursor/source → completion permit/driver → clang suggestions → editor",
+        "zh-CN": "Monaco 光标/源码 → 补全许可/驱动 → clang 建议 → 编辑器"
+      },
+      "boundary": {
+        "en": "Separate bounded completion capacity; remote diagnostics selection does not relocate semantic completion.",
+        "zh-CN": "独立且有界的补全容量；选择远程诊断不会迁移语义补全。"
+      },
+      "sources": [
+        "frontend/src/utils/cEbpfIntelligence.ts",
+        "engine/src/routes/ebpf/completion.inc.rs",
+        "engine/src/services/ebpf_loader/completion.inc.rs"
+      ],
+      "api": [
+        "POST /ebpf/complete"
+      ],
+      "implementation": "implemented",
+      "verification": "source-enumerated-not-executed"
+    },
+    {
+      "id": "F20",
+      "module": "M05",
+      "name": {
+        "en": "Local kernel execution",
+        "zh-CN": "本地内核执行"
+      },
+      "actor": "authenticated",
+      "chain": {
+        "en": "manual run → source validation → owner lease → compile → bpftool/Aya load → attach verification → result",
+        "zh-CN": "手动运行 → 源码校验 → 所有者租约 → 编译 → bpftool/Aya 加载 → 挂载核验 → 结果"
+      },
+      "boundary": {
+        "en": "Linux shared kernel; compile success, load success and verified attachment are distinct. Some program types need a separate attach target.",
+        "zh-CN": "Linux 共享内核；编译成功、加载成功和挂载已核验是不同状态。部分程序类型需要独立挂载目标。"
+      },
+      "sources": [
+        "engine/src/routes/ebpf/handlers.inc.rs",
+        "engine/src/services/runner_driver.rs",
+        "engine/src/services/ebpf_loader/core.inc.rs",
+        "engine/src/services/ebpf_loader/aya.inc.rs"
+      ],
+      "api": [
+        "POST /ebpf/run"
+      ],
+      "implementation": "implemented",
+      "verification": "source-enumerated-not-executed"
+    },
+    {
+      "id": "F21",
+      "module": "M05",
+      "name": {
+        "en": "Debug probes and kernel samples",
+        "zh-CN": "调试探针与内核采样"
+      },
+      "actor": "authenticated",
+      "chain": {
+        "en": "optional debug lines → instrumentation → verified attach → trace/ringbuf sampler → EventBus → breakpoint/event view",
+        "zh-CN": "可选调试行 → 插桩 → 核验挂载 → trace/ringbuf 采样 → EventBus → 断点/事件视图"
+      },
+      "boundary": {
+        "en": "Trace probes do not pause the kernel. An eligible bpftool tracepoint run with an unsupported attach outcome may trigger a guarded Aya retry; sampling is bounded and asynchronous.",
+        "zh-CN": "追踪探针不暂停内核。符合条件的 bpftool tracepoint 运行在挂载不受支持时可触发受保护的 Aya 重试；采样有时限且异步。"
+      },
+      "sources": [
+        "engine/src/services/ebpf_loader/debug.inc.rs",
+        "engine/src/routes/ebpf/stream.inc.rs",
+        "engine/src/routes/ebpf/ringbuf.inc.rs",
+        "frontend/src/features/ebpf/useBreakpointHitStream.ts"
+      ],
+      "api": [],
+      "implementation": "implemented",
+      "verification": "source-enumerated-not-executed"
+    },
+    {
+      "id": "F22",
+      "module": "M05",
+      "name": {
+        "en": "Attachment inventory and detach",
+        "zh-CN": "挂载清单与卸载"
+      },
+      "actor": "authenticated owner",
+      "chain": {
+        "en": "refresh owner inventory → inspect exact pin/details → confirm detach → driver cleanup/verification",
+        "zh-CN": "刷新所有者挂载清单 → 检查精确 pin/详情 → 确认卸载 → 驱动清理/核验"
+      },
+      "boundary": {
+        "en": "Independent of active run capacity; wrong-owner or unavailable-driver requests cannot become a successful local cleanup.",
+        "zh-CN": "不依赖活跃运行容量；越权或驱动不可用不能伪装成本地清理成功。"
+      },
+      "sources": [
+        "frontend/src/features/ebpf/detachTarget.ts",
+        "engine/src/routes/ebpf/attachments.inc.rs",
+        "engine/src/services/runner_driver.rs"
+      ],
+      "api": [
+        "GET /ebpf/attachments",
+        "GET /ebpf/attachments/details",
+        "POST /ebpf/detach"
+      ],
+      "implementation": "implemented",
+      "verification": "source-enumerated-not-executed"
+    },
+    {
+      "id": "F23",
+      "module": "M06",
+      "name": {
+        "en": "Runner capacity and ownership",
+        "zh-CN": "Runner 容量与所有权"
+      },
+      "actor": "authenticated; teacher overview",
+      "chain": {
+        "en": "status/overview → global and per-user lease accounting → owner-checked driver dispatch → RAII release",
+        "zh-CN": "状态/总览 → 全局及用户租约计数 → 所有者核验后驱动分发 → RAII 释放"
+      },
+      "boundary": {
+        "en": "local_process is current execution mode. Quotas are resource controls, not isolation; lease release does not mean kernel detach.",
+        "zh-CN": "当前执行模式为 local_process。配额是资源控制而非隔离；租约释放不等于内核卸载。"
+      },
+      "sources": [
+        "engine/src/routes/runner.rs",
+        "engine/src/services/runner_manager.rs",
+        "engine/src/services/runner_driver.rs"
+      ],
+      "api": [
+        "GET /runner/status",
+        "GET /runner/overview"
+      ],
+      "implementation": "implemented",
+      "verification": "source-enumerated-not-executed"
+    },
+    {
+      "id": "F24",
+      "module": "M06",
+      "name": {
+        "en": "Agent registration and liveness",
+        "zh-CN": "Agent 注册与存活状态"
+      },
+      "actor": "Agent bootstrap/signed; teacher inventory",
+      "chain": {
+        "en": "bootstrap bearer → register/rotate credential → HMAC heartbeat → healthy/stale registry → inventory",
+        "zh-CN": "引导 Bearer → 注册/轮换凭据 → HMAC 心跳 → 健康/过期注册表 → 清单"
+      },
+      "boundary": {
+        "en": "Off unless configured; timestamp, nonce, identity and body binding reject replay. Agent identity is not a browser teacher session.",
+        "zh-CN": "未配置时关闭；时间戳、nonce、身份和正文绑定拒绝重放。Agent 身份不是浏览器教师会话。"
+      },
+      "sources": [
+        "engine/src/routes/runner_agent.rs",
+        "engine/src/services/runner_agent_registry.rs",
+        "engine/src/services/runner_agent_authenticator.rs",
+        "engine/src/services/runner_agent_client.rs"
+      ],
+      "api": [
+        "GET /runner/agents",
+        "POST /runner/agent/register",
+        "POST /runner/agent/heartbeat"
+      ],
+      "implementation": "implemented",
+      "verification": "source-enumerated-not-executed"
+    },
+    {
+      "id": "F25",
+      "module": "M06",
+      "name": {
+        "en": "Agent job lifecycle",
+        "zh-CN": "Agent 作业生命周期"
+      },
+      "actor": "teacher/signed Agent",
+      "chain": {
+        "en": "teacher probe/compile submission → queue → signed claim + lease → isolated executor → sync/result or cancel/expire",
+        "zh-CN": "教师探测/编译提交 → 队列 → 签名领取与租约 → 隔离执行器 → 同步/结果或取消/过期"
+      },
+      "boundary": {
+        "en": "In-memory jobs; lease identity rejects stale results; compile jobs return reports, never kernel-load or executable objects.",
+        "zh-CN": "作业在内存中；租约身份拒绝过期结果；编译作业只返回报告，不加载内核或返回可执行目标文件。"
+      },
+      "sources": [
+        "engine/src/routes/runner_job.rs",
+        "engine/src/services/runner_job_queue.rs",
+        "engine/src/services/runner_agent_executor.rs",
+        "engine/src/bin/cyanrex-runner-agent.rs"
+      ],
+      "api": [
+        "GET /runner/jobs",
+        "POST /runner/jobs/probe",
+        "POST /runner/jobs/compile-check",
+        "POST /runner/jobs/cancel",
+        "POST /runner/agent/jobs/claim",
+        "POST /runner/agent/jobs/sync",
+        "POST /runner/agent/jobs/result"
+      ],
+      "implementation": "implemented",
+      "verification": "source-enumerated-not-executed"
+    },
+    {
+      "id": "F26",
+      "module": "M06",
+      "name": {
+        "en": "Remote compile diagnostics",
+        "zh-CN": "远程编译诊断"
+      },
+      "actor": "authenticated owner",
+      "chain": {
+        "en": "eligible backend selection → owner-bound job submission → Agent compile report → poll/diagnostics/cancel",
+        "zh-CN": "选择合格后端 → 按所有者绑定的作业提交 → Agent 编译报告 → 轮询/诊断/取消"
+      },
+      "boundary": {
+        "en": "Healthy non-shared_kernel clang_check Agents only. No remote run, remote completion, automatic header replication or silent local retry.",
+        "zh-CN": "仅接受健康、非 shared_kernel 且支持 clang_check 的 Agent。没有远程运行、远程补全、自动头文件复制或静默本地重试。"
+      },
+      "sources": [
+        "frontend/src/features/ebpf/useCompileBackends.ts",
+        "frontend/src/features/ebpf/useCompilerDiagnostics.ts",
+        "engine/src/routes/ebpf/remote_check.inc.rs"
+      ],
+      "api": [
+        "GET /ebpf/check/backends",
+        "POST /ebpf/check/remote",
+        "GET /ebpf/check/remote",
+        "POST /ebpf/check/remote/cancel"
+      ],
+      "implementation": "implemented",
+      "verification": "source-enumerated-not-executed"
+    },
+    {
+      "id": "F27",
+      "module": "M07",
+      "name": {
+        "en": "Course and lab navigation",
+        "zh-CN": "课程与实验导航"
+      },
+      "actor": "authenticated UI; static course assets",
+      "chain": {
+        "en": "learning center → five lab definitions/progress + localized Markdown → explicit editor handoff",
+        "zh-CN": "学习中心 → 五个实验定义/进度 + 本地化 Markdown → 显式跳转编辑器"
+      },
+      "boundary": {
+        "en": "Course files are static public assets; navigation alone neither loads a template nor runs a lab.",
+        "zh-CN": "课程文件是公开静态资源；导航本身不载入模板，也不运行实验。"
+      },
+      "sources": [
+        "frontend/pages/learn/index.tsx",
+        "frontend/pages/learn/[...slug].tsx",
+        "engine/src/services/learning_catalog.rs",
+        "frontend/scripts/sync-course-docs.mjs"
+      ],
+      "api": [
+        "GET /learning/labs"
+      ],
+      "implementation": "implemented",
+      "verification": "source-enumerated-not-executed"
+    },
+    {
+      "id": "F28",
+      "module": "M07",
+      "name": {
+        "en": "Assess and record run",
+        "zh-CN": "评估并记录运行"
+      },
+      "actor": "run owner",
+      "chain": {
+        "en": "returned run result + lab/source/attach evidence → structural assessment → LearningStore → learning event",
+        "zh-CN": "返回的运行结果 + 实验/源码/挂载证据 → 结构化评估 → LearningStore → 学习事件"
+      },
+      "boundary": {
+        "en": "Only runs reaching record_learning_run with a lab ID are recorded. Validation/quota/driver early exits skip it; persistence error logs a warning without reverting execution.",
+        "zh-CN": "仅带实验 ID 且到达 record_learning_run 的运行被记录。校验/配额/驱动提前返回跳过记录；持久化失败只记警告，不撤销执行。"
+      },
+      "sources": [
+        "engine/src/routes/ebpf/learning.inc.rs",
+        "engine/src/services/learning_catalog.rs",
+        "engine/src/services/learning_store/attempt.rs",
+        "engine/src/services/learning_source.rs"
+      ],
+      "api": [],
+      "implementation": "implemented",
+      "verification": "source-enumerated-not-executed"
+    },
+    {
+      "id": "F29",
+      "module": "M07",
+      "name": {
+        "en": "Attempt history and resume",
+        "zh-CN": "提交历史与恢复"
+      },
+      "actor": "authenticated owner",
+      "chain": {
+        "en": "history → owner-bound attempt lookup → source/feedback preview → confirmed draft restore → optional new manual run",
+        "zh-CN": "历史 → 所有者绑定的提交查询 → 源码/反馈预览 → 确认恢复草稿 → 可选的新手动运行"
+      },
+      "boundary": {
+        "en": "Other-owner/missing records share 404; history restore never runs or detaches; SQL read failure is not replaced with stale local success.",
+        "zh-CN": "外部所有者/不存在的记录统一 404；恢复历史不运行也不卸载；SQL 读取失败不以陈旧本地成功代替。"
+      },
+      "sources": [
+        "frontend/src/features/learning/AttemptResumePanel.tsx",
+        "frontend/src/features/learning/resumeAttempt.ts",
+        "engine/src/routes/learning.rs",
+        "engine/src/services/learning_store/queries.rs"
+      ],
+      "api": [
+        "GET /learning/attempts",
+        "GET /learning/attempt"
+      ],
+      "implementation": "implemented",
+      "verification": "source-enumerated-not-executed"
+    },
+    {
+      "id": "F30",
+      "module": "M07",
+      "name": {
+        "en": "Teacher review",
+        "zh-CN": "教师总览与审阅"
+      },
+      "actor": "teacher",
+      "chain": {
+        "en": "learning snapshots → student-filtered overview → selected student recent attempts → review",
+        "zh-CN": "学习快照 → 学生过滤总览 → 所选学生近期提交 → 审阅"
+      },
+      "boundary": {
+        "en": "Separate teacher API; ordinary student endpoints remain owner-bound even for teachers. Overview is not a full account directory.",
+        "zh-CN": "独立教师 API；普通学生接口即使教师调用也绑定自身。总览不是完整账户目录。"
+      },
+      "sources": [
+        "frontend/pages/teaching.tsx",
+        "engine/src/routes/learning.rs",
+        "engine/src/services/learning_store/queries.rs"
+      ],
+      "api": [
+        "GET /learning/teacher/overview",
+        "GET /learning/teacher/attempts"
+      ],
+      "implementation": "implemented",
+      "verification": "source-enumerated-not-executed"
+    },
+    {
+      "id": "F31",
+      "module": "M07",
+      "name": {
+        "en": "Revision-safe teacher feedback",
+        "zh-CN": "带版本校验的教师反馈"
+      },
+      "actor": "teacher writes; student reads",
+      "chain": {
+        "en": "review draft + expected revision → feedback CAS → persistent revision → student reads current feedback",
+        "zh-CN": "审阅草稿 + 期望版本 → 反馈 CAS → 持久化版本 → 学生读取当前反馈"
+      },
+      "boundary": {
+        "en": "409 on conflicting revision; no silent overwrite. Student visibility uses subsequent reads, not a dedicated feedback push channel.",
+        "zh-CN": "版本冲突返回 409，不静默覆盖。学生通过后续读取看到反馈，没有专用反馈推送通道。"
+      },
+      "sources": [
+        "frontend/src/features/learning/TeacherFeedback.tsx",
+        "engine/src/routes/learning.rs",
+        "engine/src/services/learning_store/feedback.rs"
+      ],
+      "api": [
+        "POST /learning/teacher/feedback"
+      ],
+      "implementation": "implemented",
+      "verification": "source-enumerated-not-executed"
+    },
+    {
+      "id": "F32",
+      "module": "M08",
+      "name": {
+        "en": "Event history and export",
+        "zh-CN": "事件历史与导出"
+      },
+      "actor": "authenticated owner",
+      "chain": {
+        "en": "owner/category/severity/time filters → bounded event query → view or JSON/CSV export",
+        "zh-CN": "所有者/分类/级别/时间筛选 → 有界事件查询 → 展示或 JSON/CSV 导出"
+      },
+      "boundary": {
+        "en": "SQL and bounded memory are distinct storage paths; exported history is not a complete durable execution audit.",
+        "zh-CN": "SQL 与有界内存是不同存储路径；导出历史不是完整、持久的执行审计。"
+      },
+      "sources": [
+        "frontend/pages/events.tsx",
+        "engine/src/routes/events.rs",
+        "engine/src/services/event_bus_filter.rs",
+        "engine/src/services/event_bus_db.rs"
+      ],
+      "api": [
+        "GET /events",
+        "GET /events/export"
+      ],
+      "implementation": "implemented",
+      "verification": "source-enumerated-not-executed"
+    },
+    {
+      "id": "F33",
+      "module": "M08",
+      "name": {
+        "en": "Live event delivery and recovery",
+        "zh-CN": "实时事件传送与恢复"
+      },
+      "actor": "authenticated owner",
+      "chain": {
+        "en": "EventBus fanout → session/Origin-checked WebSocket → overlap-safe snapshot recovery/backoff",
+        "zh-CN": "EventBus 扇出 → 会话/Origin 校验的 WebSocket → 防重叠快照恢复/退避"
+      },
+      "boundary": {
+        "en": "Lag closes with 1013 and slow sends are bounded; recovery is best-effort within retained history, not durable replay or exactly-once delivery.",
+        "zh-CN": "落后时以 1013 关闭且慢发送有时限；恢复仅在保留历史内尽力进行，不是持久重放或恰好一次传送。"
+      },
+      "sources": [
+        "engine/src/routes/events/stream.rs",
+        "engine/src/services/event_bus/subscriptions.rs",
+        "frontend/src/features/events/eventStream.ts"
+      ],
+      "api": [
+        "GET /ws/events"
+      ],
+      "implementation": "implemented",
+      "verification": "source-enumerated-not-executed"
+    },
+    {
+      "id": "F34",
+      "module": "M08",
+      "name": {
+        "en": "Unread state",
+        "zh-CN": "未读状态"
+      },
+      "actor": "authenticated owner",
+      "chain": {
+        "en": "publish/read flags → unread count → sidebar badge → mark read",
+        "zh-CN": "发布/已读标记 → 未读数量 → 侧栏标记 → 标为已读"
+      },
+      "boundary": {
+        "en": "Owner-scoped; marking read does not delete retained events.",
+        "zh-CN": "按所有者隔离；标为已读不删除保留事件。"
+      },
+      "sources": [
+        "frontend/src/components/SidebarLayout.tsx",
+        "engine/src/routes/events.rs",
+        "engine/src/services/event_bus.rs"
+      ],
+      "api": [
+        "GET /events/unread-count",
+        "POST /events/mark-read"
+      ],
+      "implementation": "implemented",
+      "verification": "source-enumerated-not-executed"
+    },
+    {
+      "id": "F35",
+      "module": "M08",
+      "name": {
+        "en": "Scoped event deletion",
+        "zh-CN": "限定范围的事件删除"
+      },
+      "actor": "authenticated owner",
+      "chain": {
+        "en": "review exact filter scope → destructive confirmation → strict filter parse → delete matches → refresh",
+        "zh-CN": "审阅精确筛选范围 → 危险确认 → 严格解析 → 删除匹配项 → 刷新"
+      },
+      "boundary": {
+        "en": "Invalid filters reject 400 instead of widening to delete-all; nonmatches and their read flags remain.",
+        "zh-CN": "非法筛选返回 400，不扩大成全删；未匹配项及其已读状态保留。"
+      },
+      "sources": [
+        "frontend/src/features/events/deleteScope.ts",
+        "frontend/pages/events.tsx",
+        "engine/src/routes/events.rs",
+        "engine/src/services/event_bus/deletion.rs"
+      ],
+      "api": [
+        "POST /events/delete"
+      ],
+      "implementation": "implemented",
+      "verification": "source-enumerated-not-executed"
+    },
+    {
+      "id": "F36",
+      "module": "M08",
+      "name": {
+        "en": "Event retention policy",
+        "zh-CN": "事件保留策略"
+      },
+      "actor": "authenticated API; teacher-only settings page",
+      "chain": {
+        "en": "read/update owner max records + drop_oldest/drop_new → retention policy → later history/publish behavior",
+        "zh-CN": "读写自身最大记录数 + drop_oldest/drop_new → 保留策略 → 后续历史/发布行为"
+      },
+      "boundary": {
+        "en": "UI settings page is teacher-only, while this API is authenticated per-user; memory retention is bounded, not archival storage.",
+        "zh-CN": "设置页仅教师可见，但此 API 对已登录用户按自身开放；内存保留有界，不是归档存储。"
+      },
+      "sources": [
+        "frontend/pages/settings.tsx",
+        "engine/src/routes/settings.rs",
+        "engine/src/services/event_bus_policy.rs"
+      ],
+      "api": [
+        "GET /settings/events",
+        "POST /settings/events"
+      ],
+      "implementation": "implemented",
+      "verification": "source-enumerated-not-executed"
+    },
+    {
+      "id": "F37",
+      "module": "M09",
+      "name": {
+        "en": "Navigation, confirmation and local state",
+        "zh-CN": "导航、确认与本地状态"
+      },
+      "actor": "guest/authenticated/teacher UI",
+      "chain": {
+        "en": "session-aware shell → role-visible navigation → target-bound confirmation → request → local draft/filter/locale state",
+        "zh-CN": "感知会话的界面外壳 → 按角色导航 → 绑定目标的确认 → 请求 → 本地草稿/筛选/语言状态"
+      },
+      "boundary": {
+        "en": "Client controls supplement server guards; navigation can clear unconfirmed actions but cannot undo already dispatched work. Dashboard currently shows guidance, not live health polling.",
+        "zh-CN": "客户端控制补充而不替代服务端鉴权；导航可清未确认操作，不能撤回已发出的工作。Dashboard 当前是引导页，不主动轮询健康。"
+      },
+      "sources": [
+        "frontend/src/components/SidebarLayout.tsx",
+        "frontend/src/components/useConfirmedAction.tsx",
+        "frontend/src/utils/pageState.ts",
+        "frontend/src/i18n/context.tsx",
+        "frontend/pages/dashboard.tsx"
+      ],
+      "api": [],
+      "implementation": "implemented",
+      "verification": "source-enumerated-not-executed"
+    },
+    {
+      "id": "F38",
+      "module": "M10",
+      "name": {
+        "en": "API contract and SDK consumers",
+        "zh-CN": "API 契约与 SDK 消费者"
+      },
+      "actor": "browser/Node client; public contract",
+      "chain": {
+        "en": "Axum routes/access → OpenAPI → generated types/63 operations → SDK cookie/Origin/errors → Engine",
+        "zh-CN": "Axum 路由/权限 → OpenAPI → 生成类型/63 个操作 → SDK Cookie/Origin/错误 → Engine"
+      },
+      "boundary": {
+        "en": "68 API operations include five Agent endpoints outside the SDK; frontend fetch hooks are separate consumers, not necessarily SDK calls.",
+        "zh-CN": "68 个 API 含 SDK 之外的 5 个 Agent 接口；前端 fetch hooks 是独立消费者，不应画成必经 SDK。"
+      },
+      "sources": [
+        "scripts/openapi-contract.mjs",
+        "engine/openapi/openapi.json",
+        "sdk-js/src/index.ts",
+        "sdk-js/src/generated/operations.ts"
+      ],
+      "api": [
+        "GET /openapi.json"
+      ],
+      "implementation": "implemented",
+      "verification": "source-enumerated-not-executed"
+    },
+    {
+      "id": "F39",
+      "module": "M11",
+      "name": {
+        "en": "Reviewed SSH deployment",
+        "zh-CN": "经确认的 SSH 部署"
+      },
+      "actor": "teacher/operator",
+      "chain": {
+        "en": "SSH plan → review exact target/host key → apply → verify preinstalled package → allowed remote action",
+        "zh-CN": "SSH plan → 审阅精确目标/主机密钥 → apply → 校验预装包 → 允许的远端动作"
+      },
+      "boundary": {
+        "en": "Current SSH flow manages an already installed Linux offline package; no package upload, bare-host bootstrap or automatic TLS provisioning.",
+        "zh-CN": "当前 SSH 流程管理已经安装的 Linux 离线包；没有包上传、裸机初始化或自动 TLS 配置。"
+      },
+      "sources": [
+        "engine/src/bin/cyanrex-release/ssh_cli.rs",
+        "docs/en/classroom-connection.md"
+      ],
+      "api": [],
+      "implementation": "implemented",
+      "verification": "source-enumerated-not-executed"
+    },
+    {
+      "id": "F40",
+      "module": "M11",
+      "name": {
+        "en": "Build, acceptance and release evidence",
+        "zh-CN": "构建、验收与发行证据"
+      },
+      "actor": "maintainer/teacher operator",
+      "chain": {
+        "en": "quality/contracts → offline package → metadata/checksum validation → safe extraction/install smoke → candidate-bound kernel evidence",
+        "zh-CN": "质量/契约 → 离线包 → 元数据/校验和验证 → 安全解包/安装冒烟 → 候选包绑定内核证据"
+      },
+      "boundary": {
+        "en": "Checksums bind bytes, not publisher identity. CI definitions or past reports do not prove a current deployment or new kernel acceptance run.",
+        "zh-CN": "校验和绑定字节，不证明发行者身份。CI 定义或历史报告不能证明当前部署或新的内核验收。"
+      },
+      "sources": [
+        "scripts/quality-gate.sh",
+        "scripts/package-distribution.sh",
+        "engine/src/bin/cyanrex-release/candidate.rs",
+        "engine/src/bin/cyanrex-release/package.rs",
+        ".github/workflows/release-validation.yml"
+      ],
+      "api": [],
+      "implementation": "implemented",
+      "verification": "source-enumerated-not-executed"
+    }
+  ],
+  "edges": [
+    {
+      "id": "E01",
+      "from": "F40",
+      "to": "F39",
+      "kind": "prerequisite",
+      "label": {
+        "en": "verified preinstalled package",
+        "zh-CN": "已校验且预装的发行包"
+      }
+    },
+    {
+      "id": "E02",
+      "from": "F39",
+      "to": "F01",
+      "kind": "control",
+      "label": {
+        "en": "reviewed up/down/status action",
+        "zh-CN": "经审阅的 up/down/status 动作"
+      }
+    },
+    {
+      "id": "E03",
+      "from": "F01",
+      "to": "F06",
+      "kind": "initialization",
+      "label": {
+        "en": "seed local teacher and initialize auth",
+        "zh-CN": "种子本地教师并初始化认证"
+      }
+    },
+    {
+      "id": "E04",
+      "from": "F01",
+      "to": "F14",
+      "kind": "initialization",
+      "label": {
+        "en": "validate and discover manifests",
+        "zh-CN": "校验并发现 manifest"
+      }
+    },
+    {
+      "id": "E05",
+      "from": "F01",
+      "to": "F24",
+      "kind": "initialization",
+      "label": {
+        "en": "optional Agent registry configuration",
+        "zh-CN": "可选 Agent 注册表配置"
+      }
+    },
+    {
+      "id": "E06",
+      "from": "F01",
+      "to": "F10",
+      "kind": "initialization",
+      "label": {
+        "en": "optional classroom descriptor configuration",
+        "zh-CN": "可选课堂发现配置"
+      }
+    },
+    {
+      "id": "E07",
+      "from": "F02",
+      "to": "F23",
+      "kind": "read",
+      "label": {
+        "en": "user capacity in readiness report",
+        "zh-CN": "环境报告中的用户容量"
+      }
+    },
+    {
+      "id": "E08",
+      "from": "F02",
+      "to": "F20",
+      "kind": "advisory",
+      "label": {
+        "en": "readiness report informs a later manual run",
+        "zh-CN": "就绪报告供后续手动运行参考"
+      }
+    },
+    {
+      "id": "E09",
+      "from": "F11",
+      "to": "F10",
+      "kind": "handoff",
+      "label": {
+        "en": "teacher publishes invitation entry link",
+        "zh-CN": "教师分发邀请入口链接"
+      }
+    },
+    {
+      "id": "E10",
+      "from": "F10",
+      "to": "F12",
+      "kind": "prerequisite",
+      "label": {
+        "en": "confirmed teacher identity and compatible protocol",
+        "zh-CN": "已确认教师身份及兼容协议"
+      }
+    },
+    {
+      "id": "E11",
+      "from": "F11",
+      "to": "F12",
+      "kind": "authorization",
+      "label": {
+        "en": "student-bound one-time invitation",
+        "zh-CN": "绑定学生的一次性邀请"
+      }
+    },
+    {
+      "id": "E12",
+      "from": "F12",
+      "to": "F06",
+      "kind": "manual-handoff",
+      "label": {
+        "en": "save enrollment TOTP then log in",
+        "zh-CN": "保存入学 TOTP 后正常登录"
+      }
+    },
+    {
+      "id": "E13",
+      "from": "F04",
+      "to": "F06",
+      "kind": "manual-handoff",
+      "label": {
+        "en": "save registration TOTP then log in",
+        "zh-CN": "保存注册 TOTP 后正常登录"
+      }
+    },
+    {
+      "id": "E14",
+      "from": "F05",
+      "to": "F06",
+      "kind": "manual-handoff",
+      "label": {
+        "en": "bootstrap TOTP then log in",
+        "zh-CN": "初始化 TOTP 后正常登录"
+      }
+    },
+    {
+      "id": "E15",
+      "from": "F06",
+      "to": "F37",
+      "kind": "authorization",
+      "label": {
+        "en": "server session and role feed UI shell",
+        "zh-CN": "服务端会话与角色进入 UI 外壳"
+      }
+    },
+    {
+      "id": "E16",
+      "from": "F37",
+      "to": "F07",
+      "kind": "control",
+      "label": {
+        "en": "logout with pending/error guards",
+        "zh-CN": "具有进行中/错误保护的退出"
+      }
+    },
+    {
+      "id": "E17",
+      "from": "F37",
+      "to": "F08",
+      "kind": "confirmation",
+      "label": {
+        "en": "review password change",
+        "zh-CN": "审阅密码修改"
+      }
+    },
+    {
+      "id": "E18",
+      "from": "F37",
+      "to": "F09",
+      "kind": "confirmation",
+      "label": {
+        "en": "review account deletion",
+        "zh-CN": "审阅账户删除"
+      }
+    },
+    {
+      "id": "E19",
+      "from": "F27",
+      "to": "F17",
+      "kind": "manual-handoff",
+      "label": {
+        "en": "lab context, explicitly chosen template",
+        "zh-CN": "实验上下文及显式选择的模板"
+      }
+    },
+    {
+      "id": "E20",
+      "from": "F13",
+      "to": "F17",
+      "kind": "manual-handoff",
+      "label": {
+        "en": "load a selected saved script",
+        "zh-CN": "载入选定的已保存脚本"
+      }
+    },
+    {
+      "id": "E21",
+      "from": "F29",
+      "to": "F17",
+      "kind": "manual-handoff",
+      "label": {
+        "en": "restore reviewed historical source",
+        "zh-CN": "恢复已审阅的历史源码"
+      }
+    },
+    {
+      "id": "E22",
+      "from": "F17",
+      "to": "F13",
+      "kind": "write",
+      "label": {
+        "en": "explicit save/delete action",
+        "zh-CN": "显式保存/删除动作"
+      }
+    },
+    {
+      "id": "E23",
+      "from": "F17",
+      "to": "F18",
+      "kind": "request",
+      "label": {
+        "en": "debounced or manual local diagnostics",
+        "zh-CN": "防抖或手动本地诊断"
+      }
+    },
+    {
+      "id": "E24",
+      "from": "F17",
+      "to": "F19",
+      "kind": "request",
+      "label": {
+        "en": "cursor-triggered semantic completion",
+        "zh-CN": "光标触发的语义补全"
+      }
+    },
+    {
+      "id": "E25",
+      "from": "F17",
+      "to": "F26",
+      "kind": "conditional-request",
+      "label": {
+        "en": "diagnostics on an explicitly selected Agent",
+        "zh-CN": "在显式选定 Agent 上诊断"
+      }
+    },
+    {
+      "id": "E26",
+      "from": "F17",
+      "to": "F20",
+      "kind": "manual-handoff",
+      "label": {
+        "en": "explicit Run action; check does not trigger run",
+        "zh-CN": "显式 Run；检查不触发运行"
+      }
+    },
+    {
+      "id": "E27",
+      "from": "F16",
+      "to": "F18",
+      "kind": "dependency",
+      "label": {
+        "en": "selected headers into local diagnostics",
+        "zh-CN": "已选头文件进入本地诊断"
+      }
+    },
+    {
+      "id": "E28",
+      "from": "F16",
+      "to": "F19",
+      "kind": "dependency",
+      "label": {
+        "en": "selected headers into local completion",
+        "zh-CN": "已选头文件进入本地补全"
+      }
+    },
+    {
+      "id": "E29",
+      "from": "F16",
+      "to": "F20",
+      "kind": "dependency",
+      "label": {
+        "en": "selected headers into local compile/load",
+        "zh-CN": "已选头文件进入本地编译/加载"
+      }
+    },
+    {
+      "id": "E30",
+      "from": "F03",
+      "to": "F18",
+      "kind": "configuration",
+      "label": {
+        "en": "resident diagnostic cache strategy",
+        "zh-CN": "常驻诊断缓存策略"
+      }
+    },
+    {
+      "id": "E31",
+      "from": "F03",
+      "to": "F19",
+      "kind": "configuration",
+      "label": {
+        "en": "resident completion cache strategy",
+        "zh-CN": "常驻补全缓存策略"
+      }
+    },
+    {
+      "id": "E32",
+      "from": "F18",
+      "to": "F03",
+      "kind": "observation",
+      "label": {
+        "en": "check timing/cache/rejection counters",
+        "zh-CN": "检查耗时/缓存/拒绝计数"
+      }
+    },
+    {
+      "id": "E33",
+      "from": "F19",
+      "to": "F03",
+      "kind": "observation",
+      "label": {
+        "en": "completion timing/cache/rejection counters",
+        "zh-CN": "补全耗时/缓存/拒绝计数"
+      }
+    },
+    {
+      "id": "E34",
+      "from": "F18",
+      "to": "F23",
+      "kind": "admission",
+      "label": {
+        "en": "separate check permits and driver deadline",
+        "zh-CN": "独立检查许可与驱动时限"
+      }
+    },
+    {
+      "id": "E35",
+      "from": "F19",
+      "to": "F23",
+      "kind": "admission",
+      "label": {
+        "en": "separate completion permits and driver deadline",
+        "zh-CN": "独立补全许可与驱动时限"
+      }
+    },
+    {
+      "id": "E36",
+      "from": "F20",
+      "to": "F23",
+      "kind": "admission",
+      "label": {
+        "en": "owner-bound execution lease",
+        "zh-CN": "所有者绑定的执行租约"
+      }
+    },
+    {
+      "id": "E37",
+      "from": "F22",
+      "to": "F23",
+      "kind": "dependency",
+      "label": {
+        "en": "same selected driver without an execution lease",
+        "zh-CN": "同一已选驱动，无需执行租约"
+      }
+    },
+    {
+      "id": "E38",
+      "from": "F20",
+      "to": "F21",
+      "kind": "conditional-async",
+      "label": {
+        "en": "verified attach plus enabled debug/stream",
+        "zh-CN": "挂载核验成功且启用调试/采样"
+      }
+    },
+    {
+      "id": "E39",
+      "from": "F20",
+      "to": "F22",
+      "kind": "state",
+      "label": {
+        "en": "attachments become inspectable; cleanup is explicit",
+        "zh-CN": "挂载可供查看；清理须显式执行"
+      }
+    },
+    {
+      "id": "E40",
+      "from": "F20",
+      "to": "F28",
+      "kind": "conditional-write",
+      "label": {
+        "en": "lab ID and run reaches recording stage",
+        "zh-CN": "具有实验 ID 且运行到达记录阶段"
+      }
+    },
+    {
+      "id": "E41",
+      "from": "F20",
+      "to": "F32",
+      "kind": "publication",
+      "label": {
+        "en": "platform lifecycle events",
+        "zh-CN": "平台生命周期事件"
+      }
+    },
+    {
+      "id": "E42",
+      "from": "F21",
+      "to": "F32",
+      "kind": "publication",
+      "label": {
+        "en": "kernel/debug samples in retained history",
+        "zh-CN": "保留历史中的内核/调试采样"
+      }
+    },
+    {
+      "id": "E43",
+      "from": "F21",
+      "to": "F33",
+      "kind": "publication",
+      "label": {
+        "en": "live owner-scoped samples",
+        "zh-CN": "按所有者隔离的实时采样"
+      }
+    },
+    {
+      "id": "E44",
+      "from": "F28",
+      "to": "F32",
+      "kind": "publication",
+      "label": {
+        "en": "learning attempted/completed event after store success",
+        "zh-CN": "存储成功后的学习尝试/完成事件"
+      }
+    },
+    {
+      "id": "E45",
+      "from": "F28",
+      "to": "F27",
+      "kind": "read-model",
+      "label": {
+        "en": "attempts contribute to lab progress",
+        "zh-CN": "提交参与实验进度聚合"
+      }
+    },
+    {
+      "id": "E46",
+      "from": "F28",
+      "to": "F29",
+      "kind": "read-model",
+      "label": {
+        "en": "persisted attempts available for history",
+        "zh-CN": "持久化提交供历史读取"
+      }
+    },
+    {
+      "id": "E47",
+      "from": "F28",
+      "to": "F30",
+      "kind": "read-model",
+      "label": {
+        "en": "student attempts contribute to teacher overview",
+        "zh-CN": "学生提交参与教师总览"
+      }
+    },
+    {
+      "id": "E48",
+      "from": "F30",
+      "to": "F31",
+      "kind": "manual-handoff",
+      "label": {
+        "en": "selected student attempt and expected revision",
+        "zh-CN": "选定学生提交及期望版本"
+      }
+    },
+    {
+      "id": "E49",
+      "from": "F31",
+      "to": "F29",
+      "kind": "read-model",
+      "label": {
+        "en": "current feedback on subsequent history reads",
+        "zh-CN": "后续历史读取包含当前反馈"
+      }
+    },
+    {
+      "id": "E50",
+      "from": "F24",
+      "to": "F25",
+      "kind": "authorization",
+      "label": {
+        "en": "Agent identity, capability and freshness",
+        "zh-CN": "Agent 身份、能力与新鲜度"
+      }
+    },
+    {
+      "id": "E51",
+      "from": "F24",
+      "to": "F26",
+      "kind": "discovery",
+      "label": {
+        "en": "eligible healthy remote compiler list",
+        "zh-CN": "合格健康的远程编译器列表"
+      }
+    },
+    {
+      "id": "E52",
+      "from": "F26",
+      "to": "F25",
+      "kind": "request",
+      "label": {
+        "en": "owner-scoped compile job, no remote run",
+        "zh-CN": "所有者绑定的编译作业，不是远程运行"
+      }
+    },
+    {
+      "id": "E53",
+      "from": "F25",
+      "to": "F26",
+      "kind": "result",
+      "label": {
+        "en": "terminal compiler report or failure/cancellation",
+        "zh-CN": "终态编译报告或失败/取消"
+      }
+    },
+    {
+      "id": "E54",
+      "from": "F33",
+      "to": "F32",
+      "kind": "recovery",
+      "label": {
+        "en": "snapshot fetch on reconnect/lag",
+        "zh-CN": "重连/落后时获取快照"
+      }
+    },
+    {
+      "id": "E55",
+      "from": "F32",
+      "to": "F34",
+      "kind": "control",
+      "label": {
+        "en": "event page marks visible stream/history read",
+        "zh-CN": "事件页将所见流/历史标为已读"
+      }
+    },
+    {
+      "id": "E56",
+      "from": "F33",
+      "to": "F34",
+      "kind": "control",
+      "label": {
+        "en": "live arrival updates read/badge workflow",
+        "zh-CN": "实时到达更新已读/徽标流程"
+      }
+    },
+    {
+      "id": "E57",
+      "from": "F35",
+      "to": "F32",
+      "kind": "mutation",
+      "label": {
+        "en": "remove matching history and refresh view",
+        "zh-CN": "删除匹配历史并刷新视图"
+      }
+    },
+    {
+      "id": "E58",
+      "from": "F35",
+      "to": "F34",
+      "kind": "mutation",
+      "label": {
+        "en": "reconcile unread state without altering nonmatches",
+        "zh-CN": "协调未读状态，不更改未匹配项"
+      }
+    },
+    {
+      "id": "E59",
+      "from": "F36",
+      "to": "F32",
+      "kind": "configuration",
+      "label": {
+        "en": "retention/overflow affects retained history",
+        "zh-CN": "保留/溢出策略影响保留历史"
+      }
+    },
+    {
+      "id": "E60",
+      "from": "F36",
+      "to": "F34",
+      "kind": "configuration",
+      "label": {
+        "en": "retained records affect unread count",
+        "zh-CN": "保留记录影响未读数量"
+      }
+    },
+    {
+      "id": "E61",
+      "from": "F37",
+      "to": "F35",
+      "kind": "confirmation",
+      "label": {
+        "en": "freeze reviewed deletion scope",
+        "zh-CN": "固定已审阅的删除范围"
+      }
+    },
+    {
+      "id": "E62",
+      "from": "F37",
+      "to": "F22",
+      "kind": "confirmation",
+      "label": {
+        "en": "freeze exact reviewed attachment targets",
+        "zh-CN": "固定精确审阅的挂载目标"
+      }
+    },
+    {
+      "id": "E63",
+      "from": "F37",
+      "to": "F13",
+      "kind": "confirmation",
+      "label": {
+        "en": "guard destructive script actions",
+        "zh-CN": "保护破坏性的脚本操作"
+      }
+    },
+    {
+      "id": "E64",
+      "from": "F15",
+      "to": "F14",
+      "kind": "dispatch",
+      "label": {
+        "en": "typed list/start/stop module commands",
+        "zh-CN": "类型化模块列表/启动/停止命令"
+      }
+    },
+    {
+      "id": "E65",
+      "from": "F15",
+      "to": "F17",
+      "kind": "manual-handoff",
+      "label": {
+        "en": "run_experiment only navigates to editor",
+        "zh-CN": "run_experiment 只跳转编辑器"
+      }
+    },
+    {
+      "id": "E66",
+      "from": "F38",
+      "to": "F06",
+      "kind": "client",
+      "label": {
+        "en": "SDK cookie/Origin/session transport",
+        "zh-CN": "SDK Cookie/Origin/会话传输"
+      }
+    },
+    {
+      "id": "E67",
+      "from": "F38",
+      "to": "F20",
+      "kind": "client",
+      "label": {
+        "en": "SDK run call uses the same guarded API",
+        "zh-CN": "SDK 运行调用使用相同受保护 API"
+      }
+    },
+    {
+      "id": "E68",
+      "from": "F38",
+      "to": "F33",
+      "kind": "client",
+      "label": {
+        "en": "SDK constructs an authenticated WebSocket URL",
+        "zh-CN": "SDK 构造供认证连接使用的 WebSocket URL"
+      }
+    },
+    {
+      "id": "E69",
+      "from": "F40",
+      "to": "F38",
+      "kind": "verification",
+      "label": {
+        "en": "route/OpenAPI/SDK drift and consumer checks",
+        "zh-CN": "路由/OpenAPI/SDK 漂移与消费者检查"
+      }
+    }
+  ],
+  "api_operations": [
+    {
+      "operation": "GET /",
+      "access": "public",
+      "operation_id": "getRoot",
+      "workflow": "F01"
+    },
+    {
+      "operation": "GET /.well-known/cyanrex-classroom",
+      "access": "public",
+      "operation_id": "getWellKnownCyanrexClassroom",
+      "workflow": "F10"
+    },
+    {
+      "operation": "GET /auth/me",
+      "access": "public",
+      "operation_id": "getAuthMe",
+      "workflow": "F06"
+    },
+    {
+      "operation": "GET /classroom/invitations",
+      "access": "admin",
+      "operation_id": "getClassroomInvitations",
+      "workflow": "F11"
+    },
+    {
+      "operation": "GET /ebpf/attachments",
+      "access": "authenticated",
+      "operation_id": "getEbpfAttachments",
+      "workflow": "F22"
+    },
+    {
+      "operation": "GET /ebpf/attachments/details",
+      "access": "authenticated",
+      "operation_id": "getEbpfAttachmentsDetails",
+      "workflow": "F22"
+    },
+    {
+      "operation": "GET /ebpf/check/backends",
+      "access": "authenticated",
+      "operation_id": "getEbpfCheckBackends",
+      "workflow": "F26"
+    },
+    {
+      "operation": "GET /ebpf/check/remote",
+      "access": "authenticated",
+      "operation_id": "getEbpfCheckRemote",
+      "workflow": "F26"
+    },
+    {
+      "operation": "GET /ebpf/templates",
+      "access": "authenticated",
+      "operation_id": "getEbpfTemplates",
+      "workflow": "F17"
+    },
+    {
+      "operation": "GET /events",
+      "access": "authenticated",
+      "operation_id": "getEvents",
+      "workflow": "F32"
+    },
+    {
+      "operation": "GET /events/export",
+      "access": "authenticated",
+      "operation_id": "getEventsExport",
+      "workflow": "F32"
+    },
+    {
+      "operation": "GET /events/unread-count",
+      "access": "authenticated",
+      "operation_id": "getEventsUnreadCount",
+      "workflow": "F34"
+    },
+    {
+      "operation": "GET /health",
+      "access": "public",
+      "operation_id": "getHealth",
+      "workflow": "F01"
+    },
+    {
+      "operation": "GET /helper/environment",
+      "access": "authenticated",
+      "operation_id": "getHelperEnvironment",
+      "workflow": "F02"
+    },
+    {
+      "operation": "GET /learning/attempt",
+      "access": "authenticated",
+      "operation_id": "getLearningAttempt",
+      "workflow": "F29"
+    },
+    {
+      "operation": "GET /learning/attempts",
+      "access": "authenticated",
+      "operation_id": "getLearningAttempts",
+      "workflow": "F29"
+    },
+    {
+      "operation": "GET /learning/labs",
+      "access": "authenticated",
+      "operation_id": "getLearningLabs",
+      "workflow": "F27"
+    },
+    {
+      "operation": "GET /learning/teacher/attempts",
+      "access": "staff",
+      "operation_id": "getLearningTeacherAttempts",
+      "workflow": "F30"
+    },
+    {
+      "operation": "GET /learning/teacher/overview",
+      "access": "staff",
+      "operation_id": "getLearningTeacherOverview",
+      "workflow": "F30"
+    },
+    {
+      "operation": "GET /modules",
+      "access": "staff",
+      "operation_id": "getModules",
+      "workflow": "F14"
+    },
+    {
+      "operation": "GET /modules/c-headers/catalog",
+      "access": "staff",
+      "operation_id": "getModulesCHeadersCatalog",
+      "workflow": "F16"
+    },
+    {
+      "operation": "GET /modules/c-headers/selected-metadata",
+      "access": "authenticated",
+      "operation_id": "getModulesCHeadersSelectedMetadata",
+      "workflow": "F16"
+    },
+    {
+      "operation": "GET /openapi.json",
+      "access": "public",
+      "operation_id": "getOpenapiJson",
+      "workflow": "F38"
+    },
+    {
+      "operation": "GET /runner/agents",
+      "access": "admin",
+      "operation_id": "getRunnerAgents",
+      "workflow": "F24"
+    },
+    {
+      "operation": "GET /runner/jobs",
+      "access": "admin",
+      "operation_id": "getRunnerJobs",
+      "workflow": "F25"
+    },
+    {
+      "operation": "GET /runner/overview",
+      "access": "admin",
+      "operation_id": "getRunnerOverview",
+      "workflow": "F23"
+    },
+    {
+      "operation": "GET /runner/status",
+      "access": "authenticated",
+      "operation_id": "getRunnerStatus",
+      "workflow": "F23"
+    },
+    {
+      "operation": "GET /scripts",
+      "access": "authenticated",
+      "operation_id": "getScripts",
+      "workflow": "F13"
+    },
+    {
+      "operation": "GET /settings/compiler",
+      "access": "admin",
+      "operation_id": "getSettingsCompiler",
+      "workflow": "F03"
+    },
+    {
+      "operation": "GET /settings/events",
+      "access": "authenticated",
+      "operation_id": "getSettingsEvents",
+      "workflow": "F36"
+    },
+    {
+      "operation": "GET /settings/performance",
+      "access": "admin",
+      "operation_id": "getSettingsPerformance",
+      "workflow": "F03"
+    },
+    {
+      "operation": "GET /ws/events",
+      "access": "authenticated",
+      "operation_id": "getWsEvents",
+      "workflow": "F33"
+    },
+    {
+      "operation": "POST /auth/delete",
+      "access": "authenticated",
+      "operation_id": "postAuthDelete",
+      "workflow": "F09"
+    },
+    {
+      "operation": "POST /auth/login",
+      "access": "public",
+      "operation_id": "postAuthLogin",
+      "workflow": "F06"
+    },
+    {
+      "operation": "POST /auth/logout",
+      "access": "optional-session-csrf",
+      "operation_id": "postAuthLogout",
+      "workflow": "F07"
+    },
+    {
+      "operation": "POST /auth/password/change",
+      "access": "authenticated",
+      "operation_id": "postAuthPasswordChange",
+      "workflow": "F08"
+    },
+    {
+      "operation": "POST /auth/register",
+      "access": "public",
+      "operation_id": "postAuthRegister",
+      "workflow": "F04"
+    },
+    {
+      "operation": "POST /auth/totp/bootstrap",
+      "access": "public",
+      "operation_id": "postAuthTotpBootstrap",
+      "workflow": "F05"
+    },
+    {
+      "operation": "POST /classroom/invitations",
+      "access": "admin",
+      "operation_id": "postClassroomInvitations",
+      "workflow": "F11"
+    },
+    {
+      "operation": "POST /classroom/invitations/revoke",
+      "access": "admin",
+      "operation_id": "postClassroomInvitationsRevoke",
+      "workflow": "F11"
+    },
+    {
+      "operation": "POST /classroom/join",
+      "access": "optional-session-csrf",
+      "operation_id": "postClassroomJoin",
+      "workflow": "F12"
+    },
+    {
+      "operation": "POST /command",
+      "access": "admin",
+      "operation_id": "postCommand",
+      "workflow": "F15"
+    },
+    {
+      "operation": "POST /ebpf/check",
+      "access": "authenticated",
+      "operation_id": "postEbpfCheck",
+      "workflow": "F18"
+    },
+    {
+      "operation": "POST /ebpf/check/remote",
+      "access": "authenticated",
+      "operation_id": "postEbpfCheckRemote",
+      "workflow": "F26"
+    },
+    {
+      "operation": "POST /ebpf/check/remote/cancel",
+      "access": "authenticated",
+      "operation_id": "postEbpfCheckRemoteCancel",
+      "workflow": "F26"
+    },
+    {
+      "operation": "POST /ebpf/complete",
+      "access": "authenticated",
+      "operation_id": "postEbpfComplete",
+      "workflow": "F19"
+    },
+    {
+      "operation": "POST /ebpf/detach",
+      "access": "authenticated",
+      "operation_id": "postEbpfDetach",
+      "workflow": "F22"
+    },
+    {
+      "operation": "POST /ebpf/run",
+      "access": "authenticated",
+      "operation_id": "postEbpfRun",
+      "workflow": "F20"
+    },
+    {
+      "operation": "POST /events/delete",
+      "access": "authenticated",
+      "operation_id": "postEventsDelete",
+      "workflow": "F35"
+    },
+    {
+      "operation": "POST /events/mark-read",
+      "access": "authenticated",
+      "operation_id": "postEventsMarkRead",
+      "workflow": "F34"
+    },
+    {
+      "operation": "POST /learning/teacher/feedback",
+      "access": "staff",
+      "operation_id": "postLearningTeacherFeedback",
+      "workflow": "F31"
+    },
+    {
+      "operation": "POST /modules/c-headers/delete",
+      "access": "admin",
+      "operation_id": "postModulesCHeadersDelete",
+      "workflow": "F16"
+    },
+    {
+      "operation": "POST /modules/c-headers/download",
+      "access": "admin",
+      "operation_id": "postModulesCHeadersDownload",
+      "workflow": "F16"
+    },
+    {
+      "operation": "POST /modules/c-headers/select",
+      "access": "admin",
+      "operation_id": "postModulesCHeadersSelect",
+      "workflow": "F16"
+    },
+    {
+      "operation": "POST /modules/start",
+      "access": "admin",
+      "operation_id": "postModulesStart",
+      "workflow": "F14"
+    },
+    {
+      "operation": "POST /modules/stop",
+      "access": "admin",
+      "operation_id": "postModulesStop",
+      "workflow": "F14"
+    },
+    {
+      "operation": "POST /runner/agent/heartbeat",
+      "access": "runner-agent-signed",
+      "operation_id": "postRunnerAgentHeartbeat",
+      "workflow": "F24"
+    },
+    {
+      "operation": "POST /runner/agent/jobs/claim",
+      "access": "runner-agent-signed",
+      "operation_id": "postRunnerAgentJobsClaim",
+      "workflow": "F25"
+    },
+    {
+      "operation": "POST /runner/agent/jobs/result",
+      "access": "runner-agent-signed",
+      "operation_id": "postRunnerAgentJobsResult",
+      "workflow": "F25"
+    },
+    {
+      "operation": "POST /runner/agent/jobs/sync",
+      "access": "runner-agent-signed",
+      "operation_id": "postRunnerAgentJobsSync",
+      "workflow": "F25"
+    },
+    {
+      "operation": "POST /runner/agent/register",
+      "access": "runner-agent-bootstrap",
+      "operation_id": "postRunnerAgentRegister",
+      "workflow": "F24"
+    },
+    {
+      "operation": "POST /runner/jobs/cancel",
+      "access": "admin",
+      "operation_id": "postRunnerJobsCancel",
+      "workflow": "F25"
+    },
+    {
+      "operation": "POST /runner/jobs/compile-check",
+      "access": "admin",
+      "operation_id": "postRunnerJobsCompileCheck",
+      "workflow": "F25"
+    },
+    {
+      "operation": "POST /runner/jobs/probe",
+      "access": "admin",
+      "operation_id": "postRunnerJobsProbe",
+      "workflow": "F25"
+    },
+    {
+      "operation": "POST /scripts/delete",
+      "access": "authenticated",
+      "operation_id": "postScriptsDelete",
+      "workflow": "F13"
+    },
+    {
+      "operation": "POST /scripts/save",
+      "access": "authenticated",
+      "operation_id": "postScriptsSave",
+      "workflow": "F13"
+    },
+    {
+      "operation": "POST /settings/compiler",
+      "access": "admin",
+      "operation_id": "postSettingsCompiler",
+      "workflow": "F03"
+    },
+    {
+      "operation": "POST /settings/events",
+      "access": "authenticated",
+      "operation_id": "postSettingsEvents",
+      "workflow": "F36"
+    }
+  ],
+  "pages": [
+    {
+      "route": "/account",
+      "source": "frontend/pages/account.tsx",
+      "ui_access": "authenticated",
+      "workflows": [
+        "F08",
+        "F09"
+      ]
+    },
+    {
+      "route": "/dashboard",
+      "source": "frontend/pages/dashboard.tsx",
+      "ui_access": "authenticated",
+      "workflows": [
+        "F37"
+      ]
+    },
+    {
+      "route": "/ebpf",
+      "source": "frontend/pages/ebpf.tsx",
+      "ui_access": "authenticated",
+      "workflows": [
+        "F13",
+        "F16",
+        "F17",
+        "F18",
+        "F19",
+        "F20",
+        "F21",
+        "F22",
+        "F26",
+        "F29"
+      ]
+    },
+    {
+      "route": "/events",
+      "source": "frontend/pages/events.tsx",
+      "ui_access": "authenticated",
+      "workflows": [
+        "F32",
+        "F33",
+        "F34",
+        "F35"
+      ]
+    },
+    {
+      "route": "/helper",
+      "source": "frontend/pages/helper.tsx",
+      "ui_access": "authenticated",
+      "workflows": [
+        "F02",
+        "F23"
+      ]
+    },
+    {
+      "route": "/",
+      "source": "frontend/pages/index.tsx",
+      "ui_access": "public",
+      "workflows": [
+        "F37"
+      ]
+    },
+    {
+      "route": "/join",
+      "source": "frontend/pages/join.tsx",
+      "ui_access": "public",
+      "workflows": [
+        "F10",
+        "F12"
+      ]
+    },
+    {
+      "route": "/learn/[...slug]",
+      "source": "frontend/pages/learn/[...slug].tsx",
+      "ui_access": "authenticated",
+      "workflows": [
+        "F27"
+      ]
+    },
+    {
+      "route": "/learn",
+      "source": "frontend/pages/learn/index.tsx",
+      "ui_access": "authenticated",
+      "workflows": [
+        "F27",
+        "F29"
+      ]
+    },
+    {
+      "route": "/login",
+      "source": "frontend/pages/login.tsx",
+      "ui_access": "public",
+      "workflows": [
+        "F06"
+      ]
+    },
+    {
+      "route": "/modules",
+      "source": "frontend/pages/modules.tsx",
+      "ui_access": "teacher",
+      "workflows": [
+        "F16"
+      ]
+    },
+    {
+      "route": "/otp-setup",
+      "source": "frontend/pages/otp-setup.tsx",
+      "ui_access": "public",
+      "workflows": [
+        "F05"
+      ]
+    },
+    {
+      "route": "/register",
+      "source": "frontend/pages/register.tsx",
+      "ui_access": "public",
+      "workflows": [
+        "F04"
+      ]
+    },
+    {
+      "route": "/settings",
+      "source": "frontend/pages/settings.tsx",
+      "ui_access": "teacher",
+      "workflows": [
+        "F03",
+        "F24",
+        "F25",
+        "F36"
+      ]
+    },
+    {
+      "route": "/teaching",
+      "source": "frontend/pages/teaching.tsx",
+      "ui_access": "teacher",
+      "workflows": [
+        "F11",
+        "F30",
+        "F31"
+      ]
+    },
+    {
+      "route": "/terminal",
+      "source": "frontend/pages/terminal.tsx",
+      "ui_access": "teacher",
+      "workflows": [
+        "F14",
+        "F15"
+      ]
+    }
+  ],
+  "shared_ui_workflows": [
+    "F06",
+    "F07",
+    "F34",
+    "F37"
+  ],
+  "storage_boundaries": [
+    {
+      "id": "D01",
+      "workflows": [
+        "F04",
+        "F05",
+        "F06",
+        "F07",
+        "F08",
+        "F09",
+        "F12"
+      ],
+      "name": {
+        "en": "Authentication",
+        "zh-CN": "认证"
+      },
+      "backend": {
+        "en": "PostgreSQL users/sessions; intentional in-memory configuration/fallback",
+        "zh-CN": "PostgreSQL users/sessions；显式内存配置/降级路径"
+      },
+      "boundary": {
+        "en": "Raw session token stays in HttpOnly cookie, SQL stores its digest. Active-SQL login needs confirmed insertion; configured durable account mutations reject unconfirmed writes. Existing fallback is not cross-process revocation coordination.",
+        "zh-CN": "原始会话令牌只放 HttpOnly Cookie，SQL 存摘要。活跃 SQL 登录需要确认插入；配置了持久化的账户变更拒绝未确认写入。现有降级不提供跨进程撤销协调。"
+      },
+      "sources": [
+        "engine/src/services/auth_service/service.inc.rs",
+        "engine/src/services/auth_service/sessions.inc.rs",
+        "engine/src/services/auth_service/account_mutations.inc.rs"
+      ]
+    },
+    {
+      "id": "D02",
+      "workflows": [
+        "F13"
+      ],
+      "name": {
+        "en": "Scripts",
+        "zh-CN": "脚本"
+      },
+      "backend": {
+        "en": "PostgreSQL user_scripts or instance-local private JSON",
+        "zh-CN": "PostgreSQL user_scripts 或实例本地私有 JSON"
+      },
+      "boundary": {
+        "en": "Owner-bound operations; local admission → load → private temp/write/rename → publish cache. No cross-process file locking or crash-durability guarantee from rename alone.",
+        "zh-CN": "按所有者操作；本地准入 → 加载 → 私有临时文件/写入/rename → 发布缓存。没有跨进程文件锁，单靠 rename 不保证掉电持久性。"
+      },
+      "sources": [
+        "engine/src/services/script_store.rs",
+        "engine/src/services/script_store/local.rs"
+      ]
+    },
+    {
+      "id": "D03",
+      "workflows": [
+        "F27",
+        "F28",
+        "F29",
+        "F30",
+        "F31"
+      ],
+      "name": {
+        "en": "Attempts and feedback",
+        "zh-CN": "提交与反馈"
+      },
+      "backend": {
+        "en": "PostgreSQL learning_attempts or local shared JSON snapshots",
+        "zh-CN": "PostgreSQL learning_attempts 或本地共享 JSON 快照"
+      },
+      "boundary": {
+        "en": "Serialized local writes and feedback revisions coordinate one process. Attempt persistence, kernel effects and event publication are not one transaction.",
+        "zh-CN": "本地写入串行化与反馈版本协调单进程。提交持久化、内核副作用、事件发布不是一个事务。"
+      },
+      "sources": [
+        "engine/src/services/learning_store.rs",
+        "engine/src/services/learning_store/persistence.rs",
+        "engine/src/services/learning_store/feedback.rs"
+      ]
+    },
+    {
+      "id": "D04",
+      "workflows": [
+        "F20",
+        "F21",
+        "F28",
+        "F32",
+        "F33",
+        "F34",
+        "F35",
+        "F36"
+      ],
+      "name": {
+        "en": "Event history and unread",
+        "zh-CN": "事件历史与未读"
+      },
+      "backend": {
+        "en": "Bounded per-owner memory, subscriptions, PostgreSQL event_records/event_user_settings through persistence worker",
+        "zh-CN": "按所有者有界内存、订阅，以及经持久化 worker 写入的 PostgreSQL event_records/event_user_settings"
+      },
+      "boundary": {
+        "en": "Live publication is not an SQL-commit acknowledgement. Overflow, lag, deletion and retention bound history; current inventory does not prove queue/restart/failover consistency.",
+        "zh-CN": "实时发布不是 SQL 提交回执。溢出、落后、删除与保留策略限制历史；本清单不证明队列/重启/故障切换一致性。"
+      },
+      "sources": [
+        "engine/src/services/event_bus.rs",
+        "engine/src/services/event_bus_db.rs",
+        "engine/src/services/event_bus/event_bus_schema.rs",
+        "engine/src/services/event_bus/subscriptions.rs"
+      ]
+    },
+    {
+      "id": "D05",
+      "workflows": [
+        "F16",
+        "F18",
+        "F19",
+        "F20"
+      ],
+      "name": {
+        "en": "Headers and compilation files",
+        "zh-CN": "头文件与编译文件"
+      },
+      "backend": {
+        "en": "Trusted downloads/selection metadata; transient owner/instance workspaces",
+        "zh-CN": "可信下载/选择元数据；临时所有者/实例工作目录"
+      },
+      "boundary": {
+        "en": "Verified headers are instance-shared. Local workspaces/cache and an Agent's isolated compile filesystem are different environments.",
+        "zh-CN": "已验证头文件为实例共享。本地工作区/缓存与 Agent 隔离编译文件系统是不同环境。"
+      },
+      "sources": [
+        "engine/src/services/c_header_module.rs",
+        "engine/src/services/ebpf_loader/compiler_workspace.rs",
+        "engine/src/services/runner_agent_executor.rs"
+      ]
+    },
+    {
+      "id": "D06",
+      "workflows": [
+        "F03",
+        "F10",
+        "F11",
+        "F14",
+        "F23",
+        "F24",
+        "F25",
+        "F26"
+      ],
+      "name": {
+        "en": "Ephemeral control state",
+        "zh-CN": "临时控制状态"
+      },
+      "backend": {
+        "en": "In-process invitations, module status, Runner leases, Agent credentials/nonces/jobs, compiler mode/cache and metrics",
+        "zh-CN": "进程内邀请、模块状态、Runner 租约、Agent 凭据/nonce/作业、编译模式/缓存与指标"
+      },
+      "boundary": {
+        "en": "Restart is not durable recovery of these control objects; no multi-Engine scheduler/registry coordination is implemented.",
+        "zh-CN": "重启不等于恢复这些控制对象；没有多 Engine 调度器/注册表协调。"
+      },
+      "sources": [
+        "engine/src/state.rs",
+        "engine/src/services/classroom.rs",
+        "engine/src/services/runner_agent_registry.rs",
+        "engine/src/services/runner_job_queue.rs",
+        "engine/src/services/module_manager.rs"
+      ]
+    },
+    {
+      "id": "D07",
+      "workflows": [
+        "F17",
+        "F29",
+        "F37"
+      ],
+      "name": {
+        "en": "Browser state",
+        "zh-CN": "浏览器状态"
+      },
+      "backend": {
+        "en": "sessionStorage drafts/filters/reports; localStorage locale; HttpOnly session cookie managed separately",
+        "zh-CN": "sessionStorage 草稿/筛选/报告；localStorage 语言；单独管理的 HttpOnly 会话 Cookie"
+      },
+      "boundary": {
+        "en": "Browser cache is not a server-side submission or secret vault; a confirmed restore replaces the current draft but does not execute it.",
+        "zh-CN": "浏览器缓存不是服务端提交或秘密保险箱；确认恢复会替换当前草稿，但不执行它。"
+      },
+      "sources": [
+        "frontend/src/utils/pageState.ts",
+        "frontend/src/i18n/context.tsx",
+        "frontend/src/features/learning/AttemptResumePanel.tsx"
+      ]
+    },
+    {
+      "id": "D08",
+      "workflows": [
+        "F20",
+        "F21",
+        "F22",
+        "F23"
+      ],
+      "name": {
+        "en": "Kernel resources",
+        "zh-CN": "内核资源"
+      },
+      "backend": {
+        "en": "Local Linux kernel, bpffs owner/instance pins, Aya-held links/maps",
+        "zh-CN": "本地 Linux 内核、bpffs 所有者/实例 pin、Aya 持有的 link/map"
+      },
+      "boundary": {
+        "en": "Successful HTTP return, sampling timeout, lease release, logout and module stop are not equivalent to explicit detach. Namespaces/quotas do not create separate kernels.",
+        "zh-CN": "HTTP 成功返回、采样到期、租约释放、退出和模块停止不等于显式 detach。命名空间/配额不能生成独立内核。"
+      },
+      "sources": [
+        "engine/src/services/ebpf_loader.rs",
+        "engine/src/services/ebpf_loader/attach.inc.rs",
+        "engine/src/services/ebpf_loader/aya.inc.rs",
+        "engine/src/routes/ebpf/attachments.inc.rs"
+      ]
+    }
+  ],
+  "catalogs": {
+    "templates": [
+      {
+        "id": "xdp-pass",
+        "source": "engine/src/routes/ebpf/templates.inc.rs"
+      },
+      {
+        "id": "tracepoint-sys-enter",
+        "source": "engine/src/routes/ebpf/templates.inc.rs"
+      },
+      {
+        "id": "tracepoint-execve-counter",
+        "source": "engine/src/routes/ebpf/templates.inc.rs"
+      },
+      {
+        "id": "kprobe-openat-counter",
+        "source": "engine/src/routes/ebpf/templates.inc.rs"
+      },
+      {
+        "id": "kprobe-openat-argv",
+        "source": "engine/src/routes/ebpf/templates.inc.rs"
+      },
+      {
+        "id": "kretprobe-openat-ret",
+        "source": "engine/src/routes/ebpf/templates.inc.rs"
+      },
+      {
+        "id": "kprobe-connect-counter",
+        "source": "engine/src/routes/ebpf/templates.inc.rs"
+      },
+      {
+        "id": "kretprobe-connect-ret",
+        "source": "engine/src/routes/ebpf/templates.inc.rs"
+      },
+      {
+        "id": "ringbuf-skeleton",
+        "source": "engine/src/routes/ebpf/templates.inc.rs"
+      },
+      {
+        "id": "xdp-packet-counter",
+        "source": "engine/src/routes/ebpf/templates.inc.rs"
+      },
+      {
+        "id": "xdp-tcp4-counter",
+        "source": "engine/src/routes/ebpf/templates.inc.rs"
+      },
+      {
+        "id": "xdp-icmp-pass-scope",
+        "source": "engine/src/routes/ebpf/templates.inc.rs"
+      },
+      {
+        "id": "ringbuf-hi-freq-sampler",
+        "source": "engine/src/routes/ebpf/templates.inc.rs"
+      },
+      {
+        "id": "ringbuf-syscall-beacon",
+        "source": "engine/src/routes/ebpf/templates.inc.rs"
+      },
+      {
+        "id": "ringbuf-process-beacon",
+        "source": "engine/src/routes/ebpf/templates.inc.rs"
+      },
+      {
+        "id": "xdp-ipv4-protocol-meter",
+        "source": "engine/src/routes/ebpf/templates_learning.inc.rs"
+      },
+      {
+        "id": "xdp-large-packet-counter",
+        "source": "engine/src/routes/ebpf/templates_learning.inc.rs"
+      },
+      {
+        "id": "kprobe-openat-by-uid",
+        "source": "engine/src/routes/ebpf/templates_learning.inc.rs"
+      },
+      {
+        "id": "kretprobe-read-latency-beacon",
+        "source": "engine/src/routes/ebpf/templates_learning.inc.rs"
+      },
+      {
+        "id": "ringbuf-openat-latency-beacon",
+        "source": "engine/src/routes/ebpf/templates_learning.inc.rs"
+      },
+      {
+        "id": "xdp-dns-udp4-meter",
+        "source": "engine/src/routes/ebpf/templates_learning.inc.rs"
+      },
+      {
+        "id": "xdp-ipv4-frag-sampler",
+        "source": "engine/src/routes/ebpf/templates_learning.inc.rs"
+      },
+      {
+        "id": "kprobe-sendto-bytes-band",
+        "source": "engine/src/routes/ebpf/templates_learning.inc.rs"
+      },
+      {
+        "id": "kretprobe-connect-latency-beacon",
+        "source": "engine/src/routes/ebpf/templates_learning.inc.rs"
+      },
+      {
+        "id": "tracepoint-openat-sample-beacon",
+        "source": "engine/src/routes/ebpf/templates_learning.inc.rs"
+      },
+      {
+        "id": "xdp-ttl-meter",
+        "source": "engine/src/routes/ebpf/templates_learning_plus.inc.rs"
+      },
+      {
+        "id": "xdp-tcp-rst-beacon",
+        "source": "engine/src/routes/ebpf/templates_learning_plus.inc.rs"
+      },
+      {
+        "id": "kprobe-write-fd-band",
+        "source": "engine/src/routes/ebpf/templates_learning_plus.inc.rs"
+      },
+      {
+        "id": "kretprobe-write-latency-beacon",
+        "source": "engine/src/routes/ebpf/templates_learning_plus.inc.rs"
+      },
+      {
+        "id": "tracepoint-sys_enter_read-sample-beacon",
+        "source": "engine/src/routes/ebpf/templates_learning_plus.inc.rs"
+      },
+      {
+        "id": "xdp-ipv4-tos-meter",
+        "source": "engine/src/routes/ebpf/templates_learning_plus2.inc.rs"
+      },
+      {
+        "id": "xdp-udp-large-payload-meter",
+        "source": "engine/src/routes/ebpf/templates_learning_plus2.inc.rs"
+      },
+      {
+        "id": "kprobe-close-by-uid",
+        "source": "engine/src/routes/ebpf/templates_learning_plus2.inc.rs"
+      },
+      {
+        "id": "kretprobe-close-latency-beacon",
+        "source": "engine/src/routes/ebpf/templates_learning_plus2.inc.rs"
+      },
+      {
+        "id": "tracepoint-sched-process-exec-beacon",
+        "source": "engine/src/routes/ebpf/templates_learning_plus2.inc.rs"
+      },
+      {
+        "id": "xdp-icmp-type-meter",
+        "source": "engine/src/routes/ebpf/templates_learning_plus3.inc.rs"
+      },
+      {
+        "id": "kprobe-mmap-len-band",
+        "source": "engine/src/routes/ebpf/templates_learning_plus3.inc.rs"
+      },
+      {
+        "id": "kretprobe-accept-latency-beacon",
+        "source": "engine/src/routes/ebpf/templates_learning_plus3.inc.rs"
+      },
+      {
+        "id": "ringbuf-sched-switch-beacon",
+        "source": "engine/src/routes/ebpf/templates_learning_plus3.inc.rs"
+      },
+      {
+        "id": "tracepoint-sys-enter-nanosleep-beacon",
+        "source": "engine/src/routes/ebpf/templates_learning_plus3.inc.rs"
+      },
+      {
+        "id": "ringbuf-process-fork-beacon",
+        "source": "engine/src/routes/ebpf/templates_more.inc.rs"
+      },
+      {
+        "id": "xdp-dns-block-sample",
+        "source": "engine/src/routes/ebpf/templates_more.inc.rs"
+      },
+      {
+        "id": "kretprobe-openat-fail-alert",
+        "source": "engine/src/routes/ebpf/templates_more.inc.rs"
+      },
+      {
+        "id": "xdp-tcp-sample-beacon",
+        "source": "engine/src/routes/ebpf/templates_more.inc.rs"
+      },
+      {
+        "id": "xdp-tcp-syn-beacon",
+        "source": "engine/src/routes/ebpf/templates_more.inc.rs"
+      },
+      {
+        "id": "kretprobe-connect-latency-alert",
+        "source": "engine/src/routes/ebpf/templates_more.inc.rs"
+      },
+      {
+        "id": "tracepoint-execve-sample-beacon",
+        "source": "engine/src/routes/ebpf/templates_more.inc.rs"
+      },
+      {
+        "id": "xdp-icmpv4-sample-beacon",
+        "source": "engine/src/routes/ebpf/templates_more.inc.rs"
+      }
+    ],
+    "labs": [
+      {
+        "id": "01-first-program",
+        "template_id": "xdp-pass",
+        "requires_verified_attach": false,
+        "source": "engine/src/services/learning_catalog.rs"
+      },
+      {
+        "id": "02-trace-execve",
+        "template_id": "tracepoint-sys-enter",
+        "requires_verified_attach": true,
+        "source": "engine/src/services/learning_catalog.rs"
+      },
+      {
+        "id": "03-map-counter",
+        "template_id": "ringbuf-hi-freq-sampler",
+        "requires_verified_attach": true,
+        "source": "engine/src/services/learning_catalog.rs"
+      },
+      {
+        "id": "04-ring-buffer",
+        "template_id": "ringbuf-skeleton",
+        "requires_verified_attach": true,
+        "source": "engine/src/services/learning_catalog.rs"
+      },
+      {
+        "id": "05-verifier-debugging",
+        "template_id": null,
+        "requires_verified_attach": false,
+        "source": "engine/src/services/learning_catalog.rs"
+      }
+    ],
+    "bundled_modules": [
+      {
+        "source": "modules/module-ebpf/module.json",
+        "$schema": "../module.schema.json",
+        "schema_version": 1,
+        "name": "module-ebpf",
+        "version": "0.3.1",
+        "description": "Declares the eBPF attachment and event-streaming integration surface.",
+        "capabilities": [
+          "ebpf.attach",
+          "ebpf.detach",
+          "ebpf.events"
+        ]
+      },
+      {
+        "source": "modules/module-network/module.json",
+        "$schema": "../module.schema.json",
+        "schema_version": 1,
+        "name": "module-network",
+        "version": "0.3.1",
+        "description": "Declares normalized network-event capture and publication capabilities.",
+        "capabilities": [
+          "network.events",
+          "event.publish"
+        ]
+      }
+    ]
+  },
+  "historical_evidence": {
+    "source": "reports/acceptance/2026-09-09-boundary-fixes/result.json",
+    "status": "historical-only; not a fresh current-source acceptance run",
+    "module_taxonomy": "docs/en/testing-network.md"
+  },
+  "source_inputs": [
+    {
+      "path": ".github/workflows/release-validation.yml",
+      "sha256": "5a8f1adcc50ac3e34030c7fc5873edc3949f02271852312f4ca25790193d4d44"
+    },
+    {
+      "path": "docs/en/classroom-connection.md",
+      "sha256": "082760ad75c259322791ad2ded700688d2f96e432ba8603b6423dd7bbfb9c18f"
+    },
+    {
+      "path": "docs/en/testing-network.md",
+      "sha256": "146a23383cfc075df4f775081412326f42881e796efd59795378ef435406e7ff"
+    },
+    {
+      "path": "engine/Cargo.toml",
+      "sha256": "17738c937ecd37932606d52b4a77d4aae2415649a6d3beb7a59c260126b5fca5"
+    },
+    {
+      "path": "engine/openapi/openapi.json",
+      "sha256": "775082bec5c9672655156b7486a7db4626091407c07374dd302daad15b82b9ce"
+    },
+    {
+      "path": "engine/src/application.rs",
+      "sha256": "9b33568414726469662182e6b1fab84aeb305ecdbc90912e4d74e94964789c06"
+    },
+    {
+      "path": "engine/src/bin/cyanrex-release/candidate.rs",
+      "sha256": "fe63a5d861421d9dc2bc657e0ffb113894e9054bceec7464125674c5e5106e27"
+    },
+    {
+      "path": "engine/src/bin/cyanrex-release/package.rs",
+      "sha256": "d55eb37c6285c9e4fa7c0ffa2260acff917499c4db6e602244507f22aee18d46"
+    },
+    {
+      "path": "engine/src/bin/cyanrex-release/ssh_cli.rs",
+      "sha256": "46127cff8b8bdfd6c26f7d21bc0b67f37e5017dd3daedf2a472e51f8b63f004b"
+    },
+    {
+      "path": "engine/src/bin/cyanrex-runner-agent.rs",
+      "sha256": "009cb4d1115fb3c85dff91d861c0d7641cd19c697aa5b6cae3e794c18e493b95"
+    },
+    {
+      "path": "engine/src/config.rs",
+      "sha256": "3ef33b88b9f0114686c76497bb8b7e51dfb0fa822a5b109416a0c00e87ac2ff7"
+    },
+    {
+      "path": "engine/src/metrics.rs",
+      "sha256": "3e122ade545fb79865ce74ffc035881abe84ee29ac85c68b737b91c0f6438b7b"
+    },
+    {
+      "path": "engine/src/models/runner_job.rs",
+      "sha256": "96680eea353e8d498d2d7653a3827c44f4982156c748cec0cf60be514309d618"
+    },
+    {
+      "path": "engine/src/routes/auth.rs",
+      "sha256": "c5f9553a45d2ab9f359fd3e8620004653d102924faf07c51033e0b40c9e0c520"
+    },
+    {
+      "path": "engine/src/routes/auth_session.rs",
+      "sha256": "f40abd56a068ba5695a06e8b9b652ae9c2aff59c83b994d7ddcb368ac8142b88"
+    },
+    {
+      "path": "engine/src/routes/c_headers.rs",
+      "sha256": "89b2c584349f0a5313c75f3a7b2b2ddffdbac2abe5c034171fd923632b60f87d"
+    },
+    {
+      "path": "engine/src/routes/classroom.rs",
+      "sha256": "65a02e3bb9ac06f6afbe428a24073cb39721f0b472088c48572a8ff7ddb468f5"
+    },
+    {
+      "path": "engine/src/routes/ebpf.rs",
+      "sha256": "5374f873c65f5e6e46d3e741785b11d681e9fb415d34746bbd8a92f6ab0aca8a"
+    },
+    {
+      "path": "engine/src/routes/ebpf/attachments.inc.rs",
+      "sha256": "e70184ac3a9e36f7d563380146b3feebea0a2f483b01a9b32e23c9a93f52b32c"
+    },
+    {
+      "path": "engine/src/routes/ebpf/check.inc.rs",
+      "sha256": "240e4e9f1ad74f225de255160867778804e3a18fc95daeabc639d6b8328ebb59"
+    },
+    {
+      "path": "engine/src/routes/ebpf/completion.inc.rs",
+      "sha256": "8515a5b267ee7f581e569b9e7c969369f49fb929b1009d552971a2300c488591"
+    },
+    {
+      "path": "engine/src/routes/ebpf/handlers.inc.rs",
+      "sha256": "b577626b2ecc39f6a57c2c731e06d66a03ec9335060bd17344f5f42740479ead"
+    },
+    {
+      "path": "engine/src/routes/ebpf/learning.inc.rs",
+      "sha256": "59547ed1150558e0e1351c0672dbe970a3f858a037508cc8a6d38dff2becdd45"
+    },
+    {
+      "path": "engine/src/routes/ebpf/remote_check.inc.rs",
+      "sha256": "cf3f4672a41a0b893913780b7635bcc92f1192c373d894ee25911d1ca1157dc1"
+    },
+    {
+      "path": "engine/src/routes/ebpf/ringbuf.inc.rs",
+      "sha256": "0a985bc16b741e72d300ebcb85f59bacf541e683e9af6942361c526968e6e974"
+    },
+    {
+      "path": "engine/src/routes/ebpf/stream.inc.rs",
+      "sha256": "698f45e962f54bfd6f2218f323282032afa919bafdcc8c62cad778c9ea3e90f0"
+    },
+    {
+      "path": "engine/src/routes/ebpf/template_catalog.inc.rs",
+      "sha256": "2604d1faf4792b47254153ff71949bd4fdfd628e5f8c34163a7acdd7d7a4f633"
+    },
+    {
+      "path": "engine/src/routes/ebpf/templates.inc.rs",
+      "sha256": "87c210b5de28734723b1c8d37ad68e7272dcc1057f1e30b537712c374465d6ca"
+    },
+    {
+      "path": "engine/src/routes/ebpf/templates_learning.inc.rs",
+      "sha256": "efced0cace7cce9de468416a1faf65959443f8e345c1deef69a76d5b9bc25de9"
+    },
+    {
+      "path": "engine/src/routes/ebpf/templates_learning_plus.inc.rs",
+      "sha256": "66bf02452460bd3782644968a6e9d7c57d40d11b83b4c7b7405ae7bfd2b71839"
+    },
+    {
+      "path": "engine/src/routes/ebpf/templates_learning_plus2.inc.rs",
+      "sha256": "4f20e1c89bac510f32c9b11a9f6a0d24f3e31f0d3d6dee7b353b65837531683c"
+    },
+    {
+      "path": "engine/src/routes/ebpf/templates_learning_plus3.inc.rs",
+      "sha256": "fc93e1d5221fcf12cd54e95b8d95961cf78fa764c9fee6ff5cfbf832594a0792"
+    },
+    {
+      "path": "engine/src/routes/ebpf/templates_more.inc.rs",
+      "sha256": "17f1640a1b1adb4a0d46f7cf5f1eb7be63add9b5d84136cdcb0b7279f52a17ef"
+    },
+    {
+      "path": "engine/src/routes/events.rs",
+      "sha256": "1e501ae96f4c103a7866fb268448f2eb551bdf902efd92312b745915ef9056d1"
+    },
+    {
+      "path": "engine/src/routes/events/stream.rs",
+      "sha256": "9aae8b53ce4d1ed51f7d989b36016e802f91eaf48a9ab3a16971d4c6e99ad249"
+    },
+    {
+      "path": "engine/src/routes/health.rs",
+      "sha256": "bac8661f9a27af93f6d55c10461cc5a1c40448c5fd13fd6d132669470f8053dd"
+    },
+    {
+      "path": "engine/src/routes/helper.rs",
+      "sha256": "6039c107714f9a01e27c344ad41a548ea5ae895c18001a2a824f0d777357df4d"
+    },
+    {
+      "path": "engine/src/routes/learning.rs",
+      "sha256": "7afd3736bed62ce4c7a4e7cd3f34cacac30354865bba05aa068dbd8a26915cb9"
+    },
+    {
+      "path": "engine/src/routes/modules.rs",
+      "sha256": "8d685f9ee8fd748c3d50cce66f1c33fa7b3615c9a71440bb60563ece9c09a684"
+    },
+    {
+      "path": "engine/src/routes/runner.rs",
+      "sha256": "6e8826c3a6755124edd9118f8348cebe1a6e13884a5ad1e882029325fff2a55c"
+    },
+    {
+      "path": "engine/src/routes/runner_agent.rs",
+      "sha256": "473fe3286ca29c7d36bdbc4ec9fac386a33b71dbdbe0ee76688a0f668182a2ba"
+    },
+    {
+      "path": "engine/src/routes/runner_job.rs",
+      "sha256": "a4625416ab6fa0d55eff85e67a94ee0c652c2e936d91b537a39b31114e23eb7c"
+    },
+    {
+      "path": "engine/src/routes/scripts.rs",
+      "sha256": "b34bca96acc087657b55f8d6941f5f442ece2f044a8be5573d26b4d0b6b9d55e"
+    },
+    {
+      "path": "engine/src/routes/settings.rs",
+      "sha256": "9e74f5d88ac45c215257c0e892bded4f1e7592300d171eee4f993eb962c219b9"
+    },
+    {
+      "path": "engine/src/services/auth_service/account_mutations.inc.rs",
+      "sha256": "d2ec479e4c2ff7eeb8392803543bfc6e2907da881ea815c50d74782e073735df"
+    },
+    {
+      "path": "engine/src/services/auth_service/service.inc.rs",
+      "sha256": "c6863a29923ef71ffb42d9920b59f4d6db30fc8a7ea46cf4a35cd91a9a451b52"
+    },
+    {
+      "path": "engine/src/services/auth_service/sessions.inc.rs",
+      "sha256": "f589de8fb454a4f7d4a89b68a57f11f541e06d0fbe87366a48c7be0dfd10af68"
+    },
+    {
+      "path": "engine/src/services/c_header_module.rs",
+      "sha256": "d6a110dc943ffcfd09f5d13318fbd264ab1496f4f8ea20eec47c41fdc8c306a9"
+    },
+    {
+      "path": "engine/src/services/classroom.rs",
+      "sha256": "4722100b5d8b615a4b98b459d7f777620889f4feab891a5525deb39c1f137f63"
+    },
+    {
+      "path": "engine/src/services/command_dispatcher.rs",
+      "sha256": "7faae85b6ee916c89ac92682f24e6d528cb908ec675c13031d0fb8861d9c1a12"
+    },
+    {
+      "path": "engine/src/services/ebpf_loader.rs",
+      "sha256": "287bb03216cced13c17aa73c41090033f8dbf44a71081324f4d2a696e429ca58"
+    },
+    {
+      "path": "engine/src/services/ebpf_loader/attach.inc.rs",
+      "sha256": "3b5476009d7824470882832dca9d77aeb152df88f80920638b07f3f73a42ffad"
+    },
+    {
+      "path": "engine/src/services/ebpf_loader/aya.inc.rs",
+      "sha256": "9a2b95c5f25e3c5969788417e5184a416e33feac0207ee9a908921580c943c6c"
+    },
+    {
+      "path": "engine/src/services/ebpf_loader/check.inc.rs",
+      "sha256": "faeccc6d86fd6ef03bc7688ebc0237a683fcbeb347891d6843e08dc6148a3020"
+    },
+    {
+      "path": "engine/src/services/ebpf_loader/compiler_workspace.rs",
+      "sha256": "f044397161d5e7d94947765182317aa825e502be7ee92bc51b900314a61407b9"
+    },
+    {
+      "path": "engine/src/services/ebpf_loader/completion.inc.rs",
+      "sha256": "9dcfcd189ad864abb9d010366ed0086b970bb8867a2310eb967a0343e49e3b5f"
+    },
+    {
+      "path": "engine/src/services/ebpf_loader/core.inc.rs",
+      "sha256": "922ad9c8378accb48710e31f6e9330f36ce65ea1b31c5ad4f14558270839b1ad"
+    },
+    {
+      "path": "engine/src/services/ebpf_loader/debug.inc.rs",
+      "sha256": "f9ed8f7e6aa5ff04b88f3c894b275ced75c6fbea43830159420f6b5ffb076bd9"
+    },
+    {
+      "path": "engine/src/services/environment_checker.rs",
+      "sha256": "1390648ebb9c5be2e9c59abc3b7e3bea9772491e32d9c9cab6b4626cbe5cfd99"
+    },
+    {
+      "path": "engine/src/services/event_bus.rs",
+      "sha256": "4b2d52b861887952a293db0d752d4f7b8d2682635af109f189e3f480d07d1001"
+    },
+    {
+      "path": "engine/src/services/event_bus/deletion.rs",
+      "sha256": "87bebf0795f83c2d9b6ca50011fda4c9981235ac4f695f21f75a62ebf444e901"
+    },
+    {
+      "path": "engine/src/services/event_bus/event_bus_schema.rs",
+      "sha256": "a14ae75c4550393d30fc121c2da5074413e83f2225246bed60b1e51305d2c534"
+    },
+    {
+      "path": "engine/src/services/event_bus/subscriptions.rs",
+      "sha256": "bd6117829bfc70c9d38b26e4f370b720cb119b4b2fe7478a2976672063bff77f"
+    },
+    {
+      "path": "engine/src/services/event_bus_db.rs",
+      "sha256": "5d7d880607766cbbc7aeb3be15ddfe5e61005b8d7be8496a84fb169d2e83d356"
+    },
+    {
+      "path": "engine/src/services/event_bus_filter.rs",
+      "sha256": "44f54e572ce34a512614c33ca3d2b27ef85eaa57713da31478f3c168a54c1528"
+    },
+    {
+      "path": "engine/src/services/event_bus_policy.rs",
+      "sha256": "30c68c0c01291a32b58fed774a2735096c3158a3a6ec8ad32f6a7675c64b7722"
+    },
+    {
+      "path": "engine/src/services/learning_catalog.rs",
+      "sha256": "efc90f4b4578677ede9d66c643911c9eface21b5cbac15329a046a67a1ff5f89"
+    },
+    {
+      "path": "engine/src/services/learning_source.rs",
+      "sha256": "caff53596dc6d81b80d2bee0dc964f5f4b87253f8ce9be53429b17d2f8b9a669"
+    },
+    {
+      "path": "engine/src/services/learning_store.rs",
+      "sha256": "90f313aec3f74d6ca91ddea0d07e2113fff026cc3d19ce55345b1f7f64fd79b9"
+    },
+    {
+      "path": "engine/src/services/learning_store/attempt.rs",
+      "sha256": "5e7dd0cc9acac2daed9b233a614bd3ffebca9585ead123207ec30ce5a63321bd"
+    },
+    {
+      "path": "engine/src/services/learning_store/feedback.rs",
+      "sha256": "9879921260ecd6fa773d134f40da28bb730162a3802e244b8304f2683c9296a2"
+    },
+    {
+      "path": "engine/src/services/learning_store/persistence.rs",
+      "sha256": "1523fe7c4bea17aaaafe2f7b50334f2ae846373a47db191af81a3de6545847ab"
+    },
+    {
+      "path": "engine/src/services/learning_store/queries.rs",
+      "sha256": "60501c66f6a5ba0a5489058f9b979cca32ad977cc339c16990cb84b047378412"
+    },
+    {
+      "path": "engine/src/services/module_manager.rs",
+      "sha256": "712be5f47f168f8d9dfadb22ec2869d56702c7e0d517fcdbc34ab83645e08edb"
+    },
+    {
+      "path": "engine/src/services/runner_agent_authenticator.rs",
+      "sha256": "99ffb35e5609f608b9aad407b654d921b399ab252474f855a398884af459484b"
+    },
+    {
+      "path": "engine/src/services/runner_agent_client.rs",
+      "sha256": "c47859ad981b4cd2b9a97f29e3fd378b76149fd3f466c653c907d9385c1f636b"
+    },
+    {
+      "path": "engine/src/services/runner_agent_executor.rs",
+      "sha256": "2efdf630d1dc50c68375f71b76df971114b0e7cad933739ab8e7c3e52f5cc5a7"
+    },
+    {
+      "path": "engine/src/services/runner_agent_registry.rs",
+      "sha256": "07da9a1186019ff6f4f308402aa9ee2acb19614e39ebae931cd017fcd29ed7cb"
+    },
+    {
+      "path": "engine/src/services/runner_driver.rs",
+      "sha256": "b08efbee3f16933c184cadd822d43c9a584d8e60ecece12872dcc09d2ec6b39a"
+    },
+    {
+      "path": "engine/src/services/runner_job_queue.rs",
+      "sha256": "ae5045de6fc3d9941c8fed803aa3670d31471ca25e53e1933b7561ef5dd39131"
+    },
+    {
+      "path": "engine/src/services/runner_manager.rs",
+      "sha256": "150184cb2de207f6b1f8b1ae2a314fb12cddc7aa17b39834c70ab389b1a8f0e3"
+    },
+    {
+      "path": "engine/src/services/script_store.rs",
+      "sha256": "50af6d5570bc30359237964b6503f340576fff36e5a319a580ed23d20e905302"
+    },
+    {
+      "path": "engine/src/services/script_store/local.rs",
+      "sha256": "fe5c78f32736ce2b84ece34576517ec36a3eeae5fd4dc87b2e0156ef940957da"
+    },
+    {
+      "path": "engine/src/state.rs",
+      "sha256": "34e71b82157540c87b0ca62cc8784795b414aa11dcf0268bf3cabefa2ffbf3e6"
+    },
+    {
+      "path": "frontend/pages/account.tsx",
+      "sha256": "56a6ce91faee203f0086abee611327c036b1ee4533c34f5b7dac51286a940178"
+    },
+    {
+      "path": "frontend/pages/dashboard.tsx",
+      "sha256": "d1ff5672715ee6029b1253572b66a06b33fd24a419931d4ebf0ac22a276b09a0"
+    },
+    {
+      "path": "frontend/pages/ebpf.tsx",
+      "sha256": "3a960cb80b17b704ed504989de347d917f39e5e574736d1387fc281a7cea35cf"
+    },
+    {
+      "path": "frontend/pages/events.tsx",
+      "sha256": "09169ca365b4b50fd284db66461d818181436c833feadaeb3c2a96790a09a097"
+    },
+    {
+      "path": "frontend/pages/helper.tsx",
+      "sha256": "b0f20ad72656ad1c84c525c7bcd8cd7c35eedf18b2ac6457a5294c4c3d7fc5b6"
+    },
+    {
+      "path": "frontend/pages/index.tsx",
+      "sha256": "7ba63c34dee55b51a180bc464da36ddae6151cce775731963d43dc31d935bd82"
+    },
+    {
+      "path": "frontend/pages/join.tsx",
+      "sha256": "48a8dd7dda98f7085b73ba7cb36789901891a0545cf02a8cd35e6a52def5ff66"
+    },
+    {
+      "path": "frontend/pages/learn/[...slug].tsx",
+      "sha256": "1b015a25aa7f52a6b4ea62b51ae140e8e4cc944d140c85d21315c2ca11b5aa05"
+    },
+    {
+      "path": "frontend/pages/learn/index.tsx",
+      "sha256": "94f27e613d570bffcb8b85de890043247ad6474906af055c9198cd256b1bb369"
+    },
+    {
+      "path": "frontend/pages/login.tsx",
+      "sha256": "21691542a6b461f2ba24a8cdb678568cf79622b77bb5195ad396e870dfa8fc1b"
+    },
+    {
+      "path": "frontend/pages/modules.tsx",
+      "sha256": "12122293d7005d3dca011c376406422696eba265c21fdd55b88555b2b67b7579"
+    },
+    {
+      "path": "frontend/pages/otp-setup.tsx",
+      "sha256": "2a5523e8140d071f432a117534e69e1ff9bc877ca49289da59c46335caebbe05"
+    },
+    {
+      "path": "frontend/pages/register.tsx",
+      "sha256": "b72353971f051c721292e366887ccb5bbe1f3589764a26691958b8f1fb800f64"
+    },
+    {
+      "path": "frontend/pages/settings.tsx",
+      "sha256": "3f8d0b2d472d7ac49e34f828d8b58bf18e1f71f7a6c4c11e899f16f2b4969eb7"
+    },
+    {
+      "path": "frontend/pages/teaching.tsx",
+      "sha256": "6d798fe20387f40082c6e1018a93cfc79594c24d886d3961e9fdcda9c50660c4"
+    },
+    {
+      "path": "frontend/pages/terminal.tsx",
+      "sha256": "d861a7fe24815e1b2cb57468e52e2fbeaa06df8616a3964a9c25840807aee50e"
+    },
+    {
+      "path": "frontend/scripts/sync-course-docs.mjs",
+      "sha256": "aa68f74f0ef9280db3022d246b20a5ace0724185c60c52c241b4cdc586712e83"
+    },
+    {
+      "path": "frontend/src/components/MarkdownDocument.tsx",
+      "sha256": "c667b8029bf7528932aca1471801af8e8ca7a4a74c5a29ab2812360a4edeb463"
+    },
+    {
+      "path": "frontend/src/components/SidebarLayout.tsx",
+      "sha256": "3d082cbaf7f4098ca6451555f9c48d94097f5d7e1e7ba57c170acf19fc479161"
+    },
+    {
+      "path": "frontend/src/components/useConfirmedAction.tsx",
+      "sha256": "828e846577513c7d83d447fd067718327e0b92375969da0c599115c45ec997fd"
+    },
+    {
+      "path": "frontend/src/config/runtime.ts",
+      "sha256": "3a64ac8a9f4f16fd08fc3cf677cff7297a8a842d0cbe20973011fe286a10ec3d"
+    },
+    {
+      "path": "frontend/src/features/classroom/InvitationPanel.tsx",
+      "sha256": "fe09cb5cf0e3ce67a6900e0ea8ccd5d391bd5345fc13bd6cfd2675b48876c2f4"
+    },
+    {
+      "path": "frontend/src/features/classroom/connection.js",
+      "sha256": "b91990927b5aad8c491a16453c536d442daabfce11e7670fc1ddffd53fea0c42"
+    },
+    {
+      "path": "frontend/src/features/ebpf/detachTarget.ts",
+      "sha256": "51cb0a984d7f24825a25fd6fee8adfd87508708f0c381cbd5150bbe4b4d32013"
+    },
+    {
+      "path": "frontend/src/features/ebpf/useBreakpointHitStream.ts",
+      "sha256": "d81728bff8769e78223728669865cad1d9c869496ab5385847fa3f19231506a7"
+    },
+    {
+      "path": "frontend/src/features/ebpf/useCompileBackends.ts",
+      "sha256": "a3e8fca73eedab4de7f8c43cea8caee52e1b86094bd728e9ccc7c5fb31684507"
+    },
+    {
+      "path": "frontend/src/features/ebpf/useCompilerDiagnostics.ts",
+      "sha256": "2b3b5dcaede6383bc61ff454a1e1b46e2af086e621d6be0a24a2de20fa696358"
+    },
+    {
+      "path": "frontend/src/features/ebpf/useEbpfPageController.ts",
+      "sha256": "997b03737ab562c83d737256a8ac66948e8bdb25ca8e197862714f6a5815a7e0"
+    },
+    {
+      "path": "frontend/src/features/ebpf/useEbpfSafetyActions.ts",
+      "sha256": "b96cfc4334074bc5f6d8283789107160931bb7c42facfdbce9847a2efff4b091"
+    },
+    {
+      "path": "frontend/src/features/events/deleteScope.ts",
+      "sha256": "04fa36cd037336c12d7f3d4f57df4e312394d2ff653ab27474c1e38937a6d48e"
+    },
+    {
+      "path": "frontend/src/features/events/eventStream.ts",
+      "sha256": "a6a23f680e6b2c152e256a0ef9e7d3b8895513b644614aad909f5438cef4cb79"
+    },
+    {
+      "path": "frontend/src/features/learning/AttemptResumePanel.tsx",
+      "sha256": "e34bf4c79bc49a12265fe9d81168dd9d3bcb576d1f8f1dbdf1563e55fa046c6a"
+    },
+    {
+      "path": "frontend/src/features/learning/TeacherFeedback.tsx",
+      "sha256": "1b947080d805b7dd261b79007f11c181e788ebea5f512ecd12d03d6388ba2236"
+    },
+    {
+      "path": "frontend/src/features/learning/resumeAttempt.ts",
+      "sha256": "6d89fc57053350ef76a2477fd635fbedbdfd2ec6907fc2e7eaf39eaf30d18887"
+    },
+    {
+      "path": "frontend/src/features/terminal/command.ts",
+      "sha256": "cadb66e430c18d56dd590b899be11c70c794bf081751ab851b739cbad1853e20"
+    },
+    {
+      "path": "frontend/src/i18n/context.tsx",
+      "sha256": "1059258e37ec48a49e99caa3c1f84ff3cbdfb4a9b658d6be23d40c70c89ad8b7"
+    },
+    {
+      "path": "frontend/src/utils/authSession.ts",
+      "sha256": "a279a6cb34c28151e3c743dcae8df4137d29bd8efcaa7162076c44ede44adbf6"
+    },
+    {
+      "path": "frontend/src/utils/cEbpfIntelligence.ts",
+      "sha256": "f2c23699af683e943b2d50d6b2ecbefe53e15a5c76173171eecea29ac438bfca"
+    },
+    {
+      "path": "frontend/src/utils/pageState.ts",
+      "sha256": "80fb002415682050e1013ebefb35a59a0f28df30972a7d43f4d3f69eedeb3211"
+    },
+    {
+      "path": "frontend/src/utils/sidebarPermissions.js",
+      "sha256": "2cd233cf01ccf5d13980b92ddd9fb494aa8ec075eed166c51c7b0be09451c1dc"
+    },
+    {
+      "path": "modules/README.md",
+      "sha256": "52c3a906831fbd4d4004f6d41269d8e654d55acda3fa34ad71643bbaadf71e62"
+    },
+    {
+      "path": "modules/module-ebpf/module.json",
+      "sha256": "a000b9a235ebb3882afccfcc1db05eb707f1a9ccc67416defb293d7ec53e9ecd"
+    },
+    {
+      "path": "modules/module-network/module.json",
+      "sha256": "6686f7a0281a5539a9676fc34634f2a139f2e64d76ebf2d6795b264f381d9bb5"
+    },
+    {
+      "path": "modules/module-protocol/README.md",
+      "sha256": "a8b13260cf50fa776855cffd93de7e00b39ef18793ccffba12c41c19c7cf0bce"
+    },
+    {
+      "path": "reports/acceptance/2026-09-09-boundary-fixes/result.json",
+      "sha256": "7a8fb602b46224366029945535ce1f7f856b0470b2cb44a85a2d07319971ffc5"
+    },
+    {
+      "path": "scripts/openapi-contract.mjs",
+      "sha256": "0ea92df386e8203a40357fc3fee1785797fc457779cd3381bb2a81fbd3b216f7"
+    },
+    {
+      "path": "scripts/package-distribution.sh",
+      "sha256": "3e6ac0fd8fdbf91e76b33f3ced693460dde9668c4b21ef5e066e43ef3dc35322"
+    },
+    {
+      "path": "scripts/quality-gate.sh",
+      "sha256": "2ae112f2c45f1f190c3928613c50d70f1b6fd159cd1a1b438b82e3a886d0b6c7"
+    },
+    {
+      "path": "sdk-js/src/generated/operations.ts",
+      "sha256": "6b38fc37661558c962a8f3c49bbc63bd22e50266c92414ff3043809084accb27"
+    },
+    {
+      "path": "sdk-js/src/index.ts",
+      "sha256": "4923c06d14cf3521f435d25e4e1ef77a57c6bec995004ab0ac218c5ec725d323"
+    },
+    {
+      "path": "start.sh",
+      "sha256": "3af15b0a9cc289d531fe57fc205de6b7768f13dbb7b1ae2dfadc3f6f02173079"
+    }
+  ]
+}

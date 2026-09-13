@@ -132,6 +132,13 @@ const queryParameters = new Map([
 ]);
 
 const authMutationOperations = new Set(["POST /auth/logout", "POST /auth/password/change", "POST /auth/delete"]);
+const learningReadOperations = new Set([
+  "GET /learning/attempts", "GET /learning/labs",
+  "GET /learning/teacher/attempts", "GET /learning/teacher/overview",
+]);
+const privateReadHeaders = {
+  "Cache-Control": { description: "Do not cache learning records or storage-failure responses.", schema: { type: "string", const: "no-store" } },
+};
 
 const createdOperations = new Set([
   "POST /classroom/invitations",
@@ -192,6 +199,18 @@ function buildOperation(operation, method, routePath, access) {
   if (operation === "GET /learning/attempt") {
     result.description = "Read one previous submission belonging to the authenticated session owner, including source and current teacher feedback. No username override or write occurs. Missing/other-owner records return 404; invalid IDs return 400; storage errors return 500. Responses use Cache-Control: no-store.";
   }
+  if (learningReadOperations.has(operation)) {
+    result.description = "Read learning records/projections without writing or executing a lab. A selected PostgreSQL schema/query failure returns 500 with no silent local fallback for this read. Invalid or unreadable local snapshots also return 500, not a successful empty history, zero progress or empty classroom. Missing local files remain valid empty state. Local load failures remain retryable after repair. Successful reads and storage failures use Cache-Control: no-store; errors omit stored values and paths.";
+  }
+  if (["POST /ebpf/check/remote", "GET /ebpf/check/remote", "POST /ebpf/check/remote/cancel"].includes(operation)) {
+    result.description = "Owner-bound remote compile-only checks have a 35-second queue wait limit from submission. An unclaimed check becomes expired on the next queue interaction, releasing its source and per-user active quota. The claimed execution deadline is unchanged and begins at claim; this does not expire staff-managed unowned jobs or kill a running compiler. Queued cancellation is immediate; claimed cancellation requires acknowledgement or lease expiry. Missing/other-owner jobs return 404. No remote loading or silent local fallback is added.";
+  }
+  if (operation === "POST /runner/agent/jobs/claim") {
+    result.description = "Signed claim requires a healthy Agent with a nonzero free-slot report. Total usable capacity is active_jobs + available_slots, already bounded by the registered maximum. Outstanding claimed and cancel-requested leases count once against that total; reserved capacity is not implicitly re-enabled. The claim response is no-store and includes the source and per-claim lease only for the assigned Agent.";
+  }
+  if (operation === "POST /runner/agent/jobs/sync") {
+    result.description = "Signed lease synchronization reports cancellations and lost_job_ids. The bundled Agent discards its job before execution or result submission if that job is listed as lost, even if a cancellation instruction also names it. This rejects the stale job without stopping later polling; it is not continuous mid-execution lease monitoring.";
+  }
   if (authMutationOperations.has(operation)) {
     result.description = "Configured PostgreSQL authentication must confirm the durable mutation before reporting success; no silent memory-only change or revocation on storage failure. Unconfirmed persistence returns 503 without clearing the session cookie; restore storage and verify state before an explicit retry. A lost commit/response acknowledgement can be ambiguous. Account deletion and its sessions share one transaction. Password/account writes bind the verified credentials and normalized identity; zero affected rows are rejected. Intentionally memory-only instances retain volatile behavior. After a read failure permanently disables auth persistence, these mutations remain blocked until storage is restored and Engine restarted.";
   }
@@ -246,8 +265,12 @@ function responsesFor(operation) {
     [successCode]: {
       description: "Successful response",
       content: { "application/json": { schema } },
+      ...(learningReadOperations.has(operation) ? { headers: privateReadHeaders } : {}),
     },
     default: errorResponse(),
+    ...(learningReadOperations.has(operation) ? {
+      500: { ...errorResponse(), description: "Learning storage read failed; not empty success. No storage details are exposed and no learning records are changed.", headers: privateReadHeaders },
+    } : {}),
     ...(authMutationOperations.has(operation) ? {
       503: { ...errorResponse(), description: "Authentication storage unavailable; mutation completion is unconfirmed. Session cookie is retained for verification and an explicit retry." },
     } : {}),

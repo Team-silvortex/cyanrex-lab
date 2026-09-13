@@ -2,7 +2,7 @@ use super::{Arc, AttemptSnapshot, LabAttempt, LearningStore};
 use std::{
     fs,
     io::{BufWriter, Write},
-    path::Path,
+    path::{Path, PathBuf},
 };
 use tokio::sync::OwnedMutexGuard;
 
@@ -45,14 +45,43 @@ fn persist_attempts(path: &Path, attempts: &[Arc<LabAttempt>]) -> Result<(), Str
     let parent = path
         .parent()
         .ok_or_else(|| "invalid learning data path".to_string())?;
-    fs::create_dir_all(parent)
+    let mut directory = fs::DirBuilder::new();
+    directory.recursive(true);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::DirBuilderExt;
+        directory.mode(0o700);
+    }
+    directory
+        .create(parent)
         .map_err(|error| format!("failed to prepare learning data dir: {error}"))?;
-    let temp_path = path.with_extension("json.tmp");
-    let file = fs::File::create(&temp_path)
+    // Never truncate or follow a preexisting fixed-name temporary path in a privileged Engine.
+    let temp_path = parent.join(format!(".learning-{}.tmp", uuid::Uuid::new_v4()));
+    let mut options = fs::OpenOptions::new();
+    options.write(true).create_new(true);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        options.mode(0o600);
+    }
+    let file = options
+        .open(&temp_path)
         .map_err(|error| format!("failed to persist learning attempts: {error}"))?;
+    let _cleanup = TemporarySnapshot(temp_path.clone());
     write_pretty(file, &SerializableAttempts(attempts))?;
     fs::rename(&temp_path, path)
         .map_err(|error| format!("failed to finalize learning attempts: {error}"))
+}
+
+struct TemporarySnapshot(PathBuf);
+impl Drop for TemporarySnapshot {
+    fn drop(&mut self) {
+        if let Err(error) = fs::remove_file(&self.0) {
+            if error.kind() != std::io::ErrorKind::NotFound {
+                tracing::warn!("learning temporary snapshot cleanup failed: {error}");
+            }
+        }
+    }
 }
 
 fn write_pretty(writer: impl Write, value: &impl serde::Serialize) -> Result<(), String> {

@@ -29,6 +29,10 @@ test("event page recovers visibly, preserves live rows across snapshots, and cha
     });
     const page = await context.newPage();
     const errors = []; page.on("pageerror", (error) => errors.push(error.message));
+    await context.route("**/*", route => {
+      if (new URL(route.request().url()).origin === new URL(baseUrl).origin) return route.continue();
+      errors.push("Blocked an unmocked external request"); return route.abort();
+    });
     let snapshots = 0;
     const fixture = [event(1)];
     await context.route(`${engineUrl}/**`, async (route) => {

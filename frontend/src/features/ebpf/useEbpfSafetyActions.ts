@@ -9,8 +9,9 @@ type Translate = (key: string, vars?: Record<string, string | number>) => string
 
 export function useEbpfSafetyActions(controller: Controller, t: Translate, labId: string) {
   const safety = useConfirmedAction();
+  const runtimeBusy = controller.running || controller.detaching;
   const replace = (target: string, next: string, apply: () => void) => {
-    if (safety.isBusy() || controller.running) return;
+    if (safety.isBusy() || runtimeBusy) return;
     if (next === controller.code) { apply(); return; }
     safety.request({ action: t("ebpf.load"), description: t("safety.replaceSource"), targets: [target], preview: next }, apply);
   };
@@ -40,13 +41,13 @@ export function useEbpfSafetyActions(controller: Controller, t: Translate, labId
   const upload = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     event.target.value = ""; // Re-selecting the same file must work after cancelling.
-    if (!file || safety.isBusy() || controller.running) return;
+    if (!file || safety.isBusy() || runtimeBusy) return;
     if (file.size > MAX_UPLOAD_BYTES) { void controller.onUpload(file); return; }
     safety.request({ action: t("ebpf.importFile"), description: t("safety.replaceSource"), targets: [file.name] },
       signal => controller.onUpload(file, signal));
   };
   const run = () => {
-    if (controller.running) return;
+    if (runtimeBusy) return;
     safety.request({ action: t("ebpf.compileRun"), description: t("safety.run"), targets: [controller.scriptTitle],
       preview: controller.code, dangerous: false, details: [
         { label: "Engine", value: new URL(getEngineUrl()).origin },
@@ -64,13 +65,13 @@ export function useEbpfSafetyActions(controller: Controller, t: Translate, labId
       targets: [next.slice(6)] }, () => controller.compileBackends.setTarget(next));
   };
   const detachOne = (path: string) => {
-    if (!path?.trim() || controller.running) return;
-    safety.request({ action: t("ebpf.detach"), description: t("safety.detach"), targets: [path] }, () => controller.detach(path));
+    if (!path?.trim() || runtimeBusy || controller.attachmentState !== "ready") return;
+    safety.request({ action: t("ebpf.detach"), description: t("safety.detach"), targets: [path] }, signal => controller.detach(path, signal));
   };
   const detachAll = () => {
-    if (controller.running || !controller.attachments.length) return;
+    if (runtimeBusy || controller.attachmentState !== "ready" || !controller.attachments.length) return;
     safety.request({ action: t("ebpf.detachAll"), description: t("safety.detachAll"),
-      targets: [...controller.attachments], phrase: "DETACH" }, () => controller.detach(null));
+      targets: [...controller.attachments], phrase: "DETACH" }, signal => controller.detach(null, signal));
   };
   const deleteScript = (script: UserScript) => safety.request({ action: t("ebpf.delete"), description: t("safety.deleteScript"),
     targets: [`${script.title} (${script.id})`] }, () => controller.deleteScript(script.id));

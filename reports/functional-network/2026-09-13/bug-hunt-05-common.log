@@ -1,0 +1,86 @@
+File length limits passed.
+Version metadata is synchronized at 0.3.8.
+[course] committed frontend course copy matches docs.
+Generated OpenAPI document is current (64 paths).
+OpenAPI contract is synchronized at 0.3.8: 68 Engine operations, 63 SDK operations.
+API compatibility passed against 0.3.0: 61 operations remain compatible with 0.3.8.
+Generated SDK types are current (85 schemas).
+Generated SDK operations are current (63 operations).
+SDK public surface is compatible: 85 members, 8 additive.
+✔ compatibility rejects removed operations and changed access tiers (4.463575ms)
+✔ compatibility rejects request requirements and enum narrowing (0.703184ms)
+✔ compatibility rejects weakened response guarantees (0.548089ms)
+✔ compatibility permits additive operations and compatible object growth (8.884335ms)
+✔ compatibility treats nullable input and output in opposite directions (0.905883ms)
+✔ auth mutations document unconfirmed storage writes without weakening access or success schemas (8.58693ms)
+✔ login and destructive event filters expose failure behavior without changing success contracts (4.60298ms)
+✔ classroom endpoints preserve separate discovery, invitation and join trust boundaries (16.326243ms)
+✔ launchers forward opt-in classroom config and explicitly build the frontend API address (8.094281ms)
+✔ course documentation sync detects drift and replaces the generated tree (39.664305ms)
+✔ Engine Docker context admits compile-time OpenAPI and migration assets (8.958221ms)
+✔ Engine Docker builder copies compile-time assets before compiling (2.106806ms)
+✔ frontend prebuild works with only its Docker context and committed course copy (321.1985ms)
+✔ functional network enumerates default Next page extensions and excludes framework files (2.298354ms)
+✔ functional network accepts a complete source snapshot (0.968005ms)
+✔ functional network rejects missing, extra and duplicate operation ownership (0.524042ms)
+✔ functional network rejects unknown graph, module and page targets (2.409803ms)
+✔ functional network detects version, source, access, page and catalog drift (0.916664ms)
+✔ functional network rejects stale counts and source references missing from manifest (0.412873ms)
+✔ functional network rejects mismatched API back-references and duplicate IDs (0.287887ms)
+✔ learning benchmark rotates configurations without dropping or duplicating any pair (6.299418ms)
+✔ cold-load pairs retain all four fixtures and alternate across five rounds (2.334805ms)
+✔ every learning benchmark configuration swaps its before/after order each round (2.00203ms)
+✔ learning projections distinguish failed storage reads from empty success and remain private (9.480038ms)
+✔ npm audit retains production scope, moderate threshold, and finite timeouts (2.140403ms)
+✔ valid clean and below-threshold audit reports pass without retrying (0.570453ms)
+✔ vulnerability reports fail immediately, including misleading transient error text (0.341622ms)
+✔ network failures, rate limits, and server errors retry a fresh audit (1.516525ms)
+✔ npm 9 message-only socket failures are recognized (0.233821ms)
+✔ retired Quick fallback retries Bulk through npm without accepting the failed report (0.228129ms)
+✔ persistent transient failures stop after three attempts and stay failed (0.323066ms)
+✔ authentication, certificate, lockfile, and unknown errors never retry (0.492139ms)
+✔ missing or malformed reports cannot pass even if npm exits zero (0.566515ms)
+✔ process launch failures fail closed and timeouts remain bounded (0.531977ms)
+✔ real npm CLI retries Bulk, including a retired Quick fallback when used (1532.926079ms)
+✔ local and CI frontend/SDK audits share the same fail-closed wrapper (1.388776ms)
+✔ extractEngineOperations handles chained Axum methods and multiline routes (2.214628ms)
+✔ extractEngineAccess follows the Axum router trust tiers (10.236958ms)
+✔ extractSdkOperations recognizes generic requests, downloads, and WebSockets (2.322902ms)
+✔ OpenAPI operation extraction and comparison report exact drift (0.620351ms)
+✔ Rust CI runs PostgreSQL acceptance against its disposable service and rejects an empty selection (7.217394ms)
+✔ Rust CI promotes every auth boundary regression plus script/event persistence checks (2.360896ms)
+✔ Rust CI exercises persisted authentication and duplicate registration on the disposable database (2.523005ms)
+✔ release metadata records source, image references, and archive integrity (8.523315ms)
+✔ release metadata rejects ambiguous or host-specific build inputs (1.718453ms)
+✔ release expectations bind a candidate to its tag, commit, source state, and image mode (2.268775ms)
+✔ release metadata CLI parses tag-bound verification expectations (0.555563ms)
+✔ Git source inspection distinguishes clean, dirty, tagged, and unavailable trees (53.562188ms)
+✔ packaged metadata verification binds JSON and image archive to checksums (5.516878ms)
+✔ release argument parsing requires one explicit mode (2.179679ms)
+✔ release snapshot validation reports every mismatched field and changelog requirement (2.526222ms)
+✔ release preflight accepts a clean candidate and its annotated immutable tag (242.031819ms)
+✔ user remote checks document bounded queue waiting without changing success or access (1.475855ms)
+✔ Agent claim and sync retain signed authority and explain capacity and lost leases (0.321693ms)
+✔ operation generation covers SDK transports and excludes signed Agent protocol (13.289445ms)
+✔ rendered operations preserve required path, query, body, and response types (1.268687ms)
+✔ operation generation rejects unsupported parameters and mismatched path templates (0.70627ms)
+✔ client surface extraction keeps public methods and nested namespace paths (2.725774ms)
+✔ client surface comparison rejects removals while reporting additive members (0.358897ms)
+✔ client surface baseline rendering is sorted and deterministic (0.302185ms)
+✔ schemaToType renders references, nullable unions, arrays, and maps (1.068112ms)
+✔ renderSdkSchemaTypes emits a deterministic named schema map (0.40662ms)
+✔ schemaToType rejects references outside component schemas (0.495115ms)
+✔ the legacy admin API tier truthfully includes teacher deployment authority (7.431195ms)
+✔ supported launchers pass explicit teacher and legacy administrator allowlists (2.923033ms)
+ℹ tests 65
+ℹ suites 0
+ℹ pass 65
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1674.476468
+Runner Agent management tool checks passed.
+Distribution management tool checks passed.
+Live kernel smoke tool checks passed.
+Release candidate bundle verifier checks passed.

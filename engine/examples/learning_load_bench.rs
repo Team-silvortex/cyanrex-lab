@@ -44,7 +44,10 @@ async fn main() {
     });
     ready_rx.await.unwrap();
     let start = Instant::now();
-    let recent = store.recent_attempts_for_user("bench-user-0", 20).await;
+    let recent = store
+        .recent_attempts_for_user("bench-user-0", 20)
+        .await
+        .unwrap();
     let first_read = start.elapsed();
     // Let an overdue tick run even when synchronous parsing blocked the executor until the query returned.
     tokio::time::sleep(period * 2).await;
@@ -56,10 +59,13 @@ async fn main() {
         .iter()
         .all(|row| row.username == "bench-user-0" && row.source.len() == source_bytes));
     let start = Instant::now();
-    let warm = store.recent_attempts_for_user("bench-user-0", 20).await;
+    let warm = store
+        .recent_attempts_for_user("bench-user-0", 20)
+        .await
+        .unwrap();
     let warm_read = start.elapsed();
     assert_eq!(recent[0].id, warm[0].id);
-    let overview = store.teacher_overview().await;
+    let overview = store.teacher_overview().await.unwrap();
     assert_eq!(overview.active_students, 30);
     assert_eq!(
         overview

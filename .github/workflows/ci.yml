@@ -166,6 +166,9 @@ jobs:
         run: |
           npm run test:performance-hotspots
           npm run test:event-stream
+          npm run test:compiler-check
+          npm run test:semantic-completion
+          npm run test:runtime-request
           npm run test:security-headers
           npm run test:tooling
       - name: Audit frontend production dependencies

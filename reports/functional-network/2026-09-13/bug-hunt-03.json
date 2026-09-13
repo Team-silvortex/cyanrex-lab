@@ -1,0 +1,394 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-13",
+  "status": "fixed-and-scoped-regressions-passed",
+  "baseline": {
+    "version": "0.3.8",
+    "commit": "c26a529aecc0ab64d0a1743be10972e5d8ac137b",
+    "branch": "main",
+    "inventory": "docs/functional-network.json",
+    "prior_pass": "reports/functional-network/2026-09-13/bug-hunt-02.json",
+    "worktree": "Original inventory and both prior uncommitted passes preserved; no backend implementation changed this pass."
+  },
+  "scope": {
+    "workflows": [
+      "F17",
+      "F18",
+      "F26"
+    ],
+    "edges": [
+      "E23",
+      "E25",
+      "E26"
+    ],
+    "surrounding_storage": [
+      "D07",
+      "D06"
+    ],
+    "meaning": "Inline editor diagnostics: cache identity/lifetime, stale async UI/cache publication, cancellation ownership, whole-request deadlines and remote terminal classification.",
+    "exclusions": [
+      "F19 semantic completion",
+      "F16/F18 manual header checks",
+      "server authentication/ownership changes",
+      "stored drafts/targets",
+      "live Engine or kernel operations"
+    ]
+  },
+  "findings": [
+    {
+      "id": "BH03-01",
+      "status": "fixed",
+      "summary": "Global cache crossed Engine/editor remount boundaries and used ambiguous delimiter/32-bit hash identities.",
+      "fix": "Per-editor eight-second/24-entry cache keyed by exact JSON tuple of Engine URL, target, source and header context.",
+      "regressions": [
+        "cached diagnostics never cross Engine URLs",
+        "remounting an editor does not reuse the previous editor or account's cache",
+        "source and header context use unambiguous cache identities",
+        "equal-length sources with the same old 32-bit hash do not share diagnostics"
+      ]
+    },
+    {
+      "id": "BH03-02",
+      "status": "fixed",
+      "summary": "Late success/errors overwrote current UI; old markers survived debounce and discarded success entered the cache.",
+      "fix": "Key-bound view and post-await cancellation checks before UI/cache publication; stale markers hidden immediately.",
+      "regressions": [
+        "late success cannot replace current diagnostics or populate a stale cache",
+        "late errors cannot erase the current diagnostics",
+        "changing source removes old markers and status during debounce"
+      ]
+    },
+    {
+      "id": "BH03-03",
+      "status": "fixed",
+      "summary": "A shared promise used its first editor's AbortSignal; unmounting that editor aborted a surviving consumer.",
+      "fix": "Remove module-global pending request sharing; independent editor request lifetimes and cancellation.",
+      "regressions": [
+        "one editor's cancellation does not own another editor's request"
+      ]
+    },
+    {
+      "id": "BH03-04",
+      "status": "fixed",
+      "summary": "A loop-only deadline could not interrupt stalled submission/poll/body reads; cancelled late submission entered polling.",
+      "fix": "20-second local and 35-second remote total request deadlines, including submission/body/polls; pre-poll cancellation check and one best-effort independent cancel for a known unfinished job.",
+      "regressions": [
+        "remote submission and a stalled poll each have a bounded 35-second total wait",
+        "late remote submission after a target switch only cancels its job, without polling or fallback",
+        "local deadline also aborts a stalled JSON body after successful headers",
+        "cancellation between polls stops the delay and sends exactly one private cancellation"
+      ]
+    },
+    {
+      "id": "BH03-05",
+      "status": "fixed",
+      "summary": "Cancelled/expired remote jobs containing normalized result fields appeared as compiler issues.",
+      "fix": "Terminal state takes precedence: unavailable with no markers; real compiler rejection remains issues; no redundant cancel for known terminal jobs.",
+      "regressions": [
+        "cancelled and expired remote jobs are unavailable even when they carry a result",
+        "completed remote compiler results retain issue/note mapping and never trigger a local run",
+        "remote cancellation and expiry show unavailable in the real editor without running or replacing its draft"
+      ]
+    }
+  ],
+  "before_fix": {
+    "browser": {
+      "total": 12,
+      "passed": 1,
+      "failed": 11
+    },
+    "log": "reports/functional-network/2026-09-13/bug-hunt-03-red.log",
+    "note": "Old hook bundled with real React/Chromium; synthetic fetch permits late application continuations. Four preservation cases and one production UI case were added after reproduction. Final harness pauses its clock to avoid host-time drift at exact boundaries."
+  },
+  "new_tests": {
+    "diagnostic_browser": 16,
+    "portable_transport": 11,
+    "production_editor": 1,
+    "total": 28,
+    "note": "Included in the suite totals below; do not sum overlapping suites."
+  },
+  "checks": [
+    {
+      "name": "diagnostic browser suite",
+      "command": "node --test frontend/tests/compilerDiagnostics.browser.mjs",
+      "status": "passed",
+      "passed": 16,
+      "failed": 0,
+      "skipped": 0,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-03-browser.log",
+      "boundary": "Real React 19 StrictMode, synthetic fetch and paused browser clock, all external requests blocked. Not production page or live Engine acceptance."
+    },
+    {
+      "name": "all portable frontend tests",
+      "command": "node --experimental-strip-types --test frontend/tests/*.test.mjs",
+      "status": "passed",
+      "passed": 55,
+      "failed": 0,
+      "skipped": 0,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-03-frontend.log",
+      "includes": "11 compiler transport tests; no external services."
+    },
+    {
+      "name": "production UI safety and logout suites",
+      "command": "node --test frontend/tests/actionSafety.browser.mjs frontend/tests/authSession.browser.mjs",
+      "status": "passed",
+      "passed": 18,
+      "failed": 0,
+      "skipped": 0,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-03-ui.log",
+      "boundary": "Own production Next.js server at http://127.0.0.1:3378; all Engine HTTP requests mocked. Monaco, remote confirmation/unavailable state, unchanged draft, no automatic run, safety and logout regressions."
+    },
+    {
+      "name": "production frontend build",
+      "command": "npm --prefix frontend run build",
+      "status": "passed",
+      "exit_code": 0,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-03-build.log",
+      "note": "No dependency installation; owned generated TypeScript build-cache changes restored."
+    },
+    {
+      "name": "explicit TypeScript check",
+      "command": "node frontend/node_modules/typescript/bin/tsc --noEmit --project frontend/tsconfig.json",
+      "status": "passed",
+      "exit_code": 0,
+      "output": ""
+    },
+    {
+      "name": "common quality gate",
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL -u CYANREX_DB_FALLBACK scripts/quality-gate.sh --format-only",
+      "status": "passed",
+      "passed": 65,
+      "failed": 0,
+      "skipped": 0,
+      "exit_code": 0,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-03-common.log",
+      "includes": [
+        "source/document length",
+        "0.3.8 version parity",
+        "course mirror parity",
+        "64 OpenAPI paths / 68 Engine operations / 63 SDK operations / 85 schemas",
+        "API/SDK surface compatibility",
+        "Runner/distribution/kernel-smoke/candidate tool fixtures",
+        "Rust formatting"
+      ],
+      "note": "Tool fixtures do not load the kernel; generated SDK checks are not SDK runtime tests."
+    },
+    {
+      "name": "functional network drift",
+      "command": "node scripts/check-functional-network.mjs",
+      "status": "expected-baseline-drift",
+      "expected_exit_code": 1,
+      "expected_source_drift": [
+        "engine/openapi/openapi.json",
+        "engine/src/routes/learning.rs",
+        "engine/src/routes/runner_job.rs",
+        "engine/src/services/learning_store.rs",
+        "engine/src/services/learning_store/persistence.rs",
+        "engine/src/services/runner_agent_client.rs",
+        "engine/src/services/runner_job_queue.rs",
+        "frontend/src/features/ebpf/useCompilerDiagnostics.ts",
+        "scripts/quality-gate.sh"
+      ],
+      "note": "Nine cumulative source drifts only; frozen map not re-fingerprinted. Counts, access tiers, pages, templates and labs unchanged."
+    },
+    {
+      "name": "diff whitespace",
+      "command": "git diff --check",
+      "status": "passed",
+      "exit_code": 0
+    }
+  ],
+  "integration": {
+    "portable_tests_in_ci": true,
+    "portable_tests_in_frontend_quality_gate": true,
+    "browser_tests_optional": true,
+    "new_dependencies": false,
+    "remote_ci_run": false
+  },
+  "runtimes": {
+    "node": "v24.19.0",
+    "react": "19.0.0",
+    "next": "15.5.24",
+    "chromium": "Google Chrome 153.0.8010.36",
+    "browser_library": "Installed Playwright supplied through CYANREX_PLAYWRIGHT_MODULE",
+    "note": "Local execution used Node 24.19.0; CI wiring targets its existing Node 22 job, not a new CI execution."
+  },
+  "not_run": [
+    "full Rust/backend suite this pass",
+    "full quality gate including dependency audits",
+    "real database",
+    "real LAN/SSH deployment",
+    "live remote Agent/Clang",
+    "kernel loading/events",
+    "SDK runtime suite",
+    "new performance benchmark"
+  ],
+  "historical_backend": {
+    "source": "reports/functional-network/2026-09-13/bug-hunt-02.json",
+    "passed": 285,
+    "ignored": 29,
+    "note": "Previous pass only; not rerun or added to this pass's totals."
+  },
+  "limitations": [
+    "Cache isolation follows editor mounting, not cross-tab observation of HttpOnly cookie changes or distributed session revocation.",
+    "Saved drafts and persisted target selection are unchanged; source strings are retained by bounded exact cache keys.",
+    "Eight-second cache reuse is not proof of current Agent health or new header contents when input context stays unchanged.",
+    "Browser suspension affects timers; an aborted browser request or attempted cancellation does not prove server rollback.",
+    "Known unfinished jobs receive one best-effort cancel with a separate 10-second deadline; unknown/lost IDs rely on server queue/lease cleanup.",
+    "Failed jobs without a compiler report remain indistinguishable from compiler rejection in the existing normalized wire model.",
+    "Manual header checks and semantic completion remain separate, unmodified paths."
+  ],
+  "cleanup": {
+    "temporary_ui_server_stopped": true,
+    "temporary_browser_processes_closed": true,
+    "temporary_fixture_bundle_removed": true,
+    "typescript_generated_cache_restored": true,
+    "real_data_touched": false
+  },
+  "next": {
+    "workflows": [
+      "F19",
+      "F16",
+      "F18"
+    ],
+    "focus": "Semantic-completion providers and manual header validation: model/provider lifetimes, late responses and selected-header context. Inspection targets only, not confirmed bugs."
+  },
+  "candidate_sources": [
+    {
+      "path": "frontend/src/features/ebpf/useCompilerDiagnostics.ts",
+      "sha256": "c1c4644e67a372eb92ad4840bc0ee49c9759b0a3e3297978c5e2dc0c9c146b43"
+    },
+    {
+      "path": "frontend/src/features/ebpf/compilerCheck.ts",
+      "sha256": "d0629ced1a8711ecfef35e7452ef41004725437fe8e9babe4aff316878297450"
+    },
+    {
+      "path": "frontend/tests/compilerCheck.test.mjs",
+      "sha256": "835888a7a5b369f34cd3c9a04e79f0af39df6b9395d5edbd45951d3070e77e45"
+    },
+    {
+      "path": "frontend/tests/compilerDiagnostics.browser.mjs",
+      "sha256": "55f6077943c6180b1b176b0ed30be4d6084b981c94d84d6848f39d962b4020c4"
+    },
+    {
+      "path": "frontend/tests/helpers/compilerDiagnosticsBrowser.mjs",
+      "sha256": "ad81c733c898310cb7ff488cb9394a8eca66f4729e56b035f0adde4232310349"
+    },
+    {
+      "path": "frontend/tests/helpers/typescript-loader.cjs",
+      "sha256": "d6d1cf7cf65e5b020a1a54003e7990526f4131b7b5b9378f9a9327ab48f4dffd"
+    },
+    {
+      "path": "frontend/tests/fixtures/compilerDiagnostics.mjs",
+      "sha256": "b83b3378b4c3e93843a7ac4649ddb31a07b4356703fdafa4585f4bf10eceb807"
+    },
+    {
+      "path": "frontend/tests/actionSafety.browser.mjs",
+      "sha256": "87d46d20b4123b00a05b766c2afdb78b31a393c520343ab0e788b9ba00ab617f"
+    },
+    {
+      "path": "frontend/package.json",
+      "sha256": "2d95f6a8f368cfe1e7c7b883e114b2a3736c0b9ea0705b367f5ee18e9581b122"
+    },
+    {
+      "path": "frontend/README.md",
+      "sha256": "c1a1fd3264043a6d78eceecc2658374f096c9ddada19dd582133d20a24902878"
+    },
+    {
+      "path": "scripts/quality-gate.sh",
+      "sha256": "103826cb301bc1206ab9a8c1f3f5e4c29574ed034cb1125d0f58a4522d56687b"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "518e651814f480e22c6be4f09ef2f036ef057eef108a360715c5873e342c48e0"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "sha256": "b4e24ad076e6688b26a374c6a717af22090b95053a9a5c79a1a8c4b0cf5eb697"
+    },
+    {
+      "path": "docs/en/architecture.md",
+      "sha256": "6b0e09ef46a0c2c393fc422bfe31c727c31028f00583fc6733a60c4162b364e8"
+    },
+    {
+      "path": "docs/en/security.md",
+      "sha256": "32e9b24874a993578030b33bb4990dbae52491d0918bb8ce5943f1760df31903"
+    },
+    {
+      "path": "docs/en/runner-agent.md",
+      "sha256": "4a65c1807865fd657388b5a6a259a779e10d7bf2db670499f4cdb57f742fcf45"
+    },
+    {
+      "path": "docs/en/functional-network.md",
+      "sha256": "2a31295f513c65f3e5c27a051ca398650acd86ce02e467a329ed8e7d6e947ca5"
+    },
+    {
+      "path": "docs/en/functional-network-bug-hunt-03.md",
+      "sha256": "5f0b4a915f5dc584194f89955f5344b5ddfe5dfd2dc3663886629a07278adf43"
+    },
+    {
+      "path": "docs/zh-CN/architecture.md",
+      "sha256": "1cc798d1bd61625330cfa8667603b393b066c7f36027e15fe46c88ef94ed0539"
+    },
+    {
+      "path": "docs/zh-CN/security.md",
+      "sha256": "e3b22654c2413e18ba3cf99781d00b550a56b697d21fb742c1a73acc2e00e22f"
+    },
+    {
+      "path": "docs/zh-CN/runner-agent.md",
+      "sha256": "95d51f1c2fcd222d992f62f8abb77ef0f0cb07949f7754b9ae575ff0cbc97232"
+    },
+    {
+      "path": "docs/zh-CN/functional-network.md",
+      "sha256": "46792eb3b6aea6e673d02fc5b96f4c09d672c0634b94971cfefe1d04290b60a1"
+    },
+    {
+      "path": "docs/zh-CN/functional-network-bug-hunt-03.md",
+      "sha256": "16e0b4680ea33adc310c89fa7e2696e374a590171ffeea73818e2cb0ca63ed8a"
+    }
+  ],
+  "preserved_evidence": [
+    {
+      "path": "docs/functional-network.json",
+      "sha256": "bc16ef895c1f7b9f9d0b5d9195499d4efcba09466b3c85bdfcc04d20006ad30d"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-01-backend.log",
+      "sha256": "03e1dd64ec0f870a4b0a95a89c1dad040db5538be33c6183fa9c1e5ead04109c"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-01-common.log",
+      "sha256": "93dfc2b81cf2fae4315b2fb4cf0ed2108afdbd58d16df1cc056b4433badf7cb4"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-01.json",
+      "sha256": "88e4bb77557b4cfa60559528e20717a26077f8c135ed0cd2ebb352f4663fbe7c"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-02-backend.log",
+      "sha256": "cdd2f53dd32d2d9f2223397214c636a5857d316c99041bc61044174874228dbc"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-02-common.log",
+      "sha256": "b48883e7832c04c7394e79fb7fc20cbe45eb4b7631734901a7d77b31a951979c"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-02-red.log",
+      "sha256": "72318ede656aa1e3bab7451c2f39b4a767e0c733f1567eae9debe5b1eec45311"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-02.json",
+      "sha256": "117c91a90548edde822bc714b09ceda6086cc4ecddb0d29021211bd3d51d402b"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/verification.json",
+      "sha256": "33a58e9da0fd45b1c3e71787a5b4f2b2d18e811800597d15973148f4ad258902"
+    }
+  ],
+  "actions": {
+    "version_bumped": false,
+    "committed": false,
+    "pushed": false,
+    "deployed": false
+  }
+}

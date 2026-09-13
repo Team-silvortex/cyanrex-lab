@@ -1,0 +1,76 @@
+Rust reproduction group: client
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 10.58s
+     Running unittests src/lib.rs (engine/target/debug/deps/cyanrex_engine-b02300368eca6ec0)
+
+running 6 tests
+test services::runner_agent_client::boundary_tests::lost_lease_prevents_execution_and_result_submission ... 
+thread 'services::runner_agent_client::boundary_tests::lost_lease_prevents_execution_and_result_submission' (1043605) panicked at src/services/runner_agent_client/boundary_tests.rs:103:9:
+lost leases must not execute/report or acknowledge cancellation
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+test services::runner_agent_client::boundary_tests::lost_lease_takes_precedence_over_a_cancel_instruction ... 
+thread 'services::runner_agent_client::boundary_tests::lost_lease_takes_precedence_over_a_cancel_instruction' (1043606) panicked at src/services/runner_agent_client/boundary_tests.rs:103:9:
+lost leases must not execute/report or acknowledge cancellation
+FAILED
+test services::runner_agent_client::boundary_tests::response_tests::exact_limit_chunked_json_is_accepted ... ok
+test services::runner_agent_client::boundary_tests::response_tests::oversized_chunked_response_is_rejected_before_waiting_for_eof ... 
+thread 'services::runner_agent_client::boundary_tests::response_tests::oversized_chunked_response_is_rejected_before_waiting_for_eof' (1043610) panicked at src/services/runner_agent_client/response_tests.rs:63:9:
+must stop as soon as 640 KiB is exceeded, without waiting for EOF
+FAILED
+test services::runner_agent_client::boundary_tests::response_tests::small_chunked_server_error_keeps_its_status_and_retry_policy ... ok
+test services::runner_agent_client::boundary_tests::valid_and_cancelled_leases_keep_their_existing_completion_behavior ... ok
+
+failures:
+
+failures:
+    services::runner_agent_client::boundary_tests::lost_lease_prevents_execution_and_result_submission
+    services::runner_agent_client::boundary_tests::lost_lease_takes_precedence_over_a_cancel_instruction
+    services::runner_agent_client::boundary_tests::response_tests::oversized_chunked_response_is_rejected_before_waiting_for_eof
+
+test result: FAILED. 3 passed; 3 failed; 0 ignored; 0 measured; 164 filtered out; finished in 2.05s
+
+error: test failed, to rerun pass `--lib`
+
+Rust reproduction group: capacity
+   Compiling cyanrex-engine v0.3.8 (/home/chiharukiryu/cdev/cyanrex-lab/engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 12.98s
+     Running tests/routes_tdd.rs (engine/target/debug/deps/routes_tdd-6f48ff5b14a5af5c)
+
+running 2 tests
+test runner_claim_does_not_subtract_reported_active_jobs_twice ... 
+thread 'runner_claim_does_not_subtract_reported_active_jobs_twice' (1044818) panicked at tests/routes_tdd/runner_capacity.inc.rs:35:5:
+one free slot must admit the second lease
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+test runner_claim_keeps_reserved_capacity_and_cancel_pending_leases_counted ... ok
+
+failures:
+
+failures:
+    runner_claim_does_not_subtract_reported_active_jobs_twice
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 83 filtered out; finished in 0.81s
+
+error: test failed, to rerun pass `--test routes_tdd`
+
+Rust reproduction group: queue
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 11.88s
+     Running unittests src/lib.rs (engine/target/debug/deps/cyanrex_engine-b02300368eca6ec0)
+
+running 1 test
+test services::runner_job_queue::tests::unclaimed_user_checks_expire_without_leaking_source_or_blocking_user_quota ... 
+thread 'services::runner_job_queue::tests::unclaimed_user_checks_expire_without_leaking_source_or_blocking_user_quota' (1044821) panicked at src/services/runner_job_queue/tests.inc.rs:160:5:
+assertion `left == right` failed
+  left: Queued
+ right: Expired
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    services::runner_job_queue::tests::unclaimed_user_checks_expire_without_leaking_source_or_blocking_user_quota
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 169 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `--lib`

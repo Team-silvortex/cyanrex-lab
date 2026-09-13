@@ -378,17 +378,26 @@ async fn learning(args: &[String]) -> Value {
     std::fs::write(&path, serde_json::to_vec(&attempts).unwrap()).unwrap();
     drop(attempts);
     let store = LearningStore::with_local_data_path(path.clone());
-    assert!(!store.attempts_for_user("bench-user-0").await.is_empty());
+    assert!(!store
+        .attempts_for_user("bench-user-0")
+        .await
+        .unwrap()
+        .is_empty());
     let mut samples = Vec::new();
     for _ in 0..repetitions {
         let start = Instant::now();
         match kind.as_str() {
             "recent" => {
-                black_box(store.recent_attempts_for_user("bench-user-0", 20).await);
+                black_box(
+                    store
+                        .recent_attempts_for_user("bench-user-0", 20)
+                        .await
+                        .unwrap(),
+                );
             }
             "overview" => {
                 assert_eq!(
-                    black_box(store.teacher_overview().await).active_students,
+                    black_box(store.teacher_overview().await.unwrap()).active_students,
                     30
                 );
             }

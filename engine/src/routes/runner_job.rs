@@ -112,7 +112,9 @@ pub async fn claim(
     }
     match state.runner_job_queue.claim(
         agent_id,
-        agent.available_slots as usize,
+        // The queue counts outstanding leases itself; free slots already exclude reported work.
+        // Do not use max_concurrent here: the Agent may deliberately reserve some capacity.
+        usize::from(agent.active_jobs) + usize::from(agent.available_slots),
         &agent.capabilities,
     ) {
         Ok(job) => {

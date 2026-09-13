@@ -1,79 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-const baseUrl = process.env.CYANREX_UI_BASE_URL || "http://localhost:3217";
-const engineUrl = process.env.CYANREX_UI_ENGINE_URL || "http://localhost:8080";
-const draft = "// Unsaved safety draft\nint keep_draft(void) { return 1; }";
-const target = "/sys/fs/bpf/safety-fixture/program-a";
-
-async function setup(role = "admin") {
-  const { chromium } = await import(process.env.CYANREX_PLAYWRIGHT_MODULE || "playwright");
-  const browser = await chromium.launch({ executablePath: process.env.CYANREX_CHROMIUM_PATH });
-  const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
-  await context.addInitScript(({ draft, engineUrl }) => {
-    localStorage.setItem("cyanrex_locale", "zh-CN");
-    sessionStorage.setItem("ebpf_code_v1", JSON.stringify(draft));
-    const EngineSocket = class { constructor() { setTimeout(() => this.onopen?.({}), 0); } close() {} };
-    window.WebSocket = new Proxy(window.WebSocket, { construct(Socket, args) {
-      return new URL(args[0], location.href).host === new URL(engineUrl).host
-        ? new EngineSocket() : Reflect.construct(Socket, args);
-    } });
-  }, { draft, engineUrl });
-  const page = await context.newPage(), writes = [], errors = [];
-  const state = { fail: false, hold: null, headers: ["header-a", "header-b"].map(id => ({ id, name: id, description: "Fixture header", source_url: "fixture", downloaded: true, selected: true, local_path: `/fixture/${id}` })) };
-  page.on("pageerror", error => errors.push(error.message));
-  await context.route("**/*", route => {
-    if (new URL(route.request().url()).origin === new URL(baseUrl).origin) return route.continue();
-    errors.push("Blocked an unmocked external request");
-    return route.abort();
-  });
-  await context.route(`${engineUrl}/**`, async route => {
-    const request = route.request(), url = new URL(request.url());
-    const headers = { "access-control-allow-origin": new URL(baseUrl).origin, "access-control-allow-credentials": "true",
-      "access-control-allow-methods": "GET, POST, OPTIONS", "access-control-allow-headers": "content-type" };
-    const reply = (json, status = 200) => route.fulfill({ json, status, headers });
-    if (request.method() === "OPTIONS") return route.fulfill({ status: 204, headers });
-    if (request.method() === "POST" && !["/events/mark-read", "/ebpf/check", "/ebpf/complete"].includes(url.pathname)) {
-      writes.push({ path: url.pathname, params: Object.fromEntries(url.searchParams), body: request.postData() ? request.postDataJSON() : null });
-      if (state.hold) await state.hold();
-      if (state.fail || writes.length === state.failAt) return reply({ ok: false, message: "fixture unavailable" }, 503);
-    }
-    switch (url.pathname) {
-      case "/auth/me": return reply({ authenticated: true, username: role, role });
-      case "/events/unread-count": return reply({ unread: 0 });
-      case "/events/mark-read": return reply({ ok: true });
-      case "/events": return reply([{ username: role, timestamp: "2026-09-08T11:00:00Z", source: "fixture", event_type: "fixture.event", category: "kernel", severity: "error", color: "red", payload: {} }]);
-      case "/events/delete": return reply({ ok: true, deleted: 500 });
-      case "/learning/labs": return reply(state.labs ?? []);
-      case "/ebpf/templates": return reply([{ id: "template-a", name: "Template A", capability: "xdp", code: "// Template source" }]);
-      case "/ebpf/attachments/details": return reply({ attachments: [{ pin_path: target, source: draft, program_name: "program-a" }] });
-      case "/ebpf/detach": return reply({ ok: true, message: "detached", detached: [target], clean: true });
-      case "/modules/c-headers/selected-metadata": return reply({ selected_headers: [] });
-      case "/modules/c-headers/catalog": return reply({ headers: state.headers });
-      case "/modules/c-headers/delete": return reply({ ok: true, message: "removed" });
-      case "/modules/c-headers/select": return reply({ ok: true, message: "selected" });
-      case "/ebpf/check/backends": return reply({ local_available: true, agents: [{ agent_id: "compiler-agent-a", isolation: "container", available_slots: 1, max_concurrent: 1 }] });
-      case "/ebpf/check": return reply({ ok: true, diagnostics: [], message: "checked", stdout: "", stderr: "" });
-      case "/ebpf/check/remote": return reply({ job_id: "remote-check-a", state: "succeeded", result: { ok: true, diagnostics: [], message: "remote checked", stdout: "", stderr: "" } });
-      case "/ebpf/check/remote/cancel": return reply({ ok: true });
-      case "/ebpf/complete": return reply({ ok: true, items: [], message: "" });
-      case "/ebpf/run": return reply({ success: false, stage: "compile", message: "fixture compilation", compile_stdout: "", compile_stderr: "", load_stdout: "", load_stderr: "" });
-      case "/scripts": return reply([{ id: "script-a", title: "My saved script", script: "// Saved source", updated_at: "2026-09-08T12:00:00Z" }]);
-      case "/scripts/delete": return reply({ ok: true, message: "deleted" });
-      case "/modules": return reply([{ name: "module-a", status: "running", version: "0.3.5" }]);
-      case "/command": return reply({ ok: true, commandType: request.postDataJSON().commandType, message: "done", module: { name: "module-a", status: "stopped" } });
-      case "/auth/delete": return reply({ ok: true });
-      case "/settings/performance": return reply({}, 503);
-      case "/settings/events": return reply(request.method() === "POST" ? { ok: true, settings: request.postDataJSON() } : { max_records: 500, overflow_policy: "drop_oldest" });
-      case "/settings/compiler": return reply(request.method() === "POST" ? { ok: true, settings: request.postDataJSON() } : { resident: false, strategy: "on_demand" });
-      case "/runner/agents": return reply({ enabled: true, total_agents: 0, online_agents: 0, agents: [] });
-      case "/runner/jobs": return reply({ total_jobs: 1, jobs: [{ job_id: "job-a-full-confirmation-id", kind: "compile_check", state: "queued", owner_username: "student", target_agent_id: "agent-a", created_at: "2026-09-08T12:00:00Z" }] });
-      case "/runner/jobs/cancel": return reply({ ok: true });
-      default: errors.push(`Unexpected API ${request.method()} ${url.pathname}`); return reply({}, 404);
-    }
-  });
-  return { browser, page, writes, errors, state, code: () => page.evaluate(() => JSON.parse(sessionStorage.getItem("ebpf_code_v1"))) };
-}
+import { baseUrl, draft, target, setup } from "./helpers/actionSafetyBrowser.mjs";
 
 const dialog = page => page.getByRole("dialog", { name: "确认操作", exact: true });
 const approve = page => dialog(page).getByRole("button", { name: /^确认/ });
@@ -343,6 +271,26 @@ test("remote diagnostics require acknowledging source transfer before switching 
   } finally { await f.browser.close(); }
 });
 
+test("remote cancellation and expiry show unavailable in the real editor without running or replacing its draft", { timeout: 45000 }, async () => {
+  const f = await setup("student");
+  try {
+    await f.page.goto(`${baseUrl}/ebpf`);
+    await f.page.locator(".monaco-editor").waitFor();
+    const backend = f.page.getByLabel("内联诊断后端", { exact: true });
+    for (const state of ["cancelled", "expired"]) {
+      f.state.remoteState = state;
+      await backend.selectOption("agent:compiler-agent-a");
+      await approve(f.page).click();
+      await f.page.getByText(/clang: unavailable/).first().waitFor();
+      assert.equal(await f.page.evaluate(() => JSON.parse(sessionStorage.getItem("ebpf_code_v1"))), draft);
+      await backend.selectOption("local");
+      await f.page.getByText(/clang: passed/).first().waitFor();
+    }
+    assert.deepEqual(f.writes.map(item => item.path), ["/ebpf/check/remote", "/ebpf/check/remote"]);
+    assert.deepEqual(f.errors, []);
+  } finally { await f.browser.close(); }
+});
+
 test("a confirmed file import cannot replace a different lab's draft after navigation", { timeout: 45000 }, async () => {
   const f = await setup("student");
   try {
@@ -426,5 +374,58 @@ test("event deletion explains the complete filter scope and freezes the cutoff b
     assert.equal(params.limit, undefined);
     assert.equal(params.since_minutes, undefined);
     assert.deepEqual(f.errors, []);
+  } finally { await f.browser.close(); }
+});
+
+test("real Monaco accepts semantic suggestions and multiline SEC snippets without executing code", { timeout: 45000 }, async () => {
+  const f = await setup("student");
+  try {
+    f.state.completionItems = [{ label: "fixture_symbol", insert_text: "fixture_symbol", detail: "fixture field", kind: "field" }];
+    await f.page.goto(`${baseUrl}/ebpf`);
+    await f.page.waitForFunction(() => window.monaco?.editor.getEditors().length);
+    // Initial header loading replaces providers; wait for that context's inline check before invoking one.
+    await f.page.getByText(/clang: passed/).first().waitFor();
+    await f.page.evaluate(() => {
+      const editor = window.monaco.editor.getEditors()[0];
+      editor.setValue("fixture_"); editor.setPosition({ lineNumber: 1, column: 9 }); editor.focus();
+      editor.trigger("test", "editor.action.triggerSuggest", {});
+    });
+    await f.page.locator(".suggest-widget .monaco-list-row").filter({ hasText: "fixture_symbol" }).waitFor();
+    await f.page.keyboard.press("Enter");
+    await f.page.waitForFunction(() => window.monaco.editor.getModels()[0].getValue() === "fixture_symbol");
+    assert.ok(f.state.completions.some(item => item.code === "fixture_" && item.line === 1 && item.column === 9));
+    for (const item of f.state.completions) assert.deepEqual(Object.keys(item).sort(), ["code", "column", "line"]);
+    f.state.completionItems = [];
+    await f.page.evaluate(() => {
+      const editor = window.monaco.editor.getEditors()[0];
+      editor.setValue("SEC"); editor.setPosition({ lineNumber: 1, column: 4 }); editor.focus();
+      editor.trigger("test", "editor.action.triggerSuggest", {});
+    });
+    await f.page.locator(".suggest-widget .monaco-list-row").filter({ hasText: /^SEC xdp/ }).dblclick();
+    const source = await f.page.evaluate(() => window.monaco.editor.getModels()[0].getValue());
+    assert.match(source, /^SEC\("xdp"\)\nint xdp_handler/); assert.equal(source.includes("\\n"), false);
+    assert.equal(f.writes.length, 0); assert.deepEqual(f.errors, []);
+  } finally { await f.browser.close(); }
+});
+
+test("header refresh errors remain visible while an explicit local self-check still works", { timeout: 45000 }, async () => {
+  const f = await setup("student");
+  try {
+    f.state.selectedMetadata = [{ id: "fixture-header", include_hint: "<fixture.h>", local_path: "/fixture/fixture.h", downloaded: true }];
+    await f.page.goto(`${baseUrl}/ebpf`);
+    await f.page.locator(".monaco-editor").waitFor();
+    const panel = f.page.locator("details.workspace-disclosure").filter({ has: f.page.locator("summary", { hasText: "已注入头文件" }) });
+    await panel.locator("summary").first().click();
+    await panel.getByText("fixture-header", { exact: true }).waitFor();
+    f.state.metadataStatus = 403;
+    await panel.getByRole("button", { name: "刷新注入头文件", exact: true }).click();
+    await panel.getByRole("alert").filter({ hasText: "无法刷新头文件列表" }).waitFor();
+    assert.equal(await panel.getByText("没有已选择头文件元数据。", { exact: true }).count(), 0);
+    assert.equal(await panel.getByText("fixture-header", { exact: true }).count(), 1);
+    await panel.getByRole("button", { name: "快速自检头文件注入", exact: true }).click();
+    await panel.getByText("passed", { exact: true }).waitFor();
+    assert.ok(f.state.checks.some(item => item.code === draft));
+    for (const item of f.state.checks) assert.deepEqual(Object.keys(item), ["code"]);
+    assert.equal(await f.code(), draft); assert.equal(f.writes.length, 0); assert.deepEqual(f.errors, []);
   } finally { await f.browser.close(); }
 });

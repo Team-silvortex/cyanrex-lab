@@ -1,0 +1,36 @@
+   Compiling cyanrex-engine v0.3.8 (/home/chiharukiryu/cdev/cyanrex-lab/engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 18.03s
+     Running unittests src/lib.rs (engine/target/debug/deps/cyanrex_engine-b02300368eca6ec0)
+
+running 4 tests
+test routes::ebpf::breakpoint_trace_tests::parses_only_the_requested_debug_session ... ok
+test routes::ebpf::breakpoint_trace_tests::preserves_exact_decimal_markers_with_normal_trace_suffixes ... ok
+test routes::ebpf::breakpoint_trace_tests::rejects_empty_debug_session_and_whitespace_before_the_line ... ok
+test routes::ebpf::breakpoint_trace_tests::rejects_zero_and_non_integral_breakpoint_markers ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 171 filtered out; finished in 0.00s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.13s
+     Running unittests src/lib.rs (engine/target/debug/deps/cyanrex_engine-b02300368eca6ec0)
+
+running 5 tests
+test services::ebpf_loader::debug_tests::does_not_treat_map_initializer_as_a_function ... ok
+test services::ebpf_loader::debug_tests::enforces_breakpoint_limit ... ok
+test services::ebpf_loader::debug_tests::ignores_braces_and_assignments_in_preprocessor_macros ... ok
+test services::ebpf_loader::debug_tests::instruments_function_entry_and_statement_without_changing_line_count ... ok
+test services::ebpf_loader::debug_tests::rejects_global_comment_and_out_of_range_lines ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 170 filtered out; finished in 0.00s
+
+   Compiling cyanrex-engine v0.3.8 (/home/chiharukiryu/cdev/cyanrex-lab/engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 8.42s
+     Running tests/routes_tdd.rs (engine/target/debug/deps/routes_tdd-6f48ff5b14a5af5c)
+
+running 4 tests
+test event_websocket_keeps_raw_event_frames_and_owner_isolation ... ok
+test event_websocket_lag_closes_with_resync_code_instead_of_silent_loss ... ok
+test event_websocket_other_owner_burst_does_not_force_resync ... ok
+test event_websocket_requires_a_session_and_allowed_origin ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 82 filtered out; finished in 3.05s
+

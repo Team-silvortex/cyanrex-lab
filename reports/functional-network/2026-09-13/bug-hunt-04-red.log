@@ -1,0 +1,368 @@
+✖ completion providers never send another editor's model to their Engine (1310.083362ms)
+✖ disposing a provider aborts pending completions and discards late items (260.69673ms)
+✖ model edits and replacements invalidate completion callbacks even without token cancellation (249.80933ms)
+✖ completion cache cannot survive provider/header-context replacement (258.740528ms)
+✖ pre-cancelled completion tokens never return cached semantic suggestions (254.013856ms)
+✖ separate completion providers do not share cancellation ownership (250.764331ms)
+✖ completion network failures retain snippets without unhandled promise rejections (253.718959ms)
+✖ stalled completion is aborted after ten seconds while static snippets remain available (261.718438ms)
+✖ section snippets insert actual line breaks, not literal backslash-n text (253.864763ms)
+✖ manual header checks discard late results after source changes (288.859059ms)
+✖ duplicate manual-check calls dispatch only once (272.992249ms)
+✖ manual header checks abort on unmount and have a complete-request deadline (284.82851ms)
+✖ manual HTTP failures are infrastructure errors rather than compiler issues (281.304669ms)
+✖ overlapping metadata refreshes cannot replace a newer header selection (300.644915ms)
+✖ metadata refresh failure is visible without silently claiming an empty selection (290.634699ms)
+✖ an unrelated first Monaco model never receives this editor's diagnostic markers (265.328592ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 0
+ℹ fail 16
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5496.68197
+
+✖ failing tests:
+
+test at frontend/tests/editorIntelligence.browser.mjs:23:1
+✖ completion providers never send another editor's model to their Engine (1310.083362ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/editorIntelligence.browser.mjs:25:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/editorIntelligence.browser.mjs:19:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/editorIntelligence.browser.mjs:29:1
+✖ disposing a provider aborts pending completions and discards late items (260.69673ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  false !== true
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/editorIntelligence.browser.mjs:31:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/editorIntelligence.browser.mjs:19:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/editorIntelligence.browser.mjs:36:1
+✖ model edits and replacements invalidate completion callbacks even without token cancellation (249.80933ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + [
+  +   'hash map declaration',
+  +   'ring buffer declaration',
+  +   'per-cpu array declaration',
+  +   'SEC xdp',
+  +   'SEC tc',
+  +   'SEC tracepoint sched_switch',
+  +   '#include <vmlinux.h>',
+  +   'GPL license',
+  +   'bpf_printk',
+  +   'bpf_map_lookup_elem',
+  +   'bpf_map_update_elem',
+  +   'bpf_ringbuf_reserve',
+  +   'bpf_ringbuf_submit',
+  +   'bpf_get_current_pid_tgid',
+  +   'bpf_get_current_comm',
+  +   'bpf_probe_read_kernel',
+  +   'XDP_PASS',
+  +   'XDP_DROP',
+  +   'XDP_TX',
+  +   'XDP_REDIRECT',
+  +   'old_version'
+  + ]
+  - []
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/editorIntelligence.browser.mjs:38:55
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/editorIntelligence.browser.mjs:19:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 'hash map declaration', 'ring buffer declaration', 'per-cpu array declaration', 'SEC xdp', 'SEC tc', 'SEC tracepoint sched_switch', '#include <vmlinux.h>', 'GPL license', 'bpf_printk', 'bpf_map_lookup_elem', 'bpf_map_update_elem', 'bpf_ringbuf_reserve', 'bpf_ringbuf_submit', 'bpf_get_current_pid_tgid', 'bpf_get_current_comm', 'bpf_probe_read_kernel', 'XDP_PASS', 'XDP_DROP', 'XDP_TX', 'XDP_REDIRECT', 'old_version' ],
+    expected: [],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/editorIntelligence.browser.mjs:43:1
+✖ completion cache cannot survive provider/header-context replacement (258.740528ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 2
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/editorIntelligence.browser.mjs:47:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/editorIntelligence.browser.mjs:19:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 2,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/editorIntelligence.browser.mjs:51:1
+✖ pre-cancelled completion tokens never return cached semantic suggestions (254.013856ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + [
+  +   'hash map declaration',
+  +   'ring buffer declaration',
+  +   'per-cpu array declaration',
+  +   'SEC xdp',
+  +   'SEC tc',
+  +   'SEC tracepoint sched_switch',
+  +   '#include <vmlinux.h>',
+  +   'GPL license',
+  +   'bpf_printk',
+  +   'bpf_map_lookup_elem',
+  +   'bpf_map_update_elem',
+  +   'bpf_ringbuf_reserve',
+  +   'bpf_ringbuf_submit',
+  +   'bpf_get_current_pid_tgid',
+  +   'bpf_get_current_comm',
+  +   'bpf_probe_read_kernel',
+  +   'XDP_PASS',
+  +   'XDP_DROP',
+  +   'XDP_TX',
+  +   'XDP_REDIRECT',
+  +   'cached'
+  + ]
+  - []
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/editorIntelligence.browser.mjs:55:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/editorIntelligence.browser.mjs:19:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 'hash map declaration', 'ring buffer declaration', 'per-cpu array declaration', 'SEC xdp', 'SEC tc', 'SEC tracepoint sched_switch', '#include <vmlinux.h>', 'GPL license', 'bpf_printk', 'bpf_map_lookup_elem', 'bpf_map_update_elem', 'bpf_ringbuf_reserve', 'bpf_ringbuf_submit', 'bpf_get_current_pid_tgid', 'bpf_get_current_comm', 'bpf_probe_read_kernel', 'XDP_PASS', 'XDP_DROP', 'XDP_TX', 'XDP_REDIRECT', 'cached' ],
+    expected: [],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/editorIntelligence.browser.mjs:59:1
+✖ separate completion providers do not share cancellation ownership (250.764331ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/editorIntelligence.browser.mjs:63:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/editorIntelligence.browser.mjs:19:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/editorIntelligence.browser.mjs:67:1
+✖ completion network failures retain snippets without unhandled promise rejections (253.718959ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + [
+  +   'synthetic failure'
+  + ]
+  - []
+  
+      at run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/editorIntelligence.browser.mjs:19:55)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 'synthetic failure' ],
+    expected: [],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/editorIntelligence.browser.mjs:72:1
+✖ stalled completion is aborted after ten seconds while static snippets remain available (261.718438ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  false !== true
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/editorIntelligence.browser.mjs:75:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/editorIntelligence.browser.mjs:19:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/editorIntelligence.browser.mjs:79:1
+✖ section snippets insert actual line breaks, not literal backslash-n text (253.864763ms)
+  AssertionError [ERR_ASSERTION]: SEC xdp
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/editorIntelligence.browser.mjs:83:41
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/editorIntelligence.browser.mjs:19:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at frontend/tests/editorIntelligence.browser.mjs:87:1
+✖ manual header checks discard late results after source changes (288.859059ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  'passed' !== 'idle'
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/editorIntelligence.browser.mjs:90:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/editorIntelligence.browser.mjs:19:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'passed',
+    expected: 'idle',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/editorIntelligence.browser.mjs:93:1
+✖ duplicate manual-check calls dispatch only once (272.992249ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  2 !== 1
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/editorIntelligence.browser.mjs:95:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/editorIntelligence.browser.mjs:19:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 2,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/editorIntelligence.browser.mjs:99:1
+✖ manual header checks abort on unmount and have a complete-request deadline (284.82851ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'checking'
+  - 'error'
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/editorIntelligence.browser.mjs:101:34
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/editorIntelligence.browser.mjs:19:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'checking',
+    expected: 'error',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/editorIntelligence.browser.mjs:106:1
+✖ manual HTTP failures are infrastructure errors rather than compiler issues (281.304669ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  'issues' !== 'error'
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/editorIntelligence.browser.mjs:109:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/editorIntelligence.browser.mjs:19:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'issues',
+    expected: 'error',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/editorIntelligence.browser.mjs:112:1
+✖ overlapping metadata refreshes cannot replace a newer header selection (300.644915ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    [
+  +   'old'
+  -   'new'
+    ]
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/editorIntelligence.browser.mjs:116:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/editorIntelligence.browser.mjs:19:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 'old' ],
+    expected: [ 'new' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/editorIntelligence.browser.mjs:119:1
+✖ metadata refresh failure is visible without silently claiming an empty selection (290.634699ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok((await f.snapshot()).metadataError)
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/editorIntelligence.browser.mjs:123:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/editorIntelligence.browser.mjs:19:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '',
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at frontend/tests/editorIntelligence.browser.mjs:127:1
+✖ an unrelated first Monaco model never receives this editor's diagnostic markers (265.328592ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(calls.every(call => call.id === "owned"))
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/editorIntelligence.browser.mjs:130:39
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/editorIntelligence.browser.mjs:19:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

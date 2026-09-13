@@ -1,0 +1,29 @@
+✖ late disposal of a previous model cannot clear the replacement model's decorations (1331.955872ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2985.02993
+
+✖ failing tests:
+
+test at frontend/tests/breakpointLifecycle.browser.mjs:102:1
+✖ late disposal of a previous model cannot clear the replacement model's decorations (1331.955872ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/breakpointLifecycle.browser.mjs:107:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/breakpointLifecycle.browser.mjs:20:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

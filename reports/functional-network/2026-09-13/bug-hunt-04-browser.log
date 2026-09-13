@@ -1,0 +1,46 @@
+✔ cached diagnostics never cross Engine URLs (1346.492179ms)
+✔ remounting an editor does not reuse the previous editor or account's cache (300.863274ms)
+✔ source and header context use unambiguous cache identities (296.067997ms)
+✔ equal-length sources with the same old 32-bit hash do not share diagnostics (287.403222ms)
+✔ late success cannot replace current diagnostics or populate a stale cache (284.21399ms)
+✔ late errors cannot erase the current diagnostics (285.677135ms)
+✔ changing source removes old markers and status during debounce (281.495404ms)
+✔ one editor's cancellation does not own another editor's request (381.698565ms)
+✔ cancelled and expired remote jobs are unavailable even when they carry a result (304.492815ms)
+✔ remote submission and a stalled poll each have a bounded 35-second total wait (296.691917ms)
+✔ late remote submission after a target switch only cancels its job, without polling or fallback (278.056881ms)
+✔ completed remote compiler results retain issue/note mapping and never trigger a local run (269.120781ms)
+✔ same-editor cache reuse stops at the exact eight-second expiry (288.069236ms)
+✔ cache retains at most 24 entries per editor (371.894199ms)
+✔ rapid edits, blank drafts and pre-debounce unmounts dispatch no obsolete checks (301.400553ms)
+✔ failed checks are not cached and local requests cannot wait beyond 20 seconds (277.946486ms)
+✔ completion providers never send another editor's model to their Engine (1517.126692ms)
+✔ disposing a provider aborts pending completions and discards late items (335.310471ms)
+✔ model edits and replacements invalidate completion callbacks even without token cancellation (370.084789ms)
+✔ completion cache cannot survive provider/header-context replacement (325.33355ms)
+✔ pre-cancelled completion tokens never return cached semantic suggestions (338.279638ms)
+✔ separate completion providers do not share cancellation ownership (337.768211ms)
+✔ completion network failures retain snippets without unhandled promise rejections (378.429365ms)
+✔ stalled completion is aborted after ten seconds while static snippets remain available (322.049352ms)
+✔ section snippets insert actual line breaks, not literal backslash-n text (322.835494ms)
+✔ manual header checks discard late results after source changes (362.178551ms)
+✔ duplicate manual-check calls dispatch only once (363.065557ms)
+✔ manual header checks abort on unmount and have a complete-request deadline (398.247289ms)
+✔ manual HTTP failures are infrastructure errors rather than compiler issues (354.052003ms)
+✔ overlapping metadata refreshes cannot replace a newer header selection (331.059818ms)
+✔ metadata refresh failure is visible without silently claiming an empty selection (311.50532ms)
+✔ an unrelated first Monaco model never receives this editor's diagnostic markers (312.850143ms)
+✔ malformed metadata rows are a visible failure without crashing the editor (315.922598ms)
+✔ owner disposal unregisters every language provider (376.940875ms)
+✔ refreshing unchanged headers invalidates pending checks and the mounted completion provider (548.716303ms)
+✔ metadata deadlines end loading without losing the last selection and unmount aborts refresh (364.596255ms)
+✔ late manual-check errors cannot erase a newer successful result (311.170938ms)
+✔ normal manual compiler rejection remains issues and sends only source to the local check (310.65693ms)
+ℹ tests 38
+ℹ suites 0
+ℹ pass 38
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 9071.607113

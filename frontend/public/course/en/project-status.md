@@ -1,7 +1,7 @@
 # Project Status
 
-Snapshot date: **2026-09-12**
-Current release line: **0.3.8**
+Snapshot date: **2026-09-13**
+Current release line: **0.3.9**
 
 This page is the capability-level progress baseline for Cyanrex Lab. It records what is usable now,
 what remains intentionally limited, and which decisions should drive the next development cycle.
@@ -18,11 +18,22 @@ The detailed trust boundaries and data flows remain in the [system architecture]
 | Local Runner | Operational | Replaceable driver boundary, global/per-user leases, timeout handling, and explicit `shared_kernel` reporting |
 | Runner Agent | Operational for remote checks | Signed registration, heartbeat, leases, cancellation, probes, and isolated compile-only diagnostics; remote eBPF loading is not enabled |
 | Deployment and distribution | Operational | Docker, WSL2, native Linux, hardened optional compiler Agent, and offline package/install tooling |
-| Release traceability | `0.3.8` synchronized source metadata; artifact acceptance remains separate | Changelog/version sync, annotated-tag preflight, checksum-bound source/archive metadata, per-image Docker content IDs, exact-image installation, and native Rust evidence/candidate verification with safe non-overwriting extraction; `0.3.0` is an API baseline only; publishing a source tag does not establish artifact acceptance |
+| Release traceability | `0.3.9` synchronized source metadata; artifact acceptance remains separate | Changelog/version sync, annotated-tag preflight, checksum-bound source/archive metadata, per-image Docker content IDs, exact-image installation, and native Rust evidence/candidate verification with safe non-overwriting extraction; `0.3.0` is an API baseline only; publishing a source tag does not establish artifact acceptance |
 | Module catalog | Operational, state-only | Versioned v1 manifests are discovered and validated at startup; lifecycle is in memory and never executes directory code |
 | JavaScript SDK | Operational internal package | Typed ESM client with 63 generated non-Agent operationId calls, a 77-member additive namespace baseline and deprecation policy, explicit `/openapi` and `/operations` exports, browser/Node sessions, cancellation, downloads, typed errors, and package-consumer smoke coverage |
 | API contract | Operational internal contract | Generated OpenAPI 3.1 served at `/openapi.json`; route/access/SDK/model drift and breaking changes against the frozen `0.3.0` baseline fail the quality gate |
 | Terminal page | Operational for teachers | Permission-aware List/Start/Stop module commands, structured results/history, and a safe handoff to the eBPF experiment workspace; it is not a shell |
+
+## Functional-network bug fixes (included in 0.3.9)
+
+- The [functional-network map](functional-network.md) enumerates 12 modules, 40 workflows and 69 links.
+  Six linked bug-hunt passes cover learning reads/private commits, Runner Agent capacity/leases/body
+  limits, compiler diagnostics, editor/header ownership, run/detach races and breakpoint/event recovery.
+- The original map, source fingerprints and six reports retain their 0.3.8 pre-release inputs. Version
+  and repaired-source drift against that frozen inventory is expected; it is not a refreshed 0.3.9 snapshot.
+- Teacher authority, owner-scoped access, explicit confirmations and API compatibility remain unchanged.
+  Local regressions do not establish current-version LAN/TLS, SSH deployment, live-kernel or offline
+  artifact acceptance, and this source release does not modify a running deployment.
 
 ## Authentication and persistence fixes (included in 0.3.8)
 

@@ -137,7 +137,7 @@ async fn saved_source_flows_through_runner_events_feedback_and_owner_bound_resum
         "reading a historical submission must never execute it"
     );
     let reloaded = LearningStore::with_local_data_path(f.root.join("learning.json"));
-    let preserved = reloaded.attempts_for_user("network-student").await;
+    let preserved = reloaded.attempts_for_user("network-student").await.unwrap();
     assert_eq!(
         preserved[0].teacher_feedback.as_ref().unwrap().comment,
         "check the guard"

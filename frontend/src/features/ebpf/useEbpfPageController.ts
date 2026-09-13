@@ -7,24 +7,16 @@ import { registerEbpfIntelligence } from "../../utils/cEbpfIntelligence";
 import { loadPageState, savePageState } from "../../utils/pageState";
 import type { LabAttempt, LabProgress } from "../learning/models";
 import { MAX_UPLOAD_BYTES, SAMPLE_EBPF } from "./models";
-import type {
-  EbpfAttachmentDetail,
-  EbpfAttachmentDetailListResponse,
-  EbpfDetachResponse,
-  EbpfCheckResponse,
-  EbpfRunResponse,
-  EbpfRuntimeBackend,
-  EbpfTemplate,
-  HeaderSelectionMetadata,
-  SelectedHeaderMetadata,
-  UserScript,
-} from "./models";
+import type { EbpfRuntimeBackend, EbpfTemplate, UserScript } from "./models";
 import { applyMarkers, toIncludePath } from "./editorUtils";
 import { useBreakpointHitStream } from "./useBreakpointHitStream";
 import { useCompilerDiagnostics } from "./useCompilerDiagnostics";
 import { useCompileBackends } from "./useCompileBackends";
 import { useEbpfEditorBreakpoints } from "./useEditorBreakpoints";
-import { buildDetachBody } from "./detachTarget";
+import { useHeaderInjectionCheck } from "./useHeaderInjectionCheck";
+import { useSelectedHeaders } from "./useSelectedHeaders";
+import { useAttachmentInventory } from "./useAttachmentInventory";
+import { useRuntimeActions } from "./useRuntimeActions";
 
 export const buildAyaBackendHint = (
   message: string,
@@ -58,37 +50,14 @@ export const buildAyaBackendHint = (
   return null;
 };
 
-type HeaderInjectionCheckStatus = "idle" | "checking" | "passed" | "issues" | "error";
-
-type HeaderInjectionCheckState = {
-  status: HeaderInjectionCheckStatus;
-  message: string;
-  stdout: string;
-  stderr: string;
-  diagnostics: number;
-};
-
-const INITIAL_HEADER_CHECK_STATE: HeaderInjectionCheckState = {
-  status: "idle",
-  message: "",
-  stdout: "",
-  stderr: "",
-  diagnostics: 0,
-};
-
 export function useEbpfPageController(
   t: (key: string, vars?: Record<string, string | number>) => string,
   activeLabId = "",
   runBlocked = false,
+  navigationKey = activeLabId,
 ) {
   const [code, setCode] = useState(() => loadPageState<string>("ebpf_code_v1") ?? SAMPLE_EBPF);
-  const [result, setResult] = useState<EbpfRunResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [running, setRunning] = useState(false);
-  const [injectedMetadata, setInjectedMetadata] = useState<SelectedHeaderMetadata[]>([]);
-  const [headerInjectionCheck, setHeaderInjectionCheck] =
-    useState<HeaderInjectionCheckState>(INITIAL_HEADER_CHECK_STATE);
-  const [attachmentDetails, setAttachmentDetails] = useState<EbpfAttachmentDetail[]>([]);
   const [templates, setTemplates] = useState<EbpfTemplate[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState(
     () => loadPageState<string>("ebpf_selected_template_v1") ?? "",
@@ -112,14 +81,22 @@ export function useEbpfPageController(
   const [activeLabProgress, setActiveLabProgress] = useState<LabProgress | null>(null);
   const monacoRef = useRef<any>(null);
   const editorRef = useRef<any>(null);
-  const intelligenceRef = useRef<{ dispose: () => void } | null>(null);
+  const [intelligenceEditor, setIntelligenceEditor] = useState<{ editor: any; monaco: any } | null>(null);
   const activeLabRef = useRef(activeLabId);
   activeLabRef.current = activeLabId;
   const engineUrl = getEngineUrl();
+  const { attachmentDetails, attachmentState, refreshAttachments, invalidateAttachments } = useAttachmentInventory(engineUrl);
+  const runtimeContext = JSON.stringify([engineUrl, navigationKey, activeLabId, code, selectedTemplate,
+    scriptTitle, runtimeBackend, samplingPerSec, streamSeconds, enableKernelStream]);
+  const runtime = useRuntimeActions(engineUrl, navigationKey, runtimeContext, invalidateAttachments, refreshAttachments, t);
+  const { result, running, detaching, runtimeNotice } = runtime;
+  const { injectedMetadata, injectedHeaderContext, refreshInjectedMetadata, injectedMetadataError, injectedMetadataLoading } = useSelectedHeaders(engineUrl);
+  const { headerInjectionCheck, runHeaderInjectionSelfCheck } = useHeaderInjectionCheck(code, engineUrl, injectedHeaderContext, t);
   const compileBackends = useCompileBackends(engineUrl);
   const { hits: breakpointHits, streamGap: breakpointStreamGap, connection: breakpointConnection } = useBreakpointHitStream(
     engineUrl,
     result?.debug?.session_id ?? null,
+    result?.debug?.instrumented_lines ?? [],
   );
   const lastBreakpointHit = breakpointHits.at(-1) ?? null;
   const { debugBreakpoints, clearDebugBreakpoints, onEditorReadyForDebug } =
@@ -139,14 +116,6 @@ export function useEbpfPageController(
     [attachmentDetails],
   );
   const analysis = useMemo(() => analyzeCCode(code, injectedIncludes), [code, injectedIncludes]);
-  const injectedHeaderContext = useMemo(
-    () =>
-      injectedMetadata
-        .map((item) => `${item.id}:${item.include_hint}:${item.local_path}`)
-        .sort()
-        .join("|"),
-    [injectedMetadata],
-  );
   const compiler = useCompilerDiagnostics(
     code,
     engineUrl,
@@ -157,10 +126,6 @@ export function useEbpfPageController(
     () => [...analysis.diagnostics, ...compiler.diagnostics],
     [analysis.diagnostics, compiler.diagnostics],
   );
-  useEffect(() => {
-    setHeaderInjectionCheck(INITIAL_HEADER_CHECK_STATE);
-  }, [code, injectedHeaderContext]);
-
   useEffect(() => {
     savePageState("ebpf_code_v1", code);
     savePageState("ebpf_selected_template_v1", selectedTemplate);
@@ -178,77 +143,6 @@ export function useEbpfPageController(
     enableKernelStream,
     runtimeBackend,
   ]);
-
-  const refreshInjectedMetadata = async () => {
-    try {
-      const response = await fetch(`${engineUrl}/modules/c-headers/selected-metadata`, {
-        credentials: "include",
-      });
-      if (!response.ok) return;
-      const json = (await response.json()) as HeaderSelectionMetadata;
-      setInjectedMetadata(json.selected_headers ?? []);
-    } catch {
-      // ignore metadata refresh errors for now
-    }
-  };
-
-  const runHeaderInjectionSelfCheck = async () => {
-    if (!code.trim()) {
-      setHeaderInjectionCheck({
-        ...INITIAL_HEADER_CHECK_STATE,
-        status: "error",
-        message: t("ebpf.headerInjectionCheckEmpty"),
-      });
-      return;
-    }
-
-    if (code.length > MAX_UPLOAD_BYTES) {
-      setHeaderInjectionCheck({
-        ...INITIAL_HEADER_CHECK_STATE,
-        status: "error",
-        message: t("ebpf.uploadBlocked", { limit: MAX_UPLOAD_BYTES }),
-      });
-      return;
-    }
-
-    setHeaderInjectionCheck({
-      ...INITIAL_HEADER_CHECK_STATE,
-      status: "checking",
-      message: t("ebpf.headerInjectionCheckRunning"),
-    });
-
-    try {
-      const response = await fetch(`${engineUrl}/ebpf/check`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ code }),
-      });
-      const json = (await response.json()) as EbpfCheckResponse;
-      const remoteMessage = json.message?.trim();
-
-      setHeaderInjectionCheck({
-        status: json.ok && response.ok ? "passed" : "issues",
-        message:
-          response.ok && json.ok
-            ? remoteMessage || t("ebpf.headerInjectionCheckPassed")
-            : `${remoteMessage || t("ebpf.headerInjectionCheckFailed")} (HTTP ${response.status})`,
-        stdout: json.stdout || "",
-        stderr: json.stderr || "",
-        diagnostics: json.diagnostics.length,
-      });
-    } catch (err) {
-      setHeaderInjectionCheck({
-        ...INITIAL_HEADER_CHECK_STATE,
-        status: "error",
-        message: (err as Error).message,
-      });
-    }
-  };
-
-  useEffect(() => {
-    refreshInjectedMetadata();
-  }, [engineUrl]);
 
   const refreshLearningProgress = async () => {
     if (!activeLabId) {
@@ -272,29 +166,12 @@ export function useEbpfPageController(
     void refreshLearningProgress();
   }, [activeLabId, engineUrl]);
 
-  const refreshAttachments = async () => {
-    try {
-      const response = await fetch(`${engineUrl}/ebpf/attachments/details`, {
-        credentials: "include",
-      });
-      if (!response.ok) return;
-      const json = (await response.json()) as EbpfAttachmentDetailListResponse;
-      setAttachmentDetails(json.attachments ?? []);
-    } catch {
-      // ignore attachment refresh errors
-    }
-  };
-
-  useEffect(() => {
-    refreshAttachments();
-  }, [engineUrl]);
-
   const applyLearningAttempt = (attempt: LabAttempt) => {
-    if (running || attempt.lab_id !== activeLabId) return false;
+    if (runtime.isBusy() || attempt.lab_id !== activeLabId) return false;
     setCode(attempt.source);
     setSelectedTemplate(attempt.template_id ?? "");
     setScriptTitle(`lab-${activeLabId}`);
-    setResult(null);
+    runtime.clear();
     setError(null);
     clearDebugBreakpoints();
     return true;
@@ -331,11 +208,15 @@ export function useEbpfPageController(
   }, [engineUrl]);
 
   useEffect(() => {
-    if (!monacoRef.current) return;
-    const model = monacoRef.current.editor.getModels()[0];
-    if (!model) return;
-    applyMarkers({ getModel: () => model }, monacoRef.current, diagnostics);
+    if (!monacoRef.current || !editorRef.current) return;
+    applyMarkers(editorRef.current, monacoRef.current, diagnostics);
   }, [diagnostics]);
+
+  useEffect(() => {
+    if (!intelligenceEditor) return;
+    const registration = registerEbpfIntelligence(intelligenceEditor.monaco, engineUrl, intelligenceEditor.editor, injectedHeaderContext);
+    return () => registration.dispose();
+  }, [intelligenceEditor, engineUrl, injectedHeaderContext]);
 
   useEffect(() => {
     loader.config({
@@ -343,10 +224,6 @@ export function useEbpfPageController(
         vs: "/monaco/vs",
       },
     });
-    return () => {
-      intelligenceRef.current?.dispose();
-      intelligenceRef.current = null;
-    };
   }, []);
 
   const onUpload = async (file: File, signal?: AbortSignal) => {
@@ -360,55 +237,28 @@ export function useEbpfPageController(
     setError(null);
   };
 
-  const runEbpf = async () => {
-    if (running || runBlocked) return;
-    if (code.length > MAX_UPLOAD_BYTES) {
+  const runEbpf = async (signal?: AbortSignal) => {
+    if (runtime.isBusy() || runBlocked || signal?.aborted) return;
+    if (new TextEncoder().encode(code).byteLength > MAX_UPLOAD_BYTES) {
       setError(t("ebpf.uploadBlocked", { limit: MAX_UPLOAD_BYTES }));
       return;
     }
+    if (!code.trim()) { setError(t("ebpf.runEmpty")); return; }
 
     const selectedTemplateDef = templates.find((item) => item.id === selectedTemplate);
     const resolvedProgramName =
       selectedTemplateDef?.name || scriptTitle.trim() || t("ebpf.customProgramName");
 
-    setRunning(true);
     setError(null);
-    setResult(null);
-
-    try {
-      const response = await fetch(`${engineUrl}/ebpf/run`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          code,
-          lab_id: activeLabId || null,
-          template_id: selectedTemplate || null,
-          program_name: resolvedProgramName,
-          sampling_per_sec: samplingPerSec,
-          stream_seconds: streamSeconds,
-          enable_kernel_stream: enableKernelStream,
-          runtime_backend: runtimeBackend,
-          debug_breakpoints: debugBreakpoints,
-        }),
-      });
-
-      const json = (await response.json()) as EbpfRunResponse;
-      setResult(json);
-      await Promise.all([refreshAttachments(), refreshLearningProgress()]);
-
-      const ayaHint = runtimeBackend === "aya" ? buildAyaBackendHint(json.message, t) : null;
-      const friendlyError = response.ok ? json.message : `HTTP ${response.status}: ${json.message}`;
-      const fullError = ayaHint ? `${friendlyError} ${ayaHint}` : friendlyError;
-
-      if (!response.ok || !json.success) {
-        setError(fullError);
-      }
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setRunning(false);
-    }
+    const accepted = await runtime.run({
+      code, lab_id: activeLabId || null, template_id: selectedTemplate || null, program_name: resolvedProgramName,
+      sampling_per_sec: samplingPerSec, stream_seconds: streamSeconds, enable_kernel_stream: enableKernelStream,
+      runtime_backend: runtimeBackend, debug_breakpoints: debugBreakpoints,
+    }, signal, message => {
+      const hint = runtimeBackend === "aya" ? buildAyaBackendHint(message, t) : null;
+      return hint ? `${message} ${hint}` : message;
+    });
+    if (accepted && !signal?.aborted && activeLabRef.current === activeLabId) void refreshLearningProgress();
   };
 
   const saveCurrentScript = async () => {
@@ -453,37 +303,9 @@ export function useEbpfPageController(
     }
   };
 
-  const detach = async (pinPath: string | null) => {
+  const detach = async (pinPath: string | null, signal?: AbortSignal) => {
     setError(null);
-    try {
-      const response = await fetch(`${engineUrl}/ebpf/detach`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(buildDetachBody(pinPath)),
-      });
-      const json = (await response.json()) as EbpfDetachResponse;
-      if (!response.ok || !json.ok) {
-        throw new Error(json.message || `HTTP ${response.status}`);
-      }
-      if (json.clean === false && (json.safety_notes?.length ?? 0) > 0) {
-        setError(t("ebpf.detachWarning", { notes: (json.safety_notes ?? []).join(" | ") }));
-      }
-      setResult((prev) =>
-        prev
-          ? {
-              ...prev,
-              message: `${prev.message} | ${t("ebpf.detachedCount", { count: json.detached.length })} | ${t("ebpf.detachState", {
-                state: json.clean === false ? t("ebpf.detachUnclean") : t("ebpf.detachClean"),
-              })}`,
-            }
-          : prev,
-      );
-      await refreshAttachments();
-    } catch (err) {
-      setError((err as Error).message);
-      throw err;
-    }
+    await runtime.detach(pinPath, signal);
   };
 
   const onEditorMount = (editor: any, monaco: any) => {
@@ -505,9 +327,7 @@ export function useEbpfPageController(
       },
     });
     monaco.editor.setTheme("cyanrex-c");
-    if (!intelligenceRef.current) {
-      intelligenceRef.current = registerEbpfIntelligence(monaco, engineUrl);
-    }
+    setIntelligenceEditor({ editor, monaco });
     onEditorReadyForDebug(editor, monaco);
     applyMarkers(editor, monaco, analysis.diagnostics);
   };
@@ -515,32 +335,31 @@ export function useEbpfPageController(
   const onEditorChange = (value: string | undefined) => {
     const next = value ?? "";
     setCode(next);
-    if (monacoRef.current) {
-      const model = monacoRef.current.editor.getModels()[0];
-      if (model) {
-        applyMarkers(
-          { getModel: () => model },
-          monacoRef.current,
-          analyzeCCode(next, injectedIncludes).diagnostics,
-        );
-      }
+    if (monacoRef.current && editorRef.current) {
+      applyMarkers(editorRef.current, monacoRef.current, analyzeCCode(next, injectedIncludes).diagnostics);
     }
   };
 
   return {
     code,
     result,
-    error,
+    error: error || runtime.error,
     running,
+    detaching,
+    runtimeNotice,
     analysis,
     scriptTitle,
     attachments,
     attachmentDetails,
+    attachmentState,
+    refreshAttachments,
     compiler,
     compileBackends,
     diagnostics,
     headerInjectionCheck,
     injectedMetadata,
+    injectedMetadataError,
+    injectedMetadataLoading,
     monacoRef,
     setCode,
     setScriptTitle,

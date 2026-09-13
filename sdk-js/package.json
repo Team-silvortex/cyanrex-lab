@@ -1,6 +1,6 @@
 {
   "name": "@cyanrex/sdk-js",
-  "version": "0.3.8",
+  "version": "0.3.9",
   "description": "Typed browser and Node.js client for the Cyanrex Lab API",
   "type": "module",
   "main": "./dist/index.js",

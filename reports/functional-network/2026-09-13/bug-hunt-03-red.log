@@ -1,0 +1,248 @@
+✖ cached diagnostics never cross Engine URLs (1170.892743ms)
+✖ remounting an editor does not reuse the previous editor or account's cache (208.690288ms)
+✖ source and header context use unambiguous cache identities (210.15543ms)
+✖ equal-length sources with the same old 32-bit hash do not share diagnostics (204.322909ms)
+✖ late success cannot replace current diagnostics or populate a stale cache (221.929687ms)
+✖ late errors cannot erase the current diagnostics (222.985926ms)
+✖ changing source removes old markers and status during debounce (219.439634ms)
+✖ one editor's cancellation does not own another editor's request (199.310012ms)
+✖ cancelled and expired remote jobs are unavailable even when they carry a result (219.646042ms)
+✖ remote submission and a stalled poll each have a bounded 35-second total wait (219.737715ms)
+✖ late remote submission after a target switch only cancels its job, without polling or fallback (206.208119ms)
+✔ completed remote compiler results retain issue/note mapping and never trigger a local run (221.707496ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 1
+ℹ fail 11
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3689.761381
+
+✖ failing tests:
+
+test at frontend/tests/compilerDiagnostics.browser.mjs:24:1
+✖ cached diagnostics never cross Engine URLs (1170.892743ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 2
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/compilerDiagnostics.browser.mjs:28:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/compilerDiagnostics.browser.mjs:20:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 2,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/compilerDiagnostics.browser.mjs:34:1
+✖ remounting an editor does not reuse the previous editor or account's cache (208.690288ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 2
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/compilerDiagnostics.browser.mjs:37:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/compilerDiagnostics.browser.mjs:20:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 2,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/compilerDiagnostics.browser.mjs:41:1
+✖ source and header context use unambiguous cache identities (210.15543ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 2
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/compilerDiagnostics.browser.mjs:45:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/compilerDiagnostics.browser.mjs:20:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 2,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/compilerDiagnostics.browser.mjs:48:1
+✖ equal-length sources with the same old 32-bit hash do not share diagnostics (204.322909ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 2
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/compilerDiagnostics.browser.mjs:53:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/compilerDiagnostics.browser.mjs:20:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 2,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/compilerDiagnostics.browser.mjs:56:1
+✖ late success cannot replace current diagnostics or populate a stale cache (221.929687ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'clang: late old'
+  - 'clang: current'
+            ^
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/compilerDiagnostics.browser.mjs:61:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/compilerDiagnostics.browser.mjs:20:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'clang: late old',
+    expected: 'clang: current',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/compilerDiagnostics.browser.mjs:67:1
+✖ late errors cannot erase the current diagnostics (222.985926ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'unavailable'
+  - 'passed'
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/compilerDiagnostics.browser.mjs:71:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/compilerDiagnostics.browser.mjs:20:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'unavailable',
+    expected: 'passed',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/compilerDiagnostics.browser.mjs:75:1
+✖ changing source removes old markers and status during debounce (219.439634ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+  +   diagnostics: [
+  +     {
+  +       column: 1,
+  +       endColumn: 2,
+  +       line: 1,
+  +       message: 'clang: old error',
+  +       severity: 'info'
+  +     }
+  +   ],
+  +   status: 'issues'
+  -   diagnostics: [],
+  -   status: 'idle'
+    }
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/compilerDiagnostics.browser.mjs:78:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/compilerDiagnostics.browser.mjs:20:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { diagnostics: [ [Object] ], status: 'issues' },
+    expected: { diagnostics: [], status: 'idle' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/compilerDiagnostics.browser.mjs:83:1
+✖ one editor's cancellation does not own another editor's request (199.310012ms)
+  AssertionError [ERR_ASSERTION]: remaining consumer must keep a live request
+  
+  true !== false
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/compilerDiagnostics.browser.mjs:88:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/compilerDiagnostics.browser.mjs:20:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/compilerDiagnostics.browser.mjs:93:1
+✖ cancelled and expired remote jobs are unavailable even when they carry a result (219.646042ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'issues'
+  - 'unavailable'
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/compilerDiagnostics.browser.mjs:99:12
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/compilerDiagnostics.browser.mjs:20:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'issues',
+    expected: 'unavailable',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/compilerDiagnostics.browser.mjs:105:1
+✖ remote submission and a stalled poll each have a bounded 35-second total wait (219.737715ms)
+  AssertionError [ERR_ASSERTION]: stalled submission must time out
+  + actual - expected
+  
+  + 'checking'
+  - 'unavailable'
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/compilerDiagnostics.browser.mjs:109:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/compilerDiagnostics.browser.mjs:20:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'checking',
+    expected: 'unavailable',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/compilerDiagnostics.browser.mjs:120:1
+✖ late remote submission after a target switch only cancels its job, without polling or fallback (206.208119ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    [
+      '/ebpf/check/remote',
+  +   '/ebpf/check/remote?job_id=fixture-job'
+  -   '/ebpf/check/remote/cancel'
+    ]
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/compilerDiagnostics.browser.mjs:124:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/compilerDiagnostics.browser.mjs:20:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ '/ebpf/check/remote', '/ebpf/check/remote?job_id=fixture-job' ],
+    expected: [ '/ebpf/check/remote', '/ebpf/check/remote/cancel' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

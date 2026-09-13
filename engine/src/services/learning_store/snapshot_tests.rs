@@ -6,6 +6,8 @@ use serde_json::json;
 mod cancellation_tests;
 #[path = "load_tests.rs"]
 mod load_tests;
+#[path = "read_failure_tests.rs"]
+mod read_failure_tests;
 
 struct Fixture(PathBuf);
 
@@ -135,7 +137,7 @@ async fn feedback_copies_only_the_changed_record_and_preserves_old_snapshots() {
         "feedback must not copy another record"
     );
     let reloaded = LearningStore::with_local_data_path(store.data_path.clone());
-    let attempts = reloaded.attempts_for_user("alice").await;
+    let attempts = reloaded.attempts_for_user("alice").await.unwrap();
     assert_eq!(attempts[0].source, before[0].source);
     assert_eq!(
         serde_json::to_value(&attempts[0].teacher_feedback).unwrap(),
@@ -149,8 +151,9 @@ async fn failed_writes_do_not_publish_a_new_snapshot_and_remain_retryable() {
     let store = fixture.store(&[attempt("alice", 0)]).await;
     let before = store.in_memory.read().await.clone();
     let original = tokio::fs::read(&store.data_path).await.unwrap();
-    let temporary = store.data_path.with_extension("json.tmp");
-    tokio::fs::create_dir(&temporary).await.unwrap();
+    let backup = fixture.0.join("original.json");
+    tokio::fs::rename(&store.data_path, &backup).await.unwrap();
+    tokio::fs::create_dir(&store.data_path).await.unwrap();
     assert!(store.record_run("alice", outcome()).await.is_err());
     assert!(matches!(
         store
@@ -173,10 +176,11 @@ async fn failed_writes_do_not_publish_a_new_snapshot_and_remain_retryable() {
         "failed persistence must not replace the snapshot"
     );
     assert!(after[0].teacher_feedback.is_none());
-    assert_eq!(tokio::fs::read(&store.data_path).await.unwrap(), original);
-    tokio::fs::remove_dir(temporary).await.unwrap();
+    assert_eq!(tokio::fs::read(&backup).await.unwrap(), original);
+    tokio::fs::remove_dir(&store.data_path).await.unwrap();
+    tokio::fs::rename(backup, &store.data_path).await.unwrap();
     store.record_run("alice", outcome()).await.unwrap();
-    assert_eq!(store.attempts_for_user("alice").await.len(), 2);
+    assert_eq!(store.attempts_for_user("alice").await.unwrap().len(), 2);
 }
 
 #[tokio::test]
@@ -202,7 +206,7 @@ async fn concurrent_appends_and_feedback_keep_every_success_after_reload() {
     );
     assert!(added_alice.is_ok() && added_bob.is_ok());
     let loaded = LearningStore::with_local_data_path(store.data_path.clone());
-    let alice = loaded.attempts_for_user("alice").await;
+    let alice = loaded.attempts_for_user("alice").await.unwrap();
     assert_eq!(alice.len(), 2);
     assert_eq!(
         alice
@@ -211,7 +215,7 @@ async fn concurrent_appends_and_feedback_keep_every_success_after_reload() {
             .count(),
         1
     );
-    assert_eq!(loaded.attempts_for_user("bob").await.len(), 1);
+    assert_eq!(loaded.attempts_for_user("bob").await.unwrap().len(), 1);
 }
 
 #[tokio::test]
@@ -231,7 +235,10 @@ async fn recent_pages_keep_timestamp_order_and_stable_ties_without_leaking_owner
         .collect();
     expected.sort_by_key(|row| std::cmp::Reverse(row.created_at));
     for limit in [0, 1, 20, 50, 100] {
-        let page = store.recent_attempts_for_user("alice", limit).await;
+        let page = store
+            .recent_attempts_for_user("alice", limit)
+            .await
+            .unwrap();
         let length = expected.len().min(limit.clamp(1, 50));
         assert_eq!(
             serde_json::to_value(&page).unwrap(),
@@ -239,19 +246,22 @@ async fn recent_pages_keep_timestamp_order_and_stable_ties_without_leaking_owner
         );
     }
     assert_eq!(
-        serde_json::to_value(store.attempts_for_user("alice").await).unwrap(),
+        serde_json::to_value(store.attempts_for_user("alice").await.unwrap()).unwrap(),
         json!(expected)
     );
-    assert!(store.attempts_for_user("a/lice").await.is_empty());
+    assert!(store.attempts_for_user("a/lice").await.unwrap().is_empty());
     assert!(store
         .recent_attempts_for_user("missing", 20)
         .await
+        .unwrap()
         .is_empty());
-    let mut page = store.recent_attempts_for_user("alice", 1).await;
+    let mut page = store.recent_attempts_for_user("alice", 1).await.unwrap();
     page[0].source.clear();
-    assert!(!store.recent_attempts_for_user("alice", 1).await[0]
-        .source
-        .is_empty());
+    assert!(
+        !store.recent_attempts_for_user("alice", 1).await.unwrap()[0]
+            .source
+            .is_empty()
+    );
 }
 
 #[tokio::test]
@@ -267,7 +277,7 @@ async fn legacy_json_array_still_loads_and_writes_identical_pretty_encoding() {
         .await
         .unwrap();
     let store = LearningStore::with_local_data_path(path.clone());
-    assert!(store.attempts_for_user("alice").await[0]
+    assert!(store.attempts_for_user("alice").await.unwrap()[0]
         .teacher_feedback
         .is_none());
     store.record_run("alice", outcome()).await.unwrap();
@@ -304,6 +314,7 @@ async fn failed_final_rename_does_not_change_the_in_memory_snapshot() {
         LearningStore::with_local_data_path(store.data_path.clone())
             .attempts_for_user("alice")
             .await
+            .unwrap()
             .len(),
         2
     );
@@ -318,7 +329,7 @@ async fn progress_and_overview_stay_fresh_without_exposing_or_copying_source() {
     let store = fixture
         .store(&[first, attempt("alice", 1), attempt("bob", 2)])
         .await;
-    let progress = store.progress_for_user("alice").await;
+    let progress = store.progress_for_user("alice").await.unwrap();
     assert_eq!(
         progress[0].status,
         crate::models::learning::LabProgressStatus::Completed
@@ -327,11 +338,11 @@ async fn progress_and_overview_stay_fresh_without_exposing_or_copying_source() {
     assert_eq!(progress[0].completed_at, Some(completed_at));
     assert_eq!(progress[0].latest_feedback, vec!["feedback-1"]);
     let recorded = store.record_run("alice", outcome()).await.unwrap();
-    let progress = store.progress_for_user("alice").await;
+    let progress = store.progress_for_user("alice").await.unwrap();
     assert_eq!(progress[0].attempts, 3);
     assert_eq!(progress[0].completed_at, Some(completed_at));
     assert_eq!(progress[0].latest_feedback, recorded.feedback);
-    let overview = store.teacher_overview().await;
+    let overview = store.teacher_overview().await.unwrap();
     assert_eq!(overview.active_students, 2);
     assert_eq!(overview.students[0].username, "alice");
     assert_eq!(overview.students[0].total_attempts, 3);
@@ -344,6 +355,7 @@ async fn progress_and_overview_stay_fresh_without_exposing_or_copying_source() {
         assert!(store
             .progress_for_user(owner)
             .await
+            .unwrap()
             .iter()
             .all(|lab| lab.attempts == 0));
     }

@@ -1,0 +1,278 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-13",
+  "status": "fixed-and-portable-regressions-passed",
+  "baseline": {
+    "version": "0.3.8",
+    "commit": "c26a529aecc0ab64d0a1743be10972e5d8ac137b",
+    "branch": "main",
+    "inventory": "docs/functional-network.json",
+    "prior_pass": "reports/functional-network/2026-09-13/bug-hunt-01.json",
+    "worktree": "Existing functional-network documents and uncommitted first-pass fixes preserved."
+  },
+  "scope": {
+    "primary_workflows": [
+      "F24",
+      "F25",
+      "F26"
+    ],
+    "existing_regression_workflows": [
+      "F18",
+      "F23"
+    ],
+    "edges": [
+      "E34",
+      "E50",
+      "E51",
+      "E52",
+      "E53"
+    ],
+    "storage": [
+      "D06"
+    ],
+    "meaning": "Agent capacity, lease sync/execution admission, queued user-check lifetime and bounded response decoding. Browser behavior was source-inspected but not changed or dynamically accepted."
+  },
+  "findings": [
+    {
+      "id": "BH02-01",
+      "status": "fixed",
+      "summary": "Claim route passed free slots as total active capacity, double-counting already reported jobs.",
+      "fix": "Use reported active_jobs + available_slots; queue counts outstanding/cancel-pending leases once. Do not replace this with registered maximum, which could consume reserved capacity.",
+      "regressions": [
+        "runner_claim_does_not_subtract_reported_active_jobs_twice",
+        "runner_claim_keeps_reserved_capacity_and_cancel_pending_leases_counted"
+      ]
+    },
+    {
+      "id": "BH02-02",
+      "status": "fixed",
+      "summary": "Bundled client ignored lost_job_ids before execution, then reported a completed probe or cancellation acknowledgement for that lost lease.",
+      "fix": "Return a retryable conflict before execution or result submission. Lost status takes precedence over a cancellation instruction for the same job.",
+      "regressions": [
+        "lost_lease_prevents_execution_and_result_submission",
+        "lost_lease_takes_precedence_over_a_cancel_instruction",
+        "valid_and_cancelled_leases_keep_their_existing_completion_behavior"
+      ]
+    },
+    {
+      "id": "BH02-03",
+      "status": "fixed",
+      "summary": "Unclaimed user checks had no expiry, so lost submit/cancel responses could permanently consume both per-user slots.",
+      "fix": "35-second user-owned queue wait limit, reaped on next access. Source and user active quota are released; claimed deadlines and staff-managed unowned job behavior remain unchanged.",
+      "regressions": [
+        "unclaimed_user_checks_expire_without_leaking_source_or_blocking_user_quota",
+        "user_queue_expiry_is_inclusive_and_does_not_extend_terminal_retention",
+        "queue_wait_limit_does_not_shorten_claimed_leases_or_expire_staff_managed_work",
+        "remote_check_cancellation_preserves_auth_csrf_and_owner_boundaries"
+      ]
+    },
+    {
+      "id": "BH02-04",
+      "status": "fixed",
+      "summary": "Unknown-length HTTP responses were fully buffered before the 640 KiB check; an oversized unfinished response waited for EOF/request timeout.",
+      "fix": "Incremental chunk checks reject before retaining bytes above the cap, including error responses. Exact-limit JSON and ordinary error classification remain supported.",
+      "regressions": [
+        "oversized_chunked_response_is_rejected_before_waiting_for_eof",
+        "exact_limit_chunked_json_is_accepted",
+        "small_chunked_server_error_keeps_its_status_and_retry_policy"
+      ]
+    }
+  ],
+  "before_fix": {
+    "rust_new_cases": {
+      "passed": 4,
+      "failed": 5,
+      "total": 9
+    },
+    "node_contract_cases": {
+      "passed": 0,
+      "failed": 2
+    },
+    "log": "reports/functional-network/2026-09-13/bug-hunt-02-red.log",
+    "note": "Initial Rust failures: capacity (1), lost lease (2), abandoned queue (1), unfinished oversized response (1). Additional preservation/boundary tests were added after those reproductions."
+  },
+  "new_tests": {
+    "rust": 12,
+    "node_contract": 2,
+    "note": "Included in full-suite totals, not additive to the focused subsets."
+  },
+  "checks": [
+    {
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL -u CYANREX_DB_FALLBACK cargo test --manifest-path engine/Cargo.toml --locked --lib runner_ -- --nocapture --test-threads=1",
+      "exit_code": 0,
+      "passed": 39,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL -u CYANREX_DB_FALLBACK cargo test --manifest-path engine/Cargo.toml --locked --test routes_tdd runner_claim_ -- --nocapture --test-threads=1",
+      "exit_code": 0,
+      "passed": 2,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL -u CYANREX_DB_FALLBACK RUST_TEST_THREADS=1 cargo test --manifest-path engine/Cargo.toml --locked",
+      "exit_code": 0,
+      "passed": 285,
+      "failed": 0,
+      "ignored": 29,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-02-backend.log"
+    },
+    {
+      "command": "scripts/quality-gate.sh --format-only",
+      "exit_code": 0,
+      "common_node_tests": {
+        "passed": 65,
+        "failed": 0
+      },
+      "scope": "File lengths, version/course/OpenAPI/SDK drift/compatibility, common Node tests, fixture-based Agent/distribution/kernel-smoke/candidate checks, Rust formatting; not full frontend/SDK runtime or real kernel acceptance.",
+      "log": "reports/functional-network/2026-09-13/bug-hunt-02-common.log"
+    },
+    {
+      "command": "node --test scripts/tests/runnerBoundaryContract.test.mjs",
+      "exit_code": 0,
+      "passed": 2,
+      "failed": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0
+    },
+    {
+      "command": "node scripts/check-functional-network.mjs",
+      "exit_code": 1,
+      "classification": "expected-pre-fix-baseline-drift",
+      "errors": [
+        "source drift engine/openapi/openapi.json",
+        "source drift engine/src/routes/learning.rs",
+        "source drift engine/src/routes/runner_job.rs",
+        "source drift engine/src/services/learning_store.rs",
+        "source drift engine/src/services/learning_store/persistence.rs",
+        "source drift engine/src/services/runner_agent_client.rs",
+        "source drift engine/src/services/runner_job_queue.rs"
+      ],
+      "note": "Seven cumulative referenced-source changes; API/access/page/catalog inventories are unchanged. The original source manifest and earlier reports were not rehashed."
+    }
+  ],
+  "environment": {
+    "os": "Linux",
+    "database": "DATABASE_URL and CYANREX_TEST_DATABASE_URL unset for tests.",
+    "protocol": "Synthetic ephemeral 127.0.0.1 listeners, scope-aborted after each test; no connection to deployed Engine or external Agent.",
+    "local_clang_present": true,
+    "compiler_scope": "The pre-existing executor test invokes installed Clang on synthetic source and cleans its workspace. It allows a non-timeout compile failure, so this is not proof of successful BPF compilation. No kernel load/attach is performed.",
+    "data": "Synthetic fixtures only; no deployed classroom data or service configuration modified."
+  },
+  "candidate_sources": [
+    {
+      "path": "engine/src/routes/runner_job.rs",
+      "sha256": "946417b26b17922f5d859486a9bc69ce65d22d4b571430e2bb27e6363c17ab3a"
+    },
+    {
+      "path": "engine/src/services/runner_agent_client.rs",
+      "sha256": "aad4bd8b6b77246ebd8f363ceae7c4b611dbb9fc411355924b052143b31b3b10"
+    },
+    {
+      "path": "engine/src/services/runner_job_queue.rs",
+      "sha256": "3202efb2d70f686ac16d79647bba8666445d89b3f75d3f11365e2e309904068b"
+    },
+    {
+      "path": "engine/src/services/runner_job_queue/tests.inc.rs",
+      "sha256": "524572766019fcea7e2126e846d320f8b77c2e684b71649e92b4d111dfffa812"
+    },
+    {
+      "path": "engine/tests/routes_tdd.rs",
+      "sha256": "9eca4cd15458c9540c613bddacdf8d56ad5aecc3503bc4645eeb7be0b2c18d15"
+    },
+    {
+      "path": "engine/tests/routes_tdd/runner_capacity.inc.rs",
+      "sha256": "47b1b3b48d69aa994f965160a2859c58a863d55c3c581c40596c247b9a789fe2"
+    },
+    {
+      "path": "engine/tests/routes_tdd/remote_check_boundary.inc.rs",
+      "sha256": "fac7a13bb029f7c0f7fe145886a3033ec0b7a8ad1136676abb80b1dbf9106a46"
+    },
+    {
+      "path": "engine/src/services/runner_agent_client/boundary_tests.rs",
+      "sha256": "77fd7722f51564eb6840135eb9080092d2c900ba6221d69386627f50e10fff49"
+    },
+    {
+      "path": "engine/src/services/runner_agent_client/response_tests.rs",
+      "sha256": "6541a434cda995281d2bfbb23c598849045d3230e4c41dea2701f98484675cd7"
+    },
+    {
+      "path": "engine/openapi/openapi.json",
+      "sha256": "9ce998a5f32b0c2ece58e28a362a5b107c1e8cd93f452284b18721c10de4e5a4"
+    },
+    {
+      "path": "scripts/generate-openapi.mjs",
+      "sha256": "0eb48ce0728eff1ce68ce2f3e1d4869c4f538684d980e73c70e09833562e36ef"
+    },
+    {
+      "path": "scripts/tests/runnerBoundaryContract.test.mjs",
+      "sha256": "f1c58f5a13afa24e83d4240b177ab8291c4641027f1e9dbe63d4e644b91f3d17"
+    }
+  ],
+  "preserved_evidence": [
+    {
+      "path": "docs/functional-network.json",
+      "sha256": "bc16ef895c1f7b9f9d0b5d9195499d4efcba09466b3c85bdfcc04d20006ad30d"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/verification.json",
+      "sha256": "33a58e9da0fd45b1c3e71787a5b4f2b2d18e811800597d15973148f4ad258902"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-01.json",
+      "sha256": "88e4bb77557b4cfa60559528e20717a26077f8c135ed0cd2ebb352f4663fbe7c"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-01-backend.log",
+      "sha256": "03e1dd64ec0f870a4b0a95a89c1dad040db5538be33c6183fa9c1e5ead04109c"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-01-common.log",
+      "sha256": "93dfc2b81cf2fae4315b2fb4cf0ed2108afdbd58d16df1cc056b4433badf7cb4"
+    }
+  ],
+  "ignored_test_breakdown": {
+    "postgresql": 25,
+    "manual_performance_or_pressure": 3,
+    "live_runner_agent_clang": 1
+  },
+  "not_run": [
+    "Real PostgreSQL integration",
+    "Live remote Engine/Agent/Clang acceptance",
+    "Browser-to-Engine and browser diagnostic acceptance",
+    "Real LAN/SSH deployment",
+    "Kernel attach/events/detach acceptance",
+    "New benchmarks or dependency security audits",
+    "Frontend build and SDK runtime tests"
+  ],
+  "remaining_limits": [
+    "Queue reaping is access-triggered, not a background timer; idle queues can retain expired source until accessed.",
+    "Terminal metadata retains the global 512-record and 15-minute retention limits.",
+    "Staff-managed unowned jobs still require claim or explicit cancellation.",
+    "Lost-lease checks are pre-execution; compilation already in progress is not continuously monitored or immediately interrupted.",
+    "No automatic resubmission, new idempotency key, remote loading or client-side execution parallelism.",
+    "Response cap bounds retained body length, not all transport allocations or process memory."
+  ],
+  "next_candidates": [
+    {
+      "workflows": [
+        "F17",
+        "F18",
+        "F26"
+      ],
+      "source": "frontend/src/features/ebpf/useCompilerDiagnostics.ts",
+      "status": "source-observed-not-dynamically-reproduced",
+      "note": "Diagnostic cache keys omit Engine/session scope; late-response and shared cancellation behavior need focused browser reproduction before implementation."
+    }
+  ],
+  "actions": {
+    "version_bumped": false,
+    "committed": false,
+    "pushed": false,
+    "deployed": false
+  }
+}

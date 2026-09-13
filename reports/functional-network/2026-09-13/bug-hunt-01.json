@@ -1,0 +1,245 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-13",
+  "status": "fixed-and-portable-regressions-passed",
+  "baseline": {
+    "version": "0.3.8",
+    "commit": "c26a529aecc0ab64d0a1743be10972e5d8ac137b",
+    "branch": "main",
+    "inventory": "docs/functional-network.json",
+    "worktree_at_start": "Existing uncommitted functional-network documentation/checker preserved."
+  },
+  "scope": {
+    "workflows": [
+      "F20",
+      "F27",
+      "F28",
+      "F29",
+      "F30",
+      "F31"
+    ],
+    "edges": [
+      "E40",
+      "E45",
+      "E46",
+      "E47",
+      "E48",
+      "E49"
+    ],
+    "storage": [
+      "D03"
+    ],
+    "meaning": "Focused learning read/persistence traversal; existing synthetic run/event integration retained. Not all 40 workflows newly exercised end to end."
+  },
+  "findings": [
+    {
+      "id": "BH01-01",
+      "status": "fixed",
+      "summary": "Four learning reads swallowed corrupt local snapshots into HTTP 200 empty/zero projections; selected SQL schema/query failures could also return stale local data.",
+      "fix": "Fallible reads, generic HTTP 500, no-store success/storage errors, no silent fallback or DB-disable latch for a selected SQL read.",
+      "regressions": [
+        "history_read_failure_is_not_empty_success",
+        "progress_read_failure_is_not_zero_progress",
+        "teacher_overview_read_failure_is_not_an_empty_classroom",
+        "teacher_review_read_failure_is_not_empty_success",
+        "schema_read_failure_is_not_empty_or_stale_local_success",
+        "query_read_failure_is_not_empty_or_stale_local_success"
+      ]
+    },
+    {
+      "id": "BH01-02",
+      "status": "fixed",
+      "summary": "New learning files/directories relied on ambient umask (new directories reproduced as 0755).",
+      "fix": "New Unix directories 0700 and temporary/snapshot files 0600; no chmod of existing parents.",
+      "regressions": [
+        "new_learning_files_and_directories_are_private"
+      ]
+    },
+    {
+      "id": "BH01-03",
+      "status": "fixed",
+      "summary": "A preexisting fixed-name temporary symlink was followed and its target truncated.",
+      "fix": "Random same-directory temporary name with exclusive creation; preexisting temporary paths untouched.",
+      "regressions": [
+        "learning_commit_does_not_follow_a_preexisting_temporary_symlink"
+      ]
+    },
+    {
+      "id": "BH01-04",
+      "status": "fixed",
+      "summary": "Final rename failures left a temporary snapshot containing source/feedback.",
+      "fix": "Scope-based cleanup of this commit's temporary path; preserve old published data and retry semantics.",
+      "regressions": [
+        "failed_learning_rename_removes_only_its_temporary_snapshot",
+        "failed_writes_do_not_publish_a_new_snapshot_and_remain_retryable",
+        "cancelled_failing_worker_preserves_old_data_and_releases_admission"
+      ]
+    }
+  ],
+  "before_fix": {
+    "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL cargo test --manifest-path engine/Cargo.toml --locked --test module_boundaries_tdd learning_ -- --nocapture --test-threads=1",
+    "exit_code": 101,
+    "new_regressions_failed": 7,
+    "existing_integration_passed": 1,
+    "note": "Four corrupt-read route cases and three persistence cases failed on the old implementation. The recovery assertion was subsequently strengthened by seeding a teacher feedback revision."
+  },
+  "new_tests": {
+    "rust": 10,
+    "node_contract": 1,
+    "note": "Seven initial red regressions, two closed-pool fault injections, one legitimate empty-state test, and one OpenAPI error-contract test. These are included in totals below, not additive to them."
+  },
+  "checks": [
+    {
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL -u CYANREX_DB_FALLBACK cargo test --manifest-path engine/Cargo.toml --locked --test module_boundaries_tdd learning_ -- --nocapture --test-threads=1",
+      "exit_code": 0,
+      "passed": 8,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL -u CYANREX_DB_FALLBACK cargo test --manifest-path engine/Cargo.toml --locked --lib learning_store -- --nocapture --test-threads=1",
+      "exit_code": 0,
+      "passed": 31,
+      "failed": 0,
+      "ignored": 1
+    },
+    {
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL -u CYANREX_DB_FALLBACK RUST_TEST_THREADS=1 cargo test --manifest-path engine/Cargo.toml --locked",
+      "exit_code": 0,
+      "passed": 273,
+      "failed": 0,
+      "ignored": 29,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-01-backend.log"
+    },
+    {
+      "command": "scripts/quality-gate.sh --format-only",
+      "exit_code": 0,
+      "common_node_tests": {
+        "passed": 63,
+        "failed": 0
+      },
+      "scope": "File lengths, version/course/OpenAPI/SDK drift and compatibility, 63 common Node tests, fixture-based Agent/distribution/kernel-smoke/candidate-tool checks and Rust formatting. Not frontend/SDK runtime builds or live kernel acceptance.",
+      "log": "reports/functional-network/2026-09-13/bug-hunt-01-common.log"
+    },
+    {
+      "command": "cargo check --manifest-path engine/Cargo.toml --locked --examples",
+      "exit_code": 0,
+      "note": "Benchmark caller compatibility checked; no benchmark executed."
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0
+    },
+    {
+      "command": "node scripts/check-functional-network.mjs",
+      "exit_code": 1,
+      "classification": "expected-pre-fix-baseline-drift",
+      "errors": [
+        "source drift engine/openapi/openapi.json",
+        "source drift engine/src/routes/learning.rs",
+        "source drift engine/src/services/learning_store.rs",
+        "source drift engine/src/services/learning_store/persistence.rs"
+      ],
+      "note": "The baseline source manifest and its earlier verification are intentionally retained, not automatically rehashed. API/access/page/catalog inventories are unchanged."
+    }
+  ],
+  "environment": {
+    "os": "Linux",
+    "database": "DATABASE_URL and CYANREX_TEST_DATABASE_URL unset for portable tests. Closed lazy pools were closed before any query/connection.",
+    "data": "New synthetic temporary fixtures only, cleaned by fixture-owned guards; no deployed data migrated or modified."
+  },
+  "candidate_sources": [
+    {
+      "path": "engine/openapi/openapi.json",
+      "sha256": "1fae52b2ced33793f58b77aad3ba4d2490cc0d066e7df4bdbc59136b3303e11e"
+    },
+    {
+      "path": "engine/src/routes/learning.rs",
+      "sha256": "a906091de5d82eb79718cfce4b74720e2e96085d624fe4da41be47e777a82483"
+    },
+    {
+      "path": "engine/src/services/learning_store.rs",
+      "sha256": "b329298bcc12200074f6ff91df74156f63a80e96e83ead63221cb41ffa7608e2"
+    },
+    {
+      "path": "engine/src/services/learning_store/persistence.rs",
+      "sha256": "072a5d9d521d39d135e520fafe0087ac8572d570422bfa11f0211af7d636d711"
+    },
+    {
+      "path": "engine/src/services/learning_store/read_failure_tests.rs",
+      "sha256": "b11505fbc5b71efc53706e0dce7a71d744e4b4addafbbb088bed2ba537da6af7"
+    },
+    {
+      "path": "engine/src/services/learning_store/cancellation_tests.rs",
+      "sha256": "0bf98b893b86acf9518efb07a288bda318c361d58be7de2a39647c7a3d3d774f"
+    },
+    {
+      "path": "engine/src/services/learning_store/snapshot_tests.rs",
+      "sha256": "e2a926f14d9ac391b4fcaecad5f9c864a0c1016177c15a58242076025ee009c2"
+    },
+    {
+      "path": "engine/tests/module_boundaries_tdd.rs",
+      "sha256": "0fbcc86f2ea1e6baba0ebd87a1d15c91125d8bd1f7636441957018b73f775fdc"
+    },
+    {
+      "path": "engine/tests/module_boundaries/learning_reads.rs",
+      "sha256": "7d84c67f7fae89fb1d1ea65a700e6d33a4664a0e13d06ce1299703a8ffb7f930"
+    },
+    {
+      "path": "engine/tests/module_boundaries/learning_persistence.rs",
+      "sha256": "28c77e4c157465f164f9aef58fa290ba6517a07887129dc483efb332fd1069e9"
+    },
+    {
+      "path": "scripts/generate-openapi.mjs",
+      "sha256": "778ad6affbf5e130197b7bf3758fe382c3b561466de49ead560ea34da1d3723e"
+    },
+    {
+      "path": "scripts/tests/learningReadContract.test.mjs",
+      "sha256": "bfc8727adc3b2ea462b237e8fb40d36675b8f6a59c4023f4805b48b8b67d80f2"
+    }
+  ],
+  "preserved_baseline": [
+    {
+      "path": "docs/functional-network.json",
+      "sha256": "bc16ef895c1f7b9f9d0b5d9195499d4efcba09466b3c85bdfcc04d20006ad30d"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/verification.json",
+      "sha256": "33a58e9da0fd45b1c3e71787a5b4f2b2d18e811800597d15973148f4ad258902"
+    }
+  ],
+  "not_run": [
+    "Real PostgreSQL integration (25 ignored tests)",
+    "Three manual performance/pressure tests",
+    "One live Runner Agent/Clang HTTP acceptance",
+    "Browser-to-Engine acceptance and frontend build",
+    "Real teacher/student LAN and SSH deployment",
+    "Real kernel attach/event/detach",
+    "Fresh benchmarks and dependency security audits"
+  ],
+  "remaining_limits": [
+    "Existing run-record write fallback is unchanged, including previously latched/configured local mode.",
+    "Existing parent-directory permissions are not migrated; data paths require trusted ownership.",
+    "No fsync, crash recovery, cross-process locking or hostile-parent replacement protection.",
+    "Process kill/power loss/cleanup errors can leave temporary files; loading ignores them.",
+    "Loaded local snapshots do not watch external edits."
+  ],
+  "actions": {
+    "version_bumped": false,
+    "committed": false,
+    "pushed": false,
+    "deployed": false
+  },
+  "suggested_next": {
+    "workflows": [
+      "F18",
+      "F26"
+    ],
+    "scope": "Compiler checks and Runner/Agent submission, polling, cancellation and result ownership; not newly accepted in this focused pass."
+  },
+  "ignored_test_breakdown": {
+    "postgresql": 25,
+    "manual_performance_or_pressure": 3,
+    "live_runner_agent_clang": 1
+  }
+}

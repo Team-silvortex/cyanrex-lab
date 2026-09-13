@@ -1,0 +1,34 @@
+   Compiling cyanrex-engine v0.3.8 (/home/chiharukiryu/cdev/cyanrex-lab/engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 8.98s
+     Running unittests src/lib.rs (engine/target/debug/deps/cyanrex_engine-b02300368eca6ec0)
+
+running 3 tests
+test routes::ebpf::breakpoint_trace_tests::parses_only_the_requested_debug_session ... ok
+test routes::ebpf::breakpoint_trace_tests::rejects_empty_debug_session_and_whitespace_before_the_line ... FAILED
+test routes::ebpf::breakpoint_trace_tests::rejects_zero_and_non_integral_breakpoint_markers ... FAILED
+
+failures:
+
+---- routes::ebpf::breakpoint_trace_tests::rejects_empty_debug_session_and_whitespace_before_the_line stdout ----
+
+thread 'routes::ebpf::breakpoint_trace_tests::rejects_empty_debug_session_and_whitespace_before_the_line' (1327076) panicked at src/routes/ebpf/ringbuf.inc.rs:150:9:
+assertion `left == right` failed
+  left: Some(47)
+ right: None
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- routes::ebpf::breakpoint_trace_tests::rejects_zero_and_non_integral_breakpoint_markers stdout ----
+
+thread 'routes::ebpf::breakpoint_trace_tests::rejects_zero_and_non_integral_breakpoint_markers' (1327077) panicked at src/routes/ebpf/ringbuf.inc.rs:144:13:
+assertion `left == right` failed: 0
+  left: Some(0)
+ right: None
+
+
+failures:
+    routes::ebpf::breakpoint_trace_tests::rejects_empty_debug_session_and_whitespace_before_the_line
+    routes::ebpf::breakpoint_trace_tests::rejects_zero_and_non_integral_breakpoint_markers
+
+test result: FAILED. 1 passed; 2 failed; 0 ignored; 0 measured; 171 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `--lib`

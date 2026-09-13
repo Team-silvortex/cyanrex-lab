@@ -6,7 +6,7 @@ use axum::{
     response::{IntoResponse, Response},
     Json,
 };
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::{
     models::{
@@ -63,13 +63,12 @@ pub async fn list_labs(State(state): State<Arc<AppState>>, headers: HeaderMap) -
     else {
         return auth_error().into_response();
     };
-    Json(
+    learning_read_response(
         state
             .learning_store
             .progress_for_user(&session.username)
             .await,
     )
-    .into_response()
 }
 
 pub async fn list_attempts(State(state): State<Arc<AppState>>, headers: HeaderMap) -> Response {
@@ -78,25 +77,30 @@ pub async fn list_attempts(State(state): State<Arc<AppState>>, headers: HeaderMa
     else {
         return auth_error().into_response();
     };
-    Json(
+    learning_read_response(
         state
             .learning_store
             .attempts_for_user(&session.username)
             .await,
     )
-    .into_response()
 }
 
 pub async fn teacher_overview(State(state): State<Arc<AppState>>) -> Response {
-    let mut overview = state.learning_store.teacher_overview().await;
-    overview.students.retain(|student| {
-        matches!(
-            state.auth_service.role_for_username(&student.username),
-            AuthRole::Student
-        )
-    });
-    overview.active_students = overview.students.len() as u32;
-    Json(overview).into_response()
+    let overview = state
+        .learning_store
+        .teacher_overview()
+        .await
+        .map(|mut overview| {
+            overview.students.retain(|student| {
+                matches!(
+                    state.auth_service.role_for_username(&student.username),
+                    AuthRole::Student
+                )
+            });
+            overview.active_students = overview.students.len() as u32;
+            overview
+        });
+    learning_read_response(overview)
 }
 
 pub async fn teacher_attempts(
@@ -120,11 +124,25 @@ pub async fn teacher_attempts(
         .learning_store
         .recent_attempts_for_user(username, query.limit.unwrap_or(20))
         .await;
-    Json(TeacherStudentAttempts {
+    learning_read_response(attempts.map(|attempts| TeacherStudentAttempts {
         username: username.to_string(),
         attempts,
-    })
-    .into_response()
+    }))
+}
+
+fn learning_read_response<T: Serialize>(result: Result<T, String>) -> Response {
+    let response = match result {
+        Ok(value) => Json(value).into_response(),
+        Err(_) => {
+            // Storage/parser errors can contain paths or stored values; never expose them here.
+            tracing::warn!("failed to load learning records");
+            learning_error(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "failed to load learning records",
+            )
+        }
+    };
+    ([("cache-control", "no-store")], response).into_response()
 }
 
 fn valid_username(username: &str) -> bool {

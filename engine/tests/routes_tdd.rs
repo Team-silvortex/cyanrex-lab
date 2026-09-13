@@ -57,3 +57,5 @@ include!("routes_tdd/runner_lifecycle.inc.rs");
 include!("routes_tdd/runner_compiler.inc.rs");
 include!("routes_tdd/runner_agent.inc.rs");
 include!("routes_tdd/runner_job.inc.rs");
+include!("routes_tdd/runner_capacity.inc.rs");
+include!("routes_tdd/remote_check_boundary.inc.rs");

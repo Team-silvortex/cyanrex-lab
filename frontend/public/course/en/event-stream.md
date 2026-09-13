@@ -65,6 +65,23 @@ the active debug session, and displays at most 50 hits; its previously unbounded
 The possible-gap notice remains after a successful reconnect because refreshing cannot prove that all
 events were recovered. Under sustained overload the client may remain in recovery until load subsides.
 
+Snapshot reads request no-store and reject redirects while retaining cookie credentials. Malformed JSON,
+invalid Event shapes and non-text live frames are discarded with a persistent possible-gap notice; they
+do not trigger reconnection by themselves. Valid events excluded by the view's filters are not gaps.
+
+Breakpoint state is keyed by Engine, debug session and normalized instrumented lines from the run report.
+Switches hide the old view immediately, before subscription effects run. Both snapshot and live filtering
+require kernel breakpoint events, the exact session, and a declared positive integer line; an empty set
+does not subscribe. Matching events still use the existing 200-row recovery/50-hit display limits and
+occurrence-count overlap handling. Model-owned decorations and callbacks are removed on replacement or
+disposal, and out-of-model hit lines are not displayed. Clearing requested breakpoints prepares future
+runs; it does not uninstall probes from an already running program.
+
+The Engine trace parser requires a nonempty session and an entire positive decimal token. Zero, fractions,
+numeric prefixes, overflow and blank line tokens are rejected. Normal trace suffix whitespace is accepted.
+Session markers/line allowlists do not prove that a kernel producer is trusted in a shared trace log.
+See [bug hunt 06](functional-network-bug-hunt-06.md) for scoped evidence and remaining limitations.
+
 ## Recovery limits
 
 Only retained recent history can be recovered. Retention policy, event filters, other kernel traffic,
@@ -78,6 +95,9 @@ requires complete replay needs a separately versioned cursor/persistence contrac
 
 ## Verification
 
+- `frontend/tests/breakpointLifecycle.browser.mjs` and `breakpointSafety.browser.mjs`: optional actual-hook
+  and production-Monaco tests for session/line filtering, model cleanup, gap recovery and explicit cleanup.
+- `engine/src/routes/ebpf/ringbuf.inc.rs`: pure trace-marker parsing regressions; no live sampler is started.
 - `engine/tests/routes_tdd/events_ws.inc.rs`: real authenticated loopback handshakes, Origin checks,
   unchanged raw Event payloads, immunity to other-owner bursts, and explicit own-overload closure.
 - `engine/src/services/event_bus/subscriptions/tests.rs`: shared-event/JSON allocation, owner isolation,

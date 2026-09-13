@@ -1,5 +1,5 @@
 import type * as Monaco from "monaco-editor";
-import type { EbpfCompletionItem, EbpfCompletionResponse } from "../features/ebpf/models";
+import { createSemanticCompletion } from "./semanticCompletion";
 
 type HoverDoc = {
   title: string;
@@ -113,20 +113,20 @@ const COMPLETIONS = [
   },
   {
     label: "SEC xdp",
-    insertText: 'SEC("xdp")\\nint ${1:xdp_handler}(struct xdp_md *ctx) {\\n  return XDP_PASS;\\n}',
+    insertText: 'SEC("xdp")\nint ${1:xdp_handler}(struct xdp_md *ctx) {\n  return XDP_PASS;\n}',
     detail: "XDP section snippet",
     kind: "snippet",
   },
   {
     label: "SEC tc",
-    insertText: 'SEC("tc")\\nint ${1:tc_handler}(struct __sk_buff *skb) {\\n  return 0;\\n}',
+    insertText: 'SEC("tc")\nint ${1:tc_handler}(struct __sk_buff *skb) {\n  return 0;\n}',
     detail: "TC section snippet",
     kind: "snippet",
   },
   {
     label: "SEC tracepoint sched_switch",
     insertText:
-      'SEC("tracepoint/sched/sched_switch")\\nint ${1:on_sched_switch}(struct trace_event_raw_sched_switch *ctx) {\\n  return 0;\\n}',
+      'SEC("tracepoint/sched/sched_switch")\nint ${1:on_sched_switch}(struct trace_event_raw_sched_switch *ctx) {\n  return 0;\n}',
     detail: "Typed tracepoint context snippet",
     kind: "snippet",
   },
@@ -216,16 +216,6 @@ const COMPLETIONS = [
   },
 ] as const;
 
-type CompletionCacheEntry = {
-  createdAt: number;
-  items: EbpfCompletionItem[];
-};
-
-const COMPLETION_CACHE_TTL_MS = 5_000;
-const COMPLETION_CACHE_MAX_ENTRIES = 18;
-const completionCache = new Map<string, CompletionCacheEntry>();
-const inFlightCompletions = new Map<string, Promise<EbpfCompletionResponse>>();
-
 function toCompletionKind(monaco: typeof Monaco, kind: (typeof COMPLETIONS)[number]["kind"]) {
   if (kind === "function") return monaco.languages.CompletionItemKind.Function;
   if (kind === "constant") return monaco.languages.CompletionItemKind.Constant;
@@ -235,10 +225,14 @@ function toCompletionKind(monaco: typeof Monaco, kind: (typeof COMPLETIONS)[numb
 export function registerEbpfIntelligence(
   monaco: typeof Monaco,
   engineUrl: string,
+  editor: Monaco.editor.IStandaloneCodeEditor,
+  headerContextKey = "",
 ): Monaco.IDisposable {
+  const semanticCompletion = createSemanticCompletion(editor, engineUrl, headerContextKey);
   const completion = monaco.languages.registerCompletionItemProvider("c", {
     triggerCharacters: ["#", "_", "b", "X", ".", ">"],
     async provideCompletionItems(model, position, context, token) {
+      if (!semanticCompletion.owns(model) || token.isCancellationRequested) return { suggestions: [] };
       const word = model.getWordUntilPosition(position);
       const range = {
         startLineNumber: position.lineNumber,
@@ -258,58 +252,19 @@ export function registerEbpfIntelligence(
 
       const semanticTrigger = context.triggerKind === monaco.languages.CompletionTriggerKind.Invoke
         || context.triggerCharacter === "." || context.triggerCharacter === ">";
-      if (!semanticTrigger) return { suggestions };
+      if (!semanticTrigger) { semanticCompletion.cancel(); return { suggestions }; }
 
-      const controller = new AbortController();
-      const code = model.getValue();
-      const cacheKey = createCompletionCacheKey(engineUrl, code, position.lineNumber, position.column);
-      const now = Date.now();
-      const cached = completionCache.get(cacheKey);
-      if (cached && now < cached.createdAt + COMPLETION_CACHE_TTL_MS) {
-        for (const item of cached.items) {
-          suggestions.push({
-            label: item.label,
-            kind: toSemanticCompletionKind(monaco, item.kind),
-            insertText: item.insert_text || item.label,
-            detail: `clang · ${item.detail}`,
-            sortText: `0-${item.label}`,
-            range,
-          });
-        }
-        return { suggestions };
-      }
-
-      const cancellation = token.onCancellationRequested(() => controller.abort());
-      try {
-        const semantic = await requestCompletion(
-          cacheKey,
-          code,
-          position,
-          engineUrl,
-          controller.signal,
-        );
-        if (token.isCancellationRequested || !semantic.ok) return { suggestions };
-        for (const item of semantic.items) {
-          suggestions.push({
-            label: item.label,
-            kind: toSemanticCompletionKind(monaco, item.kind),
-            insertText: item.insert_text || item.label,
-            detail: `clang · ${item.detail}`,
-            sortText: `0-${item.label}`,
-            range,
-          });
-        }
-        if (semantic.items.length > 0) {
-          completionCache.set(cacheKey, {
-            createdAt: Date.now(),
-            items: semantic.items,
-          });
-          pruneCompletionCache();
-        }
-      } catch {
-        // Local snippets remain available when semantic completion is offline.
-      } finally {
-        cancellation.dispose();
+      const items = await semanticCompletion.request(model, position, token);
+      if (items === null) return { suggestions: [] };
+      for (const item of items) {
+        suggestions.push({
+          label: item.label,
+          kind: toSemanticCompletionKind(monaco, item.kind),
+          insertText: item.insert_text || item.label,
+          detail: `clang · ${item.detail}`,
+          sortText: `0-${item.label}`,
+          range,
+        });
       }
       return { suggestions };
     },
@@ -317,6 +272,7 @@ export function registerEbpfIntelligence(
 
   const hover = monaco.languages.registerHoverProvider("c", {
     provideHover(model, position) {
+      if (!semanticCompletion.owns(model)) return null;
       const word = model.getWordAtPosition(position);
       if (!word) return null;
 
@@ -342,6 +298,7 @@ export function registerEbpfIntelligence(
     signatureHelpTriggerCharacters: ["("],
     signatureHelpRetriggerCharacters: [","],
     provideSignatureHelp(model, position) {
+      if (!semanticCompletion.owns(model)) return null;
       const line = model.getLineContent(position.lineNumber).slice(0, position.column - 1);
 
       if (line.endsWith("bpf_map_update_elem(")) {
@@ -394,6 +351,7 @@ export function registerEbpfIntelligence(
 
   const symbols = monaco.languages.registerDocumentSymbolProvider("c", {
     provideDocumentSymbols(model) {
+      if (!semanticCompletion.owns(model)) return [];
       const source = model.getValue();
       const items: Monaco.languages.DocumentSymbol[] = [];
       for (const match of source.matchAll(/SEC\("([^"]+)"\)\s*\n?[^\n{]*?\b([A-Za-z_]\w*)\s*\(/g)) {
@@ -428,6 +386,7 @@ export function registerEbpfIntelligence(
 
   const definitions = monaco.languages.registerDefinitionProvider("c", {
     provideDefinition(model, position) {
+      if (!semanticCompletion.owns(model)) return null;
       const word = model.getWordAtPosition(position)?.word;
       if (!word) return null;
       const pattern = new RegExp(`(?:^|\\n)[^;\\n]*\\b${escapeRegex(word)}\\s*\\([^;]*\\)\\s*\\{`, "m");
@@ -444,6 +403,7 @@ export function registerEbpfIntelligence(
 
   const actions = monaco.languages.registerCodeActionProvider("c", {
     provideCodeActions(model, _range, context) {
+      if (!semanticCompletion.owns(model)) return { actions: [], dispose() {} };
       const actions: Monaco.languages.CodeAction[] = [];
       for (const marker of context.markers) {
         const include = marker.message.match(/^Missing #include <([^>]+)>/);
@@ -473,91 +433,18 @@ export function registerEbpfIntelligence(
     },
   });
 
-  return {
-    dispose() {
-      completion.dispose();
-      hover.dispose();
-      signature.dispose();
-      symbols.dispose();
-      definitions.dispose();
-      actions.dispose();
-    },
-  };
-}
-
-function requestCompletion(
-  cacheKey: string,
-  code: string,
-  position: Monaco.Position,
-  engineUrl: string,
-  signal: AbortSignal,
-): Promise<EbpfCompletionResponse> {
-  const inFlight = inFlightCompletions.get(cacheKey);
-  if (inFlight) return inFlight;
-
-  const request = (async () => {
-    const response = await fetch(`${engineUrl}/ebpf/complete`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      signal,
-      body: JSON.stringify({
-        code,
-        line: position.lineNumber,
-        column: position.column,
-      }),
-    });
-    if (!response.ok) {
-      return completionFailure(`HTTP ${response.status}`);
-    }
-    return (await response.json()) as EbpfCompletionResponse;
-  })();
-
-  inFlightCompletions.set(cacheKey, request);
-  request.finally(() => {
-    inFlightCompletions.delete(cacheKey);
-  });
-  return request;
-}
-
-function pruneCompletionCache() {
-  const now = Date.now();
-  for (const [key, item] of completionCache) {
-    if (item.createdAt + COMPLETION_CACHE_TTL_MS <= now) {
-      completionCache.delete(key);
-    }
+  const ownerDisposed = editor.onDidDispose(dispose);
+  return { dispose };
+  function dispose() {
+    ownerDisposed.dispose();
+    semanticCompletion.dispose();
+    completion.dispose();
+    hover.dispose();
+    signature.dispose();
+    symbols.dispose();
+    definitions.dispose();
+    actions.dispose();
   }
-  while (completionCache.size > COMPLETION_CACHE_MAX_ENTRIES) {
-    const key = completionCache.keys().next().value;
-    if (key === undefined) break;
-    completionCache.delete(key);
-  }
-}
-
-function createCompletionCacheKey(
-  engineUrl: string,
-  code: string,
-  line: number,
-  column: number,
-): string {
-  return `${engineUrl}|${line}:${column}|${hashCode(code)}`;
-}
-
-function hashCode(value: string): string {
-  let hash = 0x811c9dc5;
-  for (let index = 0; index < value.length; index += 1) {
-    hash ^= value.charCodeAt(index);
-    hash = Math.imul(hash, 0x01000193) >>> 0;
-  }
-  return `${hash.toString(16)}-${value.length}`;
-}
-
-function completionFailure(message: string): EbpfCompletionResponse {
-  return {
-    ok: false,
-    items: [],
-    message,
-  };
 }
 
 function insertAtTopAction(

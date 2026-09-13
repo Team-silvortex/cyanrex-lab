@@ -145,3 +145,60 @@ fn user_compile_jobs_are_private_cancellable_and_quota_limited() {
         RunnerJobState::Cancelled
     );
 }
+
+#[test]
+fn unclaimed_user_checks_expire_without_leaking_source_or_blocking_user_quota() {
+    let queue = RunnerJobQueue::default();
+    let submit = || queue.submit_user_compile_check("alice".into(), "compiler".into(),
+        "int lesson(void) { return 0; }".into(), None, Some(20));
+    let first = submit().unwrap();
+    submit().unwrap();
+    assert!(matches!(submit(), Err(RunnerJobQueueError::Conflict(_))));
+    // No sleep or real Agent: simulate an abandoned browser's unclaimed jobs.
+    for job in queue.jobs().values_mut() { job.created_at -= chrono::Duration::seconds(36); }
+    let expired = queue.job_for_owner(&first.job_id, "alice").unwrap();
+    assert_eq!(expired.state, RunnerJobState::Expired);
+    assert!(expired.completed_at.is_some());
+    assert!(queue.jobs().values().all(|job| job.source.is_none()));
+    assert!(queue.claim("compiler", 2, &[COMPILE_CAPABILITY.into()]).unwrap().is_none());
+    assert!(submit().is_ok(), "a lost cancellation must not consume quota forever");
+    assert!(matches!(queue.job_for_owner(&first.job_id, "bob"), Err(RunnerJobQueueError::NotFound)));
+}
+
+#[test]
+fn user_queue_expiry_is_inclusive_and_does_not_extend_terminal_retention() {
+    let queue = RunnerJobQueue::default();
+    let submitted = queue.submit_user_compile_check("alice".into(), "compiler".into(),
+        "int lesson(void) { return 0; }".into(), None, Some(20)).unwrap();
+    let now = submitted.created_at;
+    let mut jobs = queue.jobs();
+    reap(&mut jobs, now + chrono::Duration::seconds(34));
+    assert_eq!(jobs[&submitted.job_id].state, RunnerJobState::Queued);
+    let expiry = now + chrono::Duration::seconds(35);
+    reap(&mut jobs, expiry);
+    assert_eq!(jobs[&submitted.job_id].state, RunnerJobState::Expired);
+    assert!(jobs[&submitted.job_id].source.is_none());
+    reap(&mut jobs, expiry + chrono::Duration::seconds(10));
+    assert_eq!(jobs[&submitted.job_id].completed_at, Some(expiry));
+    reap(&mut jobs, expiry + chrono::Duration::seconds(901));
+    assert!(jobs.is_empty());
+}
+
+#[test]
+fn queue_wait_limit_does_not_shorten_claimed_leases_or_expire_staff_managed_work() {
+    let queue = RunnerJobQueue::default();
+    let user = queue.submit_user_compile_check("alice".into(), "compiler".into(),
+        "int lesson(void) { return 0; }".into(), None, Some(20)).unwrap();
+    queue.jobs().get_mut(&user.job_id).unwrap().created_at -= chrono::Duration::seconds(34);
+    let claim = queue.claim("compiler", 1, &[COMPILE_CAPABILITY.into()]).unwrap().unwrap();
+    let staff = queue.submit_compile_check(None, "int staff(void) { return 1; }".into(), None, None).unwrap();
+    queue.jobs().get_mut(&staff.job_id).unwrap().created_at -= chrono::Duration::hours(1);
+    let mut jobs = queue.jobs();
+    reap(&mut jobs, claim.claimed_at + chrono::Duration::seconds(2));
+    assert_eq!(jobs[&user.job_id].state, RunnerJobState::Claimed);
+    assert_eq!(jobs[&user.job_id].deadline, Some(claim.deadline));
+    assert_eq!(jobs[&staff.job_id].state, RunnerJobState::Queued);
+    assert!(jobs[&staff.job_id].source.is_some());
+    reap(&mut jobs, claim.deadline + chrono::Duration::seconds(1));
+    assert_eq!(jobs[&user.job_id].state, RunnerJobState::Expired);
+}

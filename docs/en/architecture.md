@@ -108,6 +108,48 @@ Important rules:
 - `docs/` is authoritative. `frontend/public/course/` is synchronized for builds whose Docker
   context cannot access the repository-level documentation directory.
 
+Inline compiler diagnostics keep a bounded, eight-second cache within one editor mount, keyed by the
+exact Engine URL, target, source and header context. Editors do not share pending requests or cancellation
+ownership. Input changes hide stale markers during debounce; cancelled continuations cannot publish UI
+or cache results. `compilerCheck.ts` owns transport and complete-request deadlines (20 seconds local,
+35 seconds remote including submission). Terminal cancellation/expiry means unavailable, not compiler
+issues. Remote cleanup is best effort, never rollback or automatic local fallback. This is browser
+lifecycle isolation, not detection of an HttpOnly session changed elsewhere or server authorization.
+See [the third chain-guided bug hunt](functional-network-bug-hunt-03.md) for reproduction and limits.
+
+Semantic language providers belong to their owning editor and current model; disposal unregisters all
+six providers. `semanticCompletion.ts` holds an independent five-second/18-entry exact cache and a
+ten-second complete-request deadline. Model versions, cursor requests and header refreshes invalidate
+obsolete continuations; failures keep static snippets, without running code or switching to an Agent.
+`useSelectedHeaders` owns latest-wins ten-second metadata reads and an explicit refresh revision, including
+unchanged filenames. Failure preserves a clearly labelled last-successful list, not an empty selection.
+`useHeaderInjectionCheck` uses the existing local-only 20-second transport, blocks duplicate dispatch,
+and discards results after code/context changes or unmount. Both checks and completion still obtain
+session ownership and selected headers from Engine; browser metadata is not an atomic compile snapshot.
+Authenticated students may read selected metadata, while only teachers change header selection/downloads.
+See [bug hunt 04](functional-network-bug-hunt-04.md); marker updates now target the owned editor model.
+
+`useRuntimeActions` owns a synchronous run/detach admission guard, navigation cancellation and result
+epochs bound to the draft, lab and runtime settings. Editing invalidates output, not already dispatched
+kernel work. `runtimeRequest.ts` validates responses and bounds browser waiting including body reads
+to 330 seconds for mutations; this is not a server transaction deadline or rollback guarantee. Normal
+compiler/validation reports remain reports; transport uncertainty keeps the confirmation's failure view.
+`useAttachmentInventory` independently reconciles owner-scoped inventory with latest-wins 20-second
+reads. Failed reads retain a visibly stale list; only a valid empty response means no listed attachments.
+Run completion does not await these supplementary reads. Detach needs explicit `clean: true`, and verified
+removal retires the result's pin/debug session. See [bug hunt 05](functional-network-bug-hunt-05.md).
+
+Breakpoint observations are keyed by Engine, debug session and the run report's normalized instrumented
+line set. Changes hide old hits/gap status in the first render, before effects reset the subscription.
+Only matching kernel breakpoint events on declared positive integer lines are displayed. Editor glyphs,
+keyboard handlers and cleanup belong to a captured editor/model, not whichever editor a shared ref later
+points at. Invalid hit lines cannot be clamped by Monaco into a misleading highlight. F9/gutter changes
+prepare the next explicit run; clearing requested breakpoints does not uninstall existing probes.
+Shared event recovery uses private non-redirecting snapshot reads and marks malformed live frames as
+possible gaps without reconnecting just for those frames. The trace parser rejects zero and numeric
+prefixes such as `47abc`. These are integrity/display checks, not event-source authentication or new
+kernel isolation. See [bug hunt 06](functional-network-bug-hunt-06.md).
+
 ## 4. Engine Architecture
 
 The Engine is organized as a small layered application:
@@ -349,6 +391,14 @@ session username, hides them from other users, and permits two active remote che
 checking is the default; an unavailable selected Agent produces an error instead of silently falling
 back. `/ebpf/run` stays local.
 
+User-owned checks have a 35-second unclaimed queue window, reaped on the next queue interaction;
+expiration drops source and releases per-user active quota without changing claimed execution deadlines.
+Staff-managed unowned jobs retain their queue/cancel policy. Agent claim admission counts outstanding
+leases once against reported active-plus-free capacity, preserving reserved capacity. A pre-execution
+sync that reports a lost lease prevents execution/result submission; the Agent keeps polling. Its response
+decoder enforces the 640 KiB body cap incrementally, including responses without a length header.
+Neither these limits nor lease checks add remote loading or continuous execution-time cancellation.
+
 The standalone `cyanrex-runner-agent` binary implements this protocol for Linux, WSL2, and
 unprivileged containers. It uses a Rustls HTTPS client, disables redirects and environment proxies,
 keeps the issued credential in memory, and automatically re-registers after Engine state loss. The
@@ -382,7 +432,7 @@ If enabled with `CYANREX_DB_FALLBACK`, individual services can degrade independe
 - account/session reads, registration and login can fall back to process memory;
 - events fall back to bounded per-user memory;
 - scripts fall back to per-instance JSON files under `CYANREX_DATA_DIR`;
-- learning attempts fall back to per-instance JSON files under `CYANREX_DATA_DIR`;
+- learning run writes retain a per-instance JSON fallback under `CYANREX_DATA_DIR`; read failures follow the explicit policy below;
 - downloaded C headers and their selection metadata remain filesystem-backed.
 
 Fallback keeps a lab usable during a database outage, but memory-backed users, sessions, and events
@@ -418,7 +468,14 @@ remain retryable. Loading still holds the full input string and all decoded reco
 copying response payloads; progress aggregates in one pass. A blocking worker streams the complete JSON
 file through a 64 KiB buffer, flushes, renames and publishes memory while retaining writer admission even
 after request cancellation. This is not fsync, crash recovery or cross-process coordination. There is no new
-SQL projection, HTTP pagination contract or retention policy. See [Learning Record Storage](learning-storage.md).
+SQL projection, HTTP pagination contract or retention policy.
+
+History, progress and teacher reads now propagate local load or selected-PostgreSQL schema/query failures
+as generic `500` responses, not empty/zero projections; successful reads and storage failures are no-store.
+A selected SQL read does not silently switch to stale local state or disable its pool. The existing
+run-record write fallback remains. Local commits exclusively create random same-directory temporary files,
+with 0600/0700 for new Unix files/directories, and attempt temporary cleanup after failures. Existing parent
+permissions are not changed; data paths still require trusted ownership. See [Learning Record Storage](learning-storage.md).
 
 ### Event stream recovery
 

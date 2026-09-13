@@ -4,14 +4,16 @@ import type { EbpfRunResponse } from "./models";
 type Props = {
   result: EbpfRunResponse | null;
   error: string | null;
+  notice?: string;
   t: (key: string) => string;
 };
 
-export default function EbpfResultPanel({ result, error, t }: Props) {
+export default function EbpfResultPanel({ result, error, notice, t }: Props) {
   return (
     <section className="panel result-panel" style={{ marginTop: 16 }}>
       <h3>{t("ebpf.result")}</h3>
-      {!result && !error && <p className="meta">{t("ebpf.noRunResult")}</p>}
+      {!result && !error && !notice && <p className="meta">{t("ebpf.noRunResult")}</p>}
+      {notice && <p className="meta" role="status">{sanitizeForDisplay(notice)}</p>}
       {error && <p className="error" role="alert">{sanitizeForDisplay(error)}</p>}
       {result && <>
         <p><strong>{t("ebpf.resultSuccess")}</strong> {String(result.success)}</p>

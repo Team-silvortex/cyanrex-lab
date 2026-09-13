@@ -1,0 +1,24 @@
+✔ cached diagnostics never cross Engine URLs (1144.124677ms)
+✔ remounting an editor does not reuse the previous editor or account's cache (220.158555ms)
+✔ source and header context use unambiguous cache identities (199.211118ms)
+✔ equal-length sources with the same old 32-bit hash do not share diagnostics (207.628285ms)
+✔ late success cannot replace current diagnostics or populate a stale cache (223.289066ms)
+✔ late errors cannot erase the current diagnostics (214.901011ms)
+✔ changing source removes old markers and status during debounce (223.674048ms)
+✔ one editor's cancellation does not own another editor's request (218.921635ms)
+✔ cancelled and expired remote jobs are unavailable even when they carry a result (246.118099ms)
+✔ remote submission and a stalled poll each have a bounded 35-second total wait (241.043388ms)
+✔ late remote submission after a target switch only cancels its job, without polling or fallback (226.504298ms)
+✔ completed remote compiler results retain issue/note mapping and never trigger a local run (215.422214ms)
+✔ same-editor cache reuse stops at the exact eight-second expiry (236.363692ms)
+✔ cache retains at most 24 entries per editor (297.802626ms)
+✔ rapid edits, blank drafts and pre-debounce unmounts dispatch no obsolete checks (236.303748ms)
+✔ failed checks are not cached and local requests cannot wait beyond 20 seconds (222.263915ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4742.266363

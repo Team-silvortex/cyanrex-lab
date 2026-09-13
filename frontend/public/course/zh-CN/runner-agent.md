@@ -1,6 +1,6 @@
 # Runner Agent 使用指南
 
-独立的 `cyanrex-runner-agent` 用于把可信 Linux、WSL2 或容器节点接入 Engine 控制面。0.3.8 版本
+独立的 `cyanrex-runner-agent` 用于把可信 Linux、WSL2 或容器节点接入 Engine 控制面。0.3.9 版本
 执行内置 `control_probe`，并可选择开启只编译的 `ebpf_compile_check`。编译检查默认关闭；两种模式
 都不接受 Shell 命令或任意可执行载荷，也不需要 root 和 Linux Capability。编译作业不会加载 eBPF，
 也不会返回目标文件。
@@ -96,7 +96,7 @@ docker run --rm --name cyanrex-runner-agent \
   --entrypoint cyanrex-runner-agent \
   --env-file ./runner-agent.env \
   --mount type=bind,src="$PWD/agent-token",dst=/run/secrets/cyanrex-agent-token,ro \
-  cyanrex/cyanrex-engine:0.3.8
+  cyanrex/cyanrex-engine:0.3.9
 ```
 
 配置可以从 [`docker/runner-agent.env.example`](../../docker/runner-agent.env.example) 开始。源码更新后
@@ -130,11 +130,24 @@ docker run --rm --name cyanrex-runner-agent \
 1. 使用 Bootstrap Token 注册并取得单节点 HMAC 凭据；
 2. 发送带签名的健康与容量心跳；
 3. 领取数量不超过已上报空闲容量；
-4. 同步 Job Lease，检查取消请求；
+4. 同步 Job Lease，检查取消或丢失；租约已丢失的任务不得开始执行；
 5. 执行内置探针，或在显式开启时用固定参数调用 Clang 做编译检查；
 6. 编译检查限制资源与输出，只返回目标摘要并删除工作区，不加载或返回目标文件；
 7. Engine 丢失内存注册状态后自动重新注册；
 8. 收到 Ctrl-C 时尽力发送 `draining` 心跳。
+
+领取容量使用心跳中的 `active_jobs + available_slots`，注册校验保证它不超过登记上限；队列把
+已领取和等待取消确认的租约计入该总量一次。空位数已经扣除了上报的进行中任务，不能重复扣减；
+也不能直接使用登记上限来重新开放 Agent 主动保留的容量。旧心跳不能绕过队列的未完成租约计数。
+独立客户端仍逐个处理任务，本次修复没有增加客户端并行执行。
+
+同步结果的 `lost_job_ids` 包含当前任务时，Agent 在执行或上报前丢弃它；即使 `cancel_job_ids`
+也包含它，丢失状态仍优先。该任务按可重试冲突处理，轮询可以继续；有效取消仍不执行任务而直接确认。
+这是执行前检查，不是执行中的持续租约监控，也不保证立刻中止 Clang。
+
+读取 Engine 响应时逐块检查累计大小，包含没有 `Content-Length` 的分块响应和错误响应；保留的
+正文将超过 640 KiB 时立即拒绝，不等发送方结束，恰好 640 KiB 仍可接受。原有请求超时继续生效。
+这限制响应正文缓冲，不是整个传输层或进程的内存上限。
 
 ## 教师部署运维
 
@@ -154,6 +167,19 @@ docker run --rm --name cyanrex-runner-agent \
 接口轮询，并通过 `POST /ebpf/check/remote/cancel` 取消过期请求。作业绑定当前用户，每个用户最多
 同时保留两个未终结的远程检查。
 
+编辑器远程检查从发出提交开始，整次请求最多等待 35 秒，包含读取响应及轮询；本地内联检查为
+20 秒。修改源码、头文件上下文、Engine 或目标会取消旧请求并隐藏旧标记。取消/过期任务显示
+`unavailable`，正常完成的编译拒绝仍显示 `issues`。请求携带会话、禁止缓存和重定向，不自动重试
+或转本地。已知但未完成的作业会尽力取消，取消请求单独限时 10 秒，也包括切换后迟到的提交响应；
+未知 ID 由下面的服务端排队/租约规则兜底。浏览器暂停或导航不证明服务端已停止，取消也不代表回滚。
+8 秒/24 项缓存只属于当前编辑器挂载，不跨导航保留或跨编辑器共享请求，也不是跨标签页的会话撤销机制。
+
+用户绑定的检查排队 35 秒仍未领取时，在下一次队列交互（提交、领取、查状态、取消、同步、结果或
+清单查询）过期，释放源码及用户活跃名额；终态元数据沿用 15 分钟保留规则。没有后台定时器，
+完全闲置的队列要等被访问才清理。这避免提交响应丢失或尽力取消失败永久占满用户的两个名额。
+已领取任务的执行期限仍从领取时计算；教师管理接口提交的无用户归属探针/编译任务保持原有显式
+排队/取消规则，不应用新等待时限。响应结构和所有者检查不变。
+
 编辑器默认使用本地检查；所选 Agent 不可用时会明确失败，不会静默回退。`/ebpf/run` 仍在本地执行，
 远程加载仍未启用。作业清单只记录源码大小，不记录源码正文。协议只允许字面量安全系统头文件；
 引号、宏生成、父目录相对路径、`include_next`、`embed` 和头文件探测写法都会被拒绝。
@@ -165,6 +191,9 @@ docker run --rm --name cyanrex-runner-agent \
 - `503`：Agent 控制面未启用，或有上限的注册表/队列已满；
 - 非回环 HTTP 被拒绝：应配置 HTTPS；只有受信且有防火墙的实验网才打开明文例外；
 - 签名持续失败：先同步系统时间，再考虑轮换凭据。
-- 编译作业一直排队：在隔离 Agent 上开启编译检查，并确认清单包含 `clang_check`；
+- 用户检查在领取前过期：确认 Agent 健康、空位及 `clang_check` 后明确重试，不会自动转本地；
+  教师管理任务仍可排队等待领取或显式取消；
 - 编译配置被拒绝：使用 `container`、`virtual_machine` 或 `dedicated_host`，提供存在的 Clang 绝对
   路径，并把工作目录放在私有、可丢弃的存储中。
+
+复现与验证范围见[沿链路抓虫 02](functional-network-bug-hunt-02.md)。

@@ -1,0 +1,28 @@
+✔ teachers manage modules, deployment settings and terminal without switching role, keeping confirmations (2946.92662ms)
+✔ students keep experiment access without teacher deployment navigation (1243.030249ms)
+✔ single deletion focuses cancel, Escape/Enter cancel safely, and failures cannot be double-submitted (1072.755585ms)
+✔ module lifecycle commands require confirmation but read-only commands do not (656.500987ms)
+✔ account deletion keeps credential and typed gates, cancels without writes, and reports failure (631.519097ms)
+✔ job cancellation binds the full job id and settings need explicit review (781.993265ms)
+✔ confirmation stays usable in every language on mobile and navigation discards an unconfirmed action (1746.06866ms)
+✔ detach-all requires a typed phrase and single detach can never fall back to all (999.527774ms)
+✔ template/source replacement and kernel runs require separate explicit decisions (1566.134119ms)
+✔ remote diagnostics require acknowledging source transfer before switching agents (1275.237904ms)
+✔ remote cancellation and expiry show unavailable in the real editor without running or replacing its draft (3390.620291ms)
+✔ a confirmed file import cannot replace a different lab's draft after navigation (1065.218569ms)
+✔ entering a lab preserves the draft until its template is explicitly loaded (963.681543ms)
+✔ header batch deletion stops at failure and reports partial completion, never false success (557.183651ms)
+✔ event deletion explains the complete filter scope and freezes the cutoff before confirmation (550.949518ms)
+✔ real Monaco accepts semantic suggestions and multiline SEC snippets without executing code (1358.547859ms)
+✔ header refresh errors remain visible while an explicit local self-check still works (1055.277574ms)
+✔ failed logout stays on the current page, reports uncertainty and permits an explicit retry (2936.179665ms)
+✔ logout ignores duplicate clicks while pending and does not redirect until confirmed (712.622543ms)
+✔ navigating away discards late logout UI callbacks without claiming server rollback (636.528729ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 20
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 21927.431275

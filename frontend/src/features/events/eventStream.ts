@@ -32,7 +32,7 @@ type Options = {
 const browserRuntime: Runtime = {
   connect: (url) => new WebSocket(url),
   snapshot: async (url, signal) => {
-    const response = await fetch(url, { signal, credentials: "include" });
+    const response = await fetch(url, { signal, credentials: "include", cache: "no-store", redirect: "error" });
     if (!response.ok) throw Object.assign(new Error(`HTTP ${response.status}`), { status: response.status });
     return response.json();
   },
@@ -145,10 +145,12 @@ export function startEventStream(options: Options, runtime: Runtime = browserRun
       });
     };
     socket.onmessage = (message) => {
-      if (!active() || typeof message.data !== "string") return;
+      if (!active()) return;
+      if (typeof message.data !== "string") { options.onGap(); return; }
       let event: unknown;
-      try { event = JSON.parse(message.data); } catch { return; }
-      if (!isEvent(event) || (options.accepts && !options.accepts(event))) return;
+      try { event = JSON.parse(message.data); } catch { options.onGap(); return; }
+      if (!isEvent(event)) { options.onGap(); return; }
+      if (options.accepts && !options.accepts(event)) return;
       if (loading) {
         if (buffered.length >= limit) { retry(); return; }
         buffered.push(event);

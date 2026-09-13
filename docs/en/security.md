@@ -93,6 +93,54 @@ invalidations cannot reappear merely because a subsequent query fails. The exist
 fallback still cannot discover revocations or credential changes made elsewhere while the database is
 unavailable; this is not a distributed revocation guarantee or a replacement for incident recovery.
 
+### Browser diagnostic boundary
+
+Browser inline compiler caches and pending checks belong to one editor mount and exact Engine/target/
+source/header context, not a process-global pool. Leaving/re-entering the editor discards that cache;
+cancelled callbacks cannot publish stale diagnostics. This does not observe cookies changed in another
+tab, revoke sessions, erase saved drafts or create an authorization boundary. Diagnostic requests reject
+redirects and request no-store; queue/lease ownership is still enforced by Engine. Timeouts and best-effort
+job cancellation do not prove server-side rollback. See [bug hunt 03](functional-network-bug-hunt-03.md).
+
+Semantic providers also reject foreign/disposed models and have editor-owned requests/cache; manual
+header checks cancel on source or context changes. Completion and selected-header reads have ten-second
+whole-request limits; manual checks use the local 20-second limit. All three request paths reject redirects
+and request no-store. A failed metadata refresh displays the last successful list explicitly, never a
+claim that no headers are selected. Client context revisions only invalidate UI work: Engine still chooses
+the session owner and current headers, and teachers retain exclusive header mutation authority. There is
+no atomic header snapshot, cross-tab revocation detection, remote completion or automatic execution added.
+See [bug hunt 04](functional-network-bug-hunt-04.md).
+
+### Browser runtime boundary
+
+Manual run/detach requests include credentials, request no-store and reject redirects. A local admission
+guard prevents concurrent dispatch from one controller; it is not cross-tab idempotency. Navigation aborts
+browser waiting; editing hides old results, and neither action unloads an already dispatched program.
+The 330-second mutation and 20-second inventory limits are active-browser waiting bounds, not proof of
+server rollback. Uncertain results require review and never trigger an automatic retry or detach.
+Only explicit `clean: true` confirms cleanup; a failed/malformed inventory is not empty success, and stale
+inventory disables cleanup controls until refreshed. Engine still enforces session ownership, CSRF and
+Runner authorization. The explicit `pin_path: null` bulk action retains its existing current-account scope,
+including attachments added before execution, as disclosed in its typed confirmation; it is not a frozen
+server snapshot. No new session-revocation detection or kernel inspection is added. See
+[bug hunt 05](functional-network-bug-hunt-05.md).
+
+Breakpoint session/line filtering, strict trace-marker parsing and model-owned highlights prevent stale
+or malformed observations from being attributed to the current draft. They do not authenticate a kernel
+producer: session markers in a shared trace log are not secrets or a tenant boundary. Only the Engine's
+session/Origin checks and owner-scoped event subscription confer access. Event recovery snapshot reads
+also request no-store and reject redirects; malformed frames retain a possible-gap notice, not a claim
+of complete recovery. No new revocation, replay guarantee or automatic kernel action is added. See
+[bug hunt 06](functional-network-bug-hunt-06.md).
+
+### Learning data boundary
+
+Learning record reads fail visibly on corrupt/unreadable storage instead of showing an empty classroom.
+Successful learning projections and their storage errors are no-store. New local learning directories
+and snapshots use Unix 0700/0600 and exclusive random temporary files with failure cleanup. Keep existing
+data-directory ownership and parent permissions restricted; old directories are not automatically chmodded,
+and this does not provide crash recovery or hostile-parent path protection. See [learning storage](learning-storage.md).
+
 ### Classroom connection boundary
 
 Classroom onboarding uses a separate [discovery/invitation boundary](classroom-connection.md).
@@ -124,6 +172,12 @@ backend inventory omits labels and kernel details, remote jobs are bound to the 
 and each user is limited to two active checks. `/ebpf/run` remains local. Signed transport proves
 which registered credential sent a result; it does not prove that compilation was honest. Consider
 mutual TLS, node-bound keys, and attestation across a stronger trust boundary.
+
+Lost leases observed before execution are discarded rather than executed or acknowledged as cancelled;
+the polling loop remains available for later jobs. This does not interrupt compilation already in progress.
+Unclaimed user checks expire after a 35-second wait on the next queue access, releasing source and user
+quota; staff-managed unowned jobs keep their explicit cancellation policy. Response buffering rejects
+more than 640 KiB while streaming, even without a declared length, before reading the whole response.
 
 The bundled standalone Agent fails closed on non-loopback plain HTTP unless an explicit insecure-lab
 override is set. It disables HTTP redirects and environment proxies, caps response bodies, and can

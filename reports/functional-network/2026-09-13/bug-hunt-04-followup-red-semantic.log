@@ -1,0 +1,47 @@
+(node:1165536) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/src/utils/semanticCompletion.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/chiharukiryu/cdev/cyanrex-lab/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ semantic request stays local and sends only source/cursor with private transport (20.757429ms)
+✔ completion cache expires exactly at five seconds and respects cursor/source identity (1.277203ms)
+✔ completion cache remains bounded to eighteen entries (3.43894ms)
+✔ foreign, disposed and pre-cancelled models dispatch nothing (0.411705ms)
+✔ empty and UTF-8 oversized source remains snippet-only without dispatch (0.950326ms)
+✔ superseded cursor requests discard even already-delivered responses (0.666108ms)
+✔ owner disposal aborts active work and releases listeners without publishing a late result (0.431371ms)
+✔ model replacement invalidates pending work and all model-local cache reuse (0.712995ms)
+✔ a stalled semantic JSON body has a ten-second whole-request deadline (0.558547ms)
+✔ network/HTTP failures never retry or poison semantic cache (0.891977ms)
+✖ malformed semantic payloads remain snippet-only instead of escaping into providers (2.516416ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 10
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 124.811146
+
+✖ failing tests:
+
+test at frontend/tests/semanticCompletion.test.mjs:109:1
+✖ malformed semantic payloads remain snippet-only instead of escaping into providers (2.516416ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + [
+  +   null
+  + ]
+  - []
+  
+      at TestContext.<anonymous> (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/semanticCompletion.test.mjs:112:50)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ null ],
+    expected: [],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

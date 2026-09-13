@@ -1,0 +1,42 @@
+✔ teachers manage modules, deployment settings and terminal without switching role, keeping confirmations (2880.520878ms)
+✔ students keep experiment access without teacher deployment navigation (1047.190216ms)
+✔ single deletion focuses cancel, Escape/Enter cancel safely, and failures cannot be double-submitted (1032.720532ms)
+✔ module lifecycle commands require confirmation but read-only commands do not (672.091139ms)
+✔ account deletion keeps credential and typed gates, cancels without writes, and reports failure (637.039224ms)
+✔ job cancellation binds the full job id and settings need explicit review (756.115557ms)
+✔ confirmation stays usable in every language on mobile and navigation discards an unconfirmed action (1432.8221ms)
+✔ detach-all requires a typed phrase and single detach can never fall back to all (996.653857ms)
+✔ template/source replacement and kernel runs require separate explicit decisions (1212.679478ms)
+✔ remote diagnostics require acknowledging source transfer before switching agents (1290.91488ms)
+✔ remote cancellation and expiry show unavailable in the real editor without running or replacing its draft (3345.547876ms)
+✔ a confirmed file import cannot replace a different lab's draft after navigation (1445.579986ms)
+✔ entering a lab preserves the draft until its template is explicitly loaded (1028.448029ms)
+✔ header batch deletion stops at failure and reports partial completion, never false success (627.732004ms)
+✔ event deletion explains the complete filter scope and freezes the cutoff before confirmation (593.159178ms)
+✖ real Monaco accepts semantic suggestions and multiline SEC snippets without executing code (30884.345661ms)
+✔ header refresh errors remain visible while an explicit local self-check still works (2304.880443ms)
+✔ failed logout stays on the current page, reports uncertainty and permits an explicit retry (2870.820898ms)
+✔ logout ignores duplicate clicks while pending and does not redirect until confirmed (561.097596ms)
+✔ navigating away discards late logout UI callbacks without claiming server rollback (606.631266ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 19
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 52261.33509
+
+✖ failing tests:
+
+test at frontend/tests/actionSafety.browser.mjs:456:1
+✖ real Monaco accepts semantic suggestions and multiline SEC snippets without executing code (30884.345661ms)
+  locator.waitFor: Timeout 30000ms exceeded.
+  Call log:
+  [2m  - waiting for locator('.suggest-widget .monaco-list-row').filter({ hasText: 'fixture_symbol' }) to be visible[22m
+  [2m    64 × locator resolved to hidden <div role="option" data-index="0" aria-setsize="1" id="list_id_1_0" aria-posinset="1" draggable="false" data-parity="even" data-last-element="true" aria-label="fixture_symbol, Field" class="monaco-list-row show-file-icons string-label focused">…</div>[22m
+  
+      at TestContext.<anonymous> (/home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/actionSafety.browser.mjs:467:100) {
+    name: 'TimeoutError',
+    log: [ "  - waiting for locator('.suggest-widget .monaco-list-row').filter({ hasText: 'fixture_symbol' }) to be visible", '    64 × locator resolved to hidden <div role="option" data-index="0" aria-setsize="1" id="list_id_1_0" aria-posinset="1" draggable="false" data-parity="even" data-last-element="true" aria-label="fixture_symbol, Field" class="monaco-list-row show-file-icons string-label focused">…</div>' ]
+  }

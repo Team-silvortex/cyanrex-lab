@@ -1,0 +1,728 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-13",
+  "status": "fixed-and-scoped-regressions-passed",
+  "baseline": {
+    "version": "0.3.8",
+    "commit": "c26a529aecc0ab64d0a1743be10972e5d8ac137b",
+    "branch": "main",
+    "inventory": "docs/functional-network.json",
+    "prior_pass": "reports/functional-network/2026-09-13/bug-hunt-03.json",
+    "worktree": "Three earlier uncommitted passes preserved; no Rust implementation changed this pass."
+  },
+  "scope": {
+    "workflows": [
+      "F16",
+      "F17",
+      "F18",
+      "F19"
+    ],
+    "edges": [
+      "E23",
+      "E24",
+      "E26",
+      "E27",
+      "E28"
+    ],
+    "surrounding_storage": [
+      "D07"
+    ],
+    "meaning": "Owned editor/model completion, manual local header checks, latest-wins selected metadata and diagnostic marker ownership.",
+    "exclusions": [
+      "server authentication or Runner implementation changes",
+      "stored drafts/targets",
+      "live Engine or kernel work",
+      "Clang parser and Unicode byte-column acceptance"
+    ]
+  },
+  "findings": [
+    {
+      "id": "BH04-01",
+      "status": "fixed",
+      "summary": "Global language providers accepted foreign models; cache and requests outlived model/provider/header context; editor disposal left providers registered.",
+      "fix": "Bind all six providers to their editor/current model, with per-registration exact Engine/header/model/source/cursor cache and lifecycle cleanup.",
+      "regressions": [
+        "completion providers never send another editor's model to their Engine",
+        "model edits and replacements invalidate completion callbacks even without token cancellation",
+        "completion cache cannot survive provider/header-context replacement",
+        "owner disposal unregisters every language provider"
+      ]
+    },
+    {
+      "id": "BH04-02",
+      "status": "fixed",
+      "summary": "Shared cancellation ownership, an ignored rejecting finally promise, unbounded waits and malformed semantic items escaped the expected fallback.",
+      "fix": "Independent request generations, ten-second whole-request deadline, response validation; preserve static snippets for service failure, never obsolete work.",
+      "regressions": [
+        "separate completion providers do not share cancellation ownership",
+        "completion network failures retain snippets without unhandled promise rejections",
+        "a stalled semantic JSON body has a ten-second whole-request deadline",
+        "malformed semantic payloads remain snippet-only instead of escaping into providers"
+      ]
+    },
+    {
+      "id": "BH04-03",
+      "status": "fixed",
+      "summary": "Manual header checks allowed duplicate dispatch, stale results/errors after source changes/unmount and infrastructure failures misclassified as code issues.",
+      "fix": "Input-bound state and synchronous duplicate guard, abort on context changes/unmount, existing local-only 20-second transport and separate issues/error state.",
+      "regressions": [
+        "manual header checks discard late results after source changes",
+        "duplicate manual-check calls dispatch only once",
+        "manual HTTP failures are infrastructure errors rather than compiler issues",
+        "late manual-check errors cannot erase a newer successful result",
+        "normal manual compiler rejection remains issues and sends only source to the local check"
+      ]
+    },
+    {
+      "id": "BH04-04",
+      "status": "fixed",
+      "summary": "Older metadata refreshes overwrote newer selections; failed reads silently resembled empty selection and malformed rows crashed rendering.",
+      "fix": "Latest-wins ten-second credentialed metadata reads, validation and explicit loading/error; keep last successful list and invalidate all checks/providers at refresh start even for unchanged filenames.",
+      "regressions": [
+        "overlapping metadata refreshes cannot replace a newer header selection",
+        "metadata refresh failure is visible without silently claiming an empty selection",
+        "malformed metadata rows are a visible failure without crashing the editor",
+        "refreshing unchanged headers invalidates pending checks and the mounted completion provider",
+        "metadata deadlines end loading without losing the last selection and unmount aborts refresh",
+        "header refresh errors remain visible while an explicit local self-check still works"
+      ]
+    },
+    {
+      "id": "BH04-05",
+      "status": "fixed",
+      "summary": "Controller wrote diagnostic markers to Monaco's first global model, not necessarily its own editor.",
+      "fix": "Use the owned editor for synchronous and async diagnostic marker updates.",
+      "regressions": [
+        "an unrelated first Monaco model never receives this editor's diagnostic markers"
+      ]
+    },
+    {
+      "id": "BH04-06",
+      "status": "fixed",
+      "summary": "Three SEC snippets inserted literal backslash-n text instead of line breaks.",
+      "fix": "Insert actual newlines in XDP/TC/tracepoint snippets, retaining placeholders and explicit insertion.",
+      "regressions": [
+        "section snippets insert actual line breaks, not literal backslash-n text",
+        "real Monaco accepts semantic suggestions and multiline SEC snippets without executing code"
+      ]
+    }
+  ],
+  "before_fix": {
+    "browser": {
+      "total": 16,
+      "passed": 0,
+      "failed": 16
+    },
+    "log": "reports/functional-network/2026-09-13/bug-hunt-04-red.log",
+    "note": "Old implementation with actual controller/provider code and React StrictMode in Chromium; synthetic Monaco/fetch/clock.",
+    "followup_red": [
+      {
+        "scope": "Malformed semantic response after initial fix",
+        "total": 11,
+        "passed": 10,
+        "failed": 1,
+        "log": "reports/functional-network/2026-09-13/bug-hunt-04-followup-red-semantic.log"
+      },
+      {
+        "scope": "Malformed metadata and full provider disposal after initial fix",
+        "total": 2,
+        "passed": 0,
+        "failed": 2,
+        "log": "reports/functional-network/2026-09-13/bug-hunt-04-followup-red-browser.log"
+      }
+    ]
+  },
+  "new_tests": {
+    "editor_intelligence_browser": 22,
+    "portable_semantic": 11,
+    "production_editor": 2,
+    "total": 35,
+    "note": "Included in final suite totals, not additional tests to sum twice."
+  },
+  "checks": [
+    {
+      "name": "controller/provider and previous diagnostic browser suites",
+      "command": "node --test frontend/tests/editorIntelligence.browser.mjs frontend/tests/compilerDiagnostics.browser.mjs",
+      "status": "passed",
+      "passed": 38,
+      "failed": 0,
+      "skipped": 0,
+      "exit_code": 0,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-04-browser.log",
+      "boundary": "22 new plus 16 previous: real React 19 StrictMode/controller/provider implementation, synthetic Monaco, fetch and paused clock; external network blocked."
+    },
+    {
+      "name": "all portable frontend tests",
+      "command": "node --experimental-strip-types --test frontend/tests/*.test.mjs",
+      "status": "passed",
+      "passed": 66,
+      "failed": 0,
+      "skipped": 0,
+      "exit_code": 0,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-04-frontend.log",
+      "boundary": "Includes 11 new semantic transport/cache tests; no external service."
+    },
+    {
+      "name": "production UI safety and logout suites",
+      "command": "node --test frontend/tests/actionSafety.browser.mjs frontend/tests/authSession.browser.mjs",
+      "status": "passed",
+      "passed": 20,
+      "failed": 0,
+      "skipped": 0,
+      "exit_code": 0,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-04-ui.log",
+      "boundary": "Owned production Next.js server at http://127.0.0.1:3378; real Monaco and native fetch with all Engine HTTP mocked; two new editor cases."
+    },
+    {
+      "name": "existing compiler route boundaries",
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL -u CYANREX_DB_FALLBACK RUST_TEST_THREADS=1 cargo test --manifest-path engine/Cargo.toml --locked --test routes_tdd runner_compiler_tests -- --nocapture --test-threads=1",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "ignored": 0,
+      "filtered_out": 82,
+      "exit_code": 0,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-04-backend.log",
+      "boundary": "In-process authenticated router and synthetic driver, isolated temporary test state; owner/headers/cursor/CSRF/capacity/timeout/no fallback, not live Clang."
+    },
+    {
+      "name": "existing selected-header boundaries",
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL -u CYANREX_DB_FALLBACK RUST_TEST_THREADS=1 cargo test --manifest-path engine/Cargo.toml --locked --test module_boundaries_tdd header_ -- --nocapture --test-threads=1",
+      "status": "passed",
+      "passed": 2,
+      "failed": 0,
+      "ignored": 0,
+      "filtered_out": 17,
+      "exit_code": 0,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-04-headers-backend.log",
+      "boundary": "Temporary fixtures: teacher mutation/student metadata read, selection reload and forged-downloader checksum rejection; no real header download or instance mutation."
+    },
+    {
+      "name": "production frontend build",
+      "command": "NEXT_PUBLIC_ENGINE_URL=http://localhost:8080 NEXT_TELEMETRY_DISABLED=1 npm --prefix frontend run build",
+      "status": "passed",
+      "exit_code": 0,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-04-build.log",
+      "note": "No dependency installation; generated TypeScript cache remains clean."
+    },
+    {
+      "name": "explicit TypeScript check",
+      "command": "node frontend/node_modules/typescript/bin/tsc --noEmit --incremental false --project frontend/tsconfig.json",
+      "status": "passed",
+      "exit_code": 0,
+      "output": ""
+    },
+    {
+      "name": "common quality gate",
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL -u CYANREX_DB_FALLBACK scripts/quality-gate.sh --format-only",
+      "status": "passed",
+      "passed": 65,
+      "failed": 0,
+      "skipped": 0,
+      "exit_code": 0,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-04-common.log",
+      "includes": [
+        "lengths",
+        "0.3.8 version parity",
+        "course mirrors",
+        "64 OpenAPI paths / 68 Engine operations / 63 SDK operations / 85 schemas",
+        "API/SDK surface compatibility",
+        "Runner/distribution/kernel-smoke/candidate tool fixtures",
+        "Rust formatting"
+      ],
+      "note": "Tool fixtures are not a live dependency audit, kernel load or SDK runtime run."
+    },
+    {
+      "name": "functional network drift",
+      "command": "node scripts/check-functional-network.mjs",
+      "status": "expected-baseline-drift",
+      "expected_exit_code": 1,
+      "exit_code": 1,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-04-map-drift.log",
+      "source_drifts": [
+        "engine/openapi/openapi.json",
+        "engine/src/routes/learning.rs",
+        "engine/src/routes/runner_job.rs",
+        "engine/src/services/learning_store.rs",
+        "engine/src/services/learning_store/persistence.rs",
+        "engine/src/services/runner_agent_client.rs",
+        "engine/src/services/runner_job_queue.rs",
+        "frontend/pages/ebpf.tsx",
+        "frontend/src/features/ebpf/useCompilerDiagnostics.ts",
+        "frontend/src/features/ebpf/useEbpfPageController.ts",
+        "frontend/src/utils/cEbpfIntelligence.ts",
+        "scripts/quality-gate.sh"
+      ],
+      "note": "Twelve cumulative source drifts only; frozen inventory not re-fingerprinted. Counts/access/pages/templates/labs unchanged."
+    },
+    {
+      "name": "diff whitespace",
+      "command": "git diff --check",
+      "status": "passed",
+      "exit_code": 0
+    }
+  ],
+  "test_harness_correction": {
+    "initial_full_ui": {
+      "passed": 19,
+      "failed": 1,
+      "total": 20,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-04-ui-before-sync.log"
+    },
+    "symptom": "New semantic suggestion test observed a hidden popup when initial header metadata could still replace its provider.",
+    "correction": "Wait for the initial context's completed inline check before invoking suggestions. No retry or production-error suppression added; final full suite passed.",
+    "final_log": "reports/functional-network/2026-09-13/bug-hunt-04-ui.log"
+  },
+  "integration": {
+    "portable_tests_in_ci": true,
+    "portable_tests_in_frontend_quality_gate": true,
+    "browser_tests_optional": true,
+    "new_dependencies": false,
+    "remote_ci_run": false
+  },
+  "runtimes": {
+    "node": "v24.19.0",
+    "react": "19.0.0",
+    "next": "15.5.24",
+    "monaco": "0.55.1",
+    "typescript": "5.8.3",
+    "chromium": "Google Chrome 153.0.8010.36",
+    "browser_library": "Installed Playwright supplied through CYANREX_PLAYWRIGHT_MODULE",
+    "note": "Existing CI uses Node 22; not a new remote CI execution."
+  },
+  "not_run": [
+    "full backend/quality gate including dependency audit",
+    "real database or account/instance data",
+    "live Engine/Agent/Clang",
+    "LAN/SSH deployment",
+    "kernel loading/events",
+    "SDK runtime suite",
+    "new benchmark",
+    "Clang parser and Unicode byte-column acceptance"
+  ],
+  "historical_backend": {
+    "source": "reports/functional-network/2026-09-13/bug-hunt-02.json",
+    "passed": 285,
+    "ignored": 29,
+    "note": "Previous pass only; not added to this pass's six focused backend tests."
+  },
+  "limitations": [
+    "Header refresh revision is local invalidation, not an atomic server compile snapshot or automatic detection of another teacher/tab's changes.",
+    "Five-second cache is not proof of current server health/header content; cache keys retain bounded exact source strings.",
+    "Editor/model lifetime isolation does not observe cross-tab HttpOnly cookie changes or revoke sessions; stored drafts/targets remain unchanged.",
+    "Browser suspension affects timers; abort is not proof of server rollback.",
+    "Synthetic browser fetch deliberately permits late application callbacks after abort; production UI uses native fetch with mocked HTTP.",
+    "Selected metadata remains readable by authenticated students; teachers retain exclusive selection/download mutation authority. Browser sends no owner or header paths to check/completion."
+  ],
+  "cleanup": {
+    "temporary_ui_server_stopped": true,
+    "temporary_browsers_closed": true,
+    "temporary_fixture_bundle_removed": true,
+    "typescript_generated_cache_clean": true,
+    "real_data_touched": false
+  },
+  "next": {
+    "workflows": [
+      "F20",
+      "F22"
+    ],
+    "focus": "Manual execution to result display and attachment inventory/detach: stale UI after navigation/draft changes and refresh ownership. Inspection targets, not confirmed bugs or live-kernel authorization."
+  },
+  "candidate_sources": [
+    {
+      "path": "frontend/src/utils/semanticCompletion.ts",
+      "sha256": "f901eb52ce6e03bb9c220f6a8be0c248fc2059d8203fe60a736f241c88946e57"
+    },
+    {
+      "path": "frontend/src/utils/cEbpfIntelligence.ts",
+      "sha256": "11476dfc069441b5a2068781797486bc49f6365a69a94ae6b94c5d67638e2054"
+    },
+    {
+      "path": "frontend/src/features/ebpf/useSelectedHeaders.ts",
+      "sha256": "b81d6b940b25d7ce8b292d84fdf235ab489727c87dd657797ece97d5e7bf0999"
+    },
+    {
+      "path": "frontend/src/features/ebpf/useHeaderInjectionCheck.ts",
+      "sha256": "7d7640cfa432c7cd4fd9c6e0c7b18569a383e60b7d6eaa29b07c832b6d73e2d8"
+    },
+    {
+      "path": "frontend/src/features/ebpf/useEbpfPageController.ts",
+      "sha256": "268799101973ef432c18f3f45c2f843f92ef38f88ec829b838668e94e7348896"
+    },
+    {
+      "path": "frontend/src/features/ebpf/useCompilerDiagnostics.ts",
+      "sha256": "c1c4644e67a372eb92ad4840bc0ee49c9759b0a3e3297978c5e2dc0c9c146b43"
+    },
+    {
+      "path": "frontend/src/features/ebpf/compilerCheck.ts",
+      "sha256": "d0629ced1a8711ecfef35e7452ef41004725437fe8e9babe4aff316878297450"
+    },
+    {
+      "path": "frontend/src/features/ebpf/models.ts",
+      "sha256": "0bfac5954d02bb2360898ad811fb1beffffd4053d5b985e5ed373b4dd39d944b"
+    },
+    {
+      "path": "frontend/pages/ebpf.tsx",
+      "sha256": "2fd226567021fc7b6e1a255cbfa921cca06f85bf4a9078564c9b18fd7d74645e"
+    },
+    {
+      "path": "frontend/src/i18n/locales/en.ts",
+      "sha256": "65bdd2a79e6cc4b6b72c0276c83efca102a6dcf6ee25c0a0ad58c86a6e718d99"
+    },
+    {
+      "path": "frontend/src/i18n/locales/es.ts",
+      "sha256": "d0314e49cb38b7dcff05c8300c5605bde0c95aba2f0a0cc1e5cce556dff18453"
+    },
+    {
+      "path": "frontend/src/i18n/locales/ja.ts",
+      "sha256": "0a419f4bc51ab6e26512188d6b59fb597dc11f2183df96f3fe71151d40faeb7a"
+    },
+    {
+      "path": "frontend/src/i18n/locales/zh_cn.ts",
+      "sha256": "3579f8bf5a0e520f5cc105e6b92703408124d50fbcf0115f15f5a4d47474d45a"
+    },
+    {
+      "path": "frontend/tests/semanticCompletion.test.mjs",
+      "sha256": "2538f6178c6ef9cef5c2be29c60528a8dfadfab45486e21e83a221f0894921f9"
+    },
+    {
+      "path": "frontend/tests/editorIntelligence.browser.mjs",
+      "sha256": "d4d6fb395a85805992a6df220f6de5925b5e09de878730739ddc715d1252037c"
+    },
+    {
+      "path": "frontend/tests/fixtures/editorIntelligence.mjs",
+      "sha256": "5a51ea1d1e60777532e49de17113d11d4ef59e79a8fff80223cf4f2109d117c5"
+    },
+    {
+      "path": "frontend/tests/helpers/compilerDiagnosticsBrowser.mjs",
+      "sha256": "c83a8ad196f76279c5787f3d0ef71cc318c46425a9ed303ad00b4066b071c37b"
+    },
+    {
+      "path": "frontend/tests/helpers/typescript-loader.cjs",
+      "sha256": "d6d1cf7cf65e5b020a1a54003e7990526f4131b7b5b9378f9a9327ab48f4dffd"
+    },
+    {
+      "path": "frontend/tests/compilerDiagnostics.browser.mjs",
+      "sha256": "55f6077943c6180b1b176b0ed30be4d6084b981c94d84d6848f39d962b4020c4"
+    },
+    {
+      "path": "frontend/tests/fixtures/compilerDiagnostics.mjs",
+      "sha256": "b83b3378b4c3e93843a7ac4649ddb31a07b4356703fdafa4585f4bf10eceb807"
+    },
+    {
+      "path": "frontend/tests/actionSafety.browser.mjs",
+      "sha256": "249862eb4145c582794dd8a1094c59f01a8dfd7896e7627acc12f55544d6eb98"
+    },
+    {
+      "path": "frontend/tests/authSession.browser.mjs",
+      "sha256": "d50427923f65ff327b783116ee627dd9cb557718a9df9fbe1c7e8abd08da5b81"
+    },
+    {
+      "path": "frontend/package.json",
+      "sha256": "917dac1ede7786514804ec774bd8219f34cf72a63117353e9b0b9ff5bafee914"
+    },
+    {
+      "path": "frontend/package-lock.json",
+      "sha256": "bcfdf3dcf2c2d477048a9b886d01c3bf760eb677a035fb111a7e5ed1ee066ff7"
+    },
+    {
+      "path": "frontend/README.md",
+      "sha256": "cced133848e6545871959bea6be925a1679ed3aff758d9fc1d504bd725503589"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "57688507b4b6e35ae25ba8ce27e66c652705af53b8d35a47194361377c8cce2d"
+    },
+    {
+      "path": "scripts/quality-gate.sh",
+      "sha256": "8a472bc7c0d3dce22ac7a81469bf57d9ffaf5df202bbcc87bc7a5e1718f51f4f"
+    },
+    {
+      "path": "scripts/check-functional-network.mjs",
+      "sha256": "d42f869e022311c97c9acf592b2492aca21a52155e05872b959ce473429c1d31"
+    },
+    {
+      "path": "engine/src/application.rs",
+      "sha256": "9b33568414726469662182e6b1fab84aeb305ecdbc90912e4d74e94964789c06"
+    },
+    {
+      "path": "engine/src/routes/c_headers.rs",
+      "sha256": "89b2c584349f0a5313c75f3a7b2b2ddffdbac2abe5c034171fd923632b60f87d"
+    },
+    {
+      "path": "engine/src/routes/ebpf/check.inc.rs",
+      "sha256": "240e4e9f1ad74f225de255160867778804e3a18fc95daeabc639d6b8328ebb59"
+    },
+    {
+      "path": "engine/src/routes/ebpf/completion.inc.rs",
+      "sha256": "8515a5b267ee7f581e569b9e7c969369f49fb929b1009d552971a2300c488591"
+    },
+    {
+      "path": "engine/tests/routes_tdd/runner_compiler.inc.rs",
+      "sha256": "722bdca54285629cc087150e0bb0e237073859a1e058b0f387f27f0d9453d206"
+    },
+    {
+      "path": "engine/tests/module_boundaries/storage.rs",
+      "sha256": "ec20ae9aba8d05643b6b3fc9a92808464dc6400f9825d4569496fab7951197ad"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "sha256": "1236392c0fe431f9527cc043a3514fa86026601e409dfddea8a199d8af6a5db0"
+    },
+    {
+      "path": "docs/en/architecture.md",
+      "sha256": "f067cd2d3c0a33f01559a45239b169630074cd125db712761e7bfbea62bd7c4c"
+    },
+    {
+      "path": "frontend/public/course/en/architecture.md",
+      "sha256": "f067cd2d3c0a33f01559a45239b169630074cd125db712761e7bfbea62bd7c4c"
+    },
+    {
+      "path": "docs/en/security.md",
+      "sha256": "c203cbfcc9eb05fafa59871d22b40c8755550867226f3c1cab48ced350cdea64"
+    },
+    {
+      "path": "frontend/public/course/en/security.md",
+      "sha256": "c203cbfcc9eb05fafa59871d22b40c8755550867226f3c1cab48ced350cdea64"
+    },
+    {
+      "path": "docs/en/functional-network.md",
+      "sha256": "6d4eea56695b103822fa29f4a0fa2dc152bfd84077ede0a5d02577b860127425"
+    },
+    {
+      "path": "frontend/public/course/en/functional-network.md",
+      "sha256": "6d4eea56695b103822fa29f4a0fa2dc152bfd84077ede0a5d02577b860127425"
+    },
+    {
+      "path": "docs/en/functional-network-bug-hunt-04.md",
+      "sha256": "f43de916a6e20b18263e32b830d24d2a85271df4689a3aea5d6bbad865449dc1"
+    },
+    {
+      "path": "frontend/public/course/en/functional-network-bug-hunt-04.md",
+      "sha256": "f43de916a6e20b18263e32b830d24d2a85271df4689a3aea5d6bbad865449dc1"
+    },
+    {
+      "path": "docs/zh-CN/architecture.md",
+      "sha256": "ac14b6ce6a670715433190eba170c2c80275dfbd44355a8c613d0fa4d0815d7e"
+    },
+    {
+      "path": "frontend/public/course/zh-CN/architecture.md",
+      "sha256": "ac14b6ce6a670715433190eba170c2c80275dfbd44355a8c613d0fa4d0815d7e"
+    },
+    {
+      "path": "docs/zh-CN/security.md",
+      "sha256": "2acfbadb10483d661bcbc9f2c78f4f0378d729893909cdf0f85ac3ba7ec70b67"
+    },
+    {
+      "path": "frontend/public/course/zh-CN/security.md",
+      "sha256": "2acfbadb10483d661bcbc9f2c78f4f0378d729893909cdf0f85ac3ba7ec70b67"
+    },
+    {
+      "path": "docs/zh-CN/functional-network.md",
+      "sha256": "5342e2924106582c6f5abe808ffa62fd90448b7989d9dac7277c65142dc5626c"
+    },
+    {
+      "path": "frontend/public/course/zh-CN/functional-network.md",
+      "sha256": "5342e2924106582c6f5abe808ffa62fd90448b7989d9dac7277c65142dc5626c"
+    },
+    {
+      "path": "docs/zh-CN/functional-network-bug-hunt-04.md",
+      "sha256": "323bbf1cd1bd532359bb6a97f06e8862aad551955c03a073c82185e779461538"
+    },
+    {
+      "path": "frontend/public/course/zh-CN/functional-network-bug-hunt-04.md",
+      "sha256": "323bbf1cd1bd532359bb6a97f06e8862aad551955c03a073c82185e779461538"
+    }
+  ],
+  "preserved_evidence": [
+    {
+      "path": "docs/functional-network.json",
+      "sha256": "bc16ef895c1f7b9f9d0b5d9195499d4efcba09466b3c85bdfcc04d20006ad30d"
+    },
+    {
+      "path": "frontend/public/course/functional-network.json",
+      "sha256": "bc16ef895c1f7b9f9d0b5d9195499d4efcba09466b3c85bdfcc04d20006ad30d"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-01-backend.log",
+      "sha256": "03e1dd64ec0f870a4b0a95a89c1dad040db5538be33c6183fa9c1e5ead04109c"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-01-common.log",
+      "sha256": "93dfc2b81cf2fae4315b2fb4cf0ed2108afdbd58d16df1cc056b4433badf7cb4"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-01.json",
+      "sha256": "88e4bb77557b4cfa60559528e20717a26077f8c135ed0cd2ebb352f4663fbe7c"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-02-backend.log",
+      "sha256": "cdd2f53dd32d2d9f2223397214c636a5857d316c99041bc61044174874228dbc"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-02-common.log",
+      "sha256": "b48883e7832c04c7394e79fb7fc20cbe45eb4b7631734901a7d77b31a951979c"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-02-red.log",
+      "sha256": "72318ede656aa1e3bab7451c2f39b4a767e0c733f1567eae9debe5b1eec45311"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-02.json",
+      "sha256": "117c91a90548edde822bc714b09ceda6086cc4ecddb0d29021211bd3d51d402b"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-03-browser.log",
+      "sha256": "3e8eeb3c9e1f9cfdf568c61bcb2970748242cae7dc1262b518b5a55ea32a34b2"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-03-build.log",
+      "sha256": "cc26bc0c2a05f88d4b7caf7c62f0c9597b019c971de75b709a62f302a7a04023"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-03-common.log",
+      "sha256": "36794a5c9f575896271c50d2d9a6cc4d6004a729d27473b7d7289af8bd9d1f6d"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-03-frontend.log",
+      "sha256": "96d5e36ad2a070496d4a6f34d748f34705fe67aa7bd264114fb0ef5afeea2f01"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-03-red.log",
+      "sha256": "c2e8b8de0ce3bffd76e56a7bc037f3d9f76fea249b7389dd26e346f102f77719"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-03-ui.log",
+      "sha256": "36149f8ec8b63503ca969d29d5871c17f6c56cc56c72afae3cbf6698b96c4d84"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-03.json",
+      "sha256": "ed1d9d5e87424bb300bd69ade5ebda75e950e1a8a4f6776a5e88c14885558a9e"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/verification.json",
+      "sha256": "33a58e9da0fd45b1c3e71787a5b4f2b2d18e811800597d15973148f4ad258902"
+    },
+    {
+      "path": "docs/en/functional-network-bug-hunt-01.md",
+      "sha256": "e1fbe40de77679219a2e2f217534dfdd3b16aeb187e1f2a0cfc6bb6f9ecd6787"
+    },
+    {
+      "path": "frontend/public/course/en/functional-network-bug-hunt-01.md",
+      "sha256": "e1fbe40de77679219a2e2f217534dfdd3b16aeb187e1f2a0cfc6bb6f9ecd6787"
+    },
+    {
+      "path": "docs/en/functional-network-bug-hunt-02.md",
+      "sha256": "2696da5bd82d1b4de53429860f1ed8ab5ca9b76190e74e70736a9e847bb53a4e"
+    },
+    {
+      "path": "frontend/public/course/en/functional-network-bug-hunt-02.md",
+      "sha256": "2696da5bd82d1b4de53429860f1ed8ab5ca9b76190e74e70736a9e847bb53a4e"
+    },
+    {
+      "path": "docs/en/functional-network-bug-hunt-03.md",
+      "sha256": "5f0b4a915f5dc584194f89955f5344b5ddfe5dfd2dc3663886629a07278adf43"
+    },
+    {
+      "path": "frontend/public/course/en/functional-network-bug-hunt-03.md",
+      "sha256": "5f0b4a915f5dc584194f89955f5344b5ddfe5dfd2dc3663886629a07278adf43"
+    },
+    {
+      "path": "docs/zh-CN/functional-network-bug-hunt-01.md",
+      "sha256": "4fce45299e8b1b05beded5df29c79a4009bb8bf5bb16937682286529ae2283b4"
+    },
+    {
+      "path": "frontend/public/course/zh-CN/functional-network-bug-hunt-01.md",
+      "sha256": "4fce45299e8b1b05beded5df29c79a4009bb8bf5bb16937682286529ae2283b4"
+    },
+    {
+      "path": "docs/zh-CN/functional-network-bug-hunt-02.md",
+      "sha256": "bcd8779a605506a2aedffb46e64621fe5d5c8bfaa1947d0043ae6a641ea95aa9"
+    },
+    {
+      "path": "frontend/public/course/zh-CN/functional-network-bug-hunt-02.md",
+      "sha256": "bcd8779a605506a2aedffb46e64621fe5d5c8bfaa1947d0043ae6a641ea95aa9"
+    },
+    {
+      "path": "docs/zh-CN/functional-network-bug-hunt-03.md",
+      "sha256": "16e0b4680ea33adc310c89fa7e2696e374a590171ffeea73818e2cb0ca63ed8a"
+    },
+    {
+      "path": "frontend/public/course/zh-CN/functional-network-bug-hunt-03.md",
+      "sha256": "16e0b4680ea33adc310c89fa7e2696e374a590171ffeea73818e2cb0ca63ed8a"
+    }
+  ],
+  "evidence_logs": [
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-04-red.log",
+      "exit_code": 1,
+      "sha256": "d78f84b06ac2043d06788275df818e41a8036876b0b97cde99d8b626cce9ab73"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-04-followup-red-semantic.log",
+      "exit_code": 1,
+      "sha256": "18956952b9633b3dc24eae92b05aa1baf858e1e1e77d78bd177ff0f9410e6a19"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-04-followup-red-browser.log",
+      "exit_code": 1,
+      "sha256": "c663c692df371ced202ad8ed9ed75ea19c2b684109a5f8c3afaac9c0386b8e65"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-04-ui-before-sync.log",
+      "exit_code": 1,
+      "sha256": "2bca3622fd662f820120a5432a75edfb9c890b4a3b6752bcb637882b77ce091b"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-04-browser.log",
+      "exit_code": 0,
+      "sha256": "e43d262e08a50554d4a3357936c04d055932cf6c7e72809e014165be91b73ed5"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-04-frontend.log",
+      "exit_code": 0,
+      "sha256": "b3bb5ffd0d5e2b60d12796afdf918ce1ee8c024c785b468a38473873a766c007"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-04-ui.log",
+      "exit_code": 0,
+      "sha256": "e570071c3b4e37229d8601972d470ac2bcb4b334d0ea45f1ef9dca0b44ca9a30"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-04-build.log",
+      "exit_code": 0,
+      "sha256": "07989515ac637cb16b8b8a6bc7d94d2ef7f8d10cea0f3813c6bdf4bf0a7e75cd"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-04-backend.log",
+      "exit_code": 0,
+      "sha256": "d8f2337a6931ce89d9970915a79f5f0b4f379dd4735f014117de9a8aa462b798"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-04-headers-backend.log",
+      "exit_code": 0,
+      "sha256": "fae010fb19eeba2955d86c1e62eb5e1ce3e00f7fdfdbf7e6637c27aa2000079e"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-04-common.log",
+      "exit_code": 0,
+      "sha256": "059235fa08a2cebe8fe2548f2c6bedc11e9b846a3ad8fec293feb8fad71efcd4"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-04-map-drift.log",
+      "exit_code": 1,
+      "sha256": "36480037e23066d2ceaa0bc7b240f9c99fca5b88f97c262f897df686059eeec7"
+    }
+  ],
+  "prior_evidence_audit": {
+    "baseline_and_prior_artifacts": 9,
+    "historical_report_copies": 2
+  },
+  "actions": {
+    "version_bump": false,
+    "commit": false,
+    "push": false,
+    "deploy": false,
+    "live_engine_mutation": false
+  }
+}
