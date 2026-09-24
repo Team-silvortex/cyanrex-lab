@@ -26,9 +26,11 @@ node_modules/
 out/
 dist/
 coverage/
+*.tsbuildinfo
 /engine/data/
 scripts/bench-event-bus-compare-*.jsonl
 .run/perf/*.jsonl
+/.run/disk-cleanup-*.json
 
 # macOS filesystem metadata (invalid as source files on Linux)
 .DS_Store

@@ -1,0 +1,25 @@
+   Compiling cyanrex-engine v0.3.9 (/home/chiharukiryu/cdev/cyanrex-lab/engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 17.97s
+     Running unittests src/lib.rs (engine/target/debug/deps/cyanrex_engine-c01bd6d40079956c)
+
+running 17 tests
+test services::event_bus::tests::deletion::postgres_filtered_delete_preserves_uncached_rows_and_read_flags ... ok
+test services::event_bus::tests::persistence::followup::postgres_cancelled_admitted_settings_finish_before_later_publications ... ok
+test services::event_bus::tests::persistence::followup::postgres_cold_settings_read_cannot_overwrite_a_newer_cache_value ... ok
+test services::event_bus::tests::persistence::followup::postgres_drop_new_can_use_capacity_freed_by_deletion_immediately ... ok
+test services::event_bus::tests::persistence::followup::postgres_equal_timestamp_latest_page_uses_publication_order ... ok
+test services::event_bus::tests::persistence::followup::postgres_equal_timestamp_retention_does_not_sort_by_event_type ... ok
+test services::event_bus::tests::persistence::followup::postgres_failed_batch_releases_its_barrier_into_explicit_memory_fallback ... ok
+test services::event_bus::tests::persistence::followup::postgres_failed_replacement_does_not_lose_previous_durable_rows ... ok
+test services::event_bus::tests::persistence::followup::postgres_replacement_cannot_be_undone_by_queued_old_events ... ok
+test services::event_bus::tests::persistence::followup::postgres_trim_failure_rolls_back_settings_and_preserves_retained_rows ... ok
+test services::event_bus::tests::persistence::postgres_deletion_cannot_be_undone_by_its_pending_publications ... ok
+test services::event_bus::tests::persistence::postgres_deletion_invalidates_drop_new_capacity_cache ... ok
+test services::event_bus::tests::persistence::postgres_failed_settings_update_preserves_memory_and_previous_policy ... ok
+test services::event_bus::tests::persistence::postgres_mark_read_waits_for_previously_queued_events ... ok
+test services::event_bus::tests::persistence::postgres_publish_batch_really_persists_json_without_fallback ... ok
+test services::event_bus::tests::persistence::postgres_replacement_really_persists_and_marks_only_its_owner_read ... ok
+test services::event_bus::tests::persistence::postgres_retention_update_cannot_be_overridden_by_queued_old_settings ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 178 filtered out; finished in 2.03s
+

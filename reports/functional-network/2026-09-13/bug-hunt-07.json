@@ -1,0 +1,908 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-13",
+  "status": "fixed-and-scoped-regressions-passed",
+  "baseline": {
+    "version": "0.3.9",
+    "commit": "705fecc4415d678180c3a6b5f7eefb507f4788e6",
+    "branch": "main",
+    "worktree": "Clean at the start; passes 01–06 and the 0.3.9 release are already committed. This pass remains uncommitted and is not a version bump or push.",
+    "prior_pass": "reports/functional-network/2026-09-13/bug-hunt-06.json",
+    "inventory": {
+      "path": "docs/functional-network.json",
+      "version": "0.3.8",
+      "commit": "c26a529aecc0ab64d0a1743be10972e5d8ac137b",
+      "sha256": "bc16ef895c1f7b9f9d0b5d9195499d4efcba09466b3c85bdfcc04d20006ad30d",
+      "note": "Frozen historical inventory, not re-fingerprinted to hide cumulative drift."
+    }
+  },
+  "scope": {
+    "workflows": [
+      "F32",
+      "F34",
+      "F35"
+    ],
+    "related_workflows": [
+      "F33",
+      "F37"
+    ],
+    "edges": [
+      "E54",
+      "E55",
+      "E56",
+      "E57",
+      "E58",
+      "E61"
+    ],
+    "meaning": "History/filter/export to unread/read acknowledgement to scoped deletion and history/badge refresh.",
+    "exclusions": [
+      "Rust or persistence implementation changes",
+      "route/access/API wire/SDK/schema changes",
+      "real Engine/accounts/event collections/databases",
+      "deployment, SSH, LAN/TLS or kernel access"
+    ]
+  },
+  "findings": [
+    {
+      "id": "BH07-01",
+      "status": "fixed",
+      "summary": "A changed filter could commit old rows; invalid stored dates crashed query creation and relative windows retained expired display rows.",
+      "fix": "Validate filter/date/enumeration boundaries before subscribing, key rendered history by exact view, and age relative display once per second without extra reads or acknowledgements.",
+      "regressions": [
+        "filter changes never commit previous-scope rows under the new selection",
+        "invalid saved custom dates fail visibly instead of crashing the event page",
+        "rolling time windows retire expired visible rows even without new events",
+        "late snapshots and socket callbacks cannot replace a changed history filter",
+        "bounded history preserves repeated events and time ticks do not query or acknowledge repeatedly"
+      ]
+    },
+    {
+      "id": "BH07-02",
+      "status": "fixed",
+      "summary": "Export admitted duplicate dispatch, allowed obsolete downloads after context changes and waited without a complete-body deadline.",
+      "fix": "Single-flight exact filter/format ownership, abort and late-response guards, credentialed no-store/redirect-error transport, MIME/filename checks and released object URLs.",
+      "regressions": [
+        "export admission prevents same-turn duplicate downloads",
+        "changed export filters abort the download and ignore its late response",
+        "leaving the page aborts export and cannot trigger a late local download",
+        "event exports reject unexpected response content instead of downloading an HTML error",
+        "an export deadline covers a stalled body and returns control without a download or automatic retry",
+        "returning to an earlier filter cannot resurrect an aborted export's busy state"
+      ]
+    },
+    {
+      "id": "BH07-03",
+      "status": "fixed",
+      "summary": "Malformed truthy deletion confirmation/counts were accepted and obsolete deletion waiting was not cancelled on departure.",
+      "fix": "Accept only exact ok:true and nonnegative safe-integer deleted counts; preserve captured confirmation scope, separate authorization rejection from uncertain failure, never retry and invalidate old history/badge reads on confirmed success.",
+      "regressions": [
+        "unconfirmed deletion bodies cannot clear visible history or restart its stream",
+        "navigation cancels deletion waiting and obsolete success cannot refresh a new view",
+        "deletion has a complete waiting deadline and its failure never retries the mutation",
+        "explicit deletion authorization rejection is not mislabeled as transport uncertainty",
+        "confirmed deletion refreshes history and invalidates an older unread response"
+      ]
+    },
+    {
+      "id": "BH07-04",
+      "status": "fixed",
+      "summary": "Read acknowledgement failures were silent, pending mutations could overlap and request waiting survived departure.",
+      "fix": "Filter-bound debounced single-flight acknowledgement with exact ok:true, bounded waiting and visible manual retry. Disclose the unchanged ALL-current-account event scope.",
+      "regressions": [
+        "failed read acknowledgements remain visible and do not silently retry on live events",
+        "pending read acknowledgement is single-flight and later live arrivals request one follow-up",
+        "read acknowledgement failure requires a manual retry and an explicit true response",
+        "leaving before acknowledgement debounce sends no mark-read mutation",
+        "leaving with a pending acknowledgement aborts it and ignores a late success",
+        "changing filters cancels a pending read acknowledgement from the previous view",
+        "changing filters before read debounce cannot acknowledge the obsolete snapshot"
+      ]
+    },
+    {
+      "id": "BH07-05",
+      "status": "fixed",
+      "summary": "Unread polls overlapped, accepted malformed counts and silently concealed failed reads.",
+      "fix": "Nonoverlapping completion-based polls with a ten-second complete-body deadline, strict count parsing, an unavailable badge and current-request guards against older post-mutation reads.",
+      "regressions": [
+        "unread polling never overlaps a pending request and cancels it on page exit",
+        "malformed unread counts show unavailable rather than a false zero or numeric badge",
+        "unread timeout is visible and a later nonoverlapping poll can recover",
+        "confirmed deletion refreshes history and invalidates an older unread response"
+      ]
+    }
+  ],
+  "tdd": {
+    "original_browser": {
+      "tests": 13,
+      "passed": 0,
+      "failed": 13,
+      "exit_code": 1,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-07-red-browser.log",
+      "source": "Unmodified 0.3.9 product code."
+    },
+    "initial_implementation": {
+      "tests": 13,
+      "passed": 11,
+      "failed": 2,
+      "exit_code": 1,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-07-browser-before-settle.log",
+      "note": "Two error-view assertions ran before asynchronous DOM settlement. The fixture now advances the paused clock and waits for the actual alert; this observation-timing correction did not require a product change."
+    },
+    "expanded_browser": {
+      "tests": 28,
+      "passed": 28,
+      "failed": 0,
+      "exit_code": 0,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-07-browser-expanded.log"
+    },
+    "followup_red": {
+      "tests": 2,
+      "passed": 0,
+      "failed": 2,
+      "exit_code": 1,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-07-followup-red.log",
+      "note": "The first refactor bound acknowledgement only to navigation, losing old filter timer cleanup and failing to cancel in-flight work. Passing the complete filter context fixes both; this is a follow-up regression, not another original finding."
+    },
+    "final_event_component_browser": {
+      "tests": 30,
+      "passed": 30,
+      "failed": 0,
+      "exit_code": 0,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-07-browser.log",
+      "note": "Included in the combined 112-case final component/browser run."
+    }
+  },
+  "new_tests": {
+    "event_component_browser": 30,
+    "portable_event_page": 12,
+    "production_event_page": 3,
+    "total": 45,
+    "note": "Already included in final suite totals; not additional passes to sum again."
+  },
+  "checks": [
+    {
+      "name": "event page and previous component/controller browser suites",
+      "command": "node --test frontend/tests/eventPage.browser.mjs frontend/tests/breakpointLifecycle.browser.mjs frontend/tests/runtimeLifecycle.browser.mjs frontend/tests/editorIntelligence.browser.mjs frontend/tests/compilerDiagnostics.browser.mjs",
+      "status": "passed",
+      "passed": 112,
+      "failed": 0,
+      "skipped": 0,
+      "exit_code": 0,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-07-browser.log",
+      "boundary": "30 new + 82 previous. Real React 19 StrictMode and event/Sidebar/confirmation components; synthetic Next routing, page storage, HTTP/WebSockets and paused clock."
+    },
+    {
+      "name": "all portable frontend tests",
+      "command": "node --experimental-strip-types --test frontend/tests/*.test.mjs",
+      "status": "passed",
+      "passed": 93,
+      "failed": 0,
+      "skipped": 0,
+      "exit_code": 0,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-07-frontend.log",
+      "boundary": "12 new + 81 previous. Strict filters/responses, request cancellation and complete-body deadline, private transport and format-bound export decoding."
+    },
+    {
+      "name": "production event/action/breakpoint/runtime/logout UI",
+      "command": "node --test frontend/tests/eventActions.browser.mjs frontend/tests/breakpointSafety.browser.mjs frontend/tests/eventStream.browser.mjs frontend/tests/runtimeSafety.browser.mjs frontend/tests/actionSafety.browser.mjs frontend/tests/authSession.browser.mjs",
+      "status": "passed",
+      "passed": 32,
+      "failed": 0,
+      "skipped": 0,
+      "exit_code": 0,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-07-ui.log",
+      "boundary": "3 new + 29 previous. Real built Next.js/Monaco at owned http://127.0.0.1:3378, native download of known synthetic JSON bytes, four locales at 320 px. All Engine HTTP/WebSocket requests mocked; unexpected external HTTP blocked."
+    },
+    {
+      "name": "existing authenticated event WebSocket routes",
+      "command": "cargo test --manifest-path engine/Cargo.toml --locked --offline --test routes_tdd event_ -- --test-threads=1",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "ignored": 0,
+      "filtered_out": 82,
+      "exit_code": 0,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-07-backend.log",
+      "boundary": "Isolated loopback routes and in-memory fixtures test session/Origin, owner isolation, raw frames and overload close. No deployed Engine."
+    },
+    {
+      "name": "existing event module boundaries",
+      "command": "cargo test --manifest-path engine/Cargo.toml --locked --offline --test module_boundaries_tdd event_ -- --test-threads=1",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "ignored": 0,
+      "filtered_out": 15,
+      "exit_code": 0,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-07-backend.log",
+      "boundary": "In-memory owner-bound history/export/unread, scoped deletion and invalid-filter rejection, retention/settings/overflow policy. No external database."
+    },
+    {
+      "name": "production frontend build",
+      "command": "NEXT_TELEMETRY_DISABLED=1 NEXT_PUBLIC_ENGINE_URL=http://localhost:8080 node node_modules/next/dist/bin/next build",
+      "cwd": "frontend",
+      "status": "passed",
+      "exit_code": 0,
+      "generated_routes": 18,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-07-build.log",
+      "note": "No dependency installation. NEXT_PUBLIC_ENGINE_URL is the route-mock target, not authority to call a live Engine."
+    },
+    {
+      "name": "standalone TypeScript",
+      "command": "node frontend/node_modules/typescript/bin/tsc --noEmit --incremental false --project frontend/tsconfig.json",
+      "status": "passed",
+      "exit_code": 0,
+      "output": ""
+    },
+    {
+      "name": "common quality gate",
+      "command": "scripts/quality-gate.sh --format-only",
+      "status": "passed",
+      "passed": 65,
+      "failed": 0,
+      "skipped": 0,
+      "exit_code": 0,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-07-common.log",
+      "includes": [
+        "file lengths",
+        "0.3.9 version parity",
+        "course mirrors",
+        "64 OpenAPI paths / 68 Engine operations / 63 SDK operations / 85 schemas",
+        "API compatibility with 0.3.0 and SDK public surface",
+        "isolated Runner/distribution/kernel-smoke/release-candidate tool checks",
+        "Rust formatting"
+      ],
+      "note": "Sanitized environment with DATABASE_URL and all CYANREX_* variables removed. Tool fixtures are not live kernel, dependency-audit or SDK runtime acceptance."
+    },
+    {
+      "name": "functional network drift",
+      "command": "node scripts/check-functional-network.mjs",
+      "status": "expected-baseline-drift",
+      "expected_exit_code": 1,
+      "exit_code": 1,
+      "source_drift_count": 19,
+      "source_drifts": [
+        "engine/Cargo.toml",
+        "engine/openapi/openapi.json",
+        "engine/src/routes/ebpf/ringbuf.inc.rs",
+        "engine/src/routes/learning.rs",
+        "engine/src/routes/runner_job.rs",
+        "engine/src/services/learning_store.rs",
+        "engine/src/services/learning_store/persistence.rs",
+        "engine/src/services/runner_agent_client.rs",
+        "engine/src/services/runner_job_queue.rs",
+        "frontend/pages/ebpf.tsx",
+        "frontend/pages/events.tsx",
+        "frontend/src/components/SidebarLayout.tsx",
+        "frontend/src/features/ebpf/useBreakpointHitStream.ts",
+        "frontend/src/features/ebpf/useCompilerDiagnostics.ts",
+        "frontend/src/features/ebpf/useEbpfPageController.ts",
+        "frontend/src/features/ebpf/useEbpfSafetyActions.ts",
+        "frontend/src/features/events/eventStream.ts",
+        "frontend/src/utils/cEbpfIntelligence.ts",
+        "scripts/quality-gate.sh"
+      ],
+      "version_drift": {
+        "snapshot": "0.3.8",
+        "source": "0.3.9"
+      },
+      "log": "reports/functional-network/2026-09-13/bug-hunt-07-map-drift.log",
+      "note": "19 cumulative source drifts plus the existing version change; no API/access/catalog/page/count drift. Of these, this pass newly changes events.tsx and SidebarLayout.tsx; the gate already differed. Original map fingerprints are unchanged."
+    },
+    {
+      "name": "historical evidence preservation",
+      "status": "passed",
+      "files": 76,
+      "baseline_commit": "705fecc4415d678180c3a6b5f7eefb507f4788e6",
+      "note": "Original map and course copy, bilingual passes 01–06 and course mirrors, and all existing functional-network reports/logs match baseline bytes; hashes below."
+    },
+    {
+      "name": "diff whitespace",
+      "command": "git diff --check",
+      "status": "passed",
+      "exit_code": 0,
+      "note": "Checks tracked source diff. New evidence logs retain terminal output and are not source-format acceptance."
+    }
+  ],
+  "integration": {
+    "portable_tests_in_ci": true,
+    "portable_tests_in_quality_gate": true,
+    "browser_tests_optional": true,
+    "new_dependencies": false,
+    "version_bump": false,
+    "commit": false,
+    "push": false,
+    "remote_ci_run": false
+  },
+  "runtimes": {
+    "node": "v24.19.0",
+    "react": "19.0.0",
+    "next": "15.5.24",
+    "monaco": "0.55.1",
+    "typescript": "5.8.3",
+    "chromium": "Google Chrome 153.0.8010.36",
+    "note": "Existing CI uses Node 22; remote CI was not executed for uncommitted source."
+  },
+  "test_environment": {
+    "backend": "Focused subprocesses remove DATABASE_URL and every CYANREX_* variable without printing values. CARGO_NET_OFFLINE=true; fixtures supply their own role/registration config and memory accounts.",
+    "browser": "Installed Playwright/Chrome and temporary loopback frontend. HTTP/WS, credentials, page storage, event bytes and accounts are synthetic; no installed account/session/event data used.",
+    "synthetic_callbacks": "Component fixtures deliberately permit late callbacks after abort/unsubscribe to test invalidation. Production cases use native fetch/download and real Next/Monaco with Engine routes intercepted.",
+    "logs": "Separate original RED, observation-timing iteration, expanded green, follow-up RED and final logs; no old evidence overwritten."
+  },
+  "limitations": [
+    "History remains a best-effort 200-row view, not an atomic snapshot/live join or durable replay.",
+    "Relative aging is a one-second active-browser display tick, not server retention or reliable frozen-browser wall time; it does not dispatch queries or acknowledgements.",
+    "Export remains a separate full-history query and is not an exact copy of displayed rows.",
+    "Export MIME/filename checks do not validate arbitrary payload contents, sanitize spreadsheet formulas or add a byte budget.",
+    "Export/deletion waiting is 20 seconds and unread/read acknowledgement waiting is ten seconds, including body consumption; cancellation cannot undo a dispatched server mutation or bound its transaction duration.",
+    "Read acknowledgement still marks ALL events of the current account, including filtered-out and undisplayed records. No per-record IDs, cutoff or durable confirmation guarantee added.",
+    "Acknowledgement failure stops automatic retries in the same scope; explicit retry or a new filter/navigation context can try again.",
+    "Deletion retains typed confirmation, captured exact category/severity/time scope, existing owner/CSRF boundary, and no automatic retry or broadened failed query.",
+    "A confirmed deletion response is the existing Engine acknowledgement, not new proof of cross-process SQL durability.",
+    "Existing backend event tests are memory/loopback boundary regressions; full Rust, SDK runtime, database, deployment and kernel acceptance remain outside this pass.",
+    "Earlier release and acceptance results remain historical and are not included in current-source or release-artifact acceptance."
+  ],
+  "not_run": [
+    "full Rust/full quality gate",
+    "external or real account/event/database operations",
+    ".env reads or edits",
+    "live Engine/Agent/Clang",
+    "LAN/TLS/SSH deployment",
+    "kernel loading/trace collection",
+    "SDK runtime",
+    "dependency audit",
+    "benchmark",
+    "new CI run"
+  ],
+  "cleanup": {
+    "temporary_ui_server_stopped": true,
+    "temporary_browsers_closed": true,
+    "temporary_fixture_bundles_removed": true,
+    "temporary_ws_routers_aborted": true,
+    "typescript_generated_cache_clean": true,
+    "real_data_touched": false
+  },
+  "next": {
+    "workflows": [
+      "F36",
+      "F32",
+      "F34",
+      "F35"
+    ],
+    "focus": "Retention/overflow to event storage and asynchronous persistence boundaries, starting with isolated fault and queue fixtures. Inspection targets only, not confirmed bugs or permission to delete real events."
+  },
+  "candidate_sources": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "3117eca6b05fcad76d4828a3d16052d34a6af972e428ee67f1b59d8b39642178"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "sha256": "80b09b3cfb33add6c1ec4d38ab83555c4bbfabf4163dc05d6ee913bd8b518479"
+    },
+    {
+      "path": "docs/en/architecture.md",
+      "sha256": "580335c98ab6e25780022ae6064ff27276939f63df0ac64eb7f4affef7ff34d9"
+    },
+    {
+      "path": "docs/en/event-stream.md",
+      "sha256": "106d258ff3578c86474e933f1431fd8290f4791614e9dc8134151a9e172ce9f1"
+    },
+    {
+      "path": "docs/en/functional-network-bug-hunt-07.md",
+      "sha256": "2b8ec66a371feb851c909d3e3c99ee55a0292efa916fe57bde87b6aa0aeecb2c"
+    },
+    {
+      "path": "docs/en/functional-network.md",
+      "sha256": "39740816c397c64f2b4b3fdc9b3a2f79b659511d546d7e10ae55ce129e1bc451"
+    },
+    {
+      "path": "docs/en/security.md",
+      "sha256": "5b684d996c848078245ddf0d6131d7b1e52ee608277504e1402969fcfb446bdc"
+    },
+    {
+      "path": "docs/zh-CN/architecture.md",
+      "sha256": "cc96b8a0e5d76c400c66cd7cce1d735656dcfbd170fe571f8453c7b0c536cffb"
+    },
+    {
+      "path": "docs/zh-CN/event-stream.md",
+      "sha256": "a1f9a7c5e0cb195fd463d1c8a9e1f9405b8b421b4ba30b31657383ae35fc7a0f"
+    },
+    {
+      "path": "docs/zh-CN/functional-network-bug-hunt-07.md",
+      "sha256": "f69dcda94470dd31c4e1d605e58aee425cf2ba593e5b1c48e41a159b24c962a3"
+    },
+    {
+      "path": "docs/zh-CN/functional-network.md",
+      "sha256": "c9c75da3b7ce969305d6ad31d4a4ebbf5a6aa231598433921bd2c1774128d307"
+    },
+    {
+      "path": "docs/zh-CN/security.md",
+      "sha256": "fc7c75d4a834d932046e1a1cca26a179e0ed175faa3a629e872ccba45956d061"
+    },
+    {
+      "path": "frontend/README.md",
+      "sha256": "9dcf0ac4d62a77e205ff531c07129c167e4b16a696e6221e07d774a82ee6c2ec"
+    },
+    {
+      "path": "frontend/package.json",
+      "sha256": "125cccec9488ecffd8b98a93db2f4412a11aa744fe988a6c7190a213c65bf83d"
+    },
+    {
+      "path": "frontend/pages/events.tsx",
+      "sha256": "1cd2e49e26c999b95a91a327b149918a39f87739b2acac66ce1dffde7d2adb75"
+    },
+    {
+      "path": "frontend/public/course/en/architecture.md",
+      "sha256": "580335c98ab6e25780022ae6064ff27276939f63df0ac64eb7f4affef7ff34d9"
+    },
+    {
+      "path": "frontend/public/course/en/event-stream.md",
+      "sha256": "106d258ff3578c86474e933f1431fd8290f4791614e9dc8134151a9e172ce9f1"
+    },
+    {
+      "path": "frontend/public/course/en/functional-network-bug-hunt-07.md",
+      "sha256": "2b8ec66a371feb851c909d3e3c99ee55a0292efa916fe57bde87b6aa0aeecb2c"
+    },
+    {
+      "path": "frontend/public/course/en/functional-network.md",
+      "sha256": "39740816c397c64f2b4b3fdc9b3a2f79b659511d546d7e10ae55ce129e1bc451"
+    },
+    {
+      "path": "frontend/public/course/en/security.md",
+      "sha256": "5b684d996c848078245ddf0d6131d7b1e52ee608277504e1402969fcfb446bdc"
+    },
+    {
+      "path": "frontend/public/course/zh-CN/architecture.md",
+      "sha256": "cc96b8a0e5d76c400c66cd7cce1d735656dcfbd170fe571f8453c7b0c536cffb"
+    },
+    {
+      "path": "frontend/public/course/zh-CN/event-stream.md",
+      "sha256": "a1f9a7c5e0cb195fd463d1c8a9e1f9405b8b421b4ba30b31657383ae35fc7a0f"
+    },
+    {
+      "path": "frontend/public/course/zh-CN/functional-network-bug-hunt-07.md",
+      "sha256": "f69dcda94470dd31c4e1d605e58aee425cf2ba593e5b1c48e41a159b24c962a3"
+    },
+    {
+      "path": "frontend/public/course/zh-CN/functional-network.md",
+      "sha256": "c9c75da3b7ce969305d6ad31d4a4ebbf5a6aa231598433921bd2c1774128d307"
+    },
+    {
+      "path": "frontend/public/course/zh-CN/security.md",
+      "sha256": "fc7c75d4a834d932046e1a1cca26a179e0ed175faa3a629e872ccba45956d061"
+    },
+    {
+      "path": "frontend/src/components/SidebarLayout.tsx",
+      "sha256": "048a6a99d38c0de6f36aaaaaa5d68a0e8b149da1e237a1ace7f8cef901ad3bf0"
+    },
+    {
+      "path": "frontend/src/features/events/eventFilters.ts",
+      "sha256": "44debe8341b44195af5a5c47519ce7e92c099b42ea5fd4f5426c9539ef4653a1"
+    },
+    {
+      "path": "frontend/src/features/events/eventRequest.ts",
+      "sha256": "5628dc5df0b67c0755993886fe297e6d679c0432b12fc04cc0345763dd85ae65"
+    },
+    {
+      "path": "frontend/src/features/events/useEventActions.ts",
+      "sha256": "45da09d8fe3213081ad00a45ea36b258c85f6761c90f664fdfc11de23f7ef1dd"
+    },
+    {
+      "path": "frontend/src/features/events/useEventHistory.ts",
+      "sha256": "e3758b7399cc0a76f6c26a7a445a35f27fd7d2a46ad18d285400673570457332"
+    },
+    {
+      "path": "frontend/src/features/events/useEventReadAcknowledgement.ts",
+      "sha256": "0e41c97d75df4b0ab6f06d37412277402744b5f23cac9bf9779eda6a412062a5"
+    },
+    {
+      "path": "frontend/src/features/events/useUnreadEvents.ts",
+      "sha256": "666f70d7bd9292f14bc374c67ced36b345754990a48ae5f437d078c5a8d2724d"
+    },
+    {
+      "path": "frontend/src/i18n/locales/en.ts",
+      "sha256": "8e18fd3d53e87bad3c6bb252b0fb7350a804765142774ac5eca9becf814b4da5"
+    },
+    {
+      "path": "frontend/src/i18n/locales/es.ts",
+      "sha256": "415489b89c16ffbfde8b3231780b2483bffcb67e16cdd485c672d249f2c6655c"
+    },
+    {
+      "path": "frontend/src/i18n/locales/ja.ts",
+      "sha256": "a88ea6bb8a4b26ae2b9d63ff14952987d6c4ef447aa18a81e99c34b0dcfffa9b"
+    },
+    {
+      "path": "frontend/src/i18n/locales/zh_cn.ts",
+      "sha256": "ff5731fbbe9ad8bfb76e66ec8b952e321646ac41f74f883692a6552042da8d91"
+    },
+    {
+      "path": "frontend/tests/eventActions.browser.mjs",
+      "sha256": "8431dc835af039c362b9f8382c287a2c6bf224ebd219443fa4b1466e767ca533"
+    },
+    {
+      "path": "frontend/tests/eventPage.browser.mjs",
+      "sha256": "cd39b25830357b9f8df5490e905172125e8fbed95b2f22107aeb18e75f0c723a"
+    },
+    {
+      "path": "frontend/tests/eventPage.test.mjs",
+      "sha256": "8a394fbd6525a93df1d98578f7f73b1b0f97eb2b559bfd5f5d8e9c23869b676d"
+    },
+    {
+      "path": "frontend/tests/fixtures/eventPage.mjs",
+      "sha256": "ca3d5a0176c435c331a6139514020a5b083401a11850fd2ef7cb5271237068db"
+    },
+    {
+      "path": "frontend/tests/fixtures/eventPageStubs.mjs",
+      "sha256": "ce723b3568517e4e6305d6c8d379ae08024475ff98cef2dce8b3d26e854371ba"
+    },
+    {
+      "path": "frontend/tests/helpers/actionSafetyBrowser.mjs",
+      "sha256": "880c6c08c9ba1248ce75db8cf7638eda34636cf8f95a004f5db89f23204d5572"
+    },
+    {
+      "path": "frontend/tests/helpers/compilerDiagnosticsBrowser.mjs",
+      "sha256": "371a3581a35dba728997106b6b45216d9a386cc25d5dd55db5edfb0094d17d4c"
+    },
+    {
+      "path": "frontend/tests/helpers/typescript-loader.cjs",
+      "sha256": "b3bc4a09fc1faa481ebc9a62c22437bf09ce40f731c8f50e71a3606acb82b1cf"
+    },
+    {
+      "path": "scripts/quality-gate.sh",
+      "sha256": "8dd8b874d9f0ff3fcbe2b4ce7e0174cb8a59c84c423bbbd0dc25626fcc7e3bff"
+    }
+  ],
+  "evidence_logs": [
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-07-backend.log",
+      "sha256": "dac92b9856d78d0aaa166f8a9d00ad564d4ce4e3cefb70eb948f1600cb323870"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-07-browser-before-settle.log",
+      "sha256": "578dc1ac759167d8dbceae6bfcc33823b77cbcdfa9fc40319e7c8ee39cc8f0d6"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-07-browser-expanded.log",
+      "sha256": "2c7adb9b6d564847c90ee4b0ab5eed97b7916d5164fccae0a3d0cc1467c4488c"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-07-browser.log",
+      "sha256": "61eefdae2f26e0ab6a604f45c885b05ac1c8620912c4b26f814093de17237d65"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-07-build.log",
+      "sha256": "e377d70056da7dc6dbe8122764c78d2e50be1089d3439fc5fea17faa8fd57f3d"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-07-common.log",
+      "sha256": "4fdacc3a85ee490872c6abe642e1c4bd104f63259705fd9ad227ac824b468850"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-07-followup-red.log",
+      "sha256": "8ea808963dcc95517ed6175916c062985df8035f963441cd1ef857adcd349bd6"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-07-frontend.log",
+      "sha256": "a88b74e9306c830711fc8c5905012e57f0b7302b40f97b188cf6b23e6dcd7286"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-07-map-drift.log",
+      "sha256": "4d5135f8018e7e580641c4130284fdc59a79165eb0ee9bdcbf7dc5ed38b748d0"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-07-red-browser.log",
+      "sha256": "c7a4cc6f936470c2f8e75d9e3fdcce4feddeb085ae0c6511cb42e2a430fe9709"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-07-ui.log",
+      "sha256": "5104dc402f64ab6aefd583ca0ce2e3e6eb296f320960d842d4fb1acf9498dcce"
+    }
+  ],
+  "preserved_evidence": [
+    {
+      "path": "docs/en/functional-network-bug-hunt-01.md",
+      "sha256": "e1fbe40de77679219a2e2f217534dfdd3b16aeb187e1f2a0cfc6bb6f9ecd6787"
+    },
+    {
+      "path": "docs/en/functional-network-bug-hunt-02.md",
+      "sha256": "2696da5bd82d1b4de53429860f1ed8ab5ca9b76190e74e70736a9e847bb53a4e"
+    },
+    {
+      "path": "docs/en/functional-network-bug-hunt-03.md",
+      "sha256": "5f0b4a915f5dc584194f89955f5344b5ddfe5dfd2dc3663886629a07278adf43"
+    },
+    {
+      "path": "docs/en/functional-network-bug-hunt-04.md",
+      "sha256": "f43de916a6e20b18263e32b830d24d2a85271df4689a3aea5d6bbad865449dc1"
+    },
+    {
+      "path": "docs/en/functional-network-bug-hunt-05.md",
+      "sha256": "ecfd44485ad23200706f7d176f6704ec46effe8a30219f2a5c7e05ce5cfc4074"
+    },
+    {
+      "path": "docs/en/functional-network-bug-hunt-06.md",
+      "sha256": "31a15dce993a40f3f34fc0344f9cd9284bc18c59d5af362b853dff0b2882529b"
+    },
+    {
+      "path": "docs/functional-network.json",
+      "sha256": "bc16ef895c1f7b9f9d0b5d9195499d4efcba09466b3c85bdfcc04d20006ad30d"
+    },
+    {
+      "path": "docs/zh-CN/functional-network-bug-hunt-01.md",
+      "sha256": "4fce45299e8b1b05beded5df29c79a4009bb8bf5bb16937682286529ae2283b4"
+    },
+    {
+      "path": "docs/zh-CN/functional-network-bug-hunt-02.md",
+      "sha256": "bcd8779a605506a2aedffb46e64621fe5d5c8bfaa1947d0043ae6a641ea95aa9"
+    },
+    {
+      "path": "docs/zh-CN/functional-network-bug-hunt-03.md",
+      "sha256": "16e0b4680ea33adc310c89fa7e2696e374a590171ffeea73818e2cb0ca63ed8a"
+    },
+    {
+      "path": "docs/zh-CN/functional-network-bug-hunt-04.md",
+      "sha256": "323bbf1cd1bd532359bb6a97f06e8862aad551955c03a073c82185e779461538"
+    },
+    {
+      "path": "docs/zh-CN/functional-network-bug-hunt-05.md",
+      "sha256": "e439cc5bab2a34e0463bbf70b15c796230f1105b9072ef8f704093d985209231"
+    },
+    {
+      "path": "docs/zh-CN/functional-network-bug-hunt-06.md",
+      "sha256": "94cae515fa1b969bc68ec302da629da783577073a0e73befbd90e88022c9b650"
+    },
+    {
+      "path": "frontend/public/course/en/functional-network-bug-hunt-01.md",
+      "sha256": "e1fbe40de77679219a2e2f217534dfdd3b16aeb187e1f2a0cfc6bb6f9ecd6787"
+    },
+    {
+      "path": "frontend/public/course/en/functional-network-bug-hunt-02.md",
+      "sha256": "2696da5bd82d1b4de53429860f1ed8ab5ca9b76190e74e70736a9e847bb53a4e"
+    },
+    {
+      "path": "frontend/public/course/en/functional-network-bug-hunt-03.md",
+      "sha256": "5f0b4a915f5dc584194f89955f5344b5ddfe5dfd2dc3663886629a07278adf43"
+    },
+    {
+      "path": "frontend/public/course/en/functional-network-bug-hunt-04.md",
+      "sha256": "f43de916a6e20b18263e32b830d24d2a85271df4689a3aea5d6bbad865449dc1"
+    },
+    {
+      "path": "frontend/public/course/en/functional-network-bug-hunt-05.md",
+      "sha256": "ecfd44485ad23200706f7d176f6704ec46effe8a30219f2a5c7e05ce5cfc4074"
+    },
+    {
+      "path": "frontend/public/course/en/functional-network-bug-hunt-06.md",
+      "sha256": "31a15dce993a40f3f34fc0344f9cd9284bc18c59d5af362b853dff0b2882529b"
+    },
+    {
+      "path": "frontend/public/course/functional-network.json",
+      "sha256": "bc16ef895c1f7b9f9d0b5d9195499d4efcba09466b3c85bdfcc04d20006ad30d"
+    },
+    {
+      "path": "frontend/public/course/zh-CN/functional-network-bug-hunt-01.md",
+      "sha256": "4fce45299e8b1b05beded5df29c79a4009bb8bf5bb16937682286529ae2283b4"
+    },
+    {
+      "path": "frontend/public/course/zh-CN/functional-network-bug-hunt-02.md",
+      "sha256": "bcd8779a605506a2aedffb46e64621fe5d5c8bfaa1947d0043ae6a641ea95aa9"
+    },
+    {
+      "path": "frontend/public/course/zh-CN/functional-network-bug-hunt-03.md",
+      "sha256": "16e0b4680ea33adc310c89fa7e2696e374a590171ffeea73818e2cb0ca63ed8a"
+    },
+    {
+      "path": "frontend/public/course/zh-CN/functional-network-bug-hunt-04.md",
+      "sha256": "323bbf1cd1bd532359bb6a97f06e8862aad551955c03a073c82185e779461538"
+    },
+    {
+      "path": "frontend/public/course/zh-CN/functional-network-bug-hunt-05.md",
+      "sha256": "e439cc5bab2a34e0463bbf70b15c796230f1105b9072ef8f704093d985209231"
+    },
+    {
+      "path": "frontend/public/course/zh-CN/functional-network-bug-hunt-06.md",
+      "sha256": "94cae515fa1b969bc68ec302da629da783577073a0e73befbd90e88022c9b650"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-01-backend.log",
+      "sha256": "03e1dd64ec0f870a4b0a95a89c1dad040db5538be33c6183fa9c1e5ead04109c"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-01-common.log",
+      "sha256": "93dfc2b81cf2fae4315b2fb4cf0ed2108afdbd58d16df1cc056b4433badf7cb4"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-01.json",
+      "sha256": "88e4bb77557b4cfa60559528e20717a26077f8c135ed0cd2ebb352f4663fbe7c"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-02-backend.log",
+      "sha256": "cdd2f53dd32d2d9f2223397214c636a5857d316c99041bc61044174874228dbc"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-02-common.log",
+      "sha256": "b48883e7832c04c7394e79fb7fc20cbe45eb4b7631734901a7d77b31a951979c"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-02-red.log",
+      "sha256": "72318ede656aa1e3bab7451c2f39b4a767e0c733f1567eae9debe5b1eec45311"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-02.json",
+      "sha256": "117c91a90548edde822bc714b09ceda6086cc4ecddb0d29021211bd3d51d402b"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-03-browser.log",
+      "sha256": "3e8eeb3c9e1f9cfdf568c61bcb2970748242cae7dc1262b518b5a55ea32a34b2"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-03-build.log",
+      "sha256": "cc26bc0c2a05f88d4b7caf7c62f0c9597b019c971de75b709a62f302a7a04023"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-03-common.log",
+      "sha256": "36794a5c9f575896271c50d2d9a6cc4d6004a729d27473b7d7289af8bd9d1f6d"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-03-frontend.log",
+      "sha256": "96d5e36ad2a070496d4a6f34d748f34705fe67aa7bd264114fb0ef5afeea2f01"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-03-red.log",
+      "sha256": "c2e8b8de0ce3bffd76e56a7bc037f3d9f76fea249b7389dd26e346f102f77719"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-03-ui.log",
+      "sha256": "36149f8ec8b63503ca969d29d5871c17f6c56cc56c72afae3cbf6698b96c4d84"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-03.json",
+      "sha256": "ed1d9d5e87424bb300bd69ade5ebda75e950e1a8a4f6776a5e88c14885558a9e"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-04-backend.log",
+      "sha256": "d8f2337a6931ce89d9970915a79f5f0b4f379dd4735f014117de9a8aa462b798"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-04-browser.log",
+      "sha256": "e43d262e08a50554d4a3357936c04d055932cf6c7e72809e014165be91b73ed5"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-04-build.log",
+      "sha256": "07989515ac637cb16b8b8a6bc7d94d2ef7f8d10cea0f3813c6bdf4bf0a7e75cd"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-04-common.log",
+      "sha256": "059235fa08a2cebe8fe2548f2c6bedc11e9b846a3ad8fec293feb8fad71efcd4"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-04-followup-red-browser.log",
+      "sha256": "c663c692df371ced202ad8ed9ed75ea19c2b684109a5f8c3afaac9c0386b8e65"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-04-followup-red-semantic.log",
+      "sha256": "18956952b9633b3dc24eae92b05aa1baf858e1e1e77d78bd177ff0f9410e6a19"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-04-frontend.log",
+      "sha256": "b3bb5ffd0d5e2b60d12796afdf918ce1ee8c024c785b468a38473873a766c007"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-04-headers-backend.log",
+      "sha256": "fae010fb19eeba2955d86c1e62eb5e1ce3e00f7fdfdbf7e6637c27aa2000079e"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-04-map-drift.log",
+      "sha256": "36480037e23066d2ceaa0bc7b240f9c99fca5b88f97c262f897df686059eeec7"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-04-red.log",
+      "sha256": "d78f84b06ac2043d06788275df818e41a8036876b0b97cde99d8b626cce9ab73"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-04-ui-before-sync.log",
+      "sha256": "2bca3622fd662f820120a5432a75edfb9c890b4a3b6752bcb637882b77ce091b"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-04-ui.log",
+      "sha256": "e570071c3b4e37229d8601972d470ac2bcb4b334d0ea45f1ef9dca0b44ca9a30"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-04.json",
+      "sha256": "f7a80c030439021ebef57269b011af1b8167309e276668570939c792e3fad189"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-05-backend.log",
+      "sha256": "07d883fae25ef6b2310a849860ae929f0dc67a79fc6bfc730bfe90017ab99c02"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-05-browser.log",
+      "sha256": "70c26a3daf6a117b88181cad177d9b426db0f44aaaf71c896b8ec43174f1ac8b"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-05-build.log",
+      "sha256": "467ff470ee47939dc9b6c6f4023638921f0f0b55a275ce0bdac29d87c185e71e"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-05-common.log",
+      "sha256": "878b12a45396647185442bf20225e87790a2794872a31e5c4a06fc5e4b3eac3d"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-05-frontend.log",
+      "sha256": "0414e29c1ec5b81db71109e76df784de471719e86180312c362d07701a714fd7"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-05-map-drift.log",
+      "sha256": "ab4fab76dee70e68c741ef27f14280860ecec5ee9554662f58b2d99359b8c4c8"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-05-preservation-red.log",
+      "sha256": "f6540aac0d26c154519d6869a47aacd28c666c2a8080b3eb66e3ebe7658db9c0"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-05-red.log",
+      "sha256": "26ddd235bbc05b0bdb07e7ca777a879a8853727430cb7e4cc914ccc773b0dfe5"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-05-ui.log",
+      "sha256": "17c8a0c3d893fc1170008dd7ad9836a7f692d263b40cece45a5bc32554c680ae"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-05.json",
+      "sha256": "9c9bf58d78e120ec995d292c1f49410098e27e727cf2b055a3dc847cdf547a73"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-06-backend.log",
+      "sha256": "4549b8596b419d0da80914bd81a7e2ef758ebd1734b08e1e3b01d242d68bc476"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-06-browser-before-filter-fix.log",
+      "sha256": "2bf4ea4dea0292abdae471b5099dc6d619aea9cea05f02bc4ae31208f96d7365"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-06-browser.log",
+      "sha256": "2f49511ab066e7941953d333d89c82316bada13e43c9c550e8ccf96cc2def26f"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-06-build.log",
+      "sha256": "cab591bab6ce1c4d27ac2bc373adae0e9405400502e2d842959395cbdb11300a"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-06-common.log",
+      "sha256": "864bc6210872b2df93f9a8173fab2317e996a99e8a7e7616a57fff965c5a17f2"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-06-followup-red.log",
+      "sha256": "755c80cd659b6af26fbc7a499ff843cf65ec572ebe8f11ca8d555360e064e971"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-06-frontend.log",
+      "sha256": "cb4ad743773d26e146eee8670c3bce7547a1eb518dae8c63b3d1bb2c9feb8839"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-06-map-drift.log",
+      "sha256": "0242c1c932792a22e224f1068de5947caaccedb0916d829195eeccb3fe33917d"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-06-red-backend.log",
+      "sha256": "1a30012a4c96ed7195cec232c8e2bc9b66e1b7b8ca465e987e1c697011565dd3"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-06-red-browser.log",
+      "sha256": "393634e42d7cfcc27ce078a094a038a513d4cf16502396fc39932f1eda7f34f3"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-06-ui.log",
+      "sha256": "078a826a7340f5d4c5c32352585eeb73ce8f9161e7325898f8b090255c76d86a"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-06.json",
+      "sha256": "e895effb331b1a606911687bfdf9ed0196cf23501346bd06920fef30e6b01663"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/verification.json",
+      "sha256": "33a58e9da0fd45b1c3e71787a5b4f2b2d18e811800597d15973148f4ad258902"
+    }
+  ]
+}

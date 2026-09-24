@@ -1,0 +1,153 @@
+(node:1610474) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/src/features/ebpf/detachTarget.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/chiharukiryu/cdev/cyanrex-lab/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ only an explicit null can select detach-all; missing or blank targets fail closed (3.253969ms)
+✔ event deletion freezes an absolute upper bound and never uses the visible list limit (0.921752ms)
+✔ custom deletion keeps an earlier end, caps future ranges and rejects malformed scopes (0.466121ms)
+(node:1610475) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/src/utils/authSession.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/chiharukiryu/cdev/cyanrex-lab/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ logout requires an explicit successful response and uses private non-redirecting transport (42.197328ms)
+✔ logout propagates network failure without retrying (0.726838ms)
+✔ logout combines navigation cancellation with a bounded request deadline (0.927944ms)
+(node:1610481) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/src/features/classroom/connection.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/chiharukiryu/cdev/cyanrex-lab/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ classroom invitation fragments are strictly parsed without accepting query/redirect overrides (2.49431ms)
+✔ classroom discovery is data, not a redirect or authority to switch API origins (1.105375ms)
+✔ join compatibility uses protocol and required capability, never matching patch strings (0.318094ms)
+✔ cleanMacosMetadata removes Finder sidecars without touching source files (16.624716ms)
+(node:1610488) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/src/features/ebpf/compilerCheck.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/chiharukiryu/cdev/cyanrex-lab/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ local check uses private, non-redirecting credentialed transport without running code (35.581409ms)
+✔ authentication, capacity and network errors never retry or fall back from an Agent (2.9764ms)
+✔ pre-cancelled work dispatches no request (0.784976ms)
+✔ local deadline also aborts a stalled JSON body after successful headers (1.1296ms)
+✔ remote submission has a deadline even before a job ID is known (1.582235ms)
+✔ remote submission and stalled polling share one deadline and cancel only the known job (1.633732ms)
+✔ nonterminal remote responses wait 500 ms and do not accept a premature result (2.21088ms)
+✔ cancellation between polls stops the delay and sends exactly one private cancellation (1.692031ms)
+✔ cancelled/expired jobs are not compiler reports and known terminal jobs are not cancelled again (1.083314ms)
+✔ compiler rejection remains a normal report, not an infrastructure failure (0.649684ms)
+✔ malformed JSON and missing remote job IDs fail without caching or a fabricated cancellation (0.677886ms)
+(node:1610489) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/src/features/events/eventFilters.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/chiharukiryu/cdev/cyanrex-lab/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ event filters retain category, severity and bounded history but export has no page limit (2.00768ms)
+✔ invalid or reversed time ranges never turn into wider history/export queries (0.713553ms)
+✔ custom timestamp boundaries are inclusive and malformed event times never pass (0.314678ms)
+✔ relative windows expire a record immediately after the exact cutoff (0.234698ms)
+✔ event mutations require exact confirmation and nonnegative safe-integer counts (0.476791ms)
+✔ event transport keeps session credentials and private nonredirecting GET/POST semantics (31.645196ms)
+✔ pre-cancelled event requests do not dispatch (0.629085ms)
+✔ event request deadline includes body decoding and releases its cancellation linkage (1.227603ms)
+✔ a cancelled late event response never reaches its decoder (2.599646ms)
+✔ successful event reads release timers and parent listeners (0.760621ms)
+✔ HTTP, network and malformed JSON failures never retry event mutations (2.761779ms)
+✔ export decoding checks MIME type and preserves bytes with a safe format-bound filename (3.579176ms)
+(node:1610499) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/src/features/events/eventStream.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/chiharukiryu/cdev/cyanrex-lab/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ subscribes before snapshot and merges in-flight rows without erasing live data (4.088778ms)
+✔ snapshot merging keeps repeated identical events and insertion order (0.415156ms)
+✔ frames already present in a snapshot may arrive after the HTTP response without duplication (1.650173ms)
+✔ lag triggers a gap notice, backoff, and a fresh snapshot on reconnect (0.70149ms)
+✔ old connection callbacks and late aborted snapshots cannot overwrite a new generation (0.451734ms)
+✔ snapshot buffer overflow is visible and bounded, including under a sustained burst (10.035126ms)
+✔ filtering applies to both snapshot and live rows before consuming the bounded buffer (0.801748ms)
+✔ failed snapshot never reports open; retries do not overlap and stop on HTTP auth failure (0.467142ms)
+✔ handshake and snapshot deadlines cancel stalled work (0.232514ms)
+✔ repeated rapid disconnects back off to at most 30s instead of resetting at each handshake (0.709225ms)
+✔ malformed frames and cleanup cannot mutate state or leave timers/requests alive (0.266298ms)
+✔ disposal during snapshot aborts it; a new filter controller does not inherit its data (0.343512ms)
+✔ an invalid snapshot retries; policy closure is terminal; limit one remains bounded (0.550979ms)
+✔ malformed live input marks a gap without retrying or discarding valid recent rows (0.234468ms)
+✔ valid filtered-out frames are not misreported as data gaps (0.175748ms)
+✔ explicit forbidden snapshots stop retries just like unauthorized snapshots (0.197359ms)
+✔ backoff resets only after a thirty-second stable live period (0.258322ms)
+(node:1610506) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/src/features/learning/resumeAttempt.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/chiharukiryu/cdev/cyanrex-lab/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ resume links carry only the lab and attempt identifiers, not submitted source or usernames (1.146973ms)
+✔ resume targets distinguish absent, valid and malformed queries (1.404103ms)
+✔ resume reads one owner-bound attempt with credentials, no-store and cancellation (32.391911ms)
+✔ resume rejects missing, cross-lab, mismatched and oversized records without applying them (7.438836ms)
+✔ an aborted resume discards even a late successful response (0.569674ms)
+(node:1610512) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/src/features/settings/hotspots.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/chiharukiryu/cdev/cyanrex-lab/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ zero-sample metrics are safe instead of false critical hotspots (1.965682ms)
+✔ real low cache-hit samples remain critical (0.309358ms)
+(node:1610519) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/src/features/ebpf/runtimeRequest.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/chiharukiryu/cdev/cyanrex-lab/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ runtime mutations use one private non-redirecting credentialed POST without adding authority (32.772592ms)
+✔ attachment reconciliation is a private GET, never an implicit detach (0.651277ms)
+✔ a pre-cancelled runtime request never calls fetch (0.725595ms)
+✔ runtime deadline covers a hung JSON body and releases its parent listener (1.144919ms)
+✔ navigation aborts an active request but cannot publish an abort-ignoring late body (1.016178ms)
+✔ completed runtime reads release their deadline and cancellation linkage (0.725896ms)
+✔ HTTP, network and malformed-body failures do not retry a runtime mutation (4.702856ms)
+✔ normal compiler rejection and valid debug records retain their result fields (0.526373ms)
+✔ malformed run and nested debug fields cannot reach result rendering (0.441495ms)
+✔ detach parsing never fabricates clean or changes explicit warning fields (0.581085ms)
+✔ only a valid distinct inventory may be reported as ready, including a real empty result (0.366003ms)
+✔ CSP permits the configured Engine origin (1.288817ms)
+✔ invalid or non-http Engine URLs fall back without injecting CSP (0.392193ms)
+(node:1610534) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/src/utils/semanticCompletion.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/chiharukiryu/cdev/cyanrex-lab/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ semantic request stays local and sends only source/cursor with private transport (40.2874ms)
+✔ completion cache expires exactly at five seconds and respects cursor/source identity (1.927421ms)
+✔ completion cache remains bounded to eighteen entries (4.702234ms)
+✔ foreign, disposed and pre-cancelled models dispatch nothing (0.574673ms)
+✔ empty and UTF-8 oversized source remains snippet-only without dispatch (1.189532ms)
+✔ superseded cursor requests discard even already-delivered responses (0.847554ms)
+✔ owner disposal aborts active work and releases listeners without publishing a late result (0.487551ms)
+✔ model replacement invalidates pending work and all model-local cache reuse (0.806276ms)
+✔ a stalled semantic JSON body has a ten-second whole-request deadline (0.732037ms)
+✔ network/HTTP failures never retry or poison semantic cache (1.039883ms)
+✔ malformed semantic payloads remain snippet-only instead of escaping into providers (1.755901ms)
+(node:1610536) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/src/utils/sidebarPermissions.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/chiharukiryu/cdev/cyanrex-lab/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ normalizeAuthRole accepts only supported roles (2.265422ms)
+✔ getRequiredRolesForRoute returns route-specific role policies (1.11343ms)
+✔ isRoleAllowed handles allowlists and unauthenticated role (0.255437ms)
+✔ isRouteAllowed enforces route policy end-to-end (2.089674ms)
+✔ filterNavItemsByRole only shows modules/settings per role (0.343471ms)
+✔ deployment management belongs to teachers with legacy admin compatibility, never unknown roles (0.265325ms)
+(node:1610553) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/src/features/learning/teacherReview.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/chiharukiryu/cdev/cyanrex-lab/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ teacher review URL encodes the student and uses the bounded default (1.402901ms)
+✔ teacher feedback request binds the attempt and the displayed revision (1.098322ms)
+✔ teacher feedback rejects empty and oversized comments but accepts Unicode (0.702803ms)
+✔ teacher review URL clamps requested history size (0.52422ms)
+(node:1610561) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/src/features/terminal/command.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/chiharukiryu/cdev/cyanrex-lab/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ module lifecycle commands require a normalized module name (2.187807ms)
+✔ command responses have a stable human-readable summary (0.339374ms)
+ℹ tests 93
+ℹ suites 0
+ℹ pass 93
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 241.440332

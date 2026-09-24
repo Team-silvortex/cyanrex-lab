@@ -1,0 +1,8 @@
+5:2026-09-13 15:47:31.512 CST [1564389] ERROR:  syntax error at or near "VALUES" at character 167
+6:2026-09-13 15:47:31.512 CST [1564389] STATEMENT:  INSERT INTO event_records (
+9:2026-09-13 15:47:31.538 CST [1564388] ERROR:  syntax error at or near "VALUES" at character 167
+10:2026-09-13 15:47:31.538 CST [1564388] STATEMENT:  INSERT INTO event_records (
+13:2026-09-13 15:47:31.590 CST [1564389] ERROR:  syntax error at or near "VALUES" at character 167
+14:2026-09-13 15:47:31.590 CST [1564389] STATEMENT:  INSERT INTO event_records (
+17:2026-09-13 15:47:31.741 CST [1564397] ERROR:  new row for relation "event_user_settings" violates check constraint "event_user_settings_max_records_check"
+19:2026-09-13 15:47:31.741 CST [1564397] STATEMENT:  INSERT INTO event_user_settings (username, max_records, overflow_policy)

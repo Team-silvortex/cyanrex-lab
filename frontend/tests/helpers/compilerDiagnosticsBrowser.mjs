@@ -4,16 +4,16 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import nextWebpack from "next/dist/compiled/webpack/webpack.js";
 
-export async function buildFixture(entry = new URL("../fixtures/compilerDiagnostics.mjs", import.meta.url)) {
+export async function buildFixture(entry = new URL("../fixtures/compilerDiagnostics.mjs", import.meta.url), aliases = {}) {
   const directory = await mkdtemp(join(tmpdir(), "cyanrex-diagnostics-browser-"));
   nextWebpack.init();
   const compiler = nextWebpack.webpack({
     mode: "development", devtool: false,
     entry: fileURLToPath(entry),
     output: { path: directory, filename: "fixture.js" },
-    resolve: { extensions: [".ts", ".js", ".mjs"] },
+    resolve: { extensions: [".ts", ".tsx", ".js", ".mjs"], alias: aliases },
     plugins: [new nextWebpack.webpack.DefinePlugin({ "process.env.NEXT_PUBLIC_ENGINE_URL": JSON.stringify("https://engine-a.invalid") })],
-    module: { rules: [{ test: /\.ts$/, use: fileURLToPath(new URL("typescript-loader.cjs", import.meta.url)) }] },
+    module: { rules: [{ test: /\.tsx?$/, use: fileURLToPath(new URL("typescript-loader.cjs", import.meta.url)) }] },
   });
   try {
     await new Promise((resolve, reject) => compiler.run((error, stats) => {

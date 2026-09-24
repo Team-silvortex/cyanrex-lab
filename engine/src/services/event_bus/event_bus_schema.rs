@@ -8,7 +8,7 @@ impl EventBus {
             return Ok(());
         };
 
-        self.schema_ready
+        self.query_with_deadline(self.schema_ready
             .get_or_try_init(|| async {
                 sqlx::query(
                     "CREATE TABLE IF NOT EXISTS event_records (
@@ -57,7 +57,7 @@ impl EventBus {
                 .execute(pool)
                 .await?;
                 Ok(())
-            })
+            }))
             .await
             .map(|_| ())
     }

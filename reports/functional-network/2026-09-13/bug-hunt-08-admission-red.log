@@ -1,0 +1,25 @@
+   Compiling cyanrex-engine v0.3.9 (/home/chiharukiryu/cdev/cyanrex-lab/engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 10.53s
+     Running unittests src/lib.rs (engine/target/debug/deps/cyanrex_engine-c01bd6d40079956c)
+
+running 1 test
+test services::event_bus::tests::persistence::followup::postgres_blocked_owner_mutation_does_not_hold_other_owners_publications ... FAILED
+
+failures:
+
+---- services::event_bus::tests::persistence::followup::postgres_blocked_owner_mutation_does_not_hold_other_owners_publications stdout ----
+
+thread 'services::event_bus::tests::persistence::followup::postgres_blocked_owner_mutation_does_not_hold_other_owners_publications' (1588064) panicked at src/services/event_bus/tests/persistence/followup.rs:27:9:
+one owner cannot hold unrelated publication admission while waiting for SQL
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'services::event_bus::tests::persistence::followup::postgres_blocked_owner_mutation_does_not_hold_other_owners_publications' (1588064) panicked at src/services/event_bus/tests/persistence.rs:96:13:
+event boundary failed; owned schema was cleaned up: JoinError::Panic(Id(10), "one owner cannot hold unrelated publication admission while waiting for SQL", ...)
+
+
+failures:
+    services::event_bus::tests::persistence::followup::postgres_blocked_owner_mutation_does_not_hold_other_owners_publications
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 195 filtered out; finished in 0.26s
+
+error: test failed, to rerun pass `--lib`

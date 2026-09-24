@@ -137,6 +137,14 @@ async fn postgres_filtered_delete_preserves_uncached_rows_and_read_flags() {
     bus.db_pool = Some(pool.clone());
     bus.db_disabled.store(false, Ordering::Relaxed);
     bus.ensure_schema().await.unwrap();
+    // A durable EventBus has its ordered persistence worker, including mutation barriers.
+    let (sender, receiver) = mpsc::channel(DB_PERSIST_QUEUE_CAPACITY);
+    bus.persist_sender = sender;
+    let worker = tokio::spawn(event_bus_db::run_persist_loop(
+        bus.clone(),
+        pool.clone(),
+        receiver,
+    ));
     sqlx::query("INSERT INTO event_records (username, timestamp, source, event_type, category, severity, color, payload, is_read)
         SELECT 'alice', now(), 'test', 'test', CASE WHEN n % 2 = 0 THEN 'kernel' ELSE 'platform' END,
         'warning', 'yellow', jsonb_build_object('seq', n), n < 5 FROM generate_series(0, 9) n")
@@ -169,6 +177,8 @@ async fn postgres_filtered_delete_preserves_uncached_rows_and_read_flags() {
             .collect::<Vec<_>>(),
     );
     let unread = bus.unread.read().await["alice"];
+    worker.abort();
+    let _ = worker.await;
     pool.close().await;
     sqlx::query(&format!("DROP SCHEMA {schema} CASCADE"))
         .execute(&admin)

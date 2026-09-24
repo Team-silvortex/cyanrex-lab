@@ -1,0 +1,48 @@
+✖ changing filters cancels a pending read acknowledgement from the previous view (1568.992736ms)
+✖ changing filters before read debounce cannot acknowledge the obsolete snapshot (344.880641ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 0
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3159.403793
+
+✖ failing tests:
+
+test at frontend/tests/eventPage.browser.mjs:269:1
+✖ changing filters cancels a pending read acknowledgement from the previous view (1568.992736ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  false !== true
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/eventPage.browser.mjs:272:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/eventPage.browser.mjs:33:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/eventPage.browser.mjs:276:1
+✖ changing filters before read debounce cannot acknowledge the obsolete snapshot (344.880641ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/eventPage.browser.mjs:278:33
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/eventPage.browser.mjs:33:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

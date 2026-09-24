@@ -1,0 +1,21 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.16s
+     Running tests/routes_tdd.rs (engine/target/debug/deps/routes_tdd-83ab7d7414fc3bf3)
+
+running 4 tests
+test event_websocket_keeps_raw_event_frames_and_owner_isolation ... ok
+test event_websocket_lag_closes_with_resync_code_instead_of_silent_loss ... ok
+test event_websocket_other_owner_burst_does_not_force_resync ... ok
+test event_websocket_requires_a_session_and_allowed_origin ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 82 filtered out; finished in 3.21s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.13s
+     Running tests/module_boundaries_tdd.rs (engine/target/debug/deps/module_boundaries_tdd-371d0bef347d2dd0)
+
+running 4 tests
+test events::event_history_export_and_unread_remain_session_scoped ... ok
+test events::event_settings_http_retention_and_overflow_policy_do_not_cross_users ... ok
+test events::filtered_event_deletion_removes_matches_not_the_complement ... ok
+test events::invalid_event_delete_filters_must_not_widen_into_delete_all ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 15 filtered out; finished in 7.53s

@@ -1,8 +1,7 @@
-use crate::services::event_bus_codec::{to_category_str, to_color_str, to_severity_str};
 use crate::services::event_bus_db;
 use crate::services::event_bus_filter::latest_matching_events;
-use crate::services::event_bus_policy::{parse_policy, policy_to_str};
-use crate::sqlx_compat::{PgPool, PgPoolOptions, Postgres, QueryBuilder, Row};
+use crate::services::event_bus_policy::parse_policy;
+use crate::sqlx_compat::{PgPool, PgPoolOptions, Row};
 use chrono::{DateTime, Utc};
 use std::{
     collections::{HashMap, VecDeque},
@@ -18,8 +17,11 @@ use tokio::sync::{broadcast, mpsc, OnceCell, RwLock};
 
 use crate::models::event::Event;
 
+mod delete_operation;
 mod deletion;
 mod event_bus_schema;
+mod mutations;
+mod persistence;
 #[cfg(test)]
 mod read_bench;
 mod subscriptions;
@@ -41,7 +43,8 @@ pub struct EventBus {
     db_pool: Option<PgPool>,
     schema_ready: Arc<OnceCell<()>>,
     db_disabled: Arc<AtomicBool>,
-    persist_sender: mpsc::Sender<event_bus_db::PersistRequest>,
+    persist_sender: mpsc::Sender<event_bus_db::PersistMessage>,
+    mutation_gates: Arc<std::sync::Mutex<HashMap<String, Arc<tokio::sync::Mutex<()>>>>>,
     drop_new_count_cache: Arc<RwLock<HashMap<String, (usize, Instant)>>>,
 }
 
@@ -114,6 +117,7 @@ impl EventBus {
             schema_ready: Arc::new(OnceCell::new()),
             db_disabled: Arc::new(AtomicBool::new(false)),
             persist_sender,
+            mutation_gates: Arc::new(std::sync::Mutex::new(HashMap::new())),
             drop_new_count_cache: Arc::new(RwLock::new(HashMap::new())),
         };
 
@@ -128,6 +132,7 @@ impl EventBus {
     }
 
     pub async fn publish(&self, event: Event) {
+        let _admission = self.mutation_admission(&event.username).await;
         let user_settings = self.settings_for_user(&event.username).await;
         let max_records = user_settings.max_records.max(1);
 
@@ -154,30 +159,21 @@ impl EventBus {
         if self.sender.receiver_count() > 0 {
             let _ = self.sender.send(event.clone());
         }
-        if let Some(pool) = self.active_pool() {
-            let queue_request = event_bus_db::new_persist_request(
-                event.clone(),
+        if self.active_pool().is_some() {
+            let request = event_bus_db::new_persist_request(
+                event,
                 max_records,
                 user_settings.overflow_policy,
             );
-
-            if let Err(error) = self.persist_sender.try_send(queue_request) {
-                let queue_request = match error {
-                    tokio::sync::mpsc::error::TrySendError::Full(request)
-                    | tokio::sync::mpsc::error::TrySendError::Closed(request) => request,
-                };
-                let bus = self.clone();
-                let pool = pool.clone();
-                tokio::spawn(async move {
-                    event_bus_db::persist_event_to_db(
-                        &bus,
-                        &pool,
-                        queue_request.event,
-                        queue_request.max_records,
-                        queue_request.overflow_policy,
-                    )
-                    .await;
-                });
+            if self
+                .persist_sender
+                .try_send(event_bus_db::PersistMessage::Event(request))
+                .is_err()
+            {
+                // Never bypass the bounded, ordered writer with an unbounded spawned task.
+                self.disable_db(
+                    "persist queue full or closed; using bounded volatile history until restart",
+                );
             }
         }
     }
@@ -229,108 +225,6 @@ impl EventBus {
         self.snapshot_from_history_filtered(username, filters).await
     }
 
-    pub async fn delete_user_events_filtered(
-        &self,
-        username: &str,
-        category: Option<&str>,
-        severity: Option<&str>,
-        since_minutes: Option<i64>,
-        start: Option<DateTime<Utc>>,
-        end: Option<DateTime<Utc>>,
-    ) -> usize {
-        use crate::services::event_bus_filter::{
-            normalize_category_filter, normalize_severity_filter,
-        };
-        if (category.is_some() && normalize_category_filter(category).is_none())
-            || (severity.is_some() && normalize_severity_filter(severity).is_none())
-            || since_minutes.is_some_and(|minutes| minutes < 0)
-        {
-            return 0;
-        }
-        let mut start = start;
-        if let Some(minutes) = since_minutes.filter(|minutes| *minutes > 0) {
-            let Some(cutoff) = chrono::Duration::try_minutes(minutes)
-                .and_then(|duration| Utc::now().checked_sub_signed(duration))
-            else {
-                return 0;
-            };
-            start = Some(start.map_or(cutoff, |value| value.max(cutoff)));
-        }
-        if start.zip(end).is_some_and(|(start, end)| start > end) {
-            return 0;
-        }
-        // Both backends must use the same frozen cutoff, including near a minute boundary.
-        let since_minutes = None;
-        let has_filter = category.is_some()
-            || severity.is_some()
-            || since_minutes.is_some_and(|minutes| minutes > 0)
-            || start.is_some()
-            || end.is_some();
-
-        if !has_filter {
-            if let Some(pool) = self.active_pool() {
-                if self.ensure_schema().await.is_ok() {
-                    match event_bus_db::delete_all_events_for_user(pool, username).await {
-                        Ok(deleted) => {
-                            self.delete_from_history_filtered(
-                                username, None, None, None, None, None,
-                            )
-                            .await;
-                            return deleted as usize;
-                        }
-                        Err(error) => {
-                            self.disable_db(&format!("delete all events failed: {error}"))
-                        }
-                    }
-                }
-            }
-
-            return self
-                .delete_from_history_filtered(username, None, None, None, None, None)
-                .await;
-        }
-
-        if let Some(pool) = self.active_pool() {
-            if self.ensure_schema().await.is_ok() {
-                let filters = EventQueryFilters {
-                    category,
-                    severity,
-                    limit: None,
-                    since_minutes,
-                    start,
-                    end,
-                };
-                match event_bus_db::delete_events_from_db_with_filters(
-                    pool,
-                    filters.to_db_query(username),
-                )
-                .await
-                {
-                    Ok(deleted) => {
-                        if deleted > 0 {
-                            self.delete_from_history_filtered(
-                                username,
-                                category,
-                                severity,
-                                since_minutes,
-                                start,
-                                end,
-                            )
-                            .await;
-                        }
-                        return deleted as usize;
-                    }
-                    Err(error) => {
-                        self.disable_db(&format!("delete filtered events failed: {error}"))
-                    }
-                }
-            }
-        }
-
-        self.delete_from_history_filtered(username, category, severity, since_minutes, start, end)
-            .await
-    }
-
     async fn snapshot_from_history_filtered(
         &self,
         username: &str,
@@ -371,85 +265,6 @@ impl EventBus {
         unread.get(username).copied().unwrap_or(0)
     }
 
-    pub async fn mark_all_read_for_user(&self, username: &str) {
-        {
-            let mut unread = self.unread.write().await;
-            unread.insert(username.to_string(), 0);
-        }
-
-        if let Some(pool) = self.active_pool() {
-            if self.ensure_schema().await.is_ok() {
-                if let Err(error) = sqlx::query(
-                    "UPDATE event_records SET is_read = true WHERE username = $1 AND is_read = false",
-                )
-                .bind(username)
-                .execute(pool)
-                .await
-                {
-                    self.disable_db(&format!("mark read failed: {error}"));
-                }
-            }
-        }
-    }
-
-    pub async fn replace_user_events(&self, username: &str, events: Vec<Event>) {
-        let max_records = self.settings_for_user(username).await.max_records.max(1);
-        let mut truncated = events;
-        if truncated.len() > max_records {
-            truncated = truncated.split_off(truncated.len() - max_records);
-        }
-        {
-            let mut history = self.history.write().await;
-            history.insert(username.to_string(), truncated.clone().into());
-        }
-        {
-            let mut unread = self.unread.write().await;
-            unread.insert(username.to_string(), 0);
-        }
-
-        if let Some(pool) = self.active_pool() {
-            if self.ensure_schema().await.is_ok() {
-                if let Err(error) = sqlx::query("DELETE FROM event_records WHERE username = $1")
-                    .bind(username)
-                    .execute(pool)
-                    .await
-                {
-                    self.disable_db(&format!("replace events delete failed: {error}"));
-                    return;
-                }
-
-                if !truncated.is_empty() {
-                    let _ = event_bus_db::execute_sql_with_retry(
-                        self,
-                        &format!("replace events insert for user {username}"),
-                        || async {
-                            let mut query = QueryBuilder::<Postgres>::new(
-                                "INSERT INTO event_records (
-                                    username, timestamp, source, event_type, category, severity, color, payload, is_read
-                                )",
-                            );
-                            query.push(" VALUES ");
-                            query.push_values(truncated.iter(), |mut builder, event| {
-                                builder
-                                    .push_bind(&event.username)
-                                    .push_bind(event.timestamp)
-                                    .push_bind(&event.source)
-                                    .push_bind(&event.event_type)
-                                    .push_bind(to_category_str(event.category))
-                                    .push_bind(to_severity_str(event.severity))
-                                    .push_bind(to_color_str(event.color))
-                                    .push_bind(event.payload.to_string())
-                                    .push_bind(true);
-                            });
-                            query.build().execute(pool).await
-                        },
-                    )
-                    .await;
-                }
-            }
-        }
-    }
-
     pub async fn settings_for_user(&self, username: &str) -> UserEventSettings {
         {
             let cache = self.settings.read().await;
@@ -461,14 +276,17 @@ impl EventBus {
         let mut value = UserEventSettings::default();
         if let Some(pool) = self.active_pool() {
             if self.ensure_schema().await.is_ok() {
-                match sqlx::query(
-                    "SELECT max_records, overflow_policy
+                match self
+                    .query_with_deadline(
+                        sqlx::query(
+                            "SELECT max_records, overflow_policy
                      FROM event_user_settings
                      WHERE username = $1",
-                )
-                .bind(username)
-                .fetch_optional(pool)
-                .await
+                        )
+                        .bind(username)
+                        .fetch_optional(pool),
+                    )
+                    .await
                 {
                     Ok(Some(row)) => {
                         let max_records: i64 = row.get("max_records");
@@ -483,79 +301,8 @@ impl EventBus {
         }
 
         let mut cache = self.settings.write().await;
-        cache.insert(username.to_string(), value);
-        value
-    }
-
-    pub async fn update_settings_for_user(
-        &self,
-        username: &str,
-        max_records: usize,
-        overflow_policy: EventOverflowPolicy,
-    ) -> Result<UserEventSettings, String> {
-        let settings = UserEventSettings {
-            max_records: max_records.clamp(50, 50000),
-            overflow_policy,
-        };
-
-        {
-            let mut cache = self.settings.write().await;
-            cache.insert(username.to_string(), settings);
-        }
-
-        {
-            let mut history = self.history.write().await;
-            if let Some(bucket) = history.get_mut(username) {
-                if bucket.len() > settings.max_records {
-                    bucket.drain(..bucket.len() - settings.max_records);
-                }
-            }
-        }
-        {
-            let mut unread = self.unread.write().await;
-            if let Some(counter) = unread.get_mut(username) {
-                if *counter > settings.max_records {
-                    *counter = settings.max_records;
-                }
-            }
-        }
-
-        if let Some(pool) = self.active_pool() {
-            if self.ensure_schema().await.is_ok() {
-                sqlx::query(
-                    "INSERT INTO event_user_settings (username, max_records, overflow_policy)
-                     VALUES ($1, $2, $3)
-                     ON CONFLICT (username)
-                     DO UPDATE SET max_records = EXCLUDED.max_records, overflow_policy = EXCLUDED.overflow_policy",
-                )
-                .bind(username)
-                .bind(settings.max_records as i64)
-                .bind(policy_to_str(settings.overflow_policy))
-                .execute(pool)
-                .await
-                .map_err(|error| format!("update event settings failed: {error}"))?;
-
-                sqlx::query(
-                    "DELETE FROM event_records
-                     WHERE id IN (
-                         SELECT id
-                         FROM event_records
-                         WHERE username = $1
-                         ORDER BY timestamp DESC, id DESC
-                         OFFSET $2
-                     )",
-                )
-                .bind(username)
-                .bind(settings.max_records as i64)
-                .execute(pool)
-                .await
-                .map_err(|error| {
-                    format!("trim event records after settings update failed: {error}")
-                })?;
-            }
-        }
-
-        Ok(settings)
+        // A cold SQL read must not overwrite settings published while it was awaiting I/O.
+        *cache.entry(username.to_string()).or_insert(value)
     }
 
     pub(crate) fn active_pool(&self) -> Option<&PgPool> {

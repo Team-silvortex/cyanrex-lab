@@ -150,6 +150,17 @@ possible gaps without reconnecting just for those frames. The trace parser rejec
 prefixes such as `47abc`. These are integrity/display checks, not event-source authentication or new
 kernel isolation. See [bug hunt 06](functional-network-bug-hunt-06.md).
 
+Event history now belongs to a filter/navigation/revision scope through `useEventHistory`: mismatched
+rows are hidden before effects run, invalid date/filter input never widens the query, and a one-second
+display tick ages relative windows without network traffic. `useEventActions` bounds export/deletion
+waiting to 20 seconds including body consumption, rejects redirects and discards obsolete callbacks.
+Deletion keeps the reviewed absolute cutoff and needs exact `ok: true` plus a nonnegative integer count.
+`useEventReadAcknowledgement` serializes and debounces the existing all-owner acknowledgement, cancelling
+old filter work and requiring manual retry after failure. `useUnreadEvents` polls four seconds after
+completion, with a ten-second deadline and explicit unavailable state. Confirmed acknowledgements/deletion
+invalidate older badge reads. None of this changes Engine authentication, event wire format, persistence,
+or the lack of event IDs; see [bug hunt 07](functional-network-bug-hunt-07.md).
+
 ## 4. Engine Architecture
 
 The Engine is organized as a small layered application:
@@ -457,8 +468,23 @@ New Unix files/directories use 0600/0700. This is not fsync durability or cross-
 Event deletion retains nonmatches in place without replacing SQL rows from the bounded cache.
 History/unread updates share one lock order; surviving read flags are preserved. HTTP deletion rejects
 invalid values, unknown keys and invalid time ranges before mutation; SQL and memory share one frozen
-cutoff. No filters explicitly means delete all for the session owner. Async event persistence still
-is not a transactional, cross-process or crash-recovery guarantee.
+cutoff. No filters explicitly means delete all for the session owner.
+
+Event publications and mutations now share per-owner admission. A mutation waits for a barrier in the
+existing 2,048-slot persistence queue before SQL work; later publications for that owner wait until cache
+publication. Other owners retain independent admission. Settings plus retention trim, and replacement,
+use SQL transactions; batch/replacement inserts bind native JSON. Equal timestamps keep publication
+order and SQL pages break ties by row ID. The private replacement API rejects foreign-owner records.
+Memory settings/history/unread changes acquire all locks before editing; late cold settings reads cannot
+overwrite a newer cached policy. Deletion/settings/replacement invalidate cached DropNew capacity.
+
+Queued mutation cancellation changes nothing; an admitted SQL mutation finishes its sequence even if
+the caller leaves. Barriers and selected schema/settings/mutation storage stages have ten-second waiting
+limits, not one whole-request deadline or proof that SQL was rolled back. Full/closed queues, failed
+barriers and storage deadlines latch the existing volatile fallback until restart, with a warning instead
+of spawning bypass writers. Snapshot/unread reads still follow the existing independent fallback policy.
+This is single-Engine ordering, not cross-process locking, crash recovery, durable replay, or a new durable
+HTTP acknowledgement. See [bug hunt 08](functional-network-bug-hunt-08.md).
 
 Local learning records use shared immutable snapshots: reads avoid cloning all source, appends share
 unchanged records, and feedback replaces only the edited record. First-load I/O, UTF-8 validation and

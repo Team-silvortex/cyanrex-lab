@@ -1,7 +1,13 @@
 [package]
 name = "cyanrex-engine"
-version = "0.3.9"
+version = "0.4.0"
 edition = "2021"
+
+# Keep local builds and tests small while retaining file/line backtraces.
+# The test profile inherits these settings; release builds are unchanged.
+[profile.dev]
+debug = 1
+incremental = false
 
 [dependencies]
 axum = { version = "0.8", features = ["ws"] }

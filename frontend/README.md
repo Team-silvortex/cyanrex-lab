@@ -81,3 +81,17 @@ The expanded portable `test:event-stream` remains in CI and the quality gate. Br
 optional and mock all Engine traffic; no kernel programs are loaded. F9/gutter changes prepare a later
 manual run, while clearing requested breakpoints does not remove probes already running in the kernel.
 See [bug hunt 06](../docs/en/functional-network-bug-hunt-06.md) and [event recovery](../docs/en/event-stream.md).
+
+## Event history and acknowledgement regressions
+
+`npm run test:event-page` covers filter validation, response parsing and private request deadlines, and
+is included in CI and the frontend quality gate. `npm run test:event-page-browser` mounts the real Events
+page, Sidebar and confirmation components under React StrictMode. Only routing/page storage and Engine
+transports are fixtures, with controlled responses and a paused clock; no running server is needed.
+It uses the optional Playwright/Chromium settings above and the installed Next.js/TypeScript toolchain.
+
+`npm run test:event-actions-browser` exercises the built frontend's native JSON download, four-locale
+320 px invalid-range controls and explicit acknowledgement retry. Run it alongside the existing event,
+confirmation, runtime, breakpoint and logout production-browser suites. Every Engine request is mocked.
+Read acknowledgement still affects all current-account events; filtered IDs or durable acknowledgement
+are not introduced. See [bug hunt 07](../docs/en/functional-network-bug-hunt-07.md).

@@ -2,6 +2,25 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
+test("Rust CI explicitly runs every queued event persistence and retention boundary", async () => {
+  const workflow = await readFile(new URL("../../.github/workflows/ci.yml", import.meta.url), "utf8");
+  const step = workflow.split("- name: Run real PostgreSQL event ordering and retention")[1]?.split("\n      - name:")[0] ?? "";
+  let count = 0;
+  for (const [file, module] of [["persistence.rs", "persistence"], ["persistence/followup.rs", "persistence::followup"]]) {
+    const source = await readFile(new URL(`../../engine/src/services/event_bus/tests/${file}`, import.meta.url), "utf8");
+    for (const [, name] of source.matchAll(/async fn (postgres_\w+)\(/g)) {
+      count += 1;
+      assert.ok(step.includes(`services::event_bus::tests::${module}::${name}`), name);
+    }
+  }
+  assert.equal(count, 17, "new durable cases must be deliberately included in CI");
+  assert.match(step, /CYANREX_DB_FALLBACK: "true"/);
+  assert.ok(step.includes("@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test"));
+  assert.match(step, /--ignored --list/);
+  assert.match(step, /grep -Fx/);
+  assert.match(step, /--ignored --exact --nocapture/);
+});
+
 test("Rust CI runs PostgreSQL acceptance against its disposable service and rejects an empty selection", async () => {
   const workflow = await readFile(new URL("../../.github/workflows/ci.yml", import.meta.url), "utf8");
   const engine = workflow.split("  engine:\n")[1]?.split("\n  frontend:\n")[0] ?? "";

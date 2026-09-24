@@ -1,0 +1,40 @@
+✔ teachers manage modules, deployment settings and terminal without switching role, keeping confirmations (3477.838911ms)
+✔ students keep experiment access without teacher deployment navigation (1910.502268ms)
+✔ single deletion focuses cancel, Escape/Enter cancel safely, and failures cannot be double-submitted (1397.163545ms)
+✔ module lifecycle commands require confirmation but read-only commands do not (914.92729ms)
+✔ account deletion keeps credential and typed gates, cancels without writes, and reports failure (778.598098ms)
+✔ job cancellation binds the full job id and settings need explicit review (798.623896ms)
+✔ confirmation stays usable in every language on mobile and navigation discards an unconfirmed action (1409.934744ms)
+✔ detach-all requires a typed phrase and single detach can never fall back to all (1113.313175ms)
+✔ template/source replacement and kernel runs require separate explicit decisions (1282.880181ms)
+✔ remote diagnostics require acknowledging source transfer before switching agents (1309.419908ms)
+✔ remote cancellation and expiry show unavailable in the real editor without running or replacing its draft (3004.740253ms)
+✔ a confirmed file import cannot replace a different lab's draft after navigation (1126.58142ms)
+✔ entering a lab preserves the draft until its template is explicitly loaded (1020.769217ms)
+✔ header batch deletion stops at failure and reports partial completion, never false success (582.272216ms)
+✔ event deletion explains the complete filter scope and freezes the cutoff before confirmation (565.298115ms)
+✔ real Monaco accepts semantic suggestions and multiline SEC snippets without executing code (1362.759797ms)
+✔ header refresh errors remain visible while an explicit local self-check still works (1086.636346ms)
+✔ failed logout stays on the current page, reports uncertainty and permits an explicit retry (3478.587055ms)
+✔ logout ignores duplicate clicks while pending and does not redirect until confirmed (1029.77285ms)
+✔ navigating away discards late logout UI callbacks without claiming server rollback (977.082181ms)
+✔ real Monaco binds hit decorations to the declared session and retires them on edit and cleanup (3476.922452ms)
+✔ breakpoint recovery keeps its gap warning and rejects obsolete sockets without loading again (3312.853595ms)
+✔ forbidden breakpoint snapshots stop retries and never masquerade as live observation (1799.366702ms)
+✔ production event export downloads the verified JSON response without event mutations (2863.343517ms)
+✔ invalid time ranges stay visible and cannot export or delete in all four narrow-screen locales (1550.17439ms)
+✔ unknown unread counts and failed acknowledgements stay visible until an explicit successful retry (3424.695248ms)
+✔ event page recovers visibly, preserves live rows across snapshots, and changes filters safely (2471.680811ms)
+✔ real editor hides stale run output without detaching, and confirmed cleanup retires its quick action (3404.532901ms)
+✔ failed inventory is not empty success and must be refreshed before cleanup controls enable (1149.820762ms)
+✔ unclean and missing cleanup confirmation remain failures without an automatic retry (1479.727913ms)
+✔ a failed run transport stays in the confirmation failure view with an uncertainty notice (829.351378ms)
+✔ navigation discards an in-flight run result without claiming kernel rollback (920.804465ms)
+ℹ tests 32
+ℹ suites 0
+ℹ pass 32
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 23228.396248

@@ -42,8 +42,13 @@ export async function setup(role = "admin") {
     }
     switch (url.pathname) {
       case "/auth/me": return reply({ authenticated: true, username: role, role });
-      case "/events/unread-count": return reply({ unread: 0 });
-      case "/events/mark-read": return reply({ ok: true });
+      case "/events/unread-count": return reply(state.unreadResult ?? { unread: 0 }, state.unreadStatus || 200);
+      case "/events/mark-read": return reply(state.markReadResult ?? { ok: true }, state.markReadStatus || 200);
+      case "/events/export":
+        (state.exports ||= []).push(url.search);
+        return route.fulfill({ body: JSON.stringify(state.events ?? []), headers: { ...headers,
+          "content-type": "application/json", "content-disposition": 'attachment; filename="cyanrex-events-fixture.json"',
+          "access-control-expose-headers": "content-disposition" } });
       case "/events":
         (state.eventReads ||= []).push(url.search);
         return reply(state.events ?? [{ username: role, timestamp: "2026-09-08T11:00:00Z", source: "fixture", event_type: "fixture.event", category: "kernel", severity: "error", color: "red", payload: {} }], state.eventsStatus || 200);

@@ -1,0 +1,36 @@
+✔ filter changes never commit previous-scope rows under the new selection (1475.095428ms)
+✔ invalid saved custom dates fail visibly instead of crashing the event page (317.954569ms)
+✔ rolling time windows retire expired visible rows even without new events (327.322279ms)
+✔ export admission prevents same-turn duplicate downloads (313.145308ms)
+✔ changed export filters abort the download and ignore its late response (617.698251ms)
+✔ leaving the page aborts export and cannot trigger a late local download (380.476379ms)
+✔ event exports reject unexpected response content instead of downloading an HTML error (389.569386ms)
+✔ unconfirmed deletion bodies cannot clear visible history or restart its stream (432.972981ms)
+✔ navigation cancels deletion waiting and obsolete success cannot refresh a new view (421.791157ms)
+✔ failed read acknowledgements remain visible and do not silently retry on live events (345.772506ms)
+✔ unread polling never overlaps a pending request and cancels it on page exit (308.622361ms)
+✔ malformed unread counts show unavailable rather than a false zero or numeric badge (311.238257ms)
+✔ export and unread/mark-read requests are private and reject redirects (367.145413ms)
+✔ a successful JSON export keeps its exact filters, downloads once and releases its object URL (379.360823ms)
+✔ CSV export has a safe format-bound filename and changing format cancels the previous export (430.787653ms)
+✔ an export deadline covers a stalled body and returns control without a download or automatic retry (389.817015ms)
+✔ returning to an earlier filter cannot resurrect an aborted export's busy state (407.551846ms)
+✔ deletion has a complete waiting deadline and its failure never retries the mutation (427.754933ms)
+✔ explicit deletion authorization rejection is not mislabeled as transport uncertainty (423.027555ms)
+✔ confirmed deletion refreshes history and invalidates an older unread response (441.790464ms)
+✔ pending read acknowledgement is single-flight and later live arrivals request one follow-up (334.017577ms)
+✔ read acknowledgement failure requires a manual retry and an explicit true response (381.704265ms)
+✔ leaving before acknowledgement debounce sends no mark-read mutation (313.989493ms)
+✔ leaving with a pending acknowledgement aborts it and ignores a late success (324.099472ms)
+✔ unread timeout is visible and a later nonoverlapping poll can recover (340.517121ms)
+✔ refreshing the same history preserves its gap notice while a new filter gets a new scope (393.036549ms)
+✔ late snapshots and socket callbacks cannot replace a changed history filter (345.111439ms)
+✔ bounded history preserves repeated events and time ticks do not query or acknowledge repeatedly (384.255568ms)
+ℹ tests 28
+ℹ suites 0
+ℹ pass 28
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 11905.799472

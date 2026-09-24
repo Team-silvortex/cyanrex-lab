@@ -1,0 +1,28 @@
+✖ Rust CI explicitly runs every queued event persistence and retention boundary (5.098744ms)
+✔ Rust CI runs PostgreSQL acceptance against its disposable service and rejects an empty selection (1.40881ms)
+✔ Rust CI promotes every auth boundary regression plus script/event persistence checks (1.681792ms)
+✔ Rust CI exercises persisted authentication and duplicate registration on the disposable database (0.588793ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 3
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 52.65235
+
+✖ failing tests:
+
+test at scripts/tests/postgresCi.test.mjs:5:1
+✖ Rust CI explicitly runs every queued event persistence and retention boundary (5.098744ms)
+  AssertionError [ERR_ASSERTION]: postgres_mark_read_waits_for_previously_queued_events
+      at TestContext.<anonymous> (file:///home/chiharukiryu/cdev/cyanrex-lab/scripts/tests/postgresCi.test.mjs:13:14)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

@@ -133,6 +133,25 @@ also request no-store and reject redirects; malformed frames retain a possible-g
 of complete recovery. No new revocation, replay guarantee or automatic kernel action is added. See
 [bug hunt 06](functional-network-bug-hunt-06.md).
 
+### Event history and acknowledgement boundary
+
+Event export/deletion and unread/acknowledgement requests retain credentials, request no-store and reject
+redirects. Browser waiting is bounded to 20 seconds for export/deletion and ten seconds for unread state;
+navigation cancellation is not server rollback. Failed or malformed deletion/acknowledgement responses
+are never treated as success, and mutations are not automatically retried after failure. The unchanged
+mark-read endpoint covers ALL events for the session owner, including rows outside the current filters
+or 200-row view; the UI explicitly discloses this. It is not a per-record or durable acknowledgement.
+MIME/filename checks prevent accidental wrong-format downloads, not spreadsheet formula sanitization,
+archive authenticity, complete event replay or a new payload byte budget. See [bug hunt 07](functional-network-bug-hunt-07.md).
+
+Engine event mutations now wait for earlier queued writes and retain per-owner admission through admitted
+SQL work and cache publication. This closes local ordering/cancellation races without changing session,
+CSRF or teacher authority. The private replacement helper rejects foreign-owner records. Queue overflow
+and storage deadlines warn and latch volatile fallback; successful read/deletion HTTP responses still do
+not promise durable revocation of events across restart or other processes. Do not use this stream as an
+exactly-once security audit log. Transactions protect settings/trim and replacement, not the whole
+publication/HTTP/recovery lifecycle. See [bug hunt 08](functional-network-bug-hunt-08.md).
+
 ### Learning data boundary
 
 Learning record reads fail visibly on corrupt/unreadable storage instead of showing an empty classroom.

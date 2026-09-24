@@ -1,0 +1,59 @@
+✔ filter changes never commit previous-scope rows under the new selection (1588.70212ms)
+✔ invalid saved custom dates fail visibly instead of crashing the event page (378.999053ms)
+✔ rolling time windows retire expired visible rows even without new events (377.572223ms)
+✔ export admission prevents same-turn duplicate downloads (368.53717ms)
+✔ changed export filters abort the download and ignore its late response (416.856263ms)
+✔ leaving the page aborts export and cannot trigger a late local download (395.267873ms)
+✖ event exports reject unexpected response content instead of downloading an HTML error (417.820498ms)
+✖ unconfirmed deletion bodies cannot clear visible history or restart its stream (410.061973ms)
+✔ navigation cancels deletion waiting and obsolete success cannot refresh a new view (429.059898ms)
+✔ failed read acknowledgements remain visible and do not silently retry on live events (343.563419ms)
+✔ unread polling never overlaps a pending request and cancels it on page exit (312.889448ms)
+✔ malformed unread counts show unavailable rather than a false zero or numeric badge (320.637484ms)
+✔ export and unread/mark-read requests are private and reject redirects (375.367629ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 11
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6311.906364
+
+✖ failing tests:
+
+test at frontend/tests/eventPage.browser.mjs:77:1
+✖ event exports reject unexpected response content instead of downloading an HTML error (417.820498ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(await f.page.getByRole("alert").count())
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/eventPage.browser.mjs:80:70
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/eventPage.browser.mjs:31:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at frontend/tests/eventPage.browser.mjs:83:1
+✖ unconfirmed deletion bodies cannot clear visible history or restart its stream (410.061973ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(await f.page.getByRole("dialog").getByRole("alert").count())
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/eventPage.browser.mjs:87:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/eventPage.browser.mjs:31:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

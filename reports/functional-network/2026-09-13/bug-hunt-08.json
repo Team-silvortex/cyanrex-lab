@@ -1,0 +1,993 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-13",
+  "status": "fixed-and-scoped-regressions-passed",
+  "baseline": {
+    "version": "0.3.9",
+    "commit": "705fecc4415d678180c3a6b5f7eefb507f4788e6",
+    "branch": "main",
+    "prior_pass": "reports/functional-network/2026-09-13/bug-hunt-07.json",
+    "worktree": "Pass 07 was already uncommitted at the start. Candidate hashes compare with that starting worktree, not a fabricated clean commit. No version bump, commit, push or deployment.",
+    "inventory": {
+      "path": "docs/functional-network.json",
+      "version": "0.3.8",
+      "commit": "c26a529aecc0ab64d0a1743be10972e5d8ac137b",
+      "sha256": "bc16ef895c1f7b9f9d0b5d9195499d4efcba09466b3c85bdfcc04d20006ad30d",
+      "note": "Original frozen map; no historical fingerprints rewritten."
+    }
+  },
+  "scope": {
+    "workflows": [
+      "F36",
+      "F32",
+      "F34",
+      "F35"
+    ],
+    "meaning": "Retention/overflow through history/export, unread/acknowledgement and scoped deletion; asynchronous SQL writer and private replacement service.",
+    "exclusions": [
+      "new routes, access tiers, API/Event wire, schema or SDK changes",
+      "frontend product changes",
+      "real deployment accounts/events/databases, deployment .env",
+      "live Engine/Agent, SSH/LAN deployment or kernel mutation"
+    ]
+  },
+  "findings": [
+    {
+      "id": "BH08-01",
+      "status": "fixed",
+      "summary": "Batch/replacement INSERT generated duplicate VALUES and never persisted real rows; fallback masked the failure.",
+      "fix": "QueryBuilder owns VALUES and native Json binding preserves payload types; real SQL count and nested Unicode round-trip assertions reject fallback.",
+      "regressions": [
+        "postgres_publish_batch_really_persists_json_without_fallback",
+        "postgres_replacement_really_persists_and_marks_only_its_owner_read"
+      ]
+    },
+    {
+      "id": "BH08-02",
+      "status": "fixed",
+      "summary": "After insertion was repaired, pending events resurrected deleted rows/unread state and overrode a newer retention limit.",
+      "fix": "Per-owner admission and an ordered writer barrier before mutations; admitted SQL work retains ownership through cache publication even after caller cancellation.",
+      "regressions": [
+        "postgres_mark_read_waits_for_previously_queued_events",
+        "postgres_deletion_cannot_be_undone_by_its_pending_publications",
+        "postgres_retention_update_cannot_be_overridden_by_queued_old_settings",
+        "postgres_replacement_cannot_be_undone_by_queued_old_events",
+        "postgres_cancelled_admitted_settings_finish_before_later_publications"
+      ]
+    },
+    {
+      "id": "BH08-03",
+      "status": "fixed",
+      "summary": "Full persistence queues spawned unbounded bypass writes.",
+      "fix": "Keep the existing bounded queue and latch logged volatile fallback on full/closed queues. Bound barriers and selected schema/settings/mutation waiting stages to ten seconds; no bypass task.",
+      "regressions": [
+        "full_persistence_queue_latches_bounded_memory_fallback_instead_of_spawning_writers",
+        "stalled_persistence_barrier_has_a_deadline_and_releases_owner_admission",
+        "stalled_storage_operation_has_a_deadline_instead_of_holding_admission_forever",
+        "postgres_failed_batch_releases_its_barrier_into_explicit_memory_fallback"
+      ]
+    },
+    {
+      "id": "BH08-04",
+      "status": "fixed",
+      "summary": "Cancelled retention/replacement split memory state, and failed SQL settings had already changed policy/cache/history.",
+      "fix": "Acquire all memory locks before mutation. Settings/trim and replacement commit a SQL transaction before memory publication; replacement batches remain within SQL bind limits.",
+      "regressions": [
+        "cancelled_retention_update_never_splits_settings_history_and_unread",
+        "cancelled_replacement_never_splits_history_and_unread",
+        "cancelled_mutation_waiting_for_owner_admission_changes_nothing",
+        "postgres_failed_settings_update_preserves_memory_and_previous_policy",
+        "postgres_trim_failure_rolls_back_settings_and_preserves_retained_rows",
+        "postgres_failed_replacement_does_not_lose_previous_durable_rows"
+      ]
+    },
+    {
+      "id": "BH08-05",
+      "status": "fixed",
+      "summary": "DropNew retained stale capacity after deletion; stale cold settings could overwrite newer cache; replacement accepted foreign-owner records.",
+      "fix": "Invalidate capacity after deletion/settings/replacement, preserve an already newer cache entry, and reject mixed-owner replacement before changes.",
+      "regressions": [
+        "postgres_deletion_invalidates_drop_new_capacity_cache",
+        "postgres_drop_new_can_use_capacity_freed_by_deletion_immediately",
+        "postgres_cold_settings_read_cannot_overwrite_a_newer_cache_value",
+        "replacement_rejects_foreign_owner_records_without_modifying_either_owner"
+      ]
+    },
+    {
+      "id": "BH08-06",
+      "status": "fixed",
+      "summary": "Equal-time batch sorting by event type made retention discard later publications.",
+      "fix": "Stable timestamp sort and timestamp/id SQL page ordering preserve equal-time publication order.",
+      "regressions": [
+        "postgres_equal_timestamp_retention_does_not_sort_by_event_type",
+        "postgres_equal_timestamp_latest_page_uses_publication_order"
+      ],
+      "note": "The latest-page case already passed under the observed original PostgreSQL plan; explicit ID tie-breaking removes reliance on that plan."
+    }
+  ],
+  "tdd": {
+    "initial": {
+      "ordinary": {
+        "tests": 4,
+        "passed": 0,
+        "failed": 4
+      },
+      "postgres": {
+        "tests": 5,
+        "passed": 0,
+        "failed": 5
+      },
+      "process_exit_code": 1,
+      "cargo_exit_codes": [
+        101,
+        101
+      ],
+      "log": "reports/functional-network/2026-09-13/bug-hunt-08-red.log",
+      "note": "Three SQL ordering cases were initially blocked by bad INSERT, not yet evidence of their actual race."
+    },
+    "insertion_red": {
+      "tests": 2,
+      "passed": 0,
+      "failed": 2,
+      "exit_code": 101,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-08-sql-red.log",
+      "diagnostics": "reports/functional-network/2026-09-13/bug-hunt-08-sql-diagnostics.log"
+    },
+    "insertion_only_fix": {
+      "tests": 7,
+      "passed": 2,
+      "failed": 5,
+      "exit_code": 101,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-08-sql-only.log",
+      "note": "Only SQL syntax/native JSON fixed. Real insertion passed; deeper SQL cases now failed with resurrected rows/unread/old retention and stale cache results."
+    },
+    "initial_complete_fix": {
+      "ordinary_passed": 33,
+      "ordinary_ignored": 10,
+      "postgres_passed": 8,
+      "exit_code": 0,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-08-initial.log"
+    },
+    "equal_time_followup": {
+      "tests": 2,
+      "passed": 1,
+      "failed": 1,
+      "exit_code": 101,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-08-ordering-red.log"
+    },
+    "expanded_postgres": {
+      "tests": 17,
+      "passed": 17,
+      "failed": 0,
+      "exit_code": 0,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-08-expanded.log"
+    },
+    "admission_followup": {
+      "tests": 1,
+      "passed": 0,
+      "failed": 1,
+      "exit_code": 101,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-08-admission-red.log",
+      "note": "First refactor used global mutation admission and blocked unrelated owner publication. Replaced with per-owner admission; refactor regression, not another original finding."
+    },
+    "ci_selection_red": {
+      "tests": 4,
+      "passed": 3,
+      "failed": 1,
+      "exit_code": 1,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-08-ci-red.log",
+      "note": "The selection guard failed before the explicit list was added; final common gate includes its successful rerun."
+    }
+  },
+  "new_tests": {
+    "ordinary_rust": 7,
+    "postgres": 17,
+    "tooling": 1,
+    "total": 25,
+    "note": "Included in final suite totals. Repeated/focused runs are not additional unique passes."
+  },
+  "checks": [
+    {
+      "name": "full default Rust suite",
+      "command": "cargo test --manifest-path engine/Cargo.toml --locked --offline -- --test-threads=1",
+      "status": "passed",
+      "passed": 295,
+      "failed": 0,
+      "ignored": 46,
+      "exit_code": 0,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-08-backend.log",
+      "boundary": "Unit/route/module/package/SSH-tool fixtures; includes isolated installed compiler checks, but no live kernel or deployment. Database environment removed; ignored SQL cases run separately."
+    },
+    {
+      "name": "focused event/helper and SQL suites",
+      "status": "passed",
+      "ordinary_passed": 36,
+      "ordinary_ignored": 20,
+      "postgres_passed": 18,
+      "exit_code": 0,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-08-focused.log",
+      "boundary": "Includes actual ten-second stalled waiting tests; ordinary cases overlap the full Rust suite. PostgreSQL cases overlap the final rerun."
+    },
+    {
+      "name": "final real PostgreSQL event suite",
+      "command": "cargo test --manifest-path engine/Cargo.toml --locked --offline --lib services::event_bus::tests -- --ignored --test-threads=1",
+      "status": "passed",
+      "passed": 18,
+      "failed": 0,
+      "ignored": 0,
+      "filtered_out": 181,
+      "exit_code": 0,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-08-postgres.log",
+      "boundary": "17 new plus prior deletion; real PostgreSQL 16.15 with private Unix socket, synthetic accounts/events, unique schema per case, controlled queues/table locks, explicit cleanup."
+    },
+    {
+      "name": "portable frontend regressions",
+      "command": "node --experimental-strip-types --test frontend/tests/*.test.mjs",
+      "status": "passed",
+      "passed": 93,
+      "failed": 0,
+      "skipped": 0,
+      "exit_code": 0,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-08-frontend.log",
+      "boundary": "Existing contracts including pass 07; no frontend product code changed in this pass."
+    },
+    {
+      "name": "production frontend build",
+      "command": "NEXT_PUBLIC_ENGINE_URL=http://localhost:8080 NEXT_TELEMETRY_DISABLED=1 node node_modules/next/dist/bin/next build",
+      "cwd": "frontend",
+      "status": "passed",
+      "generated_routes": 18,
+      "exit_code": 0,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-08-build.log",
+      "boundary": "Existing local dependencies, no live Engine call or dependency installation."
+    },
+    {
+      "name": "standalone TypeScript",
+      "command": "node frontend/node_modules/typescript/bin/tsc --noEmit --incremental false --project frontend/tsconfig.json",
+      "status": "passed",
+      "exit_code": 0,
+      "output": ""
+    },
+    {
+      "name": "common quality gate",
+      "command": "scripts/quality-gate.sh --format-only",
+      "status": "passed",
+      "passed": 66,
+      "failed": 0,
+      "exit_code": 0,
+      "log": "reports/functional-network/2026-09-13/bug-hunt-08-common.log",
+      "includes": [
+        "source/document line limits",
+        "0.3.9 version parity",
+        "course mirrors",
+        "64 OpenAPI paths / 68 Engine operations / 63 SDK operations / 85 schemas",
+        "API/SDK compatibility",
+        "isolated Runner/distribution/kernel-smoke/release-candidate tool checks",
+        "Rust formatting"
+      ],
+      "note": "Tool checks are not a new dependency audit, SDK runtime or live deployment acceptance."
+    },
+    {
+      "name": "frozen network drift",
+      "command": "node scripts/check-functional-network.mjs",
+      "status": "expected-baseline-drift",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "source_drift_count": 22,
+      "source_drifts": [
+        "engine/Cargo.toml",
+        "engine/openapi/openapi.json",
+        "engine/src/routes/ebpf/ringbuf.inc.rs",
+        "engine/src/routes/learning.rs",
+        "engine/src/routes/runner_job.rs",
+        "engine/src/services/event_bus.rs",
+        "engine/src/services/event_bus/event_bus_schema.rs",
+        "engine/src/services/event_bus_db.rs",
+        "engine/src/services/learning_store.rs",
+        "engine/src/services/learning_store/persistence.rs",
+        "engine/src/services/runner_agent_client.rs",
+        "engine/src/services/runner_job_queue.rs",
+        "frontend/pages/ebpf.tsx",
+        "frontend/pages/events.tsx",
+        "frontend/src/components/SidebarLayout.tsx",
+        "frontend/src/features/ebpf/useBreakpointHitStream.ts",
+        "frontend/src/features/ebpf/useCompilerDiagnostics.ts",
+        "frontend/src/features/ebpf/useEbpfPageController.ts",
+        "frontend/src/features/ebpf/useEbpfSafetyActions.ts",
+        "frontend/src/features/events/eventStream.ts",
+        "frontend/src/utils/cEbpfIntelligence.ts",
+        "scripts/quality-gate.sh"
+      ],
+      "version_drift": {
+        "snapshot": "0.3.8",
+        "source": "0.3.9"
+      },
+      "log": "reports/functional-network/2026-09-13/bug-hunt-08-map-drift.log",
+      "note": "22 cumulative source drifts; no operation/access/catalog/page/count drift. Original snapshot fingerprints are unchanged."
+    },
+    {
+      "name": "historical evidence preservation",
+      "status": "passed",
+      "files": 92,
+      "note": "Original inventory/course copy and reports/logs/docs for passes 01–07 match the starting worktree byte for byte; exact hashes below."
+    },
+    {
+      "name": "diff whitespace",
+      "command": "git diff --check",
+      "status": "passed",
+      "exit_code": 0,
+      "note": "Tracked source diff; raw new logs retain terminal evidence."
+    }
+  ],
+  "test_environment": {
+    "ordinary": "Subprocess environments removed DATABASE_URL and all CYANREX_* variables without reading deployment .env or printing its values. CARGO_NET_OFFLINE=true; --test-threads=1.",
+    "postgres": "Installed PostgreSQL 16.15 in an owned mktemp directory, TCP listening disabled, Unix socket inside private parent. Explicit synthetic CYANREX_TEST_DATABASE_URL only; unique schemas cleaned after each case. Configured fixture statement_timeout=5000 ms; this does not substitute for the separate pure ten-second application deadline tests.",
+    "cancellation": "Memory tests block unread/admission locks. SQL tests pause writer queues or take a controlled table lock, abort the caller and observe completion/order; no external coordination or user data.",
+    "runtimes": {
+      "node": "24.19.0",
+      "postgresql": "16.15",
+      "next": "15.5.24",
+      "react": "19.0.0",
+      "typescript": "5.8.3",
+      "ci_node": "22"
+    },
+    "ci": "17 new SQL case names are explicitly selected on the existing disposable CI service and guarded by a tooling regression; remote CI not run for uncommitted source."
+  },
+  "integration": {
+    "ordinary_tests_in_default_cargo": true,
+    "new_sql_tests_explicitly_in_ci": true,
+    "new_dependencies": false,
+    "new_routes": false,
+    "wire_or_schema_change": false,
+    "frontend_product_change": false,
+    "commit": false,
+    "push": false,
+    "version_bump": false
+  },
+  "limitations": [
+    "Admission orders the same owner in one EventBus/Engine, not cross-process writers or crash recovery.",
+    "Shared queue/pool/CPU/history locks remain shared resources; owner admission metadata, like existing history/settings, is retained for process lifetime. No new total byte/owner quota.",
+    "Barriers order earlier publications, not all future producers or snapshot/live recovery; snapshot and unread queries retain independent fallback behavior.",
+    "Full/closed queues, failed barriers and selected storage deadlines latch existing volatile fallback until restart, with warnings. Volatile data is not automatically reconciled or restored.",
+    "Read/deletion HTTP success can still acknowledge memory only; no new durable acknowledgement or persistence-health wire field was added.",
+    "A stage deadline ends application waiting, not necessarily the dispatched database statement, and is not an overall HTTP deadline or proof of rollback.",
+    "Known settings/replacement transaction failures are covered; lost commit acknowledgements, process crashes and multi-Engine concurrency are not. Background INSERT retry ambiguity remains.",
+    "Equal timestamps have explicit order, but arbitrary timestamp order, database timestamp precision and snapshot/live overlap do not become IDs/cursor replay/exactly-once semantics.",
+    "Cold DropNew admission against already-full SQL history and writer lifetime/shutdown draining remain separate inspection targets.",
+    "Replacement is a private service helper, not a new HTTP import route. Transactions do not cover the complete publication/HTTP/recovery lifecycle."
+  ],
+  "not_run": [
+    "new dependency audit",
+    "new benchmark",
+    "SDK runtime",
+    "browser suites or browser-to-real-Engine acceptance",
+    "live deployment/Engine/Agent/SSH/LAN/kernel mutation",
+    "release artifact acceptance",
+    "remote CI",
+    "other ignored PostgreSQL auth/learning/script suites"
+  ],
+  "cleanup": {
+    "owned_postgres_stopped": true,
+    "owned_postgres_directory_removed": true,
+    "remaining_owned_schemas_before_stop": 0,
+    "remaining_client_connections_before_stop": 0,
+    "real_deployment_data_touched": false,
+    "version_lockfiles_and_typescript_cache_unchanged": true
+  },
+  "next": {
+    "workflows": [
+      "F32",
+      "F34",
+      "F36"
+    ],
+    "focus": "Storage-read failure and restart/fallback consistency, cold DropNew admission against full SQL history, and writer shutdown/draining. Pending inspection, not authorization to touch real events."
+  },
+  "candidate_sources": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "f2d36ec03cbffd3d02b305b416c9f303e3bd39e8c68a797f36e2e05d6b8a5abf",
+      "starting_sha256": "3117eca6b05fcad76d4828a3d16052d34a6af972e428ee67f1b59d8b39642178"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "sha256": "04f5efce8ad719f929afa5afb169c0ba2bc3081e8c82a3766d6df5db580f9d1d",
+      "starting_sha256": "80b09b3cfb33add6c1ec4d38ab83555c4bbfabf4163dc05d6ee913bd8b518479"
+    },
+    {
+      "path": "docs/en/architecture.md",
+      "sha256": "e5403cd2dba4f8e7467e05e1310d297a2560b75e4e6a3e86ce5be129a3323b91",
+      "starting_sha256": "580335c98ab6e25780022ae6064ff27276939f63df0ac64eb7f4affef7ff34d9"
+    },
+    {
+      "path": "docs/en/event-stream.md",
+      "sha256": "c692971a322973c59f5490a007e0c11b49090b4b93c6cffc076862a345b4a25e",
+      "starting_sha256": "106d258ff3578c86474e933f1431fd8290f4791614e9dc8134151a9e172ce9f1"
+    },
+    {
+      "path": "docs/en/functional-network-bug-hunt-08.md",
+      "sha256": "86468729b3806e9d8e02a8a51e434a20fa5c6583e1aad0a33ba954c0f3bb449b",
+      "starting_sha256": null
+    },
+    {
+      "path": "docs/en/functional-network.md",
+      "sha256": "6e37062b1708638d42db0fb79881e7d1b854820a223b9f9ed596b9d64f6f2adc",
+      "starting_sha256": "39740816c397c64f2b4b3fdc9b3a2f79b659511d546d7e10ae55ce129e1bc451"
+    },
+    {
+      "path": "docs/en/security.md",
+      "sha256": "97925360bb162e2755ed27b121ba6f64ff17324ecedf18306f0c6e8f8833f030",
+      "starting_sha256": "5b684d996c848078245ddf0d6131d7b1e52ee608277504e1402969fcfb446bdc"
+    },
+    {
+      "path": "docs/zh-CN/architecture.md",
+      "sha256": "49fb4280dcf0c11c389383bdb3cc6531cd016db30a325267226f26dc083c48d3",
+      "starting_sha256": "cc96b8a0e5d76c400c66cd7cce1d735656dcfbd170fe571f8453c7b0c536cffb"
+    },
+    {
+      "path": "docs/zh-CN/event-stream.md",
+      "sha256": "da62a4c5bf73696ea1ef46150f8345d4f8fad6818ee22af1205e50b51ac6992a",
+      "starting_sha256": "a1f9a7c5e0cb195fd463d1c8a9e1f9405b8b421b4ba30b31657383ae35fc7a0f"
+    },
+    {
+      "path": "docs/zh-CN/functional-network-bug-hunt-08.md",
+      "sha256": "98443b1b0888e6b53b8117a6cd2783d6bd632a5de9421e6a40fb7344249a73f2",
+      "starting_sha256": null
+    },
+    {
+      "path": "docs/zh-CN/functional-network.md",
+      "sha256": "528f131d21f425213a0821b03b344b032549dcb13da97f7ef81c53dc73caefa8",
+      "starting_sha256": "c9c75da3b7ce969305d6ad31d4a4ebbf5a6aa231598433921bd2c1774128d307"
+    },
+    {
+      "path": "docs/zh-CN/security.md",
+      "sha256": "ff0f3d09662b68d72d2a53af82c7789fdd97efd2d484f0924cfb3f906692b415",
+      "starting_sha256": "fc7c75d4a834d932046e1a1cca26a179e0ed175faa3a629e872ccba45956d061"
+    },
+    {
+      "path": "engine/src/services/event_bus.rs",
+      "sha256": "13168f4de9f8d66b872f12575b3b0268dd5ecb9e28d3511b569878f99e46ae66",
+      "starting_sha256": "4b2d52b861887952a293db0d752d4f7b8d2682635af109f189e3f480d07d1001"
+    },
+    {
+      "path": "engine/src/services/event_bus/delete_operation.rs",
+      "sha256": "a5e186ae47cda5e54c6d547d9cf7e500e1911656708da38f459bd937df859e66",
+      "starting_sha256": null
+    },
+    {
+      "path": "engine/src/services/event_bus/event_bus_schema.rs",
+      "sha256": "4a7ff80868ccdfcd88b1addad16be706c1e7a60f82d89d262335cbd216eb395a",
+      "starting_sha256": "a14ae75c4550393d30fc121c2da5074413e83f2225246bed60b1e51305d2c534"
+    },
+    {
+      "path": "engine/src/services/event_bus/mutations.rs",
+      "sha256": "32bdbf927f42fa17522fd1ab5325f36b8ef856668e67480ccada2d39013d6bb8",
+      "starting_sha256": null
+    },
+    {
+      "path": "engine/src/services/event_bus/persistence.rs",
+      "sha256": "d0b0442837f732f2fab8077fb3bc030569754db66151a478ef9fde15fcdf2fc3",
+      "starting_sha256": null
+    },
+    {
+      "path": "engine/src/services/event_bus/tests.rs",
+      "sha256": "add363cb1a8b4612c4612e4b3fd9059b7d4eb36524bfb5fd6a6e6c7103ea3f53",
+      "starting_sha256": "c98ac24f844f536426027d98475e3270b69dea9dd6318aa4505d3e9f74890cba"
+    },
+    {
+      "path": "engine/src/services/event_bus/tests/deletion.rs",
+      "sha256": "89034dead14345bec09850b14f2fa4dd1054507b81aefe71ac9912c8c6a6886c",
+      "starting_sha256": "bc81a6411dbdedf01431d25ccac625477f4e6ada0ef4a619787b5eca0e23a389"
+    },
+    {
+      "path": "engine/src/services/event_bus/tests/persistence.rs",
+      "sha256": "b302f7d88213cc568882e04452b7dc59be559c5d3ee4b9b0c3033b11af80fde7",
+      "starting_sha256": null
+    },
+    {
+      "path": "engine/src/services/event_bus/tests/persistence/followup.rs",
+      "sha256": "aa658d91a6c554311bbd9ed0e7a1b59efe55c327b1fcf17277751a5940e93b07",
+      "starting_sha256": null
+    },
+    {
+      "path": "engine/src/services/event_bus/tests/retention.rs",
+      "sha256": "a4b5d53c36f805a45126203c48f5a95ff2fbbd5460050c4765095d884d7d2f02",
+      "starting_sha256": null
+    },
+    {
+      "path": "engine/src/services/event_bus_db.rs",
+      "sha256": "6650ffbe7961fe79395422c1cba103452b2dab78239e58ddee415d1c32d0f6f7",
+      "starting_sha256": "5d7d880607766cbbc7aeb3be15ddfe5e61005b8d7be8496a84fb169d2e83d356"
+    },
+    {
+      "path": "frontend/public/course/en/architecture.md",
+      "sha256": "e5403cd2dba4f8e7467e05e1310d297a2560b75e4e6a3e86ce5be129a3323b91",
+      "starting_sha256": "580335c98ab6e25780022ae6064ff27276939f63df0ac64eb7f4affef7ff34d9"
+    },
+    {
+      "path": "frontend/public/course/en/event-stream.md",
+      "sha256": "c692971a322973c59f5490a007e0c11b49090b4b93c6cffc076862a345b4a25e",
+      "starting_sha256": "106d258ff3578c86474e933f1431fd8290f4791614e9dc8134151a9e172ce9f1"
+    },
+    {
+      "path": "frontend/public/course/en/functional-network-bug-hunt-08.md",
+      "sha256": "86468729b3806e9d8e02a8a51e434a20fa5c6583e1aad0a33ba954c0f3bb449b",
+      "starting_sha256": null
+    },
+    {
+      "path": "frontend/public/course/en/functional-network.md",
+      "sha256": "6e37062b1708638d42db0fb79881e7d1b854820a223b9f9ed596b9d64f6f2adc",
+      "starting_sha256": "39740816c397c64f2b4b3fdc9b3a2f79b659511d546d7e10ae55ce129e1bc451"
+    },
+    {
+      "path": "frontend/public/course/en/security.md",
+      "sha256": "97925360bb162e2755ed27b121ba6f64ff17324ecedf18306f0c6e8f8833f030",
+      "starting_sha256": "5b684d996c848078245ddf0d6131d7b1e52ee608277504e1402969fcfb446bdc"
+    },
+    {
+      "path": "frontend/public/course/zh-CN/architecture.md",
+      "sha256": "49fb4280dcf0c11c389383bdb3cc6531cd016db30a325267226f26dc083c48d3",
+      "starting_sha256": "cc96b8a0e5d76c400c66cd7cce1d735656dcfbd170fe571f8453c7b0c536cffb"
+    },
+    {
+      "path": "frontend/public/course/zh-CN/event-stream.md",
+      "sha256": "da62a4c5bf73696ea1ef46150f8345d4f8fad6818ee22af1205e50b51ac6992a",
+      "starting_sha256": "a1f9a7c5e0cb195fd463d1c8a9e1f9405b8b421b4ba30b31657383ae35fc7a0f"
+    },
+    {
+      "path": "frontend/public/course/zh-CN/functional-network-bug-hunt-08.md",
+      "sha256": "98443b1b0888e6b53b8117a6cd2783d6bd632a5de9421e6a40fb7344249a73f2",
+      "starting_sha256": null
+    },
+    {
+      "path": "frontend/public/course/zh-CN/functional-network.md",
+      "sha256": "528f131d21f425213a0821b03b344b032549dcb13da97f7ef81c53dc73caefa8",
+      "starting_sha256": "c9c75da3b7ce969305d6ad31d4a4ebbf5a6aa231598433921bd2c1774128d307"
+    },
+    {
+      "path": "frontend/public/course/zh-CN/security.md",
+      "sha256": "ff0f3d09662b68d72d2a53af82c7789fdd97efd2d484f0924cfb3f906692b415",
+      "starting_sha256": "fc7c75d4a834d932046e1a1cca26a179e0ed175faa3a629e872ccba45956d061"
+    },
+    {
+      "path": "scripts/tests/postgresCi.test.mjs",
+      "sha256": "0a001ee559735ee5306d3587b87625f2200997c4af1e8b68419abebda7b98a39",
+      "starting_sha256": "0a927af4c6bb66e7765942db81e4862e617c4bd00c0f4c9d6502a76f870359ef"
+    }
+  ],
+  "evidence_logs": [
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-08-admission-red.log",
+      "sha256": "4426006e47d9f343273d6061ab1ac870f2345b28aedd638c3716541883aa2b52"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-08-backend.log",
+      "sha256": "d11db3904aed4d98abcafe941acf026053ed2f1c6a1ce48401516d5ab19a0be1"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-08-build.log",
+      "sha256": "4a0d42368199c71333fd9656523ee4516dc17165c5b76e7b53f674bca90c1a80"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-08-ci-red.log",
+      "sha256": "453410cdab73080b7d3a911efa83f00b803d4badfbcab91f770b12d24afbd8db"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-08-common.log",
+      "sha256": "4eeb510985c0f97917612a07c3168474f7d82ca21d88091d2d9815255a304911"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-08-expanded.log",
+      "sha256": "d04e8750ff4ac1449417800e3a22fefae93f7b8ce30c2fbcabd9a9656b4d8829"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-08-focused.log",
+      "sha256": "42979da8d2347787aaf94a51d762fcb541293afcff56e9371ba4ced20aac46e7"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-08-frontend.log",
+      "sha256": "5cfc43c65f33038f07ff02897aed4521c3f3bcd989488b37dee6707b28506515"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-08-initial.log",
+      "sha256": "8bf3f1069f437f2ff5b7883043bc906ab8d6a05464dd315601df90c1324ecbd7"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-08-map-drift.log",
+      "sha256": "6d6a759a397012235219e4fe8062cfdbe8659c6440ce3e0680db72800858a4b4"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-08-ordering-red.log",
+      "sha256": "1b6d52d107979d9a4bfc6ebfebd88109061b3d6aed5fc24e3aadb008b9915424"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-08-postgres.log",
+      "sha256": "59ac69bfe751508515e8df07c3d39c5b9707f7f0655cf4d21be30ab05fa9acb2"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-08-red.log",
+      "sha256": "d928afcb9b0f639ede52aecfe8224e4a2d64172ea3ddf1be155a92a7b4a0533b"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-08-sql-diagnostics.log",
+      "sha256": "34a5ba8e8aa1568ce3cb8e5ee8fd9c1299292c92fe6610aa66ad1e6990121e53"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-08-sql-only.log",
+      "sha256": "889e994c03554bde52ff111b21b090d56b78601e7cb6e908414cb5b5291ed035"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-08-sql-red.log",
+      "sha256": "714feef6c991732d1aaa70c712b05f8cdb41a85631043acfad7ac1232a115399"
+    }
+  ],
+  "preserved_evidence": [
+    {
+      "path": "docs/en/functional-network-bug-hunt-01.md",
+      "sha256": "e1fbe40de77679219a2e2f217534dfdd3b16aeb187e1f2a0cfc6bb6f9ecd6787"
+    },
+    {
+      "path": "docs/en/functional-network-bug-hunt-02.md",
+      "sha256": "2696da5bd82d1b4de53429860f1ed8ab5ca9b76190e74e70736a9e847bb53a4e"
+    },
+    {
+      "path": "docs/en/functional-network-bug-hunt-03.md",
+      "sha256": "5f0b4a915f5dc584194f89955f5344b5ddfe5dfd2dc3663886629a07278adf43"
+    },
+    {
+      "path": "docs/en/functional-network-bug-hunt-04.md",
+      "sha256": "f43de916a6e20b18263e32b830d24d2a85271df4689a3aea5d6bbad865449dc1"
+    },
+    {
+      "path": "docs/en/functional-network-bug-hunt-05.md",
+      "sha256": "ecfd44485ad23200706f7d176f6704ec46effe8a30219f2a5c7e05ce5cfc4074"
+    },
+    {
+      "path": "docs/en/functional-network-bug-hunt-06.md",
+      "sha256": "31a15dce993a40f3f34fc0344f9cd9284bc18c59d5af362b853dff0b2882529b"
+    },
+    {
+      "path": "docs/en/functional-network-bug-hunt-07.md",
+      "sha256": "2b8ec66a371feb851c909d3e3c99ee55a0292efa916fe57bde87b6aa0aeecb2c"
+    },
+    {
+      "path": "docs/functional-network.json",
+      "sha256": "bc16ef895c1f7b9f9d0b5d9195499d4efcba09466b3c85bdfcc04d20006ad30d"
+    },
+    {
+      "path": "docs/zh-CN/functional-network-bug-hunt-01.md",
+      "sha256": "4fce45299e8b1b05beded5df29c79a4009bb8bf5bb16937682286529ae2283b4"
+    },
+    {
+      "path": "docs/zh-CN/functional-network-bug-hunt-02.md",
+      "sha256": "bcd8779a605506a2aedffb46e64621fe5d5c8bfaa1947d0043ae6a641ea95aa9"
+    },
+    {
+      "path": "docs/zh-CN/functional-network-bug-hunt-03.md",
+      "sha256": "16e0b4680ea33adc310c89fa7e2696e374a590171ffeea73818e2cb0ca63ed8a"
+    },
+    {
+      "path": "docs/zh-CN/functional-network-bug-hunt-04.md",
+      "sha256": "323bbf1cd1bd532359bb6a97f06e8862aad551955c03a073c82185e779461538"
+    },
+    {
+      "path": "docs/zh-CN/functional-network-bug-hunt-05.md",
+      "sha256": "e439cc5bab2a34e0463bbf70b15c796230f1105b9072ef8f704093d985209231"
+    },
+    {
+      "path": "docs/zh-CN/functional-network-bug-hunt-06.md",
+      "sha256": "94cae515fa1b969bc68ec302da629da783577073a0e73befbd90e88022c9b650"
+    },
+    {
+      "path": "docs/zh-CN/functional-network-bug-hunt-07.md",
+      "sha256": "f69dcda94470dd31c4e1d605e58aee425cf2ba593e5b1c48e41a159b24c962a3"
+    },
+    {
+      "path": "frontend/public/course/en/functional-network-bug-hunt-01.md",
+      "sha256": "e1fbe40de77679219a2e2f217534dfdd3b16aeb187e1f2a0cfc6bb6f9ecd6787"
+    },
+    {
+      "path": "frontend/public/course/en/functional-network-bug-hunt-02.md",
+      "sha256": "2696da5bd82d1b4de53429860f1ed8ab5ca9b76190e74e70736a9e847bb53a4e"
+    },
+    {
+      "path": "frontend/public/course/en/functional-network-bug-hunt-03.md",
+      "sha256": "5f0b4a915f5dc584194f89955f5344b5ddfe5dfd2dc3663886629a07278adf43"
+    },
+    {
+      "path": "frontend/public/course/en/functional-network-bug-hunt-04.md",
+      "sha256": "f43de916a6e20b18263e32b830d24d2a85271df4689a3aea5d6bbad865449dc1"
+    },
+    {
+      "path": "frontend/public/course/en/functional-network-bug-hunt-05.md",
+      "sha256": "ecfd44485ad23200706f7d176f6704ec46effe8a30219f2a5c7e05ce5cfc4074"
+    },
+    {
+      "path": "frontend/public/course/en/functional-network-bug-hunt-06.md",
+      "sha256": "31a15dce993a40f3f34fc0344f9cd9284bc18c59d5af362b853dff0b2882529b"
+    },
+    {
+      "path": "frontend/public/course/en/functional-network-bug-hunt-07.md",
+      "sha256": "2b8ec66a371feb851c909d3e3c99ee55a0292efa916fe57bde87b6aa0aeecb2c"
+    },
+    {
+      "path": "frontend/public/course/functional-network.json",
+      "sha256": "bc16ef895c1f7b9f9d0b5d9195499d4efcba09466b3c85bdfcc04d20006ad30d"
+    },
+    {
+      "path": "frontend/public/course/zh-CN/functional-network-bug-hunt-01.md",
+      "sha256": "4fce45299e8b1b05beded5df29c79a4009bb8bf5bb16937682286529ae2283b4"
+    },
+    {
+      "path": "frontend/public/course/zh-CN/functional-network-bug-hunt-02.md",
+      "sha256": "bcd8779a605506a2aedffb46e64621fe5d5c8bfaa1947d0043ae6a641ea95aa9"
+    },
+    {
+      "path": "frontend/public/course/zh-CN/functional-network-bug-hunt-03.md",
+      "sha256": "16e0b4680ea33adc310c89fa7e2696e374a590171ffeea73818e2cb0ca63ed8a"
+    },
+    {
+      "path": "frontend/public/course/zh-CN/functional-network-bug-hunt-04.md",
+      "sha256": "323bbf1cd1bd532359bb6a97f06e8862aad551955c03a073c82185e779461538"
+    },
+    {
+      "path": "frontend/public/course/zh-CN/functional-network-bug-hunt-05.md",
+      "sha256": "e439cc5bab2a34e0463bbf70b15c796230f1105b9072ef8f704093d985209231"
+    },
+    {
+      "path": "frontend/public/course/zh-CN/functional-network-bug-hunt-06.md",
+      "sha256": "94cae515fa1b969bc68ec302da629da783577073a0e73befbd90e88022c9b650"
+    },
+    {
+      "path": "frontend/public/course/zh-CN/functional-network-bug-hunt-07.md",
+      "sha256": "f69dcda94470dd31c4e1d605e58aee425cf2ba593e5b1c48e41a159b24c962a3"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-01-backend.log",
+      "sha256": "03e1dd64ec0f870a4b0a95a89c1dad040db5538be33c6183fa9c1e5ead04109c"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-01-common.log",
+      "sha256": "93dfc2b81cf2fae4315b2fb4cf0ed2108afdbd58d16df1cc056b4433badf7cb4"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-01.json",
+      "sha256": "88e4bb77557b4cfa60559528e20717a26077f8c135ed0cd2ebb352f4663fbe7c"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-02-backend.log",
+      "sha256": "cdd2f53dd32d2d9f2223397214c636a5857d316c99041bc61044174874228dbc"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-02-common.log",
+      "sha256": "b48883e7832c04c7394e79fb7fc20cbe45eb4b7631734901a7d77b31a951979c"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-02-red.log",
+      "sha256": "72318ede656aa1e3bab7451c2f39b4a767e0c733f1567eae9debe5b1eec45311"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-02.json",
+      "sha256": "117c91a90548edde822bc714b09ceda6086cc4ecddb0d29021211bd3d51d402b"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-03-browser.log",
+      "sha256": "3e8eeb3c9e1f9cfdf568c61bcb2970748242cae7dc1262b518b5a55ea32a34b2"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-03-build.log",
+      "sha256": "cc26bc0c2a05f88d4b7caf7c62f0c9597b019c971de75b709a62f302a7a04023"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-03-common.log",
+      "sha256": "36794a5c9f575896271c50d2d9a6cc4d6004a729d27473b7d7289af8bd9d1f6d"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-03-frontend.log",
+      "sha256": "96d5e36ad2a070496d4a6f34d748f34705fe67aa7bd264114fb0ef5afeea2f01"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-03-red.log",
+      "sha256": "c2e8b8de0ce3bffd76e56a7bc037f3d9f76fea249b7389dd26e346f102f77719"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-03-ui.log",
+      "sha256": "36149f8ec8b63503ca969d29d5871c17f6c56cc56c72afae3cbf6698b96c4d84"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-03.json",
+      "sha256": "ed1d9d5e87424bb300bd69ade5ebda75e950e1a8a4f6776a5e88c14885558a9e"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-04-backend.log",
+      "sha256": "d8f2337a6931ce89d9970915a79f5f0b4f379dd4735f014117de9a8aa462b798"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-04-browser.log",
+      "sha256": "e43d262e08a50554d4a3357936c04d055932cf6c7e72809e014165be91b73ed5"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-04-build.log",
+      "sha256": "07989515ac637cb16b8b8a6bc7d94d2ef7f8d10cea0f3813c6bdf4bf0a7e75cd"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-04-common.log",
+      "sha256": "059235fa08a2cebe8fe2548f2c6bedc11e9b846a3ad8fec293feb8fad71efcd4"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-04-followup-red-browser.log",
+      "sha256": "c663c692df371ced202ad8ed9ed75ea19c2b684109a5f8c3afaac9c0386b8e65"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-04-followup-red-semantic.log",
+      "sha256": "18956952b9633b3dc24eae92b05aa1baf858e1e1e77d78bd177ff0f9410e6a19"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-04-frontend.log",
+      "sha256": "b3bb5ffd0d5e2b60d12796afdf918ce1ee8c024c785b468a38473873a766c007"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-04-headers-backend.log",
+      "sha256": "fae010fb19eeba2955d86c1e62eb5e1ce3e00f7fdfdbf7e6637c27aa2000079e"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-04-map-drift.log",
+      "sha256": "36480037e23066d2ceaa0bc7b240f9c99fca5b88f97c262f897df686059eeec7"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-04-red.log",
+      "sha256": "d78f84b06ac2043d06788275df818e41a8036876b0b97cde99d8b626cce9ab73"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-04-ui-before-sync.log",
+      "sha256": "2bca3622fd662f820120a5432a75edfb9c890b4a3b6752bcb637882b77ce091b"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-04-ui.log",
+      "sha256": "e570071c3b4e37229d8601972d470ac2bcb4b334d0ea45f1ef9dca0b44ca9a30"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-04.json",
+      "sha256": "f7a80c030439021ebef57269b011af1b8167309e276668570939c792e3fad189"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-05-backend.log",
+      "sha256": "07d883fae25ef6b2310a849860ae929f0dc67a79fc6bfc730bfe90017ab99c02"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-05-browser.log",
+      "sha256": "70c26a3daf6a117b88181cad177d9b426db0f44aaaf71c896b8ec43174f1ac8b"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-05-build.log",
+      "sha256": "467ff470ee47939dc9b6c6f4023638921f0f0b55a275ce0bdac29d87c185e71e"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-05-common.log",
+      "sha256": "878b12a45396647185442bf20225e87790a2794872a31e5c4a06fc5e4b3eac3d"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-05-frontend.log",
+      "sha256": "0414e29c1ec5b81db71109e76df784de471719e86180312c362d07701a714fd7"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-05-map-drift.log",
+      "sha256": "ab4fab76dee70e68c741ef27f14280860ecec5ee9554662f58b2d99359b8c4c8"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-05-preservation-red.log",
+      "sha256": "f6540aac0d26c154519d6869a47aacd28c666c2a8080b3eb66e3ebe7658db9c0"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-05-red.log",
+      "sha256": "26ddd235bbc05b0bdb07e7ca777a879a8853727430cb7e4cc914ccc773b0dfe5"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-05-ui.log",
+      "sha256": "17c8a0c3d893fc1170008dd7ad9836a7f692d263b40cece45a5bc32554c680ae"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-05.json",
+      "sha256": "9c9bf58d78e120ec995d292c1f49410098e27e727cf2b055a3dc847cdf547a73"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-06-backend.log",
+      "sha256": "4549b8596b419d0da80914bd81a7e2ef758ebd1734b08e1e3b01d242d68bc476"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-06-browser-before-filter-fix.log",
+      "sha256": "2bf4ea4dea0292abdae471b5099dc6d619aea9cea05f02bc4ae31208f96d7365"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-06-browser.log",
+      "sha256": "2f49511ab066e7941953d333d89c82316bada13e43c9c550e8ccf96cc2def26f"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-06-build.log",
+      "sha256": "cab591bab6ce1c4d27ac2bc373adae0e9405400502e2d842959395cbdb11300a"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-06-common.log",
+      "sha256": "864bc6210872b2df93f9a8173fab2317e996a99e8a7e7616a57fff965c5a17f2"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-06-followup-red.log",
+      "sha256": "755c80cd659b6af26fbc7a499ff843cf65ec572ebe8f11ca8d555360e064e971"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-06-frontend.log",
+      "sha256": "cb4ad743773d26e146eee8670c3bce7547a1eb518dae8c63b3d1bb2c9feb8839"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-06-map-drift.log",
+      "sha256": "0242c1c932792a22e224f1068de5947caaccedb0916d829195eeccb3fe33917d"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-06-red-backend.log",
+      "sha256": "1a30012a4c96ed7195cec232c8e2bc9b66e1b7b8ca465e987e1c697011565dd3"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-06-red-browser.log",
+      "sha256": "393634e42d7cfcc27ce078a094a038a513d4cf16502396fc39932f1eda7f34f3"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-06-ui.log",
+      "sha256": "078a826a7340f5d4c5c32352585eeb73ce8f9161e7325898f8b090255c76d86a"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-06.json",
+      "sha256": "e895effb331b1a606911687bfdf9ed0196cf23501346bd06920fef30e6b01663"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-07-backend.log",
+      "sha256": "dac92b9856d78d0aaa166f8a9d00ad564d4ce4e3cefb70eb948f1600cb323870"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-07-browser-before-settle.log",
+      "sha256": "578dc1ac759167d8dbceae6bfcc33823b77cbcdfa9fc40319e7c8ee39cc8f0d6"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-07-browser-expanded.log",
+      "sha256": "2c7adb9b6d564847c90ee4b0ab5eed97b7916d5164fccae0a3d0cc1467c4488c"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-07-browser.log",
+      "sha256": "61eefdae2f26e0ab6a604f45c885b05ac1c8620912c4b26f814093de17237d65"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-07-build.log",
+      "sha256": "e377d70056da7dc6dbe8122764c78d2e50be1089d3439fc5fea17faa8fd57f3d"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-07-common.log",
+      "sha256": "4fdacc3a85ee490872c6abe642e1c4bd104f63259705fd9ad227ac824b468850"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-07-followup-red.log",
+      "sha256": "8ea808963dcc95517ed6175916c062985df8035f963441cd1ef857adcd349bd6"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-07-frontend.log",
+      "sha256": "a88b74e9306c830711fc8c5905012e57f0b7302b40f97b188cf6b23e6dcd7286"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-07-map-drift.log",
+      "sha256": "4d5135f8018e7e580641c4130284fdc59a79165eb0ee9bdcbf7dc5ed38b748d0"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-07-red-browser.log",
+      "sha256": "c7a4cc6f936470c2f8e75d9e3fdcce4feddeb085ae0c6511cb42e2a430fe9709"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-07-ui.log",
+      "sha256": "5104dc402f64ab6aefd583ca0ce2e3e6eb296f320960d842d4fb1acf9498dcce"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/bug-hunt-07.json",
+      "sha256": "cdce3afd7d6b575a8873604702b9bc1549cfb66e1269e06fe850cf6b3661ce3e"
+    },
+    {
+      "path": "reports/functional-network/2026-09-13/verification.json",
+      "sha256": "33a58e9da0fd45b1c3e71787a5b4f2b2d18e811800597d15973148f4ad258902"
+    }
+  ]
+}

@@ -11,8 +11,10 @@ Follow-ups: [01 — learning and persistence](functional-network-bug-hunt-01.md)
 [03 — browser compiler diagnostics](functional-network-bug-hunt-03.md) ·
 [04 — completion and manual header checks](functional-network-bug-hunt-04.md) ·
 [05 — manual run and attachment cleanup](functional-network-bug-hunt-05.md) ·
-[06 — debug sessions and event recovery](functional-network-bug-hunt-06.md). The inventory/fingerprints remain the
-pre-hunt baseline; drift checks report later learning, Runner/Agent, browser and quality-gate changes. Per-pass results
+[06 — debug sessions and event recovery](functional-network-bug-hunt-06.md) ·
+[07 — event history, export and unread/deletion controls](functional-network-bug-hunt-07.md) ·
+[08 — event retention and persistence ordering](functional-network-bug-hunt-08.md). The inventory/fingerprints remain the
+pre-hunt baseline; drift checks report later learning, Runner/Agent, browser, event storage and quality-gate changes. Per-pass results
 are not all-workflow acceptance.
 
 The teacher is the teaching and deployment authority; solo mode seeds its own teacher. `admin` is a compatibility alias, and the `staff`/`admin` route groups both require teacher authority. A teacher on one instance does not inherit teacher rights on another.

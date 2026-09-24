@@ -26,6 +26,11 @@ pub(crate) struct PersistRequest {
     pub(crate) overflow_policy: EventOverflowPolicy,
 }
 
+pub(crate) enum PersistMessage {
+    Event(PersistRequest),
+    Barrier(tokio::sync::oneshot::Sender<bool>),
+}
+
 #[derive(Debug, Clone, Copy)]
 pub(crate) struct EventQueryFilter<'a> {
     pub username: &'a str,
@@ -86,7 +91,7 @@ where
 pub(crate) async fn run_persist_loop(
     bus: EventBus,
     pool: PgPool,
-    mut receiver: mpsc::Receiver<PersistRequest>,
+    mut receiver: mpsc::Receiver<PersistMessage>,
 ) {
     let mut channel_closed = false;
     let mut max_pending_requests = 0usize;
@@ -96,7 +101,14 @@ pub(crate) async fn run_persist_loop(
     let warn_threshold = pressure_cfg.warning_threshold(DB_PERSIST_QUEUE_CAPACITY);
     let clear_threshold = pressure_cfg.recover_threshold(DB_PERSIST_QUEUE_CAPACITY);
 
-    while let Some(first_request) = receiver.recv().await {
+    while let Some(message) = receiver.recv().await {
+        let first_request = match message {
+            PersistMessage::Event(request) => request,
+            PersistMessage::Barrier(reply) => {
+                let _ = reply.send(bus.active_pool().is_some());
+                continue;
+            }
+        };
         if bus.active_pool().is_none() {
             continue;
         }
@@ -127,6 +139,7 @@ pub(crate) async fn run_persist_loop(
 
         let mut batch = Vec::with_capacity(DB_PERSIST_BATCH_SIZE);
         batch.push(first_request);
+        let mut barrier = None;
 
         let wait = sleep(TokioDuration::from_millis(DB_PERSIST_BATCH_WAIT_MS));
         tokio::pin!(wait);
@@ -134,10 +147,10 @@ pub(crate) async fn run_persist_loop(
         while batch.len() < DB_PERSIST_BATCH_SIZE && !channel_closed {
             tokio::select! {
                 request = receiver.recv() => {
-                    if let Some(request) = request {
-                        batch.push(request);
-                    } else {
-                        channel_closed = true;
+                    match request {
+                        Some(PersistMessage::Event(request)) => batch.push(request),
+                        Some(PersistMessage::Barrier(reply)) => { barrier = Some(reply); break; }
+                        None => channel_closed = true,
                     }
                 }
                 _ = &mut wait => {
@@ -146,7 +159,11 @@ pub(crate) async fn run_persist_loop(
             }
         }
 
-        if persist_event_batch(&bus, &pool, batch).await.is_err() {
+        let result = persist_event_batch(&bus, &pool, batch).await;
+        if let Some(reply) = barrier {
+            let _ = reply.send(result.is_ok() && bus.active_pool().is_some());
+        }
+        if result.is_err() {
             break;
         }
 
@@ -229,7 +246,7 @@ async fn persist_event_insert_batch(
                         username, timestamp, source, event_type, category, severity, color, payload, is_read
                     )",
                 );
-                query.push(" VALUES ");
+                query.push(" ");
                 query.push_values(chunk.iter(), |mut b, request| {
                     let event = &request.event;
                     b.push_bind(&event.username)
@@ -239,7 +256,7 @@ async fn persist_event_insert_batch(
                         .push_bind(to_category_str(event.category))
                         .push_bind(to_severity_str(event.severity))
                         .push_bind(to_color_str(event.color))
-                        .push_bind(event.payload.to_string())
+                        .push_bind(Json(&event.payload))
                         .push_bind(is_read);
                 });
                 query.build().execute(pool).await
@@ -265,12 +282,8 @@ async fn persist_drop_new_batch(
         return Ok(());
     }
     if requests.len() > 1 {
-        requests.sort_unstable_by(|left, right| {
-            left.event
-                .timestamp
-                .cmp(&right.event.timestamp)
-                .then_with(|| left.event.event_type.cmp(&right.event.event_type))
-        });
+        // Equal timestamps retain queue/publication order, not event-type spelling.
+        requests.sort_by_key(|request| request.event.timestamp);
     }
 
     let first_request = requests.first().expect("non-empty after empty check");
@@ -340,12 +353,7 @@ async fn persist_oldest_batch(
     requests: &mut [PersistRequest],
 ) -> Result<(), ()> {
     if requests.len() > 1 {
-        requests.sort_unstable_by(|left, right| {
-            left.event
-                .timestamp
-                .cmp(&right.event.timestamp)
-                .then_with(|| left.event.event_type.cmp(&right.event.event_type))
-        });
+        requests.sort_by_key(|request| request.event.timestamp);
     }
 
     if persist_event_insert_batch(bus, pool, username, requests, false, "batch insert")
@@ -382,24 +390,6 @@ async fn persist_oldest_batch(
     }
 
     Ok(())
-}
-
-pub(crate) async fn persist_event_to_db(
-    bus: &EventBus,
-    pool: &PgPool,
-    event: Event,
-    max_records: usize,
-    overflow_policy: EventOverflowPolicy,
-) {
-    let request = PersistRequest {
-        event,
-        max_records,
-        overflow_policy,
-    };
-
-    if persist_event_batch(bus, pool, vec![request]).await.is_err() {
-        bus.disable_db("persist event in fallback batch failed");
-    }
 }
 
 pub(crate) async fn snapshot_from_db_with_filters(
@@ -463,7 +453,7 @@ pub(crate) async fn snapshot_from_db_with_filters(
         next_param += 1;
     }
 
-    query.push_str(" ORDER BY timestamp DESC");
+    query.push_str(" ORDER BY timestamp DESC, id DESC");
     if checked_limit.is_some() {
         query.push_str(&format!(" LIMIT ${next_param}"));
     }

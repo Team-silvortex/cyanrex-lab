@@ -11,8 +11,10 @@
 [第 3 轮——浏览器编译诊断](functional-network-bug-hunt-03.md) ·
 [第 4 轮——补全与手动头文件检查](functional-network-bug-hunt-04.md) ·
 [第 5 轮——手动运行与挂载清理](functional-network-bug-hunt-05.md) ·
-[第 6 轮——调试会话与事件恢复](functional-network-bug-hunt-06.md)。清单及其指纹保留为抓虫前基线，
-漂移检查会如实报告后续修改的学习、Runner/Agent、浏览器与检查入口，不把分轮结果当成全链路验收。
+[第 6 轮——调试会话与事件恢复](functional-network-bug-hunt-06.md) ·
+[第 7 轮——事件历史、导出与未读/删除操作](functional-network-bug-hunt-07.md) ·
+[第 8 轮——事件保留与持久化顺序](functional-network-bug-hunt-08.md)。清单及其指纹保留为抓虫前基线，
+漂移检查会如实报告后续修改的学习、Runner/Agent、浏览器、事件存储与检查入口，不把分轮结果当成全链路验收。
 
 教师同时拥有教学与部署管理权；单人模式初始化自己的教师。`admin` 是兼容别名，`staff`/`admin` 路由组均要求教师权威。一个实例上的教师不会因此获得另一实例的教师权限。
 

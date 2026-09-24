@@ -82,7 +82,64 @@ numeric prefixes, overflow and blank line tokens are rejected. Normal trace suff
 Session markers/line allowlists do not prove that a kernel producer is trusted in a shared trace log.
 See [bug hunt 06](functional-network-bug-hunt-06.md) for scoped evidence and remaining limitations.
 
+## History, export and unread controls
+
+The Events page keys history and connection/gap state by Engine, navigation and filters. Invalid or
+reversed custom ranges stop history/export/deletion instead of throwing or silently querying everything.
+Changing filters hides previous rows immediately; relative windows age displayed rows on a one-second
+tick without extra snapshots or acknowledgements. Refreshing the same scope preserves its gap notice.
+Only a successful current snapshot can establish an empty view; recovering history disables deletion.
+
+Export freezes the chosen query/format for one request, prevents duplicate dispatch and aborts browser
+waiting on input changes or navigation. A 20-second deadline includes the body. Its MIME type must match
+JSON/CSV; filenames are safe and format-bound, and object URLs are released after download activation.
+Export remains a separate full-history query, not an atomic snapshot of the 200 displayed rows; file
+contents, spreadsheet formula safety and total bytes are not newly validated or bounded by this patch.
+
+Deletion retains its target-bound typed confirmation and fixed upper cutoff, never the visible count as
+its server scope. Only exact `ok: true` plus a nonnegative safe-integer `deleted` count refreshes the view;
+failure/timeout is uncertain, does not clear rows and never retries automatically. Leaving the page cancels
+waiting, not deletion. Explicit session/permission rejection remains distinguishable.
+
+After successful history/live delivery, a 1.2-second debounce acknowledges ALL current-account events,
+including events outside the filters/view; the existing endpoint has no per-event IDs or cutoff. The UI
+discloses that scope. Only one acknowledgement can be pending; filter changes/navigation cancel its timer
+and waiting. Failure is visible and suppresses automatic attempts until a manual retry or new view scope.
+Sidebar unread reads are validated, have ten-second deadlines and poll four seconds after completion.
+Unavailable state is `?`, not zero. Successful acknowledgement/deletion triggers a fresh read that invalidates
+older in-flight badge responses. These are UI acknowledgements, not new durable SQL guarantees.
+
+See [bug hunt 07](functional-network-bug-hunt-07.md) for reproduction and source-bound evidence.
+
 ## Recovery limits
+
+### Persistence ordering and retention
+
+While SQL remains healthy, mutations drain earlier queued publications through a writer barrier before
+mark-read, filtered deletion, replacement or retention changes. Per-owner admission prevents later local
+publications overtaking that sequence, including after cancellation of an admitted SQL caller. Other
+owners can still publish. Memory-only cancellation while waiting for locks leaves the old state intact.
+Settings/trim and replacement each use a transaction; failures do not publish their new memory state.
+Capacity caches are cleared after mutations so DropNew can immediately use newly freed slots. Equal-time
+rows preserve queue order, and SQL history uses timestamp plus ID ordering.
+
+The queue still has 2,048 slots and 64-record batches. Full/closed queues no longer spawn an additional
+SQL task per event: they warn and latch volatile history until Engine restart. Barrier waiting and selected
+schema/settings/mutation stages each have ten-second application deadlines. They do not stop already
+dispatched database work or prove rollback, and they are not a total request deadline. The existing
+fallback can still acknowledge volatile read/deletion changes; HTTP success is not a new durability flag.
+After an outage, review storage health and any volatile events before restarting; restoration/reconciliation
+is not automatic. Plain history/unread reads do not gain a barrier or an atomic snapshot/live join.
+
+See [bug hunt 08](functional-network-bug-hunt-08.md). Its 17 new PostgreSQL cases plus the earlier deletion
+case use disposable schemas, real SQL and controlled queues/locks; CI explicitly selects the new ignored
+tests. Run only with an explicitly disposable `CYANREX_TEST_DATABASE_URL`, never the deployment URL:
+
+```bash
+cargo test --manifest-path engine/Cargo.toml --locked --lib services::event_bus::tests -- --ignored --test-threads=1
+```
+
+### Remaining replay limits
 
 Only retained recent history can be recovered. Retention policy, event filters, other kernel traffic,
 or Engine restarts may remove missing records before a client reconnects. PostgreSQL persistence is

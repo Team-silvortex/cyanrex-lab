@@ -1,0 +1,68 @@
+   Compiling cyanrex-engine v0.3.9 (/home/chiharukiryu/cdev/cyanrex-lab/engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 12.46s
+     Running unittests src/lib.rs (engine/target/debug/deps/cyanrex_engine-c01bd6d40079956c)
+
+running 43 tests
+test services::event_bus::read_bench::measure ... ignored, manual release benchmark; use scripts/bench-event-history-reads.mjs
+test services::event_bus::subscriptions::bench::measure ... ignored, manual release benchmark; use scripts/bench-event-fanout.mjs
+test services::event_bus::subscriptions::tests::cancelling_recv_preserves_delivery_and_aborting_releases_the_subscription ... ok
+test services::event_bus::subscriptions::tests::concurrent_publishers_and_connection_churn_preserve_owner_and_writer_order ... ok
+test services::event_bus::subscriptions::tests::event_bus_keeps_global_compatibility_and_drop_new_semantics ... ok
+test services::event_bus::subscriptions::tests::json_is_lazy_and_encoded_once_across_concurrent_receivers ... ok
+test services::event_bus::subscriptions::tests::matching_receivers_share_one_event_allocation ... ok
+test services::event_bus::subscriptions::tests::receivers_do_not_keep_the_registry_or_sender_alive ... ok
+test services::event_bus::subscriptions::tests::stale_drop_cannot_remove_a_replacement_generation ... ok
+test services::event_bus::subscriptions::tests::subscriptions_are_live_only_and_cleanup_after_the_last_connection ... ok
+test services::event_bus::subscriptions::tests::unrelated_traffic_cannot_lag_an_owner_but_own_slow_receivers_still_lag ... ok
+test services::event_bus::tests::bounded_reads_during_publication_remain_ordered_and_user_scoped ... ok
+test services::event_bus::tests::concurrent_users_retain_independent_ordered_histories ... ok
+test services::event_bus::tests::deletion::cancelled_deletion_never_splits_history_and_unread ... ok
+test services::event_bus::tests::deletion::deletion_cannot_erase_concurrent_nonmatching_publications ... ok
+test services::event_bus::tests::deletion::deletion_preserves_read_state_and_other_users ... ok
+test services::event_bus::tests::deletion::invalid_service_filters_never_widen_deletion ... ok
+test services::event_bus::tests::deletion::postgres_filtered_delete_preserves_uncached_rows_and_read_flags ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::drop_new_does_not_change_history_broadcast_or_unread_after_full ... ok
+test services::event_bus::tests::drop_oldest_preserves_fifo_after_repeated_wraparound ... ok
+test services::event_bus::tests::filtered_snapshots_keep_latest_matching_events_in_fifo_order ... ok
+test services::event_bus::tests::limited_queries_handle_empty_zero_oversized_and_full_export_results ... ok
+test services::event_bus::tests::persistence::postgres_deletion_cannot_be_undone_by_its_pending_publications ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::postgres_deletion_invalidates_drop_new_capacity_cache ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::postgres_failed_settings_update_preserves_memory_and_previous_policy ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::postgres_mark_read_waits_for_previously_queued_events ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::postgres_publish_batch_really_persists_json_without_fallback ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::postgres_replacement_really_persists_and_marks_only_its_owner_read ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::postgres_retention_update_cannot_be_overridden_by_queued_old_settings ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::replacement_and_clear_remain_user_scoped_and_reset_unread ... ok
+test services::event_bus::tests::retention::cancelled_replacement_never_splits_history_and_unread ... ok
+test services::event_bus::tests::retention::cancelled_retention_update_never_splits_settings_history_and_unread ... ok
+test services::event_bus::tests::retention::full_persistence_queue_latches_bounded_memory_fallback_instead_of_spawning_writers ... ok
+test services::event_bus::tests::retention::replacement_rejects_foreign_owner_records_without_modifying_either_owner ... ok
+test services::event_bus::tests::selected_result_storage_does_not_grow_past_the_known_output_bound ... ok
+test services::event_bus::tests::shrinking_and_growing_a_wrapped_history_preserves_the_newest_events ... ok
+test services::event_bus::tests::steady_state_eviction_does_not_grow_or_relocate_retained_events ... ok
+test services::event_bus_filter::tests::borrowed_selection_matches_legacy_filters_across_wrapped_histories ... ok
+test services::event_bus_filter::tests::latest_page_stops_visiting_after_its_limit_and_returns_borrowed_events ... ok
+test services::event_bus_filter::tests::retention_is_applied_before_filtering_older_matches ... ok
+test services::event_bus_filter::tests::selective_page_stops_after_enough_matches_not_enough_scanned_events ... ok
+test services::event_bus_filter::tests::time_bounds_are_inclusive_and_do_not_assume_timestamp_order ... ok
+test services::event_bus_filter::tests::zero_limit_does_not_visit_history ... ok
+
+test result: ok. 33 passed; 0 failed; 10 ignored; 0 measured; 143 filtered out; finished in 0.24s
+
+Selected test process exit: 0
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.12s
+     Running unittests src/lib.rs (engine/target/debug/deps/cyanrex_engine-c01bd6d40079956c)
+
+running 8 tests
+test services::event_bus::tests::deletion::postgres_filtered_delete_preserves_uncached_rows_and_read_flags ... ok
+test services::event_bus::tests::persistence::postgres_deletion_cannot_be_undone_by_its_pending_publications ... ok
+test services::event_bus::tests::persistence::postgres_deletion_invalidates_drop_new_capacity_cache ... ok
+test services::event_bus::tests::persistence::postgres_failed_settings_update_preserves_memory_and_previous_policy ... ok
+test services::event_bus::tests::persistence::postgres_mark_read_waits_for_previously_queued_events ... ok
+test services::event_bus::tests::persistence::postgres_publish_batch_really_persists_json_without_fallback ... ok
+test services::event_bus::tests::persistence::postgres_replacement_really_persists_and_marks_only_its_owner_read ... ok
+test services::event_bus::tests::persistence::postgres_retention_update_cannot_be_overridden_by_queued_old_settings ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 178 filtered out; finished in 0.83s
+
+Selected test process exit: 0

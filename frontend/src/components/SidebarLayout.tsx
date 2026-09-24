@@ -15,6 +15,7 @@ import {
 } from "../utils/sidebarPermissions";
 import { parseSafeRedirectPath } from "../utils/security";
 import { logoutSession } from "../utils/authSession";
+import { useUnreadEvents } from "../features/events/useUnreadEvents";
 import LanguageSwitcher from "./LanguageSwitcher";
 
 type NavItem = {
@@ -53,7 +54,6 @@ export default function SidebarLayout({ title, children }: SidebarLayoutProps) {
   const router = useRouter();
   const [authReady, setAuthReady] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
-  const [unreadEvents, setUnreadEvents] = useState(0);
   const [userRole, setUserRole] = useState<AuthRole>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
@@ -130,6 +130,7 @@ export default function SidebarLayout({ title, children }: SidebarLayoutProps) {
     () => isRoleAllowed(routeRequiredRoles ?? undefined, userRole),
     [routeRequiredRoles, userRole],
   );
+  const unread = useUnreadEvents(engineUrl, router.asPath, authReady && !checkingAuth && currentRouteAllowed);
 
   useEffect(() => {
     if (!authReady || checkingAuth || currentRouteAllowed) {
@@ -139,33 +140,6 @@ export default function SidebarLayout({ title, children }: SidebarLayoutProps) {
       router.replace("/dashboard");
     }
   }, [authReady, checkingAuth, currentRouteAllowed, routeRequiredRoles, router]);
-
-  useEffect(() => {
-    if (!authReady) return;
-    let active = true;
-
-    const refreshUnread = async () => {
-      try {
-        const response = await fetch(`${engineUrl}/events/unread-count`, {
-          credentials: "include",
-        });
-        if (!response.ok) return;
-        const json = (await response.json()) as { unread?: number };
-        if (active) {
-          setUnreadEvents(json.unread ?? 0);
-        }
-      } catch {
-        // ignore poll errors
-      }
-    };
-
-    refreshUnread();
-    const timer = setInterval(refreshUnread, 4000);
-    return () => {
-      active = false;
-      clearInterval(timer);
-    };
-  }, [authReady, engineUrl, router.pathname]);
 
   const onLogout = async () => {
     if (logoutRequest.current) return;
@@ -267,8 +241,11 @@ export default function SidebarLayout({ title, children }: SidebarLayoutProps) {
                     onClick={() => setMenuOpen(false)}
                   >
                     <span>{t(item.key)}</span>
-                    {item.href === "/events" && unreadEvents > 0 && (
-                      <span className="nav-badge">{unreadEvents > 99 ? "99+" : unreadEvents}</span>
+                    {item.href === "/events" && (unread.count > 0 || unread.unavailable) && (
+                      <span className="nav-badge" title={unread.unavailable ? t("events.unreadUnavailable") : undefined}
+                        aria-label={unread.unavailable ? t("events.unreadUnavailable") : undefined}>
+                        {unread.unavailable ? "?" : unread.count > 99 ? "99+" : unread.count}
+                      </span>
                     )}
                   </Link>
                 );

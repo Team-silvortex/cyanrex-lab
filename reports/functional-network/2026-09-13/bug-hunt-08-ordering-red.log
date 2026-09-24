@@ -1,0 +1,28 @@
+   Compiling cyanrex-engine v0.3.9 (/home/chiharukiryu/cdev/cyanrex-lab/engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 10.15s
+     Running unittests src/lib.rs (engine/target/debug/deps/cyanrex_engine-c01bd6d40079956c)
+
+running 2 tests
+test services::event_bus::tests::persistence::followup::postgres_equal_timestamp_latest_page_uses_publication_order ... ok
+test services::event_bus::tests::persistence::followup::postgres_equal_timestamp_retention_does_not_sort_by_event_type ... FAILED
+
+failures:
+
+---- services::event_bus::tests::persistence::followup::postgres_equal_timestamp_retention_does_not_sort_by_event_type stdout ----
+
+thread 'services::event_bus::tests::persistence::followup::postgres_equal_timestamp_retention_does_not_sort_by_event_type' (1575369) panicked at src/services/event_bus/tests/persistence/followup.rs:39:9:
+assertion `left == right` failed
+  left: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49]
+ right: [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'services::event_bus::tests::persistence::followup::postgres_equal_timestamp_retention_does_not_sort_by_event_type' (1575369) panicked at src/services/event_bus/tests/persistence.rs:96:13:
+event boundary failed; owned schema was cleaned up: JoinError::Panic(Id(24), "assertion `left == right` failed\n  left: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49]\n right: [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55]", ...)
+
+
+failures:
+    services::event_bus::tests::persistence::followup::postgres_equal_timestamp_retention_does_not_sort_by_event_type
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 193 filtered out; finished in 0.06s
+
+error: test failed, to rerun pass `--lib`

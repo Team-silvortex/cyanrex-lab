@@ -1,0 +1,270 @@
+✖ filter changes never commit previous-scope rows under the new selection (1487.955704ms)
+✖ invalid saved custom dates fail visibly instead of crashing the event page (289.976197ms)
+✖ rolling time windows retire expired visible rows even without new events (323.899862ms)
+✖ export admission prevents same-turn duplicate downloads (302.501158ms)
+✖ changed export filters abort the download and ignore its late response (654.579993ms)
+✖ leaving the page aborts export and cannot trigger a late local download (357.235303ms)
+✖ event exports reject unexpected response content instead of downloading an HTML error (348.63836ms)
+✖ unconfirmed deletion bodies cannot clear visible history or restart its stream (417.366938ms)
+✖ navigation cancels deletion waiting and obsolete success cannot refresh a new view (417.683091ms)
+✖ failed read acknowledgements remain visible and do not silently retry on live events (326.739393ms)
+✖ unread polling never overlaps a pending request and cancels it on page exit (293.478152ms)
+✖ malformed unread counts show unavailable rather than a false zero or numeric badge (312.074317ms)
+✖ export and unread/mark-read requests are private and reject redirects (345.61106ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 0
+ℹ fail 13
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6050.804703
+
+✖ failing tests:
+
+test at frontend/tests/eventPage.browser.mjs:34:1
+✖ filter changes never commit previous-scope rows under the new selection (1487.955704ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(renders.every(item => item.rows.length === 0))
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/eventPage.browser.mjs:38:37
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/eventPage.browser.mjs:31:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at frontend/tests/eventPage.browser.mjs:41:1
+✖ invalid saved custom dates fail visibly instead of crashing the event page (289.976197ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + [
+  +   'Invalid time value',
+  +   'Invalid time value'
+  + ]
+  - []
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/eventPage.browser.mjs:44:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/eventPage.browser.mjs:31:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 'Invalid time value', 'Invalid time value' ],
+    expected: [],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/eventPage.browser.mjs:48:1
+✖ rolling time windows retire expired visible rows even without new events (323.899862ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/eventPage.browser.mjs:52:33
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/eventPage.browser.mjs:31:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/eventPage.browser.mjs:55:1
+✖ export admission prevents same-turn duplicate downloads (302.501158ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  2 !== 1
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/eventPage.browser.mjs:60:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/eventPage.browser.mjs:31:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 2,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/eventPage.browser.mjs:63:1
+✖ changed export filters abort the download and ignore its late response (654.579993ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - true
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/eventPage.browser.mjs:67:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/eventPage.browser.mjs:31:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/eventPage.browser.mjs:71:1
+✖ leaving the page aborts export and cannot trigger a late local download (357.235303ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - true
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/eventPage.browser.mjs:74:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/eventPage.browser.mjs:31:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/eventPage.browser.mjs:77:1
+✖ event exports reject unexpected response content instead of downloading an HTML error (348.63836ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(await f.page.getByRole("alert").count())
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/eventPage.browser.mjs:80:70
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/eventPage.browser.mjs:31:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at frontend/tests/eventPage.browser.mjs:83:1
+✖ unconfirmed deletion bodies cannot clear visible history or restart its stream (417.366938ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(await f.page.getByRole("dialog").getByRole("alert").count())
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/eventPage.browser.mjs:87:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/eventPage.browser.mjs:31:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at frontend/tests/eventPage.browser.mjs:90:1
+✖ navigation cancels deletion waiting and obsolete success cannot refresh a new view (417.683091ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - true
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/eventPage.browser.mjs:94:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/eventPage.browser.mjs:31:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/eventPage.browser.mjs:97:1
+✖ failed read acknowledgements remain visible and do not silently retry on live events (326.739393ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(await f.page.getByRole("alert").count())
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/eventPage.browser.mjs:100:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/eventPage.browser.mjs:31:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at frontend/tests/eventPage.browser.mjs:105:1
+✖ unread polling never overlaps a pending request and cancels it on page exit (293.478152ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  3 !== 1
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/eventPage.browser.mjs:107:33
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/eventPage.browser.mjs:31:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 3,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/eventPage.browser.mjs:112:1
+✖ malformed unread counts show unavailable rather than a false zero or numeric badge (312.074317ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  '12' !== '?'
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/eventPage.browser.mjs:115:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/eventPage.browser.mjs:31:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '12',
+    expected: '?',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/eventPage.browser.mjs:118:1
+✖ export and unread/mark-read requests are private and reject redirects (345.61106ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - 'no-store'
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/eventPage.browser.mjs:122:58
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/eventPage.browser.mjs:31:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 'no-store',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

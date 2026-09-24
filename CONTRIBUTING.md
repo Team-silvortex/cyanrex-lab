@@ -65,6 +65,22 @@ Useful focused checks are:
 The frontend check installs dependencies with `npm ci`. If the lockfile is
 already installed and unchanged, `--no-npm-install` can shorten a local run.
 
+### Local Build Disk Usage
+
+Rust development and test builds keep line-level debug information and disable
+incremental compilation to limit disk growth during repeated test runs. Release
+builds are unchanged. For a debugging session that needs local variable inspection,
+override with `CARGO_PROFILE_DEV_DEBUG=2` (or `CARGO_PROFILE_TEST_DEBUG=2` for tests).
+You can opt back into incremental compilation with `CARGO_INCREMENTAL=1`; this
+trades more disk space for faster rebuilds.
+
+After stopping local builds and any processes using their output, reclaim Rust
+build artifacts with `cargo clean --manifest-path engine/Cargo.toml`. The next
+build will recompile dependencies. Frontend `.next/`, SDK `dist/`, and TypeScript
+`*.tsbuildinfo` are also generated outputs, not source or backups. Keep runtime
+data, `.env` files, `.run/` maintenance configuration, database volumes, migration
+backups, and rollback images out of routine cache cleanup.
+
 ## Repository Rules
 
 - Maintained source files must not exceed 600 lines.
@@ -91,13 +107,13 @@ remain explicit operations so a local validation run cannot publish accidentally
 
 ```bash
 ./scripts/quality-gate.sh
-git commit -m "0.3.9"
+git commit -m "0.4.0"
 git fetch origin --tags --prune
-node scripts/release-preflight.mjs --version 0.3.9
-git tag -a v0.3.9 -m "cyanrex-lab 0.3.9"
-node scripts/release-preflight.mjs --tag v0.3.9
+node scripts/release-preflight.mjs --version 0.4.0
+git tag -a v0.4.0 -m "cyanrex-lab 0.4.0"
+node scripts/release-preflight.mjs --tag v0.4.0
 git push origin main
-git push origin v0.3.9
+git push origin v0.4.0
 ```
 
 The release owner should verify the tag target, distribution checksum, extracted-package smoke result,

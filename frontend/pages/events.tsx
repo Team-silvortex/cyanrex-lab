@@ -1,34 +1,25 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/router";
 
 import SidebarLayout from "../src/components/SidebarLayout";
 import { useConfirmedAction } from "../src/components/useConfirmedAction";
 import { buildEventDeleteParams } from "../src/features/events/deleteScope";
-import { getEngineUrl, toWebSocketUrl } from "../src/config/runtime";
-import { startEventStream, type EngineEvent, type EventStreamState } from "../src/features/events/eventStream";
+import { getEngineUrl } from "../src/config/runtime";
+import type { EngineEvent } from "../src/features/events/eventStream";
+import { useEventHistory } from "../src/features/events/useEventHistory";
+import { useEventActions } from "../src/features/events/useEventActions";
+import { useEventReadAcknowledgement } from "../src/features/events/useEventReadAcknowledgement";
 import { useI18n } from "../src/i18n/context";
 import { loadPageState, savePageState } from "../src/utils/pageState";
 
 type SafetyTone = "ok" | "warn";
 
-const EVENT_LIST_LIMIT = 200;
-const MARK_READ_DEBOUNCE_MS = 1200;
-
-type EventFilterState = {
-  categoryFilter: "all" | "kernel" | "platform";
-  severityFilter: "all" | "success" | "warning" | "error";
-  rangePreset: "all" | "10m" | "1h" | "24h" | "custom";
-  startTime: string;
-  endTime: string;
-};
-
 export default function EventsPage() {
   const { t } = useI18n();
+  const router = useRouter();
   const safety = useConfirmedAction();
-  const [events, setEvents] = useState<EngineEvent[]>([]);
-  const [connection, setConnection] = useState<EventStreamState>("connecting");
-  const [streamGap, setStreamGap] = useState(false);
   const [streamRevision, setStreamRevision] = useState(0);
-  const [error, setError] = useState<string | null>(null);
+  const [scopeError, setScopeError] = useState({ key: "", message: "" });
   const [categoryFilter, setCategoryFilter] = useState<"all" | "kernel" | "platform">(
     () => loadPageState<"all" | "kernel" | "platform">("events_category_v1") ?? "all",
   );
@@ -44,50 +35,22 @@ export default function EventsPage() {
     () => loadPageState<"json" | "csv">("events_export_v1") ?? "json",
   );
   const engineUrl = useMemo(getEngineUrl, []);
-  const markReadTimer = useRef<number | null>(null);
-
-  const scheduleMarkRead = useCallback(() => {
-    if (markReadTimer.current !== null) {
-      return;
-    }
-
-    markReadTimer.current = window.setTimeout(() => {
-      markReadTimer.current = null;
-      void fetch(`${engineUrl}/events/mark-read`, {
-        method: "POST",
-        credentials: "include",
-      }).catch(() => undefined);
-    }, MARK_READ_DEBOUNCE_MS);
-  }, [engineUrl]);
-
-  useEffect(() => {
-    const filters = { categoryFilter, severityFilter, rangePreset, startTime, endTime };
-    const params = buildFilterParams({ ...filters, limit: EVENT_LIST_LIMIT });
-    setEvents([]);
-    const dispose = startEventStream({
-      socketUrl: toWebSocketUrl(engineUrl, "/ws/events"),
-      snapshotUrl: `${engineUrl}/events?${params.toString()}`,
-      accepts: (event) => matchesCurrentFilters(event, filters),
-      onEvents: (rows) => { setEvents(rows); scheduleMarkRead(); },
-      onState: setConnection,
-      onGap: () => setStreamGap(true),
-    });
-    return () => {
-      dispose();
-      if (markReadTimer.current !== null) {
-        clearTimeout(markReadTimer.current);
-        markReadTimer.current = null;
-      }
-    };
-  }, [categoryFilter, engineUrl, endTime, rangePreset, scheduleMarkRead, severityFilter, startTime, streamRevision]);
+  const filters = useMemo(() => ({ categoryFilter, severityFilter, rangePreset, startTime, endTime }),
+    [categoryFilter, severityFilter, rangePreset, startTime, endTime]);
+  const filterKey = JSON.stringify([router.asPath, filters]);
+  const refreshHistory = useCallback(() => setStreamRevision(value => value + 1), []);
+  const read = useEventReadAcknowledgement(engineUrl, filterKey);
+  const { events, connection, streamGap, valid } = useEventHistory(engineUrl, router.asPath, filters, streamRevision, read.scheduleMarkRead);
+  const actions = useEventActions(engineUrl, router.asPath, filters, exportFormat, refreshHistory, t);
+  const error = !valid ? t("safety.invalidRange") : actions.error || (scopeError.key === filterKey ? scopeError.message : null);
 
   const activeFilterCount = useMemo(() => {
     let count = 0;
     if (categoryFilter !== "all") count += 1;
     if (severityFilter !== "all") count += 1;
     if (rangePreset !== "all") count += 1;
-    if (rangePreset === "custom" && startTime.trim()) count += 1;
-    if (rangePreset === "custom" && endTime.trim()) count += 1;
+    if (rangePreset === "custom" && typeof startTime === "string" && startTime.trim()) count += 1;
+    if (rangePreset === "custom" && typeof endTime === "string" && endTime.trim()) count += 1;
     return count;
   }, [categoryFilter, severityFilter, rangePreset, startTime, endTime]);
 
@@ -100,81 +63,18 @@ export default function EventsPage() {
     savePageState("events_export_v1", exportFormat);
   }, [categoryFilter, severityFilter, rangePreset, startTime, endTime, exportFormat]);
 
-  const exportEvents = async () => {
-    const params = buildFilterParams({
-      categoryFilter,
-      severityFilter,
-      rangePreset,
-      startTime,
-      endTime,
-      exportFormat,
-    });
-
-    try {
-      const response = await fetch(`${engineUrl}/events/export?${params.toString()}`, {
-        credentials: "include",
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      const blob = await response.blob();
-      const disposition = response.headers.get("content-disposition") || "";
-      const matched = disposition.match(/filename=\"([^\"]+)\"/);
-      const filename = matched?.[1] || `cyanrex-events.${exportFormat}`;
-
-      const url = URL.createObjectURL(blob);
-      const anchor = document.createElement("a");
-      anchor.href = url;
-      anchor.download = filename;
-      document.body.appendChild(anchor);
-      anchor.click();
-      anchor.remove();
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      setError((err as Error).message);
-    }
-  };
-
   const deleteFilteredEvents = () => {
-    const count = events.length;
-    if (count === 0) {
-      setError(t("events.noFilteredToDelete"));
-      return;
-    }
-
+    if (!valid || connection !== "open" || events.length === 0) return;
     let params: URLSearchParams;
-    try { params = buildEventDeleteParams({ categoryFilter, severityFilter, rangePreset, startTime, endTime }); }
-    catch { setError(t("safety.invalidRange")); return; }
+    try { params = buildEventDeleteParams(filters); }
+    catch { setScopeError({ key: filterKey, message: t("safety.invalidRange") }); return; }
+    setScopeError({ key: filterKey, message: "" });
     safety.request({ action: t("events.deleteFiltered"), description: t("safety.deleteEvents"), phrase: "DELETE", details: [
       { label: t("events.category"), value: t(`events.${categoryFilter}`) },
       { label: t("events.severity"), value: t(`events.${severityFilter}`) },
       { label: t("events.start"), value: params.get("start") || t("events.all") },
       { label: t("events.end"), value: params.get("end")! },
-    ] }, () => performDelete(params));
-  };
-
-  const performDelete = async (params: URLSearchParams) => {
-    try {
-      const response = await fetch(`${engineUrl}/events/delete?${params.toString()}`, {
-        method: "POST",
-        credentials: "include",
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-      const json = (await response.json()) as { ok: boolean; deleted: number };
-      if (!json.ok) {
-        throw new Error("delete filtered events failed");
-      }
-      setEvents([]);
-      setError(null);
-      // Invalidate any in-flight snapshot so it cannot restore rows from before this deletion.
-      setStreamRevision((revision) => revision + 1);
-    } catch (err) {
-      setError((err as Error).message);
-      throw err;
-    }
+    ] }, signal => actions.performDelete(params, signal));
   };
 
   return (
@@ -186,9 +86,15 @@ export default function EventsPage() {
           {t("events.status")}: {t(`events.connection${connection[0].toUpperCase()}${connection.slice(1)}`)} | {t("events.total")}: {events.length} | {t("events.filtered")}: {events.length} | {t("events.activeFilters", { count: activeFilterCount })}
         </p>
         {streamGap && <p className="meta" role="status">{t("events.streamGap")}</p>}
-        {connection === "closed" && (
+        {connection === "closed" && valid && (
           <button type="button" onClick={() => setStreamRevision((revision) => revision + 1)}>{t("events.retryStream")}</button>
         )}
+        <p className="meta">{t("events.markReadScope")}</p>
+        {read.readState === "pending" && <p className="meta" role="status">{t("events.markReadPending")}</p>}
+        {read.readState === "error" && <div className="error" role="alert">
+          <p>{t("events.markReadFailed")}</p>
+          <button type="button" onClick={read.retryMarkRead}>{t("events.retryMarkRead")}</button>
+        </div>}
         <div className="row" style={{ marginTop: 10 }}>
           <label className="meta">
             {t("events.category")}:
@@ -242,15 +148,17 @@ export default function EventsPage() {
               <option value="csv">{t("events.exportCsv")}</option>
             </select>
           </label>
-          <button type="button" onClick={exportEvents}>{t("events.exportDownload")}</button>
-          <button type="button" className="button-danger" disabled={safety.busy || events.length === 0}
+          <button type="button" onClick={refreshHistory} disabled={!valid || safety.busy}>{t("events.refreshHistory")}</button>
+          <button type="button" onClick={actions.exportEvents} disabled={!valid || actions.exporting}>{t("events.exportDownload")}</button>
+          {actions.exporting && <span className="meta" role="status">{t("events.exporting")}</span>}
+          <button type="button" className="button-danger" disabled={!valid || connection !== "open" || safety.busy || events.length === 0}
             onClick={deleteFilteredEvents}>{t("events.deleteFiltered")}</button>
         </div>
-        {error && <p className="error">{error}</p>}
+        {error && <p className="error" role="alert">{error}</p>}
       </section>
 
       <section className="panel" style={{ marginTop: 16 }}>
-        {events.length === 0 && <p className="meta">{t("events.noEvents")}</p>}
+        {valid && events.length === 0 && <p className="meta">{t(connection === "open" ? "events.noEvents" : "events.loadingHistory")}</p>}
         {events.map((_, reverseIdx) => {
           const idx = events.length - 1 - reverseIdx;
           const event = events[idx];
@@ -284,56 +192,6 @@ export default function EventsPage() {
       </section>
     </SidebarLayout>
   );
-}
-
-function presetToMinutes(preset: "all" | "10m" | "1h" | "24h" | "custom"): number | null {
-  if (preset === "10m") return 10;
-  if (preset === "1h") return 60;
-  if (preset === "24h") return 24 * 60;
-  return null;
-}
-
-function matchesCurrentFilters(
-  event: EngineEvent,
-  filters: EventFilterState,
-): boolean {
-  if (filters.categoryFilter !== "all" && event.category !== filters.categoryFilter) {
-    return false;
-  }
-
-  if (filters.severityFilter !== "all" && event.severity !== filters.severityFilter) {
-    return false;
-  }
-
-  return timeFilterPass(event.timestamp, filters.rangePreset, filters.startTime, filters.endTime);
-}
-
-function timeFilterPass(
-  timestamp: string,
-  preset: "all" | "10m" | "1h" | "24h" | "custom",
-  start: string,
-  end: string,
-): boolean {
-  const eventTime = new Date(timestamp).getTime();
-  if (Number.isNaN(eventTime)) return true;
-
-  const minutes = presetToMinutes(preset);
-  if (minutes) {
-    return eventTime >= Date.now() - minutes * 60 * 1000;
-  }
-
-  if (preset === "custom") {
-    if (start) {
-      const startMs = new Date(start).getTime();
-      if (!Number.isNaN(startMs) && eventTime < startMs) return false;
-    }
-    if (end) {
-      const endMs = new Date(end).getTime();
-      if (!Number.isNaN(endMs) && eventTime > endMs) return false;
-    }
-  }
-
-  return true;
 }
 
 function extractSafetyBadges(
@@ -372,27 +230,4 @@ function mapSafetyNoteToLabel(
   if (note.includes("still tracked in attachment set")) return t("events.attachmentTrackingResidue");
   if (note.includes("detach all requested but")) return t("events.detachAllIncomplete");
   return note;
-}
-
-function buildFilterParams(input: {
-  categoryFilter: "all" | "kernel" | "platform";
-  severityFilter: "all" | "success" | "warning" | "error";
-  rangePreset: "all" | "10m" | "1h" | "24h" | "custom";
-  startTime: string;
-  endTime: string;
-  exportFormat?: "json" | "csv";
-  limit?: number;
-}): URLSearchParams {
-  const params = new URLSearchParams();
-  if (input.exportFormat) params.set("format", input.exportFormat);
-  if (input.categoryFilter !== "all") params.set("category", input.categoryFilter);
-  if (input.severityFilter !== "all") params.set("severity", input.severityFilter);
-  if (input.limit) params.set("limit", String(input.limit));
-  const minutes = presetToMinutes(input.rangePreset);
-  if (minutes) params.set("since_minutes", String(minutes));
-  if (input.rangePreset === "custom") {
-    if (input.startTime) params.set("start", new Date(input.startTime).toISOString());
-    if (input.endTime) params.set("end", new Date(input.endTime).toISOString());
-  }
-  return params;
 }

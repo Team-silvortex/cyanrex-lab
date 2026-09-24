@@ -4,6 +4,8 @@ use serde_json::json;
 use tokio::sync::broadcast::error::TryRecvError;
 
 mod deletion;
+mod persistence;
+mod retention;
 
 fn memory_bus() -> EventBus {
     let bus = EventBus::new(1024);

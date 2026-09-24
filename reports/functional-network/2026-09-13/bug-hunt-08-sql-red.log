@@ -1,0 +1,39 @@
+   Compiling cyanrex-engine v0.3.9 (/home/chiharukiryu/cdev/cyanrex-lab/engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 8.20s
+     Running unittests src/lib.rs (engine/target/debug/deps/cyanrex_engine-c01bd6d40079956c)
+
+running 2 tests
+test services::event_bus::tests::persistence::postgres_publish_batch_really_persists_json_without_fallback ... FAILED
+test services::event_bus::tests::persistence::postgres_replacement_really_persists_and_marks_only_its_owner_read ... FAILED
+
+failures:
+
+---- services::event_bus::tests::persistence::postgres_publish_batch_really_persists_json_without_fallback stdout ----
+
+thread 'services::event_bus::tests::persistence::postgres_publish_batch_really_persists_json_without_fallback' (1566448) panicked at src/services/event_bus/tests/persistence.rs:157:9:
+assertion `left == right` failed: memory fallback cannot stand in for persistence
+  left: 0
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'services::event_bus::tests::persistence::postgres_publish_batch_really_persists_json_without_fallback' (1566448) panicked at src/services/event_bus/tests/persistence.rs:56:13:
+event boundary failed; owned schema was cleaned up: JoinError::Panic(Id(10), "assertion `left == right` failed: memory fallback cannot stand in for persistence\n  left: 0\n right: 1", ...)
+
+---- services::event_bus::tests::persistence::postgres_replacement_really_persists_and_marks_only_its_owner_read stdout ----
+
+thread 'services::event_bus::tests::persistence::postgres_replacement_really_persists_and_marks_only_its_owner_read' (1566453) panicked at src/services/event_bus/tests/persistence.rs:172:9:
+assertion `left == right` failed
+  left: 0
+ right: 1
+
+thread 'services::event_bus::tests::persistence::postgres_replacement_really_persists_and_marks_only_its_owner_read' (1566453) panicked at src/services/event_bus/tests/persistence.rs:56:13:
+event boundary failed; owned schema was cleaned up: JoinError::Panic(Id(25), "assertion `left == right` failed\n  left: 0\n right: 1", ...)
+
+
+failures:
+    services::event_bus::tests::persistence::postgres_publish_batch_really_persists_json_without_fallback
+    services::event_bus::tests::persistence::postgres_replacement_really_persists_and_marks_only_its_owner_read
+
+test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 184 filtered out; finished in 0.23s
+
+error: test failed, to rerun pass `--lib`

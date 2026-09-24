@@ -5,6 +5,35 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-09-24
+
+### Changed
+
+- Reduced local Rust development/test build disk usage with limited debug information and disabled
+  incremental compilation; release builds remain unchanged. Removed tracked TypeScript build metadata
+  and documented cache cleanup and explicit debugging overrides. Runtime data and deployment are unaffected.
+
+### Fixed
+
+- Event PostgreSQL batch/replacement inserts now generate valid SQL and bind native JSON. Ordered
+  persistence barriers keep earlier publications ahead of read acknowledgement, scoped deletion,
+  replacement and retention changes; queue overflow no longer spawns unbounded bypass writers.
+- Event settings/trim and replacement use transactions before publishing memory. Per-owner mutation
+  admission survives admitted SQL caller cancellation without blocking unrelated owners; memory-only
+  cancellation cannot split settings/history/unread updates. Capacity caches are invalidated after
+  mutations, cold settings reads cannot overwrite newer values, and equal-time retention preserves
+  publication order. Added real disposable PostgreSQL and fault/queue regressions, explicitly wired into CI.
+  Existing volatile fallback and raw Event/API contracts remain; this is not durable replay or cross-process coordination.
+
+- Event history rejects invalid/reversed filters without crashing or issuing a wider query, hides
+  previous-scope rows immediately, and ages rolling windows without reconnecting. Export is single-flight,
+  context-bound and deadline-limited, verifies the requested MIME type and uses safe download filenames.
+- Event deletion validates exact confirmation/counts, honors navigation cancellation and reports uncertain
+  outcomes without retries. Confirmed deletion refreshes history and invalidates stale unread responses.
+  Read acknowledgements are single-flight, filter-bound and visibly retryable; their existing all-owner
+  scope is now explicit. Sidebar polling is nonoverlapping and shows unavailable instead of a false count.
+  Added four-locale notices and isolated frontend/browser regressions; Engine authority/wire/storage stay unchanged.
+
 ## [0.3.9] - 2026-09-13
 
 ### Added
@@ -348,7 +377,9 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 The canonical package metadata advanced directly from `0.2.9` to `0.3.1`. Version `0.3.0` identifies
 the frozen API compatibility snapshot only; it was not a package release and must not be tagged.
 
-[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.8...HEAD
+[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.9...v0.4.0
+[0.3.9]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.8...v0.3.9
 [0.3.8]: https://github.com/Team-silvortex/cyanrex-lab/compare/f3f9faf585721df5e208c18da99652b040e35d50...v0.3.8
 [0.3.7]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.6...v0.3.7
 [0.3.6]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.5...v0.3.6
