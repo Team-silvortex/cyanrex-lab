@@ -1,0 +1,36 @@
+{
+  "meaning": "Exact bytes of 0.4.2 pre-commit checks. Map drift exit 1 is expected against the frozen 0.3.8 map.",
+  "count": 6,
+  "files": [
+    {
+      "path": "browser-regressions.log",
+      "bytes": 5227,
+      "sha256": "1de0cba6d66904754f5e4d0a5edb0e686ec22bcb5e633a855d2e404128d12d85"
+    },
+    {
+      "path": "cache-cleanup.log",
+      "bytes": 38,
+      "sha256": "aca3a63624e1e4daf59101ae16a5ccfac5c0463cacb780373db1af1e64ab35f6"
+    },
+    {
+      "path": "final-preflight.log",
+      "bytes": 7138,
+      "sha256": "c18ed54b6467423eb1d93b5332b7f2d623b4fcb8959a1d6613162a311b68618d"
+    },
+    {
+      "path": "full-gate.log",
+      "bytes": 88420,
+      "sha256": "f8c67483de8e1524e54bac4fbf273105687b319cd5da71992975da843b8c95aa"
+    },
+    {
+      "path": "map-drift.log",
+      "bytes": 1376,
+      "sha256": "f2a4cab1b02d6186a2d8beba4333b121f58651af600786c7a806f7a66e794c3a"
+    },
+    {
+      "path": "production-page-subset.log",
+      "bytes": 332,
+      "sha256": "b48b425324192053bd928f3a3bf0f1d8dc5ed5854d2c10839ff9c2ed4a948d41"
+    }
+  ]
+}

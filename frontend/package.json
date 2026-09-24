@@ -1,6 +1,6 @@
 {
   "name": "@cyanrex/frontend",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "private": true,
   "scripts": {
     "postinstall": "node scripts/sync-monaco-assets.mjs",
@@ -12,8 +12,14 @@
     "build": "next build",
     "start": "next start",
     "test:performance-hotspots": "node --experimental-strip-types --test tests/performanceHotspots.test.mjs",
+    "test:performance-metrics": "node --experimental-strip-types --test tests/performanceMetrics.test.mjs",
+    "test:performance-metrics-browser": "node --test tests/performanceMetrics.browser.mjs",
     "test:event-stream": "node --experimental-strip-types --test tests/eventStream.test.mjs",
     "test:event-page": "node --experimental-strip-types --test tests/eventPage.test.mjs",
+    "test:settings": "node --experimental-strip-types --test tests/settingsRequest.test.mjs",
+    "test:settings-browser": "node --test tests/settingsPage.browser.mjs",
+    "test:runner-inventory": "node --experimental-strip-types --test tests/runnerInventory.test.mjs",
+    "test:runner-admin-browser": "node --test tests/runnerAdmin.browser.mjs",
     "test:event-page-browser": "node --test tests/eventPage.browser.mjs",
     "test:event-actions-browser": "node --test tests/eventActions.browser.mjs",
     "test:compiler-check": "node --experimental-strip-types --test tests/compilerCheck.test.mjs",

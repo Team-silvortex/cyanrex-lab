@@ -1,0 +1,22 @@
+(node:2935716) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/src/features/settings/performanceMetrics.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/chiharukiryu/cdev/cyanrex-lab/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ valid metrics preserve integer counters, zero samples and fractional latency (1.295024ms)
+✔ metrics reject missing operation objects and missing fields (0.333694ms)
+✔ every metrics counter rejects coercions, negative, fractional and unsafe numbers (1.230856ms)
+✔ latency accepts finite fractions but rejects invalid or unrepresentable magnitudes (0.252069ms)
+✔ overview aggregate counters cannot exceed exact JavaScript integer arithmetic (0.194396ms)
+✔ independently sampled counters are not incorrectly rejected as an atomic snapshot (0.121531ms)
+✔ validated metrics copy their display fields and ignore future extension fields (0.18694ms)
+✔ accepted limits keep hotspot arithmetic finite (0.35466ms)
+✔ performance decoding composes with one private read and rejects malformed payloads (17.964754ms)
+✔ all four locales contain explicit unavailable and stale metrics notices (0.80771ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 109.412483

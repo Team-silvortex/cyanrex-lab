@@ -1,0 +1,25 @@
+✔ failed settings reads cannot enable saving cached defaults (1428.205417ms)
+✔ Strict Mode obsolete settings reads cannot overwrite the current load (335.020002ms)
+✔ unconfirmed event settings cannot dispatch the compiler save (430.754407ms)
+✔ navigation cancels a pending save and cannot dispatch a late second step (411.541979ms)
+✔ partial settings saves require verification before a new confirmation (428.518181ms)
+✔ stalled initial settings requests have a bounded read wait and explicit reload (328.651513ms)
+✔ successful saves freeze normalized values, lock editing and dispatch each stage only once (435.76099ms)
+✔ unavailable compiler reads explicitly allow event-only saving, never a hidden compiler write (410.977651ms)
+✔ malformed event reads stay blocked until an explicit fresh reload succeeds (388.231973ms)
+✔ event save timeout blocks retry and ignores late acknowledgement before fresh verification (564.924418ms)
+✔ compiler timeout retains partial-save warning even after metrics refresh (437.961651ms)
+✔ unmount aborts saving and prevents late writes or unread notifications (402.253792ms)
+✔ cancelling a review or navigating before confirmation never writes (440.091005ms)
+✔ blank and fractional drafts cannot be confirmed; discarding a draft needs explicit approval (526.922867ms)
+✔ locale changes preserve the draft and never reload or mutate settings (369.972013ms)
+✔ new navigation owns loading state and rejects all earlier read results (327.354449ms)
+✔ a mismatched compiler acknowledgement cannot claim complete success (425.424326ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 17
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 8259.494569

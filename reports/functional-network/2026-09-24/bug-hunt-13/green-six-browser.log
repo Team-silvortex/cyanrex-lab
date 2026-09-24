@@ -1,0 +1,34 @@
+✔ failed settings reads cannot enable saving cached defaults (1466.455437ms)
+✔ Strict Mode obsolete settings reads cannot overwrite the current load (330.30204ms)
+✖ unconfirmed event settings cannot dispatch the compiler save (390.457491ms)
+✔ navigation cancels a pending save and cannot dispatch a late second step (386.102962ms)
+✔ partial settings saves require verification before a new confirmation (431.002651ms)
+✔ stalled initial settings requests have a bounded read wait and explicit reload (324.595614ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 5
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3486.407014
+
+✖ failing tests:
+
+test at frontend/tests/settingsPage.browser.mjs:52:1
+✖ unconfirmed event settings cannot dispatch the compiler save (390.457491ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /could not be confirmed/i. Input:
+  
+  'Save SettingsConfirm operationThis applies event retention and compiler settings to this Engine. Lowering retention may discard records. Changes are not transactional; check the current settings after any failure.Max retained events500Overflow policydrop_oldestClang resident accelerationfalseExecuting. Do not submit again; closing the page cannot undo a dispatched request.CancelConfirm Save Settings'
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:56:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:33:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'Save SettingsConfirm operationThis applies event retention and compiler settings to this Engine. Lowering retention may discard records. Changes are not transactional; check the current settings after any failure.Max retained events500Overflow policydrop_oldestClang resident accelerationfalseExecuting. Do not submit again; closing the page cannot undo a dispatched request.CancelConfirm Save Settings',
+    expected: /could not be confirmed/i,
+    operator: 'match',
+    diff: 'simple'
+  }

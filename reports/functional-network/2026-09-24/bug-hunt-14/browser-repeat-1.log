@@ -1,0 +1,23 @@
+✔ malformed metrics cannot crash the settings form or Runner panel (1494.520861ms)
+✔ a stalled metrics read has a deadline and releases explicit refresh (397.784057ms)
+✔ navigation invalidates metrics and aborts obsolete reads (332.898879ms)
+✔ background failure marks retained metrics stale and removes old refresh success (342.54553ms)
+✔ locale changes do not reload metrics or discard the settings draft (370.060553ms)
+✔ saving settings cannot erase an unrelated metrics failure (471.330674ms)
+✔ pending event settings do not block independent metrics refresh (333.47791ms)
+✔ Strict Mode owns a new read and late obsolete responses cannot overwrite it (314.849407ms)
+✔ Engine changes hide the previous sample and invalidate old refresh callbacks (328.007377ms)
+✔ unmount stops metrics reads, late results and future polling (309.660713ms)
+✔ polling waits after completion and coalesces overlapping refresh requests (309.158294ms)
+✔ a hung JSON body times out and cannot replace a later successful sample (317.01052ms)
+✔ stale samples lose the healthy label until a validated retry succeeds (350.298194ms)
+✔ metrics failures leave Runner cancellation and settings controls independent (473.888528ms)
+✔ unavailable and stale feedback translates without extra reads in all four locales (358.180036ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6678.906516

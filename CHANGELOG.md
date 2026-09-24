@@ -5,6 +5,32 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-09-24
+
+### Fixed
+
+- Runner administration validates Agent/job inventories before display and keeps failed reads read-only.
+  Private requests now have header/body deadlines and Engine/navigation ownership; obsolete responses
+  cannot overwrite current state. Probes require confirmation, cancellation rechecks reviewed targets,
+  and matching job acknowledgements distinguish confirmed operations from uncertain writes. Uncertainty
+  survives background polling until an explicit verified refresh; no mutation is retried automatically.
+  Added four-language guidance, isolated regressions and a fifteenth functional-network bug-hunt record.
+
+- Performance metrics now validate snapshots before rendering, preventing malformed responses from
+  crashing settings and Runner controls. Reads are private, deadline-limited and bound to navigation;
+  polling waits after completion and locale changes no longer restart it. Failed refreshes label the
+  retained snapshot as stale, remove current-health styling, and keep their own four-language feedback.
+  Saving or loading unrelated settings cannot hide metrics failures or block an independent refresh.
+  Added isolated parser/browser regressions and a fourteenth functional-network bug-hunt record.
+
+- Settings forms now require a verified event-settings read before editing or saving. Strict Mode,
+  navigation and reload generations reject obsolete responses; private requests have read/write
+  deadlines and no automatic mutation retries. Confirmation freezes validated values and locks editing.
+- Event and compiler saves require exact acknowledgements. Unconfirmed or partial saves explicitly
+  require reloading before another save; compiler-unavailable event-only saves are clearly identified.
+  Confirmed event retention changes refresh unread state. Added four-language feedback, isolated
+  browser/request regressions and a thirteenth functional-network bug-hunt record.
+
 ## [0.4.1] - 2026-09-24
 
 ### Fixed

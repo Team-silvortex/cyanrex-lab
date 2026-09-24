@@ -1,6 +1,7 @@
 import type { TranslationDict } from "../translations";
 import { safetyMessages } from "./safety";
 import { classroomMessages } from "./classroom";
+import { runnerSafetyMessages } from "./runnerSafety";
 
 export const en: TranslationDict = {
     classroom: classroomMessages.en,
@@ -148,6 +149,7 @@ export const en: TranslationDict = {
       deleteConfirm: "Delete {count} filtered event(s)? This cannot be undone.",
     },
     settings: {
+      ...runnerSafetyMessages.en,
       title: "Settings",
       subtitle: "Configure event retention limit and overflow behavior.",
       maxRecords: "Max retained events",
@@ -159,6 +161,15 @@ export const en: TranslationDict = {
       save: "Save Settings",
       saving: "Saving...",
       saved: "Settings saved",
+      loadFailed: "Event settings could not be loaded. Reload settings before saving.",
+      compilerUnavailable: "Compiler settings are unavailable. Only event settings can be saved.",
+      eventsOnlySaved: "Event settings saved. Compiler settings were not changed.",
+      saveUnconfirmed: "The settings update could not be confirmed. It may still complete; reload settings to verify before saving again.",
+      partialSave: "Event settings were saved, but the compiler update could not be confirmed. Reload settings to verify before saving again.",
+      verifyBeforeSave: "Reload settings to verify the current state before saving again.",
+      invalidDraft: "Enter a whole-number retention limit and a valid overflow policy.",
+      reload: "Reload Settings",
+      reloadHint: "Reload replaces this draft with the values confirmed by the server.",
       loading: "Loading...",
       residentCompiler: "Clang resident acceleration",
       residentCompilerEnabledHint: "Keep diagnostics and semantic completion caches for active teaching sessions.",
@@ -169,6 +180,9 @@ export const en: TranslationDict = {
       metricsRefreshing: "Refreshing metrics...",
       metricsUpdated: "Performance metrics refreshed",
       metricsUnavailable: "No performance metrics available yet.",
+      metricsReadFailed: "Could not refresh performance metrics. You can try refreshing again.",
+      metricsStale: "These are the last successful readings, not confirmed current metrics.",
+      metricsStaleLabel: "Not current",
       metricsTotal: "Total calls",
       metricsCacheHits: "Cache hits",
       metricsCacheMisses: "Cache misses",

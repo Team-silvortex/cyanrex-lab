@@ -1,0 +1,228 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-24",
+  "status": "fixed-and-scoped-regressions-passed",
+  "baseline": {
+    "version": "0.4.1",
+    "commit": "f56349b4412cb72d2330a7fae11ad597cf6e82a1",
+    "branch": "main",
+    "worktree": "Already contained uncommitted passes 13 and 14; not clean-release acceptance.",
+    "previous_pass": "reports/functional-network/2026-09-24/bug-hunt-14.json",
+    "inventory": {
+      "path": "docs/functional-network.json",
+      "version": "0.3.8",
+      "commit": "c26a529aecc0ab64d0a1743be10972e5d8ac137b",
+      "sha256": "bc16ef895c1f7b9f9d0b5d9195499d4efcba09466b3c85bdfcc04d20006ad30d"
+    },
+    "publication": "No version change, commit, tag, push or deployment."
+  },
+  "scope": {
+    "workflows": [
+      "F24 teacher inventory consumption",
+      "F25 teacher probe/cancel and acknowledgement",
+      "F03/F36 co-located panel isolation"
+    ],
+    "links": [
+      "E50 browser identity/freshness consumption only"
+    ],
+    "meaning": "Inventory pair -> review -> probe/cancel -> acknowledgement -> read-back. Not Agent protocol or full edge acceptance.",
+    "boundaries": "Actual React Runner panel, SettingsPage, confirmation and i18n under Strict Mode; synthetic responses and controlled clock; non-fixture networking blocked.",
+    "excluded": [
+      "Engine/Agent authority, signatures, registration, queue/claim/execution/result semantics",
+      "real deployment data/credentials, Engine/database, Agent, SSH/LAN/kernel operations"
+    ]
+  },
+  "findings": [
+    {
+      "id": "BH15-01",
+      "status": "fixed",
+      "observed": "Malformed nested Agent data crashed the settings tree.",
+      "fix": "Decode both inventories before publication; validate display shapes, bounded collections, dates, counts and identities."
+    },
+    {
+      "id": "BH15-02",
+      "status": "fixed",
+      "observed": "Stalled inventories never aborted or released refresh.",
+      "fix": "Private credentialed no-store/non-redirecting transport, ten-second header/body deadlines and sibling cancellation on paired-read failure."
+    },
+    {
+      "id": "BH15-03",
+      "status": "fixed",
+      "observed": "Navigation did not abort the old inventory read.",
+      "fix": "Engine/navigation/effect generations own reads, writes, results and timers."
+    },
+    {
+      "id": "BH15-04",
+      "status": "fixed",
+      "observed": "Failed refresh left the old inventory actionable.",
+      "fix": "Labeled reference inventory with actions blocked until verified reads recover."
+    },
+    {
+      "id": "BH15-05",
+      "status": "fixed",
+      "observed": "A 2xx without a matching cancellation job never reached failed-confirmation feedback.",
+      "fix": "Validate actual job acknowledgements; uncertain operations require an explicit verified refresh and are never automatically retried."
+    },
+    {
+      "id": "BH15-06",
+      "status": "fixed",
+      "observed": "Clicking a probe immediately dispatched without review.",
+      "fix": "Explicit Agent confirmation with current identity, healthy-state and Engine-relative expiry recheck."
+    },
+    {
+      "id": "BH15-07",
+      "status": "fixed",
+      "observed": "Unmount did not abort a pending cancellation POST.",
+      "fix": "Confirmation/generation cancellation reaches bounded POSTs; obsolete replies cannot publish or trigger read-back."
+    }
+  ],
+  "semantics": {
+    "read_deadline_ms": 10000,
+    "write_deadline_ms": 20000,
+    "poll_delay_after_completion_ms": 10000,
+    "dispatch_max_sample_age_ms": 20000,
+    "publication": "Both validated GETs publish as one browser state; not a cross-endpoint server transaction.",
+    "dispatch": "Blocked while reading; current reviewed identity/state/assignment required; polling paused during writes.",
+    "expiry": "Engine generated_at plus monotonic elapsed browser time from read start, without synchronized wall-clock assumptions.",
+    "uncertainty": "May already have taken effect. Background read success does not unlock retry; explicit successful refresh and a new confirmation are required. Fresh observations do not prove an older operation cannot finish later.",
+    "acknowledged_readback_failure": "Acknowledgement stays confirmed; failed inventory remains read-only.",
+    "mutation_retry": false,
+    "server_rollback": false
+  },
+  "tdd": {
+    "baseline": {
+      "passed": 0,
+      "failed": 7,
+      "exit_code": 1,
+      "log": "bug-hunt-15/red-browser-final.log",
+      "meaning": "First failing assertion per case; later protective coverage not independently reproduced before each fix."
+    },
+    "diagnostics": [
+      {
+        "log": "bug-hunt-15/red-browser-first.log",
+        "passed": 0,
+        "failed": 7,
+        "note": "Four incorrect UI button labels prevented the intended assertions."
+      },
+      {
+        "log": "bug-hunt-15/red-browser.log",
+        "passed": 1,
+        "failed": 6,
+        "note": "Cancellation assertion was insufficient while old implementation waited for read-back; final baseline waits for failed-confirmation feedback."
+      },
+      {
+        "log": "bug-hunt-15/expanded-browser.log",
+        "passed": 51,
+        "failed": 1,
+        "note": "Navigation assertion ran before React removed the dialog; wait for detachment fixed the test without runtime changes."
+      },
+      {
+        "log": "bug-hunt-15/runner-unit-bounds-red.log",
+        "passed": 8,
+        "failed": 2,
+        "note": "Additional decoder tests exposed impossible calendar dates and excess labels; decoder tightened before final green."
+      }
+    ],
+    "additions": {
+      "unit": 10,
+      "browser": 24,
+      "unique_total": 34,
+      "unit_ci_wired": true,
+      "browser_optional": true
+    },
+    "fixture_updates": "Existing settings/metrics/production mock inventories and cancel responses now use complete Engine DTOs. Existing scenario assertions unchanged."
+  },
+  "checks": {
+    "first_green": {
+      "passed": 15,
+      "failed": 0,
+      "exit_code": 0,
+      "log": "bug-hunt-15/green-first.log",
+      "composition": "7 Runner browser + first 8 Runner unit tests."
+    },
+    "initial_unit": {
+      "passed": 8,
+      "failed": 0,
+      "exit_code": 0,
+      "log": "bug-hunt-15/runner-unit.log"
+    },
+    "expanded_final": {
+      "passed": 66,
+      "failed": 0,
+      "exit_code": 0,
+      "log": "bug-hunt-15/expanded-final.log",
+      "composition": "10 Runner unit + 24 Runner browser + 17 settings browser + 15 metrics browser."
+    },
+    "runner_repeats": [
+      {
+        "passed": 24,
+        "failed": 0,
+        "exit_code": 0,
+        "log": "bug-hunt-15/browser-repeat-1.log"
+      },
+      {
+        "passed": 24,
+        "failed": 0,
+        "exit_code": 0,
+        "log": "bug-hunt-15/browser-repeat-2.log"
+      },
+      {
+        "passed": 24,
+        "failed": 0,
+        "exit_code": 0,
+        "log": "bug-hunt-15/browser-repeat-3.log"
+      }
+    ],
+    "production_page_subset": {
+      "passed": 2,
+      "failed": 0,
+      "exit_code": 0,
+      "log": "bug-hunt-15/production-page-subset.log",
+      "selection": "teachers manage modules|job cancellation binds",
+      "meaning": "Owned loopback production Next server; intercepted synthetic Engine API, not live integration."
+    },
+    "frontend_gate": {
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL PATH=<Node24.19-bin>:<existing-path> ./scripts/quality-gate.sh --frontend-only --no-npm-install",
+      "exit_code": 0,
+      "log": "bug-hunt-15/frontend-gate.log",
+      "common_passed": 69,
+      "frontend_passed": 125,
+      "production_routes": 18,
+      "production_audit_vulnerabilities": 0,
+      "type_check": true,
+      "overlap": "Runner units are included; browser repeats/earlier runs are not additive unique cases."
+    },
+    "final_preflight": {
+      "command": "./scripts/quality-gate.sh --format-only --no-npm-install",
+      "exit_code": 0,
+      "log": "bug-hunt-15/final-preflight.log",
+      "common_passed": 69,
+      "meaning": "Final documentation/mirrors, metadata/contracts/common tooling and Rust formatting only."
+    },
+    "map_drift": {
+      "exit_code": 1,
+      "expected": true,
+      "log": "bug-hunt-15/map-drift.log",
+      "version": "0.3.8 -> 0.4.1",
+      "source_count": 26,
+      "access_api_page_catalog_count_drift": false,
+      "meaning": "Frozen finite source inventory, not an exhaustive current tree fingerprint."
+    }
+  },
+  "evidence": {
+    "frozen_receipt": "bug-hunt-15/frozen-receipt.json",
+    "frozen_files": 361,
+    "frozen_sha256": "d21ecd7e4e2ae1bdae83b323c18e8c1db87e7b7ba3ee81a6dac6bc62792b1b68",
+    "source_fingerprints": "bug-hunt-15/source-fingerprints.json",
+    "raw_log_manifest": "bug-hunt-15/log-manifest.json",
+    "cleanup": "bug-hunt-15/cleanup.json",
+    "runtime": "Main checks: Node 24.19.0 and installed Chrome 153.0.8010.52. Intermediate decoder red run/report utilities: host Node 24.21.0."
+  },
+  "limits": [
+    "No full project gate, Rust/SQL/SDK runtime suite or remote CI rerun.",
+    "No live browser-to-Engine integration, signed Agent execution, deployment/LAN/kernel acceptance or new benchmark.",
+    "Deadlines bound cooperative browser waiting, not a blocked event loop or server work.",
+    "Server state may change after a client review; browser checks do not replace server authority."
+  ],
+  "next": "F14/F15/F16 teacher module/header management and structured terminal command inventory, confirmation, acknowledgement and navigation boundaries."
+}

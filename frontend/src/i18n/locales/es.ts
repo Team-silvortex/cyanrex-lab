@@ -1,6 +1,7 @@
 import type { TranslationDict } from "../translations";
 import { safetyMessages } from "./safety";
 import { classroomMessages } from "./classroom";
+import { runnerSafetyMessages } from "./runnerSafety";
 
 export const es: TranslationDict = {
     classroom: classroomMessages.es,
@@ -148,6 +149,7 @@ export const es: TranslationDict = {
       deleteConfirm: "¿Eliminar {count} evento(s) filtrado(s)? No se puede deshacer.",
     },
     settings: {
+      ...runnerSafetyMessages.es,
       title: "Configuración",
       subtitle: "Configura el límite de retención de eventos y la política de desborde.",
       maxRecords: "Máximo de eventos retenidos",
@@ -159,6 +161,15 @@ export const es: TranslationDict = {
       save: "Guardar configuración",
       saving: "Guardando...",
       saved: "Configuración guardada",
+      loadFailed: "No se pudo cargar la configuración de eventos. Vuelve a cargarla antes de guardar.",
+      compilerUnavailable: "La configuración del compilador no está disponible. Solo se pueden guardar los ajustes de eventos.",
+      eventsOnlySaved: "Configuración de eventos guardada. No se modificó la del compilador.",
+      saveUnconfirmed: "No se pudo confirmar la actualización. Aún podría completarse; vuelve a cargar y verificar antes de guardar de nuevo.",
+      partialSave: "Se guardaron los ajustes de eventos, pero no se pudo confirmar la actualización del compilador. Vuelve a cargar y verificar antes de guardar de nuevo.",
+      verifyBeforeSave: "Vuelve a cargar y verificar la configuración actual antes de guardar de nuevo.",
+      invalidDraft: "Introduce un límite de retención entero y una política de desbordamiento válida.",
+      reload: "Recargar configuración",
+      reloadHint: "La recarga sustituye este borrador por los valores confirmados por el servidor.",
       loading: "Cargando...",
       residentCompiler: "Aceleración residente de Clang",
       residentCompilerEnabledHint: "Conserva las cachés de diagnóstico y autocompletado durante las sesiones.",
@@ -169,6 +180,9 @@ export const es: TranslationDict = {
       metricsRefreshing: "Actualizando métricas...",
       metricsUpdated: "Métricas actualizadas",
       metricsUnavailable: "Aún no hay métricas disponibles.",
+      metricsReadFailed: "No se pudieron actualizar las métricas. Puedes volver a intentarlo.",
+      metricsStale: "Estas son las últimas lecturas correctas, no métricas actuales confirmadas.",
+      metricsStaleLabel: "No actual",
       metricsTotal: "Llamadas totales",
       metricsCacheHits: "Aciertos de caché",
       metricsCacheMisses: "Fallos de caché",

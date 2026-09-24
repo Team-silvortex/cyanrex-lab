@@ -1,0 +1,31 @@
+{
+  "preview": {
+    "url": "http://127.0.0.1:3217",
+    "owned_pid": 2948296,
+    "validated_cwd": "/home/chiharukiryu/cdev/cyanrex-lab",
+    "exited_after_interruption": true,
+    "listener_absent_after": true
+  },
+  "generated_cache": {
+    "method": "gio trash with exact validated paths",
+    "recoverable": true,
+    "entries": [
+      {
+        "path": "frontend/.next",
+        "allocated_bytes_before": 48050176
+      },
+      {
+        "path": "frontend/tsconfig.tsbuildinfo",
+        "allocated_bytes_before": 102400
+      }
+    ],
+    "both_absent_after": true,
+    "note": "Moved to desktop trash, not counted as freed disk space."
+  },
+  "rust_sdk_build_outputs": "Not regenerated; engine/target and sdk-js/dist remain absent.",
+  "dependencies_retained": [
+    "frontend/node_modules",
+    "sdk-js/node_modules"
+  ],
+  "scope": "No source, dependency, runtime configuration, evidence or deployment files removed."
+}

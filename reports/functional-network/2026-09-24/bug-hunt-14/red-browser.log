@@ -1,0 +1,144 @@
+✖ malformed metrics cannot crash the settings form or Runner panel (1506.971804ms)
+✖ a stalled metrics read has a deadline and releases explicit refresh (334.278701ms)
+✖ navigation invalidates metrics and aborts obsolete reads (338.3749ms)
+✖ background failure marks retained metrics stale and removes old refresh success (333.720393ms)
+✖ locale changes do not reload metrics or discard the settings draft (386.888682ms)
+✖ saving settings cannot erase an unrelated metrics failure (480.712348ms)
+✖ pending event settings do not block independent metrics refresh (326.895916ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 0
+ℹ fail 7
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3898.798356
+
+✖ failing tests:
+
+test at frontend/tests/performanceMetrics.browser.mjs:34:1
+✖ malformed metrics cannot crash the settings form or Runner panel (1506.971804ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/performanceMetrics.browser.mjs:36:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/performanceMetrics.browser.mjs:31:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/performanceMetrics.browser.mjs:40:1
+✖ a stalled metrics read has a deadline and releases explicit refresh (334.278701ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - true
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/performanceMetrics.browser.mjs:42:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/performanceMetrics.browser.mjs:31:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/performanceMetrics.browser.mjs:47:1
+✖ navigation invalidates metrics and aborts obsolete reads (338.3749ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - true
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/performanceMetrics.browser.mjs:50:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/performanceMetrics.browser.mjs:31:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/performanceMetrics.browser.mjs:54:1
+✖ background failure marks retained metrics stale and removes old refresh success (333.720393ms)
+  AssertionError [ERR_ASSERTION]: Expected "actual" to be strictly unequal to: ''
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/performanceMetrics.browser.mjs:60:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/performanceMetrics.browser.mjs:31:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '',
+    expected: '',
+    operator: 'notStrictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/performanceMetrics.browser.mjs:64:1
+✖ locale changes do not reload metrics or discard the settings draft (386.888682ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  2 !== 1
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/performanceMetrics.browser.mjs:68:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/performanceMetrics.browser.mjs:31:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 2,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/performanceMetrics.browser.mjs:72:1
+✖ saving settings cannot erase an unrelated metrics failure (480.712348ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(await f.page.locator(".error").count() > 0)
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/performanceMetrics.browser.mjs:79:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/performanceMetrics.browser.mjs:31:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at frontend/tests/performanceMetrics.browser.mjs:82:1
+✖ pending event settings do not block independent metrics refresh (326.895916ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/performanceMetrics.browser.mjs:84:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/performanceMetrics.browser.mjs:31:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

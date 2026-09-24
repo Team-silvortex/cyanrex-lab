@@ -1,0 +1,1229 @@
+File length limits passed.
+Version metadata is synchronized at 0.4.1.
+[course] committed frontend course copy matches docs.
+Generated OpenAPI document is current (64 paths).
+OpenAPI contract is synchronized at 0.4.1: 68 Engine operations, 63 SDK operations.
+API compatibility passed against 0.3.0: 61 operations remain compatible with 0.4.1.
+Generated SDK types are current (85 schemas).
+Generated SDK operations are current (63 operations).
+SDK public surface is compatible: 85 members, 8 additive.
+✔ compatibility rejects removed operations and changed access tiers (4.003521ms)
+✔ compatibility rejects request requirements and enum narrowing (0.504216ms)
+✔ compatibility rejects weakened response guarantees (0.571171ms)
+✔ compatibility permits additive operations and compatible object growth (7.139415ms)
+✔ compatibility treats nullable input and output in opposite directions (0.893436ms)
+✔ auth mutations document unconfirmed storage writes without weakening access or success schemas (8.344125ms)
+✔ login and destructive event filters expose failure behavior without changing success contracts (6.148136ms)
+✔ classroom endpoints preserve separate discovery, invitation and join trust boundaries (9.599321ms)
+✔ launchers forward opt-in classroom config and explicitly build the frontend API address (7.063212ms)
+✔ course documentation sync detects drift and replaces the generated tree (35.914274ms)
+✔ Engine Docker context admits compile-time OpenAPI and migration assets (11.753613ms)
+✔ Engine Docker builder copies compile-time assets before compiling (2.806115ms)
+✔ frontend prebuild works with only its Docker context and committed course copy (179.620533ms)
+✔ event mutations document unconfirmed writes, cancellation and private acknowledgements (7.354799ms)
+✔ event reads document private unavailable results without changing session authority or success shapes (8.452689ms)
+✔ event settings expose private unavailable reads and unconfirmed transactional updates (7.699497ms)
+✔ functional network enumerates default Next page extensions and excludes framework files (1.760463ms)
+✔ functional network accepts a complete source snapshot (0.782027ms)
+✔ functional network rejects missing, extra and duplicate operation ownership (0.387618ms)
+✔ functional network rejects unknown graph, module and page targets (0.316243ms)
+✔ functional network detects version, source, access, page and catalog drift (1.325607ms)
+✔ functional network rejects stale counts and source references missing from manifest (0.408185ms)
+✔ functional network rejects mismatched API back-references and duplicate IDs (0.267271ms)
+✔ learning benchmark rotates configurations without dropping or duplicating any pair (5.107252ms)
+✔ cold-load pairs retain all four fixtures and alternate across five rounds (2.183256ms)
+✔ every learning benchmark configuration swaps its before/after order each round (0.569198ms)
+✔ learning projections distinguish failed storage reads from empty success and remain private (8.25075ms)
+✔ npm audit retains production scope, moderate threshold, and finite timeouts (1.628936ms)
+✔ valid clean and below-threshold audit reports pass without retrying (0.550463ms)
+✔ vulnerability reports fail immediately, including misleading transient error text (0.331802ms)
+✔ network failures, rate limits, and server errors retry a fresh audit (1.365913ms)
+✔ npm 9 message-only socket failures are recognized (0.299853ms)
+✔ retired Quick fallback retries Bulk through npm without accepting the failed report (0.258575ms)
+✔ persistent transient failures stop after three attempts and stay failed (0.394771ms)
+✔ authentication, certificate, lockfile, and unknown errors never retry (0.771036ms)
+✔ missing or malformed reports cannot pass even if npm exits zero (0.673443ms)
+✔ process launch failures fail closed and timeouts remain bounded (0.497122ms)
+✔ real npm CLI retries Bulk, including a retired Quick fallback when used (1482.192053ms)
+✔ local and CI frontend/SDK audits share the same fail-closed wrapper (1.352187ms)
+✔ extractEngineOperations handles chained Axum methods and multiline routes (1.818211ms)
+✔ extractEngineAccess follows the Axum router trust tiers (10.187494ms)
+✔ extractSdkOperations recognizes generic requests, downloads, and WebSockets (2.141247ms)
+✔ OpenAPI operation extraction and comparison report exact drift (0.492284ms)
+✔ Rust CI explicitly runs every queued event persistence and retention boundary (16.208841ms)
+✔ Rust CI runs PostgreSQL acceptance against its disposable service and rejects an empty selection (3.812052ms)
+✔ Rust CI promotes every auth boundary regression plus script/event persistence checks (2.133313ms)
+✔ Rust CI exercises persisted authentication and duplicate registration on the disposable database (0.976302ms)
+✔ release metadata records source, image references, and archive integrity (15.658699ms)
+✔ release metadata rejects ambiguous or host-specific build inputs (1.644446ms)
+✔ release expectations bind a candidate to its tag, commit, source state, and image mode (4.19415ms)
+✔ release metadata CLI parses tag-bound verification expectations (0.711575ms)
+✔ Git source inspection distinguishes clean, dirty, tagged, and unavailable trees (82.314072ms)
+✔ packaged metadata verification binds JSON and image archive to checksums (5.471175ms)
+✔ release argument parsing requires one explicit mode (1.942755ms)
+✔ release snapshot validation reports every mismatched field and changelog requirement (2.170803ms)
+✔ release preflight accepts a clean candidate and its annotated immutable tag (335.811106ms)
+✔ user remote checks document bounded queue waiting without changing success or access (1.335886ms)
+✔ Agent claim and sync retain signed authority and explain capacity and lost leases (0.286327ms)
+✔ operation generation covers SDK transports and excludes signed Agent protocol (10.628311ms)
+✔ rendered operations preserve required path, query, body, and response types (0.898265ms)
+✔ operation generation rejects unsupported parameters and mismatched path templates (0.500058ms)
+✔ client surface extraction keeps public methods and nested namespace paths (2.283534ms)
+✔ client surface comparison rejects removals while reporting additive members (0.403627ms)
+✔ client surface baseline rendering is sorted and deterministic (0.290345ms)
+✔ schemaToType renders references, nullable unions, arrays, and maps (1.481059ms)
+✔ renderSdkSchemaTypes emits a deterministic named schema map (0.459242ms)
+✔ schemaToType rejects references outside component schemas (0.52198ms)
+✔ the legacy admin API tier truthfully includes teacher deployment authority (7.161326ms)
+✔ supported launchers pass explicit teacher and legacy administrator allowlists (2.578408ms)
+ℹ tests 69
+ℹ suites 0
+ℹ pass 69
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1627.004208
+Runner Agent management tool checks passed.
+Distribution management tool checks passed.
+Live kernel smoke tool checks passed.
+Release candidate bundle verifier checks passed.
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.24
+   Compiling quote v1.0.47
+   Compiling cfg-if v1.0.4
+   Compiling libc v0.2.189
+   Compiling serde_core v1.0.229
+   Compiling serde v1.0.229
+   Compiling version_check v0.9.5
+   Compiling bytes v1.12.1
+   Compiling shlex v2.0.1
+   Compiling find-msvc-tools v0.1.9
+   Compiling pin-project-lite v0.2.17
+   Compiling parking_lot_core v0.9.12
+   Compiling log v0.4.33
+   Compiling futures-core v0.3.33
+   Compiling stable_deref_trait v1.2.1
+   Compiling itoa v1.0.18
+   Compiling subtle v2.6.1
+   Compiling scopeguard v1.2.0
+   Compiling once_cell v1.21.4
+   Compiling lock_api v0.4.14
+   Compiling typenum v1.20.1
+   Compiling cc v1.4.0
+   Compiling memchr v2.8.3
+   Compiling futures-sink v0.3.33
+   Compiling zerocopy v0.8.55
+   Compiling litemap v0.8.2
+   Compiling writeable v0.6.3
+   Compiling tracing-core v0.1.36
+   Compiling percent-encoding v2.3.2
+   Compiling bitflags v2.13.1
+   Compiling icu_normalizer_data v2.2.0
+   Compiling generic-array v0.14.7
+   Compiling icu_properties_data v2.2.0
+   Compiling slab v0.4.12
+   Compiling futures-task v0.3.33
+   Compiling futures-io v0.3.33
+   Compiling utf8_iter v1.0.4
+   Compiling pkg-config v0.3.33
+   Compiling http v1.5.0
+   Compiling vcpkg v0.2.15
+   Compiling httparse v1.10.1
+   Compiling getrandom v0.3.4
+   Compiling equivalent v1.0.2
+   Compiling form_urlencoded v1.2.2
+   Compiling autocfg v1.5.1
+   Compiling futures-util v0.3.33
+   Compiling zmij v1.0.23
+   Compiling cpufeatures v0.2.17
+   Compiling syn v2.0.119
+   Compiling syn v3.0.3
+   Compiling zeroize v1.9.0
+   Compiling thiserror v2.0.19
+   Compiling allocator-api2 v0.2.21
+   Compiling foldhash v0.1.5
+   Compiling tower-service v0.3.3
+   Compiling num-traits v0.2.19
+   Compiling rustls-pki-types v1.15.1
+   Compiling futures-channel v0.3.33
+   Compiling hashbrown v0.17.1
+   Compiling crc32fast v1.5.0
+   Compiling untrusted v0.9.0
+   Compiling http-body v1.1.0
+   Compiling serde_json v1.0.151
+   Compiling hashbrown v0.15.5
+   Compiling try-lock v0.2.5
+   Compiling errno v0.3.14
+   Compiling socket2 v0.6.5
+   Compiling mio v1.2.2
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling signal-hook-registry v1.4.8
+   Compiling getrandom v0.2.17
+   Compiling digest v0.10.7
+   Compiling base64 v0.22.1
+   Compiling want v0.3.1
+   Compiling rand_core v0.6.4
+   Compiling indexmap v2.14.0
+   Compiling rand_core v0.9.5
+   Compiling openssl-sys v0.9.117
+   Compiling ring v0.17.14
+   Compiling sync_wrapper v1.0.2
+   Compiling crossbeam-utils v0.8.22
+   Compiling httpdate v1.0.3
+   Compiling getrandom v0.4.3
+   Compiling foreign-types-shared v0.1.1
+   Compiling rustls v0.23.43
+   Compiling tower-layer v0.3.3
+   Compiling atomic-waker v1.1.2
+   Compiling openssl v0.10.81
+   Compiling foreign-types v0.3.2
+   Compiling core-error v0.0.0
+   Compiling native-tls v0.2.18
+   Compiling tinyvec_macros v0.1.1
+   Compiling rustix v1.1.4
+   Compiling object v0.36.7
+   Compiling thiserror v1.0.69
+   Compiling ipnet v2.12.1
+   Compiling tinyvec v1.12.0
+   Compiling sha1 v0.10.7
+   Compiling http-body-util v0.1.4
+   Compiling parking v2.2.1
+   Compiling ryu v1.0.23
+   Compiling iana-time-zone v0.1.65
+   Compiling data-encoding v2.11.0
+   Compiling linux-raw-sys v0.12.1
+   Compiling regex-syntax v0.8.11
+   Compiling openssl-probe v0.2.1
+   Compiling crossbeam-queue v0.3.13
+   Compiling uuid v1.24.0
+   Compiling unicode-normalization v0.1.25
+   Compiling event-listener v5.4.2
+   Compiling hashlink v0.10.0
+   Compiling hmac v0.12.1
+   Compiling webpki-roots v1.0.9
+   Compiling adler2 v2.0.1
+   Compiling lazy_static v1.5.0
+   Compiling crc-catalog v2.5.0
+   Compiling unicode-bidi v0.3.18
+   Compiling simd-adler32 v0.3.10
+   Compiling mime v0.3.17
+   Compiling base64ct v1.8.3
+   Compiling unicode-properties v0.1.4
+   Compiling either v1.17.0
+   Compiling miniz_oxide v0.9.1
+   Compiling crc v3.4.0
+   Compiling password-hash v0.5.0
+   Compiling sharded-slab v0.1.7
+   Compiling hkdf v0.12.4
+   Compiling atoi v2.0.0
+   Compiling serde_path_to_error v0.1.20
+   Compiling stringprep v0.1.5
+   Compiling sha2 v0.10.9
+   Compiling md-5 v0.10.6
+   Compiling blake2 v0.10.6
+   Compiling filetime v0.2.29
+   Compiling regex-automata v0.4.16
+   Compiling tracing-log v0.2.0
+   Compiling thread_local v1.1.10
+   Compiling dotenvy v0.15.7
+   Compiling matchit v0.8.4
+   Compiling hex v0.4.3
+   Compiling assert_matches v1.5.0
+   Compiling home v0.5.12
+   Compiling byteorder v1.5.0
+   Compiling nu-ansi-term v0.50.3
+   Compiling whoami v1.6.1
+   Compiling argon2 v0.5.3
+   Compiling flate2 v1.1.10
+   Compiling ppv-lite86 v0.2.21
+   Compiling xattr v1.6.1
+   Compiling serde_derive v1.0.229
+   Compiling displaydoc v0.2.7
+   Compiling tokio-macros v2.7.2
+   Compiling thiserror-impl v2.0.19
+   Compiling rand_chacha v0.9.0
+   Compiling rand_chacha v0.3.1
+   Compiling tar v0.4.46
+   Compiling synstructure v0.13.2
+   Compiling rand v0.8.7
+   Compiling rand v0.9.5
+   Compiling zerofrom-derive v0.1.7
+   Compiling yoke-derive v0.8.2
+   Compiling zerovec-derive v0.11.3
+   Compiling tracing-attributes v0.1.31
+   Compiling openssl-macros v0.1.1
+   Compiling thiserror-impl v1.0.69
+   Compiling tungstenite v0.29.0
+   Compiling matchers v0.2.0
+   Compiling rustls-webpki v0.103.13
+   Compiling zerofrom v0.1.8
+   Compiling yoke v0.8.3
+   Compiling zerovec v0.11.6
+   Compiling zerotrie v0.2.4
+   Compiling tracing v0.1.44
+   Compiling axum-core v0.5.6
+   Compiling aya-obj v0.2.1
+   Compiling tinystr v0.8.3
+   Compiling potential_utf v0.1.5
+   Compiling icu_collections v2.2.0
+   Compiling icu_locale_core v2.2.0
+   Compiling smallvec v1.15.2
+   Compiling serde_urlencoded v0.7.1
+   Compiling chrono v0.4.45
+   Compiling tracing-subscriber v0.3.23
+   Compiling parking_lot v0.12.5
+   Compiling icu_provider v2.2.0
+   Compiling tokio v1.53.1
+   Compiling futures-intrusive v0.5.0
+   Compiling icu_properties v2.2.0
+   Compiling icu_normalizer v2.2.0
+   Compiling aya v0.13.1
+   Compiling idna_adapter v1.2.2
+   Compiling idna v1.1.0
+   Compiling url v2.5.8
+   Compiling hyper v1.11.0
+   Compiling tower v0.5.3
+   Compiling tokio-stream v0.1.19
+   Compiling tokio-rustls v0.26.4
+   Compiling tokio-tungstenite v0.29.0
+   Compiling sqlx-core v0.8.6
+   Compiling tower-http v0.6.11
+   Compiling hyper-util v0.1.20
+   Compiling sqlx-postgres v0.8.6
+   Compiling hyper-rustls v0.27.9
+   Compiling axum v0.8.9
+   Compiling reqwest v0.12.28
+   Compiling cyanrex-engine v0.4.1 (/home/chiharukiryu/cdev/cyanrex-lab/engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 32.42s
+     Running unittests src/lib.rs (engine/target/debug/deps/cyanrex_engine-008a5a21e404809e)
+
+running 243 tests
+test metrics::tests::records_check_and_completion_metrics_independently ... ok
+test routes::ebpf::breakpoint_trace_tests::rejects_empty_debug_session_and_whitespace_before_the_line ... ok
+test routes::ebpf::breakpoint_trace_tests::parses_only_the_requested_debug_session ... ok
+test routes::ebpf::breakpoint_trace_tests::preserves_exact_decimal_markers_with_normal_trace_suffixes ... ok
+test routes::events::stream::pressure_tests::measure ... ignored, manual loopback pressure check; use scripts/bench-event-stream.mjs
+test routes::ebpf::breakpoint_trace_tests::rejects_zero_and_non_integral_breakpoint_markers ... ok
+test routes::ebpf::debug_backend_fallback_tests::fallback_requires_bpftool_tracepoint_and_active_debug_probe ... ok
+test services::auth_service::postgres_boundary_tests::postgres_cancelled_account_deletion_rolls_back_the_earlier_session_delete ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::auth_service::postgres_boundary_tests::postgres_cancelled_classroom_join_never_reopens_its_consumed_invitation ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::auth_service::postgres_boundary_tests::postgres_cancelled_login_rolls_back_without_publishing_a_session ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::auth_service::postgres_boundary_tests::postgres_delete_deferred_commit_failure_rolls_back_account_and_sessions ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::auth_service::postgres_boundary_tests::postgres_delete_session_step_failure_preserves_account_and_session ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::auth_service::postgres_boundary_tests::postgres_delete_suppressed_session_cascade_cannot_report_success ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL; probes suppressed cascade deletion
+test services::auth_service::postgres_boundary_tests::postgres_login_cannot_publish_after_concurrent_password_change ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::auth_service::postgres_boundary_tests::postgres_login_cannot_report_success_after_its_account_was_deleted ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL; probes login/deletion race
+test services::auth_service::postgres_boundary_tests::postgres_login_zero_row_session_insert_cannot_report_success ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL; probes zero-row session insertion
+test services::auth_service::postgres_boundary_tests::postgres_old_login_cannot_authenticate_as_a_recreated_account ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL; probes account-generation isolation
+test services::auth_service::postgres_mutation_tests::postgres_account_deletion_failure_is_atomic ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::auth_service::postgres_mutation_tests::postgres_account_mutations_normalize_identity_and_persist ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::auth_service::postgres_mutation_tests::postgres_account_zero_row_deletion_is_not_success ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::auth_service::postgres_mutation_tests::postgres_concurrent_password_changes_cannot_overwrite_newer_credentials ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::auth_service::postgres_mutation_tests::postgres_logout_write_failure_is_not_success ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::auth_service::postgres_mutation_tests::postgres_logout_zero_row_deletion_is_not_success ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::auth_service::postgres_mutation_tests::postgres_password_write_failure_is_not_success ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::auth_service::postgres_mutation_tests::postgres_password_zero_row_update_is_not_success ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::auth_service::postgres_tests::postgres_deleted_account_cannot_revive_in_fallback ... ignored, requires CYANREX_TEST_DATABASE_URL pointing to a disposable PostgreSQL database
+test services::auth_service::postgres_tests::postgres_expired_session_cannot_revive_in_fallback ... ignored, requires CYANREX_TEST_DATABASE_URL pointing to a disposable PostgreSQL database
+test services::auth_service::postgres_tests::postgres_registration_persists_accounts_and_serializes_duplicates ... ignored, requires CYANREX_TEST_DATABASE_URL pointing to a disposable PostgreSQL database
+test services::auth_service::postgres_tests::postgres_revoked_session_cannot_revive_in_fallback ... ignored, requires CYANREX_TEST_DATABASE_URL pointing to a disposable PostgreSQL database
+test routes::ebpf::learning_template_assessment_tests::bundled_beginner_templates_satisfy_structural_assessment ... ok
+test routes::events::stream::tests::closed_channel_produces_a_normal_shutdown_close ... ok
+test services::auth_service::tests::totp_uri_encodes_issuer_and_label_without_altering_credentials_or_parameters ... ok
+test services::classroom::tests::classroom_configuration_fails_closed ... ok
+test services::ebpf_loader::compiler_diagnostic_tests::parses_clang_error_locations ... ok
+test services::ebpf_loader::completion_parser_tests::parses_clang_completion_item ... ok
+test services::ebpf_loader::compiler_workspace::tests::compiler_workspace_is_private_and_removed_on_drop ... ok
+test services::ebpf_loader::debug_tests::ignores_braces_and_assignments_in_preprocessor_macros ... ok
+test services::ebpf_loader::debug_tests::enforces_breakpoint_limit ... ok
+test services::ebpf_loader::debug_tests::instruments_function_entry_and_statement_without_changing_line_count ... ok
+test services::ebpf_loader::debug_tests::rejects_global_comment_and_out_of_range_lines ... ok
+test services::ebpf_loader::compiler_workspace::tests::compiler_workspace_is_removed_when_operation_is_cancelled ... ok
+test services::ebpf_loader::workspace_tests::owner_namespace_is_stable_distinct_and_path_safe ... ok
+test services::event_bus::read_bench::measure ... ignored, manual release benchmark; use scripts/bench-event-history-reads.mjs
+test services::environment_checker::tests::runtime_mode_aliases_are_parsed ... ok
+test services::event_bus::subscriptions::bench::measure ... ignored, manual release benchmark; use scripts/bench-event-fanout.mjs
+test services::ebpf_loader::debug_tests::does_not_treat_map_initializer_as_a_function ... ok
+test services::event_bus::subscriptions::tests::event_bus_keeps_global_compatibility_and_drop_new_semantics ... ok
+test services::ebpf_loader::workspace_tests::workspace_is_removed_when_lease_scope_ends ... ok
+test services::event_bus::subscriptions::tests::matching_receivers_share_one_event_allocation ... ok
+test services::event_bus::subscriptions::tests::cancelling_recv_preserves_delivery_and_aborting_releases_the_subscription ... ok
+test services::classroom::tests::classroom_invitations_are_bounded_expire_and_do_not_survive_restart ... ok
+test services::event_bus::subscriptions::tests::json_is_lazy_and_encoded_once_across_concurrent_receivers ... ok
+test services::event_bus::subscriptions::tests::stale_drop_cannot_remove_a_replacement_generation ... ok
+test services::event_bus::subscriptions::tests::receivers_do_not_keep_the_registry_or_sender_alive ... ok
+test services::event_bus::subscriptions::tests::unrelated_traffic_cannot_lag_an_owner_but_own_slow_receivers_still_lag ... ok
+test routes::events::stream::tests::stalled_send_is_bounded_and_cancelled ... ok
+test services::event_bus::subscriptions::tests::subscriptions_are_live_only_and_cleanup_after_the_last_connection ... ok
+test services::event_bus::tests::confirmed_mutations::confirmed_mutations_distinguish_bad_configuration_and_validate_before_storage ... ok
+test services::event_bus::tests::deletion::cancelled_deletion_never_splits_history_and_unread ... ok
+test services::event_bus::tests::deletion::deletion_preserves_read_state_and_other_users ... ok
+test services::event_bus::tests::deletion::invalid_service_filters_never_widen_deletion ... ok
+test services::event_bus::tests::deletion::deletion_cannot_erase_concurrent_nonmatching_publications ... ok
+test services::event_bus::tests::deletion::postgres_filtered_delete_preserves_uncached_rows_and_read_flags ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::drop_new_does_not_change_history_broadcast_or_unread_after_full ... ok
+test services::event_bus::tests::filtered_snapshots_keep_latest_matching_events_in_fifo_order ... ok
+test services::event_bus::tests::drop_oldest_preserves_fifo_after_repeated_wraparound ... ok
+test services::event_bus::tests::lifecycle::disabled_persistence_worker_consumes_queued_barriers_then_exits ... ok
+test services::event_bus::tests::lifecycle::idle_persistence_worker_does_not_keep_its_own_producer_alive ... ok
+test services::event_bus::tests::persistence::cold_start::postgres_cancelled_cold_drop_new_admission_does_not_lose_capacity ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::cold_start::postgres_cold_drop_new_concurrent_clones_share_admission_and_owner_isolation ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::cold_start::postgres_cold_drop_new_count_failure_latches_memory_until_restart ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::cold_start::postgres_cold_drop_new_mutations_rebase_durable_capacity ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::cold_start::postgres_cold_full_drop_new_rejects_before_memory_unread_and_broadcast ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::cold_start::postgres_cold_partial_drop_new_counts_pending_publications_before_flush ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::cold_start::postgres_writer_drains_multiple_batches_after_last_producer_drops ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::confirmed_mutations::postgres_cancelled_confirmed_mutation_finishes_before_later_publication ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::confirmed_mutations::postgres_confirmed_cold_delete_counts_sql_rows_and_preserves_read_flags ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::confirmed_mutations::postgres_delete_failure_preserves_history_and_can_be_retried ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::confirmed_mutations::postgres_failed_mutation_barrier_does_not_acknowledge_volatile_changes ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::confirmed_mutations::postgres_mark_read_failure_preserves_unread_and_can_be_retried ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::confirmed_mutations::postgres_mutation_schema_failure_preserves_memory_and_recovers ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::confirmed_mutations::postgres_mutation_sql_timeout_never_falls_back_to_memory_success ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::confirmed_mutations::postgres_mutation_wait_deadline_does_not_claim_rollback_or_success ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::confirmed_mutations::postgres_mutations_reject_latched_fallback_without_memory_changes ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::followup::postgres_blocked_owner_mutation_does_not_hold_other_owners_publications ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::followup::postgres_cancelled_admitted_settings_finish_before_later_publications ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::followup::postgres_cold_settings_read_cannot_overwrite_a_newer_cache_value ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::followup::postgres_drop_new_can_use_capacity_freed_by_deletion_immediately ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::followup::postgres_equal_timestamp_latest_page_uses_publication_order ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::followup::postgres_equal_timestamp_retention_does_not_sort_by_event_type ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::followup::postgres_failed_batch_releases_its_barrier_into_explicit_memory_fallback ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::followup::postgres_failed_replacement_does_not_lose_previous_durable_rows ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::followup::postgres_replacement_cannot_be_undone_by_queued_old_events ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::followup::postgres_trim_failure_rolls_back_settings_and_preserves_retained_rows ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::postgres_deletion_cannot_be_undone_by_its_pending_publications ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::postgres_deletion_invalidates_drop_new_capacity_cache ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::postgres_failed_settings_update_preserves_memory_and_previous_policy ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::postgres_mark_read_waits_for_previously_queued_events ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::postgres_publish_batch_really_persists_json_without_fallback ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::postgres_replacement_really_persists_and_marks_only_its_owner_read ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::postgres_retention_update_cannot_be_overridden_by_queued_old_settings ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::reads::postgres_export_read_failure_is_not_a_successful_download ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::reads::postgres_history_read_failure_is_unavailable_and_retryable ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::reads::postgres_latched_fallback_reads_stay_unavailable_until_fresh_state ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::reads::postgres_payload_decode_failure_is_not_a_fabricated_empty_object ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::reads::postgres_read_timeout_releases_waiting_without_disabling_storage ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::reads::postgres_schema_read_failure_is_retryable_without_memory_success ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::reads::postgres_timestamp_decode_failure_is_unavailable_not_a_panic ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::reads::postgres_unread_read_failure_is_unavailable_not_zero ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::settings::postgres_settings_cancelled_update_orders_later_events_under_new_policy ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::settings::postgres_settings_commit_wait_is_bounded_without_claiming_rollback ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::settings::postgres_settings_corrupt_values_are_not_default_or_panicking_reads ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::settings::postgres_settings_failed_barrier_cannot_publish_or_trim_policy ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::settings::postgres_settings_prior_fallback_does_not_publish_or_trim_memory ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::settings::postgres_settings_read_deadline_and_cancellation_remain_retryable ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::settings::postgres_settings_read_failure_is_not_cached_or_default_success ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::settings::postgres_settings_sql_timeout_preserves_uncommitted_policy_and_history ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::settings::postgres_settings_success_reloads_and_preserves_read_flags_and_capacity ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::persistence::settings::postgres_settings_write_failure_is_private_and_atomic ... ignored, requires a disposable CYANREX_TEST_DATABASE_URL
+test services::event_bus::tests::reads::authoritative_read_filters_are_checked_before_either_backend ... ok
+test services::event_bus::tests::reads::authoritative_reads_distinguish_invalid_configuration_from_memory_only ... ok
+test services::event_bus::tests::replacement_and_clear_remain_user_scoped_and_reset_unread ... ok
+test services::event_bus::tests::retention::cancelled_mutation_waiting_for_owner_admission_changes_nothing ... ok
+test services::event_bus::tests::retention::cancelled_publish_waiting_for_capacity_lock_keeps_memory_and_reservation_unchanged ... ok
+test services::event_bus::tests::retention::cancelled_replacement_never_splits_history_and_unread ... ok
+test services::event_bus::tests::concurrent_users_retain_independent_ordered_histories ... ok
+test services::event_bus::tests::retention::cancelled_retention_update_never_splits_settings_history_and_unread ... ok
+test services::event_bus::tests::retention::replacement_rejects_foreign_owner_records_without_modifying_either_owner ... ok
+test services::event_bus::tests::retention::full_persistence_queue_latches_bounded_memory_fallback_instead_of_spawning_writers ... ok
+test services::event_bus::tests::bounded_reads_during_publication_remain_ordered_and_user_scoped ... ok
+test services::event_bus::tests::limited_queries_handle_empty_zero_oversized_and_full_export_results ... ok
+test services::event_bus::tests::selected_result_storage_does_not_grow_past_the_known_output_bound ... ok
+test services::event_bus::tests::settings::confirmed_settings_distinguish_invalid_storage_and_intentional_memory ... ok
+test services::event_bus::tests::shrinking_and_growing_a_wrapped_history_preserves_the_newest_events ... ok
+test services::event_bus::tests::steady_state_eviction_does_not_grow_or_relocate_retained_events ... ok
+test services::event_bus::subscriptions::tests::concurrent_publishers_and_connection_churn_preserve_owner_and_writer_order ... ok
+test services::event_bus_filter::tests::latest_page_stops_visiting_after_its_limit_and_returns_borrowed_events ... ok
+test services::event_bus_filter::tests::retention_is_applied_before_filtering_older_matches ... ok
+test services::event_bus_filter::tests::selective_page_stops_after_enough_matches_not_enough_scanned_events ... ok
+test services::event_bus_filter::tests::time_bounds_are_inclusive_and_do_not_assume_timestamp_order ... ok
+test services::event_bus_filter::tests::zero_limit_does_not_visit_history ... ok
+test services::learning_catalog::tests::catalog_has_ordered_unique_labs ... ok
+test services::learning_catalog::tests::comments_and_strings_do_not_satisfy_source_requirements ... ok
+test services::learning_catalog::tests::equivalent_null_guard_is_accepted_for_map_lab ... ok
+test services::learning_catalog::tests::helper_name_substrings_do_not_satisfy_call_requirements ... ok
+test services::learning_catalog::tests::success_flag_without_runtime_stage_does_not_complete_lab ... ok
+test services::learning_catalog::tests::tracepoint_lab_requires_real_success_template_and_attach ... ok
+test services::learning_store::feedback::tests::postgres_feedback_migrates_legacy_rows_and_serializes_updates ... ignored, requires CYANREX_TEST_DATABASE_URL pointing to a disposable PostgreSQL database
+test services::learning_store::persistence::tests::partial_write_and_final_flush_failures_are_returned ... ok
+test services::ebpf_loader::compiler_scope_tests::compiler_check_cache_is_scoped_to_owner ... ok
+test services::learning_store::persistence::tests::serializer_errors_are_not_successful_writes ... ok
+test services::learning_store::persistence::tests::short_and_interrupted_writes_preserve_large_source_and_empty_arrays ... ok
+test services::ebpf_loader::compiler_scope_tests::compiler_completion_cache_is_scoped_to_owner_and_cursor ... ok
+test services::learning_store::queries::tests::single_pass_aggregates_match_previous_progress_and_overview_semantics ... ok
+test services::learning_store::queries::tests::zero_limit_does_not_scan_and_a_limited_query_visits_each_input_at_most_once ... ok
+test services::learning_store::queries::tests::bounded_selection_matches_stable_sort_with_ties_and_arbitrary_input_order ... ok
+test services::learning_store::persistence::tests::pretty_json_is_written_before_all_rows_are_serialized ... ok
+test services::event_bus::tests::confirmed_mutations::confirmed_memory_mutation_cancellation_does_not_split_cache_publication ... ok
+test services::learning_store::snapshot_tests::appends_share_existing_sources_and_do_not_mutate_old_snapshots ... ok
+test services::event_bus_filter::tests::borrowed_selection_matches_legacy_filters_across_wrapped_histories ... ok
+test services::learning_store::snapshot_tests::cancellation_tests::cancelled_failing_worker_preserves_old_data_and_releases_admission ... ok
+test services::learning_store::snapshot_tests::cancellation_tests::cancelling_queued_writers_does_not_change_disk_or_memory ... ok
+test services::learning_store::snapshot_tests::cancellation_tests::cancelled_append_finishes_publication_before_releasing_the_writer_lock ... ok
+test services::learning_store::snapshot_tests::cancellation_tests::cancelled_feedback_keeps_the_saved_revision_and_rejects_a_stale_retry ... ok
+test services::learning_store::snapshot_tests::failed_writes_do_not_publish_a_new_snapshot_and_remain_retryable ... ok
+test services::learning_store::snapshot_tests::failed_final_rename_does_not_change_the_in_memory_snapshot ... ok
+test services::learning_store::snapshot_tests::feedback_copies_only_the_changed_record_and_preserves_old_snapshots ... ok
+test services::learning_store::snapshot_tests::cancellation_tests::cancelled_request_does_not_drop_an_admitted_but_not_started_worker ... ok
+test services::learning_store::snapshot_tests::load_tests::cancelled_queued_load_keeps_admission_and_finishes_initialization ... ok
+test services::learning_store::snapshot_tests::load_tests::cancelled_decoded_load_publishes_once_and_does_not_reread_changed_input ... ok
+test services::learning_store::snapshot_tests::concurrent_appends_and_feedback_keep_every_success_after_reload ... ok
+test services::learning_store::snapshot_tests::legacy_json_array_still_loads_and_writes_identical_pretty_encoding ... ok
+test services::learning_store::snapshot_tests::load_tests::only_not_found_is_initialized_as_empty_and_path_errors_remain_retryable ... ok
+test services::learning_store::snapshot_tests::read_failure_tests::a_new_local_classroom_still_has_legitimate_empty_reads_without_writing ... ok
+test services::learning_store::snapshot_tests::read_failure_tests::query_read_failure_is_not_empty_or_stale_local_success ... ok
+test services::learning_store::snapshot_tests::read_failure_tests::schema_read_failure_is_not_empty_or_stale_local_success ... ok
+test services::learning_store::snapshot_tests::progress_and_overview_stay_fresh_without_exposing_or_copying_source ... ok
+test services::learning_store::snapshot_tests::snapshot_reads_share_the_collection_and_source_allocations ... ok
+test services::learning_store::tests::progress_prefers_completed_state_over_later_failures ... ok
+test services::module_manager::tests::discovers_versioned_manifests_and_manages_only_known_modules ... ok
+test services::module_manager::tests::rejects_missing_catalog_and_invalid_manifest_values ... ok
+test services::module_manager::tests::rejects_unsupported_or_directory_mismatched_manifests ... ok
+test services::runner_agent_authenticator::tests::tampering_rotation_and_stale_timestamps_are_rejected ... ok
+test services::runner_agent_authenticator::tests::valid_signature_is_accepted_once ... ok
+test services::runner_agent_client::boundary_tests::lost_lease_prevents_execution_and_result_submission ... ok
+test services::runner_agent_client::boundary_tests::lost_lease_takes_precedence_over_a_cancel_instruction ... ok
+test services::learning_store::snapshot_tests::recent_pages_keep_timestamp_order_and_stable_ties_without_leaking_owners ... ok
+test services::learning_store::snapshot_tests::load_tests::cold_decoder_matches_legacy_serde_and_never_publishes_partial_input ... ok
+test services::learning_store::snapshot_tests::load_tests::concurrent_cold_appends_and_feedback_preserve_initial_and_new_rows ... ok
+test services::runner_agent_client::boundary_tests::response_tests::small_chunked_server_error_keeps_its_status_and_retry_policy ... ok
+test services::runner_agent_client::compile_check_requires_a_real_isolation_boundary ... ok
+test services::runner_agent_client::engine_url_rejects_redirectable_or_ambiguous_components ... ok
+test services::runner_agent_client::engine_url_requires_tls_outside_loopback ... ok
+test services::runner_agent_executor::tests::capped_reader_drains_but_bounds_output ... ok
+test services::runner_agent_executor::tests::executor_rejects_ambiguous_paths ... ok
+test services::runner_agent_client::boundary_tests::valid_and_cancelled_leases_keep_their_existing_completion_behavior ... ok
+test services::runner_agent_executor::tests::source_policy_allows_system_headers_and_rejects_file_reads ... ok
+test services::runner_agent_executor::tests::workspaces_are_private_and_removed ... ok
+test services::runner_agent_registry::tests::heartbeat_cannot_overstate_registered_capacity ... ok
+test services::learning_store::snapshot_tests::load_tests::concurrent_cold_readers_share_one_published_snapshot ... ok
+test services::runner_agent_registry::tests::identifiers_cannot_contain_whitespace ... ok
+test services::runner_agent_registry::tests::shared_kernel_agents_cannot_advertise_the_compiler ... ok
+test services::runner_agent_registry::tests::short_tokens_and_invalid_retention_are_rejected ... ok
+test services::runner_agent_registry::tests::stale_agents_become_offline_and_are_then_pruned ... ok
+test services::runner_agent_registry::tests::token_authentication_is_disabled_or_constant_time_checked ... ok
+test services::runner_driver::tests::local_attachment_lifecycle_preserves_empty_inventory_and_cleanup ... ok
+test services::runner_driver::tests::local_detach_rejects_untracked_paths_without_touching_them ... ok
+test services::runner_agent_client::boundary_tests::response_tests::oversized_chunked_response_is_rejected_before_waiting_for_eof ... ok
+test services::runner_job_queue::tests::claim_respects_agent_active_capacity ... ok
+test services::runner_job_queue::tests::claimed_probe_requires_cancel_acknowledgement ... ok
+test services::runner_job_queue::tests::compile_checks_require_the_clang_capability_and_hide_source_from_inventory ... ok
+test services::runner_job_queue::tests::probe_can_be_claimed_completed_and_listed_without_exposing_lease ... ok
+test services::runner_job_queue::tests::queue_wait_limit_does_not_shorten_claimed_leases_or_expire_staff_managed_work ... ok
+test services::runner_job_queue::tests::unclaimed_user_checks_expire_without_leaking_source_or_blocking_user_quota ... ok
+test services::runner_job_queue::tests::user_queue_expiry_is_inclusive_and_does_not_extend_terminal_retention ... ok
+test services::runner_job_queue::tests::user_compile_jobs_are_private_cancellable_and_quota_limited ... ok
+test services::runner_manager::tests::enforces_per_user_capacity_and_releases_on_drop ... ok
+test services::runner_manager::tests::compiler_operations_require_an_owner_before_dispatch ... ok
+test services::runner_manager::tests::execution_delegates_to_driver_and_updates_runtime_metadata ... ok
+test services::runner_manager::tests::execution_rejects_another_owner_before_calling_driver_or_changing_lease ... ok
+test services::runner_manager::tests::reports_global_capacity_without_exposing_other_user_count ... ok
+test services::runner_manager::tests::unsupported_driver_mode_fails_closed ... ok
+test services::script_store::tests::cancelling_a_queued_commit_does_not_write_or_publish ... ok
+test services::script_store::tests::cold_snapshot_with_another_owner_is_not_exposed_or_overwritten ... ok
+test services::runner_agent_registry::tests::registry_has_a_hard_agent_count_limit ... ok
+test services::runner_agent_client::boundary_tests::response_tests::exact_limit_chunked_json_is_accepted ... ok
+test services::script_store::tests::failed_rename_keeps_old_snapshot_and_removes_only_its_temporary_file ... ok
+test services::script_store::tests::persisted_scripts_have_private_file_permissions ... ok
+test services::script_store::tests::malformed_cold_snapshot_is_preserved_and_can_be_retried_after_repair ... ok
+test services::script_store::tests::cancelled_commit_retains_admission_until_disk_and_cache_are_published ... ok
+test services::script_store::tests::concurrent_local_commits_survive_reload_without_lost_updates ... ok
+test services::runner_agent_executor::tests::installed_clang_produces_a_bounded_report_and_leaves_no_job_files ... ok
+test services::auth_service::tests::verified_memory_login_cannot_publish_after_credentials_change_or_removal ... ok
+test services::auth_service::tests::schema_failure_cannot_reissue_secrets_for_an_existing_memory_account ... ok
+test services::auth_service::tests::concurrent_registration_during_schema_failure_has_exactly_one_winner ... ok
+test services::auth_service::tests::registration_after_schema_failure_returns_a_usable_fallback_account ... ok
+test services::auth_service::tests::concurrent_memory_password_changes_have_one_winner ... ok
+test services::auth_service::tests::account_mutations_use_the_same_normalized_identity_as_login ... ok
+test services::auth_service::postgres_mutation_tests::configured_auth_storage_outage_cannot_turn_mutations_into_memory_success ... ok
+test services::event_bus::tests::confirmed_mutations::confirmed_mutation_admission_deadline_does_not_dispatch_later ... ok
+test services::event_bus::tests::retention::stalled_persistence_barrier_has_a_deadline_and_releases_owner_admission ... ok
+test services::event_bus::tests::retention::stalled_storage_operation_has_a_deadline_instead_of_holding_admission_forever ... ok
+test services::event_bus::tests::settings::confirmed_settings_cancelled_memory_publication_and_admission_leave_state_intact ... ok
+
+test result: ok. 165 passed; 0 failed; 78 ignored; 0 measured; 0 filtered out; finished in 10.09s
+
+     Running unittests src/main.rs (engine/target/debug/deps/cyanrex_engine-7e9d91f04d63235b)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/bin/cyanrex-release/main.rs (engine/target/debug/deps/cyanrex_release-9353bc4fe09c2567)
+
+running 10 tests
+test smoke_http::tests::totp_matches_the_rfc_sha1_vector_truncated_to_six_digits ... ok
+test smoke_http::tests::admin_credentials_require_https_or_loopback ... ok
+test strict_json::tests::accepts_each_json_value_kind ... ok
+test strict_json::tests::rejects_duplicate_keys_at_any_depth ... ok
+test smoke_health::tests::health_probe_requires_an_ok_payload ... ok
+test smoke_runner_agent::tests::native_runner_smoke_authenticates_submits_and_accepts_a_real_result ... ok
+test smoke_runner_agent::tests::native_runner_smoke_cancels_a_job_that_does_not_finish ... ok
+test smoke_live_kernel::tests::native_live_kernel_smoke_reports_unproven_failure_cleanup ... ok
+test smoke_live_kernel::tests::native_live_kernel_smoke_detaches_when_no_matching_event_arrives ... ok
+test smoke_live_kernel::tests::native_live_kernel_smoke_writes_evidence_after_exact_cleanup ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running unittests src/bin/cyanrex-runner-agent.rs (engine/target/debug/deps/cyanrex_runner_agent-eed98ac312db2e0d)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/bin/event_bus_bench.rs (engine/target/debug/deps/event_bus_bench-86e52a49a89b56c9)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/classroom_tdd.rs (engine/target/debug/deps/classroom_tdd-81343a3c589ce485)
+
+running 8 tests
+test classroom_disabled_join_does_not_reveal_reserved_teacher_names ... ok
+test classroom_revocation_and_inventory_do_not_leak_invitation_secrets ... ok
+test classroom_wrong_identity_protocol_capability_origin_or_username_cannot_redeem ... ok
+test classroom_concurrent_redemption_is_once_and_oversized_requests_are_rejected ... ok
+test classroom_disabled_by_default_and_discovery_is_minimal ... ok
+test classroom_management_is_teacher_only_and_csrf_protected ... ok
+test classroom_existing_account_is_not_reset_and_failed_creation_consumes_invitation ... ok
+test classroom_invitation_joins_student_without_open_registration_or_automatic_login ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.96s
+
+     Running tests/module_boundaries_tdd.rs (engine/target/debug/deps/module_boundaries_tdd-0a5a725fe57da857)
+
+running 24 tests
+test event_reads::event_reads_reject_invalid_filters_without_widening ... ok
+test event_mutations::event_mutation_success_and_invalid_queries_are_private_json ... ok
+test script_postgres::scripts_use_postgres_without_file_fallback_and_keep_owner_boundaries_after_reload ... ignored, requires CYANREX_TEST_DATABASE_URL pointing to disposable PostgreSQL
+test event_reads::event_read_time_overflow_is_bad_request_not_panic ... ok
+test event_reads::event_read_responses_are_private_and_keep_legacy_ignored_owner_fields ... ok
+test event_settings::event_settings_http_is_private_and_preserves_validation_and_clamping ... ok
+test events::event_history_export_and_unread_remain_session_scoped ... ok
+test events::event_settings_http_retention_and_overflow_policy_do_not_cross_users ... ok
+test events::filtered_event_deletion_removes_matches_not_the_complement ... ok
+test events::invalid_event_delete_filters_must_not_widen_into_delete_all ... ok
+test learning_flow::saved_source_flows_through_runner_events_feedback_and_owner_bound_resume ... ok
+test learning_persistence::failed_learning_rename_removes_only_its_temporary_snapshot ... ok
+test learning_persistence::learning_commit_does_not_follow_a_preexisting_temporary_symlink ... ok
+test learning_persistence::new_learning_files_and_directories_are_private ... ok
+test learning_reads::history_read_failure_is_not_empty_success ... ok
+test learning_reads::progress_read_failure_is_not_zero_progress ... ok
+test learning_reads::teacher_overview_read_failure_is_not_an_empty_classroom ... ok
+test learning_reads::teacher_review_read_failure_is_not_empty_success ... ok
+test storage::header_download_checksum_failure_cannot_publish_a_downloaded_resource ... ok
+test storage::script_corrupt_snapshot_must_not_be_overwritten_by_a_successful_save ... ok
+test storage::script_failed_file_delete_must_retain_the_previously_saved_record ... ok
+test storage::script_failed_file_save_must_not_publish_an_unsaved_record ... ok
+test storage::scripts_bind_http_identity_csrf_and_file_reload_without_cross_owner_deletion ... ok
+test storage::teacher_header_selection_reloads_and_is_readable_but_not_mutable_by_students ... ok
+
+test result: ok. 23 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 29.58s
+
+     Running tests/release_candidate_tdd.rs (engine/target/debug/deps/release_candidate_tdd-da28e33c255d4dbb)
+
+running 1 test
+test native_candidate_verifier_passes_the_complete_bundle_regression_suite ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.53s
+
+     Running tests/release_package_tdd.rs (engine/target/debug/deps/release_package_tdd-e36e1259e76b4a94)
+
+running 9 tests
+test native_extractor_rejects_outer_checksum_tampering ... ok
+test installed_tests::installation_checks_the_bundled_binary_before_execution ... ok
+test installed_tests::installed_verifier_rejects_links_missing_files_and_duplicate_metadata ... ok
+test native_installed_package_verifier_rejects_tampering_and_unlisted_files ... ok
+test installed_tests::installation_preflight_preserves_preexisting_configuration_and_tokens ... ok
+test native_extractor_rejects_unsafe_or_unverified_members ... ok
+test installed_tests::installed_image_probe_checks_all_images_and_fails_closed ... ok
+test rust_and_python_extract_the_same_verified_package ... ok
+test installed_tests::installation_uses_native_probes_without_python_and_cleans_owned_state ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+
+     Running tests/release_tool_tdd.rs (engine/target/debug/deps/release_tool_tdd-5be80cf927e605ca)
+
+running 3 tests
+test native_writer_rejects_duplicates_and_existing_outputs ... ok
+test native_verifier_accepts_v1_and_rejects_tampering ... ok
+test python_and_rust_evidence_are_mutually_compatible ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+     Running tests/routes_tdd.rs (engine/target/debug/deps/routes_tdd-7faf260dd79e60c0)
+
+running 86 tests
+test get_index_should_return_homepage_payload ... ok
+test get_health_should_return_ok_status ... ok
+test get_modules_list_allowed_for_admin ... ok
+test get_ebpf_templates_should_return_template_catalog ... ok
+test get_ebpf_templates_should_include_categorized_learning_paths ... ok
+test authenticated_remote_check_is_user_scoped_and_normalizes_agent_diagnostics ... ok
+test admin_can_submit_a_capability_matched_compile_check_without_inventory_source_leak ... ok
+test get_auth_me_should_return_authenticated_after_login ... ok
+test get_c_headers_catalog_should_return_header_module_items ... ok
+test event_websocket_lag_closes_with_resync_code_instead_of_silent_loss ... ok
+test get_openapi_should_return_versioned_machine_readable_contract ... ok
+test get_helper_environment_should_return_check_report ... ok
+test get_modules_catalog_allowed_for_teacher ... ok
+test get_auth_me_returns_role_for_student_user ... ok
+test get_modules_list_allowed_for_teacher ... ok
+test learning_single_attempt_reports_storage_errors_without_exposing_source ... ok
+test learning_labs_require_auth_and_return_progress_catalog ... ok
+test get_modules_list_forbidden_for_student ... ok
+test event_websocket_keeps_raw_event_frames_and_owner_isolation ... ok
+test options_ebpf_run_should_allow_cors_preflight ... ok
+test learning_single_attempt_is_read_only_and_bound_to_the_session_owner ... ok
+test post_auth_login_returns_teacher_role_for_deployment_owner ... ok
+test event_websocket_other_owner_burst_does_not_force_resync ... ok
+test post_auth_login_rejects_invalid_username ... ok
+test learning_teacher_feedback_failure_does_not_publish_unsaved_changes ... ok
+test learning_teacher_feedback_and_new_runs_preserve_both_updates ... ok
+test learning_teacher_feedback_is_saved_and_visible_to_its_student ... ok
+test post_auth_login_returns_teacher_role_for_teacher_user ... ok
+test post_auth_login_should_fail_with_invalid_totp ... ok
+test learning_teacher_feedback_loads_legacy_attempts_without_feedback ... ok
+test post_auth_register_rejects_invalid_username ... ok
+test post_auth_delete_should_remove_user_and_invalidate_login ... ok
+test learning_teacher_feedback_rejects_missing_revision_and_spoofed_author ... ok
+test post_auth_login_should_succeed_with_valid_password_and_totp ... ok
+test learning_teacher_feedback_validates_comment_and_attempt_owner ... ok
+test event_websocket_requires_a_session_and_allowed_origin ... ok
+test post_auth_register_should_create_user_with_totp_bootstrap_payload ... ok
+test post_auth_logout_is_blocked_by_csrf_origin_restriction ... ok
+test learning_teacher_feedback_rejects_stale_and_concurrent_edits ... ok
+test post_auth_student_can_access_ebpf_endpoints ... ok
+test post_auth_totp_bootstrap_should_return_otpauth_uri_for_valid_credentials ... ok
+test post_auth_totp_bootstrap_should_fail_with_invalid_credentials ... ok
+test post_command_should_return_structured_module_results_for_admin ... ok
+test post_auth_logout_allows_request_with_allowed_origin ... ok
+test post_auth_student_can_blocked_by_csrf_origin_restriction ... ok
+test post_auth_teacher_can_manage_deployment_settings ... ok
+test post_command_should_validate_module_name_and_describe_experiment_handoff ... ok
+test post_auth_change_password_should_require_valid_otp_and_update_login_password ... ok
+test post_auth_student_is_forbidden_from_admin_settings_route ... ok
+test post_command_should_be_allowed_for_teacher ... ok
+test post_ebpf_check_with_oversized_code_should_return_payload_too_large ... ok
+test post_ebpf_check_empty_code_should_return_validation_error ... ok
+test runner_agent_registration_rejects_oversized_payloads ... ok
+test post_ebpf_run_with_oversized_code_should_fail_validation ... ok
+test runner_agent_signed_requests_cannot_be_replayed ... ok
+test post_ebpf_run_with_empty_code_should_fail_validation ... ok
+test post_modules_lifecycle_updates_a_discovered_catalog_entry ... ok
+test runner_agent_registration_requires_bearer_token ... ok
+test runner_claim_does_not_subtract_reported_active_jobs_twice ... ok
+test runner_claim_keeps_reserved_capacity_and_cancel_pending_leases_counted ... ok
+test post_modules_start_rejects_unknown_catalog_entries ... ok
+test runner_agent_can_register_heartbeat_and_appear_in_admin_inventory ... ok
+test post_modules_download_for_teacher_reaches_header_validation ... ok
+test learning_teacher_feedback_enforces_staff_and_csrf ... ok
+test runner_probe_job_supports_claim_cancel_sync_and_result ... ok
+test runner_status_requires_auth_and_reports_shared_kernel_boundary ... ok
+test post_auth_student_is_allowed_when_csrf_origin_is_missing_with_override ... ok
+test runner_compiler_tests::compiler_guards_and_validation_run_before_driver_dispatch ... ok
+test runner_overview_is_admin_only ... ok
+test runner_lifecycle_tests::attachment_backend_unavailability_never_falls_back_to_local_loader ... ok
+test teacher_attempt_review_is_limited_and_students_cannot_read_it ... ok
+test runner_compiler_tests::compiler_routes_delegate_source_owner_headers_cursor_and_cache_status ... ok
+test runner_lifecycle_tests::attachment_inventory_uses_session_owner_and_outlives_execution_lease ... ok
+test runner_lifecycle_tests::detach_uses_driver_ownership_and_cleanup_report_without_host_inspection ... ok
+test runner_lifecycle_tests::attachment_operations_have_bounded_deadlines ... ok
+test runner_lifecycle_tests::attachment_routes_keep_auth_and_csrf_guards_before_driver ... ok
+test teacher_authority_public_registration_cannot_claim_reserved_names_or_roles ... ok
+test teacher_authority_deployment_owner_cannot_delete_itself_with_students_present ... ok
+test teacher_authority_manages_deployment_and_retains_csrf ... ok
+test post_auth_student_is_blocked_when_csrf_origin_is_missing ... ok
+test teacher_authority_students_and_anonymous_cannot_manage_deployment ... ok
+test teacher_authority_default_and_legacy_accounts_report_teacher ... ok
+test teacher_learning_overview_is_staff_only ... ok
+test remote_check_cancellation_preserves_auth_csrf_and_owner_boundaries ... ok
+test runner_compiler_tests::compiler_backend_failure_and_timeout_never_fall_back_to_local_compiler ... ok
+test runner_compiler_tests::compiler_capacity_is_per_manager_and_cancel_releases_slots_and_metrics ... ok
+
+test result: ok. 86 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 14.39s
+
+     Running tests/runner_agent_client_tdd.rs (engine/target/debug/deps/runner_agent_client_tdd-6465213ccea89463)
+
+running 1 test
+test runner_agent_client_completes_signed_probe_and_compile_jobs_over_http ... ignored, requires a loopback TCP listener and Linux Clang with the BPF target
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/ssh_deploy_tdd.rs (engine/target/debug/deps/ssh_deploy_tdd-512adddb1ad68797)
+
+running 5 tests
+test ssh_target_refuses_version_mismatch_before_touching_deployment ... ok
+test ssh_plan_is_offline_strict_and_target_bound ... ok
+test ssh_apply_uses_reviewed_arguments_once_and_does_not_retry_failure ... ok
+test ssh_target_checks_package_controls_and_private_configuration_before_execution ... ok
+test ssh_arguments_reject_injection_and_unknown_actions ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+   Doc-tests cyanrex_engine
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+Skipping npm install for frontend checks.
+
+> @cyanrex/frontend@0.4.1 prebuild
+> node scripts/clean-macos-metadata.mjs && node scripts/sync-course-docs.mjs
+
+[metadata] removed 0 macOS filesystem metadata entries
+[course] synchronized locale copies: en, zh-CN
+
+> @cyanrex/frontend@0.4.1 build
+> next build
+
+   ▲ Next.js 15.5.24
+
+   Linting and checking validity of types ...
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 2.7s
+   Collecting page data ...
+   Generating static pages (0/18) ...
+   Generating static pages (4/18) 
+   Generating static pages (8/18) 
+   Generating static pages (13/18) 
+ ✓ Generating static pages (18/18)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (pages)                                 Size  First Load JS
+┌ ○ /                                        304 B         137 kB
+├   /_app                                      0 B         137 kB
+├ ○ /404                                     180 B         137 kB
+├ ○ /account                               2.43 kB         145 kB
+├ ○ /dashboard                               513 B         143 kB
+├ ○ /ebpf                                  28.7 kB         172 kB
+├ ○ /events                                6.53 kB         149 kB
+├ ○ /helper                                1.33 kB         144 kB
+├ ○ /join                                  4.32 kB         143 kB
+├ ○ /learn                                 3.92 kB         147 kB
+├ ○ /learn/[...slug]                       2.08 kB         145 kB
+├ ○ /login                                 1.89 kB         141 kB
+├ ○ /modules                               3.31 kB         146 kB
+├ ○ /otp-setup                             1.91 kB         141 kB
+├ ○ /register                              1.91 kB         141 kB
+├ ○ /settings                              8.18 kB         151 kB
+├ ○ /teaching                              6.19 kB         149 kB
+└ ○ /terminal                              3.22 kB         146 kB
++ First Load JS shared by all               142 kB
+  ├ chunks/framework-372c62845e5ba996.js   57.5 kB
+  ├ chunks/main-7f338c3961cdd4b9.js          37 kB
+  ├ chunks/pages/_app-138bace09c6a7600.js  40.6 kB
+  └ other shared chunks (total)             6.8 kB
+
+○  (Static)  prerendered as static content
+
+
+> @cyanrex/frontend@0.4.1 test:performance-hotspots
+> node --experimental-strip-types --test tests/performanceHotspots.test.mjs
+
+(node:2852480) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/src/features/settings/hotspots.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/chiharukiryu/cdev/cyanrex-lab/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ zero-sample metrics are safe instead of false critical hotspots (1.17777ms)
+✔ real low cache-hit samples remain critical (0.163277ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 83.111179
+
+> @cyanrex/frontend@0.4.1 test:event-stream
+> node --experimental-strip-types --test tests/eventStream.test.mjs
+
+(node:2852524) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/src/features/events/eventStream.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/chiharukiryu/cdev/cyanrex-lab/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ subscribes before snapshot and merges in-flight rows without erasing live data (2.068993ms)
+✔ snapshot merging keeps repeated identical events and insertion order (0.284073ms)
+✔ frames already present in a snapshot may arrive after the HTTP response without duplication (1.006117ms)
+✔ lag triggers a gap notice, backoff, and a fresh snapshot on reconnect (0.476985ms)
+✔ old connection callbacks and late aborted snapshots cannot overwrite a new generation (0.254448ms)
+✔ snapshot buffer overflow is visible and bounded, including under a sustained burst (7.113266ms)
+✔ filtering applies to both snapshot and live rows before consuming the bounded buffer (0.589697ms)
+✔ failed snapshot never reports open; retries do not overlap and stop on HTTP auth failure (0.343424ms)
+✔ handshake and snapshot deadlines cancel stalled work (0.213511ms)
+✔ repeated rapid disconnects back off to at most 30s instead of resetting at each handshake (0.488196ms)
+✔ malformed frames and cleanup cannot mutate state or leave timers/requests alive (0.206507ms)
+✔ disposal during snapshot aborts it; a new filter controller does not inherit its data (0.22405ms)
+✔ an invalid snapshot retries; policy closure is terminal; limit one remains bounded (0.42662ms)
+✔ malformed live input marks a gap without retrying or discarding valid recent rows (0.167825ms)
+✔ valid filtered-out frames are not misreported as data gaps (0.151895ms)
+✔ explicit forbidden snapshots stop retries just like unauthorized snapshots (0.124964ms)
+✔ backoff resets only after a thirty-second stable live period (0.187212ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 17
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 101.787862
+
+> @cyanrex/frontend@0.4.1 test:event-page
+> node --experimental-strip-types --test tests/eventPage.test.mjs
+
+(node:2852549) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/src/features/events/eventFilters.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/chiharukiryu/cdev/cyanrex-lab/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ event filters retain category, severity and bounded history but export has no page limit (1.331768ms)
+✔ invalid or reversed time ranges never turn into wider history/export queries (0.346891ms)
+✔ custom timestamp boundaries are inclusive and malformed event times never pass (0.166894ms)
+✔ relative windows expire a record immediately after the exact cutoff (0.116789ms)
+✔ event mutations require exact confirmation and nonnegative safe-integer counts (0.336672ms)
+✔ event transport keeps session credentials and private nonredirecting GET/POST semantics (16.998894ms)
+✔ pre-cancelled event requests do not dispatch (0.487054ms)
+✔ event request deadline includes body decoding and releases its cancellation linkage (0.79966ms)
+✔ a cancelled late event response never reaches its decoder (0.853421ms)
+✔ successful event reads release timers and parent listeners (0.426431ms)
+✔ HTTP, network and malformed JSON failures never retry event mutations (1.809836ms)
+✔ export decoding checks MIME type and preserves bytes with a safe format-bound filename (1.682427ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 113.116587
+
+> @cyanrex/frontend@0.4.1 test:settings
+> node --experimental-strip-types --test tests/settingsRequest.test.mjs
+
+(node:2852575) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/src/features/settings/settingsRequest.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/chiharukiryu/cdev/cyanrex-lab/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ event settings accept only integral limits and exact policies (0.988224ms)
+✔ reviewed drafts clamp valid integers but never coerce invalid inputs (0.612028ms)
+✔ compiler reads require a boolean and matching strategy (0.177052ms)
+✔ write acknowledgements must strictly confirm the reviewed event and compiler values (0.231074ms)
+✔ settings requests are private credentialed reads/writes without authority overrides or retries (21.83583ms)
+✔ pre-cancelled settings requests never dispatch (0.467216ms)
+✔ read deadlines end waiting even if transport ignores abort; late headers never decode (0.902243ms)
+✔ write deadline also bounds an abort-ignoring JSON body and removes cancellation linkage (1.174835ms)
+✔ navigation cancellation ends a settings write before late transport completion (0.417944ms)
+✔ completed reads release both timer and parent linkage (0.430087ms)
+✔ HTTP, network, JSON and MIME failures cannot retry or confirm a write (2.072268ms)
+✔ all four locales explain unavailable, unconfirmed and partial settings updates (0.816942ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 115.444575
+
+> @cyanrex/frontend@0.4.1 test:compiler-check
+> node --experimental-strip-types --test tests/compilerCheck.test.mjs
+
+(node:2852601) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/src/features/ebpf/compilerCheck.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/chiharukiryu/cdev/cyanrex-lab/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ local check uses private, non-redirecting credentialed transport without running code (19.081221ms)
+✔ authentication, capacity and network errors never retry or fall back from an Agent (1.403774ms)
+✔ pre-cancelled work dispatches no request (0.398137ms)
+✔ local deadline also aborts a stalled JSON body after successful headers (1.233865ms)
+✔ remote submission has a deadline even before a job ID is known (0.282921ms)
+✔ remote submission and stalled polling share one deadline and cancel only the known job (0.885571ms)
+✔ nonterminal remote responses wait 500 ms and do not accept a premature result (0.940315ms)
+✔ cancellation between polls stops the delay and sends exactly one private cancellation (0.699002ms)
+✔ cancelled/expired jobs are not compiler reports and known terminal jobs are not cancelled again (0.657694ms)
+✔ compiler rejection remains a normal report, not an infrastructure failure (0.446378ms)
+✔ malformed JSON and missing remote job IDs fail without caching or a fabricated cancellation (0.458019ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 111.341486
+
+> @cyanrex/frontend@0.4.1 test:semantic-completion
+> node --experimental-strip-types --test tests/semanticCompletion.test.mjs
+
+(node:2852627) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/src/utils/semanticCompletion.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/chiharukiryu/cdev/cyanrex-lab/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ semantic request stays local and sends only source/cursor with private transport (24.339408ms)
+✔ completion cache expires exactly at five seconds and respects cursor/source identity (1.243443ms)
+✔ completion cache remains bounded to eighteen entries (3.257622ms)
+✔ foreign, disposed and pre-cancelled models dispatch nothing (0.36204ms)
+✔ empty and UTF-8 oversized source remains snippet-only without dispatch (0.932159ms)
+✔ superseded cursor requests discard even already-delivered responses (0.599024ms)
+✔ owner disposal aborts active work and releases listeners without publishing a late result (0.419598ms)
+✔ model replacement invalidates pending work and all model-local cache reuse (0.670949ms)
+✔ a stalled semantic JSON body has a ten-second whole-request deadline (0.653266ms)
+✔ network/HTTP failures never retry or poison semantic cache (1.00215ms)
+✔ malformed semantic payloads remain snippet-only instead of escaping into providers (1.63607ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 121.694241
+
+> @cyanrex/frontend@0.4.1 test:runtime-request
+> node --experimental-strip-types --test tests/runtimeRequest.test.mjs
+
+(node:2852653) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/src/features/ebpf/runtimeRequest.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/chiharukiryu/cdev/cyanrex-lab/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ runtime mutations use one private non-redirecting credentialed POST without adding authority (20.057764ms)
+✔ attachment reconciliation is a private GET, never an implicit detach (0.385433ms)
+✔ a pre-cancelled runtime request never calls fetch (0.46908ms)
+✔ runtime deadline covers a hung JSON body and releases its parent listener (0.74634ms)
+✔ navigation aborts an active request but cannot publish an abort-ignoring late body (0.5278ms)
+✔ completed runtime reads release their deadline and cancellation linkage (0.435076ms)
+✔ HTTP, network and malformed-body failures do not retry a runtime mutation (7.257297ms)
+✔ normal compiler rejection and valid debug records retain their result fields (0.235742ms)
+✔ malformed run and nested debug fields cannot reach result rendering (0.228479ms)
+✔ detach parsing never fabricates clean or changes explicit warning fields (0.262563ms)
+✔ only a valid distinct inventory may be reported as ready, including a real empty result (0.23461ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 117.364498
+
+> @cyanrex/frontend@0.4.1 test:security-headers
+> node --test tests/securityHeaders.test.mjs
+
+✔ CSP permits the configured Engine origin (0.693922ms)
+✔ invalid or non-http Engine URLs fall back without injecting CSP (0.189626ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 46.549931
+
+> @cyanrex/frontend@0.4.1 test:tooling
+> node --test tests/cleanMacosMetadata.test.mjs
+
+✔ cleanMacosMetadata removes Finder sidecars without touching source files (6.580267ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 52.338761
+
+> @cyanrex/frontend@0.4.1 test:ui-permissions
+> node --experimental-strip-types --test tests/sidebarPermissions.test.mjs tests/teachingReview.test.mjs tests/terminalCommand.test.mjs tests/learningResume.test.mjs tests/actionSafety.test.mjs tests/classroomConnection.test.mjs tests/authSession.test.mjs
+
+(node:2852733) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/src/features/ebpf/detachTarget.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/chiharukiryu/cdev/cyanrex-lab/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ only an explicit null can select detach-all; missing or blank targets fail closed (1.427258ms)
+✔ event deletion freezes an absolute upper bound and never uses the visible list limit (0.709401ms)
+✔ custom deletion keeps an earlier end, caps future ranges and rejects malformed scopes (0.251071ms)
+(node:2852739) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/src/utils/authSession.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/chiharukiryu/cdev/cyanrex-lab/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ logout requires an explicit successful response and uses private non-redirecting transport (21.970362ms)
+✔ logout propagates network failure without retrying (0.507672ms)
+✔ logout combines navigation cancellation with a bounded request deadline (0.73002ms)
+(node:2852740) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/src/features/classroom/connection.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/chiharukiryu/cdev/cyanrex-lab/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ classroom invitation fragments are strictly parsed without accepting query/redirect overrides (1.87629ms)
+✔ classroom discovery is data, not a redirect or authority to switch API origins (0.61805ms)
+✔ join compatibility uses protocol and required capability, never matching patch strings (0.222327ms)
+(node:2852742) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/src/features/learning/resumeAttempt.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/chiharukiryu/cdev/cyanrex-lab/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ resume links carry only the lab and attempt identifiers, not submitted source or usernames (0.773672ms)
+✔ resume targets distinguish absent, valid and malformed queries (0.907062ms)
+✔ resume reads one owner-bound attempt with credentials, no-store and cancellation (20.047755ms)
+✔ resume rejects missing, cross-lab, mismatched and oversized records without applying them (4.666817ms)
+✔ an aborted resume discards even a late successful response (0.373491ms)
+(node:2852748) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/src/utils/sidebarPermissions.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/chiharukiryu/cdev/cyanrex-lab/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ normalizeAuthRole accepts only supported roles (0.707818ms)
+✔ getRequiredRolesForRoute returns route-specific role policies (0.660319ms)
+✔ isRoleAllowed handles allowlists and unauthenticated role (0.160781ms)
+✔ isRouteAllowed enforces route policy end-to-end (1.08211ms)
+✔ filterNavItemsByRole only shows modules/settings per role (0.240882ms)
+✔ deployment management belongs to teachers with legacy admin compatibility, never unknown roles (0.197149ms)
+(node:2852754) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/src/features/learning/teacherReview.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/chiharukiryu/cdev/cyanrex-lab/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ teacher review URL encodes the student and uses the bounded default (0.816843ms)
+✔ teacher feedback request binds the attempt and the displayed revision (0.956094ms)
+✔ teacher feedback rejects empty and oversized comments but accepts Unicode (0.557335ms)
+✔ teacher review URL clamps requested history size (0.331492ms)
+(node:2852760) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/src/features/terminal/command.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/chiharukiryu/cdev/cyanrex-lab/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ module lifecycle commands require a normalized module name (1.328864ms)
+✔ command responses have a stable human-readable summary (0.184806ms)
+ℹ tests 26
+ℹ suites 0
+ℹ pass 26
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 134.619873
+[npm-audit] Auditing production dependencies in /home/chiharukiryu/cdev/cyanrex-lab/frontend (moderate or higher blocks).
+{
+  "auditReportVersion": 2,
+  "vulnerabilities": {},
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0
+    },
+    "dependencies": {
+      "prod": 50,
+      "dev": 7,
+      "optional": 40,
+      "peer": 0,
+      "peerOptional": 0,
+      "total": 96
+    }
+  }
+}
+Skipping npm install for SDK checks.
+
+> @cyanrex/sdk-js@0.4.1 check
+> npm run check:compatibility && npm run check:surface && npm test && npm run test:types && npm run test:package
+
+
+> @cyanrex/sdk-js@0.4.1 check:compatibility
+> node ../scripts/api-compatibility.mjs
+
+API compatibility passed against 0.3.0: 61 operations remain compatible with 0.4.1.
+
+> @cyanrex/sdk-js@0.4.1 check:surface
+> node ../scripts/sdk-surface-compatibility.mjs
+
+SDK public surface is compatible: 85 members, 8 additive.
+
+> @cyanrex/sdk-js@0.4.1 pretest
+> npm run build
+
+
+> @cyanrex/sdk-js@0.4.1 prebuild
+> npm run check:generated
+
+
+> @cyanrex/sdk-js@0.4.1 check:generated
+> node ../scripts/generate-sdk-types.mjs --check && node ../scripts/generate-sdk-operations.mjs --check
+
+Generated SDK types are current (85 schemas).
+Generated SDK operations are current (63 operations).
+
+> @cyanrex/sdk-js@0.4.1 build
+> tsc -p tsconfig.json
+
+
+> @cyanrex/sdk-js@0.4.1 test
+> node --test tests/*.test.mjs
+
+✔ classroom SDK access uses secure origins, no redirects/caching and explicit invitation data (22.058408ms)
+✔ learning resume convenience and generated operations read one owner-bound record (0.705784ms)
+✔ uses cookie credentials and serializes JSON requests (0.426821ms)
+✔ builds queries and sends command bus payloads (0.609334ms)
+✔ throws a typed API error with parsed response details (0.455315ms)
+✔ supports empty responses and caller cancellation signals (0.237426ms)
+✔ captures a Node session cookie and adds the configured CSRF origin (3.891772ms)
+✔ loads the public OpenAPI contract through the system namespace (1.261397ms)
+✔ dispatches generated JSON operations with typed body and query inputs (0.448111ms)
+✔ dispatches generated download and WebSocket transports (1.117968ms)
+✔ rejects unknown generated operation names at runtime (0.166453ms)
+✔ teacher feedback convenience and generated APIs preserve revisions and CSRF (19.942497ms)
+✔ teacher feedback conflicts are exposed without retrying an overwrite (0.743405ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 13
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 83.52773
+
+> @cyanrex/sdk-js@0.4.1 test:types
+> tsc -p tsconfig.type-tests.json
+
+
+> @cyanrex/sdk-js@0.4.1 test:package
+> node --test tests/package-smoke.mjs
+
+✔ package manifest contains the runtime and generated declaration closure (223.974366ms)
+✔ packed JavaScript and declarations have no dangling relative imports (2.694856ms)
+✔ built ESM entry point works from a consumer-style import (23.901857ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 303.018305
+[npm-audit] Auditing production dependencies in /home/chiharukiryu/cdev/cyanrex-lab/sdk-js (moderate or higher blocks).
+{
+  "auditReportVersion": 2,
+  "vulnerabilities": {},
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0
+    },
+    "dependencies": {
+      "prod": 1,
+      "dev": 1,
+      "optional": 0,
+      "peer": 0,
+      "peerOptional": 0,
+      "total": 1
+    }
+  }
+}

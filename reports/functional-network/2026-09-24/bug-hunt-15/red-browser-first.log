@@ -1,0 +1,127 @@
+✖ malformed Runner inventory cannot crash neighboring settings controls (1491.9917ms)
+✖ stalled inventory reads time out and release refresh (293.25105ms)
+✖ navigation aborts obsolete inventories and starts a new owner (292.541755ms)
+✖ failed refresh keeps the previous inventory read-only (2805.449442ms)
+✖ a 2xx response without a matching cancellation acknowledgement is not success (2796.942678ms)
+✖ probe submission requires a reviewed confirmation (2791.486854ms)
+✖ leaving the page aborts a pending cancellation without a follow-up refresh (2790.96215ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 0
+ℹ fail 7
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 13652.937645
+
+✖ failing tests:
+
+test at frontend/tests/runnerAdmin.browser.mjs:37:1
+✖ malformed Runner inventory cannot crash neighboring settings controls (1491.9917ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runnerAdmin.browser.mjs:40:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runnerAdmin.browser.mjs:34:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/runnerAdmin.browser.mjs:44:1
+✖ stalled inventory reads time out and release refresh (293.25105ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - true
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runnerAdmin.browser.mjs:46:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runnerAdmin.browser.mjs:34:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/runnerAdmin.browser.mjs:50:1
+✖ navigation aborts obsolete inventories and starts a new owner (292.541755ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - true
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runnerAdmin.browser.mjs:53:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runnerAdmin.browser.mjs:34:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/runnerAdmin.browser.mjs:57:1
+✖ failed refresh keeps the previous inventory read-only (2805.449442ms)
+  locator.waitFor: Timeout 2500ms exceeded.
+  Call log:
+  [2m  - waiting for getByRole('button', { name: 'Cancel job', exact: true }) to be visible[22m
+  
+      at f.ready (/home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runnerAdmin.browser.mjs:32:82)
+      at async file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runnerAdmin.browser.mjs:58:3
+      at async run (/home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runnerAdmin.browser.mjs:34:9) {
+    name: 'TimeoutError',
+    log: [ "  - waiting for getByRole('button', { name: 'Cancel job', exact: true }) to be visible" ]
+  }
+
+test at frontend/tests/runnerAdmin.browser.mjs:64:1
+✖ a 2xx response without a matching cancellation acknowledgement is not success (2796.942678ms)
+  locator.waitFor: Timeout 2500ms exceeded.
+  Call log:
+  [2m  - waiting for getByRole('button', { name: 'Cancel job', exact: true }) to be visible[22m
+  
+      at f.ready (/home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runnerAdmin.browser.mjs:32:82)
+      at async file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runnerAdmin.browser.mjs:65:3
+      at async run (/home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runnerAdmin.browser.mjs:34:9) {
+    name: 'TimeoutError',
+    log: [ "  - waiting for getByRole('button', { name: 'Cancel job', exact: true }) to be visible" ]
+  }
+
+test at frontend/tests/runnerAdmin.browser.mjs:70:1
+✖ probe submission requires a reviewed confirmation (2791.486854ms)
+  locator.waitFor: Timeout 2500ms exceeded.
+  Call log:
+  [2m  - waiting for getByRole('button', { name: 'Cancel job', exact: true }) to be visible[22m
+  
+      at f.ready (/home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runnerAdmin.browser.mjs:32:82)
+      at async file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runnerAdmin.browser.mjs:71:3
+      at async run (/home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runnerAdmin.browser.mjs:34:9) {
+    name: 'TimeoutError',
+    log: [ "  - waiting for getByRole('button', { name: 'Cancel job', exact: true }) to be visible" ]
+  }
+
+test at frontend/tests/runnerAdmin.browser.mjs:76:1
+✖ leaving the page aborts a pending cancellation without a follow-up refresh (2790.96215ms)
+  locator.waitFor: Timeout 2500ms exceeded.
+  Call log:
+  [2m  - waiting for getByRole('button', { name: 'Cancel job', exact: true }) to be visible[22m
+  
+      at f.ready (/home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runnerAdmin.browser.mjs:32:82)
+      at async file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runnerAdmin.browser.mjs:77:3
+      at async run (/home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runnerAdmin.browser.mjs:34:9) {
+    name: 'TimeoutError',
+    log: [ "  - waiting for getByRole('button', { name: 'Cancel job', exact: true }) to be visible" ]
+  }

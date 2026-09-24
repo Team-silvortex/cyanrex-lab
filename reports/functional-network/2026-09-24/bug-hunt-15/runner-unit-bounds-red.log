@@ -1,0 +1,62 @@
+(node:3562404) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/src/i18n/locales/runnerSafety.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/chiharukiryu/cdev/cyanrex-lab/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ inventories accept Engine DTOs, disabled registries and retained terminal jobs (1.955953ms)
+✔ inventories reject missing containers, wrong counts and duplicate identities (0.463934ms)
+✔ all displayed nested fields are validated before rendering (0.463203ms)
+✔ counts and capacities reject coercion, impossible sums and unsafe arithmetic (1.137056ms)
+✖ timestamps require explicit time zones and real parseable instants (0.68725ms)
+✖ inventory bounds prevent unbounded retained lists and nested labels (0.44132ms)
+✔ all locales include readable, matching Runner safety messages (0.187606ms)
+✔ validated display DTOs are copied and ignore output or future extension fields (0.188949ms)
+✔ probe acknowledgement binds the submitted agent, kind, state and request (0.283994ms)
+✔ cancel acknowledgements accept both Engine transitions but bind the reviewed job (0.305355ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 8
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 100.363599
+
+✖ failing tests:
+
+test at frontend/tests/runnerInventory.test.mjs:34:1
+✖ timestamps require explicit time zones and real parseable instants (0.68725ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception.
+      at TestContext.<anonymous> (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runnerInventory.test.mjs:36:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'throws',
+    diff: 'simple'
+  }
+
+test at frontend/tests/runnerInventory.test.mjs:43:1
+✖ inventory bounds prevent unbounded retained lists and nested labels (0.44132ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception.
+      at TestContext.<anonymous> (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runnerInventory.test.mjs:46:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'throws',
+    diff: 'simple'
+  }

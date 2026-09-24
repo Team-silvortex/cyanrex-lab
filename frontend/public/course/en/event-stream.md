@@ -179,6 +179,15 @@ Success and handler errors are no-store. JSON syntax, oversized bodies, content 
 errors retain 400/413/415/422 with generic JSON. Limits still clamp to 50..50000; unknown body fields do not
 override session ownership. Explicit memory-only settings remain volatile. See [bug hunt 12](functional-network-bug-hunt-12.md).
 
+The teacher settings page now requires a successful validated read before saving and never treats a
+cached draft as confirmation. Each reviewed save confirms events before sending the optional compiler
+write; malformed/mismatched acknowledgements cannot trigger the next stage. Browser waits are bounded
+to 10 seconds per read and 20 per write, including JSON bodies. A partial/unconfirmed result requires
+explicit reload before a fresh confirmation; no automatic retries or rollback claims. Confirmed retention
+changes invalidate unread counts. Navigation discards obsolete results, while metrics refresh preserves
+the settings warning. These UI checks use isolated browser fixtures, not a live Engine connection; see
+[bug hunt 13](functional-network-bug-hunt-13.md).
+
 ## Recovery limits
 
 ### Persistence ordering and retention

@@ -1,0 +1,225 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-24",
+  "status": "fixed-and-scoped-regressions-passed",
+  "baseline": {
+    "version": "0.4.1",
+    "commit": "f56349b4412cb72d2330a7fae11ad597cf6e82a1",
+    "branch": "main",
+    "worktree": "Clean before this pass; final changes remain local and uncommitted.",
+    "previous_pass": "reports/functional-network/2026-09-24/bug-hunt-12.json",
+    "inventory": {
+      "path": "docs/functional-network.json",
+      "version": "0.3.8",
+      "commit": "c26a529aecc0ab64d0a1743be10972e5d8ac137b",
+      "sha256": "bc16ef895c1f7b9f9d0b5d9195499d4efcba09466b3c85bdfcc04d20006ad30d"
+    },
+    "publication": {
+      "requested_push_completed": true,
+      "remote": "origin",
+      "branch": "main",
+      "tag": "v0.4.1",
+      "annotated_tag_object": "2e32953bace1597fba03c88653880d8d6aa620c1",
+      "peeled_commit": "f56349b4412cb72d2330a7fae11ad597cf6e82a1",
+      "verification": "Remote refs queried after development; main and tag still point to the release commit.",
+      "new_development": "No version change, commit, tag, push or deployment in this pass."
+    }
+  },
+  "scope": {
+    "workflows": [
+      "F36",
+      "F03 settings subset"
+    ],
+    "links": [
+      "E59",
+      "E60"
+    ],
+    "meaning": "Actual settings form load/review/event-save/compiler-save/verification and navigation/unmount/Strict Mode ownership; confirmed event retention invalidates unread state.",
+    "boundaries": "Controlled browser responses and clock; all non-fixture network blocked. Two existing tests use a disposable local production Next server with intercepted synthetic API responses.",
+    "excluded": [
+      "real deployment credentials, database, Engine, Agent, SSH/LAN and kernel mutations",
+      "backend/API/schema/access/role/SDK changes",
+      "metrics polling and Runner Agent administration transport"
+    ]
+  },
+  "findings": [
+    {
+      "id": "BH13-01",
+      "status": "fixed",
+      "observed": "Failed event reads enabled saving cached/default settings.",
+      "fix": "Only validated server events establish readiness; locked controls and explicit reload."
+    },
+    {
+      "id": "BH13-02",
+      "status": "fixed",
+      "observed": "Obsolete Strict Mode reads overwrote the current settings.",
+      "fix": "Abortable request generations bound to Engine/navigation/reload; late results cannot publish."
+    },
+    {
+      "id": "BH13-03",
+      "status": "fixed",
+      "observed": "String ok acknowledgement advanced to compiler save.",
+      "fix": "Exact response types, true acknowledgement and equality with reviewed normalized values."
+    },
+    {
+      "id": "BH13-04",
+      "status": "fixed",
+      "observed": "Navigation during event save allowed a late compiler POST.",
+      "fix": "Propagate confirmation cancellation and validate generation/scope at async handoffs; unmount invalidates publication."
+    },
+    {
+      "id": "BH13-05",
+      "status": "fixed",
+      "observed": "Event success plus compiler failure showed raw error without explicit partial state and allowed save again.",
+      "fix": "Four-locale partial/unconfirmed notices, confirmed event state, unread invalidation and reload-before-new-save; no raw backend text."
+    },
+    {
+      "id": "BH13-06",
+      "status": "fixed",
+      "observed": "Stalled initial reads had no deadline or reload action.",
+      "fix": "Private credentialed no-store/redirect-error requests; 10000 ms per read, 20000 ms per write including body, even for abort-ignoring transport. No automatic mutation retries."
+    }
+  ],
+  "tdd": {
+    "baseline": {
+      "passed": 0,
+      "failed": 6,
+      "exit_code": 1,
+      "log": "bug-hunt-13/red-browser.log",
+      "meaning": "Six observed first-failure assertions; not every later protective branch independently failed first."
+    },
+    "harness_diagnostics": [
+      {
+        "log": "bug-hunt-13/browser-launch-diagnostic.log",
+        "note": "Default cached Playwright browser executable absent; installed Chrome used thereafter, no browser download."
+      },
+      {
+        "log": "bug-hunt-13/browser-settle-diagnostic.log",
+        "note": "Initial Response stream/React settling assertions; controlled body responses introduced."
+      },
+      {
+        "log": "bug-hunt-13/browser-status-settle-diagnostic.log",
+        "note": "Wait for observable dialog failure before asserting feedback."
+      },
+      {
+        "log": "bug-hunt-13/green-six-browser.log",
+        "passed": 5,
+        "failed": 1,
+        "note": "Initial fix; malformed acknowledgement feedback assertion ran before failed-dialog render."
+      },
+      {
+        "log": "bug-hunt-13/browser-expanded-first.log",
+        "passed": 13,
+        "failed": 4,
+        "note": "Expanded harness corrected to observe new read requests/readiness/dialog closure and exact Refresh metrics label; no additional runtime change needed."
+      }
+    ],
+    "additions": {
+      "request_validation_locale": 12,
+      "actual_settings_page_browser": 17,
+      "unique_total": 29,
+      "unit_ci_wired": true,
+      "browser_optional": true
+    }
+  },
+  "checks": {
+    "request": {
+      "passed": 12,
+      "failed": 0,
+      "exit_code": 0,
+      "log": "bug-hunt-13/settings-unit.log",
+      "overlap": "Included again in full-gate frontend count; not additive."
+    },
+    "browser": {
+      "passed": 17,
+      "failed": 0,
+      "exit_code": 0,
+      "log": "bug-hunt-13/browser-expanded-second.log"
+    },
+    "browser_repeats": [
+      {
+        "passed": 17,
+        "failed": 0,
+        "exit_code": 0,
+        "log": "bug-hunt-13/browser-repeat-1.log"
+      },
+      {
+        "passed": 17,
+        "failed": 0,
+        "exit_code": 0,
+        "log": "bug-hunt-13/browser-repeat-2.log"
+      },
+      {
+        "passed": 17,
+        "failed": 0,
+        "exit_code": 0,
+        "log": "bug-hunt-13/browser-repeat-3.log"
+      }
+    ],
+    "production_page_subset": {
+      "passed": 2,
+      "failed": 0,
+      "exit_code": 0,
+      "log": "bug-hunt-13/production-settings-browser.log",
+      "selection": "teachers manage modules|job cancellation binds",
+      "note": "Existing tests, synthetic API; not new cases or live Engine acceptance."
+    },
+    "full_gate": {
+      "exit_code": 0,
+      "log": "bug-hunt-13/full-gate.log",
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL PATH=<Node24.19-bin>:<existing-path> ./scripts/quality-gate.sh --no-npm-install",
+      "common_passed": 69,
+      "rust_passed": 310,
+      "rust_ignored": 80,
+      "frontend_passed": 105,
+      "sdk_runtime_passed": 13,
+      "sdk_package_passed": 3,
+      "sdk_types": "passed",
+      "production_routes": 18,
+      "frontend_and_sdk_production_audit_vulnerabilities": 0
+    },
+    "final_preflight": {
+      "exit_code": 0,
+      "log": "bug-hunt-13/final-preflight.log",
+      "command": "./scripts/quality-gate.sh --format-only",
+      "common_passed": 69,
+      "note": "After final bilingual documents and course mirrors; runtime source unchanged."
+    },
+    "frozen_map": {
+      "exit_code": 1,
+      "expected": true,
+      "log": "bug-hunt-13/map-drift-final.log",
+      "version": "0.3.8 -> 0.4.1",
+      "source_drift_count": 26,
+      "access_api_page_catalog_count_drift": false,
+      "note": "Earlier map-drift.log output is identical, but its tee pipeline lacked pipefail; final run records checker exit 1."
+    }
+  },
+  "evidence": {
+    "source_fingerprints": "bug-hunt-13/source-fingerprints.json",
+    "log_manifest": "bug-hunt-13/log-manifest.json",
+    "exact_log_copies": 16,
+    "log_bytes": 132088,
+    "frozen_receipt": "bug-hunt-13/frozen-receipt.json",
+    "preserved_count": 312,
+    "preserved_sha256": "cea6e56cb621977b3f266903495a755b9213bbc327b1648f64510836881e3175",
+    "cleanup": "bug-hunt-13/cleanup.json",
+    "meaning": "Selected source hashes, exact raw logs and historical byte preservation; not a clean release or an exhaustive source manifest."
+  },
+  "tools": {
+    "node_tests": "24.19.0",
+    "node_report_utilities": "24.21.0",
+    "rust": "1.95.0",
+    "cargo": "1.95.0",
+    "chrome": "153.0.8010.52",
+    "browser_executable": "/opt/google/chrome/chrome"
+  },
+  "limitations": [
+    "Abort, timeout and response loss are unconfirmed, not rollback; admitted server work can complete after a later reload.",
+    "Settings requests are sequential, not one transaction. Reads are neither a quiescence proof nor cross-process coherence; event settings are owner-scoped and compiler mode is global.",
+    "Browser cooperative timers do not bound CPU/event-loop stalls or Engine worker lifetime.",
+    "No live browser/Engine/PostgreSQL end-to-end, explicit PostgreSQL rerun, full optional-browser suite, remote CI inspection, Rust dependency audit, deployment/LAN/kernel acceptance.",
+    "Metrics polling and Runner Agent transport remain out of scope."
+  ],
+  "next": "F03 performance-metrics loading/refresh and error recovery, then the F24/F25 Runner Agent administration boundary."
+}

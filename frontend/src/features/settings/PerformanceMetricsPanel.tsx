@@ -9,6 +9,10 @@ import type {
 type Props = {
   metrics: PerformanceMetrics | null;
   summary: HotspotSummary | null;
+  refreshing: boolean;
+  stale: boolean;
+  error: string;
+  message: string;
 };
 
 const formatPercent = (value: number) => `${(value * 100).toFixed(1)}%`;
@@ -19,9 +23,11 @@ const severityColor = (severity: HotspotSeverity) => {
   return "#8ad66a";
 };
 
-export default function PerformanceMetricsPanel({ metrics, summary }: Props) {
+export default function PerformanceMetricsPanel({ metrics, summary, refreshing, stale, error, message }: Props) {
   const { t } = useI18n();
+  const color = (severity: HotspotSeverity) => stale ? "#9a9a9a" : severityColor(severity);
   const severityLabel = (severity: HotspotSeverity) => {
+    if (stale) return t("settings.metricsStaleLabel");
     if (severity === "critical") return t("settings.hotspotCritical");
     if (severity === "warning") return t("settings.hotspotWarning");
     return t("settings.hotspotSafe");
@@ -32,20 +38,26 @@ export default function PerformanceMetricsPanel({ metrics, summary }: Props) {
       <h3>{t("settings.performanceTitle")}</h3>
       <p className="meta">{t("settings.performanceSubtitle")}</p>
 
-      {!metrics && <p className="meta" style={{ marginTop: 10 }}>{t("settings.metricsUnavailable")}</p>}
+      <div role="status">
+        {error && <p className="error">{error}</p>}
+        {stale && <p className="meta">{t("settings.metricsStale")}</p>}
+        {message && <p className="meta" style={{ color: "#9cd67a" }}>{message}</p>}
+        {refreshing && <p className="meta">{t("settings.metricsRefreshing")}</p>}
+        {!metrics && !refreshing && <p className="meta" style={{ marginTop: 10 }}>{t("settings.metricsUnavailable")}</p>}
+      </div>
       {metrics && summary && (
         <>
           <div
             className="panel"
             style={{
               marginTop: 10,
-              borderLeft: `4px solid ${severityColor(summary.overall.severity)}`,
+              borderLeft: `4px solid ${color(summary.overall.severity)}`,
             }}
           >
             <strong>{t("settings.hotspotSummary")}</strong>
             <p
               className="meta"
-              style={{ color: severityColor(summary.overall.severity), marginTop: 6 }}
+              style={{ color: color(summary.overall.severity), marginTop: 6 }}
             >
               {severityLabel(summary.overall.severity)}
             </p>
@@ -70,12 +82,12 @@ export default function PerformanceMetricsPanel({ metrics, summary }: Props) {
             {summary.operationHotspots.map((entry) => (
               <div
                 key={entry.name}
-                style={{ border: `1px solid ${severityColor(entry.severity)}`, padding: 10 }}
+                style={{ border: `1px solid ${color(entry.severity)}`, padding: 10 }}
               >
                 <strong>{entry.name}</strong>
                 <p
                   className="meta"
-                  style={{ color: severityColor(entry.severity), marginTop: 4 }}
+                  style={{ color: color(entry.severity), marginTop: 4 }}
                 >
                   {severityLabel(entry.severity)}
                 </p>

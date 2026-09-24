@@ -1,0 +1,44 @@
+{
+  "scope": "Only this pass's newly generated build caches and its disposable preview; source, dependencies, runtime configuration and evidence retained.",
+  "preview": {
+    "address": "http://127.0.0.1:3217",
+    "pid": 2853263,
+    "validated_cwd": "/home/chiharukiryu/cdev/cyanrex-lab",
+    "stopped": true,
+    "listener_absent": true,
+    "engine_requests": "synthetic browser route interceptions; no real Engine calls"
+  },
+  "rust": {
+    "path": "engine/target",
+    "method": "cargo clean with explicit manifest and target directory",
+    "allocated_bytes_before": 1918136320,
+    "cargo_output": "Removed 1971 files, 2.3GiB total",
+    "absent_after": true,
+    "recovery": "rebuild"
+  },
+  "trash": {
+    "method": "gio trash on exact validated paths",
+    "recoverable": true,
+    "entries": [
+      {
+        "path": "frontend/.next",
+        "allocated_bytes_before": 47865856
+      },
+      {
+        "path": "sdk-js/dist",
+        "allocated_bytes_before": 184320
+      },
+      {
+        "path": "frontend/tsconfig.tsbuildinfo",
+        "allocated_bytes_before": 102400
+      }
+    ],
+    "all_absent_after": true,
+    "note": "Moved to the desktop trash, not claimed as freed disk space."
+  },
+  "note": "Direct rm -f style cleanup was rejected before execution. Used the project build cleaner and recoverable trash instead.",
+  "dependencies_preserved": [
+    "frontend/node_modules",
+    "sdk-js/node_modules"
+  ]
+}

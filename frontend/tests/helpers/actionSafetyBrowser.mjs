@@ -78,12 +78,13 @@ export async function setup(role = "admin") {
       case "/auth/delete": return reply({ ok: true });
       case "/settings/performance": return reply({}, 503);
       case "/settings/events": return reply(request.method() === "POST" ? { ok: true, settings: request.postDataJSON() } : { max_records: 500, overflow_policy: "drop_oldest" });
-      case "/settings/compiler": return reply(request.method() === "POST" ? { ok: true, settings: request.postDataJSON() } : { resident: false, strategy: "on_demand" });
-      case "/runner/agents": return reply({ enabled: true, total_agents: 0, online_agents: 0, agents: [] });
-      case "/runner/jobs": return reply({ total_jobs: 1, jobs: [{ job_id: "job-a-full-confirmation-id", kind: "compile_check", state: "queued", owner_username: "student", target_agent_id: "agent-a", created_at: "2026-09-08T12:00:00Z" }] });
-      case "/runner/jobs/cancel": return reply({ ok: true });
+      case "/settings/compiler": return reply(request.method() === "POST" ? { ok: true, settings: { ...request.postDataJSON(), strategy: request.postDataJSON().resident ? "resident_cache" : "on_demand" } } : { resident: false, strategy: "on_demand" });
+      case "/runner/agents": return reply(agentInventory([]));
+      case "/runner/jobs": return reply(jobInventory([runnerJob({ job_id: "job-a-full-confirmation-id", target_agent_id: "agent-a" })]));
+      case "/runner/jobs/cancel": return reply(runnerJob({ job_id: "job-a-full-confirmation-id", target_agent_id: "agent-a", state: "cancelled", completed_at: stamp }));
       default: errors.push(`Unexpected API ${request.method()} ${url.pathname}`); return reply({}, 404);
     }
   });
   return { browser, page, writes, errors, state, code: () => page.evaluate(() => JSON.parse(sessionStorage.getItem("ebpf_code_v1"))) };
 }
+import { agentInventory, jobInventory, runnerJob, stamp } from "../fixtures/runnerData.mjs";

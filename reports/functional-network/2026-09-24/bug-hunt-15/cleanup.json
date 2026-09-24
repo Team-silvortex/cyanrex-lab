@@ -1,0 +1,41 @@
+{
+  "preview": {
+    "url": "http://127.0.0.1:3217",
+    "owned_pid": 3573052,
+    "identity": "next-server (v15.5.24), repository cwd verified before SIGTERM",
+    "stopped": true,
+    "port_absent_after": true
+  },
+  "moved_to_desktop_trash": [
+    {
+      "source": "frontend/.next",
+      "trash": "/home/chiharukiryu/.local/share/Trash/files/.2.next",
+      "meaning": "Only this pass's generated production build cache."
+    },
+    {
+      "source": "frontend/tsconfig.tsbuildinfo",
+      "trash": "/home/chiharukiryu/.local/share/Trash/files/tsconfig.2.tsbuildinfo",
+      "meaning": "Only this pass's generated type-check cache."
+    },
+    {
+      "source": ".run/functional-network-15",
+      "trash": "/home/chiharukiryu/.local/share/Trash/files/functional-network-15",
+      "meaning": "Owned temporary evidence after exact 15-log archival verification and durable frozen receipt creation."
+    }
+  ],
+  "recoverable": true,
+  "permanent_delete": false,
+  "claimed_freed_space": false,
+  "preserved": [
+    "runtime configuration/data",
+    "dependencies",
+    "all prior reports/logs/numbered documents/mirrors",
+    "frozen functional-network JSON"
+  ],
+  "absent_and_not_regenerated": [
+    "engine/target",
+    "sdk-js/dist"
+  ],
+  "version": "0.4.1",
+  "commit_push_or_deployment": false
+}

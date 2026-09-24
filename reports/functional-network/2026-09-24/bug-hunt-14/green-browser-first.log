@@ -1,0 +1,32 @@
+✔ malformed metrics cannot crash the settings form or Runner panel (1555.769143ms)
+✔ a stalled metrics read has a deadline and releases explicit refresh (399.733335ms)
+✔ navigation invalidates metrics and aborts obsolete reads (374.7067ms)
+✔ background failure marks retained metrics stale and removes old refresh success (389.372539ms)
+✔ locale changes do not reload metrics or discard the settings draft (407.92407ms)
+✔ saving settings cannot erase an unrelated metrics failure (483.674909ms)
+✔ pending event settings do not block independent metrics refresh (371.065019ms)
+✔ failed settings reads cannot enable saving cached defaults (1599.538062ms)
+✔ Strict Mode obsolete settings reads cannot overwrite the current load (371.843719ms)
+✔ unconfirmed event settings cannot dispatch the compiler save (536.03891ms)
+✔ navigation cancels a pending save and cannot dispatch a late second step (450.820873ms)
+✔ partial settings saves require verification before a new confirmation (471.829045ms)
+✔ stalled initial settings requests have a bounded read wait and explicit reload (373.140303ms)
+✔ successful saves freeze normalized values, lock editing and dispatch each stage only once (467.854248ms)
+✔ unavailable compiler reads explicitly allow event-only saving, never a hidden compiler write (432.070114ms)
+✔ malformed event reads stay blocked until an explicit fresh reload succeeds (387.559812ms)
+✔ event save timeout blocks retry and ignores late acknowledgement before fresh verification (565.547968ms)
+✔ compiler timeout retains partial-save warning even after metrics refresh (437.16984ms)
+✔ unmount aborts saving and prevents late writes or unread notifications (400.750852ms)
+✔ cancelling a review or navigating before confirmation never writes (440.304557ms)
+✔ blank and fractional drafts cannot be confirmed; discarding a draft needs explicit approval (527.715717ms)
+✔ locale changes preserve the draft and never reload or mutate settings (376.310625ms)
+✔ new navigation owns loading state and rejects all earlier read results (345.750472ms)
+✔ a mismatched compiler acknowledgement cannot claim complete success (455.814816ms)
+ℹ tests 24
+ℹ suites 0
+ℹ pass 24
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 8812.818542

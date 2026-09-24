@@ -1,0 +1,24 @@
+(node:2837676) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/src/features/settings/settingsRequest.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/chiharukiryu/cdev/cyanrex-lab/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ event settings accept only integral limits and exact policies (0.961113ms)
+✔ reviewed drafts clamp valid integers but never coerce invalid inputs (0.580569ms)
+✔ compiler reads require a boolean and matching strategy (0.175089ms)
+✔ write acknowledgements must strictly confirm the reviewed event and compiler values (0.235522ms)
+✔ settings requests are private credentialed reads/writes without authority overrides or retries (21.246042ms)
+✔ pre-cancelled settings requests never dispatch (0.466566ms)
+✔ read deadlines end waiting even if transport ignores abort; late headers never decode (0.917662ms)
+✔ write deadline also bounds an abort-ignoring JSON body and removes cancellation linkage (1.11928ms)
+✔ navigation cancellation ends a settings write before late transport completion (0.388409ms)
+✔ completed reads release both timer and parent linkage (0.439114ms)
+✔ HTTP, network, JSON and MIME failures cannot retry or confirm a write (2.090963ms)
+✔ all four locales explain unavailable, unconfirmed and partial settings updates (0.79395ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 112.291291

@@ -82,7 +82,7 @@ pages/                    Route-level screens and orchestration
 src/components/           Shared visual and navigation components
 src/features/ebpf/        eBPF editor feature state and workflows
 src/features/runner/      Runner Agent inventory and teacher deployment operations
-src/features/settings/    Settings metrics polling, hotspot analysis, and panels
+src/features/settings/    Verified settings forms, requests, metrics polling and panels
 src/config/               Runtime endpoints and product-level settings
 src/i18n/                 Locale catalogs and language context
 src/utils/                Pure analyzers, security helpers, and page-state helpers
@@ -107,6 +107,36 @@ Important rules:
   coordinates event/compiler settings and composes the teacher deployment panels.
 - `docs/` is authoritative. `frontend/public/course/` is synchronized for builds whose Docker
   context cannot access the repository-level documentation directory.
+
+`useSettingsForm` owns settings read generations, reviewed drafts and ordered event/compiler writes.
+`settingsRequest` validates exact response shapes and acknowledgements, uses private credentialed
+requests and bounds header/body waiting (10 seconds per read, 20 per write). Cached drafts never establish
+server state. Navigation aborts browser waiting and invalidates late responses, not admitted Engine work.
+An unconfirmed or partial save locks editing until explicit reload; compiler-unavailable reads permit
+clearly labeled event-only saves. Reload never retries a write, and discarding an edited draft requires
+confirmation. The two writes remain non-transactional. Metrics/Agent transport is separate from the form.
+See [bug hunt 13](functional-network-bug-hunt-13.md).
+
+Performance metrics reads now reuse the bounded private request transport and validate both operation
+snapshots before hotspot rendering. Each mounted Engine/navigation generation owns one active read;
+the next automatic read waits ten seconds after completion, while headers/body have a ten-second deadline.
+Background failures are visible: the last successful sample is retained as stale, without current-health
+labels/colors. Metrics feedback stays in its own panel and is not cleared by a settings save; metrics
+refresh does not wait for unrelated settings reads. Language changes translate feedback without refetching.
+Counters and their displayed sums must be nonnegative safe integers; fractional latency is allowed within
+the finite safe-number range. Independently sampled Engine counters are not treated as an atomic snapshot.
+This is frontend isolation, not Runner transport hardening; see [bug hunt 14](functional-network-bug-hunt-14.md).
+
+Runner administration now validates both inventory responses before publishing the pair (not a server
+transaction). Each Engine/navigation generation owns reads, actions and completion-delayed polling.
+Private requests reuse the 10-second read / 20-second write deadlines, including response bodies.
+Failed reads retain a labeled, read-only inventory. Both probe and cancellation need explicit confirmation;
+dispatch rechecks current inventory, reviewed identity/state and Agent expiry using Engine-relative time.
+Refreshes block dispatch and polling pauses during writes. Only matching job DTOs acknowledge actions;
+an acknowledged write stays confirmed even if read-back fails. An uncertain write requires an explicit
+verified refresh before another action; background reads cannot unlock it. Navigation/unmount abort browser
+waiting, not server work. Existing teacher authorization, Agent signatures and queue semantics are unchanged.
+See [bug hunt 15](functional-network-bug-hunt-15.md).
 
 Inline compiler diagnostics keep a bounded, eight-second cache within one editor mount, keyed by the
 exact Engine URL, target, source and header context. Editors do not share pending requests or cancellation

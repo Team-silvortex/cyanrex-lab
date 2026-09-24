@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useRouter } from "next/router";
 import { useConfirmedAction } from "../../components/useConfirmedAction";
 
 import { useI18n } from "../../i18n/context";
@@ -30,9 +31,14 @@ const stateColors: Record<RunnerAgentState | RunnerJobState, string> = {
 };
 
 export default function RunnerAgentAdminPanel({ engineUrl }: Props) {
+  return <RunnerAgentAdmin key={engineUrl} engineUrl={engineUrl} />;
+}
+
+function RunnerAgentAdmin({ engineUrl }: Props) {
   const { t } = useI18n();
+  const router = useRouter();
   const safety = useConfirmedAction();
-  const admin = useRunnerAgentAdmin(engineUrl);
+  const admin = useRunnerAgentAdmin(engineUrl, router.asPath);
   const agents = admin.agents?.agents ?? [];
   const recentJobs = useMemo(
     () => [...(admin.jobs?.jobs ?? [])]
@@ -59,7 +65,7 @@ export default function RunnerAgentAdminPanel({ engineUrl }: Props) {
         <button
           type="button"
           onClick={() => void admin.refresh()}
-          disabled={admin.loading || admin.refreshing}
+          disabled={admin.loading || admin.refreshing || Boolean(admin.actionId) || safety.busy}
         >
           {admin.refreshing ? t("settings.runnerRefreshing") : t("settings.runnerRefresh")}
         </button>
@@ -67,6 +73,7 @@ export default function RunnerAgentAdminPanel({ engineUrl }: Props) {
 
       {admin.loading && <p className="meta">{t("settings.runnerLoading")}</p>}
       {admin.error && <p className="error">{admin.error}</p>}
+      {(admin.stale || admin.verify) && admin.agents && <p className="meta" role="status">{t("settings.runnerStale")}</p>}
       {notice && <p className="meta" style={{ color: "#9cd67a" }}>{notice}</p>}
 
       {admin.agents && !admin.agents.enabled && (
@@ -94,8 +101,13 @@ export default function RunnerAgentAdminPanel({ engineUrl }: Props) {
                 <AgentCard
                   key={agent.agent_id}
                   agent={agent}
-                  busy={Boolean(admin.actionId) || safety.busy}
-                  onProbe={() => void admin.probeAgent(agent.agent_id).catch(() => {})}
+                  busy={admin.actionId === `probe:${agent.agent_id}`}
+                  disabled={!admin.canAct || safety.busy}
+                  onProbe={() => safety.request({ action: t("settings.runnerProbe"), description: t("settings.runnerProbeReview"),
+                    targets: [agent.agent_id], dangerous: false,
+                    details: [{ label: t("settings.runnerStateColumn"), value: stateLabel(agent.state, t) },
+                      { label: t("settings.runnerAgent"), value: `${isolationLabel(agent.isolation, t)} · v${agent.agent_version}` }],
+                  }, signal => admin.probeAgent(agent, signal))}
                   t={t}
                 />
               ))}
@@ -120,11 +132,12 @@ export default function RunnerAgentAdminPanel({ engineUrl }: Props) {
                     <JobRow
                       key={job.job_id}
                       job={job}
-                      busy={Boolean(admin.actionId) || safety.busy}
+                      busy={admin.actionId === `cancel:${job.job_id}`}
+                      disabled={!admin.canAct || safety.busy}
                       onCancel={() => safety.request({ action: t("settings.runnerCancel"), description: t("safety.cancelJob"),
                         targets: [job.job_id], details: [{ label: t("settings.runnerOwner"), value: job.owner_username || "—" },
                           { label: t("settings.runnerAgent"), value: job.assigned_agent_id || job.target_agent_id || "—" }],
-                      }, () => admin.cancelJob(job.job_id))}
+                      }, signal => admin.cancelJob(job, signal))}
                       t={t}
                     />
                   ))}
@@ -145,11 +158,13 @@ function Summary({ label, value }: { label: string; value: string }) {
 function AgentCard({
   agent,
   busy,
+  disabled,
   onProbe,
   t,
 }: {
   agent: RunnerAgentView;
   busy: boolean;
+  disabled: boolean;
   onProbe: () => void;
   t: (key: string, vars?: Record<string, string | number>) => string;
 }) {
@@ -167,7 +182,7 @@ function AgentCard({
       <p className="meta">{t("settings.runnerCapabilities")}: {agent.capabilities.join(", ")}</p>
       {labels && <p className="meta">{t("settings.runnerLabels")}: {labels}</p>}
       {agent.message && <p className="meta">{agent.message}</p>}
-      <button type="button" onClick={onProbe} disabled={busy || agent.state !== "healthy"}>
+      <button type="button" onClick={onProbe} disabled={disabled || agent.state !== "healthy"}>
         {busy ? t("settings.runnerProbing") : t("settings.runnerProbe")}
       </button>
     </div>
@@ -177,11 +192,13 @@ function AgentCard({
 function JobRow({
   job,
   busy,
+  disabled,
   onCancel,
   t,
 }: {
   job: RunnerJobView;
   busy: boolean;
+  disabled: boolean;
   onCancel: () => void;
   t: (key: string, vars?: Record<string, string | number>) => string;
 }) {
@@ -196,7 +213,7 @@ function JobRow({
       <td style={tableCellStyle}>{formatDate(job.created_at)}{job.result_message && <div className="meta">{job.result_message}</div>}</td>
       <td style={tableCellStyle}>
         {isCancellable(job.state) ? (
-          <button type="button" onClick={onCancel} disabled={busy}>
+          <button type="button" onClick={onCancel} disabled={disabled}>
             {busy ? t("settings.runnerCancelling") : t("settings.runnerCancel")}
           </button>
         ) : "—"}

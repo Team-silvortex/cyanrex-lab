@@ -1,0 +1,93 @@
+✔ failed settings reads cannot enable saving cached defaults (1416.534489ms)
+✔ Strict Mode obsolete settings reads cannot overwrite the current load (333.12504ms)
+✔ unconfirmed event settings cannot dispatch the compiler save (394.173521ms)
+✔ navigation cancels a pending save and cannot dispatch a late second step (389.422638ms)
+✔ partial settings saves require verification before a new confirmation (429.155426ms)
+✔ stalled initial settings requests have a bounded read wait and explicit reload (332.13829ms)
+✔ successful saves freeze normalized values, lock editing and dispatch each stage only once (431.560619ms)
+✔ unavailable compiler reads explicitly allow event-only saving, never a hidden compiler write (426.611804ms)
+✖ malformed event reads stay blocked until an explicit fresh reload succeeds (363.956848ms)
+✖ event save timeout blocks retry and ignores late acknowledgement before fresh verification (462.6182ms)
+✖ compiler timeout retains partial-save warning even after metrics refresh (3416.343874ms)
+✔ unmount aborts saving and prevents late writes or unread notifications (401.494939ms)
+✖ cancelling a review or navigating before confirmation never writes (414.55891ms)
+✔ blank and fractional drafts cannot be confirmed; discarding a draft needs explicit approval (518.674525ms)
+✔ locale changes preserve the draft and never reload or mutate settings (378.900176ms)
+✔ new navigation owns loading state and rejects all earlier read results (342.657376ms)
+✔ a mismatched compiler acknowledgement cannot claim complete success (422.794141ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 13
+ℹ fail 4
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 11019.157435
+
+✖ failing tests:
+
+test at frontend/tests/settingsPage.browser.mjs:125:1
+✖ malformed event reads stay blocked until an explicit fresh reload succeeds (363.956848ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  '500' !== '900'
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:135:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:33:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '500',
+    expected: '900',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/settingsPage.browser.mjs:139:1
+✖ event save timeout blocks retry and ignores late acknowledgement before fresh verification (462.6182ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  '500' !== '700'
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:152:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:33:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '500',
+    expected: '700',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/settingsPage.browser.mjs:157:1
+✖ compiler timeout retains partial-save warning even after metrics refresh (3416.343874ms)
+  locator.click: Timeout 3000ms exceeded.
+  Call log:
+  [2m  - waiting for getByRole('button', { name: 'Refresh Metrics', exact: true })[22m
+  
+      at /home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:162:37
+      at async run (/home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:33:9) {
+    name: 'TimeoutError',
+    log: [ "  - waiting for getByRole('button', { name: 'Refresh Metrics', exact: true })" ]
+  }
+
+test at frontend/tests/settingsPage.browser.mjs:180:1
+✖ cancelling a review or navigating before confirmation never writes (414.55891ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:185:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:33:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

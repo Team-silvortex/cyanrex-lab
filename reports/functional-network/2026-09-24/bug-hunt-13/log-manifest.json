@@ -1,0 +1,85 @@
+{
+  "meaning": "Exact byte copies of .run/functional-network-13 logs, retaining whitespace and carriage returns.",
+  "files": [
+    {
+      "path": "browser-launch-diagnostic.log",
+      "sha256": "eb4e0e8539cd7774d01f024cc639774ce8a41c9e8f050cf0249e3149d316acd5",
+      "bytes": 3374
+    },
+    {
+      "path": "browser-settle-diagnostic.log",
+      "sha256": "48d5b8220db4a79ec08485e40f347448150f9bc6b68c85519e9c3b2e76dbff25",
+      "bytes": 6089
+    },
+    {
+      "path": "browser-status-settle-diagnostic.log",
+      "sha256": "0d99537c9fe54ea29fce2f694e329e0d72fc9432c1f92f693d5b484faee02bb3",
+      "bytes": 5903
+    },
+    {
+      "path": "red-browser.log",
+      "sha256": "e21493124e8397e819a5694e8158929a5987e5e943964ee15d0e7dcfa80141a5",
+      "bytes": 6007
+    },
+    {
+      "path": "green-six-browser.log",
+      "sha256": "0798512ce7db4ae7dfabe14112da75f9b03be7a5748ec88cda934465b4cdf310",
+      "bytes": 2239
+    },
+    {
+      "path": "browser-expanded-first.log",
+      "sha256": "186eeb0459da491cf0c1add248389c7ce3ad0bb7e7f596e2f449b93bfc625a9a",
+      "bytes": 4578
+    },
+    {
+      "path": "browser-expanded-second.log",
+      "sha256": "f2db2e63ac65508ee53a3d062e4c24782d040d829209d4a910b9da77bba5f22b",
+      "bytes": 1710
+    },
+    {
+      "path": "settings-unit.log",
+      "sha256": "6de87bb95ddbff60421ee0d6196d522ed8d5f9a5db0e67266969d12b6d3cc6cb",
+      "bytes": 1679
+    },
+    {
+      "path": "browser-repeat-1.log",
+      "sha256": "00d092cd6547c8c2c362835fd2f86d3ac11e6f9475c0b1e729dcd2041aaad587",
+      "bytes": 1712
+    },
+    {
+      "path": "browser-repeat-2.log",
+      "sha256": "ca9f845ee19ea4bf6a104dd26c931f5a00eab45f6a96e63fcf90a6bf6cd71ee9",
+      "bytes": 1714
+    },
+    {
+      "path": "browser-repeat-3.log",
+      "sha256": "fd0a7dcf076bee08284f4ac61fa2b7323c2cec03748c30df1a4427ef89309ec2",
+      "bytes": 1714
+    },
+    {
+      "path": "production-settings-browser.log",
+      "sha256": "5cd76a88b1b7aeae42cfb500cb453dbcc4f9ed6953c43166aa597f9142ff7c1e",
+      "bytes": 332
+    },
+    {
+      "path": "full-gate.log",
+      "sha256": "133399db2fda1f231ca78fcb3b98dd064f94ee9eea6698bbfd2c51af6789b81e",
+      "bytes": 85141
+    },
+    {
+      "path": "final-preflight.log",
+      "sha256": "60292e67a8eb8bd8c27d7a59cb7309cc61a62108163e36e5a78a2587d46d11de",
+      "bytes": 7144
+    },
+    {
+      "path": "map-drift.log",
+      "sha256": "495cce95149d87ac2d2805e7cc0b31df9ce59cd25a868bc8211e87ca9fc1715c",
+      "bytes": 1376
+    },
+    {
+      "path": "map-drift-final.log",
+      "sha256": "495cce95149d87ac2d2805e7cc0b31df9ce59cd25a868bc8211e87ca9fc1715c",
+      "bytes": 1376
+    }
+  ]
+}

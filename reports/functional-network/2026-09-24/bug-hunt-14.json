@@ -1,0 +1,217 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-24",
+  "status": "fixed-and-scoped-regressions-passed",
+  "baseline": {
+    "version": "0.4.1",
+    "commit": "f56349b4412cb72d2330a7fae11ad597cf6e82a1",
+    "branch": "main",
+    "worktree": "Already contained uncommitted pass 13; not clean-release acceptance.",
+    "previous_pass": "reports/functional-network/2026-09-24/bug-hunt-13.json",
+    "inventory": {
+      "path": "docs/functional-network.json",
+      "version": "0.3.8",
+      "commit": "c26a529aecc0ab64d0a1743be10972e5d8ac137b",
+      "sha256": "bc16ef895c1f7b9f9d0b5d9195499d4efcba09466b3c85bdfcc04d20006ad30d"
+    },
+    "publication": "No version change, commit, tag, push or deployment this pass."
+  },
+  "scope": {
+    "workflows": [
+      "F03 metrics consumption",
+      "F36 and F24/F25 panel isolation only"
+    ],
+    "links": [
+      "E32",
+      "E33"
+    ],
+    "meaning": "Private metrics read, validation, hotspot rendering, polling/manual refresh, stale/unavailable/recovery and scope cancellation. Co-located panels are not a new map edge.",
+    "boundaries": "Actual React hooks, SettingsPage, panels, confirmation and i18n under Strict Mode; synthetic responses and controlled browser clock; non-fixture networking blocked.",
+    "excluded": [
+      "Engine instrumentation or metrics semantics, APIs/schema, compiler strategy or authority changes",
+      "Runner inventory/POST transport hardening",
+      "real deployment data/credentials, Engine/database, Agent, SSH/LAN/kernel operations"
+    ]
+  },
+  "findings": [
+    {
+      "id": "BH14-01",
+      "status": "fixed",
+      "observed": "Malformed operation metrics crashed the settings tree.",
+      "fix": "Validate both snapshots before state publication and hotspot rendering; preserve neighboring form/Runner controls."
+    },
+    {
+      "id": "BH14-02",
+      "status": "fixed",
+      "observed": "Stalled reads never aborted or released the metrics refresh slot.",
+      "fix": "Reuse private credentialed, no-store, redirect-error transport and ten-second header/body waiting, including abort-ignoring responses."
+    },
+    {
+      "id": "BH14-03",
+      "status": "fixed",
+      "observed": "Navigation neither aborted the metrics read nor established a new owner.",
+      "fix": "Engine/navigation/effect generations own reads/results/timers; stale callbacks cannot publish or restart them."
+    },
+    {
+      "id": "BH14-04",
+      "status": "fixed",
+      "observed": "Background failures kept old samples without errors and retained an earlier success message.",
+      "fix": "Generic visible error, clearly stale retained data and neutral non-current labels/colors; validated recovery clears failure."
+    },
+    {
+      "id": "BH14-05",
+      "status": "fixed",
+      "observed": "Locale changes triggered additional reads.",
+      "fix": "Translate feedback keys during render, without making polling depend on translation callbacks."
+    },
+    {
+      "id": "BH14-06",
+      "status": "fixed",
+      "observed": "Settings saving cleared an unrelated metrics error.",
+      "fix": "Remove cross-panel feedback clearing; metrics feedback lives in its own panel."
+    },
+    {
+      "id": "BH14-07",
+      "status": "fixed",
+      "observed": "Pending settings reads disabled independent metrics refresh.",
+      "fix": "Refresh controls track only metrics request state."
+    }
+  ],
+  "semantics": {
+    "read_deadline_ms": 10000,
+    "poll_delay_after_completion_ms": 10000,
+    "manual_refresh": "Coalesces while a read is active; completed reads restart the normal delay.",
+    "mutation_retry": false,
+    "numeric_validation": "Nonnegative safe integer counters and displayed aggregate sums; finite fractional latency <= Number.MAX_SAFE_INTEGER milliseconds. Ignore extra fields. Do not impose cross-counter ordering/equality on independent Engine samples."
+  },
+  "tdd": {
+    "baseline": {
+      "passed": 0,
+      "failed": 7,
+      "exit_code": 1,
+      "log": "bug-hunt-14/red-browser.log",
+      "meaning": "First failing assertions only; later protective coverage is not independently reproduced before each fix."
+    },
+    "diagnostics": [
+      {
+        "log": "bug-hunt-14/red-browser-first.log",
+        "note": "Equivalent first baseline checked the new stale flag first; final baseline checks the missing existing error field first."
+      },
+      {
+        "log": "bug-hunt-14/metrics-unit.log",
+        "passed": 9,
+        "failed": 1,
+        "note": "Test fixture incorrectly expected MAX_SAFE_INTEGER + 0 to overflow; corrected to add one, without changing the decoder."
+      }
+    ],
+    "additions": {
+      "parser_request_locale": 10,
+      "metrics_browser": 15,
+      "unique_total": 25,
+      "unit_ci_wired": true,
+      "browser_optional": true
+    }
+  },
+  "checks": {
+    "unit": {
+      "passed": 10,
+      "failed": 0,
+      "exit_code": 0,
+      "log": "bug-hunt-14/metrics-unit-final.log",
+      "overlap": "Included in frontend gate count; not additive."
+    },
+    "first_green": {
+      "passed": 24,
+      "failed": 0,
+      "exit_code": 0,
+      "log": "bug-hunt-14/green-browser-first.log",
+      "composition": "Seven metrics baseline cases plus seventeen settings cases."
+    },
+    "expanded_browser": {
+      "passed": 32,
+      "failed": 0,
+      "exit_code": 0,
+      "log": "bug-hunt-14/expanded-browser.log",
+      "composition": "Fifteen metrics cases plus seventeen unchanged pass-13 settings cases."
+    },
+    "metrics_repeats": [
+      {
+        "passed": 15,
+        "failed": 0,
+        "exit_code": 0,
+        "log": "bug-hunt-14/browser-repeat-1.log"
+      },
+      {
+        "passed": 15,
+        "failed": 0,
+        "exit_code": 0,
+        "log": "bug-hunt-14/browser-repeat-2.log"
+      },
+      {
+        "passed": 15,
+        "failed": 0,
+        "exit_code": 0,
+        "log": "bug-hunt-14/browser-repeat-3.log"
+      }
+    ],
+    "production_page_subset": {
+      "passed": 2,
+      "failed": 0,
+      "exit_code": 0,
+      "log": "bug-hunt-14/production-page-subset.log",
+      "selection": "teachers manage modules|job cancellation binds",
+      "meaning": "Local production Next server with intercepted synthetic Engine responses; not live Engine acceptance."
+    },
+    "frontend_gate": {
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL PATH=<Node24.19-bin>:<existing-path> ./scripts/quality-gate.sh --frontend-only --no-npm-install",
+      "exit_code": 0,
+      "log": "bug-hunt-14/frontend-gate.log",
+      "common_passed": 69,
+      "frontend_passed": 115,
+      "production_routes": 18,
+      "type_checks": "passed",
+      "frontend_production_audit_vulnerabilities": 0,
+      "full_project_gate": false
+    },
+    "final_preflight": {
+      "command": "./scripts/quality-gate.sh --format-only",
+      "exit_code": 0,
+      "log": "bug-hunt-14/final-preflight-resumed.log",
+      "common_passed": 69,
+      "note": "Rerun after interruption to confirm final documentation/course mirrors and formatting; no Rust compilation."
+    },
+    "frozen_map": {
+      "exit_code": 1,
+      "expected": true,
+      "log": "bug-hunt-14/map-drift.log",
+      "version": "0.3.8 -> 0.4.1",
+      "cumulative_source_drift": 26,
+      "access_api_page_catalog_count_drift": false
+    }
+  },
+  "evidence": {
+    "source_fingerprints": "bug-hunt-14/source-fingerprints.json",
+    "meaning": "Selected final source fingerprints, not a full pre-fix or clean repository snapshot; pre-fix base includes preserved pass-13 evidence.",
+    "selected_final_sources": 26,
+    "log_manifest": "bug-hunt-14/log-manifest.json",
+    "exact_log_copies": 14,
+    "frozen_receipt": "bug-hunt-14/frozen-receipt.json",
+    "preserved_files": 337,
+    "preserved_sha256": "bd0529d4c35a9961f8a00fde1ca20c02196c0e229ce4cd4be5434ecba53ba2e0",
+    "cleanup": "bug-hunt-14/cleanup.json"
+  },
+  "tools": {
+    "node_tests": "24.19.0",
+    "node_report_utilities": "24.21.0",
+    "chrome": "153.0.8010.52",
+    "browser_executable": "/opt/google/chrome/chrome",
+    "rust_format_only": "1.95.0"
+  },
+  "limitations": [
+    "Metrics remain approximate in-process observations, not distributed tracing, Engine health/authorization proof or an atomic snapshot; a sample can age before the next poll.",
+    "Deadlines bound cooperative browser waiting, not CPU/event-loop stalls or server work.",
+    "Runner tests cover panel survival and normal reviewed cancellation during metrics failure, not its own decoding, deadlines, failed acknowledgements or navigation safety.",
+    "No Rust/SQL/SDK runtime tests, full project gate, remote CI, entire optional-browser suite, live browser-to-Engine integration, deployment/LAN/kernel acceptance or new benchmark."
+  ],
+  "next": "F24/F25 Runner inventory and probe/cancel lifecycle: unconfirmed acknowledgements, stale inventory, timeouts and confirmation/navigation cancellation. Read-only code inspection identifies follow-up risks, not fixes or new reproduced findings."
+}

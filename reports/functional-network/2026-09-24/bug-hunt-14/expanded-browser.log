@@ -1,0 +1,40 @@
+✔ malformed metrics cannot crash the settings form or Runner panel (1520.666585ms)
+✔ a stalled metrics read has a deadline and releases explicit refresh (401.507669ms)
+✔ navigation invalidates metrics and aborts obsolete reads (367.250865ms)
+✔ background failure marks retained metrics stale and removes old refresh success (371.881957ms)
+✔ locale changes do not reload metrics or discard the settings draft (416.404567ms)
+✔ saving settings cannot erase an unrelated metrics failure (513.405239ms)
+✔ pending event settings do not block independent metrics refresh (368.35396ms)
+✔ Strict Mode owns a new read and late obsolete responses cannot overwrite it (360.42014ms)
+✔ Engine changes hide the previous sample and invalidate old refresh callbacks (364.205993ms)
+✔ unmount stops metrics reads, late results and future polling (343.235135ms)
+✔ polling waits after completion and coalesces overlapping refresh requests (342.150859ms)
+✔ a hung JSON body times out and cannot replace a later successful sample (347.295996ms)
+✔ stale samples lose the healthy label until a validated retry succeeds (375.398722ms)
+✔ metrics failures leave Runner cancellation and settings controls independent (550.053884ms)
+✔ unavailable and stale feedback translates without extra reads in all four locales (405.504565ms)
+✔ failed settings reads cannot enable saving cached defaults (1512.782298ms)
+✔ Strict Mode obsolete settings reads cannot overwrite the current load (382.177474ms)
+✔ unconfirmed event settings cannot dispatch the compiler save (471.889396ms)
+✔ navigation cancels a pending save and cannot dispatch a late second step (469.039954ms)
+✔ partial settings saves require verification before a new confirmation (485.658335ms)
+✔ stalled initial settings requests have a bounded read wait and explicit reload (366.046785ms)
+✔ successful saves freeze normalized values, lock editing and dispatch each stage only once (497.664982ms)
+✔ unavailable compiler reads explicitly allow event-only saving, never a hidden compiler write (475.653318ms)
+✔ malformed event reads stay blocked until an explicit fresh reload succeeds (428.607843ms)
+✔ event save timeout blocks retry and ignores late acknowledgement before fresh verification (624.41076ms)
+✔ compiler timeout retains partial-save warning even after metrics refresh (490.518641ms)
+✔ unmount aborts saving and prevents late writes or unread notifications (431.149377ms)
+✔ cancelling a review or navigating before confirmation never writes (489.847636ms)
+✔ blank and fractional drafts cannot be confirmed; discarding a draft needs explicit approval (526.563497ms)
+✔ locale changes preserve the draft and never reload or mutate settings (374.144621ms)
+✔ new navigation owns loading state and rejects all earlier read results (340.497331ms)
+✔ a mismatched compiler acknowledgement cannot claim complete success (445.942322ms)
+ℹ tests 32
+ℹ suites 0
+ℹ pass 32
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 8976.251271

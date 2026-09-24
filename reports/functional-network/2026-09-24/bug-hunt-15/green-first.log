@@ -1,0 +1,27 @@
+✔ malformed Runner inventory cannot crash neighboring settings controls (1620.863031ms)
+✔ stalled inventory reads time out and release refresh (325.619414ms)
+✔ navigation aborts obsolete inventories and starts a new owner (321.884879ms)
+✔ failed refresh keeps the previous inventory read-only (363.447795ms)
+✔ a 2xx response without a matching cancellation acknowledgement is not success (457.669327ms)
+✔ probe submission requires a reviewed confirmation (372.887961ms)
+✔ leaving the page aborts a pending cancellation without a follow-up refresh (436.723262ms)
+(node:3545267) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/src/features/runner/runnerInventory.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/chiharukiryu/cdev/cyanrex-lab/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ inventories accept Engine DTOs, disabled registries and retained terminal jobs (2.055633ms)
+✔ inventories reject missing containers, wrong counts and duplicate identities (0.426948ms)
+✔ all displayed nested fields are validated before rendering (0.558385ms)
+✔ counts and capacities reject coercion, impossible sums and unsafe arithmetic (0.465183ms)
+✔ timestamps require explicit time zones and real parseable instants (0.380697ms)
+✔ validated display DTOs are copied and ignore output or future extension fields (0.1935ms)
+✔ probe acknowledgement binds the submitted agent, kind, state and request (0.267916ms)
+✔ cancel acknowledgements accept both Engine transitions but bind the reviewed job (0.268788ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4072.893021

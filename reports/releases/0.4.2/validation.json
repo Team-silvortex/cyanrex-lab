@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "version": "0.4.2",
+  "date": "2026-09-24",
+  "baseline_commit": "f56349b4412cb72d2330a7fae11ad597cf6e82a1",
+  "recorded_before_version_commit": true,
+  "scope": "Local source-version candidate; includes functional-network bug-hunt passes 13, 14 and 15.",
+  "full_gate": {
+    "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL PATH=<Node24.19-bin>:<existing-path> CARGO_BUILD_JOBS=2 CARGO_TARGET_DIR=<repository>/engine/target ./scripts/quality-gate.sh --no-npm-install",
+    "exit_code": 0,
+    "log": "full-gate.log",
+    "rust": {
+      "passed": 310,
+      "failed": 0,
+      "ignored": 80
+    },
+    "common": {
+      "passed": 69,
+      "failed": 0
+    },
+    "frontend": {
+      "passed": 125,
+      "failed": 0
+    },
+    "sdk": {
+      "runtime_passed": 13,
+      "package_passed": 3,
+      "type_checks": true
+    },
+    "production_routes": 18,
+    "frontend_and_sdk_production_audit_vulnerabilities": 0
+  },
+  "browser": {
+    "passed": 56,
+    "failed": 0,
+    "exit_code": 0,
+    "log": "browser-regressions.log",
+    "composition": "17 settings + 15 metrics + 24 Runner cases; controlled browser clock/responses, actual components, blocked external networking."
+  },
+  "production_page_subset": {
+    "passed": 2,
+    "failed": 0,
+    "exit_code": 0,
+    "log": "production-page-subset.log",
+    "selection": "teachers manage modules|job cancellation binds",
+    "scope": "Owned loopback Next production build, synthetic intercepted Engine API; not live integration."
+  },
+  "final_preflight": {
+    "exit_code": 0,
+    "common_passed": 69,
+    "log": "final-preflight.log",
+    "scope": "Final metadata, mirrors, length, contracts, common tools/tests and Rust formatting; repeat common tests are not additive."
+  },
+  "map_drift": {
+    "exit_code": 1,
+    "expected": true,
+    "log": "map-drift.log",
+    "version": "0.3.8 -> 0.4.2",
+    "cumulative_source_changes": 26,
+    "access_api_page_catalog_count_drift": false
+  },
+  "evidence": {
+    "frozen_receipt": "frozen-receipt.json",
+    "historical_files": 386,
+    "historical_sha256": "4b71361a3b84d09dcb8138bdaa68c03124e21a491a1e17e200b73b09fdb37b1f",
+    "source_inputs": "source-inputs.json",
+    "pending_input_count": 131,
+    "log_manifest": "log-manifest.json"
+  },
+  "runtime": {
+    "node": "24.19.0",
+    "chrome": "153.0.8010.52",
+    "host_report_utilities_node": "24.21.0",
+    "dependency_install": false,
+    "rust_build_jobs": 2
+  },
+  "cleanup": {
+    "owned_preview": "127.0.0.1:3217",
+    "owned_preview_pid": 3640701,
+    "preview_stopped": true,
+    "rust_generated_cache": "cargo clean --manifest-path <repository>/engine/Cargo.toml --target-dir <repository>/engine/target",
+    "rust_cleanup_output": "Removed 1971 files, 2.3GiB total",
+    "log": "cache-cleanup.log",
+    "recoverable_trash": [
+      "frontend/.next",
+      "frontend/tsconfig.tsbuildinfo",
+      "sdk-js/dist"
+    ],
+    "trash_move_claimed_as_freed_space": false,
+    "preserved": [
+      "dependencies",
+      "runtime configuration/data",
+      "historical reports and numbered documents",
+      "frozen functional network"
+    ]
+  },
+  "limits": [
+    "Default-ignored PostgreSQL/signed-Agent integrations and benchmarks were not explicitly run.",
+    "No live deployment, real Agent, SSH/LAN, eBPF/kernel load, offline artifact acceptance or remote CI.",
+    "RustSec was not rerun; production npm audits were included.",
+    "Candidate and annotated-tag preflight occur after the version commit; this record does not claim publication."
+  ],
+  "publication": {
+    "remote_push": false,
+    "deployment": false,
+    "offline_artifact_created": false
+  }
+}

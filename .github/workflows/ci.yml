@@ -226,8 +226,11 @@ jobs:
         working-directory: frontend
         run: |
           npm run test:performance-hotspots
+          npm run test:performance-metrics
           npm run test:event-stream
           npm run test:event-page
+          npm run test:settings
+          npm run test:runner-inventory
           npm run test:compiler-check
           npm run test:semantic-completion
           npm run test:runtime-request

@@ -1,6 +1,7 @@
 import type { TranslationDict } from "../translations";
 import { safetyMessages } from "./safety";
 import { classroomMessages } from "./classroom";
+import { runnerSafetyMessages } from "./runnerSafety";
 
 export const ja: TranslationDict = {
     classroom: classroomMessages.ja,
@@ -148,6 +149,7 @@ export const ja: TranslationDict = {
       deleteConfirm: "{count} 件の絞り込みイベントを削除しますか？元に戻せません。",
     },
     settings: {
+      ...runnerSafetyMessages.ja,
       title: "設定",
       subtitle: "イベント保持上限とオーバーフロー動作を設定します。",
       maxRecords: "保持するイベント最大数",
@@ -159,6 +161,15 @@ export const ja: TranslationDict = {
       save: "設定を保存",
       saving: "保存中...",
       saved: "設定を保存しました",
+      loadFailed: "イベント設定を読み込めませんでした。再読み込みしてから保存してください。",
+      compilerUnavailable: "コンパイラ設定は利用できません。イベント設定のみ保存できます。",
+      eventsOnlySaved: "イベント設定を保存しました。コンパイラ設定は変更していません。",
+      saveUnconfirmed: "設定の保存を確認できませんでした。処理が完了する可能性があります。再読み込みして状態を確認してから再度保存してください。",
+      partialSave: "イベント設定は保存されましたが、コンパイラ設定の保存を確認できませんでした。再読み込みして確認してから再度保存してください。",
+      verifyBeforeSave: "再読み込みして現在の設定を確認してから再度保存してください。",
+      invalidDraft: "保持件数を整数で入力し、有効なオーバーフロー方針を選択してください。",
+      reload: "設定を再読み込み",
+      reloadHint: "再読み込みすると、編集中の内容はサーバーで確認した設定に置き換わります。",
       loading: "読み込み中...",
       residentCompiler: "Clang 常駐アクセラレーション",
       residentCompilerEnabledHint: "授業中の診断と意味補完キャッシュを長時間保持します。",
@@ -169,6 +180,9 @@ export const ja: TranslationDict = {
       metricsRefreshing: "指標更新中...",
       metricsUpdated: "性能指標を更新しました",
       metricsUnavailable: "まだ性能指標を取得していません。",
+      metricsReadFailed: "性能指標を更新できませんでした。再度更新してください。",
+      metricsStale: "以下は前回正常に取得した値で、現在の指標とは確認できていません。",
+      metricsStaleLabel: "現在値ではありません",
       metricsTotal: "総呼び出し数",
       metricsCacheHits: "キャッシュヒット",
       metricsCacheMisses: "キャッシュミス",

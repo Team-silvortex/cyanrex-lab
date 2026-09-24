@@ -1,6 +1,6 @@
 [package]
 name = "cyanrex-engine"
-version = "0.4.1"
+version = "0.4.2"
 edition = "2021"
 
 # Keep local builds and tests small while retaining file/line backtraces.

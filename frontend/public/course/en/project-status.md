@@ -1,7 +1,7 @@
 # Project Status
 
 Snapshot date: **2026-09-24**
-Current release line: **0.4.1**
+Current release line: **0.4.2**
 
 This page is the capability-level progress baseline for Cyanrex Lab. It records what is usable now,
 what remains intentionally limited, and which decisions should drive the next development cycle.
@@ -18,11 +18,23 @@ The detailed trust boundaries and data flows remain in the [system architecture]
 | Local Runner | Operational | Replaceable driver boundary, global/per-user leases, timeout handling, and explicit `shared_kernel` reporting |
 | Runner Agent | Operational for remote checks | Signed registration, heartbeat, leases, cancellation, probes, and isolated compile-only diagnostics; remote eBPF loading is not enabled |
 | Deployment and distribution | Operational | Docker, WSL2, native Linux, hardened optional compiler Agent, and offline package/install tooling |
-| Release traceability | `0.4.1` synchronized source metadata; artifact acceptance remains separate | Changelog/version sync, annotated-tag preflight, checksum-bound source/archive metadata, per-image Docker content IDs, exact-image installation, and native Rust evidence/candidate verification with safe non-overwriting extraction; `0.3.0` is an API baseline only; publishing a source tag does not establish artifact acceptance |
+| Release traceability | `0.4.2` synchronized source metadata; artifact acceptance remains separate | Changelog/version sync, annotated-tag preflight, checksum-bound source/archive metadata, per-image Docker content IDs, exact-image installation, and native Rust evidence/candidate verification with safe non-overwriting extraction; `0.3.0` is an API baseline only; publishing a source tag does not establish artifact acceptance |
 | Module catalog | Operational, state-only | Versioned v1 manifests are discovered and validated at startup; lifecycle is in memory and never executes directory code |
 | JavaScript SDK | Operational internal package | Typed ESM client with 63 generated non-Agent operationId calls, a 77-member additive namespace baseline and deprecation policy, explicit `/openapi` and `/operations` exports, browser/Node sessions, cancellation, downloads, typed errors, and package-consumer smoke coverage |
 | API contract | Operational internal contract | Generated OpenAPI 3.1 served at `/openapi.json`; route/access/SDK/model drift and breaking changes against the frozen `0.3.0` baseline fail the quality gate |
 | Terminal page | Operational for teachers | Permission-aware List/Start/Stop module commands, structured results/history, and a safe handoff to the eBPF experiment workspace; it is not a shell |
+
+## Settings and Runner browser safety (included in 0.4.2)
+
+- [Pass 13](functional-network-bug-hunt-13.md) binds settings reads and ordered saves to navigation,
+  validates acknowledgements, and requires explicit verification after partial or unconfirmed writes.
+- [Pass 14](functional-network-bug-hunt-14.md) validates metrics before rendering, bounds refreshes,
+  marks retained samples stale and keeps feedback independent from the settings form and Runner panel.
+- [Pass 15](functional-network-bug-hunt-15.md) validates Runner inventories, requires probe/cancel review,
+  rejects obsolete targets/results, and keeps uncertain operations locked through background polling.
+- Historical reports and the frozen network retain their original versions and fingerprints. These are
+  browser lifecycle fixes, not new Agent authority, remote kernel loading, distributed transactions or
+  artifact acceptance. Source version/tag creation does not change a running deployment.
 
 ## Event storage confirmation (included in 0.4.1)
 

@@ -1,0 +1,40 @@
+{
+  "meaning": "Selected file fingerprints, not a complete repository snapshot. Baseline tests preceded runtime fixes; final sources were used by the passing full gate and browser repeats.",
+  "before": {
+    "frontend/pages/settings.tsx": "3f8d0b2d472d7ac49e34f828d8b58bf18e1f71f7a6c4c11e899f16f2b4969eb7",
+    "frontend/src/components/useConfirmedAction.tsx": "828e846577513c7d83d447fd067718327e0b92375969da0c599115c45ec997fd",
+    "frontend/src/features/settings/usePerformanceMetrics.ts": "c39dc48e5ede3254210c7c81f2c73bdd34ce1d89182b69a8f19011f5247e0b25",
+    "frontend/src/utils/pageState.ts": "80fb002415682050e1013ebefb35a59a0f28df30972a7d43f4d3f69eedeb3211",
+    "frontend/src/i18n/locales/en.ts": "8e18fd3d53e87bad3c6bb252b0fb7350a804765142774ac5eca9becf814b4da5",
+    "frontend/src/i18n/locales/zh_cn.ts": "ff5731fbbe9ad8bfb76e66ec8b952e321646ac41f74f883692a6552042da8d91",
+    "frontend/src/i18n/locales/es.ts": "415489b89c16ffbfde8b3231780b2483bffcb67e16cdd485c672d249f2c6655c",
+    "frontend/src/i18n/locales/ja.ts": "a88ea6bb8a4b26ae2b9d63ff14952987d6c4ef447aa18a81e99c34b0dcfffa9b",
+    "frontend/package.json": "48de328e8c3a6ae11ff5450c3a217e13cc7e5dd4ace68fc3ccec64c42382d93b",
+    "frontend/tests/helpers/actionSafetyBrowser.mjs": "880c6c08c9ba1248ce75db8cf7638eda34636cf8f95a004f5db89f23204d5572",
+    "frontend/tests/fixtures/settingsPage.mjs": "2d3f67055eb6bfc77921db621165e35d441da996492116da584c6e3b6b6f287d",
+    "frontend/tests/settingsPage.browser.mjs": "1a38fd04741d49f7861ca8ee32d67052a1116acc7eae52a04478660e654e44ea",
+    "scripts/quality-gate.sh": "8dd8b874d9f0ff3fcbe2b4ce7e0174cb8a59c84c423bbbd0dc25626fcc7e3bff",
+    ".github/workflows/ci.yml": "f120dce1f43b27bf7c6eb9384b59f6ada5553f7ce4b9920587ffcda817557c71"
+  },
+  "after": {
+    ".github/workflows/ci.yml": "958679f77ed778478e75bd74fc509addb499aed9d9496a02d5b18604b73fd9d9",
+    "frontend/package.json": "d5210206b3b13b0955b37549e450974e0d77c74a6742a2adcbd0660d6f74d595",
+    "frontend/pages/settings.tsx": "512d5b86ebedb0be216e265e7b1c841966e52b4e47adcecd18f83ffdba134446",
+    "frontend/src/components/useConfirmedAction.tsx": "828e846577513c7d83d447fd067718327e0b92375969da0c599115c45ec997fd",
+    "frontend/src/features/settings/settingsRequest.ts": "e20f9c569a98928a1dd60c1780d010f658610bd4b54b7faff8f8c06ea4ee54b3",
+    "frontend/src/features/settings/usePerformanceMetrics.ts": "c39dc48e5ede3254210c7c81f2c73bdd34ce1d89182b69a8f19011f5247e0b25",
+    "frontend/src/features/settings/useSettingsForm.ts": "4b66a3d01b59a5b9d7b15c1720f748a7dafde3fd165aee4a75af7f4a1f3dddba",
+    "frontend/src/i18n/locales/en.ts": "db0774fde7b398e600c8e9bf7d7321d15c55b0ecf79d331785c031c6a7e871d7",
+    "frontend/src/i18n/locales/es.ts": "530bb0eac2dcf0a3ebb58242685deb591952d1ab2bca001d8cf55ec53f50e3d3",
+    "frontend/src/i18n/locales/ja.ts": "560c648ac23c342e8117ab6a3c5446ad522b7e111396fab9d866260a9876bff0",
+    "frontend/src/i18n/locales/zh_cn.ts": "68c2748605951bf324241a6988a189d3a9324530065bd2f00bac7b0d74509dce",
+    "frontend/src/utils/pageState.ts": "80fb002415682050e1013ebefb35a59a0f28df30972a7d43f4d3f69eedeb3211",
+    "frontend/tests/fixtures/eventPageStubs.mjs": "ce723b3568517e4e6305d6c8d379ae08024475ff98cef2dce8b3d26e854371ba",
+    "frontend/tests/fixtures/settingsPage.mjs": "a62eccfbf633aa82c82ad4ee6ace47233981f3245d460549a9d603dfc29ee78f",
+    "frontend/tests/helpers/actionSafetyBrowser.mjs": "fb723205b304b09b7ebb7954bebeb184051a17ecaee9cdee7d65adccffd68bce",
+    "frontend/tests/helpers/compilerDiagnosticsBrowser.mjs": "371a3581a35dba728997106b6b45216d9a386cc25d5dd55db5edfb0094d17d4c",
+    "frontend/tests/settingsPage.browser.mjs": "d52f6952667844123645ca7b3315abd70a5e7cf592c67351abb169635b80ec27",
+    "frontend/tests/settingsRequest.test.mjs": "b78ec18e53315d94f2076d6ae77b3719c15d07cf7b130faca67d468a39e1fa32",
+    "scripts/quality-gate.sh": "f5ca18b317bedd21d2b8a74f77e151fa46012481eb6105f467234c54a19cf5ed"
+  }
+}

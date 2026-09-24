@@ -1,0 +1,31 @@
+{
+  "meaning": "Selected final files used by the passing checks, not a complete clean repository snapshot. The pre-fix baseline was HEAD plus uncommitted pass 13, whose evidence is preserved separately.",
+  "after": {
+    ".github/workflows/ci.yml": "f0d94e0aa1d99ffab17d16f54984787afa2f3ba5b21d4874994e5f1fe0189af0",
+    "engine/src/metrics.rs": "3e122ade545fb79865ce74ffc035881abe84ee29ac85c68b737b91c0f6438b7b",
+    "engine/src/models/settings.rs": "ef238e72f582e9ad4ef08a43f11763b6aefc5e91198f216affcd10b9a5c4c530",
+    "frontend/package.json": "0d61c24f3d8799ac1c9c82705bcd04e557d9f93553046cfab6e197fa3b3c91aa",
+    "frontend/pages/settings.tsx": "b3f44cdff57dde9b588159083c8372a2f99f974dd2580adaf77ca02d9fed86e9",
+    "frontend/src/features/runner/RunnerAgentAdminPanel.tsx": "55ed2c6b50e420cbe6a0d52aa31ae44b76776cb926b9ea9423603c3aab933379",
+    "frontend/src/features/runner/useRunnerAgentAdmin.ts": "7f1d534639d93fe2892149b472c9773762c4e8645c8e1ab14ae465e60cd76c5a",
+    "frontend/src/features/settings/PerformanceMetricsPanel.tsx": "4cfd25b183684017f6428fe091097572cd05c58ae9e4ad411f70484247dd85cd",
+    "frontend/src/features/settings/hotspots.ts": "ca1f2952a91d85fed13376e68522fec5e5cd4ceba2e9f76cc63a5f44128bea16",
+    "frontend/src/features/settings/models.ts": "a2f6b3f704fa661c7f79a62b557008d56661f12f34175210f7bf45601a32ead0",
+    "frontend/src/features/settings/performanceMetrics.ts": "b16f5e1c5de4155982f5ecb375a20ef83f6692b562eb1b1d259174a774660ac2",
+    "frontend/src/features/settings/settingsRequest.ts": "e20f9c569a98928a1dd60c1780d010f658610bd4b54b7faff8f8c06ea4ee54b3",
+    "frontend/src/features/settings/usePerformanceMetrics.ts": "bd505ba43d1ec51780627fa6de8f0da963f3c08f176fd27cde3e7ce947ea1424",
+    "frontend/src/features/settings/useSettingsForm.ts": "4b66a3d01b59a5b9d7b15c1720f748a7dafde3fd165aee4a75af7f4a1f3dddba",
+    "frontend/src/i18n/locales/en.ts": "ff71231f8634fd760aadcd9920dcb6d872f2708b8c8ad98079d3c391087bfbd7",
+    "frontend/src/i18n/locales/es.ts": "f26b3e31d3f308d301cdb892fe42df7e55e49501bd44bdd64501c7f064e84a98",
+    "frontend/src/i18n/locales/ja.ts": "b49e1a89f8d645bf72cca7e8f14505bc3858fe59bd58a1ebbd7e4b3d2c3bbc80",
+    "frontend/src/i18n/locales/zh_cn.ts": "719badff0aca870b9d43d1539a50b824d8b63cbf54fc781fe18c707a92026303",
+    "frontend/tests/fixtures/performanceMetrics.mjs": "2a4671e3b86ad512a9eb9cb920a607587741c22bcfdffdcaa794639bbff0058f",
+    "frontend/tests/fixtures/settingsPage.mjs": "a62eccfbf633aa82c82ad4ee6ace47233981f3245d460549a9d603dfc29ee78f",
+    "frontend/tests/helpers/actionSafetyBrowser.mjs": "fb723205b304b09b7ebb7954bebeb184051a17ecaee9cdee7d65adccffd68bce",
+    "frontend/tests/helpers/compilerDiagnosticsBrowser.mjs": "371a3581a35dba728997106b6b45216d9a386cc25d5dd55db5edfb0094d17d4c",
+    "frontend/tests/performanceMetrics.browser.mjs": "073f51931c042af524be311533030a1e90e775e26cb7ad662e54cb54b9ea8bfa",
+    "frontend/tests/performanceMetrics.test.mjs": "7d3bd00e91a82bfcb1f5b7f37dbe3b30645ce35ad1209e18c2857e4a03c8f9f9",
+    "frontend/tests/settingsPage.browser.mjs": "d52f6952667844123645ca7b3315abd70a5e7cf592c67351abb169635b80ec27",
+    "scripts/quality-gate.sh": "9e659374ac330a8001efe338d846444a2769c1fe0ea7a22c424eb690e3219250"
+  }
+}

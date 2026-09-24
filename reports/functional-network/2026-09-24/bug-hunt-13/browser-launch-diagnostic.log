@@ -1,0 +1,64 @@
+✖ failed settings reads cannot enable saving cached defaults (917.159225ms)
+✖ Strict Mode obsolete settings reads cannot overwrite the current load (0.459773ms)
+✖ unconfirmed event settings cannot dispatch the compiler save (0.114294ms)
+✖ navigation cancels a pending save and cannot dispatch a late second step (0.048511ms)
+✖ partial settings saves require verification before a new confirmation (0.058039ms)
+✖ stalled initial settings requests have a bounded read wait and explicit reload (0.04272ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 0
+ℹ fail 6
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1020.756642
+
+✖ failing tests:
+
+test at frontend/tests/settingsPage.browser.mjs:36:1
+✖ failed settings reads cannot enable saving cached defaults (917.159225ms)
+  browserType.launch: Failed to launch chromium because executable doesn't exist at /home/chiharukiryu/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome
+      at TestContext.<anonymous> (/home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:14:28) {
+    name: 'Error',
+    log: []
+  }
+
+test at frontend/tests/settingsPage.browser.mjs:44:1
+✖ Strict Mode obsolete settings reads cannot overwrite the current load (0.459773ms)
+  browserType.launch: Failed to launch chromium because executable doesn't exist at /home/chiharukiryu/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome
+      at TestContext.<anonymous> (/home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:14:28) {
+    name: 'Error',
+    log: []
+  }
+
+test at frontend/tests/settingsPage.browser.mjs:52:1
+✖ unconfirmed event settings cannot dispatch the compiler save (0.114294ms)
+  browserType.launch: Failed to launch chromium because executable doesn't exist at /home/chiharukiryu/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome
+      at TestContext.<anonymous> (/home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:14:28) {
+    name: 'Error',
+    log: []
+  }
+
+test at frontend/tests/settingsPage.browser.mjs:59:1
+✖ navigation cancels a pending save and cannot dispatch a late second step (0.048511ms)
+  browserType.launch: Failed to launch chromium because executable doesn't exist at /home/chiharukiryu/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome
+      at TestContext.<anonymous> (/home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:14:28) {
+    name: 'Error',
+    log: []
+  }
+
+test at frontend/tests/settingsPage.browser.mjs:68:1
+✖ partial settings saves require verification before a new confirmation (0.058039ms)
+  browserType.launch: Failed to launch chromium because executable doesn't exist at /home/chiharukiryu/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome
+      at TestContext.<anonymous> (/home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:14:28) {
+    name: 'Error',
+    log: []
+  }
+
+test at frontend/tests/settingsPage.browser.mjs:78:1
+✖ stalled initial settings requests have a bounded read wait and explicit reload (0.04272ms)
+  browserType.launch: Failed to launch chromium because executable doesn't exist at /home/chiharukiryu/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome
+      at TestContext.<anonymous> (/home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:14:28) {
+    name: 'Error',
+    log: []
+  }

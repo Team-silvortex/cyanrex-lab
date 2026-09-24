@@ -1,0 +1,122 @@
+✖ failed settings reads cannot enable saving cached defaults (1483.685518ms)
+✖ Strict Mode obsolete settings reads cannot overwrite the current load (344.420551ms)
+✖ unconfirmed event settings cannot dispatch the compiler save (392.94949ms)
+✖ navigation cancels a pending save and cannot dispatch a late second step (397.460191ms)
+✖ partial settings saves require verification before a new confirmation (416.586914ms)
+✖ stalled initial settings requests have a bounded read wait and explicit reload (330.909682ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 0
+ℹ fail 6
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3530.677645
+
+✖ failing tests:
+
+test at frontend/tests/settingsPage.browser.mjs:36:1
+✖ failed settings reads cannot enable saving cached defaults (1483.685518ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  false !== true
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:40:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:33:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/settingsPage.browser.mjs:44:1
+✖ Strict Mode obsolete settings reads cannot overwrite the current load (344.420551ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  '800' !== '500'
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:48:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:33:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '800',
+    expected: '500',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/settingsPage.browser.mjs:52:1
+✖ unconfirmed event settings cannot dispatch the compiler save (392.94949ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /could not be confirmed/i. Input:
+  
+  'Save SettingsConfirm operationThis applies event retention and compiler settings to this Engine. Lowering retention may discard records. Changes are not transactional; check the current settings after any failure.Max retained events500Overflow policydrop_oldestClang resident accelerationfalseExecuting. Do not submit again; closing the page cannot undo a dispatched request.CancelConfirm Save Settings'
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:56:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:33:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'Save SettingsConfirm operationThis applies event retention and compiler settings to this Engine. Lowering retention may discard records. Changes are not transactional; check the current settings after any failure.Max retained events500Overflow policydrop_oldestClang resident accelerationfalseExecuting. Do not submit again; closing the page cannot undo a dispatched request.CancelConfirm Save Settings',
+    expected: /could not be confirmed/i,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at frontend/tests/settingsPage.browser.mjs:59:1
+✖ navigation cancels a pending save and cannot dispatch a late second step (397.460191ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - true
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:65:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:33:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/settingsPage.browser.mjs:68:1
+✖ partial settings saves require verification before a new confirmation (416.586914ms)
+  page.evaluate: TypeError: Cannot read properties of undefined (reading 'resolve')
+      at Object.respond (<anonymous>:31986:61)
+      at eval (eval at evaluate (:311:30), <anonymous>:1:24)
+      at UtilityScript.evaluate (<anonymous>:313:16)
+      at UtilityScript.<anonymous> (<anonymous>:1:44)
+      at respond (/home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/helpers/compilerDiagnosticsBrowser.mjs:43:53)
+      at f.respond (/home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:28:42)
+      at /home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:71:11
+      at async run (/home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:33:9) {
+    log: []
+  }
+
+test at frontend/tests/settingsPage.browser.mjs:78:1
+✖ stalled initial settings requests have a bounded read wait and explicit reload (330.909682ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:80:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:33:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

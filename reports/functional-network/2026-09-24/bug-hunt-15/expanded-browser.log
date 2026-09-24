@@ -1,0 +1,80 @@
+✔ malformed metrics cannot crash the settings form or Runner panel (1903.521442ms)
+✔ a stalled metrics read has a deadline and releases explicit refresh (515.474385ms)
+✔ navigation invalidates metrics and aborts obsolete reads (459.790228ms)
+✔ background failure marks retained metrics stale and removes old refresh success (463.376911ms)
+✔ locale changes do not reload metrics or discard the settings draft (477.493706ms)
+✔ saving settings cannot erase an unrelated metrics failure (589.65858ms)
+✔ pending event settings do not block independent metrics refresh (428.210032ms)
+✔ Strict Mode owns a new read and late obsolete responses cannot overwrite it (429.932797ms)
+✔ Engine changes hide the previous sample and invalidate old refresh callbacks (477.463995ms)
+✔ unmount stops metrics reads, late results and future polling (411.985844ms)
+✔ polling waits after completion and coalesces overlapping refresh requests (453.868613ms)
+✔ a hung JSON body times out and cannot replace a later successful sample (439.950593ms)
+✔ stale samples lose the healthy label until a validated retry succeeds (518.841053ms)
+✔ metrics failures leave Runner cancellation and settings controls independent (684.724378ms)
+✔ unavailable and stale feedback translates without extra reads in all four locales (538.659647ms)
+✔ malformed Runner inventory cannot crash neighboring settings controls (1917.371045ms)
+✔ stalled inventory reads time out and release refresh (412.341242ms)
+✔ navigation aborts obsolete inventories and starts a new owner (395.571619ms)
+✔ failed refresh keeps the previous inventory read-only (465.59183ms)
+✔ a 2xx response without a matching cancellation acknowledgement is not success (518.380935ms)
+✔ probe submission requires a reviewed confirmation (474.911963ms)
+✔ leaving the page aborts a pending cancellation without a follow-up refresh (514.069229ms)
+✔ Strict Mode and late obsolete reads cannot overwrite the current atomic inventory (419.157851ms)
+✔ a failed half of the inventory pair aborts its sibling and cannot publish a partial update (544.019046ms)
+✔ a stalled inventory body cannot publish after a newer verified read (476.453831ms)
+✔ probe approval submits exactly once and validates the returned job before success (582.380806ms)
+✔ a cancellation acknowledgement remains confirmed if the follow-up inventory fails (540.119778ms)
+✔ timed-out cancellation stays uncertain through polling until explicit refresh (693.533904ms)
+✔ a stalled cancellation body has the same deadline and never retries the write (616.458646ms)
+✔ background state changes invalidate a reviewed cancellation target (497.778633ms)
+✔ a confirmation cannot dispatch while inventory refresh is still in flight (528.879901ms)
+✔ probe review rechecks Agent expiry using Engine-relative time (423.55368ms)
+✔ Engine changes close the old confirmation and abort its pending POST (486.32936ms)
+✖ navigation aborts a pending write and its late response cannot touch the next page (418.638311ms)
+✔ locale changes translate feedback without extra Runner reads or settings draft loss (491.286242ms)
+✔ failed settings reads cannot enable saving cached defaults (1877.433031ms)
+✔ Strict Mode obsolete settings reads cannot overwrite the current load (468.578093ms)
+✔ unconfirmed event settings cannot dispatch the compiler save (567.225594ms)
+✔ navigation cancels a pending save and cannot dispatch a late second step (573.518086ms)
+✔ partial settings saves require verification before a new confirmation (536.280975ms)
+✔ stalled initial settings requests have a bounded read wait and explicit reload (419.008141ms)
+✔ successful saves freeze normalized values, lock editing and dispatch each stage only once (599.085401ms)
+✔ unavailable compiler reads explicitly allow event-only saving, never a hidden compiler write (547.765968ms)
+✔ malformed event reads stay blocked until an explicit fresh reload succeeds (528.89052ms)
+✔ event save timeout blocks retry and ignores late acknowledgement before fresh verification (742.659272ms)
+✔ compiler timeout retains partial-save warning even after metrics refresh (652.840346ms)
+✔ unmount aborts saving and prevents late writes or unread notifications (571.6636ms)
+✔ cancelling a review or navigating before confirmation never writes (593.418502ms)
+✔ blank and fractional drafts cannot be confirmed; discarding a draft needs explicit approval (626.131301ms)
+✔ locale changes preserve the draft and never reload or mutate settings (458.217027ms)
+✔ new navigation owns loading state and rejects all earlier read results (426.607314ms)
+✔ a mismatched compiler acknowledgement cannot claim complete success (489.183837ms)
+ℹ tests 52
+ℹ suites 0
+ℹ pass 51
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 11600.173742
+
+✖ failing tests:
+
+test at frontend/tests/runnerAdmin.browser.mjs:203:1
+✖ navigation aborts a pending write and its late response cannot touch the next page (418.638311ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runnerAdmin.browser.mjs:206:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/runnerAdmin.browser.mjs:36:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

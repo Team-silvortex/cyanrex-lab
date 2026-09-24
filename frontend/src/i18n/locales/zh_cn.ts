@@ -1,6 +1,7 @@
 import type { TranslationDict } from "../translations";
 import { safetyMessages } from "./safety";
 import { classroomMessages } from "./classroom";
+import { runnerSafetyMessages } from "./runnerSafety";
 
 export const zhCN: TranslationDict = {
     classroom: classroomMessages.zhCN,
@@ -148,6 +149,7 @@ export const zhCN: TranslationDict = {
       deleteConfirm: "确认删除 {count} 条筛选事件？该操作不可撤销。",
     },
     settings: {
+      ...runnerSafetyMessages.zhCN,
       title: "设置",
       subtitle: "配置事件累计上限与溢出策略。",
       maxRecords: "事件最大累计数量",
@@ -159,6 +161,15 @@ export const zhCN: TranslationDict = {
       save: "保存设置",
       saving: "保存中...",
       saved: "设置已保存",
+      loadFailed: "未能读取事件设置，请重新读取后再保存。",
+      compilerUnavailable: "编译器设置不可用，本次只能保存事件设置。",
+      eventsOnlySaved: "事件设置已保存，未修改编译器设置。",
+      saveUnconfirmed: "无法确认设置是否已保存，服务端操作仍可能完成。请重新读取并核实后再保存。",
+      partialSave: "事件设置已保存，但无法确认编译器设置是否已保存。请重新读取并核实后再保存。",
+      verifyBeforeSave: "请重新读取并核实当前设置后再保存。",
+      invalidDraft: "请填写整数保留条数并选择有效的溢出策略。",
+      reload: "重新读取设置",
+      reloadHint: "重新读取会用服务端确认的设置替换当前草稿。",
       loading: "加载中...",
       residentCompiler: "Clang 常驻加速模式",
       residentCompilerEnabledHint: "长期保留诊断与语义补全缓存，适合持续教学和反复编辑。",
@@ -169,6 +180,9 @@ export const zhCN: TranslationDict = {
       metricsRefreshing: "指标刷新中...",
       metricsUpdated: "性能指标已刷新",
       metricsUnavailable: "尚未拿到性能指标，稍后再试。",
+      metricsReadFailed: "未能刷新性能指标，可再次尝试刷新。",
+      metricsStale: "以下是上次成功读取的数据，不代表当前指标。",
+      metricsStaleLabel: "非当前数据",
       metricsTotal: "调用总数",
       metricsCacheHits: "缓存命中",
       metricsCacheMisses: "缓存未命中",

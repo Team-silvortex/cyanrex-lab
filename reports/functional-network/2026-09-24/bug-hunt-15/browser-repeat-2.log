@@ -1,0 +1,32 @@
+✔ malformed Runner inventory cannot crash neighboring settings controls (1628.510405ms)
+✔ stalled inventory reads time out and release refresh (313.938025ms)
+✔ navigation aborts obsolete inventories and starts a new owner (291.623713ms)
+✔ failed refresh keeps the previous inventory read-only (361.447949ms)
+✔ a 2xx response without a matching cancellation acknowledgement is not success (424.539868ms)
+✔ probe submission requires a reviewed confirmation (337.100839ms)
+✔ leaving the page aborts a pending cancellation without a follow-up refresh (402.61351ms)
+✔ Strict Mode and late obsolete reads cannot overwrite the current atomic inventory (331.060765ms)
+✔ a failed half of the inventory pair aborts its sibling and cannot publish a partial update (473.534352ms)
+✔ a stalled inventory body cannot publish after a newer verified read (369.39241ms)
+✔ probe approval submits exactly once and validates the returned job before success (440.403001ms)
+✔ a cancellation acknowledgement remains confirmed if the follow-up inventory fails (412.488236ms)
+✔ timed-out cancellation stays uncertain through polling until explicit refresh (510.206947ms)
+✔ a stalled cancellation body has the same deadline and never retries the write (422.294761ms)
+✔ background state changes invalidate a reviewed cancellation target (431.168904ms)
+✔ a confirmation cannot dispatch while inventory refresh is still in flight (481.849248ms)
+✔ probe review rechecks Agent expiry using Engine-relative time (391.014084ms)
+✔ Engine changes close the old confirmation and abort its pending POST (412.977902ms)
+✔ navigation aborts a pending write and its late response cannot touch the next page (419.03682ms)
+✔ read polling waits after completion and is paused during writes (407.766187ms)
+✔ unmount aborts both reads, drops late data and stops timers (296.758326ms)
+✔ HTTP failures and incorrect media types stay generic and cannot acknowledge an action (616.498603ms)
+✔ probe confirmation can be dismissed safely and rejects a re-registered Agent (444.386442ms)
+✔ locale changes translate feedback without extra Runner reads or settings draft loss (490.603106ms)
+ℹ tests 24
+ℹ suites 0
+ℹ pass 24
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 11283.373218

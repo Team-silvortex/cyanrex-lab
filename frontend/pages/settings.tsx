@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/router";
 
 import SidebarLayout from "../src/components/SidebarLayout";
 import { useConfirmedAction } from "../src/components/useConfirmedAction";
@@ -8,128 +9,33 @@ import { DOCS_LINK_STYLE, DOCS_QUICK_LINKS } from "../src/config/settings";
 import RunnerAgentAdminPanel from "../src/features/runner/RunnerAgentAdminPanel";
 import PerformanceMetricsPanel from "../src/features/settings/PerformanceMetricsPanel";
 import { usePerformanceMetrics } from "../src/features/settings/usePerformanceMetrics";
+import { useSettingsForm } from "../src/features/settings/useSettingsForm";
+import type { EventSettings } from "../src/features/settings/settingsRequest";
 import { useI18n } from "../src/i18n/context";
-import { loadPageState, savePageState } from "../src/utils/pageState";
-
-type EventOverflowPolicy = "drop_oldest" | "drop_new";
-
-type EventSettingsResponse = {
-  max_records: number;
-  overflow_policy: EventOverflowPolicy;
-};
-
-type CompilerSettingsResponse = {
-  resident: boolean;
-  strategy: "resident_cache" | "on_demand";
-};
 
 export default function SettingsPage() {
   const { t } = useI18n();
+  const router = useRouter();
   const safety = useConfirmedAction();
   const engineUrl = useMemo(getEngineUrl, []);
-  const performance = usePerformanceMetrics(engineUrl);
-  const [maxRecords, setMaxRecords] = useState(
-    () => loadPageState<number>("settings_event_max_records_v1") ?? 500,
-  );
-  const [overflowPolicy, setOverflowPolicy] = useState<EventOverflowPolicy>(
-    () => loadPageState<EventOverflowPolicy>("settings_event_overflow_policy_v1") ?? "drop_oldest",
-  );
-  const [residentCompiler, setResidentCompiler] = useState(false);
-  const [compilerSettingsAvailable, setCompilerSettingsAvailable] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
-  const mounted = useRef(true);
+  const performance = usePerformanceMetrics(engineUrl, router.asPath);
+  const form = useSettingsForm(engineUrl, router.asPath, t);
+  const controlsDisabled = !form.ready || safety.busy;
 
-  useEffect(() => {
-    mounted.current = true;
-    const load = async () => {
-      setLoading(true);
-      setError("");
-      try {
-        const [eventsResponse, compilerResponse] = await Promise.all([
-          fetch(`${engineUrl}/settings/events`, { credentials: "include" }),
-          fetch(`${engineUrl}/settings/compiler`, { credentials: "include" }),
-        ]);
-        if (!eventsResponse.ok) throw new Error(`HTTP ${eventsResponse.status}`);
-        const events = (await eventsResponse.json()) as EventSettingsResponse;
-        if (!mounted.current) return;
-        setMaxRecords(events.max_records);
-        setOverflowPolicy(events.overflow_policy);
-        if (compilerResponse.ok) {
-          const compiler = (await compilerResponse.json()) as CompilerSettingsResponse;
-          setResidentCompiler(compiler.resident);
-          setCompilerSettingsAvailable(true);
-        }
-      } catch (err) {
-        if (mounted.current) setError((err as Error).message);
-      } finally {
-        if (mounted.current) setLoading(false);
-      }
-    };
-    void load();
-    return () => {
-      mounted.current = false;
-    };
-  }, [engineUrl]);
-
-  useEffect(() => {
-    savePageState("settings_event_max_records_v1", maxRecords);
-    savePageState("settings_event_overflow_policy_v1", overflowPolicy);
-  }, [maxRecords, overflowPolicy]);
-
-  const save = async () => {
-    setSaving(true);
-    setError("");
-    setMessage("");
-    performance.clearFeedback();
-    try {
-      const response = await fetch(`${engineUrl}/settings/events`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          max_records: Math.max(50, Math.min(50000, Number(maxRecords) || 500)),
-          overflow_policy: overflowPolicy,
-        }),
-      });
-      const payload = (await response.json()) as {
-        ok: boolean;
-        message: string;
-        settings?: EventSettingsResponse;
-      };
-      if (!response.ok || !payload.ok) {
-        throw new Error(payload.message || `HTTP ${response.status}`);
-      }
-      if (payload.settings) {
-        setMaxRecords(payload.settings.max_records);
-        setOverflowPolicy(payload.settings.overflow_policy);
-      }
-      if (compilerSettingsAvailable) {
-        const compilerResponse = await fetch(`${engineUrl}/settings/compiler`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ resident: residentCompiler }),
-        });
-        const compiler = (await compilerResponse.json()) as {
-          ok: boolean;
-          message: string;
-          settings: CompilerSettingsResponse;
-        };
-        if (!compilerResponse.ok || !compiler.ok) {
-          throw new Error(compiler.message || `HTTP ${compilerResponse.status}`);
-        }
-        setResidentCompiler(compiler.settings.resident);
-      }
-      setMessage(t("settings.saved"));
-    } catch (err) {
-      setError((err as Error).message);
-      throw err;
-    } finally {
-      setSaving(false);
-    }
+  const confirmSave = () => {
+    const snapshot = form.review();
+    if (!snapshot) return;
+    safety.request({
+      action: t("settings.save"), description: t("safety.settings"), details: [
+        { label: t("settings.maxRecords"), value: String(snapshot.events.max_records) },
+        { label: t("settings.overflowPolicy"), value: snapshot.events.overflow_policy },
+        ...(snapshot.compiler ? [{ label: t("settings.residentCompiler"), value: String(snapshot.compiler.resident) }] : []),
+      ],
+    }, signal => form.save(snapshot, signal));
+  };
+  const reload = () => {
+    if (form.dirty) safety.request({ action: t("settings.reload"), description: t("settings.reloadHint"), dangerous: false }, async () => form.reload());
+    else form.reload();
   };
 
   return (
@@ -143,19 +49,19 @@ export default function SettingsPage() {
           <label className="meta">
             {t("settings.maxRecords")}
             <input
-              type="number"
-              min={50}
-              max={50000}
-              value={maxRecords}
-              onChange={(event) => setMaxRecords(Number(event.target.value) || 500)}
+              type="number" min={50} max={50000} step={1}
+              value={Number.isNaN(form.draft.max_records) ? "" : form.draft.max_records}
+              disabled={controlsDisabled}
+              onChange={(event) => form.changeEvents({ ...form.draft, max_records: event.target.value === "" ? Number.NaN : Number(event.target.value) })}
               style={{ marginTop: 6, width: "100%" }}
             />
           </label>
           <label className="meta">
             {t("settings.overflowPolicy")}
             <select
-              value={overflowPolicy}
-              onChange={(event) => setOverflowPolicy(event.target.value as EventOverflowPolicy)}
+              value={form.draft.overflow_policy}
+              disabled={controlsDisabled}
+              onChange={(event) => form.changeEvents({ ...form.draft, overflow_policy: event.target.value as EventSettings["overflow_policy"] })}
               style={{ marginTop: 6, width: "100%" }}
             >
               <option value="drop_oldest">{t("settings.dropOldest")}</option>
@@ -165,60 +71,44 @@ export default function SettingsPage() {
         </div>
 
         <p className="meta" style={{ marginTop: 10 }}>
-          {overflowPolicy === "drop_oldest" ? t("settings.dropOldestHint") : t("settings.dropNewHint")}
+          {form.draft.overflow_policy === "drop_oldest" ? t("settings.dropOldestHint") : t("settings.dropNewHint")}
         </p>
-        {compilerSettingsAvailable && (
+        {form.compiler && (
           <label className="row" style={{ marginTop: 16, alignItems: "flex-start" }}>
             <input
-              type="checkbox"
-              checked={residentCompiler}
-              onChange={(event) => setResidentCompiler(event.target.checked)}
+              type="checkbox" checked={form.resident} disabled={controlsDisabled}
+              onChange={(event) => form.changeResident(event.target.checked)}
               style={{ marginTop: 3 }}
             />
             <span>
               <strong>{t("settings.residentCompiler")}</strong>
               <span className="meta" style={{ display: "block", marginTop: 4 }}>
-                {residentCompiler
-                  ? t("settings.residentCompilerEnabledHint")
-                  : t("settings.residentCompilerDisabledHint")}
+                {form.resident ? t("settings.residentCompilerEnabledHint") : t("settings.residentCompilerDisabledHint")}
               </span>
             </span>
           </label>
         )}
+        {!form.loading && form.events && !form.compiler && <p role="status" className="meta">{t("settings.compilerUnavailable")}</p>}
 
         <DocumentationLinks />
         <div className="row" style={{ marginTop: 12 }}>
-          <button type="button" disabled={saving || loading || safety.busy} onClick={() => safety.request({
-            action: t("settings.save"), description: t("safety.settings"), details: [
-              { label: t("settings.maxRecords"), value: String(Math.max(50, Math.min(50000, Number(maxRecords) || 500))) },
-              { label: t("settings.overflowPolicy"), value: overflowPolicy },
-              ...(compilerSettingsAvailable ? [{ label: t("settings.residentCompiler"), value: String(residentCompiler) }] : []),
-            ],
-          }, save)}>
-            {saving ? t("settings.saving") : t("settings.save")}
+          <button type="button" disabled={controlsDisabled} onClick={confirmSave}>
+            {form.saving ? t("settings.saving") : t("settings.save")}
           </button>
-          <button
-            type="button"
-            onClick={() => {
-              setMessage("");
-              setError("");
-              void performance.refresh();
-            }}
-            disabled={loading || performance.refreshing}
-          >
+          <button type="button" disabled={form.loading || form.saving || safety.busy} onClick={reload} title={t("settings.reloadHint")}>
+            {t("settings.reload")}
+          </button>
+          <button type="button" onClick={() => { void performance.refresh(); }} disabled={performance.refreshing}>
             {performance.refreshing ? t("settings.metricsRefreshing") : t("settings.refreshMetrics")}
           </button>
-          {loading && <span className="meta">{t("settings.loading")}</span>}
+          {form.loading && <span className="meta">{t("settings.loading")}</span>}
         </div>
 
-        {message && <p className="meta" style={{ color: "#9cd67a" }}>{message}</p>}
-        {performance.message && (
-          <p className="meta" style={{ color: "#9cd67a" }}>{performance.message}</p>
-        )}
-        {error && <p className="error">{error}</p>}
-        {performance.error && <p className="error">{performance.error}</p>}
+        {form.messageKey && <p role="status" className="meta" style={{ color: "#9cd67a" }}>{t(form.messageKey)}</p>}
+        {form.errorKey && <p role="alert" className="error">{t(form.errorKey)}</p>}
 
-        <PerformanceMetricsPanel metrics={performance.metrics} summary={performance.hotspotSummary} />
+        <PerformanceMetricsPanel metrics={performance.metrics} summary={performance.hotspotSummary}
+          refreshing={performance.refreshing} stale={performance.stale} error={performance.error} message={performance.message} />
         <RunnerAgentAdminPanel engineUrl={engineUrl} />
       </section>
     </SidebarLayout>

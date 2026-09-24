@@ -114,8 +114,11 @@ run_frontend_checks() {
   npm --prefix "$PROJECT_ROOT/frontend" run build
   (cd "$PROJECT_ROOT/frontend" && npx --yes tsc --noEmit)
   npm --prefix "$PROJECT_ROOT/frontend" run test:performance-hotspots
+  npm --prefix "$PROJECT_ROOT/frontend" run test:performance-metrics
   npm --prefix "$PROJECT_ROOT/frontend" run test:event-stream
   npm --prefix "$PROJECT_ROOT/frontend" run test:event-page
+  npm --prefix "$PROJECT_ROOT/frontend" run test:settings
+  npm --prefix "$PROJECT_ROOT/frontend" run test:runner-inventory
   npm --prefix "$PROJECT_ROOT/frontend" run test:compiler-check
   npm --prefix "$PROJECT_ROOT/frontend" run test:semantic-completion
   npm --prefix "$PROJECT_ROOT/frontend" run test:runtime-request

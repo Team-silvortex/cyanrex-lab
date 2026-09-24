@@ -1,0 +1,43 @@
+(node:2933998) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/src/features/settings/performanceMetrics.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/chiharukiryu/cdev/cyanrex-lab/frontend/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ valid metrics preserve integer counters, zero samples and fractional latency (1.347893ms)
+✔ metrics reject missing operation objects and missing fields (0.350423ms)
+✔ every metrics counter rejects coercions, negative, fractional and unsafe numbers (1.287981ms)
+✔ latency accepts finite fractions but rejects invalid or unrepresentable magnitudes (0.229957ms)
+✖ overview aggregate counters cannot exceed exact JavaScript integer arithmetic (0.569637ms)
+✔ independently sampled counters are not incorrectly rejected as an atomic snapshot (0.123522ms)
+✔ validated metrics copy their display fields and ignore future extension fields (0.19956ms)
+✔ accepted limits keep hotspot arithmetic finite (0.358632ms)
+✔ performance decoding composes with one private read and rejects malformed payloads (19.323763ms)
+✔ all four locales contain explicit unavailable and stale metrics notices (0.913956ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 9
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 134.002075
+
+✖ failing tests:
+
+test at frontend/tests/performanceMetrics.test.mjs:40:1
+✖ overview aggregate counters cannot exceed exact JavaScript integer arithmetic (0.569637ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception: rejected
+      at TestContext.<anonymous> (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/performanceMetrics.test.mjs:42:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'throws',
+    diff: 'simple'
+  }

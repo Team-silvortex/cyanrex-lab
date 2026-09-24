@@ -1,0 +1,75 @@
+{
+  "meaning": "Exact byte copies of .run/functional-network-14 logs; whitespace and terminal carriage returns preserved.",
+  "files": [
+    {
+      "path": "browser-repeat-1.log",
+      "bytes": 1449,
+      "sha256": "39d682fbe93f34f5744bd18e7a9f8aefeda37a3aff939a7c9755b2fd3b74eb15"
+    },
+    {
+      "path": "browser-repeat-2.log",
+      "bytes": 1450,
+      "sha256": "ab3c9630d033634017b136724c83ba2888800cf61bfba9bc92ee2720403f8ab9"
+    },
+    {
+      "path": "browser-repeat-3.log",
+      "bytes": 1448,
+      "sha256": "b16c8176554785dcb9d3ee2b4ca8f52b9437ba10d1fdbfd3ad3c618c735cbebc"
+    },
+    {
+      "path": "expanded-browser.log",
+      "bytes": 3046,
+      "sha256": "32b655a59328cdf5f240160a00d22b8561b2b03adb365d6c37fa40d34d98877f"
+    },
+    {
+      "path": "final-preflight-resumed.log",
+      "bytes": 7143,
+      "sha256": "e8e1135b94d485d6191bb47b95b7d2b9853c6dc2d0d38972fff604cac1320484"
+    },
+    {
+      "path": "final-preflight.log",
+      "bytes": 7142,
+      "sha256": "2112ae3c254a1ed3fe5e0373b657d89c8eeba5ef49a3caf2e2cb768433c6e880"
+    },
+    {
+      "path": "frontend-gate.log",
+      "bytes": 30382,
+      "sha256": "13099fa73739b337383ac43776fe4d89637ef26ef06f8e880ff95025651859a7"
+    },
+    {
+      "path": "green-browser-first.log",
+      "bytes": 2303,
+      "sha256": "2e0c53c76dbc2e2b2dc78b2c6c8f267593d11752b280293aca87e5c681589328"
+    },
+    {
+      "path": "map-drift.log",
+      "bytes": 1376,
+      "sha256": "495cce95149d87ac2d2805e7cc0b31df9ce59cd25a868bc8211e87ca9fc1715c"
+    },
+    {
+      "path": "metrics-unit-final.log",
+      "bytes": 1521,
+      "sha256": "884ee1af8d59a88501a3833f034068b480bb9620acba1232d15612b63156d3ce"
+    },
+    {
+      "path": "metrics-unit.log",
+      "bytes": 2526,
+      "sha256": "b78bd8522635f9f89e88e669949a5226a5d72ea8dcb7be4022316430799a1a8d"
+    },
+    {
+      "path": "production-page-subset.log",
+      "bytes": 331,
+      "sha256": "2cd22fad6b9cceaf8bdeb921807e18e652fb7fc1b626a5252c40c651b36b7730"
+    },
+    {
+      "path": "red-browser-first.log",
+      "bytes": 6101,
+      "sha256": "80aecc70d8c4aea294a263615b325f276457684a260b62305e0f814ac681cca0"
+    },
+    {
+      "path": "red-browser.log",
+      "bytes": 6054,
+      "sha256": "387cd0d729ff39dc31d563d788dd8dc4fbf9c7cdd93588f0a6f1de778c80bf6d"
+    }
+  ]
+}

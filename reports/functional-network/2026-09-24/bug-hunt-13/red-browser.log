@@ -1,0 +1,124 @@
+✖ failed settings reads cannot enable saving cached defaults (1465.082514ms)
+✖ Strict Mode obsolete settings reads cannot overwrite the current load (340.509438ms)
+✖ unconfirmed event settings cannot dispatch the compiler save (425.662308ms)
+✖ navigation cancels a pending save and cannot dispatch a late second step (396.151011ms)
+✖ partial settings saves require verification before a new confirmation (424.41008ms)
+✖ stalled initial settings requests have a bounded read wait and explicit reload (320.954117ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 0
+ℹ fail 6
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3533.334857
+
+✖ failing tests:
+
+test at frontend/tests/settingsPage.browser.mjs:36:1
+✖ failed settings reads cannot enable saving cached defaults (1465.082514ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  false !== true
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:40:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:33:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/settingsPage.browser.mjs:44:1
+✖ Strict Mode obsolete settings reads cannot overwrite the current load (340.509438ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  '800' !== '500'
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:48:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:33:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '800',
+    expected: '500',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/settingsPage.browser.mjs:52:1
+✖ unconfirmed event settings cannot dispatch the compiler save (425.662308ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:55:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:33:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/settingsPage.browser.mjs:59:1
+✖ navigation cancels a pending save and cannot dispatch a late second step (396.151011ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:64:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:33:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at frontend/tests/settingsPage.browser.mjs:68:1
+✖ partial settings saves require verification before a new confirmation (424.41008ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /Event settings were saved/. Input:
+  
+  'Save SettingsConfirm operationThis applies event retention and compiler settings to this Engine. Lowering retention may discard records. Changes are not transactional; check the current settings after any failure.Max retained events500Overflow policydrop_oldestClang resident accelerationfalseThe operation failed or completion could not be verified. Check the current state before starting again; no automatic retry was sent.private synthetic detailClose'
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:73:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:33:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'Save SettingsConfirm operationThis applies event retention and compiler settings to this Engine. Lowering retention may discard records. Changes are not transactional; check the current settings after any failure.Max retained events500Overflow policydrop_oldestClang resident accelerationfalseThe operation failed or completion could not be verified. Check the current state before starting again; no automatic retry was sent.private synthetic detailClose',
+    expected: /Event settings were saved/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at frontend/tests/settingsPage.browser.mjs:79:1
+✖ stalled initial settings requests have a bounded read wait and explicit reload (320.954117ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:81:10
+      at async run (file:///home/chiharukiryu/cdev/cyanrex-lab/frontend/tests/settingsPage.browser.mjs:33:9)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
