@@ -1,0 +1,15 @@
+✔ event mutations document unconfirmed writes, cancellation and private acknowledgements (5.189447ms)
+✔ event reads document private unavailable results without changing session authority or success shapes (5.178427ms)
+✔ event settings expose private unavailable reads and unconfirmed transactional updates (5.431749ms)
+✔ Rust CI explicitly runs every queued event persistence and retention boundary (5.527878ms)
+✔ Rust CI runs PostgreSQL acceptance against its disposable service and rejects an empty selection (1.555498ms)
+✔ Rust CI promotes every auth boundary regression plus script/event persistence checks (1.690049ms)
+✔ Rust CI exercises persisted authentication and duplicate registration on the disposable database (0.645082ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 64.562367

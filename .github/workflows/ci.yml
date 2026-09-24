@@ -165,7 +165,41 @@ jobs:
             services::event_bus::tests::persistence::followup::postgres_cold_settings_read_cannot_overwrite_a_newer_cache_value \
             services::event_bus::tests::persistence::followup::postgres_drop_new_can_use_capacity_freed_by_deletion_immediately \
             services::event_bus::tests::persistence::followup::postgres_replacement_cannot_be_undone_by_queued_old_events \
-            services::event_bus::tests::persistence::followup::postgres_failed_batch_releases_its_barrier_into_explicit_memory_fallback; do
+            services::event_bus::tests::persistence::followup::postgres_failed_batch_releases_its_barrier_into_explicit_memory_fallback \
+            services::event_bus::tests::persistence::cold_start::postgres_cold_full_drop_new_rejects_before_memory_unread_and_broadcast \
+            services::event_bus::tests::persistence::cold_start::postgres_cold_partial_drop_new_counts_pending_publications_before_flush \
+            services::event_bus::tests::persistence::cold_start::postgres_cold_drop_new_concurrent_clones_share_admission_and_owner_isolation \
+            services::event_bus::tests::persistence::cold_start::postgres_writer_drains_multiple_batches_after_last_producer_drops \
+            services::event_bus::tests::persistence::cold_start::postgres_cold_drop_new_mutations_rebase_durable_capacity \
+            services::event_bus::tests::persistence::cold_start::postgres_cancelled_cold_drop_new_admission_does_not_lose_capacity \
+            services::event_bus::tests::persistence::cold_start::postgres_cold_drop_new_count_failure_latches_memory_until_restart \
+            services::event_bus::tests::persistence::reads::postgres_history_read_failure_is_unavailable_and_retryable \
+            services::event_bus::tests::persistence::reads::postgres_export_read_failure_is_not_a_successful_download \
+            services::event_bus::tests::persistence::reads::postgres_unread_read_failure_is_unavailable_not_zero \
+            services::event_bus::tests::persistence::reads::postgres_schema_read_failure_is_retryable_without_memory_success \
+            services::event_bus::tests::persistence::reads::postgres_read_timeout_releases_waiting_without_disabling_storage \
+            services::event_bus::tests::persistence::reads::postgres_latched_fallback_reads_stay_unavailable_until_fresh_state \
+            services::event_bus::tests::persistence::reads::postgres_payload_decode_failure_is_not_a_fabricated_empty_object \
+            services::event_bus::tests::persistence::reads::postgres_timestamp_decode_failure_is_unavailable_not_a_panic \
+            services::event_bus::tests::persistence::confirmed_mutations::postgres_mark_read_failure_preserves_unread_and_can_be_retried \
+            services::event_bus::tests::persistence::confirmed_mutations::postgres_delete_failure_preserves_history_and_can_be_retried \
+            services::event_bus::tests::persistence::confirmed_mutations::postgres_mutations_reject_latched_fallback_without_memory_changes \
+            services::event_bus::tests::persistence::confirmed_mutations::postgres_failed_mutation_barrier_does_not_acknowledge_volatile_changes \
+            services::event_bus::tests::persistence::confirmed_mutations::postgres_mutation_wait_deadline_does_not_claim_rollback_or_success \
+            services::event_bus::tests::persistence::confirmed_mutations::postgres_cancelled_confirmed_mutation_finishes_before_later_publication \
+            services::event_bus::tests::persistence::confirmed_mutations::postgres_mutation_sql_timeout_never_falls_back_to_memory_success \
+            services::event_bus::tests::persistence::confirmed_mutations::postgres_mutation_schema_failure_preserves_memory_and_recovers \
+            services::event_bus::tests::persistence::confirmed_mutations::postgres_confirmed_cold_delete_counts_sql_rows_and_preserves_read_flags \
+            services::event_bus::tests::persistence::settings::postgres_settings_read_failure_is_not_cached_or_default_success \
+            services::event_bus::tests::persistence::settings::postgres_settings_write_failure_is_private_and_atomic \
+            services::event_bus::tests::persistence::settings::postgres_settings_prior_fallback_does_not_publish_or_trim_memory \
+            services::event_bus::tests::persistence::settings::postgres_settings_failed_barrier_cannot_publish_or_trim_policy \
+            services::event_bus::tests::persistence::settings::postgres_settings_corrupt_values_are_not_default_or_panicking_reads \
+            services::event_bus::tests::persistence::settings::postgres_settings_commit_wait_is_bounded_without_claiming_rollback \
+            services::event_bus::tests::persistence::settings::postgres_settings_read_deadline_and_cancellation_remain_retryable \
+            services::event_bus::tests::persistence::settings::postgres_settings_cancelled_update_orders_later_events_under_new_policy \
+            services::event_bus::tests::persistence::settings::postgres_settings_sql_timeout_preserves_uncommitted_policy_and_history \
+            services::event_bus::tests::persistence::settings::postgres_settings_success_reloads_and_preserves_read_flags_and_capacity; do
             cargo test --manifest-path engine/Cargo.toml --locked --lib "$task_event_pg_case" -- --ignored --list | grep -Fx "$task_event_pg_case: test"
             cargo test --manifest-path engine/Cargo.toml --locked --lib "$task_event_pg_case" -- --ignored --exact --nocapture
           done

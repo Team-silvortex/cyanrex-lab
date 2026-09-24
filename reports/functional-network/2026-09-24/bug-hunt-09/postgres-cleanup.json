@@ -1,0 +1,9 @@
+{
+  "fixture": "/tmp/cyanrex-bh09-pg-EJokFRcU",
+  "postgres": "16.15",
+  "transport": "private Unix socket; listen_addresses empty; TCP host authentication reject",
+  "before_stop": { "nondefault_schemas": 0, "other_clients": 0 },
+  "stopped": true,
+  "owned_temporary_cluster_removed": true,
+  "deployment_accessed": false
+}

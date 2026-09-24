@@ -1,0 +1,25 @@
+[functional-network] version drift: snapshot 0.3.8, source 0.4.0
+source drift engine/Cargo.toml
+source drift engine/openapi/openapi.json
+source drift engine/src/routes/ebpf/ringbuf.inc.rs
+source drift engine/src/routes/events.rs
+source drift engine/src/routes/learning.rs
+source drift engine/src/routes/runner_job.rs
+source drift engine/src/services/event_bus.rs
+source drift engine/src/services/event_bus/deletion.rs
+source drift engine/src/services/event_bus/event_bus_schema.rs
+source drift engine/src/services/event_bus_db.rs
+source drift engine/src/services/learning_store.rs
+source drift engine/src/services/learning_store/persistence.rs
+source drift engine/src/services/runner_agent_client.rs
+source drift engine/src/services/runner_job_queue.rs
+source drift frontend/pages/ebpf.tsx
+source drift frontend/pages/events.tsx
+source drift frontend/src/components/SidebarLayout.tsx
+source drift frontend/src/features/ebpf/useBreakpointHitStream.ts
+source drift frontend/src/features/ebpf/useCompilerDiagnostics.ts
+source drift frontend/src/features/ebpf/useEbpfPageController.ts
+source drift frontend/src/features/ebpf/useEbpfSafetyActions.ts
+source drift frontend/src/features/events/eventStream.ts
+source drift frontend/src/utils/cEbpfIntelligence.ts
+source drift scripts/quality-gate.sh

@@ -5,6 +5,39 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-09-24
+
+### Fixed
+
+- Event retention HTTP settings now read configured storage without cached/default success on failure.
+  Invalid stored policies/limits, unavailable storage and bounded read waits return private `503`.
+  Saves require a confirmed policy/trim transaction and persistence barrier, preserving memory on
+  definite SQL failure; admitted saves retain owner ordering after cancellation or the ten-second caller
+  deadline. Unconfirmed is not rollback. Success and JSON/content-type/body-limit errors are no-store;
+  existing clamping, owner/CSRF rules, memory-only mode and legacy runtime helper contracts remain.
+
+- Event mark-read/deletion HTTP acknowledgements now require confirmation from configured storage.
+  Failed barriers, prior fallback and unconfirmed writes return private `503`, not volatile success;
+  definite query/schema failures preserve memory and remain retryable. Caller waiting is limited to
+  ten seconds; admitted SQL work retains owner ordering after cancellation/timeout, which is not rollback.
+  Memory-only changes stay atomic while waiting for cache locks. Deletion query errors are private JSON.
+
+- Event history, JSON/CSV export and unread HTTP reads now report generic no-store `503` responses for
+  configured storage failures, decoding errors, ten-second read waits or previously latched fallback,
+  instead of empty/partial/zero success. Read failures do not disable persistence; repaired storage is
+  retryable. History SELECT plans no longer outlive column-type repairs. Explicit memory-only reads remain.
+- Event reads reject invalid/unknown filters, unsupported export formats and overflowing/reversed time
+  ranges with no-store `400` responses. Successful payloads, session ownership and legacy ignored fields
+  remain compatible; isolated HTTP/PostgreSQL regressions and failure contracts are covered in CI.
+
+- Cold-start DropNew admission now counts durable rows plus locally accepted pending events before
+  history, unread or live publication. Owner-scoped reservations survive writer-cache expiry and are
+  rebased after deletion, replacement or retention changes; cancellation cannot consume a slot.
+- The event persistence worker no longer keeps its own producer channel alive. After the last producer
+  leaves, healthy queued batches drain and the worker releases its state while the runtime remains alive.
+  Added isolated cold-cache, cancellation, fallback and lifetime regressions; API and volatile fallback
+  contracts remain unchanged. This is not crash recovery or a process-shutdown durability guarantee.
+
 ## [0.4.0] - 2026-09-24
 
 ### Changed
@@ -377,7 +410,8 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 The canonical package metadata advanced directly from `0.2.9` to `0.3.1`. Version `0.3.0` identifies
 the frozen API compatibility snapshot only; it was not a package release and must not be tagged.
 
-[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.9...v0.4.0
 [0.3.9]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.8...v0.3.9
 [0.3.8]: https://github.com/Team-silvortex/cyanrex-lab/compare/f3f9faf585721df5e208c18da99652b040e35d50...v0.3.8

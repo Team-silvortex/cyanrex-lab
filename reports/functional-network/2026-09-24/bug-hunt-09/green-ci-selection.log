@@ -1,0 +1,12 @@
+✔ Rust CI explicitly runs every queued event persistence and retention boundary (4.974204ms)
+✔ Rust CI runs PostgreSQL acceptance against its disposable service and rejects an empty selection (1.037603ms)
+✔ Rust CI promotes every auth boundary regression plus script/event persistence checks (1.907848ms)
+✔ Rust CI exercises persisted authentication and duplicate registration on the disposable database (0.724434ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 55.570636

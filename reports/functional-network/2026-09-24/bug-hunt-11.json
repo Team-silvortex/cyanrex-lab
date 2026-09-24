@@ -1,0 +1,259 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-24",
+  "status": "fixed-and-scoped-regressions-passed",
+  "baseline": {
+    "version": "0.4.0",
+    "commit": "bfecf77292bb87c01d69b8bbd3dc600de1f29e58",
+    "branch": "main",
+    "worktree": "Already contained uncommitted passes 09-10; not clean-release acceptance",
+    "prior_pass": "reports/functional-network/2026-09-24/bug-hunt-10.json",
+    "inventory": {
+      "path": "docs/functional-network.json",
+      "version": "0.3.8",
+      "commit": "c26a529aecc0ab64d0a1743be10972e5d8ac137b",
+      "sha256": "bc16ef895c1f7b9f9d0b5d9195499d4efcba09466b3c85bdfcc04d20006ad30d"
+    },
+    "publication": "No version change, commit, tag, push or deployment."
+  },
+  "scope": {
+    "workflows": [
+      "F34",
+      "F35"
+    ],
+    "meaning": "HTTP mark-read/deletion through owner admission, persistence barrier, SQL and local publication; honest acknowledgement, cancellation/deadlines, repair and cold-cache counts.",
+    "boundaries": "Actual Axum router with synthetic sessions and EventBus injected with private Unix-socket PostgreSQL 16.15. DATABASE_URL unset; no deployment services or real events used.",
+    "excluded": [
+      "real data/accounts/deployment .env or database",
+      "live Engine/Agent or SSH/LAN/kernel mutation",
+      "new routes/access tiers/Event/database schema/SDK signature or frontend product source changes"
+    ]
+  },
+  "findings": [
+    {
+      "id": "BH11-01",
+      "status": "fixed",
+      "summary": "Failed mark-read/delete SQL, failed publication barriers and prior latched fallback returned HTTP success without confirmed storage mutation.",
+      "fix": "New fallible HTTP helpers reject configured unavailable/invalid or latched storage and failed barriers with generic no-store 503. Definite schema/query errors preserve memory and remain retryable; no volatile success fallback. Legacy public helper contracts remain."
+    },
+    {
+      "id": "BH11-02",
+      "status": "fixed",
+      "summary": "An SQL mutation blocked publishing local cache did not complete within a 12-second test bound.",
+      "fix": "Ten-second cooperative caller wait includes owner admission. Admitted SQL worker retains owner ordering through local publication even after cancellation/timeout; an unconfirmed response is not rollback."
+    },
+    {
+      "id": "BH11-03",
+      "status": "fixed",
+      "summary": "Successful mutation responses lacked no-store; deletion extraction had a separate plain-text error path.",
+      "fix": "Success and handler failures are no-store; deletion extraction/validation are generic JSON 400. Initial red asserted missing success header; final test expands both mutation responses and invalid/unknown/duplicate queries."
+    }
+  ],
+  "tdd": {
+    "http_initial": {
+      "passed": 0,
+      "failed": 1,
+      "exit_code": 101,
+      "log": "bug-hunt-11/red-http.log"
+    },
+    "postgres_initial": {
+      "passed": 0,
+      "failed": 5,
+      "exit_code": 101,
+      "log": "bug-hunt-11/red-postgres.log"
+    },
+    "contract_ci_initial": {
+      "passed": 3,
+      "failed": 2,
+      "exit_code": 1,
+      "log": "bug-hunt-11/red-contract-ci.log"
+    },
+    "first_fix_postgres": {
+      "passed": 5,
+      "failed": 0,
+      "exit_code": 0,
+      "log": "bug-hunt-11/first-fix-postgres.log"
+    },
+    "expanded_postgres": {
+      "passed": 41,
+      "failed": 0,
+      "exit_code": 0,
+      "log": "bug-hunt-11/green-postgres.log",
+      "note": "Before final additional cold-cache SQL case; same runtime implementation."
+    },
+    "additions": {
+      "ordinary_rust": 4,
+      "ignored_postgres": 9,
+      "node_contract": 1,
+      "new_unique_cases": 14,
+      "existing_contract_and_ci_assertions_updated": true
+    },
+    "after_red_guards": "Three ordinary service guards and four further PostgreSQL cases added after initial failure reproductions. Memory capacity-cache atomicity is protective coverage, not a separate reproduced pre-fix defect.",
+    "operational_diagnostic": {
+      "command": "node scripts/functional-network.mjs --check",
+      "exit_code": 1,
+      "log": "bug-hunt-11/map-command-diagnostic.log",
+      "meaning": "Mistyped checker path; not a product/test defect. Correct checker rerun separately."
+    }
+  },
+  "verification": {
+    "quality_gate": {
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL PATH=<Node 24.19.0 bin>:$PATH ./scripts/quality-gate.sh --no-npm-install",
+      "exit_code": 0,
+      "log": "bug-hunt-11/quality-gate.log",
+      "default_rust": {
+        "passed": 307,
+        "failed": 0,
+        "ignored": 70
+      },
+      "common_node": {
+        "passed": 68,
+        "failed": 0
+      },
+      "frontend": {
+        "passed": 93,
+        "failed": 0,
+        "production_routes": 18,
+        "typecheck": "passed",
+        "production_npm_vulnerabilities": 0
+      },
+      "sdk": {
+        "runtime_passed": 13,
+        "package_passed": 3,
+        "typecheck": "passed",
+        "production_npm_vulnerabilities": 0
+      },
+      "compatibility": "OpenAPI/API/SDK generation and surface checks passed at unchanged version 0.4.0; 64 paths, 68 Engine operations, 63 SDK operations, 85 schemas",
+      "note": "Tool/SSH/kernel-smoke checks are isolated fixtures, not privileged deployment acceptance."
+    },
+    "post_documentation_preflight": {
+      "command": "./scripts/quality-gate.sh --format-only",
+      "exit_code": 0,
+      "log": "bug-hunt-11/final-preflight.log",
+      "meaning": "Final bilingual report/course mirrors and common contracts, file length/version/formatter/tool checks; runtime unchanged from full gate."
+    },
+    "focused_http": {
+      "passed": 9,
+      "failed": 0,
+      "exit_code": 0,
+      "new_cases": 1,
+      "overlaps_full_gate": true,
+      "log": "bug-hunt-11/green-http.log"
+    },
+    "focused_default": {
+      "command": "cargo test --manifest-path engine/Cargo.toml --locked --lib services::event_bus -- --nocapture",
+      "passed": 44,
+      "failed": 0,
+      "ignored": 44,
+      "exit_code": 0,
+      "overlaps_full_gate": true,
+      "log": "bug-hunt-11/green-default-event-final.log"
+    },
+    "earlier_narrow_default": {
+      "command": "cargo test --manifest-path engine/Cargo.toml --locked --lib services::event_bus::tests -- --nocapture",
+      "passed": 29,
+      "failed": 0,
+      "ignored": 41,
+      "exit_code": 0,
+      "log": "bug-hunt-11/green-default-event.log",
+      "note": "Narrower module selection before final cold-cache guard; not a different pass total."
+    },
+    "event_postgres": {
+      "command": "env -u DATABASE_URL CYANREX_DB_FALLBACK=true CYANREX_TEST_DATABASE_URL=<explicit disposable private socket URL> cargo test --manifest-path engine/Cargo.toml --locked --lib services::event_bus::tests -- --ignored --nocapture --test-threads=1",
+      "passed": 42,
+      "failed": 0,
+      "ignored": 0,
+      "previous": 33,
+      "new": 9,
+      "exit_code": 0,
+      "log": "bug-hunt-11/green-postgres-final.log",
+      "note": "Includes post-commit timeout completion, admitted cancellation/order, cold deletion counts/read flags and SQL timeout without claiming server rollback."
+    },
+    "contract_ci": {
+      "passed": 7,
+      "failed": 0,
+      "exit_code": 0,
+      "log": "bug-hunt-11/green-contract-ci-final.log",
+      "remote_ci_run": false,
+      "note": "41 exact ordering-job selections plus existing separately selected deletion cover all 42 event PostgreSQL cases; nonempty guards retained."
+    },
+    "map_drift": {
+      "command": "node scripts/check-functional-network.mjs",
+      "exit_code": 1,
+      "expected": true,
+      "version": "0.3.8 -> 0.4.0",
+      "source_files": 24,
+      "access_or_api_or_catalog_or_page_drift": false,
+      "log": "bug-hunt-11/map-drift.log"
+    },
+    "environment": {
+      "quality_gate_node": "24.19.0",
+      "host_utility_node": "24.21.0",
+      "rustc": "1.95.0",
+      "cargo": "1.95.0",
+      "postgres": "16.15"
+    },
+    "cleanup": {
+      "nondefault_schemas_before_stop": 0,
+      "other_clients_before_stop": 0,
+      "temporary_cluster_stopped_and_removed": true,
+      "regenerated_build_caches_removed": [
+        "engine/target",
+        "frontend/.next",
+        "sdk-js/dist",
+        "frontend/tsconfig.tsbuildinfo"
+      ],
+      "build_cleanup_log": "bug-hunt-11/build-cleanup.log",
+      "source_evidence_dependencies_and_deployment_retained": true,
+      "receipt": "bug-hunt-11/postgres-cleanup.json"
+    },
+    "not_run": [
+      "remote CI",
+      "Rust dependency audit",
+      "optional browser suites",
+      "new benchmark",
+      "real browser-to-Engine/LAN/kernel acceptance",
+      "release artifact acceptance"
+    ]
+  },
+  "preservation": {
+    "historical_files": 263,
+    "unchanged": true,
+    "sha256": "7121f921bb23d2737833c21aa2830f9b2405ec92f43e0d454e4aa40136ccfbfc",
+    "manifest": "bug-hunt-11/baseline-preservation.json",
+    "note": "Original inventory and historical pass 01-10 documents/reports/logs/mirrors remain byte-identical, including uncommitted passes 09-10 and captured whitespace."
+  },
+  "source_fingerprints": "bug-hunt-11/source-fingerprints.json",
+  "evidence_sha256": {
+    "reports/functional-network/2026-09-24/bug-hunt-11/baseline-preservation.json": "54b661651276cd718207c1f1e054e9dea3fdc814e45deaee9b4f49b85ff8c5ea",
+    "reports/functional-network/2026-09-24/bug-hunt-11/build-cleanup.log": "4fa867d9df4e6a8392bd34100c64789309126ea070778aafb73b700269902bd9",
+    "reports/functional-network/2026-09-24/bug-hunt-11/final-preflight.log": "5d71c86064938ce09a68e7ee248116f3545b0807e7cfe3b80da7f50f28e20b5e",
+    "reports/functional-network/2026-09-24/bug-hunt-11/first-fix-postgres.log": "586069d4f65c74f825be8859b73ba10fa618de9be741415931a62b5310ee3201",
+    "reports/functional-network/2026-09-24/bug-hunt-11/green-contract-ci-final.log": "fb512db209bb488729c04f42d862df7c1960b76cf5e7e2b1d4263a4170939c21",
+    "reports/functional-network/2026-09-24/bug-hunt-11/green-contract-ci.log": "dcc8c7cb695a4a230ff85c624c6653c63c6a073c63a4294ac4c9e1a327cd62cc",
+    "reports/functional-network/2026-09-24/bug-hunt-11/green-default-event-final.log": "1d6f6cd31f10dad602b65529cdebb6b0949d998c6acdc1635743650f82f8c340",
+    "reports/functional-network/2026-09-24/bug-hunt-11/green-default-event.log": "0cb8268802269df1317e68b8a7b3c3934ebe5d0965f2e5b99ead59b37c28c8e3",
+    "reports/functional-network/2026-09-24/bug-hunt-11/green-http.log": "2a478c004bb23ea3e178a752bd823ce61cde6c8fdc387f112fd591753d0e3fc7",
+    "reports/functional-network/2026-09-24/bug-hunt-11/green-postgres-final.log": "4fa506c56f1bba33afd8b19303e045edf22339f846809df6590c794acc44f21a",
+    "reports/functional-network/2026-09-24/bug-hunt-11/green-postgres.log": "a7eb63b5f71016c77abbdb1260c34f2bb05e176a10a638d2b2c9b9071a22c9b1",
+    "reports/functional-network/2026-09-24/bug-hunt-11/map-command-diagnostic.log": "f0bf2dcaa20afe8708f13884e2b95fd1ba2c55d6e4f06423fca27091d2208e15",
+    "reports/functional-network/2026-09-24/bug-hunt-11/map-drift.log": "463000df7fc62efef2171bf541097e9658276481e1fd692ac92653854460bf60",
+    "reports/functional-network/2026-09-24/bug-hunt-11/postgres-cleanup.json": "d7b490635cc0a305fb4c254ad3ca02ecc5d532982ea734e19e170f0b159732ce",
+    "reports/functional-network/2026-09-24/bug-hunt-11/postgres-init.log": "17c352ab1be3d6f9624e56608a71abe6d656b461fc2ea9d764f61faa38f9eeb9",
+    "reports/functional-network/2026-09-24/bug-hunt-11/quality-gate.log": "5fe91879a839a760487608c8599eb68ece1b313b10f67424fd53a4a2cf0250c3",
+    "reports/functional-network/2026-09-24/bug-hunt-11/red-contract-ci.log": "5d634cce53fed84534f5293c3b198d4c9ee02bf3f3ca351463c4671e1d8e3f96",
+    "reports/functional-network/2026-09-24/bug-hunt-11/red-http.log": "c4d6a0682aeb8dbf1e0f1a79537f9126349d8fac508ff737d5083a0f3a23811c",
+    "reports/functional-network/2026-09-24/bug-hunt-11/red-postgres.log": "731c47ce6faccd7e551f5cda3c42c9b90919be73c0e85d8e96cbb74b865373e2",
+    "reports/functional-network/2026-09-24/bug-hunt-11/source-fingerprints.json": "d602762ac301c81ceeda63f30e65960e6ee6083d86e4cf33d1362e0369592189"
+  },
+  "limitations": [
+    "Unconfirmed is not rollback: dispatched SQL or local publication may finish after caller cancellation/timeout or lost response. No automatic retry; verify state first.",
+    "Ten seconds bounds cooperative service waiting, not auth, serialization, CPU stalls, server-side SQL cancellation or entire worker lifetime; admitted workers can wait for cache locks.",
+    "Definite query/schema errors can be retried, but barrier/storage deadlines and independent writer failures can still latch existing fallback until repair/restart without volatile reconciliation.",
+    "No process shutdown hook, crash/power-loss recovery, network partition/lost-commit fault injection, durable replay or exactly-once guarantee.",
+    "Ordering covers one EventBus and its clones, not external SQL writers or multiple Engines.",
+    "Legacy infallible mutation helpers and settings/publication fallback retain their compatibility contracts; explicit memory-only HTTP success remains volatile.",
+    "Frontend source unchanged; existing frontend tests are not a new live browser-to-Engine integration run."
+  ],
+  "next": "F36 retention/settings and overflow-policy acknowledgement under storage fallback using isolated fixtures; this pass does not establish settings endpoint durability."
+}

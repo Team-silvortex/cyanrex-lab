@@ -1,0 +1,66 @@
+    Blocking waiting for file lock on artifact directory
+   Compiling cyanrex-engine v0.4.0 (/home/chiharukiryu/cdev/cyanrex-lab/engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 17.72s
+     Running unittests src/lib.rs (engine/target/debug/deps/cyanrex_engine-f07d476bbb92d94d)
+
+running 33 tests
+test services::event_bus::tests::deletion::postgres_filtered_delete_preserves_uncached_rows_and_read_flags ... ok
+test services::event_bus::tests::persistence::cold_start::postgres_cancelled_cold_drop_new_admission_does_not_lose_capacity ... ok
+test services::event_bus::tests::persistence::cold_start::postgres_cold_drop_new_concurrent_clones_share_admission_and_owner_isolation ... ok
+test services::event_bus::tests::persistence::cold_start::postgres_cold_drop_new_count_failure_latches_memory_until_restart ... ok
+test services::event_bus::tests::persistence::cold_start::postgres_cold_drop_new_mutations_rebase_durable_capacity ... ok
+test services::event_bus::tests::persistence::cold_start::postgres_cold_full_drop_new_rejects_before_memory_unread_and_broadcast ... ok
+test services::event_bus::tests::persistence::cold_start::postgres_cold_partial_drop_new_counts_pending_publications_before_flush ... ok
+test services::event_bus::tests::persistence::cold_start::postgres_writer_drains_multiple_batches_after_last_producer_drops ... ok
+test services::event_bus::tests::persistence::followup::postgres_blocked_owner_mutation_does_not_hold_other_owners_publications ... ok
+test services::event_bus::tests::persistence::followup::postgres_cancelled_admitted_settings_finish_before_later_publications ... ok
+test services::event_bus::tests::persistence::followup::postgres_cold_settings_read_cannot_overwrite_a_newer_cache_value ... ok
+test services::event_bus::tests::persistence::followup::postgres_drop_new_can_use_capacity_freed_by_deletion_immediately ... ok
+test services::event_bus::tests::persistence::followup::postgres_equal_timestamp_latest_page_uses_publication_order ... ok
+test services::event_bus::tests::persistence::followup::postgres_equal_timestamp_retention_does_not_sort_by_event_type ... ok
+test services::event_bus::tests::persistence::followup::postgres_failed_batch_releases_its_barrier_into_explicit_memory_fallback ... ok
+test services::event_bus::tests::persistence::followup::postgres_failed_replacement_does_not_lose_previous_durable_rows ... ok
+test services::event_bus::tests::persistence::followup::postgres_replacement_cannot_be_undone_by_queued_old_events ... ok
+test services::event_bus::tests::persistence::followup::postgres_trim_failure_rolls_back_settings_and_preserves_retained_rows ... ok
+test services::event_bus::tests::persistence::postgres_deletion_cannot_be_undone_by_its_pending_publications ... ok
+test services::event_bus::tests::persistence::postgres_deletion_invalidates_drop_new_capacity_cache ... ok
+test services::event_bus::tests::persistence::postgres_failed_settings_update_preserves_memory_and_previous_policy ... ok
+test services::event_bus::tests::persistence::postgres_mark_read_waits_for_previously_queued_events ... ok
+test services::event_bus::tests::persistence::postgres_publish_batch_really_persists_json_without_fallback ... ok
+test services::event_bus::tests::persistence::postgres_replacement_really_persists_and_marks_only_its_owner_read ... ok
+test services::event_bus::tests::persistence::postgres_retention_update_cannot_be_overridden_by_queued_old_settings ... ok
+test services::event_bus::tests::persistence::reads::postgres_export_read_failure_is_not_a_successful_download ... ok
+test services::event_bus::tests::persistence::reads::postgres_history_read_failure_is_unavailable_and_retryable ... ok
+test services::event_bus::tests::persistence::reads::postgres_latched_fallback_reads_stay_unavailable_until_fresh_state ... ok
+test services::event_bus::tests::persistence::reads::postgres_payload_decode_failure_is_not_a_fabricated_empty_object ... 
+thread 'services::event_bus::tests::persistence::reads::postgres_payload_decode_failure_is_not_a_fabricated_empty_object' (2609302) panicked at src/services/event_bus/tests/persistence/reads.rs:271:9:
+assertion `left == right` failed
+  left: 503
+ right: 200
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'services::event_bus::tests::persistence::reads::postgres_payload_decode_failure_is_not_a_fabricated_empty_object' (2609302) panicked at src/services/event_bus/tests/persistence.rs:106:13:
+event boundary failed; owned schema was cleaned up: JoinError::Panic(Id(749), "assertion `left == right` failed\n  left: 503\n right: 200", ...)
+FAILED
+test services::event_bus::tests::persistence::reads::postgres_read_timeout_releases_waiting_without_disabling_storage ... ok
+test services::event_bus::tests::persistence::reads::postgres_schema_read_failure_is_retryable_without_memory_success ... ok
+test services::event_bus::tests::persistence::reads::postgres_timestamp_decode_failure_is_unavailable_not_a_panic ... 
+thread 'services::event_bus::tests::persistence::reads::postgres_timestamp_decode_failure_is_unavailable_not_a_panic' (2609683) panicked at src/services/event_bus/tests/persistence/reads.rs:271:9:
+assertion `left == right` failed
+  left: 503
+ right: 200
+
+thread 'services::event_bus::tests::persistence::reads::postgres_timestamp_decode_failure_is_unavailable_not_a_panic' (2609683) panicked at src/services/event_bus/tests/persistence.rs:106:13:
+event boundary failed; owned schema was cleaned up: JoinError::Panic(Id(830), "assertion `left == right` failed\n  left: 503\n right: 200", ...)
+FAILED
+test services::event_bus::tests::persistence::reads::postgres_unread_read_failure_is_unavailable_not_zero ... ok
+
+failures:
+
+failures:
+    services::event_bus::tests::persistence::reads::postgres_payload_decode_failure_is_not_a_fabricated_empty_object
+    services::event_bus::tests::persistence::reads::postgres_timestamp_decode_failure_is_unavailable_not_a_panic
+
+test result: FAILED. 31 passed; 2 failed; 0 ignored; 0 measured; 184 filtered out; finished in 37.83s
+
+error: test failed, to rerun pass `--lib`

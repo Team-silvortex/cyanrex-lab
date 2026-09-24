@@ -139,7 +139,7 @@ async fn postgres_filtered_delete_preserves_uncached_rows_and_read_flags() {
     bus.ensure_schema().await.unwrap();
     // A durable EventBus has its ordered persistence worker, including mutation barriers.
     let (sender, receiver) = mpsc::channel(DB_PERSIST_QUEUE_CAPACITY);
-    bus.persist_sender = sender;
+    bus.persist_sender = Some(sender);
     let worker = tokio::spawn(event_bus_db::run_persist_loop(
         bus.clone(),
         pool.clone(),

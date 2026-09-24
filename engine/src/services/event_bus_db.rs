@@ -93,6 +93,7 @@ pub(crate) async fn run_persist_loop(
     pool: PgPool,
     mut receiver: mpsc::Receiver<PersistMessage>,
 ) {
+    let bus = bus.into_persistence_worker();
     let mut channel_closed = false;
     let mut max_pending_requests = 0usize;
     let mut queue_pressure = false;
@@ -478,22 +479,24 @@ pub(crate) async fn snapshot_from_db_with_filters(
         db_query = db_query.bind(value);
     }
 
-    let rows = db_query.fetch_all(pool).await?;
+    // A failed row decode may be repaired by a column-type migration. Do not retain a
+    // result-type-specific prepared plan across history reads and trap repaired storage.
+    // This affects history SELECTs only, not writer statement caching or SQL retry policy.
+    let rows = db_query.persistent(false).fetch_all(pool).await?;
     let mut output = Vec::with_capacity(rows.len());
     for row in rows {
         let payload = row
             .try_get::<Json<serde_json::Value>, _>("payload")
-            .map(|value| value.0)
-            .unwrap_or_else(|_| serde_json::json!({}));
+            .map(|value| value.0)?;
 
         output.push(Event {
-            username: row.get("username"),
-            timestamp: row.get("timestamp"),
-            source: row.get("source"),
-            event_type: row.get("event_type"),
-            category: parse_category(row.get::<String, _>("category").as_str()),
-            severity: parse_severity(row.get::<String, _>("severity").as_str()),
-            color: parse_color(row.get::<String, _>("color").as_str()),
+            username: row.try_get("username")?,
+            timestamp: row.try_get("timestamp")?,
+            source: row.try_get("source")?,
+            event_type: row.try_get("event_type")?,
+            category: parse_category(row.try_get::<String, _>("category")?.as_str()),
+            severity: parse_severity(row.try_get::<String, _>("severity")?.as_str()),
+            color: parse_color(row.try_get::<String, _>("color")?.as_str()),
             payload,
         });
     }

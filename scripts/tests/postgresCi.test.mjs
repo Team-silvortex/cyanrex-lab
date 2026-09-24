@@ -6,14 +6,14 @@ test("Rust CI explicitly runs every queued event persistence and retention bound
   const workflow = await readFile(new URL("../../.github/workflows/ci.yml", import.meta.url), "utf8");
   const step = workflow.split("- name: Run real PostgreSQL event ordering and retention")[1]?.split("\n      - name:")[0] ?? "";
   let count = 0;
-  for (const [file, module] of [["persistence.rs", "persistence"], ["persistence/followup.rs", "persistence::followup"]]) {
+  for (const [file, module] of [["persistence.rs", "persistence"], ["persistence/followup.rs", "persistence::followup"], ["persistence/cold_start.rs", "persistence::cold_start"], ["persistence/reads.rs", "persistence::reads"], ["persistence/confirmed_mutations.rs", "persistence::confirmed_mutations"], ["persistence/settings.rs", "persistence::settings"]]) {
     const source = await readFile(new URL(`../../engine/src/services/event_bus/tests/${file}`, import.meta.url), "utf8");
     for (const [, name] of source.matchAll(/async fn (postgres_\w+)\(/g)) {
       count += 1;
       assert.ok(step.includes(`services::event_bus::tests::${module}::${name}`), name);
     }
   }
-  assert.equal(count, 17, "new durable cases must be deliberately included in CI");
+  assert.equal(count, 51, "new durable cases must be deliberately included in CI");
   assert.match(step, /CYANREX_DB_FALLBACK: "true"/);
   assert.ok(step.includes("@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test"));
   assert.match(step, /--ignored --list/);

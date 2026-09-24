@@ -1,0 +1,253 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-24",
+  "status": "fixed-and-scoped-regressions-passed",
+  "baseline": {
+    "version": "0.4.0",
+    "commit": "bfecf77292bb87c01d69b8bbd3dc600de1f29e58",
+    "branch": "main",
+    "worktree": "Already contained uncommitted pass 09 implementation, tests, documentation and evidence; not a clean release baseline",
+    "prior_pass": "reports/functional-network/2026-09-24/bug-hunt-09.json",
+    "inventory": {
+      "path": "docs/functional-network.json",
+      "version": "0.3.8",
+      "commit": "c26a529aecc0ab64d0a1743be10972e5d8ac137b",
+      "sha256": "bc16ef895c1f7b9f9d0b5d9195499d4efcba09466b3c85bdfcc04d20006ad30d"
+    },
+    "publication": "No version change, commit, tag, push or deployment."
+  },
+  "scope": {
+    "workflows": [
+      "F32",
+      "F34"
+    ],
+    "meaning": "Authenticated history, JSON/CSV export and unread read honesty across query validation, warm/cold memory, configured storage failure/repair, cancellation/timeouts and prior fallback.",
+    "boundaries": "Actual Axum HTTP router with synthetic owner sessions and EventBus injected with disposable PostgreSQL 16.15; private Unix socket, DATABASE_URL unset; other services stay in-memory.",
+    "excluded": [
+      "real classroom accounts/events/databases or .env",
+      "live Engine/Agent, SSH/LAN or kernel mutation",
+      "new routes/access tiers/Event/database schema/SDK signature/frontend product changes"
+    ]
+  },
+  "findings": [
+    {
+      "id": "BH10-01",
+      "status": "fixed",
+      "summary": "Configured SQL read failures were masked by partial/empty/zero success and could disable persistence; wait and pre-existing fallback boundaries were not authoritative.",
+      "fix": "New fallible HTTP read path returns generic no-store 503, never an attachment on failed export; ten-second cooperative read wait includes schema/pool work and does not latch persistence off. Invalid configured and previously latched stores are not explicit memory-only mode."
+    },
+    {
+      "id": "BH10-02",
+      "status": "fixed",
+      "summary": "Invalid/unknown filters, unsupported formats and overflowing relative windows could widen queries, alter format or panic.",
+      "fix": "Validate query extraction, filters, RFC3339 dates, export format and checked/frozen time windows before storage; no-store 400 for invalid/reversed ranges. Preserve successful shapes, session owner, inclusive timestamps, zero window, limits and legacy ignored fields."
+    },
+    {
+      "id": "BH10-03",
+      "status": "fixed",
+      "summary": "Incompatible payload types fabricated empty objects and timestamp decoding panicked; initial fixes exposed cached SELECT result-type errors after column repair.",
+      "fix": "Fallible row decoding with generic unavailable responses; nonpersistent history SELECT prepared statements allow retry after column-type repair. Planning reuse changed without a benchmark."
+    }
+  ],
+  "tdd": {
+    "http_initial": {
+      "passed": 0,
+      "failed": 3,
+      "exit_code": 101,
+      "log": "bug-hunt-10/red-http.log"
+    },
+    "http_corrected_window": {
+      "passed": 0,
+      "failed": 3,
+      "exit_code": 101,
+      "log": "bug-hunt-10/red-http-corrected-window.log"
+    },
+    "postgres_initial": {
+      "passed": 0,
+      "failed": 8,
+      "exit_code": 101,
+      "log": "bug-hunt-10/red-postgres.log"
+    },
+    "contract_ci_initial": {
+      "passed": 3,
+      "failed": 2,
+      "exit_code": 1,
+      "log": "bug-hunt-10/red-contract-ci.log"
+    },
+    "authoring_note": "Initial HTTP assertion incorrectly assumed 100,000,000,000 minutes overflows Chrono; corrected to 1,000,000,000,000 for date overflow, alongside i64::MAX duration overflow. Both logs retained; mistaken assertion is not a defect or an exhaustive PostgreSQL date-domain test.",
+    "first_fix_postgres": {
+      "passed": 31,
+      "failed": 2,
+      "exit_code": 101,
+      "log": "bug-hunt-10/first-fix-postgres.log"
+    },
+    "repair_diagnostic": {
+      "passed": 0,
+      "failed": 1,
+      "exit_code": 101,
+      "log": "bug-hunt-10/repair-diagnostic.log",
+      "finding": "cached plan must not change result type after restoring JSONB; temporary tracing setup removed from final tests"
+    },
+    "after_select_repair": {
+      "passed": 33,
+      "failed": 0,
+      "exit_code": 0,
+      "log": "bug-hunt-10/green-postgres-repaired.log"
+    },
+    "additions": {
+      "ordinary_rust": 5,
+      "ignored_postgres": 8,
+      "node_contract": 1,
+      "new_unique_cases": 14,
+      "existing_ci_selection_test_extended": true
+    },
+    "after_red_guards": "Two service-level guards and final authentication/cancellation assertion extensions added after initial red reproductions; final gate and PostgreSQL logs validate final sources."
+  },
+  "verification": {
+    "post_documentation_preflight": {
+      "command": "./scripts/quality-gate.sh --format-only",
+      "exit_code": 0,
+      "log": "bug-hunt-10/final-preflight.log",
+      "meaning": "Final bilingual report and course mirrors, file length/version/OpenAPI/API/SDK contract and common/tool/formatter checks; runtime sources unchanged from full gate."
+    },
+    "quality_gate": {
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL PATH=<Node 24 bin>:$PATH ./scripts/quality-gate.sh --no-npm-install",
+      "exit_code": 0,
+      "log": "bug-hunt-10/quality-gate.log",
+      "default_rust": {
+        "passed": 303,
+        "failed": 0,
+        "ignored": 61
+      },
+      "common_node": {
+        "passed": 67,
+        "failed": 0
+      },
+      "frontend": {
+        "passed": 93,
+        "failed": 0,
+        "production_routes": 18,
+        "typecheck": "passed",
+        "production_npm_vulnerabilities": 0
+      },
+      "sdk": {
+        "runtime_passed": 13,
+        "package_passed": 3,
+        "typecheck": "passed",
+        "production_npm_vulnerabilities": 0
+      },
+      "compatibility": "OpenAPI/API/SDK generation and surface checks passed at unchanged version 0.4.0; 64 paths, 68 Engine operations, 63 SDK operations, 85 schemas",
+      "note": "Distribution/SSH/kernel-smoke script checks use isolated tool fixtures, not deployment or privileged kernel acceptance."
+    },
+    "focused_http": {
+      "passed": 8,
+      "failed": 0,
+      "exit_code": 0,
+      "new_cases": 3,
+      "overlaps_full_gate": true,
+      "log": "bug-hunt-10/green-http.log"
+    },
+    "focused_default": {
+      "passed": 41,
+      "failed": 0,
+      "ignored": 35,
+      "exit_code": 0,
+      "overlaps_full_gate": true,
+      "log": "bug-hunt-10/green-default-event.log"
+    },
+    "event_postgres": {
+      "passed": 33,
+      "failed": 0,
+      "ignored": 0,
+      "previous": 25,
+      "new": 8,
+      "exit_code": 0,
+      "log": "bug-hunt-10/green-postgres-final.log",
+      "command": "env -u DATABASE_URL CYANREX_DB_FALLBACK=true CYANREX_TEST_DATABASE_URL=<explicit disposable private socket URL> cargo test --manifest-path engine/Cargo.toml --locked --lib services::event_bus::tests -- --ignored --nocapture --test-threads=1",
+      "note": "Final auth/cancellation extensions included; independent schemas destroyed; table/column changes confined to fixtures."
+    },
+    "contract_ci": {
+      "passed": 5,
+      "failed": 0,
+      "exit_code": 0,
+      "log": "bug-hunt-10/green-contract-ci.log",
+      "remote_ci_run": false,
+      "note": "32 exact ordering-job selections plus the existing separately selected deletion case cover all 33 event PostgreSQL tests."
+    },
+    "map_drift": {
+      "exit_code": 1,
+      "expected": true,
+      "version": "0.3.8 -> 0.4.0",
+      "source_files": 23,
+      "access_or_api_or_catalog_or_page_drift": false,
+      "log": "bug-hunt-10/map-drift.log"
+    },
+    "environment": {
+      "node": "24.19.0",
+      "rustc": "1.95.0",
+      "cargo": "1.95.0",
+      "postgres": "16.15"
+    },
+    "cleanup": {
+      "nondefault_schemas_before_stop": 0,
+      "other_clients_before_stop": 0,
+      "temporary_cluster_stopped_and_removed": true,
+      "regenerated_build_caches_removed": [
+        "engine/target",
+        "frontend/.next",
+        "sdk-js/dist",
+        "frontend/tsconfig.tsbuildinfo"
+      ],
+      "build_cleanup_log": "bug-hunt-10/build-cleanup.log",
+      "source_evidence_dependencies_and_deployment_retained": true,
+      "receipt": "bug-hunt-10/postgres-cleanup.json"
+    },
+    "not_run": [
+      "remote CI",
+      "Rust dependency audit",
+      "optional browser suites",
+      "new benchmark",
+      "real browser-to-Engine/LAN/kernel acceptance",
+      "release artifact acceptance"
+    ]
+  },
+  "preservation": {
+    "historical_files": 240,
+    "unchanged": true,
+    "sha256": "96402d464f5158258c9572e3476202d170a774fece2c73a67fe3b64d6dfb453d",
+    "manifest": "bug-hunt-10/baseline-preservation.json",
+    "note": "Original inventory and historical pass 01-09 reports/logs/mirrors remain byte-identical, including uncommitted pass 09 and captured whitespace."
+  },
+  "source_fingerprints": "bug-hunt-10/source-fingerprints.json",
+  "evidence_sha256": {
+    "reports/functional-network/2026-09-24/bug-hunt-10/baseline-preservation.json": "b823c0621081b3c3b4ba79fa5635cae4d8cd06654d0f819d79032f01c7b17c48",
+    "reports/functional-network/2026-09-24/bug-hunt-10/build-cleanup.log": "4fa867d9df4e6a8392bd34100c64789309126ea070778aafb73b700269902bd9",
+    "reports/functional-network/2026-09-24/bug-hunt-10/final-preflight.log": "4608036bf9771559f61d7b7b8f8edc044679d3d50896b545030d0564b429ddea",
+    "reports/functional-network/2026-09-24/bug-hunt-10/first-fix-postgres.log": "42526b9113e800aad025a1228e5a5472cbfcbd97e29081dd18a52eb5e99ae598",
+    "reports/functional-network/2026-09-24/bug-hunt-10/green-contract-ci.log": "f977bdad5984163f6637fc1664ebe14f68e04e0ed75b6bfaeae6cf95626cb4a3",
+    "reports/functional-network/2026-09-24/bug-hunt-10/green-default-event.log": "c5c1eb6bd9a89d739cbd73b8b4259be8c4d4b373e74216b44cd7ed023db7f485",
+    "reports/functional-network/2026-09-24/bug-hunt-10/green-http.log": "962c0a2b9c609a780b25a8dd5728cc190a78950886b67daa5e3c5ee9d5a8273a",
+    "reports/functional-network/2026-09-24/bug-hunt-10/green-postgres-final.log": "bc9f16288af3a9f4900f73d6f414b6f2862260e8394bd317b4702d05001ee3df",
+    "reports/functional-network/2026-09-24/bug-hunt-10/green-postgres-repaired.log": "2a51a6afe240b804b2c16372c40e9619f31e6cf1f45e2c0a6997afc6976741e3",
+    "reports/functional-network/2026-09-24/bug-hunt-10/map-drift.log": "63bb997cf9bd3072f97c3ce82ac7d5ed3aaeb6bbcd011b5e7b76ac8691d97fba",
+    "reports/functional-network/2026-09-24/bug-hunt-10/postgres-cleanup.json": "5a33d634881a6d6ee544a7f27c25c36befffef4fcc17680916e78764799c1b07",
+    "reports/functional-network/2026-09-24/bug-hunt-10/quality-gate.log": "07a77ad46f760e6af09769737fc79f43bf79db7882c60dab1bbf779f4c8f5eeb",
+    "reports/functional-network/2026-09-24/bug-hunt-10/red-contract-ci.log": "7364ad7153d6ba7dc184ec710e9fd6c9ad03215fe30abef991a65997c6639e4f",
+    "reports/functional-network/2026-09-24/bug-hunt-10/red-http-corrected-window.log": "7b736fdca7b71db609e9cb9f9fb1aae342207b6743ab1691b2e020d2a2fe98c9",
+    "reports/functional-network/2026-09-24/bug-hunt-10/red-http.log": "9f8580e789c4ed6c9c61b37037ee1b0ce613b2b1e7928a0b9dc0c12cb197ddc0",
+    "reports/functional-network/2026-09-24/bug-hunt-10/red-postgres.log": "7da79d5986f391264d3f5f473b8be09ecee97198fa81f466ec2b4d0e2ef108cb",
+    "reports/functional-network/2026-09-24/bug-hunt-10/repair-diagnostic.log": "5f4d2365d2b206e4ce5634d2d3922b4db29eaa578cd5b749806a6deeb4fb5f2f",
+    "reports/functional-network/2026-09-24/bug-hunt-10/source-fingerprints.json": "0289f52c355e708d6ad122e438f7d7b961e0808cff0e9896fabe1f449b183b90"
+  },
+  "limitations": [
+    "Ten seconds bounds cooperative async read work, not auth, serialization, CPU stalls or proof of server-side query cancellation.",
+    "Read failures do not poison persistence; an independent writer can still latch existing fallback. Previously latched reads remain unavailable until fresh state, without volatile reconciliation.",
+    "Fresh EventBus against retained fixture rows is not process crash, network partition, lost commit or power-loss recovery.",
+    "No read queue barrier or snapshot/live atomicity; snapshots may trail live delivery. No multi-Engine/external-writer coordination.",
+    "Legacy infallible Rust helpers remain best-effort compatibility APIs, distinct from authoritative HTTP reads.",
+    "Existing volatile writes and mark-read/delete acknowledgement/durability are unchanged.",
+    "No exhaustive enum/corrupt-data validation, PostgreSQL date-domain validation, CSV formula/CR/spreadsheet safety, byte quotas, durable replay or exactly-once guarantees.",
+    "History SELECT planning reuse changed without a performance benchmark."
+  ],
+  "next": "F34 mark-read/F35 deletion acknowledgement under selected storage failure and recovery using isolated fixtures; a successful read does not establish durable mutation success."
+}

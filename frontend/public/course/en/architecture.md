@@ -482,9 +482,50 @@ Queued mutation cancellation changes nothing; an admitted SQL mutation finishes 
 the caller leaves. Barriers and selected schema/settings/mutation storage stages have ten-second waiting
 limits, not one whole-request deadline or proof that SQL was rolled back. Full/closed queues, failed
 barriers and storage deadlines latch the existing volatile fallback until restart, with a warning instead
-of spawning bypass writers. Snapshot/unread reads still follow the existing independent fallback policy.
+of spawning bypass writers. HTTP reads use the explicit failure policy below; legacy infallible service
+snapshot/unread helpers retain best-effort fallback for existing callers and benchmarks.
 This is single-Engine ordering, not cross-process locking, crash recovery, durable replay, or a new durable
-HTTP acknowledgement. See [bug hunt 08](functional-network-bug-hunt-08.md).
+HTTP acknowledgement in those legacy helpers. HTTP mutations now follow the confirmation policy below.
+See [bug hunt 08](functional-network-bug-hunt-08.md).
+
+Cold DropNew admission reads the owner's SQL count before publication, then tracks durable plus locally
+accepted pending rows separately from the writer's expiring SQL count cache. Deletion/settings/replacement
+invalidate both counters after their barrier; cancelled admission cannot reserve a slot. A count failure
+uses the existing latched volatile fallback. The writer drops its own producer handle so the last external
+producer's drop permits healthy queued work to drain and the task to exit while the runtime lives. This is
+not process-shutdown draining, a write deadline, crash recovery or coordination with external SQL writers.
+See [bug hunt 09](functional-network-bug-hunt-09.md).
+
+HTTP history, JSON/CSV export and unread reads distinguish explicit memory-only mode from configured
+storage. Schema/query/row-decoding failure or ten seconds of read waiting returns generic no-store `503`,
+without latching persistence off or substituting memory. Previously latched storage fallback and invalid
+configured URLs also return `503`; restoring SQL alone cannot reconcile volatile events. History SELECT
+plans are not retained across reads so repaired column types can be queried again. Other SQL statement
+caches and publication fallback are unchanged by this read policy. Invalid query fields,
+formats and checked time ranges return no-store `400`; successful response formats and session ownership
+are unchanged. Reads still do not flush pending publications. See [bug hunt 10](functional-network-bug-hunt-10.md).
+
+HTTP mark-read/deletion now use fallible confirmation, separate from legacy best-effort Rust helpers.
+Configured storage must confirm SQL before success; failed barriers, invalid configuration, previous
+fallback and unconfirmed writes return generic no-store `503`. Definite query/schema errors preserve
+memory and remain retryable. A ten-second cooperative service wait includes owner admission; admitted
+SQL work continues holding that admission through cache publication even after the caller leaves.
+Expiry/cancellation is not rollback: verify state before an explicit retry. Existing barrier/storage
+deadlines can still latch fallback, requiring storage repair and restart without automatic reconciliation.
+Explicit memory-only mutation stays volatile, with all deletion cache locks acquired before editing.
+Success shapes, owner/CSRF enforcement and delete-all scope remain; deletion extraction/validation errors
+are now no-store JSON `400`. No process-crash, cross-Engine or exactly-once guarantee is added.
+See [bug hunt 11](functional-network-bug-hunt-11.md).
+
+HTTP retention settings now share these fallible read/confirmation boundaries. GET queries configured
+storage fresh without writing the runtime policy cache; absent rows use the valid 500/DropOldest default,
+but invalid stored limits/policies, decode failures and unavailable storage return private `503`. Reads
+remain retryable and bounded to ten seconds. POST confirms policy plus trim in one transaction, then
+publishes all local settings/history/unread/capacity state under owner admission. Its ten-second caller
+deadline or cancellation is not rollback; admitted work may finish later. Definite SQL failures preserve
+memory. Existing 50..50000 request clamping, success schemas, ownership and CSRF remain; JSON/type/body-limit
+errors retain their HTTP statuses but use generic no-store JSON. Legacy runtime policy caching/fallback
+and external-writer coherence are unchanged. See [bug hunt 12](functional-network-bug-hunt-12.md).
 
 Local learning records use shared immutable snapshots: reads avoid cloning all source, appends share
 unchanged records, and feedback replaces only the edited record. First-load I/O, UTF-8 validation and

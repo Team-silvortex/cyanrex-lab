@@ -13,7 +13,11 @@ Follow-ups: [01 — learning and persistence](functional-network-bug-hunt-01.md)
 [05 — manual run and attachment cleanup](functional-network-bug-hunt-05.md) ·
 [06 — debug sessions and event recovery](functional-network-bug-hunt-06.md) ·
 [07 — event history, export and unread/deletion controls](functional-network-bug-hunt-07.md) ·
-[08 — event retention and persistence ordering](functional-network-bug-hunt-08.md). The inventory/fingerprints remain the
+[08 — event retention and persistence ordering](functional-network-bug-hunt-08.md) ·
+[09 — cold event admission and writer lifetime](functional-network-bug-hunt-09.md) ·
+[10 — event read failure and filter boundaries](functional-network-bug-hunt-10.md) ·
+[11 — event mutation confirmation and cancellation](functional-network-bug-hunt-11.md) ·
+[12 — retention settings and overflow-policy confirmation](functional-network-bug-hunt-12.md). The inventory/fingerprints remain the
 pre-hunt baseline; drift checks report later learning, Runner/Agent, browser, event storage and quality-gate changes. Per-pass results
 are not all-workflow acceptance.
 

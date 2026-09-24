@@ -1,0 +1,52 @@
+    Blocking waiting for file lock on artifact directory
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 12.09s
+     Running unittests src/lib.rs (engine/target/debug/deps/cyanrex_engine-f07d476bbb92d94d)
+
+running 4 tests
+test services::event_bus::tests::persistence::cold_start::postgres_cold_drop_new_concurrent_clones_share_admission_and_owner_isolation ... 
+thread 'services::event_bus::tests::persistence::cold_start::postgres_cold_drop_new_concurrent_clones_share_admission_and_owner_isolation' (2528552) panicked at src/services/event_bus/tests/persistence/cold_start.rs:110:9:
+assertion `left == right` failed
+  left: 30
+ right: 10
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'services::event_bus::tests::persistence::cold_start::postgres_cold_drop_new_concurrent_clones_share_admission_and_owner_isolation' (2528552) panicked at src/services/event_bus/tests/persistence.rs:97:13:
+event boundary failed; owned schema was cleaned up: JoinError::Panic(Id(10), "assertion `left == right` failed\n  left: 30\n right: 10", ...)
+FAILED
+test services::event_bus::tests::persistence::cold_start::postgres_cold_full_drop_new_rejects_before_memory_unread_and_broadcast ... 
+thread 'services::event_bus::tests::persistence::cold_start::postgres_cold_full_drop_new_rejects_before_memory_unread_and_broadcast' (2528565) panicked at src/services/event_bus/tests/persistence/cold_start.rs:50:9:
+assertion `left == right` failed: full durable history cannot admit phantom live events
+  left: 3
+ right: 0
+
+thread 'services::event_bus::tests::persistence::cold_start::postgres_cold_full_drop_new_rejects_before_memory_unread_and_broadcast' (2528565) panicked at src/services/event_bus/tests/persistence.rs:97:13:
+event boundary failed; owned schema was cleaned up: JoinError::Panic(Id(67), "assertion `left == right` failed: full durable history cannot admit phantom live events\n  left: 3\n right: 0", ...)
+FAILED
+test services::event_bus::tests::persistence::cold_start::postgres_cold_partial_drop_new_counts_pending_publications_before_flush ... 
+thread 'services::event_bus::tests::persistence::cold_start::postgres_cold_partial_drop_new_counts_pending_publications_before_flush' (2528574) panicked at src/services/event_bus/tests/persistence/cold_start.rs:76:9:
+assertion `left == right` failed: pending inserts also consume capacity
+  left: [100, 101, 102, 103, 104, 105, 106, 107, 108, 109]
+ right: [100, 101]
+
+thread 'services::event_bus::tests::persistence::cold_start::postgres_cold_partial_drop_new_counts_pending_publications_before_flush' (2528574) panicked at src/services/event_bus/tests/persistence.rs:97:13:
+event boundary failed; owned schema was cleaned up: JoinError::Panic(Id(91), "assertion `left == right` failed: pending inserts also consume capacity\n  left: [100, 101, 102, 103, 104, 105, 106, 107, 108, 109]\n right: [100, 101]", ...)
+FAILED
+test services::event_bus::tests::persistence::cold_start::postgres_writer_drains_multiple_batches_after_last_producer_drops ... 
+thread 'services::event_bus::tests::persistence::cold_start::postgres_writer_drains_multiple_batches_after_last_producer_drops' (2528581) panicked at src/services/event_bus/tests/lifecycle.rs:11:10:
+the writer must exit after the last producer leaves: Elapsed(())
+
+thread 'services::event_bus::tests::persistence::cold_start::postgres_writer_drains_multiple_batches_after_last_producer_drops' (2528581) panicked at src/services/event_bus/tests/persistence.rs:97:13:
+event boundary failed; owned schema was cleaned up: JoinError::Panic(Id(116), "the writer must exit after the last producer leaves: Elapsed(())", ...)
+FAILED
+
+failures:
+
+failures:
+    services::event_bus::tests::persistence::cold_start::postgres_cold_drop_new_concurrent_clones_share_admission_and_owner_isolation
+    services::event_bus::tests::persistence::cold_start::postgres_cold_full_drop_new_rejects_before_memory_unread_and_broadcast
+    services::event_bus::tests::persistence::cold_start::postgres_cold_partial_drop_new_counts_pending_publications_before_flush
+    services::event_bus::tests::persistence::cold_start::postgres_writer_drains_multiple_batches_after_last_producer_drops
+
+test result: FAILED. 0 passed; 4 failed; 0 ignored; 0 measured; 201 filtered out; finished in 2.13s
+
+error: test failed, to rerun pass `--lib`

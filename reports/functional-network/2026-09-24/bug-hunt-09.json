@@ -1,0 +1,226 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-24",
+  "status": "fixed-and-scoped-regressions-passed",
+  "baseline": {
+    "version": "0.4.0",
+    "commit": "bfecf77292bb87c01d69b8bbd3dc600de1f29e58",
+    "branch": "main",
+    "worktree": "clean at start",
+    "prior_pass": "reports/functional-network/2026-09-13/bug-hunt-08.json",
+    "inventory": {
+      "path": "docs/functional-network.json",
+      "version": "0.3.8",
+      "commit": "c26a529aecc0ab64d0a1743be10972e5d8ac137b",
+      "sha256": "bc16ef895c1f7b9f9d0b5d9195499d4efcba09466b3c85bdfcc04d20006ad30d"
+    },
+    "publication": "No version change, commit, tag, push or deployment."
+  },
+  "scope": {
+    "workflows": [
+      "F36",
+      "F33",
+      "F32",
+      "F34",
+      "F35"
+    ],
+    "meaning": "Cold DropNew admission through memory/unread/live publication and queued SQL; deletion/settings/private replacement rebasing; writer producer lifetime and healthy drain.",
+    "boundaries": "Service-level synthetic events and a disposable PostgreSQL 16.15 cluster via a private Unix socket; fresh EventBus state against retained fixture rows, not a process crash.",
+    "excluded": [
+      "real deployment accounts/events/databases or .env",
+      "live Engine/Agent, SSH/LAN or kernel mutation",
+      "new routes/access tiers/Event/API/schema/SDK/frontend product behavior"
+    ]
+  },
+  "findings": [
+    {
+      "id": "BH09-01",
+      "status": "fixed",
+      "summary": "Cold DropNew used only memory occupancy and broadcast events later rejected by a full or nearly-full SQL history.",
+      "reproductions": [
+        "50 durable rows accepted 3 phantom publications",
+        "48 durable rows accepted 10 publications with only 2 slots",
+        "40 durable rows accepted 30 concurrent publications with only 10 slots"
+      ],
+      "fix": "Per-owner durable baseline plus locally admitted pending events, independent of the writer's expiring count cache; capacity checked before visible changes, all publication locks before reserving; mutations invalidate after ordered barriers."
+    },
+    {
+      "id": "BH09-02",
+      "status": "fixed",
+      "summary": "The persistence worker's own sender kept the queue alive after all external producers left.",
+      "reproductions": [
+        "empty worker did not exit",
+        "disabled queue rejected its barrier but did not exit",
+        "127 queued events reached retention checks but the worker did not exit"
+      ],
+      "fix": "The worker relinquishes its producer handle on entry, allowing healthy remaining batches to drain and state to be released while the runtime remains alive."
+    }
+  ],
+  "tdd": {
+    "ordinary_initial": {
+      "passed": 0,
+      "failed": 2,
+      "exit_code": 101,
+      "log": "bug-hunt-09/red-lifecycle.log"
+    },
+    "postgres_initial": {
+      "passed": 0,
+      "failed": 4,
+      "exit_code": 101,
+      "log": "bug-hunt-09/red-postgres.log"
+    },
+    "postgres_expanded": {
+      "passed": 0,
+      "failed": 7,
+      "exit_code": 101,
+      "log": "bug-hunt-09/red-postgres-expanded.log"
+    },
+    "ci_selection": {
+      "passed": 3,
+      "failed": 1,
+      "exit_code": 1,
+      "log": "bug-hunt-09/red-ci-selection.log"
+    },
+    "authoring_diagnostics": "Two test-authoring compiler errors were corrected before runtime red evidence; retained separately and not counted as reproduced defects.",
+    "additions": {
+      "ordinary_rust": 3,
+      "ignored_postgres": 7,
+      "new_unique_cases": 10,
+      "existing_ci_selection_test_extended": true
+    },
+    "after_fix_guards": "One new ordinary capacity-lock cancellation case and a one-second pending-capacity expiry extension were added after the first green run."
+  },
+  "verification": {
+    "post_documentation_preflight": {
+      "command": "./scripts/quality-gate.sh --format-only",
+      "exit_code": 0,
+      "log": "bug-hunt-09/final-preflight.log",
+      "meaning": "Rechecked final documentation mirrors, length/version/OpenAPI/API/SDK/CI selection and formatter/tool fixtures after results were recorded. Runtime code was unchanged from the full gate."
+    },
+    "quality_gate": {
+      "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL PATH=<Node 24 bin>:$PATH ./scripts/quality-gate.sh --no-npm-install",
+      "exit_code": 0,
+      "log": "bug-hunt-09/quality-gate.log",
+      "default_rust": {
+        "passed": 298,
+        "failed": 0,
+        "ignored": 53
+      },
+      "common_node": {
+        "passed": 66,
+        "failed": 0
+      },
+      "frontend": {
+        "passed": 93,
+        "failed": 0,
+        "production_routes": 18,
+        "typecheck": "passed",
+        "production_npm_vulnerabilities": 0
+      },
+      "sdk": {
+        "runtime_passed": 13,
+        "package_passed": 3,
+        "typecheck": "passed",
+        "production_npm_vulnerabilities": 0
+      },
+      "compatibility": "OpenAPI, API and SDK generation/surface checks passed at unchanged version 0.4.0",
+      "note": "Common distribution/SSH/kernel-smoke scripts are isolated tool fixtures, not deployment or privileged kernel acceptance."
+    },
+    "focused_default": {
+      "passed": 39,
+      "failed": 0,
+      "ignored": 27,
+      "overlaps_full_gate": true,
+      "log": "bug-hunt-09/green-event-default-final.log"
+    },
+    "event_postgres": {
+      "passed": 25,
+      "failed": 0,
+      "ignored": 0,
+      "previous": 18,
+      "new": 7,
+      "exit_code": 0,
+      "log": "bug-hunt-09/green-postgres-final.log",
+      "command": "env -u DATABASE_URL CYANREX_DB_FALLBACK=true CYANREX_TEST_DATABASE_URL=<explicit disposable private socket URL> cargo test --manifest-path engine/Cargo.toml --locked --lib services::event_bus::tests -- --ignored --nocapture --test-threads=1"
+    },
+    "repeated_new_postgres": {
+      "rounds": 3,
+      "each_passed": 7,
+      "each_failed": 0,
+      "additional_unique_cases": 0,
+      "log": "bug-hunt-09/postgres-repeat.log"
+    },
+    "ci_selection": {
+      "passed": 4,
+      "failed": 0,
+      "log": "bug-hunt-09/green-ci-selection.log",
+      "remote_ci_run": false
+    },
+    "map_drift": {
+      "exit_code": 1,
+      "expected": true,
+      "version": "0.3.8 -> 0.4.0",
+      "source_files": 22,
+      "access_or_api_or_catalog_or_page_drift": false,
+      "log": "bug-hunt-09/map-drift.log"
+    },
+    "environment": {
+      "node": "24.19.0",
+      "rustc": "1.95.0",
+      "cargo": "1.95.0",
+      "postgres": "16.15"
+    },
+    "cleanup": {
+      "nondefault_schemas_before_stop": 0,
+      "other_clients_before_stop": 0,
+      "temporary_cluster_stopped_and_removed": true,
+      "regenerated_build_caches_removed": ["engine/target", "frontend/.next", "sdk-js/dist", "frontend/tsconfig.tsbuildinfo"],
+      "build_cleanup_log": "bug-hunt-09/build-cleanup.log",
+      "source_evidence_dependencies_and_deployment_retained": true,
+      "receipt": "bug-hunt-09/postgres-cleanup.json"
+    },
+    "not_run": [
+      "remote CI",
+      "Rust dependency audit",
+      "optional browser suites",
+      "new benchmark",
+      "real browser-to-Engine/LAN/kernel acceptance",
+      "release artifact acceptance"
+    ]
+  },
+  "preservation": {
+    "historical_files": 218,
+    "unchanged": true,
+    "sha256": "a0761755d4ea6f1037736290d85d1885094281222f364ee98c5c078ebe1cfa98",
+    "manifest": "bug-hunt-09/baseline-preservation.json",
+    "note": "Original inventory and historical pass 01-08 reports/logs/mirrors remain byte-identical, including captured whitespace."
+  },
+  "source_fingerprints": "bug-hunt-09/source-fingerprints.json",
+  "evidence_sha256": {
+    "reports/functional-network/2026-09-24/bug-hunt-09/final-preflight.log": "3f9260d13f1413e1884cd69e2ac30be170275fa5863cda61918f0b5f21428b3c",
+    "reports/functional-network/2026-09-24/bug-hunt-09/build-cleanup.log": "aca3a63624e1e4daf59101ae16a5ccfac5c0463cacb780373db1af1e64ab35f6",
+    "reports/functional-network/2026-09-24/bug-hunt-09/green-ci-selection.log": "e6c70871610dacbe32b263c1755d9490682ecbcba8554da2954472a260f1be34",
+    "reports/functional-network/2026-09-24/bug-hunt-09/green-event-default-final.log": "37fc4eee7044f62bf70af2aa3fe211d1f49ea360bb4c5c67d7e29b053a897836",
+    "reports/functional-network/2026-09-24/bug-hunt-09/green-postgres-final.log": "f757721025a5e7302e4682186121100f038da47079f2ec5f36db560082cb47f7",
+    "reports/functional-network/2026-09-24/bug-hunt-09/map-drift.log": "3886815b07962ea0c50a4e01eee03e2875cc59201c58b17b1dbabe5c2d74d534",
+    "reports/functional-network/2026-09-24/bug-hunt-09/postgres-cleanup.json": "6122aeb1266d99d638143b6c81ec101381646a2d11ae268115027276dd47ed79",
+    "reports/functional-network/2026-09-24/bug-hunt-09/postgres-repeat.log": "71d11ef1296a3cb89b517a79ea0101da0c0febbea080951f7d27ff8458067095",
+    "reports/functional-network/2026-09-24/bug-hunt-09/quality-gate.log": "430aa591de3c9831d8f6b0b4c1d33072a61553b2b7628c702da32c554ad5bec5",
+    "reports/functional-network/2026-09-24/bug-hunt-09/red-ci-selection.log": "93d64c574bc56e7e8d7c2daedee8ac8cedc6ab1e73cf7e69bdf019e9b0b77e61",
+    "reports/functional-network/2026-09-24/bug-hunt-09/red-lifecycle.log": "1480691bc5021dd9a0f573248aefe613bee6f9bc4ffd080e35ca8e7397d7967f",
+    "reports/functional-network/2026-09-24/bug-hunt-09/red-postgres-expanded.log": "8705706ae1049bb963c7f2154fc8761cfbe0a683329ff731aa847a952794d4d7",
+    "reports/functional-network/2026-09-24/bug-hunt-09/red-postgres.log": "ac5fffa2f758b0c5a81624e56be73e6110e2df55dc091b5005e6e89130569d19",
+    "reports/functional-network/2026-09-24/bug-hunt-09/test-authoring-compile.log": "61d0f7964dcde2bd4a571af77a64733d8b283ba58b302a1655ec0ba6de533dc5",
+    "reports/functional-network/2026-09-24/bug-hunt-09/test-authoring-expanded-compile.log": "e5235e8631b31ce83c7ef95d2c263a02cbf741b3ccb3bc190ff323931ffac2e7"
+  },
+  "limitations": [
+    "Single EventBus clones only, not external SQL writers or cross-Engine reservations; metadata remains until service destruction.",
+    "Cold recreation is not process crash, lost-commit or power-loss recovery.",
+    "Healthy queued drain assumes a living runtime; no process shutdown hook or whole-worker write deadline.",
+    "Stalled SQL, ambiguous retry duplication and lost commit acknowledgements remain untested.",
+    "Count failures keep existing latched volatile fallback; restoration does not reconcile volatile events.",
+    "History/export/unread read failures retain existing fallback behavior; snapshots can trail live delivery.",
+    "No new event IDs, cursor replay, exactly-once semantics, aggregate byte/owner quotas or durable HTTP success guarantee."
+  ],
+  "next": "F32/F34 selected-storage read failure honesty, filter boundaries, and restart/fallback consistency using only isolated fixtures."
+}

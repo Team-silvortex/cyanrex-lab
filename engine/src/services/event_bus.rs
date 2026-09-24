@@ -17,17 +17,23 @@ use tokio::sync::{broadcast, mpsc, OnceCell, RwLock};
 
 use crate::models::event::Event;
 
+mod confirmed_mutations;
 mod delete_operation;
 mod deletion;
+mod drop_new;
 mod event_bus_schema;
 mod mutations;
 mod persistence;
 #[cfg(test)]
 mod read_bench;
+mod reads;
+mod settings;
 mod subscriptions;
 #[cfg(test)]
 mod tests;
 
+pub(crate) use confirmed_mutations::EventMutationError;
+pub(crate) use reads::EventReadError;
 pub(crate) use subscriptions::{UserEventSubscription, UserFanout};
 
 pub(crate) const DB_PERSIST_QUEUE_CAPACITY: usize = 2_048;
@@ -41,11 +47,16 @@ pub struct EventBus {
     unread: Arc<RwLock<HashMap<String, usize>>>,
     settings: Arc<RwLock<HashMap<String, UserEventSettings>>>,
     db_pool: Option<PgPool>,
+    db_configured: bool,
     schema_ready: Arc<OnceCell<()>>,
     db_disabled: Arc<AtomicBool>,
-    persist_sender: mpsc::Sender<event_bus_db::PersistMessage>,
+    // Only producer clones retain a sender; the writer removes its own handle on entry.
+    persist_sender: Option<mpsc::Sender<event_bus_db::PersistMessage>>,
     mutation_gates: Arc<std::sync::Mutex<HashMap<String, Arc<tokio::sync::Mutex<()>>>>>,
     drop_new_count_cache: Arc<RwLock<HashMap<String, (usize, Instant)>>>,
+    // Durable baseline plus admitted, possibly still queued publications. Unlike the writer's
+    // SQL count cache, this cannot expire while accepted events are awaiting persistence.
+    drop_new_admitted: Arc<RwLock<HashMap<String, usize>>>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -95,16 +106,23 @@ impl Default for UserEventSettings {
 
 impl EventBus {
     pub fn new(buffer: usize) -> Self {
+        Self::with_database_url(
+            buffer,
+            std::env::var("DATABASE_URL")
+                .ok()
+                .filter(|value| !value.trim().is_empty()),
+        )
+    }
+
+    fn with_database_url(buffer: usize, database_url: Option<String>) -> Self {
         let (sender, _) = broadcast::channel(buffer);
-        let db_pool = std::env::var("DATABASE_URL")
-            .ok()
-            .filter(|value| !value.trim().is_empty())
-            .and_then(|url| {
-                PgPoolOptions::new()
-                    .max_connections(5)
-                    .connect_lazy(&url)
-                    .ok()
-            });
+        let db_configured = database_url.is_some();
+        let db_pool = database_url.and_then(|url| {
+            PgPoolOptions::new()
+                .max_connections(5)
+                .connect_lazy(&url)
+                .ok()
+        });
         let (persist_sender, persist_receiver) = mpsc::channel(DB_PERSIST_QUEUE_CAPACITY);
 
         let bus = Self {
@@ -114,11 +132,13 @@ impl EventBus {
             unread: Arc::new(RwLock::new(HashMap::new())),
             settings: Arc::new(RwLock::new(HashMap::new())),
             db_pool,
+            db_configured,
             schema_ready: Arc::new(OnceCell::new()),
             db_disabled: Arc::new(AtomicBool::new(false)),
-            persist_sender,
+            persist_sender: Some(persist_sender),
             mutation_gates: Arc::new(std::sync::Mutex::new(HashMap::new())),
             drop_new_count_cache: Arc::new(RwLock::new(HashMap::new())),
+            drop_new_admitted: Arc::new(RwLock::new(HashMap::new())),
         };
 
         if let Some(pool) = bus.db_pool.clone() {
@@ -135,6 +155,14 @@ impl EventBus {
         let _admission = self.mutation_admission(&event.username).await;
         let user_settings = self.settings_for_user(&event.username).await;
         let max_records = user_settings.max_records.max(1);
+        let durable_count = if user_settings.overflow_policy == EventOverflowPolicy::DropNew {
+            self.drop_new_admission_count(&event.username).await
+        } else {
+            None
+        };
+        if durable_count.is_some_and(|count| count >= max_records) {
+            return;
+        }
 
         {
             let mut history = self.history.write().await;
@@ -146,6 +174,13 @@ impl EventBus {
             }
             // Publish history and its unread suffix together, in the same lock order as deletion.
             let mut unread = self.unread.write().await;
+            let mut admitted = if durable_count.is_some() {
+                Some(self.drop_new_admitted.write().await)
+            } else {
+                None
+            };
+            // No await from the first state change through fanout and queue admission.
+            // Cancellation while acquiring any lock cannot consume a capacity slot.
             // Evict before insertion: a full deque must not grow or shift retained events.
             while bucket.len() >= max_records {
                 bucket.pop_front();
@@ -153,6 +188,9 @@ impl EventBus {
             bucket.push_back(event.clone());
             let counter = unread.entry(event.username.clone()).or_insert(0);
             *counter = counter.saturating_add(1).min(max_records);
+            if let (Some(count), Some(admitted)) = (durable_count, admitted.as_mut()) {
+                admitted.insert(event.username.clone(), count.saturating_add(1));
+            }
         }
         self.user_fanout.publish(&event);
         // Preserve the legacy global service API without cloning for an unused channel.
@@ -165,11 +203,12 @@ impl EventBus {
                 max_records,
                 user_settings.overflow_policy,
             );
-            if self
-                .persist_sender
-                .try_send(event_bus_db::PersistMessage::Event(request))
-                .is_err()
-            {
+            let queued = self.persist_sender.as_ref().is_some_and(|sender| {
+                sender
+                    .try_send(event_bus_db::PersistMessage::Event(request))
+                    .is_ok()
+            });
+            if !queued {
                 // Never bypass the bounded, ordered writer with an unbounded spawned task.
                 self.disable_db(
                     "persist queue full or closed; using bounded volatile history until restart",
@@ -198,6 +237,7 @@ impl EventBus {
         self.sender.subscribe()
     }
 
+    /// Legacy best-effort service view. HTTP reads use the fallible read boundary instead.
     pub async fn snapshot_for_user(&self, username: &str) -> Vec<Event> {
         self.snapshot_for_user_filtered(username, EventQueryFilters::default())
             .await
@@ -244,6 +284,7 @@ impl EventBus {
             .unwrap_or_default()
     }
 
+    /// Legacy best-effort service count; it may describe only volatile state after fallback.
     pub async fn unread_count_for_user(&self, username: &str) -> usize {
         if let Some(pool) = self.active_pool() {
             if self.ensure_schema().await.is_ok() {

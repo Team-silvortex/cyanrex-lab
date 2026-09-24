@@ -1,0 +1,62 @@
+   Compiling cyanrex-engine v0.4.0 (/home/chiharukiryu/cdev/cyanrex-lab/engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 13.14s
+     Running unittests src/lib.rs (engine/target/debug/deps/cyanrex_engine-f07d476bbb92d94d)
+
+running 5 tests
+test services::event_bus::tests::persistence::confirmed_mutations::postgres_delete_failure_preserves_history_and_can_be_retried ... 
+thread 'services::event_bus::tests::persistence::confirmed_mutations::postgres_delete_failure_preserves_history_and_can_be_retried' (2669071) panicked at src/services/event_bus/tests/persistence/confirmed_mutations.rs:52:5:
+assertion `left == right` failed: mutation must not claim unconfirmed success
+  left: 200
+ right: 503
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'services::event_bus::tests::persistence::confirmed_mutations::postgres_delete_failure_preserves_history_and_can_be_retried' (2669071) panicked at src/services/event_bus/tests/persistence.rs:107:13:
+event boundary failed; owned schema was cleaned up: JoinError::Panic(Id(10), "assertion `left == right` failed: mutation must not claim unconfirmed success\n  left: 200\n right: 503", ...)
+FAILED
+test services::event_bus::tests::persistence::confirmed_mutations::postgres_failed_mutation_barrier_does_not_acknowledge_volatile_changes ... 
+thread 'services::event_bus::tests::persistence::confirmed_mutations::postgres_failed_mutation_barrier_does_not_acknowledge_volatile_changes' (2669119) panicked at src/services/event_bus/tests/persistence/confirmed_mutations.rs:52:5:
+assertion `left == right` failed: mutation must not claim unconfirmed success
+  left: 200
+ right: 503
+
+thread 'services::event_bus::tests::persistence::confirmed_mutations::postgres_failed_mutation_barrier_does_not_acknowledge_volatile_changes' (2669119) panicked at src/services/event_bus/tests/persistence.rs:107:13:
+event boundary failed; owned schema was cleaned up: JoinError::Panic(Id(33), "assertion `left == right` failed: mutation must not claim unconfirmed success\n  left: 200\n right: 503", ...)
+FAILED
+test services::event_bus::tests::persistence::confirmed_mutations::postgres_mark_read_failure_preserves_unread_and_can_be_retried ... 
+thread 'services::event_bus::tests::persistence::confirmed_mutations::postgres_mark_read_failure_preserves_unread_and_can_be_retried' (2669143) panicked at src/services/event_bus/tests/persistence/confirmed_mutations.rs:52:5:
+assertion `left == right` failed: mutation must not claim unconfirmed success
+  left: 200
+ right: 503
+
+thread 'services::event_bus::tests::persistence::confirmed_mutations::postgres_mark_read_failure_preserves_unread_and_can_be_retried' (2669143) panicked at src/services/event_bus/tests/persistence.rs:107:13:
+event boundary failed; owned schema was cleaned up: JoinError::Panic(Id(58), "assertion `left == right` failed: mutation must not claim unconfirmed success\n  left: 200\n right: 503", ...)
+FAILED
+test services::event_bus::tests::persistence::confirmed_mutations::postgres_mutation_wait_deadline_does_not_claim_rollback_or_success ... 
+thread 'services::event_bus::tests::persistence::confirmed_mutations::postgres_mutation_wait_deadline_does_not_claim_rollback_or_success' (2669182) panicked at src/services/event_bus/tests/persistence/confirmed_mutations.rs:212:34:
+HTTP mutation waiting must be bounded: Elapsed(())
+
+thread 'services::event_bus::tests::persistence::confirmed_mutations::postgres_mutation_wait_deadline_does_not_claim_rollback_or_success' (2669182) panicked at src/services/event_bus/tests/persistence.rs:107:13:
+event boundary failed; owned schema was cleaned up: JoinError::Panic(Id(81), "HTTP mutation waiting must be bounded: Elapsed(())", ...)
+FAILED
+test services::event_bus::tests::persistence::confirmed_mutations::postgres_mutations_reject_latched_fallback_without_memory_changes ... 
+thread 'services::event_bus::tests::persistence::confirmed_mutations::postgres_mutations_reject_latched_fallback_without_memory_changes' (2669376) panicked at src/services/event_bus/tests/persistence/confirmed_mutations.rs:52:5:
+assertion `left == right` failed: mutation must not claim unconfirmed success
+  left: 200
+ right: 503
+
+thread 'services::event_bus::tests::persistence::confirmed_mutations::postgres_mutations_reject_latched_fallback_without_memory_changes' (2669376) panicked at src/services/event_bus/tests/persistence.rs:107:13:
+event boundary failed; owned schema was cleaned up: JoinError::Panic(Id(103), "assertion `left == right` failed: mutation must not claim unconfirmed success\n  left: 200\n right: 503", ...)
+FAILED
+
+failures:
+
+failures:
+    services::event_bus::tests::persistence::confirmed_mutations::postgres_delete_failure_preserves_history_and_can_be_retried
+    services::event_bus::tests::persistence::confirmed_mutations::postgres_failed_mutation_barrier_does_not_acknowledge_volatile_changes
+    services::event_bus::tests::persistence::confirmed_mutations::postgres_mark_read_failure_preserves_unread_and_can_be_retried
+    services::event_bus::tests::persistence::confirmed_mutations::postgres_mutation_wait_deadline_does_not_claim_rollback_or_success
+    services::event_bus::tests::persistence::confirmed_mutations::postgres_mutations_reject_latched_fallback_without_memory_changes
+
+test result: FAILED. 0 passed; 5 failed; 0 ignored; 0 measured; 219 filtered out; finished in 21.14s
+
+error: test failed, to rerun pass `--lib`

@@ -1,0 +1,43 @@
+✖ event reads document private unavailable results without changing session authority or success shapes (4.796814ms)
+✖ Rust CI explicitly runs every queued event persistence and retention boundary (4.928328ms)
+✔ Rust CI runs PostgreSQL acceptance against its disposable service and rejects an empty selection (1.927609ms)
+✔ Rust CI promotes every auth boundary regression plus script/event persistence checks (0.864508ms)
+✔ Rust CI exercises persisted authentication and duplicate registration on the disposable database (0.523651ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 3
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 57.944932
+
+✖ failing tests:
+
+test at scripts/tests/eventReadContract.test.mjs:5:1
+✖ event reads document private unavailable results without changing session authority or success shapes (4.796814ms)
+  AssertionError [ERR_ASSERTION]: The "string" argument must be of type string. Received type undefined (undefined)
+      at TestContext.<anonymous> (file:///home/chiharukiryu/cdev/cyanrex-lab/scripts/tests/eventReadContract.test.mjs:10:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /503/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at scripts/tests/postgresCi.test.mjs:5:1
+✖ Rust CI explicitly runs every queued event persistence and retention boundary (4.928328ms)
+  AssertionError [ERR_ASSERTION]: postgres_history_read_failure_is_unavailable_and_retryable
+      at TestContext.<anonymous> (file:///home/chiharukiryu/cdev/cyanrex-lab/scripts/tests/postgresCi.test.mjs:13:14)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

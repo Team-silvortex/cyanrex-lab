@@ -1,7 +1,7 @@
 # Project Status
 
 Snapshot date: **2026-09-24**
-Current release line: **0.4.0**
+Current release line: **0.4.1**
 
 This page is the capability-level progress baseline for Cyanrex Lab. It records what is usable now,
 what remains intentionally limited, and which decisions should drive the next development cycle.
@@ -18,11 +18,26 @@ The detailed trust boundaries and data flows remain in the [system architecture]
 | Local Runner | Operational | Replaceable driver boundary, global/per-user leases, timeout handling, and explicit `shared_kernel` reporting |
 | Runner Agent | Operational for remote checks | Signed registration, heartbeat, leases, cancellation, probes, and isolated compile-only diagnostics; remote eBPF loading is not enabled |
 | Deployment and distribution | Operational | Docker, WSL2, native Linux, hardened optional compiler Agent, and offline package/install tooling |
-| Release traceability | `0.4.0` synchronized source metadata; artifact acceptance remains separate | Changelog/version sync, annotated-tag preflight, checksum-bound source/archive metadata, per-image Docker content IDs, exact-image installation, and native Rust evidence/candidate verification with safe non-overwriting extraction; `0.3.0` is an API baseline only; publishing a source tag does not establish artifact acceptance |
+| Release traceability | `0.4.1` synchronized source metadata; artifact acceptance remains separate | Changelog/version sync, annotated-tag preflight, checksum-bound source/archive metadata, per-image Docker content IDs, exact-image installation, and native Rust evidence/candidate verification with safe non-overwriting extraction; `0.3.0` is an API baseline only; publishing a source tag does not establish artifact acceptance |
 | Module catalog | Operational, state-only | Versioned v1 manifests are discovered and validated at startup; lifecycle is in memory and never executes directory code |
 | JavaScript SDK | Operational internal package | Typed ESM client with 63 generated non-Agent operationId calls, a 77-member additive namespace baseline and deprecation policy, explicit `/openapi` and `/operations` exports, browser/Node sessions, cancellation, downloads, typed errors, and package-consumer smoke coverage |
 | API contract | Operational internal contract | Generated OpenAPI 3.1 served at `/openapi.json`; route/access/SDK/model drift and breaking changes against the frozen `0.3.0` baseline fail the quality gate |
 | Terminal page | Operational for teachers | Permission-aware List/Start/Stop module commands, structured results/history, and a safe handoff to the eBPF experiment workspace; it is not a shell |
+
+## Event storage confirmation (included in 0.4.1)
+
+- [Pass 09](functional-network-bug-hunt-09.md) fixes cold DropNew capacity accounting and persistence
+  worker lifetime. [Pass 10](functional-network-bug-hunt-10.md) makes HTTP history/export/unread reads
+  reject storage faults and invalid filters without false empty/partial success.
+- [Pass 11](functional-network-bug-hunt-11.md) and [pass 12](functional-network-bug-hunt-12.md) require
+  confirmed storage for HTTP mark-read, deletion and retention settings. Admitted SQL retains owner
+  ordering through cancellation; bounded caller waits report unconfirmed, not rollback. Legacy runtime
+  fallback and explicit memory-only behavior remain; repair/restart does not reconcile volatile events.
+- Final pre-bump verification passed 310 default Rust cases (80 ignored), 52 explicitly run event
+  PostgreSQL cases, 69 common checks, 93 frontend checks, and SDK 13 runtime/3 package checks with types.
+  Historical reports/fingerprints retain their original 0.4.0 inputs; they are not 0.4.1 artifact acceptance.
+- This patch does not change a running deployment. Settings-page navigation/partial-save handling,
+  cross-Engine coordination, durable replay and current-version LAN/kernel/distribution acceptance remain separate.
 
 ## Event workflow and build footprint (included in 0.4.0)
 

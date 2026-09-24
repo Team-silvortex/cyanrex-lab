@@ -139,6 +139,20 @@ const learningReadOperations = new Set([
 const privateReadHeaders = {
   "Cache-Control": { description: "Do not cache learning records or storage-failure responses.", schema: { type: "string", const: "no-store" } },
 };
+const eventReadOperations = new Set(["GET /events", "GET /events/export", "GET /events/unread-count"]);
+const eventMutationOperations = new Set(["POST /events/mark-read", "POST /events/delete"]);
+const eventSettingsOperations = new Set(["GET /settings/events", "POST /settings/events"]);
+const eventSettingsHeaders = {
+  "Cache-Control": { description: "Do not cache event settings, acknowledgements or handler errors.", schema: { type: "string", const: "no-store" } },
+};
+const eventMutationHeaders = {
+  "Cache-Control": { description: "Do not cache event mutation acknowledgements or failures.", schema: { type: "string", const: "no-store" } },
+};
+const eventReadHeaders = {
+  "Cache-Control": { description: "Do not cache event reads or their query/storage errors.", schema: { type: "string", const: "no-store" } },
+};
+const eventReadFailure = () => ({ ...errorResponse(), description: "Event storage unavailable, timed out, failed decoding or previously latched into volatile write fallback; not empty/partial success. No storage details or download attachment are returned.", headers: eventReadHeaders });
+const eventQueryFailure = () => ({ ...errorResponse(), description: "Invalid, unknown or duplicate query fields, invalid format, negative/overflowing window or reversed effective range. No wider query is performed.", headers: eventReadHeaders });
 
 const createdOperations = new Set([
   "POST /classroom/invitations",
@@ -202,6 +216,9 @@ function buildOperation(operation, method, routePath, access) {
   if (learningReadOperations.has(operation)) {
     result.description = "Read learning records/projections without writing or executing a lab. A selected PostgreSQL schema/query failure returns 500 with no silent local fallback for this read. Invalid or unreadable local snapshots also return 500, not a successful empty history, zero progress or empty classroom. Missing local files remain valid empty state. Local load failures remain retryable after repair. Successful reads and storage failures use Cache-Control: no-store; errors omit stored values and paths.";
   }
+  if (eventReadOperations.has(operation)) {
+    result.description = "Read only the authenticated session owner's events. Selected storage/schema/decoding failures and a 10-second application waiting deadline return generic 503 without disabling persistence or silently switching to memory. A prior latched write fallback also returns 503 until storage is repaired and Engine restarted; this does not reconcile volatile events. Explicit memory-only instances retain volatile reads. Successful reads and query/storage errors are no-store. History/export reject invalid or unknown filters, negative/overflowing windows and reversed effective ranges with 400; since_minutes=0 adds no time restriction. Export accepts only JSON/CSV. Legacy username (both), format (history) and limit (export) fields are ignored, never identity overrides. The normal history limit default/clamp and successful response schemas are unchanged. Reads do not add a persistence barrier or snapshot/live atomicity.";
+  }
   if (["POST /ebpf/check/remote", "GET /ebpf/check/remote", "POST /ebpf/check/remote/cancel"].includes(operation)) {
     result.description = "Owner-bound remote compile-only checks have a 35-second queue wait limit from submission. An unclaimed check becomes expired on the next queue interaction, releasing its source and per-user active quota. The claimed execution deadline is unchanged and begins at claim; this does not expire staff-managed unowned jobs or kill a running compiler. Queued cancellation is immediate; claimed cancellation requires acknowledgement or lease expiry. Missing/other-owner jobs return 404. No remote loading or silent local fallback is added.";
   }
@@ -219,6 +236,15 @@ function buildOperation(operation, method, routePath, access) {
   }
   if (operation === "POST /events/delete") {
     result.description = "Delete only events matching all supplied filters for the authenticated session owner. No filters explicitly means delete all of that owner's events; since_minutes=0 adds no time restriction. Invalid/empty filter values, unknown query keys, negative or overflowing time windows, and reversed effective time ranges return 400 without deleting events. Legacy username and format query keys are ignored, never identity overrides. Surviving records retain their unread state.";
+  }
+  if (eventMutationOperations.has(operation)) {
+    result.description = `${result.description ?? "Mark all events read for the authenticated session owner; no per-record or filter scope."} Configured event storage must confirm the write before HTTP success, without memory-only fallback. Invalid/unavailable configured storage, failed persistence barriers, previously latched fallback and unconfirmed writes return generic no-store 503. A 10-second service waiting deadline includes owner admission; it is not rollback. Cancellation before admission dispatches nothing; admitted SQL work retains owner admission through cache publication even after the caller leaves. A timed-out or lost response may still have changed storage: verify state before an explicit retry, never retry automatically. Definite query/schema errors preserve memory and remain retryable; existing barrier/storage deadlines may latch fallback until restart without reconciling volatile events. Explicit memory-only instances remain volatile. Success and handler errors use Cache-Control: no-store. No cross-process coordination, durable replay or exactly-once guarantee is added.`;
+  }
+  if (operation === "GET /settings/events") {
+    result.description = "Read event retention settings for the authenticated session owner. Configured storage is read fresh, not replaced by cached/default success on failure. Missing rows are valid defaults (500/drop_oldest); corrupt stored values, schema/query failures, unavailable configured storage and the 10-second service waiting deadline return generic 503. Read failures remain retryable and do not disable persistence or publish runtime cache values. Prior latched write fallback requires storage repair and Engine restart, without reconciling volatile events. Explicit memory-only instances retain volatile settings. Success and handler errors use Cache-Control: no-store. No external-writer/runtime-cache coherence guarantee is added.";
+  }
+  if (operation === "POST /settings/events") {
+    result.description = "Update only the authenticated session owner's event retention settings; preserve max_records clamping to 50..50000 and drop_oldest/drop_new policies. Configured storage must confirm the policy update and retention trim in one transaction before success and runtime cache publication. Failed barriers, prior fallback and unconfirmed storage writes return generic no-store 503, not memory-only success. A 10-second service waiting deadline includes owner admission and cache publication; it is not rollback. Admitted SQL work retains owner ordering after caller cancellation or deadline, so verify state before an explicit retry and never retry automatically. Definite SQL errors preserve memory and remain retryable; storage/barrier deadlines may latch fallback until restart. Explicit memory-only instances remain volatile. Malformed JSON (400), excessive bodies (413), unsupported content type (415) and invalid JSON fields/types (422) return private generic JSON. Authentication/Origin CSRF rules and success schema are unchanged; unknown body fields remain ignored, never identity overrides. No distributed coordination or durable replay is added.";
   }
   if (routePath.startsWith("/classroom/") || routePath === "/.well-known/cyanrex-classroom") {
     result.description = `${result.description ?? ""} Opt-in classroom onboarding; all responses are no-store. Discovery metadata is not proof of teacher identity. Use independently confirmed HTTPS origins (or trusted loopback SSH access). Invitations are student-name-bound, single-use, valid for 10 minutes and lost on restart. Join requires an invitation plus explicit classroom ID, compatible protocol and required capabilities, not a matching product patch. No automatic login, role promotion, Agent registration or eBPF execution occurs. Revoking an invitation does not revoke existing accounts or sessions.`.trim();
@@ -247,11 +273,14 @@ function responsesFor(operation) {
     return {
       200: {
         description: "Event export download",
+        headers: eventReadHeaders,
         content: {
           "application/json": { schema: array(ref("EventRecord")) },
           "text/csv": { schema: { type: "string" } },
         },
       },
+      400: eventQueryFailure(),
+      503: eventReadFailure(),
       default: errorResponse(),
     };
   }
@@ -266,8 +295,28 @@ function responsesFor(operation) {
       description: "Successful response",
       content: { "application/json": { schema } },
       ...(learningReadOperations.has(operation) ? { headers: privateReadHeaders } : {}),
+      ...(eventReadOperations.has(operation) ? { headers: eventReadHeaders } : {}),
+      ...(eventMutationOperations.has(operation) ? { headers: eventMutationHeaders } : {}),
+      ...(eventSettingsOperations.has(operation) ? { headers: eventSettingsHeaders } : {}),
     },
     default: errorResponse(),
+    ...(eventSettingsOperations.has(operation) ? {
+      503: {
+        description: operation.startsWith("GET") ? "Event settings unavailable; not cached/default success." : "Event settings update completion unconfirmed; verify state before retrying, not proof of rollback.",
+        headers: eventSettingsHeaders,
+        content: { "application/json": { schema: ref(operation.startsWith("GET") ? "ApiMessage" : "UpdateEventSettingsResponse") } },
+      },
+    } : {}),
+    ...(operation === "POST /settings/events" ? Object.fromEntries([400, 413, 415, 422].map((status) => [status, {
+      description: "Invalid event settings request; no settings update is dispatched.",
+      headers: eventSettingsHeaders,
+      content: { "application/json": { schema: ref("UpdateEventSettingsResponse") } },
+    }])) : {}),
+    ...(eventReadOperations.has(operation) ? { 503: eventReadFailure() } : {}),
+    ...(eventMutationOperations.has(operation) ? {
+      503: { ...errorResponse(), description: "Event mutation completion is unconfirmed; not a successful volatile write or proof of rollback. Verify current state before an explicit retry.", headers: eventMutationHeaders },
+    } : {}),
+    ...(operation === "GET /events" ? { 400: eventQueryFailure() } : {}),
     ...(learningReadOperations.has(operation) ? {
       500: { ...errorResponse(), description: "Learning storage read failed; not empty success. No storage details are exposed and no learning records are changed.", headers: privateReadHeaders },
     } : {}),
@@ -279,8 +328,9 @@ function responsesFor(operation) {
     } : {}),
     ...(operation === "POST /events/delete" ? {
       400: {
-        description: "Invalid deletion filter/query or time range; no events are deleted. Query extraction errors can be plain text.",
-        content: { ...errorResponse().content, "text/plain": { schema: { type: "string" } } },
+        ...errorResponse(),
+        description: "Invalid deletion filter/query or time range; no events are deleted. Query extraction errors are also generic JSON.",
+        headers: eventMutationHeaders,
       },
     } : {}),
     ...(operation === "POST /classroom/join" ? {

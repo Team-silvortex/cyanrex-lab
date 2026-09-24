@@ -1,8 +1,9 @@
 use std::sync::Arc;
 
 use axum::{
-    extract::State,
-    http::{HeaderMap, StatusCode},
+    extract::{rejection::JsonRejection, State},
+    http::{header, HeaderMap, HeaderValue, StatusCode},
+    response::{IntoResponse, Response},
     Json,
 };
 
@@ -58,61 +59,63 @@ fn compiler_settings(state: &AppState) -> CompilerSettingsResponse {
 pub async fn get_event_settings(
     State(state): State<Arc<AppState>>,
     headers: HeaderMap,
-) -> (StatusCode, Json<EventSettingsResponse>) {
+) -> Response {
     let username =
         match crate::routes::auth::current_session_from_headers(state.as_ref(), &headers).await {
             Some(session) => session.username,
             None => {
-                return (
+                return private_event_settings_response((
                     StatusCode::UNAUTHORIZED,
-                    Json(EventSettingsResponse {
-                        max_records: 500,
-                        overflow_policy: EventOverflowPolicyDto::DropOldest,
-                    }),
-                );
+                    Json(serde_json::json!({"ok": false, "message": "missing auth session"})),
+                ));
             }
         };
 
-    let settings = state.event_bus.settings_for_user(&username).await;
-    (
-        StatusCode::OK,
-        Json(EventSettingsResponse {
+    match state.event_bus.read_settings_for_user(&username).await {
+        Ok(settings) => private_event_settings_response(Json(EventSettingsResponse {
             max_records: settings.max_records,
             overflow_policy: to_dto_policy(settings.overflow_policy),
-        }),
-    )
+        })),
+        Err(_) => private_event_settings_response((
+            StatusCode::SERVICE_UNAVAILABLE,
+            Json(serde_json::json!({"ok": false, "message": "event settings are unavailable"})),
+        )),
+    }
 }
 
 pub async fn update_event_settings(
     State(state): State<Arc<AppState>>,
     headers: HeaderMap,
-    Json(payload): Json<UpdateEventSettingsRequest>,
-) -> (StatusCode, Json<UpdateEventSettingsResponse>) {
-    let username =
-        match crate::routes::auth::current_session_from_headers(state.as_ref(), &headers).await {
-            Some(session) => session.username,
-            None => {
-                return (
-                    StatusCode::UNAUTHORIZED,
-                    Json(UpdateEventSettingsResponse {
-                        ok: false,
-                        message: "missing auth session".to_string(),
-                        settings: None,
-                    }),
-                );
-            }
-        };
+    payload: Result<Json<UpdateEventSettingsRequest>, JsonRejection>,
+) -> Response {
+    let username = match crate::routes::auth::current_session_from_headers(state.as_ref(), &headers)
+        .await
+    {
+        Some(session) => session.username,
+        None => {
+            return event_settings_update_error(StatusCode::UNAUTHORIZED, "missing auth session");
+        }
+    };
 
+    let payload = match payload {
+        Ok(Json(payload)) => payload,
+        Err(rejection) => {
+            return event_settings_update_error(
+                rejection.status(),
+                "invalid event settings request",
+            );
+        }
+    };
     match state
         .event_bus
-        .update_settings_for_user(
+        .update_settings_confirmed(
             &username,
             payload.max_records,
             from_dto_policy(payload.overflow_policy),
         )
         .await
     {
-        Ok(settings) => (
+        Ok(settings) => private_event_settings_response((
             StatusCode::OK,
             Json(UpdateEventSettingsResponse {
                 ok: true,
@@ -122,16 +125,31 @@ pub async fn update_event_settings(
                     overflow_policy: to_dto_policy(settings.overflow_policy),
                 }),
             }),
-        ),
-        Err(error) => (
-            StatusCode::BAD_REQUEST,
-            Json(UpdateEventSettingsResponse {
-                ok: false,
-                message: error,
-                settings: None,
-            }),
+        )),
+        Err(_) => event_settings_update_error(
+            StatusCode::SERVICE_UNAVAILABLE,
+            "event settings update could not be confirmed; verify state before retrying",
         ),
     }
+}
+
+fn event_settings_update_error(status: StatusCode, message: &str) -> Response {
+    private_event_settings_response((
+        status,
+        Json(UpdateEventSettingsResponse {
+            ok: false,
+            message: message.to_owned(),
+            settings: None,
+        }),
+    ))
+}
+
+fn private_event_settings_response(value: impl IntoResponse) -> Response {
+    let mut response = value.into_response();
+    response
+        .headers_mut()
+        .insert(header::CACHE_CONTROL, HeaderValue::from_static("no-store"));
+    response
 }
 
 fn to_dto_policy(policy: EventOverflowPolicy) -> EventOverflowPolicyDto {

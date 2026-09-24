@@ -76,7 +76,7 @@ async fn full_persistence_queue_latches_bounded_memory_fallback_instead_of_spawn
     bus.db_disabled.store(false, Ordering::Relaxed);
     bus.schema_ready.set(()).unwrap();
     let (sender, receiver) = mpsc::channel(1);
-    bus.persist_sender = sender;
+    bus.persist_sender = Some(sender);
     bus.publish(event("alice", 0)).await;
     bus.publish(event("alice", 1)).await;
     // No SQL connection is needed: the queue is deliberately owned but never consumed.
@@ -117,7 +117,7 @@ async fn stalled_persistence_barrier_has_a_deadline_and_releases_owner_admission
     );
     bus.db_disabled.store(false, Ordering::Relaxed);
     let (sender, receiver) = mpsc::channel(1);
-    bus.persist_sender = sender;
+    bus.persist_sender = Some(sender);
     tokio::time::timeout(
         StdDuration::from_secs(12),
         bus.mark_all_read_for_user("alice"),
@@ -147,4 +147,62 @@ async fn stalled_storage_operation_has_a_deadline_instead_of_holding_admission_f
         .unwrap_err();
     assert!(matches!(error, sqlx::Error::PoolTimedOut));
     assert!(bus.db_disabled.load(Ordering::Relaxed));
+}
+
+#[tokio::test]
+async fn cancelled_publish_waiting_for_capacity_lock_keeps_memory_and_reservation_unchanged() {
+    let mut bus = memory_bus();
+    bus.settings.write().await.insert(
+        "alice".into(),
+        UserEventSettings {
+            max_records: 50,
+            overflow_policy: EventOverflowPolicy::DropNew,
+        },
+    );
+    bus.db_pool = Some(
+        PgPoolOptions::new()
+            .connect_lazy("postgres://fixture@127.0.0.1:1/unused")
+            .unwrap(),
+    );
+    bus.db_disabled.store(false, Ordering::Relaxed);
+    // Seed a loaded baseline. This lock-order test must not connect to PostgreSQL.
+    bus.drop_new_admitted
+        .write()
+        .await
+        .insert("alice".into(), 48);
+    let (sender, receiver) = mpsc::channel(4);
+    bus.persist_sender = Some(sender);
+    let capacity = bus.drop_new_admitted.read().await;
+    let publisher = bus.clone();
+    let task = tokio::spawn(async move {
+        publisher.publish(event("alice", 99)).await;
+    });
+    tokio::time::timeout(StdDuration::from_secs(2), async {
+        while bus.history.try_write().is_ok() {
+            tokio::task::yield_now().await;
+        }
+    })
+    .await
+    .unwrap();
+    task.abort();
+    assert!(task.await.unwrap_err().is_cancelled());
+    assert_eq!(capacity["alice"], 48);
+    drop(capacity);
+    assert!(bus
+        .history
+        .read()
+        .await
+        .get("alice")
+        .is_none_or(VecDeque::is_empty));
+    assert_eq!(
+        bus.unread.read().await.get("alice").copied().unwrap_or(0),
+        0
+    );
+    assert_eq!(receiver.len(), 0);
+    publish_range(&bus, "alice", 100..103).await;
+    assert_eq!(receiver.len(), 2);
+    assert_eq!(bus.drop_new_admitted.read().await["alice"], 50);
+    assert_eq!(bus.history.read().await["alice"].len(), 2);
+    assert_eq!(bus.unread.read().await["alice"], 2);
+    assert!(bus.active_pool().is_some());
 }

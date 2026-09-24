@@ -3,6 +3,12 @@ use std::future::Future;
 use tokio::sync::oneshot;
 
 impl EventBus {
+    pub(crate) fn into_persistence_worker(mut self) -> Self {
+        // Otherwise the receiver owns a producer and can never observe the last external drop.
+        self.persist_sender = None;
+        self
+    }
+
     pub(super) async fn mutation_admission(
         &self,
         username: &str,
@@ -41,10 +47,12 @@ impl EventBus {
         .expect("event mutation worker panicked")
     }
 
-    async fn flush_persistence(&self) {
+    pub(super) async fn flush_persistence(&self) {
         let (sender, receiver) = oneshot::channel();
         let completed = tokio::time::timeout(StdDuration::from_secs(10), async {
             self.persist_sender
+                .as_ref()
+                .ok_or(())?
                 .send(event_bus_db::PersistMessage::Barrier(sender))
                 .await
                 .map_err(|_| ())?;

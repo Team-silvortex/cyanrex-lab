@@ -1,7 +1,11 @@
 use super::*;
 use std::future::Future;
 
+mod cold_start;
+mod confirmed_mutations;
 mod followup;
+mod reads;
+mod settings;
 
 struct Fixture {
     bus: EventBus,
@@ -27,6 +31,14 @@ impl Fixture {
 }
 
 async fn with_fixture<F, Fut>(check: F)
+where
+    F: FnOnce(Fixture) -> Fut + Send + 'static,
+    Fut: Future<Output = ()> + Send + 'static,
+{
+    with_fixture_timeout(StdDuration::from_secs(15), check).await;
+}
+
+async fn with_fixture_timeout<F, Fut>(deadline: StdDuration, check: F)
 where
     F: FnOnce(Fixture) -> Fut + Send + 'static,
     Fut: Future<Output = ()> + Send + 'static,
@@ -75,14 +87,14 @@ where
         .await
         .insert("bob".into(), UserEventSettings::default());
     let (sender, receiver) = mpsc::channel(128);
-    bus.persist_sender = sender;
+    bus.persist_sender = Some(sender);
     let fixture = Fixture {
         bus,
         pool: pool.clone(),
         receiver: Some(receiver),
     };
     let outcome = tokio::spawn(async move {
-        tokio::time::timeout(StdDuration::from_secs(15), check(fixture))
+        tokio::time::timeout(deadline, check(fixture))
             .await
             .expect("fixture deadline");
     })

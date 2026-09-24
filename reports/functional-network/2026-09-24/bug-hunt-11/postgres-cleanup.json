@@ -1,0 +1,13 @@
+{
+  "date": "2026-09-24",
+  "postgres_version": "16.15",
+  "cluster": "/tmp/cyanrex-bh11-pg-qx7Q0PuG",
+  "connection": "private Unix socket only, port 55439, synthetic role cyanrex_bh11",
+  "nondefault_schemas_before_stop": 0,
+  "other_clients_before_stop": 0,
+  "stop_mode": "fast",
+  "stopped": true,
+  "removed": true,
+  "command_exit_code": 0,
+  "scope": "Only this pass's generated cluster; no deployment database or real event data touched."
+}

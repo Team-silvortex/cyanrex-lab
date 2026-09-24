@@ -1,0 +1,42 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.11s
+     Running unittests src/lib.rs (engine/target/debug/deps/cyanrex_engine-f07d476bbb92d94d)
+
+running 7 tests
+test services::event_bus::tests::persistence::cold_start::postgres_cancelled_cold_drop_new_admission_does_not_lose_capacity ... ok
+test services::event_bus::tests::persistence::cold_start::postgres_cold_drop_new_concurrent_clones_share_admission_and_owner_isolation ... ok
+test services::event_bus::tests::persistence::cold_start::postgres_cold_drop_new_count_failure_latches_memory_until_restart ... ok
+test services::event_bus::tests::persistence::cold_start::postgres_cold_drop_new_mutations_rebase_durable_capacity ... ok
+test services::event_bus::tests::persistence::cold_start::postgres_cold_full_drop_new_rejects_before_memory_unread_and_broadcast ... ok
+test services::event_bus::tests::persistence::cold_start::postgres_cold_partial_drop_new_counts_pending_publications_before_flush ... ok
+test services::event_bus::tests::persistence::cold_start::postgres_writer_drains_multiple_batches_after_last_producer_drops ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 202 filtered out; finished in 1.72s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.10s
+     Running unittests src/lib.rs (engine/target/debug/deps/cyanrex_engine-f07d476bbb92d94d)
+
+running 7 tests
+test services::event_bus::tests::persistence::cold_start::postgres_cancelled_cold_drop_new_admission_does_not_lose_capacity ... ok
+test services::event_bus::tests::persistence::cold_start::postgres_cold_drop_new_concurrent_clones_share_admission_and_owner_isolation ... ok
+test services::event_bus::tests::persistence::cold_start::postgres_cold_drop_new_count_failure_latches_memory_until_restart ... ok
+test services::event_bus::tests::persistence::cold_start::postgres_cold_drop_new_mutations_rebase_durable_capacity ... ok
+test services::event_bus::tests::persistence::cold_start::postgres_cold_full_drop_new_rejects_before_memory_unread_and_broadcast ... ok
+test services::event_bus::tests::persistence::cold_start::postgres_cold_partial_drop_new_counts_pending_publications_before_flush ... ok
+test services::event_bus::tests::persistence::cold_start::postgres_writer_drains_multiple_batches_after_last_producer_drops ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 202 filtered out; finished in 1.72s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.11s
+     Running unittests src/lib.rs (engine/target/debug/deps/cyanrex_engine-f07d476bbb92d94d)
+
+running 7 tests
+test services::event_bus::tests::persistence::cold_start::postgres_cancelled_cold_drop_new_admission_does_not_lose_capacity ... ok
+test services::event_bus::tests::persistence::cold_start::postgres_cold_drop_new_concurrent_clones_share_admission_and_owner_isolation ... ok
+test services::event_bus::tests::persistence::cold_start::postgres_cold_drop_new_count_failure_latches_memory_until_restart ... ok
+test services::event_bus::tests::persistence::cold_start::postgres_cold_drop_new_mutations_rebase_durable_capacity ... ok
+test services::event_bus::tests::persistence::cold_start::postgres_cold_full_drop_new_rejects_before_memory_unread_and_broadcast ... ok
+test services::event_bus::tests::persistence::cold_start::postgres_cold_partial_drop_new_counts_pending_publications_before_flush ... ok
+test services::event_bus::tests::persistence::cold_start::postgres_writer_drains_multiple_batches_after_last_producer_drops ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 202 filtered out; finished in 1.72s
+

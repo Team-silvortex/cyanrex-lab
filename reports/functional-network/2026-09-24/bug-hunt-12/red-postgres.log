@@ -1,0 +1,72 @@
+   Compiling cyanrex-engine v0.4.0 (/home/chiharukiryu/cdev/cyanrex-lab/engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 13.65s
+     Running unittests src/lib.rs (engine/target/debug/deps/cyanrex_engine-f07d476bbb92d94d)
+
+running 6 tests
+test services::event_bus::tests::persistence::settings::postgres_settings_commit_wait_is_bounded_without_claiming_rollback ... 
+thread 'services::event_bus::tests::persistence::settings::postgres_settings_commit_wait_is_bounded_without_claiming_rollback' (2725871) panicked at src/services/event_bus/tests/persistence/settings.rs:229:22:
+settings caller waiting must be bounded: Elapsed(())
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'services::event_bus::tests::persistence::settings::postgres_settings_commit_wait_is_bounded_without_claiming_rollback' (2725871) panicked at src/services/event_bus/tests/persistence.rs:108:13:
+event boundary failed; owned schema was cleaned up: JoinError::Panic(Id(10), "settings caller waiting must be bounded: Elapsed(())", ...)
+FAILED
+test services::event_bus::tests::persistence::settings::postgres_settings_corrupt_values_are_not_default_or_panicking_reads ... 
+thread 'services::event_bus::tests::persistence::settings::postgres_settings_corrupt_values_are_not_default_or_panicking_reads' (2726142) panicked at src/services/event_bus/tests/persistence/settings.rs:50:5:
+assertion `left == right` failed: settings storage failures must not be success or client errors
+  left: 200
+ right: 503
+
+thread 'services::event_bus::tests::persistence::settings::postgres_settings_corrupt_values_are_not_default_or_panicking_reads' (2726142) panicked at src/services/event_bus/tests/persistence.rs:108:13:
+event boundary failed; owned schema was cleaned up: JoinError::Panic(Id(35), "assertion `left == right` failed: settings storage failures must not be success or client errors\n  left: 200\n right: 503", ...)
+FAILED
+test services::event_bus::tests::persistence::settings::postgres_settings_failed_barrier_cannot_publish_or_trim_policy ... 
+thread 'services::event_bus::tests::persistence::settings::postgres_settings_failed_barrier_cannot_publish_or_trim_policy' (2726170) panicked at src/services/event_bus/tests/persistence/settings.rs:50:5:
+assertion `left == right` failed: settings storage failures must not be success or client errors
+  left: 200
+ right: 503
+
+thread 'services::event_bus::tests::persistence::settings::postgres_settings_failed_barrier_cannot_publish_or_trim_policy' (2726170) panicked at src/services/event_bus/tests/persistence.rs:108:13:
+event boundary failed; owned schema was cleaned up: JoinError::Panic(Id(60), "assertion `left == right` failed: settings storage failures must not be success or client errors\n  left: 200\n right: 503", ...)
+FAILED
+test services::event_bus::tests::persistence::settings::postgres_settings_prior_fallback_does_not_publish_or_trim_memory ... 
+thread 'services::event_bus::tests::persistence::settings::postgres_settings_prior_fallback_does_not_publish_or_trim_memory' (2726176) panicked at src/services/event_bus/tests/persistence/settings.rs:50:5:
+assertion `left == right` failed: settings storage failures must not be success or client errors
+  left: 200
+ right: 503
+
+thread 'services::event_bus::tests::persistence::settings::postgres_settings_prior_fallback_does_not_publish_or_trim_memory' (2726176) panicked at src/services/event_bus/tests/persistence.rs:108:13:
+event boundary failed; owned schema was cleaned up: JoinError::Panic(Id(88), "assertion `left == right` failed: settings storage failures must not be success or client errors\n  left: 200\n right: 503", ...)
+FAILED
+test services::event_bus::tests::persistence::settings::postgres_settings_read_failure_is_not_cached_or_default_success ... 
+thread 'services::event_bus::tests::persistence::settings::postgres_settings_read_failure_is_not_cached_or_default_success' (2726255) panicked at src/services/event_bus/tests/persistence/settings.rs:50:5:
+assertion `left == right` failed: settings storage failures must not be success or client errors
+  left: 200
+ right: 503
+
+thread 'services::event_bus::tests::persistence::settings::postgres_settings_read_failure_is_not_cached_or_default_success' (2726255) panicked at src/services/event_bus/tests/persistence.rs:108:13:
+event boundary failed; owned schema was cleaned up: JoinError::Panic(Id(111), "assertion `left == right` failed: settings storage failures must not be success or client errors\n  left: 200\n right: 503", ...)
+FAILED
+test services::event_bus::tests::persistence::settings::postgres_settings_write_failure_is_private_and_atomic ... 
+thread 'services::event_bus::tests::persistence::settings::postgres_settings_write_failure_is_private_and_atomic' (2726262) panicked at src/services/event_bus/tests/persistence/settings.rs:50:5:
+assertion `left == right` failed: settings storage failures must not be success or client errors
+  left: 400
+ right: 503
+
+thread 'services::event_bus::tests::persistence::settings::postgres_settings_write_failure_is_private_and_atomic' (2726262) panicked at src/services/event_bus/tests/persistence.rs:108:13:
+event boundary failed; owned schema was cleaned up: JoinError::Panic(Id(135), "assertion `left == right` failed: settings storage failures must not be success or client errors\n  left: 400\n right: 503", ...)
+FAILED
+
+failures:
+
+failures:
+    services::event_bus::tests::persistence::settings::postgres_settings_commit_wait_is_bounded_without_claiming_rollback
+    services::event_bus::tests::persistence::settings::postgres_settings_corrupt_values_are_not_default_or_panicking_reads
+    services::event_bus::tests::persistence::settings::postgres_settings_failed_barrier_cannot_publish_or_trim_policy
+    services::event_bus::tests::persistence::settings::postgres_settings_prior_fallback_does_not_publish_or_trim_memory
+    services::event_bus::tests::persistence::settings::postgres_settings_read_failure_is_not_cached_or_default_success
+    services::event_bus::tests::persistence::settings::postgres_settings_write_failure_is_private_and_atomic
+
+test result: FAILED. 0 passed; 6 failed; 0 ignored; 0 measured; 231 filtered out; finished in 23.78s
+
+error: test failed, to rerun pass `--lib`

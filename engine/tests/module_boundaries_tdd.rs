@@ -1,4 +1,10 @@
 //! Real HTTP router/service/filesystem boundaries with synthetic identities and a non-kernel driver.
+#[path = "module_boundaries/event_mutations.rs"]
+mod event_mutations;
+#[path = "module_boundaries/event_reads.rs"]
+mod event_reads;
+#[path = "module_boundaries/event_settings.rs"]
+mod event_settings;
 #[path = "module_boundaries/events.rs"]
 mod events;
 #[path = "module_boundaries/learning_flow.rs"]

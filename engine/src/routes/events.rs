@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
-use crate::services::event_bus::EventQueryFilters;
+use crate::services::event_bus::{EventMutationError, EventQueryFilters, EventReadError};
 use axum::{
-    extract::{ws::WebSocketUpgrade, Query, State},
+    extract::{rejection::QueryRejection, ws::WebSocketUpgrade, Query, State},
     http::{header, HeaderMap, HeaderValue, StatusCode},
     response::{IntoResponse, Response},
     Json,
@@ -17,6 +17,7 @@ const DEFAULT_EVENT_LIMIT: usize = 200;
 const MAX_EVENT_LIMIT: usize = 500;
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct EventsQuery {
     pub category: Option<String>,
     pub severity: Option<String>,
@@ -24,9 +25,14 @@ pub struct EventsQuery {
     pub since_minutes: Option<i64>,
     pub start: Option<String>,
     pub end: Option<String>,
+    #[serde(rename = "username")]
+    pub ignored_username: Option<String>,
+    #[serde(rename = "format")]
+    pub ignored_format: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct EventsExportQuery {
     pub format: Option<String>,
     pub category: Option<String>,
@@ -34,6 +40,10 @@ pub struct EventsExportQuery {
     pub since_minutes: Option<i64>,
     pub start: Option<String>,
     pub end: Option<String>,
+    #[serde(rename = "username")]
+    pub ignored_username: Option<String>,
+    #[serde(rename = "limit")]
+    pub ignored_limit: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -54,54 +64,71 @@ pub struct EventsDeleteQuery {
 pub async fn list_events(
     State(state): State<Arc<AppState>>,
     headers: HeaderMap,
-    Query(query): Query<EventsQuery>,
-) -> Json<Vec<Event>> {
-    let username = current_username_from_headers(&state, &headers).await;
-    let category_filter = sanitize_category(&query.category);
-    let severity_filter = sanitize_severity(&query.severity);
-    let limit = resolve_event_limit(query.limit);
-
-    let filters = EventQueryFilters {
-        category: category_filter.as_deref(),
-        severity: severity_filter.as_deref(),
-        limit: Some(limit),
-        since_minutes: query.since_minutes,
-        start: parse_rfc3339(query.start.as_deref()),
-        end: parse_rfc3339(query.end.as_deref()),
+    query: Result<Query<EventsQuery>, QueryRejection>,
+) -> Response {
+    let Ok(Query(query)) = query else {
+        return read_error(EventReadError::InvalidFilters);
     };
-    let events = state
+    let username = current_username_from_headers(&state, &headers).await;
+    let limit = resolve_event_limit(query.limit);
+    let filters = match read_filters(
+        &query.category,
+        &query.severity,
+        Some(limit),
+        query.since_minutes,
+        &query.start,
+        &query.end,
+    ) {
+        Ok(filters) => filters,
+        Err(error) => return read_error(error),
+    };
+    match state
         .event_bus
-        .snapshot_for_user_filtered(&username, filters)
-        .await;
-
-    Json(events)
+        .read_snapshot_for_user_filtered(&username, filters)
+        .await
+    {
+        Ok(events) => private_response(Json(events)),
+        Err(error) => read_error(error),
+    }
 }
 
 pub async fn export_events(
     State(state): State<Arc<AppState>>,
     headers: HeaderMap,
-    Query(query): Query<EventsExportQuery>,
+    query: Result<Query<EventsExportQuery>, QueryRejection>,
 ) -> Response {
-    let username = current_username_from_headers(&state, &headers).await;
-    let category_filter = sanitize_category(&query.category);
-    let severity_filter = sanitize_severity(&query.severity);
-    let filters = EventQueryFilters {
-        category: category_filter.as_deref(),
-        severity: severity_filter.as_deref(),
-        limit: None,
-        since_minutes: query.since_minutes,
-        start: parse_rfc3339(query.start.as_deref()),
-        end: parse_rfc3339(query.end.as_deref()),
+    let Ok(Query(query)) = query else {
+        return read_error(EventReadError::InvalidFilters);
     };
-    let events = state
-        .event_bus
-        .snapshot_for_user_filtered(&username, filters)
-        .await;
+    let username = current_username_from_headers(&state, &headers).await;
+    let filters = match read_filters(
+        &query.category,
+        &query.severity,
+        None,
+        query.since_minutes,
+        &query.start,
+        &query.end,
+    ) {
+        Ok(filters) => filters,
+        Err(error) => return read_error(error),
+    };
     let format = query
         .format
         .as_deref()
         .unwrap_or("json")
+        .trim()
         .to_ascii_lowercase();
+    if !matches!(format.as_str(), "json" | "csv") {
+        return read_error(EventReadError::InvalidFilters);
+    }
+    let events = match state
+        .event_bus
+        .read_snapshot_for_user_filtered(&username, filters)
+        .await
+    {
+        Ok(events) => events,
+        Err(error) => return read_error(error),
+    };
 
     let timestamp = chrono::Utc::now().format("%Y%m%d-%H%M%S").to_string();
     let filename = format!("cyanrex-events-{timestamp}.{format}");
@@ -113,74 +140,46 @@ pub async fn export_events(
 
     match serde_json::to_string(&events) {
         Ok(body) => build_download_response("application/json; charset=utf-8", &filename, body),
-        Err(error) => (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            Json(serde_json::json!({ "ok": false, "message": format!("failed to serialize events: {error}") })),
-        )
-            .into_response(),
+        Err(error) => {
+            tracing::warn!(%error, "event export serialization failed");
+            private_response((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(serde_json::json!({ "ok": false, "message": "event export is unavailable" })),
+            ))
+        }
     }
 }
 
 pub async fn delete_events(
     State(state): State<Arc<AppState>>,
     headers: HeaderMap,
-    Query(query): Query<EventsDeleteQuery>,
+    query: Result<Query<EventsDeleteQuery>, QueryRejection>,
 ) -> Response {
-    let username = current_username_from_headers(&state, &headers).await;
-    let category_filter = sanitize_category(&query.category);
-    let severity_filter = sanitize_severity(&query.severity);
-    let mut start = parse_rfc3339(query.start.as_deref());
-    let end = parse_rfc3339(query.end.as_deref());
-    let bad_filter = (query.category.is_some() && category_filter.is_none())
-        || (query.severity.is_some() && severity_filter.is_none())
-        || (query.start.is_some() && start.is_none())
-        || (query.end.is_some() && end.is_none());
-    let bad_request = || {
-        (
-            StatusCode::BAD_REQUEST,
-            Json(serde_json::json!({
-                "ok": false, "message": "invalid event deletion filter or time range"
-            })),
-        )
-            .into_response()
+    let Ok(Query(query)) = query else {
+        return mutation_error(EventMutationError::InvalidFilters);
     };
-    if bad_filter {
-        return bad_request();
-    }
-    if let Some(minutes) = query.since_minutes {
-        if minutes < 0 {
-            return bad_request();
-        }
-        if minutes > 0 {
-            // Freeze one checked cutoff for SQL and memory. Zero retains its legacy no-range meaning.
-            let cutoff = chrono::Duration::try_minutes(minutes)
-                .and_then(|duration| chrono::Utc::now().checked_sub_signed(duration));
-            let Some(cutoff) = cutoff else {
-                return bad_request();
-            };
-            start = Some(start.map_or(cutoff, |value| value.max(cutoff)));
-        }
-    }
-    if start.zip(end).is_some_and(|(start, end)| start > end) {
-        return bad_request();
-    }
-    let deleted_count = state
+    let username = current_username_from_headers(&state, &headers).await;
+    let filters = match read_filters(
+        &query.category,
+        &query.severity,
+        None,
+        query.since_minutes,
+        &query.start,
+        &query.end,
+    ) {
+        Ok(filters) => filters,
+        Err(_) => return mutation_error(EventMutationError::InvalidFilters),
+    };
+    match state
         .event_bus
-        .delete_user_events_filtered(
-            &username,
-            category_filter.as_deref(),
-            severity_filter.as_deref(),
-            None,
-            start,
-            end,
-        )
-        .await;
-
-    Json(serde_json::json!({
-        "ok": true,
-        "deleted": deleted_count,
-    }))
-    .into_response()
+        .delete_user_events_confirmed(&username, filters)
+        .await
+    {
+        Ok(deleted) => {
+            private_response(Json(serde_json::json!({ "ok": true, "deleted": deleted })))
+        }
+        Err(error) => mutation_error(error),
+    }
 }
 
 pub async fn ws_events(
@@ -194,22 +193,24 @@ pub async fn ws_events(
     ws.on_upgrade(move |socket| stream::handle_ws(socket, receiver, username))
 }
 
-pub async fn unread_count(
-    State(state): State<Arc<AppState>>,
-    headers: HeaderMap,
-) -> Json<serde_json::Value> {
+pub async fn unread_count(State(state): State<Arc<AppState>>, headers: HeaderMap) -> Response {
     let username = current_username_from_headers(&state, &headers).await;
-    let unread = state.event_bus.unread_count_for_user(&username).await;
-    Json(serde_json::json!({ "unread": unread }))
+    match state.event_bus.read_unread_count_for_user(&username).await {
+        Ok(unread) => private_response(Json(serde_json::json!({ "unread": unread }))),
+        Err(error) => read_error(error),
+    }
 }
 
-pub async fn mark_read(
-    State(state): State<Arc<AppState>>,
-    headers: HeaderMap,
-) -> Json<serde_json::Value> {
+pub async fn mark_read(State(state): State<Arc<AppState>>, headers: HeaderMap) -> Response {
     let username = current_username_from_headers(&state, &headers).await;
-    state.event_bus.mark_all_read_for_user(&username).await;
-    Json(serde_json::json!({ "ok": true }))
+    match state
+        .event_bus
+        .acknowledge_all_read_for_user(&username)
+        .await
+    {
+        Ok(()) => private_response(Json(serde_json::json!({ "ok": true }))),
+        Err(error) => mutation_error(error),
+    }
 }
 
 async fn current_username_from_headers(state: &Arc<AppState>, headers: &HeaderMap) -> String {
@@ -229,24 +230,75 @@ fn parse_rfc3339(value: Option<&str>) -> Option<chrono::DateTime<chrono::Utc>> {
         .map(|datetime| datetime.with_timezone(&chrono::Utc))
 }
 
-fn sanitize_category(value: &Option<String>) -> Option<String> {
-    value
-        .as_ref()
-        .map(|raw| raw.trim().to_ascii_lowercase())
-        .filter(|value| matches!(value.as_str(), "kernel" | "platform"))
-}
-
-fn sanitize_severity(value: &Option<String>) -> Option<String> {
-    value
-        .as_ref()
-        .map(|raw| raw.trim().to_ascii_lowercase())
-        .filter(|value| matches!(value.as_str(), "success" | "warning" | "error"))
+fn mutation_error(error: EventMutationError) -> Response {
+    let (status, message) = match error {
+        EventMutationError::InvalidFilters => (
+            StatusCode::BAD_REQUEST,
+            "invalid event deletion filter or time range",
+        ),
+        EventMutationError::Unconfirmed => (
+            StatusCode::SERVICE_UNAVAILABLE,
+            "event mutation could not be confirmed; verify state before retrying",
+        ),
+    };
+    private_response((
+        status,
+        Json(serde_json::json!({ "ok": false, "message": message })),
+    ))
 }
 
 fn resolve_event_limit(raw: Option<usize>) -> usize {
     raw.filter(|value| *value > 0)
         .map(|value| value.min(MAX_EVENT_LIMIT))
         .unwrap_or(DEFAULT_EVENT_LIMIT)
+}
+
+fn read_filters<'a>(
+    category: &'a Option<String>,
+    severity: &'a Option<String>,
+    limit: Option<usize>,
+    since_minutes: Option<i64>,
+    start_raw: &Option<String>,
+    end_raw: &Option<String>,
+) -> Result<EventQueryFilters<'a>, EventReadError> {
+    let start = parse_rfc3339(start_raw.as_deref());
+    let end = parse_rfc3339(end_raw.as_deref());
+    if (start_raw.is_some() && start.is_none()) || (end_raw.is_some() && end.is_none()) {
+        return Err(EventReadError::InvalidFilters);
+    }
+    Ok(EventQueryFilters {
+        category: category.as_deref(),
+        severity: severity.as_deref(),
+        limit,
+        since_minutes,
+        start,
+        end,
+    })
+}
+
+fn read_error(error: EventReadError) -> Response {
+    let (status, message) = match error {
+        EventReadError::InvalidFilters => (
+            StatusCode::BAD_REQUEST,
+            "invalid event query, format or time range",
+        ),
+        EventReadError::Unavailable => (
+            StatusCode::SERVICE_UNAVAILABLE,
+            "event storage is unavailable",
+        ),
+    };
+    private_response((
+        status,
+        Json(serde_json::json!({ "ok": false, "message": message })),
+    ))
+}
+
+fn private_response(response: impl IntoResponse) -> Response {
+    let mut response = response.into_response();
+    response
+        .headers_mut()
+        .insert(header::CACHE_CONTROL, HeaderValue::from_static("no-store"));
+    response
 }
 
 fn to_csv(events: &[Event]) -> String {
@@ -298,5 +350,5 @@ fn build_download_response(content_type: &str, filename: &str, body: String) -> 
         HeaderValue::from_str(&format!("attachment; filename=\"{filename}\""))
             .unwrap_or_else(|_| HeaderValue::from_static("attachment")),
     );
-    response
+    private_response(response)
 }

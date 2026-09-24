@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Cyanrex Lab Engine API",
-    "version": "0.4.0",
+    "version": "0.4.1",
     "description": "Machine-readable contract for the Cyanrex teaching control and execution plane."
   },
   "servers": [
@@ -573,6 +573,53 @@
                   }
                 }
               }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "Do not cache event reads or their query/storage errors.",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, unknown or duplicate query fields, invalid format, negative/overflowing window or reversed effective range. No wider query is performed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "Do not cache event reads or their query/storage errors.",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Event storage unavailable, timed out, failed decoding or previously latched into volatile write fallback; not empty/partial success. No storage details or download attachment are returned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "Do not cache event reads or their query/storage errors.",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
             }
           },
           "default": {
@@ -587,6 +634,7 @@
           }
         },
         "x-cyanrex-access": "authenticated",
+        "description": "Read only the authenticated session owner's events. Selected storage/schema/decoding failures and a 10-second application waiting deadline return generic 503 without disabling persistence or silently switching to memory. A prior latched write fallback also returns 503 until storage is repaired and Engine restarted; this does not reconcile volatile events. Explicit memory-only instances retain volatile reads. Successful reads and query/storage errors are no-store. History/export reject invalid or unknown filters, negative/overflowing windows and reversed effective ranges with 400; since_minutes=0 adds no time restriction. Export accepts only JSON/CSV. Legacy username (both), format (history) and limit (export) fields are ignored, never identity overrides. The normal history limit default/clamp and successful response schemas are unchanged. Reads do not add a persistence barrier or snapshot/live atomicity.",
         "x-cyanrex-roles": [
           "admin",
           "teacher",
@@ -673,6 +721,15 @@
         "responses": {
           "200": {
             "description": "Event export download",
+            "headers": {
+              "Cache-Control": {
+                "description": "Do not cache event reads or their query/storage errors.",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -689,6 +746,44 @@
               }
             }
           },
+          "400": {
+            "description": "Invalid, unknown or duplicate query fields, invalid format, negative/overflowing window or reversed effective range. No wider query is performed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "Do not cache event reads or their query/storage errors.",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Event storage unavailable, timed out, failed decoding or previously latched into volatile write fallback; not empty/partial success. No storage details or download attachment are returned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "Do not cache event reads or their query/storage errors.",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
           "default": {
             "description": "Error response",
             "content": {
@@ -701,6 +796,7 @@
           }
         },
         "x-cyanrex-access": "authenticated",
+        "description": "Read only the authenticated session owner's events. Selected storage/schema/decoding failures and a 10-second application waiting deadline return generic 503 without disabling persistence or silently switching to memory. A prior latched write fallback also returns 503 until storage is repaired and Engine restarted; this does not reconcile volatile events. Explicit memory-only instances retain volatile reads. Successful reads and query/storage errors are no-store. History/export reject invalid or unknown filters, negative/overflowing windows and reversed effective ranges with 400; since_minutes=0 adds no time restriction. Export accepts only JSON/CSV. Legacy username (both), format (history) and limit (export) fields are ignored, never identity overrides. The normal history limit default/clamp and successful response schemas are unchanged. Reads do not add a persistence barrier or snapshot/live atomicity.",
         "x-cyanrex-roles": [
           "admin",
           "teacher",
@@ -805,6 +901,34 @@
                   "additionalProperties": false
                 }
               }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "Do not cache event reads or their query/storage errors.",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Event storage unavailable, timed out, failed decoding or previously latched into volatile write fallback; not empty/partial success. No storage details or download attachment are returned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "Do not cache event reads or their query/storage errors.",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
             }
           },
           "default": {
@@ -819,6 +943,7 @@
           }
         },
         "x-cyanrex-access": "authenticated",
+        "description": "Read only the authenticated session owner's events. Selected storage/schema/decoding failures and a 10-second application waiting deadline return generic 503 without disabling persistence or silently switching to memory. A prior latched write fallback also returns 503 until storage is repaired and Engine restarted; this does not reconcile volatile events. Explicit memory-only instances retain volatile reads. Successful reads and query/storage errors are no-store. History/export reject invalid or unknown filters, negative/overflowing windows and reversed effective ranges with 400; since_minutes=0 adds no time restriction. Export accepts only JSON/CSV. Legacy username (both), format (history) and limit (export) fields are ignored, never identity overrides. The normal history limit default/clamp and successful response schemas are unchanged. Reads do not add a persistence barrier or snapshot/live atomicity.",
         "x-cyanrex-roles": [
           "admin",
           "teacher",
@@ -1775,6 +1900,34 @@
                   "$ref": "#/components/schemas/EventSettings"
                 }
               }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "Do not cache event settings, acknowledgements or handler errors.",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Event settings unavailable; not cached/default success.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Do not cache event settings, acknowledgements or handler errors.",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
             }
           },
           "default": {
@@ -1789,6 +1942,7 @@
           }
         },
         "x-cyanrex-access": "authenticated",
+        "description": "Read event retention settings for the authenticated session owner. Configured storage is read fresh, not replaced by cached/default success on failure. Missing rows are valid defaults (500/drop_oldest); corrupt stored values, schema/query failures, unavailable configured storage and the 10-second service waiting deadline return generic 503. Read failures remain retryable and do not disable persistence or publish runtime cache values. Prior latched write fallback requires storage repair and Engine restart, without reconciling volatile events. Explicit memory-only instances retain volatile settings. Success and handler errors use Cache-Control: no-store. No external-writer/runtime-cache coherence guarantee is added.",
         "x-cyanrex-roles": [
           "admin",
           "teacher",
@@ -1815,6 +1969,110 @@
                   "$ref": "#/components/schemas/UpdateEventSettingsResponse"
                 }
               }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "Do not cache event settings, acknowledgements or handler errors.",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid event settings request; no settings update is dispatched.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Do not cache event settings, acknowledgements or handler errors.",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateEventSettingsResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Invalid event settings request; no settings update is dispatched.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Do not cache event settings, acknowledgements or handler errors.",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateEventSettingsResponse"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Invalid event settings request; no settings update is dispatched.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Do not cache event settings, acknowledgements or handler errors.",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateEventSettingsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid event settings request; no settings update is dispatched.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Do not cache event settings, acknowledgements or handler errors.",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateEventSettingsResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Event settings update completion unconfirmed; verify state before retrying, not proof of rollback.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Do not cache event settings, acknowledgements or handler errors.",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateEventSettingsResponse"
+                }
+              }
             }
           },
           "default": {
@@ -1829,6 +2087,7 @@
           }
         },
         "x-cyanrex-access": "authenticated",
+        "description": "Update only the authenticated session owner's event retention settings; preserve max_records clamping to 50..50000 and drop_oldest/drop_new policies. Configured storage must confirm the policy update and retention trim in one transaction before success and runtime cache publication. Failed barriers, prior fallback and unconfirmed storage writes return generic no-store 503, not memory-only success. A 10-second service waiting deadline includes owner admission and cache publication; it is not rollback. Admitted SQL work retains owner ordering after caller cancellation or deadline, so verify state before an explicit retry and never retry automatically. Definite SQL errors preserve memory and remain retryable; storage/barrier deadlines may latch fallback until restart. Explicit memory-only instances remain volatile. Malformed JSON (400), excessive bodies (413), unsupported content type (415) and invalid JSON fields/types (422) return private generic JSON. Authentication/Origin CSRF rules and success schema are unchanged; unknown body fields remain ignored, never identity overrides. No distributed coordination or durable replay is added.",
         "x-cyanrex-roles": [
           "admin",
           "teacher",
@@ -2709,19 +2968,51 @@
                   "additionalProperties": false
                 }
               }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "Do not cache event mutation acknowledgements or failures.",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
             }
           },
           "400": {
-            "description": "Invalid deletion filter/query or time range; no events are deleted. Query extraction errors can be plain text.",
+            "description": "Invalid deletion filter/query or time range; no events are deleted. Query extraction errors are also generic JSON.",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ApiMessage"
                 }
-              },
-              "text/plain": {
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "Do not cache event mutation acknowledgements or failures.",
                 "schema": {
-                  "type": "string"
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Event mutation completion is unconfirmed; not a successful volatile write or proof of rollback. Verify current state before an explicit retry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "Do not cache event mutation acknowledgements or failures.",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
                 }
               }
             }
@@ -2738,7 +3029,7 @@
           }
         },
         "x-cyanrex-access": "authenticated",
-        "description": "Delete only events matching all supplied filters for the authenticated session owner. No filters explicitly means delete all of that owner's events; since_minutes=0 adds no time restriction. Invalid/empty filter values, unknown query keys, negative or overflowing time windows, and reversed effective time ranges return 400 without deleting events. Legacy username and format query keys are ignored, never identity overrides. Surviving records retain their unread state.",
+        "description": "Delete only events matching all supplied filters for the authenticated session owner. No filters explicitly means delete all of that owner's events; since_minutes=0 adds no time restriction. Invalid/empty filter values, unknown query keys, negative or overflowing time windows, and reversed effective time ranges return 400 without deleting events. Legacy username and format query keys are ignored, never identity overrides. Surviving records retain their unread state. Configured event storage must confirm the write before HTTP success, without memory-only fallback. Invalid/unavailable configured storage, failed persistence barriers, previously latched fallback and unconfirmed writes return generic no-store 503. A 10-second service waiting deadline includes owner admission; it is not rollback. Cancellation before admission dispatches nothing; admitted SQL work retains owner admission through cache publication even after the caller leaves. A timed-out or lost response may still have changed storage: verify state before an explicit retry, never retry automatically. Definite query/schema errors preserve memory and remain retryable; existing barrier/storage deadlines may latch fallback until restart without reconciling volatile events. Explicit memory-only instances remain volatile. Success and handler errors use Cache-Control: no-store. No cross-process coordination, durable replay or exactly-once guarantee is added.",
         "x-cyanrex-roles": [
           "admin",
           "teacher",
@@ -2831,6 +3122,34 @@
                   "additionalProperties": false
                 }
               }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "Do not cache event mutation acknowledgements or failures.",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Event mutation completion is unconfirmed; not a successful volatile write or proof of rollback. Verify current state before an explicit retry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "Do not cache event mutation acknowledgements or failures.",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
             }
           },
           "default": {
@@ -2845,6 +3164,7 @@
           }
         },
         "x-cyanrex-access": "authenticated",
+        "description": "Mark all events read for the authenticated session owner; no per-record or filter scope. Configured event storage must confirm the write before HTTP success, without memory-only fallback. Invalid/unavailable configured storage, failed persistence barriers, previously latched fallback and unconfirmed writes return generic no-store 503. A 10-second service waiting deadline includes owner admission; it is not rollback. Cancellation before admission dispatches nothing; admitted SQL work retains owner admission through cache publication even after the caller leaves. A timed-out or lost response may still have changed storage: verify state before an explicit retry, never retry automatically. Definite query/schema errors preserve memory and remain retryable; existing barrier/storage deadlines may latch fallback until restart without reconciling volatile events. Explicit memory-only instances remain volatile. Success and handler errors use Cache-Control: no-store. No cross-process coordination, durable replay or exactly-once guarantee is added.",
         "x-cyanrex-roles": [
           "admin",
           "teacher",

@@ -37,6 +37,11 @@ impl EventBus {
         // cannot leave history and the unread suffix half-updated.
         let mut history = self.history.write().await;
         let mut unread = self.unread.write().await;
+        let mut capacity = self.drop_new_count_cache.write().await;
+        let mut admitted = self.drop_new_admitted.write().await;
+        // Invalidate with the same atomic memory publication, including cancellation while waiting.
+        capacity.remove(username);
+        admitted.remove(username);
         let Some(events) = history.get_mut(username) else {
             return 0;
         };

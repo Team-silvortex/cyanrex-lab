@@ -1,0 +1,24 @@
+   Compiling cyanrex-engine v0.4.0 (/home/chiharukiryu/cdev/cyanrex-lab/engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 12.93s
+     Running unittests src/lib.rs (engine/target/debug/deps/cyanrex_engine-f07d476bbb92d94d)
+
+running 2 tests
+
+thread 'services::event_bus::tests::lifecycle::idle_persistence_worker_does_not_keep_its_own_producer_alive' (2528549) panicked at src/services/event_bus/tests/lifecycle.rs:11:10:
+the writer must exit after the last producer leaves: Elapsed(())
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'services::event_bus::tests::lifecycle::disabled_persistence_worker_consumes_queued_barriers_then_exits' (2528548) panicked at src/services/event_bus/tests/lifecycle.rs:11:10:
+the writer must exit after the last producer leaves: Elapsed(())
+test services::event_bus::tests::lifecycle::idle_persistence_worker_does_not_keep_its_own_producer_alive ... FAILED
+test services::event_bus::tests::lifecycle::disabled_persistence_worker_consumes_queued_barriers_then_exits ... FAILED
+
+failures:
+
+failures:
+    services::event_bus::tests::lifecycle::disabled_persistence_worker_consumes_queued_barriers_then_exits
+    services::event_bus::tests::lifecycle::idle_persistence_worker_does_not_keep_its_own_producer_alive
+
+test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 203 filtered out; finished in 2.00s
+
+error: test failed, to rerun pass `--lib`

@@ -1,0 +1,49 @@
+   Compiling cyanrex-engine v0.4.0 (/home/chiharukiryu/cdev/cyanrex-lab/engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.04s
+     Running tests/module_boundaries_tdd.rs (engine/target/debug/deps/module_boundaries_tdd-86747700c840c4fa)
+
+running 3 tests
+test event_reads::event_read_responses_are_private_and_keep_legacy_ignored_owner_fields ... 
+thread 'event_reads::event_read_responses_are_private_and_keep_legacy_ignored_owner_fields' (2604503) panicked at tests/module_boundaries/event_reads.rs:123:9:
+assertion `left == right` failed: /events?limit=0&username=network-bob&format=csv
+  left: None
+ right: Some("no-store")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+test event_reads::event_read_time_overflow_is_bad_request_not_panic ... 
+thread 'event_reads::event_read_time_overflow_is_bad_request_not_panic' (2604558) panicked at /home/chiharukiryu/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/chrono-0.4.45/src/lib.rs:717:17:
+TimeDelta::minutes out of bounds
+
+thread 'event_reads::event_read_time_overflow_is_bad_request_not_panic' (2604558) panicked at src/services/event_bus_filter.rs:17:24:
+`DateTime - TimeDelta` overflowed
+
+thread 'event_reads::event_read_time_overflow_is_bad_request_not_panic' (2604558) panicked at /home/chiharukiryu/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/chrono-0.4.45/src/lib.rs:717:17:
+TimeDelta::minutes out of bounds
+
+thread 'event_reads::event_read_time_overflow_is_bad_request_not_panic' (2604558) panicked at src/services/event_bus_filter.rs:17:24:
+`DateTime - TimeDelta` overflowed
+
+thread 'event_reads::event_read_time_overflow_is_bad_request_not_panic' (2604558) panicked at /home/chiharukiryu/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/chrono-0.4.45/src/lib.rs:717:17:
+TimeDelta::minutes out of bounds
+
+thread 'event_reads::event_read_time_overflow_is_bad_request_not_panic' (2604558) panicked at src/services/event_bus_filter.rs:17:24:
+`DateTime - TimeDelta` overflowed
+
+thread 'event_reads::event_read_time_overflow_is_bad_request_not_panic' (2604558) panicked at tests/module_boundaries/event_reads.rs:103:5:
+overflow must be a checked client error: ["/events?9223372036854775807: Err(JoinError::Panic(Id(5), \"TimeDelta::minutes out of bounds\", ...))", "/events?1000000000000: Err(JoinError::Panic(Id(6), \"`DateTime - TimeDelta` overflowed\", ...))", "/events/export?format=json&9223372036854775807: Err(JoinError::Panic(Id(7), \"TimeDelta::minutes out of bounds\", ...))", "/events/export?format=json&1000000000000: Err(JoinError::Panic(Id(8), \"`DateTime - TimeDelta` overflowed\", ...))", "/events/export?format=csv&9223372036854775807: Err(JoinError::Panic(Id(9), \"TimeDelta::minutes out of bounds\", ...))", "/events/export?format=csv&1000000000000: Err(JoinError::Panic(Id(10), \"`DateTime - TimeDelta` overflowed\", ...))"]
+FAILED
+test event_reads::event_reads_reject_invalid_filters_without_widening ... 
+thread 'event_reads::event_reads_reject_invalid_filters_without_widening' (2604614) panicked at tests/module_boundaries/event_reads.rs:57:5:
+invalid read filters were silently accepted: [("/events?category=typo", 200), ("/events?severity=typo", 200), ("/events?category=", 200), ("/events?severity=", 200), ("/events?start=", 200), ("/events?end=", 200), ("/events?start=not-a-date", 200), ("/events?end=not-a-date", 200), ("/events?since_minutes=-1", 200), ("/events?sevrity=error", 200), ("/events?start=2026-09-24T02:00:00Z&end=2026-09-24T01:00:00Z", 200), ("/events/export?format=json&category=typo", 200), ("/events/export?format=json&severity=typo", 200), ("/events/export?format=json&category=", 200), ("/events/export?format=json&severity=", 200), ("/events/export?format=json&start=", 200), ("/events/export?format=json&end=", 200), ("/events/export?format=json&start=not-a-date", 200), ("/events/export?format=json&end=not-a-date", 200), ("/events/export?format=json&since_minutes=-1", 200), ("/events/export?format=json&sevrity=error", 200), ("/events/export?format=json&start=2026-09-24T02:00:00Z&end=2026-09-24T01:00:00Z", 200), ("/events/export?format=csv&category=typo", 200), ("/events/export?format=csv&severity=typo", 200), ("/events/export?format=csv&category=", 200), ("/events/export?format=csv&severity=", 200), ("/events/export?format=csv&start=", 200), ("/events/export?format=csv&end=", 200), ("/events/export?format=csv&start=not-a-date", 200), ("/events/export?format=csv&end=not-a-date", 200), ("/events/export?format=csv&since_minutes=-1", 200), ("/events/export?format=csv&sevrity=error", 200), ("/events/export?format=csv&start=2026-09-24T02:00:00Z&end=2026-09-24T01:00:00Z", 200), ("/events/export?format=xml", 200), ("/events/export?format=", 200), ("/events/export?format=../csv", 200)]
+FAILED
+
+failures:
+
+failures:
+    event_reads::event_read_responses_are_private_and_keep_legacy_ignored_owner_fields
+    event_reads::event_read_time_overflow_is_bad_request_not_panic
+    event_reads::event_reads_reject_invalid_filters_without_widening
+
+test result: FAILED. 0 passed; 3 failed; 0 ignored; 0 measured; 19 filtered out; finished in 3.23s
+
+error: test failed, to rerun pass `--test module_boundaries_tdd`

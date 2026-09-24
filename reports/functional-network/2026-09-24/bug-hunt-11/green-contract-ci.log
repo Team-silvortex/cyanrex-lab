@@ -1,0 +1,15 @@
+✔ auth mutations document unconfirmed storage writes without weakening access or success schemas (5.027653ms)
+✔ login and destructive event filters expose failure behavior without changing success contracts (1.863816ms)
+✔ event mutations document unconfirmed writes, cancellation and private acknowledgements (4.615593ms)
+✔ Rust CI explicitly runs every queued event persistence and retention boundary (5.288511ms)
+✔ Rust CI runs PostgreSQL acceptance against its disposable service and rejects an empty selection (1.452606ms)
+✔ Rust CI promotes every auth boundary regression plus script/event persistence checks (0.996724ms)
+✔ Rust CI exercises persisted authentication and duplicate registration on the disposable database (0.669882ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 62.108114

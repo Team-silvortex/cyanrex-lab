@@ -1,0 +1,13 @@
+✔ event reads document private unavailable results without changing session authority or success shapes (7.423745ms)
+✔ Rust CI explicitly runs every queued event persistence and retention boundary (4.688411ms)
+✔ Rust CI runs PostgreSQL acceptance against its disposable service and rejects an empty selection (0.791642ms)
+✔ Rust CI promotes every auth boundary regression plus script/event persistence checks (1.486133ms)
+✔ Rust CI exercises persisted authentication and duplicate registration on the disposable database (0.558951ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 53.708554

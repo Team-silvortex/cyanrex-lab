@@ -26,7 +26,8 @@ test("login and destructive event filters expose failure behavior without changi
   assert.equal(deletion["x-cyanrex-access"], "authenticated");
   assert.ok(deletion["x-cyanrex-csrf"]);
   assert.match(deletion.responses[400].description, /no events are deleted/i);
-  assert.ok(deletion.responses[400].content["text/plain"]);
+  assert.ok(deletion.responses[400].content["application/json"]);
+  assert.equal(deletion.responses[400].headers["Cache-Control"].schema.const, "no-store");
   assert.match(deletion.description, /unknown query keys/i);
   assert.match(deletion.description, /No filters explicitly means delete all/i);
   assert.equal(deletion.parameters.find(({ name }) => name === "since_minutes").schema.minimum, 0);

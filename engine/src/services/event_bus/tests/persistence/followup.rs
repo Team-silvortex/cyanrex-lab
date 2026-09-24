@@ -1,10 +1,10 @@
 use super::*;
 
 impl Fixture {
-    fn reopen(&mut self) {
+    pub(super) fn reopen(&mut self) {
         assert!(self.receiver.is_none());
         let (sender, receiver) = mpsc::channel(128);
-        self.bus.persist_sender = sender;
+        self.bus.persist_sender = Some(sender);
         self.receiver = Some(receiver);
     }
 }

@@ -1,0 +1,18 @@
+   Compiling cyanrex-engine v0.4.0 (/home/chiharukiryu/cdev/cyanrex-lab/engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 8.81s
+     Running tests/module_boundaries_tdd.rs (engine/target/debug/deps/module_boundaries_tdd-86747700c840c4fa)
+
+running 10 tests
+test event_reads::event_read_time_overflow_is_bad_request_not_panic ... ok
+test event_mutations::event_mutation_success_and_invalid_queries_are_private_json ... ok
+test event_reads::event_read_responses_are_private_and_keep_legacy_ignored_owner_fields ... ok
+test event_reads::event_reads_reject_invalid_filters_without_widening ... ok
+test event_settings::event_settings_http_is_private_and_preserves_validation_and_clamping ... ok
+test events::event_history_export_and_unread_remain_session_scoped ... ok
+test events::event_settings_http_retention_and_overflow_policy_do_not_cross_users ... ok
+test events::filtered_event_deletion_removes_matches_not_the_complement ... ok
+test events::invalid_event_delete_filters_must_not_widen_into_delete_all ... ok
+test learning_flow::saved_source_flows_through_runner_events_feedback_and_owner_bound_resume ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 14 filtered out; finished in 14.71s
+

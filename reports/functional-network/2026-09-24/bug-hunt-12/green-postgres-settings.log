@@ -1,0 +1,18 @@
+    Blocking waiting for file lock on artifact directory
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 14.19s
+     Running unittests src/lib.rs (engine/target/debug/deps/cyanrex_engine-f07d476bbb92d94d)
+
+running 10 tests
+test services::event_bus::tests::persistence::settings::postgres_settings_cancelled_update_orders_later_events_under_new_policy ... ok
+test services::event_bus::tests::persistence::settings::postgres_settings_commit_wait_is_bounded_without_claiming_rollback ... ok
+test services::event_bus::tests::persistence::settings::postgres_settings_corrupt_values_are_not_default_or_panicking_reads ... ok
+test services::event_bus::tests::persistence::settings::postgres_settings_failed_barrier_cannot_publish_or_trim_policy ... ok
+test services::event_bus::tests::persistence::settings::postgres_settings_prior_fallback_does_not_publish_or_trim_memory ... ok
+test services::event_bus::tests::persistence::settings::postgres_settings_read_deadline_and_cancellation_remain_retryable ... ok
+test services::event_bus::tests::persistence::settings::postgres_settings_read_failure_is_not_cached_or_default_success ... ok
+test services::event_bus::tests::persistence::settings::postgres_settings_sql_timeout_preserves_uncommitted_policy_and_history ... ok
+test services::event_bus::tests::persistence::settings::postgres_settings_success_reloads_and_preserves_read_flags_and_capacity ... ok
+test services::event_bus::tests::persistence::settings::postgres_settings_write_failure_is_private_and_atomic ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 233 filtered out; finished in 51.88s
+

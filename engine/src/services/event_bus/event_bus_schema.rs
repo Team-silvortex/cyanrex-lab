@@ -8,7 +8,15 @@ impl EventBus {
             return Ok(());
         };
 
-        self.query_with_deadline(self.schema_ready
+        self.query_with_deadline(self.ensure_schema_on(pool)).await
+    }
+
+    // Callers choose read-only retry semantics or the existing writer deadline/fallback policy.
+    pub(super) async fn ensure_schema_on(
+        &self,
+        pool: &crate::sqlx_compat::PgPool,
+    ) -> Result<(), sqlx::Error> {
+        self.schema_ready
             .get_or_try_init(|| async {
                 sqlx::query(
                     "CREATE TABLE IF NOT EXISTS event_records (
@@ -57,7 +65,7 @@ impl EventBus {
                 .execute(pool)
                 .await?;
                 Ok(())
-            }))
+            })
             .await
             .map(|_| ())
     }

@@ -1,6 +1,7 @@
 use super::*;
 
 impl EventBus {
+    /// Legacy best-effort helper; HTTP uses delete_user_events_confirmed instead.
     pub async fn delete_user_events_filtered(
         &self,
         username: &str,
@@ -25,6 +26,7 @@ impl EventBus {
                 )
                 .await;
             bus.drop_new_count_cache.write().await.remove(&username);
+            bus.drop_new_admitted.write().await.remove(&username);
             deleted
         })
         .await

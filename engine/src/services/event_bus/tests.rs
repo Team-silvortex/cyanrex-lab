@@ -3,9 +3,13 @@ use crate::models::event::{EventCategory, EventSeverity};
 use serde_json::json;
 use tokio::sync::broadcast::error::TryRecvError;
 
+mod confirmed_mutations;
 mod deletion;
+mod lifecycle;
 mod persistence;
+mod reads;
 mod retention;
+mod settings;
 
 fn memory_bus() -> EventBus {
     let bus = EventBus::new(1024);

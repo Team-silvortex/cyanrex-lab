@@ -1,0 +1,91 @@
+    Blocking waiting for file lock on artifact directory
+   Compiling cyanrex-engine v0.4.0 (/home/chiharukiryu/cdev/cyanrex-lab/engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 34.92s
+     Running unittests src/lib.rs (engine/target/debug/deps/cyanrex_engine-f07d476bbb92d94d)
+
+running 8 tests
+test services::event_bus::tests::persistence::reads::postgres_export_read_failure_is_not_a_successful_download ... 
+thread 'services::event_bus::tests::persistence::reads::postgres_export_read_failure_is_not_a_successful_download' (2603166) panicked at src/services/event_bus/tests/persistence/reads.rs:54:5:
+assertion `left == right` failed: read failure must not masquerade as successful history/unread/download
+  left: 200
+ right: 503
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'services::event_bus::tests::persistence::reads::postgres_export_read_failure_is_not_a_successful_download' (2603166) panicked at src/services/event_bus/tests/persistence.rs:106:13:
+event boundary failed; owned schema was cleaned up: JoinError::Panic(Id(10), "assertion `left == right` failed: read failure must not masquerade as successful history/unread/download\n  left: 200\n right: 503", ...)
+FAILED
+test services::event_bus::tests::persistence::reads::postgres_history_read_failure_is_unavailable_and_retryable ... 
+thread 'services::event_bus::tests::persistence::reads::postgres_history_read_failure_is_unavailable_and_retryable' (2603234) panicked at src/services/event_bus/tests/persistence/reads.rs:54:5:
+assertion `left == right` failed: read failure must not masquerade as successful history/unread/download
+  left: 200
+ right: 503
+
+thread 'services::event_bus::tests::persistence::reads::postgres_history_read_failure_is_unavailable_and_retryable' (2603234) panicked at src/services/event_bus/tests/persistence.rs:106:13:
+event boundary failed; owned schema was cleaned up: JoinError::Panic(Id(31), "assertion `left == right` failed: read failure must not masquerade as successful history/unread/download\n  left: 200\n right: 503", ...)
+FAILED
+test services::event_bus::tests::persistence::reads::postgres_latched_fallback_reads_stay_unavailable_until_fresh_state ... 
+thread 'services::event_bus::tests::persistence::reads::postgres_latched_fallback_reads_stay_unavailable_until_fresh_state' (2603298) panicked at src/services/event_bus/tests/persistence/reads.rs:54:5:
+assertion `left == right` failed: read failure must not masquerade as successful history/unread/download
+  left: 200
+ right: 503
+
+thread 'services::event_bus::tests::persistence::reads::postgres_latched_fallback_reads_stay_unavailable_until_fresh_state' (2603298) panicked at src/services/event_bus/tests/persistence.rs:106:13:
+event boundary failed; owned schema was cleaned up: JoinError::Panic(Id(52), "assertion `left == right` failed: read failure must not masquerade as successful history/unread/download\n  left: 200\n right: 503", ...)
+FAILED
+test services::event_bus::tests::persistence::reads::postgres_payload_decode_failure_is_not_a_fabricated_empty_object ... 
+thread 'services::event_bus::tests::persistence::reads::postgres_payload_decode_failure_is_not_a_fabricated_empty_object' (2603324) panicked at src/services/event_bus/tests/persistence/reads.rs:54:5:
+assertion `left == right` failed: read failure must not masquerade as successful history/unread/download
+  left: 200
+ right: 503
+
+thread 'services::event_bus::tests::persistence::reads::postgres_payload_decode_failure_is_not_a_fabricated_empty_object' (2603324) panicked at src/services/event_bus/tests/persistence.rs:106:13:
+event boundary failed; owned schema was cleaned up: JoinError::Panic(Id(71), "assertion `left == right` failed: read failure must not masquerade as successful history/unread/download\n  left: 200\n right: 503", ...)
+FAILED
+test services::event_bus::tests::persistence::reads::postgres_read_timeout_releases_waiting_without_disabling_storage ... 
+thread 'services::event_bus::tests::persistence::reads::postgres_read_timeout_releases_waiting_without_disabling_storage' (2603390) panicked at src/services/event_bus/tests/persistence/reads.rs:215:48:
+selected reads must have a bounded wait: Elapsed(())
+
+thread 'services::event_bus::tests::persistence::reads::postgres_read_timeout_releases_waiting_without_disabling_storage' (2603390) panicked at src/services/event_bus/tests/persistence.rs:106:13:
+event boundary failed; owned schema was cleaned up: JoinError::Panic(Id(92), "selected reads must have a bounded wait: Elapsed(())", ...)
+FAILED
+test services::event_bus::tests::persistence::reads::postgres_schema_read_failure_is_retryable_without_memory_success ... 
+thread 'services::event_bus::tests::persistence::reads::postgres_schema_read_failure_is_retryable_without_memory_success' (2603577) panicked at src/services/event_bus/tests/persistence/reads.rs:54:5:
+assertion `left == right` failed: read failure must not masquerade as successful history/unread/download
+  left: 200
+ right: 503
+
+thread 'services::event_bus::tests::persistence::reads::postgres_schema_read_failure_is_retryable_without_memory_success' (2603577) panicked at src/services/event_bus/tests/persistence.rs:106:13:
+event boundary failed; owned schema was cleaned up: JoinError::Panic(Id(116), "assertion `left == right` failed: read failure must not masquerade as successful history/unread/download\n  left: 200\n right: 503", ...)
+FAILED
+test services::event_bus::tests::persistence::reads::postgres_timestamp_decode_failure_is_unavailable_not_a_panic ... 
+thread 'services::event_bus::tests::persistence::reads::postgres_timestamp_decode_failure_is_unavailable_not_a_panic' (2603639) panicked at src/services/event_bus_db.rs:492:28:
+called `Result::unwrap()` on an `Err` value: ColumnDecode { index: "\"timestamp\"", source: "mismatched types; Rust type `chrono::datetime::DateTime<chrono::offset::utc::Utc>` (as SQL type `TIMESTAMPTZ`) is not compatible with SQL type `TEXT`" }
+
+thread 'services::event_bus::tests::persistence::reads::postgres_timestamp_decode_failure_is_unavailable_not_a_panic' (2603639) panicked at src/services/event_bus/tests/persistence.rs:106:13:
+event boundary failed; owned schema was cleaned up: JoinError::Panic(Id(140), "called `Result::unwrap()` on an `Err` value: ColumnDecode { index: \"\\\"timestamp\\\"\", source: \"mismatched types; Rust type `chrono::datetime::DateTime<chrono::offset::utc::Utc>` (as SQL type `TIMESTAMPTZ`) is not compatible with SQL type `TEXT`\" }", ...)
+FAILED
+test services::event_bus::tests::persistence::reads::postgres_unread_read_failure_is_unavailable_not_zero ... 
+thread 'services::event_bus::tests::persistence::reads::postgres_unread_read_failure_is_unavailable_not_zero' (2603664) panicked at src/services/event_bus/tests/persistence/reads.rs:54:5:
+assertion `left == right` failed: read failure must not masquerade as successful history/unread/download
+  left: 200
+ right: 503
+
+thread 'services::event_bus::tests::persistence::reads::postgres_unread_read_failure_is_unavailable_not_zero' (2603664) panicked at src/services/event_bus/tests/persistence.rs:106:13:
+event boundary failed; owned schema was cleaned up: JoinError::Panic(Id(161), "assertion `left == right` failed: read failure must not masquerade as successful history/unread/download\n  left: 200\n right: 503", ...)
+FAILED
+
+failures:
+
+failures:
+    services::event_bus::tests::persistence::reads::postgres_export_read_failure_is_not_a_successful_download
+    services::event_bus::tests::persistence::reads::postgres_history_read_failure_is_unavailable_and_retryable
+    services::event_bus::tests::persistence::reads::postgres_latched_fallback_reads_stay_unavailable_until_fresh_state
+    services::event_bus::tests::persistence::reads::postgres_payload_decode_failure_is_not_a_fabricated_empty_object
+    services::event_bus::tests::persistence::reads::postgres_read_timeout_releases_waiting_without_disabling_storage
+    services::event_bus::tests::persistence::reads::postgres_schema_read_failure_is_retryable_without_memory_success
+    services::event_bus::tests::persistence::reads::postgres_timestamp_decode_failure_is_unavailable_not_a_panic
+    services::event_bus::tests::persistence::reads::postgres_unread_read_failure_is_unavailable_not_zero
+
+test result: FAILED. 0 passed; 8 failed; 0 ignored; 0 measured; 209 filtered out; finished in 27.35s
+
+error: test failed, to rerun pass `--lib`

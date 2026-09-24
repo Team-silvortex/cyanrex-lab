@@ -107,9 +107,77 @@ discloses that scope. Only one acknowledgement can be pending; filter changes/na
 and waiting. Failure is visible and suppresses automatic attempts until a manual retry or new view scope.
 Sidebar unread reads are validated, have ten-second deadlines and poll four seconds after completion.
 Unavailable state is `?`, not zero. Successful acknowledgement/deletion triggers a fresh read that invalidates
-older in-flight badge responses. These are UI acknowledgements, not new durable SQL guarantees.
+older in-flight badge responses. Browser confirmation alone is not proof of storage success; see the
+Engine confirmation policy below.
 
 See [bug hunt 07](functional-network-bug-hunt-07.md) for reproduction and source-bound evidence.
+
+### Engine read failures and query validation
+
+History, JSON/CSV export and unread HTTP handlers now use fallible reads. A configured store's schema,
+query or row-decoding failure returns generic `503`, not a successful empty/partial history, zero count or
+download. Asynchronous read waiting (including schema initialization and pool acquisition) is capped at
+ten seconds without disabling future persistence. After a transient read fault is repaired, a new read
+can succeed; cancellation also leaves storage usable. History SELECT statements are not cached across
+reads so a repaired column type does not leave a stale result-type plan. This affects history SQL planning,
+not writer caching, and no performance improvement is claimed.
+
+Previously latched write/settings/legacy-service fallback still blocks these HTTP reads until storage is
+healthy and the Engine is restarted; invalid configured database URLs are unavailable too. Existing volatile
+events are not automatically merged on restart. Explicit memory-only instances keep their bounded volatile
+reads. Legacy infallible EventBus helpers remain best-effort for compatibility; HTTP handlers do not use them.
+
+History/export reject invalid or empty category/severity/date filters, unknown/duplicate keys, negative or
+overflowing windows, reversed effective ranges, and unsupported export formats with generic `400`.
+`since_minutes=0`, history's default/clamped limit, case-insensitive filter values and JSON/CSV payloads stay
+compatible. Legacy `username` is ignored on both routes; history's `format` and export's `limit` are also
+ignored. No query field selects another owner. Successful reads/downloads and handler query/storage errors
+are `Cache-Control: no-store`. Failed exports have no attachment header. Auth middleware still controls access.
+
+The deadline bounds cooperative async waiting, not authentication, response serialization, arbitrary CPU
+work, or confirmed SQL cancellation. Reads still have no persistence barrier or atomic snapshot/live join.
+See [bug hunt 10](functional-network-bug-hunt-10.md).
+
+### Engine mutation confirmation
+
+HTTP mark-read and deletion must confirm the selected storage mutation before returning success.
+Configured invalid/unavailable storage, failed write barriers, prior fallback and unconfirmed writes
+return generic no-store `503`, never a successful memory-only acknowledgement. Definite schema/query
+errors do not clear unread/history or disable persistence, so repaired storage can be retried. Existing
+barrier/storage deadlines may still latch fallback: inspect storage and volatile events before restarting.
+No automatic volatile reconciliation is added. Explicit memory-only instances retain volatile behavior;
+legacy infallible service helpers still have their compatibility fallback contract.
+
+The caller's cooperative service wait is capped at ten seconds including owner admission. Cancellation
+before admission dispatches nothing. After SQL admission, a background task retains per-owner ordering
+through cache publication even when the caller cancels or gets a timeout. Consequently `503`, a timeout
+or a lost response is **unconfirmed, not rollback**: inspect current state before an explicit retry, and
+do not retry automatically. A SQL statement or local publication can complete after the response.
+This is not a whole-worker lifetime bound, an authentication/serialization deadline, process-shutdown
+draining or proof of server-side SQL cancellation. It adds no external-writer/multi-Engine coordination.
+
+Successful JSON shapes, session ownership, CSRF, all-owner mark-read and no-filter delete-all remain.
+Deletion freezes its validated relative cutoff before waiting. Invalid/duplicate/unknown query fields
+and invalid ranges now return no-store JSON `400`; successful acknowledgements are also no-store.
+No-match deletion and already-read acknowledgement remain valid successes. SQL deletion counts include
+uncached rows and preserve surviving read flags; all memory deletion/cache locks are acquired before
+editing, so cancelled memory-only waits cannot split state. See [bug hunt 11](functional-network-bug-hunt-11.md).
+
+### Event retention settings
+
+`GET /settings/events` reads configured storage, not a potentially stale runtime cache. A missing row
+means the normal 500/DropOldest default; invalid stored limits/policies, decoding or query errors, prior
+fallback and ten-second service read waits return generic no-store `503`. Read failure remains retryable
+without disabling persistence or caching a default. This read does not synchronize external writers
+into runtime policy; legacy publication still uses its own cached, best-effort helper.
+
+`POST /settings/events` confirms the write barrier and a single policy/trim transaction before publishing
+local settings/history/unread/capacity changes. Definite SQL failure preserves memory and is retryable;
+failed barriers/prior fallback cannot silently save or trim memory. It shares the above ten-second caller
+wait and admitted-worker cancellation semantics: unconfirmed is not rollback; verify before retrying.
+Success and handler errors are no-store. JSON syntax, oversized bodies, content type and field/type
+errors retain 400/413/415/422 with generic JSON. Limits still clamp to 50..50000; unknown body fields do not
+override session ownership. Explicit memory-only settings remain volatile. See [bug hunt 12](functional-network-bug-hunt-12.md).
 
 ## Recovery limits
 
@@ -126,14 +194,31 @@ rows preserve queue order, and SQL history uses timestamp plus ID ordering.
 The queue still has 2,048 slots and 64-record batches. Full/closed queues no longer spawn an additional
 SQL task per event: they warn and latch volatile history until Engine restart. Barrier waiting and selected
 schema/settings/mutation stages each have ten-second application deadlines. They do not stop already
-dispatched database work or prove rollback, and they are not a total request deadline. The existing
-fallback can still acknowledge volatile read/deletion changes; HTTP success is not a new durability flag.
+dispatched database work or prove rollback, and they are not a total worker deadline. Legacy service
+helpers can still acknowledge volatile changes; HTTP mark-read/deletion/settings use the separate policies above.
 After an outage, review storage health and any volatile events before restarting; restoration/reconciliation
 is not automatic. Plain history/unread reads do not gain a barrier or an atomic snapshot/live join.
 
-See [bug hunt 08](functional-network-bug-hunt-08.md). Its 17 new PostgreSQL cases plus the earlier deletion
-case use disposable schemas, real SQL and controlled queues/locks; CI explicitly selects the new ignored
-tests. Run only with an explicitly disposable `CYANREX_TEST_DATABASE_URL`, never the deployment URL:
+Cold DropNew publication now checks retained SQL rows before changing history, unread or live queues.
+Locally admitted pending events consume slots even across the writer's one-second count-cache expiry.
+Per-owner admission serializes initialization and reservation; no slot is consumed by cancellation before
+publication. Deletion, replacement and settings changes rebase this count after their existing barrier.
+Only cold or invalidated DropNew owners need this additional count query, bounded to ten seconds of
+application waiting. Failure latches the existing volatile fallback; recovery still requires reviewing
+volatile events and restarting, not automatic reconciliation. DropOldest and memory-only admission stay
+unchanged. Counts are single-Engine metadata, not coordination with external SQL writers.
+
+The background writer no longer owns a producer handle. Once the last producer clone leaves, healthy
+queued batches (including the last partial batch) drain and the worker exits while the async runtime is
+alive. Disabled storage consumes/discards queued events and rejects barriers rather than claiming durable
+success. This does not add a process-shutdown hook, whole-writer deadline, lost-commit recovery or durable
+delivery: runtime termination, stalled SQL or ambiguous write retries remain outside this guarantee.
+
+See [bug hunt 08](functional-network-bug-hunt-08.md), [09](functional-network-bug-hunt-09.md),
+[10](functional-network-bug-hunt-10.md), [11](functional-network-bug-hunt-11.md) and [12](functional-network-bug-hunt-12.md).
+The 52 PostgreSQL cases use disposable schemas, real SQL and controlled queues/locks; CI explicitly selects
+these ignored tests. Cold-cache recreation uses a fresh EventBus against the same schema, not process
+termination. Run only with an explicitly disposable `CYANREX_TEST_DATABASE_URL`, never the deployment URL:
 
 ```bash
 cargo test --manifest-path engine/Cargo.toml --locked --lib services::event_bus::tests -- --ignored --test-threads=1

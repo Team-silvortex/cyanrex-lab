@@ -1,9 +1,9 @@
 use super::*;
 use crate::services::event_bus_codec::{to_category_str, to_color_str, to_severity_str};
-use crate::services::event_bus_policy::policy_to_str;
 use crate::sqlx_compat::{types::Json, Postgres, QueryBuilder};
 
 impl EventBus {
+    /// Legacy best-effort helper; HTTP uses acknowledge_all_read_for_user for confirmed results.
     pub async fn mark_all_read_for_user(&self, username: &str) {
         let username = username.to_owned();
         self.with_persistence_barrier(username.clone(), move |bus| async move {
@@ -47,9 +47,11 @@ impl EventBus {
             let mut history = bus.history.write().await;
             let mut unread = bus.unread.write().await;
             let mut capacity = bus.drop_new_count_cache.write().await;
+            let mut admitted = bus.drop_new_admitted.write().await;
             history.insert(username.clone(), events.into());
             unread.insert(username.clone(), 0);
             capacity.remove(&username);
+            admitted.remove(&username);
         })
         .await;
     }
@@ -88,6 +90,7 @@ impl EventBus {
         transaction.commit().await
     }
 
+    /// Legacy best-effort helper; HTTP uses update_settings_confirmed instead.
     pub async fn update_settings_for_user(
         &self,
         username: &str,
@@ -103,37 +106,14 @@ impl EventBus {
             if let Some(pool) = bus.active_pool() {
                 // Persist policy and trim together; an error must not publish a new cache or
                 // irreversibly shrink memory while reporting that the settings update failed.
-                let result: Result<(), sqlx::Error> = bus.query_with_deadline(async {
-                    bus.ensure_schema().await?;
-                    let mut transaction = pool.begin().await?;
-                    sqlx::query("INSERT INTO event_user_settings (username, max_records, overflow_policy)
-                        VALUES ($1, $2, $3) ON CONFLICT (username)
-                        DO UPDATE SET max_records = EXCLUDED.max_records, overflow_policy = EXCLUDED.overflow_policy")
-                        .bind(&username).bind(settings.max_records as i64).bind(policy_to_str(settings.overflow_policy))
-                        .execute(&mut *transaction).await?;
-                    sqlx::query("DELETE FROM event_records WHERE id IN (
-                        SELECT id FROM event_records WHERE username = $1 ORDER BY timestamp DESC, id DESC OFFSET $2)")
-                        .bind(&username).bind(settings.max_records as i64).execute(&mut *transaction).await?;
-                    transaction.commit().await
-                }).await;
+                let result = bus
+                    .query_with_deadline(bus.persist_settings_and_trim(pool, &username, settings))
+                    .await;
                 result.map_err(|error| format!("update event settings failed: {error}"))?;
             }
-            // Obtain every lock before changing anything; cancellation on the memory path
-            // cannot publish half a settings/history/unread update.
-            let mut cache = bus.settings.write().await;
-            let mut history = bus.history.write().await;
-            let mut unread = bus.unread.write().await;
-            let mut capacity = bus.drop_new_count_cache.write().await;
-            cache.insert(username.clone(), settings);
-            if let Some(bucket) = history.get_mut(&username) {
-                let remove = bucket.len().saturating_sub(settings.max_records);
-                bucket.drain(..remove);
-            }
-            if let Some(counter) = unread.get_mut(&username) {
-                *counter = (*counter).min(settings.max_records);
-            }
-            capacity.remove(&username);
+            bus.publish_settings_update(&username, settings).await;
             Ok(settings)
-        }).await
+        })
+        .await
     }
 }

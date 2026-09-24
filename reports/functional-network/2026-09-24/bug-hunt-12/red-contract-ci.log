@@ -1,0 +1,43 @@
+✖ event settings expose private unavailable reads and unconfirmed transactional updates (4.812959ms)
+✖ Rust CI explicitly runs every queued event persistence and retention boundary (5.807216ms)
+✔ Rust CI runs PostgreSQL acceptance against its disposable service and rejects an empty selection (5.383531ms)
+✔ Rust CI promotes every auth boundary regression plus script/event persistence checks (1.016289ms)
+✔ Rust CI exercises persisted authentication and duplicate registration on the disposable database (0.593364ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 3
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 64.729265
+
+✖ failing tests:
+
+test at scripts/tests/eventSettingsContract.test.mjs:5:1
+✖ event settings expose private unavailable reads and unconfirmed transactional updates (4.812959ms)
+  AssertionError [ERR_ASSERTION]: The "string" argument must be of type string. Received type undefined (undefined)
+      at TestContext.<anonymous> (file:///home/chiharukiryu/cdev/cyanrex-lab/scripts/tests/eventSettingsContract.test.mjs:10:12)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /503/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at scripts/tests/postgresCi.test.mjs:5:1
+✖ Rust CI explicitly runs every queued event persistence and retention boundary (5.807216ms)
+  AssertionError [ERR_ASSERTION]: postgres_settings_read_failure_is_not_cached_or_default_success
+      at TestContext.<anonymous> (file:///home/chiharukiryu/cdev/cyanrex-lab/scripts/tests/postgresCi.test.mjs:13:14)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
