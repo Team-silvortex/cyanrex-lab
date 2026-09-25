@@ -1,0 +1,8 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.25s
+     Running tests/runner_agent_client_tdd.rs (/tmp/cyanrex-release-0.4.3-SzHT5P/rust-target/debug/deps/runner_agent_client_tdd-d4d518eb91406815)
+
+running 1 test
+test runner_agent_client_completes_signed_probe_and_compile_jobs_over_http ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.41s
+

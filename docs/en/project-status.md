@@ -1,7 +1,7 @@
 # Project Status
 
-Snapshot date: **2026-09-24**
-Current release line: **0.4.2**
+Snapshot date: **2026-09-25**
+Current release line: **0.4.3**
 
 This page is the capability-level progress baseline for Cyanrex Lab. It records what is usable now,
 what remains intentionally limited, and which decisions should drive the next development cycle.
@@ -18,11 +18,20 @@ The detailed trust boundaries and data flows remain in the [system architecture]
 | Local Runner | Operational | Replaceable driver boundary, global/per-user leases, timeout handling, and explicit `shared_kernel` reporting |
 | Runner Agent | Operational for remote checks | Signed registration, heartbeat, leases, cancellation, probes, and isolated compile-only diagnostics; remote eBPF loading is not enabled |
 | Deployment and distribution | Operational | Docker, WSL2, native Linux, hardened optional compiler Agent, and offline package/install tooling |
-| Release traceability | `0.4.2` synchronized source metadata; artifact acceptance remains separate | Changelog/version sync, annotated-tag preflight, checksum-bound source/archive metadata, per-image Docker content IDs, exact-image installation, and native Rust evidence/candidate verification with safe non-overwriting extraction; `0.3.0` is an API baseline only; publishing a source tag does not establish artifact acceptance |
+| Release traceability | `0.4.3` synchronized source metadata; artifact acceptance remains separate | Changelog/version sync, annotated-tag preflight, checksum-bound source/archive metadata, per-image Docker content IDs, exact-image installation, and native Rust evidence/candidate verification with safe non-overwriting extraction; `0.3.0` is an API baseline only; publishing a source tag does not establish artifact acceptance |
 | Module catalog | Operational, state-only | Versioned v1 manifests are discovered and validated at startup; lifecycle is in memory and never executes directory code |
 | JavaScript SDK | Operational internal package | Typed ESM client with 63 generated non-Agent operationId calls, a 77-member additive namespace baseline and deprecation policy, explicit `/openapi` and `/operations` exports, browser/Node sessions, cancellation, downloads, typed errors, and package-consumer smoke coverage |
 | API contract | Operational internal contract | Generated OpenAPI 3.1 served at `/openapi.json`; route/access/SDK/model drift and breaking changes against the frozen `0.3.0` baseline fail the quality gate |
 | Terminal page | Operational for teachers | Permission-aware List/Start/Stop module commands, structured results/history, and a safe handoff to the eBPF experiment workspace; it is not a shell |
+
+## TLS dependency security fix (included in 0.4.3)
+
+- Updated locked rustls to 0.23.45 and rustls-webpki to 0.103.15, addressing
+  [RUSTSEC-2026-0285](https://rustsec.org/advisories/RUSTSEC-2026-0285.html), which blocked CI.
+- Added an offline security-floor regression; live RustSec auditing remains enabled with no accepted
+  advisory exceptions. Teacher authority, Agent protocol and API compatibility are unchanged.
+- Rebuild and redeploy Engine and Runner Agent binaries/images to apply the fix. A source version
+  or tag does not patch a running deployment or establish LAN/kernel/offline artifact acceptance.
 
 ## Settings and Runner browser safety (included in 0.4.2)
 

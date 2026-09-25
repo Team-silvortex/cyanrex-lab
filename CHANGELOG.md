@@ -5,6 +5,16 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.4.3] - 2026-09-25
+
+### Fixed
+
+- Updated the locked Rust TLS dependency from rustls 0.23.43 to 0.23.45 and its required
+  rustls-webpki dependency from 0.103.13 to 0.103.15, fixing
+  [RUSTSEC-2026-0285](https://rustsec.org/advisories/RUSTSEC-2026-0285.html) and the CI security
+  audit failure without adding an advisory exception. Added an offline security-floor regression;
+  rebuild and redeploy Engine and Runner Agent binaries/images to apply the TLS fix.
+
 ## [0.4.2] - 2026-09-24
 
 ### Fixed
@@ -436,7 +446,9 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 The canonical package metadata advanced directly from `0.2.9` to `0.3.1`. Version `0.3.0` identifies
 the frozen API compatibility snapshot only; it was not a package release and must not be tagged.
 
-[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.3...HEAD
+[0.4.3]: https://github.com/Team-silvortex/cyanrex-lab/compare/bea50cde4a4cbe087dff9a602f1c7e03970ed946...v0.4.3
+[0.4.2]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.1...bea50cde4a4cbe087dff9a602f1c7e03970ed946
 [0.4.1]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.9...v0.4.0
 [0.3.9]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.3.8...v0.3.9

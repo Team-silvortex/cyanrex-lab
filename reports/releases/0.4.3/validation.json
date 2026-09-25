@@ -1,0 +1,178 @@
+{
+  "schema_version": 1,
+  "version": "0.4.3",
+  "date": "2026-09-25",
+  "baseline_commit": "bea50cde4a4cbe087dff9a602f1c7e03970ed946",
+  "recorded_before_version_commit": true,
+  "scope": "Source release with the RUSTSEC-2026-0285 dependency fix; no advisory exception or runtime/API change.",
+  "full_gate": {
+    "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL PATH=<Node24.19-bin>:<existing-path> CARGO_BUILD_JOBS=2 CARGO_TARGET_DIR=<owned-temp>/rust-target ./scripts/quality-gate.sh --security --no-npm-install",
+    "exit_code": 0,
+    "log": "full-gate.log",
+    "rust": {
+      "passed": 310,
+      "failed": 0,
+      "ignored": 80
+    },
+    "common": {
+      "passed": 71,
+      "failed": 0
+    },
+    "frontend": {
+      "passed": 125,
+      "failed": 0
+    },
+    "sdk": {
+      "runtime_passed": 13,
+      "package_passed": 3,
+      "type_checks": true
+    },
+    "production_routes": 18,
+    "rustsec_vulnerabilities": 0,
+    "frontend_and_sdk_production_audit_vulnerabilities": 0
+  },
+  "runner_agent_integration": {
+    "command": "env -u DATABASE_URL -u CYANREX_TEST_DATABASE_URL CARGO_BUILD_JOBS=2 CARGO_TARGET_DIR=<owned-temp>/rust-target cargo test --manifest-path engine/Cargo.toml --locked --test runner_agent_client_tdd -- --ignored --nocapture",
+    "exit_code": 0,
+    "passed": 1,
+    "failed": 0,
+    "log": "runner-agent-integration.log",
+    "scope": "Real loopback HTTP signed registration/probe/compile flow with installed Clang; not TLS/LAN or privileged eBPF loading."
+  },
+  "runtime": {
+    "node": "24.19.0",
+    "host_utilities_node": "24.21.0",
+    "rustc": "1.95.0",
+    "rust_build_jobs": 2,
+    "dependency_install": false
+  },
+  "historical_evidence": {
+    "baseline_commit": "bea50cde4a4cbe087dff9a602f1c7e03970ed946",
+    "files": 397,
+    "sha256": "7e18f97e28b7a0b8c929d2f6003344d33736396485602f3c6839c35edea2da8d",
+    "algorithm": "SHA-256 over sorted tracked relative path + NUL + exact file bytes",
+    "scope": "Existing reports, numbered functional-network bug-hunt documents/mirrors, and frozen functional-network JSON maps; unchanged from baseline."
+  },
+  "source_inputs": [
+    {
+      "path": "CHANGELOG.md",
+      "sha256": "6936fbf39f4c64411b8f1dc1d4b26cee4ec9a9d2426988dd28ba44e9d419d3ef"
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "sha256": "30bafa87f483a0eb2507d143308e6fb007c24485d535abb720f99e5b78657dc9"
+    },
+    {
+      "path": "README.md",
+      "sha256": "7c967f17411beafb400a8cf00bdfe1d4ccf4b6ea03353b4bcb8d54c8095a7f53"
+    },
+    {
+      "path": "docs/en/project-status.md",
+      "sha256": "66fed72362b1aeb06c93cbf9f8e89cfd88a33d752df5e8a40a31488d329075b7"
+    },
+    {
+      "path": "docs/en/runner-agent.md",
+      "sha256": "ae026d0e3744f1ffae1cefd6c1a56987f32dd27255a7823c00335e2cf12ebd76"
+    },
+    {
+      "path": "docs/en/security.md",
+      "sha256": "6f5ca1dea0b9d2ca80393b4ac5665b2af0cad9a0d2374dc0f787e27e877103ac"
+    },
+    {
+      "path": "docs/zh-CN/project-status.md",
+      "sha256": "76c902b51074bb301d87124101287688fbaa68a43baee48d4016a40ea946e31f"
+    },
+    {
+      "path": "docs/zh-CN/runner-agent.md",
+      "sha256": "2e0934c9c608d979248ce55d5e7a7e753a57520d4c0ac0f89dbd69e11a97d560"
+    },
+    {
+      "path": "docs/zh-CN/security.md",
+      "sha256": "cdfa3cc3f18374ebaf83920eecb3c6184693ee2842ecec79ca29c086b35753ca"
+    },
+    {
+      "path": "engine/Cargo.lock",
+      "sha256": "c05040500dbc585f7df7613d32200ee022a1297ab8113bd9632167890b13cc1f"
+    },
+    {
+      "path": "engine/Cargo.toml",
+      "sha256": "4a4264b7fac72b906ed5e78aecd3bd455956ac588df23d90a5e0ded07d9d524b"
+    },
+    {
+      "path": "engine/openapi/openapi.json",
+      "sha256": "ce096cd0a63d5eb3c8fad4c726285e6b5452e529345359835ed9ac8c6a84c40b"
+    },
+    {
+      "path": "frontend/package-lock.json",
+      "sha256": "8695e3a58a0d9c556a0df71caeb7b54ffa079e50973d4c5bf32a482c65eb058d"
+    },
+    {
+      "path": "frontend/package.json",
+      "sha256": "61ee63cdc9cae8b59932268cc8819e7bef59e018dbf4f37239c7a349ba43bb4b"
+    },
+    {
+      "path": "frontend/public/course/en/project-status.md",
+      "sha256": "66fed72362b1aeb06c93cbf9f8e89cfd88a33d752df5e8a40a31488d329075b7"
+    },
+    {
+      "path": "frontend/public/course/en/runner-agent.md",
+      "sha256": "ae026d0e3744f1ffae1cefd6c1a56987f32dd27255a7823c00335e2cf12ebd76"
+    },
+    {
+      "path": "frontend/public/course/en/security.md",
+      "sha256": "6f5ca1dea0b9d2ca80393b4ac5665b2af0cad9a0d2374dc0f787e27e877103ac"
+    },
+    {
+      "path": "frontend/public/course/zh-CN/project-status.md",
+      "sha256": "76c902b51074bb301d87124101287688fbaa68a43baee48d4016a40ea946e31f"
+    },
+    {
+      "path": "frontend/public/course/zh-CN/runner-agent.md",
+      "sha256": "2e0934c9c608d979248ce55d5e7a7e753a57520d4c0ac0f89dbd69e11a97d560"
+    },
+    {
+      "path": "frontend/public/course/zh-CN/security.md",
+      "sha256": "cdfa3cc3f18374ebaf83920eecb3c6184693ee2842ecec79ca29c086b35753ca"
+    },
+    {
+      "path": "scripts/tests/rustDependencySecurity.test.mjs",
+      "sha256": "76597b230e2accbb731110819f1b9854ad9447c19e000cc3d46f5294680286d2"
+    },
+    {
+      "path": "sdk-js/package-lock.json",
+      "sha256": "0a14093979edc9bac3dd2198c11d9b4e7c2655378e58ff6440995b17fec2fcb5"
+    },
+    {
+      "path": "sdk-js/package.json",
+      "sha256": "73759170f9e8a092789d1a26eb638cb83e9117f406cb6ad2ecbebfe5f413bfc0"
+    }
+  ],
+  "logs": [
+    {
+      "path": "full-gate.log",
+      "bytes": 89014,
+      "sha256": "34d5fea61a646bec87afd83a55d195aa987318f6214d3aedfe13713d4732541e"
+    },
+    {
+      "path": "runner-agent-integration.log",
+      "bytes": 413,
+      "sha256": "d0a1b1bb96d3ae8bb28bad26e1349eaae9a6bbce9015504e271a7c7aa37705c0"
+    }
+  ],
+  "cleanup": {
+    "rust_generated_cache": "Removed 1971 files, 2.3GiB total; rebuildable, isolated in the owned temporary target directory.",
+    "frontend_and_sdk_build_outputs": "Retained; no existing Next server or running deployment was stopped.",
+    "preserved": [
+      "dependencies",
+      "runtime configuration/data",
+      "existing release tags",
+      "historical reports and frozen network"
+    ]
+  },
+  "limits": [
+    "The other default-ignored PostgreSQL integrations and manual benchmarks were not run locally.",
+    "Browser regressions were not rerun for this dependency/metadata patch; earlier evidence retains its original version.",
+    "No real SSH/LAN onboarding, live-kernel load or local distribution artifact acceptance is claimed.",
+    "Candidate/tag preflight and authorized main/v0.4.3 publication are post-commit operations, not results recorded in this pre-commit record."
+  ]
+}

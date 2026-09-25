@@ -246,9 +246,11 @@ ssh -L 3000:127.0.0.1:3000 \
   1.23.2，npm 审计不代表宿主机动态库验收。
 - 我们会对 Rust 后端执行 `cargo audit`，并将已接受的告警记录在
   `scripts/security-audit-exceptions.json`。
-- 当前已登记例外：
-  - `RUSTSEC-2023-0071`（`rsa`）——通过 `sqlx-mysql` 在 `Cargo.lock` 中传递。
-    当前后端未直接使用 RSA 操作，且该告警尚无可用补丁版本。
+- 锁定的 rustls 依赖至少为 0.23.45，修复 TLS 1.3 握手加密层级校验问题
+  [RUSTSEC-2026-0285](https://rustsec.org/advisories/RUSTSEC-2026-0285.html)。需要重新构建并部署
+  Engine 和 Runner Agent 二进制文件/镜像，修改锁文件不会修补运行中的进程。
+  离线预检覆盖该已知安全版本下限，联网审计继续检查其他安全公告。
+- 当前没有已接受的安全公告例外；原先的 `rsa`/`sqlx-mysql` 依赖链已不在锁文件中。
 - 每个例外都包含复核截止日期，需要在到期前重新评估依赖版本。
 
 ## 安全事件处理

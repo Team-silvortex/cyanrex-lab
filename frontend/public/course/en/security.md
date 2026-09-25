@@ -300,9 +300,13 @@ After class:
   container. A custom global libheif must also be at least 1.23.2; an npm audit is not host-library acceptance.
 - We run `cargo audit` for Rust backend dependencies and track accepted exceptions in
   `scripts/security-audit-exceptions.json`.
-- Current accepted exception:
-  - `RUSTSEC-2023-0071` (`rsa`) — transitive via `sqlx-mysql` in `Cargo.lock`.
-    The backend does not currently use RSA operations directly, and the advisory currently has no patched release.
+- The locked rustls dependency is at least 0.23.45, addressing the TLS 1.3 handshake encryption-level
+  validation issue [RUSTSEC-2026-0285](https://rustsec.org/advisories/RUSTSEC-2026-0285.html).
+  Rebuild and redeploy Engine and Runner Agent binaries/images; changing the lockfile alone does not
+  patch a running process. Offline preflight checks this known version floor; live audit checks for
+  additional advisories.
+- There are currently no accepted advisory exceptions. The former `rsa`/`sqlx-mysql` dependency
+  chain is no longer in the lockfile.
 - Each accepted advisory has a review deadline and must be re-evaluated before it expires.
 
 ## Security Incident Response
