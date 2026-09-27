@@ -15,6 +15,10 @@ Contributions are welcome; start with [CONTRIBUTING.md](CONTRIBUTING.md), follow
 [community code of conduct](CODE_OF_CONDUCT.md), and report vulnerabilities through the
 private process in [SECURITY.md](SECURITY.md).
 
+## Next-generation Architecture
+
+The [next-generation architecture draft (简体中文)](docs/zh-CN/next-architecture.md) describes Cyanrex's evolution from eBPF teaching to human, AI Agent, and compute collaboration for the Nuis ecosystem. It covers the collaboration model, legacy mappings, extension boundaries, migration gates, and milestones. This is a design proposal, not a claim of implemented capabilities or a version reset; Linux implementation starts with section 0.1 and the C0 baseline.
+
 ## Repository Layout
 
 ```text
