@@ -51,7 +51,7 @@ impl CollaborationIdentityStore {
             {
                 false
             } else if let Some(access) =
-                Self::access_record(&mut tx, scope, actor.principal_id).await?
+                Self::checked_access_record(&mut tx, scope, actor.principal_id).await?
             {
                 match (action, *resource) {
                     (
@@ -90,7 +90,7 @@ impl CollaborationIdentityStore {
                         {
                             false
                         } else {
-                            Self::access_record(&mut tx, scope, owner_id)
+                            Self::checked_access_record(&mut tx, scope, owner_id)
                                 .await?
                                 .is_some_and(|owner| {
                                     owner.policy.membership.status == MembershipStatus::Active

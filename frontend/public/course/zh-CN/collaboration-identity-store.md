@@ -6,6 +6,8 @@
 
 后续：[ADR-003 / C1-B](collaboration-access-store.md)增加独立安装的成员关系与部署策略准备层。
 下文 C1-A 范围及验证记录保留原身份切片事实；两层均未接入在线认证或受保护操作。
+[ADR-005 / C1-D](collaboration-identity-lifecycle.md)后续加入显式身份 Schema 2、带操作者的绑定/
+退役命令和审计头校验。以下无操作者维护行为仅适用于身份 Schema 1，历史验证数字不改写。
 
 ## 本轮实现
 

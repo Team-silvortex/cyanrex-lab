@@ -1,16 +1,17 @@
 use super::*;
 
 impl CollaborationIdentityStore {
-    pub(super) async fn access_version(connection: &mut PgConnection) -> Result<()> {
+    pub(super) async fn access_version(connection: &mut PgConnection) -> Result<i32> {
         let row = sqlx::query(
             "SELECT version FROM collaboration_access_schema WHERE singleton FOR SHARE",
         )
         .fetch_one(connection)
         .await?;
-        if row.try_get::<i32, _>("version")? != 1 {
+        let version = row.try_get::<i32, _>("version")?;
+        if !matches!(version, 1 | 2) {
             return Err(IdentityStoreError::UnsupportedSchema);
         }
-        Ok(())
+        Ok(version)
     }
 
     /// Explicitly installs staging policy tables. Requires the identity schema to be installed;
@@ -28,7 +29,9 @@ impl CollaborationIdentityStore {
             let installed = sqlx::query("SELECT version FROM collaboration_access_schema WHERE singleton FOR SHARE")
                 .fetch_optional(&mut *tx).await?;
             if installed.is_some() {
-                Self::access_version(&mut tx).await?;
+                if Self::access_version(&mut tx).await? == 2 {
+                    Self::verify_audit_schema(&mut tx).await?;
+                }
                 sqlx::query("SELECT m.authority_id, m.workspace_id, m.principal_id, m.role_refs,
                     m.status, m.revision, m.updated_at, g.authority_id, g.principal_id,
                     g.source_workspace_id, g.status, g.revision, g.updated_at

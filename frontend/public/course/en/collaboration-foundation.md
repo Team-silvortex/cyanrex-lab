@@ -182,7 +182,7 @@ live dependency audits were not run for this slice; no deployment acceptance is 
 | C0 source baseline | Source storage/permission/API inventory and decisions recorded here. |
 | C0 deployment baseline | **Pending**: confirm real instances, durable/fallback sources, restore-tested backups and active resource ownership. |
 | C-M1 | Typed contracts and offline role projection delivered; no runtime identity registry or policy switch. |
-| C1 | [C1-A](collaboration-identity-store.md) persists identity mappings; [C1-B](collaboration-access-store.md) adds durable legacy membership/deployment policy staging. Live lifecycle, general grants and protected-operation integration remain pending. |
+| C1 | [C1-A](collaboration-identity-store.md) identity mappings, [C1-B](collaboration-access-store.md) membership/deployment policy, and the 0.4.5 [C1-C](collaboration-policy-audit.md) policy commands/audit and [C1-D](collaboration-identity-lifecycle.md) attributed binding/retirement staging are implemented. Live lifecycle, general grants and protected-operation integration remain pending. |
 | C-M2 | Pending: fixture-backed offline attempt conversion and full ID/digest/owner/progress/review reconciliation; first synthetic, then approved isolated copies. |
 
 No new product release, commit, tag or deployment is created by this foundation slice.

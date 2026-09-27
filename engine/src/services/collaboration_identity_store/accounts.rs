@@ -22,7 +22,7 @@ impl CollaborationIdentityStore {
         Self::identity(connection, scope, &username, account_id).await
     }
 
-    async fn identity(
+    pub(super) async fn identity_record(
         connection: &mut PgConnection,
         scope: WorkspaceRef,
         username: &LegacyUsername,
@@ -74,6 +74,26 @@ impl CollaborationIdentityStore {
         .transpose()
     }
 
+    pub(super) async fn identity(
+        connection: &mut PgConnection,
+        scope: WorkspaceRef,
+        username: &LegacyUsername,
+        account_id: LegacyAccountId,
+    ) -> Result<Option<StoredLegacyIdentity>> {
+        let current = Self::identity_record(connection, scope, username, account_id).await?;
+        if Self::version(connection).await? == 2 {
+            Self::check_identity_audit_head(
+                connection,
+                scope,
+                username,
+                account_id,
+                current.as_ref(),
+            )
+            .await?;
+        }
+        Ok(current)
+    }
+
     /// Operator/history lookup, not login authorization. Includes disabled/retired records.
     /// An absent mapping returns None, and never creates a Principal.
     pub async fn lookup_legacy_account(
@@ -84,7 +104,13 @@ impl CollaborationIdentityStore {
     ) -> Result<Option<StoredLegacyIdentity>> {
         bounded(async {
             let mut tx = self.transaction().await?;
-            Self::version(&mut tx).await?;
+            if Self::version(&mut tx).await? == 2 {
+                // Serialize the identity + audit-head snapshot even for an absent binding key.
+                // The same authority-first order is used by lifecycle and policy writers.
+                sqlx::query("SELECT authority_id FROM collaboration_authorities WHERE authority_id = $1 FOR SHARE")
+                    .bind(scope.authority_id.as_uuid()).fetch_optional(&mut *tx).await?
+                    .ok_or(IdentityStoreError::ScopeNotFound)?;
+            }
             Self::scope(&mut tx, scope, false).await?;
             let identity = Self::identity(&mut tx, scope, username, account_id).await?;
             tx.commit().await?;
@@ -93,6 +119,7 @@ impl CollaborationIdentityStore {
         .await
     }
 
+    /// Pre-audit binding only; identity schema 2 requires an attributed lifecycle command.
     /// Bind an explicitly verified account incarnation, allocating its Principal once.
     /// Different active incarnations conflict until explicit retirement. This never issues roles
     /// or grants and never guesses account identity from the old username/credential fields.
@@ -104,41 +131,21 @@ impl CollaborationIdentityStore {
     ) -> Result<StoredLegacyIdentity> {
         bounded(async {
             let mut tx = self.transaction().await?;
-            Self::version(&mut tx).await?;
+            if Self::version(&mut tx).await? != 1 {
+                return Err(IdentityStoreError::IdentityAuditContextRequired);
+            }
             if Self::scope(&mut tx, scope, true).await?.status != WorkspaceStatus::Active {
                 return Err(IdentityStoreError::ScopeInactive);
             }
-            if let Some(identity) = Self::identity(&mut tx, scope, username, account_id).await? {
-                if identity.retired_at.is_some() { return Err(IdentityStoreError::IdentityRetired); }
-                if identity.principal.status != PrincipalStatus::Active { return Err(IdentityStoreError::IdentityInactive); }
-                tx.commit().await?;
-                return Ok(identity);
-            }
-            let conflict = sqlx::query("SELECT principal_id FROM collaboration_legacy_identities
-                WHERE authority_id = $1 AND ((username = $2 AND retired_at IS NULL) OR account_id = $3)")
-                .bind(scope.authority_id.as_uuid()).bind(username.as_str()).bind(account_id.as_uuid())
-                .fetch_optional(&mut *tx).await?;
-            if conflict.is_some() { return Err(IdentityStoreError::IdentityConflict); }
-            let principal_id = PrincipalId::try_from(uuid::Uuid::new_v4())?;
-            confirmed_one(sqlx::query("INSERT INTO collaboration_principals (authority_id, principal_id, kind, display_name, status)
-                VALUES ($1, $2, 'human', $3, 'active')")
-                .bind(scope.authority_id.as_uuid()).bind(principal_id.as_uuid()).bind(username.as_str())
-                .execute(&mut *tx).await?.rows_affected())?;
-            confirmed_one(sqlx::query("INSERT INTO collaboration_legacy_identities (authority_id, username, account_id, principal_id)
-                VALUES ($1, $2, $3, $4)")
-                .bind(scope.authority_id.as_uuid()).bind(username.as_str()).bind(account_id.as_uuid()).bind(principal_id.as_uuid())
-                .execute(&mut *tx).await?.rows_affected())?;
-            let identity = Self::identity(&mut tx, scope, username, account_id).await?
-                .ok_or(IdentityStoreError::StorageUnavailable)?;
-            if identity.binding.principal_id != principal_id || identity.retired_at.is_some()
-                || identity.principal.status != PrincipalStatus::Active {
-                return Err(IdentityStoreError::StorageUnavailable);
-            }
+            let (_, identity) =
+                Self::bind_identity_record(&mut tx, scope, username, account_id).await?;
             tx.commit().await?;
             Ok(identity)
-        }).await
+        })
+        .await
     }
 
+    /// Pre-audit retirement only; identity schema 2 rejects this unattributed writer.
     /// Retire exactly the reviewed incarnation and Principal. History is retained; new same-name
     /// accounts need a different account_id and receive a fresh Principal without inherited grants.
     /// No legacy users/sessions, memberships or grants are mutated by this staging registry.
@@ -151,28 +158,21 @@ impl CollaborationIdentityStore {
     ) -> Result<StoredLegacyIdentity> {
         bounded(async {
             let mut tx = self.transaction().await?;
-            Self::version(&mut tx).await?;
+            if Self::version(&mut tx).await? != 1 {
+                return Err(IdentityStoreError::IdentityAuditContextRequired);
+            }
             Self::scope(&mut tx, scope, true).await?;
-            let identity = Self::identity(&mut tx, scope, username, account_id).await?
-                .ok_or(IdentityStoreError::StaleIdentity)?;
-            if identity.binding.principal_id != expected_principal { return Err(IdentityStoreError::StaleIdentity); }
-            if identity.retired_at.is_none() {
-                confirmed_one(sqlx::query("UPDATE collaboration_legacy_identities SET retired_at = NOW()
-                    WHERE authority_id = $1 AND username = $2 AND account_id = $3 AND principal_id = $4 AND retired_at IS NULL")
-                    .bind(scope.authority_id.as_uuid()).bind(username.as_str()).bind(account_id.as_uuid()).bind(expected_principal.as_uuid())
-                    .execute(&mut *tx).await?.rows_affected())?;
-                confirmed_one(sqlx::query("UPDATE collaboration_principals SET status = 'disabled'
-                    WHERE authority_id = $1 AND principal_id = $2")
-                    .bind(scope.authority_id.as_uuid()).bind(expected_principal.as_uuid())
-                    .execute(&mut *tx).await?.rows_affected())?;
-            }
-            let retired = Self::identity(&mut tx, scope, username, account_id).await?
-                .ok_or(IdentityStoreError::StorageUnavailable)?;
-            if retired.retired_at.is_none() || retired.principal.status != PrincipalStatus::Disabled {
-                return Err(IdentityStoreError::StorageUnavailable);
-            }
+            let (_, retired) = Self::retire_identity_record(
+                &mut tx,
+                scope,
+                username,
+                account_id,
+                expected_principal,
+            )
+            .await?;
             tx.commit().await?;
             Ok(retired)
-        }).await
+        })
+        .await
     }
 }

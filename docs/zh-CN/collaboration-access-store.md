@@ -4,6 +4,9 @@
 基于 **0.4.3** 实现并收录于源码版本 **0.4.4**，承接 [ADR-001](collaboration-foundation.md) 和
 [ADR-002](collaboration-identity-store.md)，未切换在线权威路径。
 
+后续：[ADR-004 / C1-C](collaboration-policy-audit.md)新增显式权限 Schema 2、带操作者命令和事务审计。
+下文保留 C1-B / Schema 1 的设计与历史验证；升级后旧无操作者写入会被拒绝，在线认证仍未切换。
+
 ## 范围与实现
 
 [权限存储](../../engine/src/services/collaboration_identity_store/access.rs)在显式身份注册表上增加
@@ -120,8 +123,8 @@ CARGO_BUILD_JOBS=2 cargo test --manifest-path engine/Cargo.toml --locked \
 
 - 在选定的 AuthService 生命周期中持久保存、核实账号生命周期，协调创建、删除、会话和策略，设计单一
   写入切换。旧内存降级不是持久身份源，不能悄悄向新表做尽力双写。
-- 接入在线授权前，补齐经过认证的权限管理、权限变更审计、通用 Workspace/Principal 状态命令和更完整
-  的 Grant 模型。
+- [C1-C](collaboration-policy-audit.md)已补齐准备层策略命令与审计；接入在线授权前仍需可信身份
+  适配、生命周期审计、通用 Workspace/Principal 状态命令和更完整的 Grant 模型。
 - 接触真实账号前完成部署盘点、备份恢复验证、来源对账及显式切换批准；合成注册表不是生产备份或迁移。
 - 将策略接到受保护操作的事务/准入边界，再端到端验证旧登录、教师与私人内容权限、会话撤销和跨空间拒绝。
 

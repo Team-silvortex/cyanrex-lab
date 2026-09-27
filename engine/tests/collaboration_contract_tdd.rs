@@ -74,6 +74,8 @@ fn core_ids_are_non_nil_canonical_uuid_strings_without_implicit_allocation() {
         EventId,
         CorrelationId,
         LegacyAccountId,
+        PolicyCommandId,
+        IdentityCommandId,
     );
 }
 

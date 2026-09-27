@@ -14,9 +14,9 @@ impl CollaborationIdentityStore {
             sqlx::query(metadata).execute(&mut *tx).await?;
             let installed = sqlx::query("SELECT version FROM collaboration_identity_schema WHERE singleton FOR SHARE")
                 .fetch_optional(&mut *tx).await?;
-            if let Some(row) = installed {
-                if row.try_get::<i32, _>("version")? != 1 {
-                    return Err(IdentityStoreError::UnsupportedSchema);
+            if installed.is_some() {
+                if Self::version(&mut tx).await? == 2 {
+                    Self::verify_identity_audit_schema(&mut tx).await?;
                 }
                 // Do not recreate disappeared tables under an already-installed version.
                 sqlx::query("SELECT a.authority_id, a.created_at, w.workspace_id, w.title, w.status,

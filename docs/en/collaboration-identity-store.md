@@ -8,6 +8,10 @@ Follow-up: [ADR-003 / C1-B](collaboration-access-store.md) adds separately insta
 deployment-policy staging. The C1-A scope and verification below describe the original identity slice;
 neither slice is wired into live authentication or protected operations.
 
+Follow-up: [ADR-005 / C1-D](collaboration-identity-lifecycle.md), included in 0.4.5, adds an explicit identity
+schema 2 upgrade, attributed binding/retirement and lifecycle audit. The original schema 1 behavior
+and verification below remain historical; neither schema is wired into live sessions.
+
 ## What this slice implements
 
 [CollaborationIdentityStore](../../engine/src/services/collaboration_identity_store/mod.rs) persists

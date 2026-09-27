@@ -17,6 +17,10 @@ Cyanrex 是一个面向 eBPF 入门教学的实验系统。它把源码编辑、
 [ADR-002 / C1-A](collaboration-identity-store.md)继续加入显式 PostgreSQL 身份注册表，仍未接入在线登录或授权。
 [ADR-003 / C1-B](collaboration-access-store.md)新增持久化成员/部署策略及带修订保护的撤权预览，
 仍未接入在线认证或受保护操作。
+[ADR-004 / C1-C](collaboration-policy-audit.md)在 0.4.5 准备层中增加带操作者的策略命令、事务审计和
+重复请求保护；仍需可信身份适配器，不自动升级现用数据库。
+[ADR-005 / C1-D](collaboration-identity-lifecycle.md)继续补齐身份绑定/退役的事务审计与最后管理者
+保护；不把注册表退役冒充已撤销旧 Session。
 
 ## 推荐阅读顺序
 

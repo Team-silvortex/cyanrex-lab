@@ -1,4 +1,4 @@
-//! Explicit, PostgreSQL-only C1 identity and legacy access staging. Not composed into AppState
+//! Explicit, PostgreSQL-only C1 identity, lifecycle audit and legacy access staging. Not composed into AppState
 //! or AuthService. Stored policies and their previews are not credentials or live route guards.
 //! All methods fail closed on storage errors, without caches, file fallback or environment reads.
 //! The trusted caller supplies verified scope and a stable account-incarnation ID. A username,
@@ -18,18 +18,34 @@ use crate::{
 mod access;
 mod access_policy;
 mod access_schema;
+mod access_write;
 mod accounts;
+mod identity_audit;
+mod identity_audit_entry;
+mod identity_audit_schema;
+mod identity_command;
+mod identity_write;
+mod policy_audit;
+mod policy_audit_schema;
+mod policy_command;
 mod schema;
 
 pub use access::{LegacyAccessPolicy, StoredLegacyAccessPolicy};
 pub use access_policy::LegacyPolicyResource;
+pub use identity_audit_entry::{
+    LegacyIdentityAuditEntry, LegacyIdentityAuditKind, LegacyIdentityReceipt,
+};
+pub use identity_command::{LegacyIdentityAction, LegacyIdentityCommand};
+pub use policy_audit::{LegacyPolicyAuditEntry, LegacyPolicyReceipt, PolicyAuditKind};
+pub use policy_command::LegacyPolicyCommand;
 
 #[derive(Clone)]
 pub struct CollaborationIdentityStore {
     pool: PgPool,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct StoredLegacyIdentity {
     pub binding: LegacyIdentityBinding,
     pub account_id: LegacyAccountId,
@@ -59,6 +75,22 @@ pub enum IdentityStoreError {
     StaleIdentity,
     #[error("access policy no longer matches the reviewed revision")]
     StaleAccess,
+    #[error("policy audit schema has not been explicitly enabled")]
+    AuditNotEnabled,
+    #[error("policy changes require an attributed command")]
+    AuditContextRequired,
+    #[error("identity audit schema has not been explicitly enabled")]
+    IdentityAuditNotEnabled,
+    #[error("identity changes require an attributed lifecycle command")]
+    IdentityAuditContextRequired,
+    #[error("each legacy authority requires a verified active manager before audit activation")]
+    AuditBootstrapRequired,
+    #[error("current principal is not authorized to manage instance policy")]
+    AccessDenied,
+    #[error("command ID is already bound to a different request")]
+    CommandConflict,
+    #[error("operation would remove the last active instance manager")]
+    LastAuthorityManager,
     #[error("invalid persisted identity record")]
     InvalidRecord,
 }
@@ -115,16 +147,17 @@ impl CollaborationIdentityStore {
         Ok(tx)
     }
 
-    async fn version(connection: &mut PgConnection) -> Result<()> {
+    async fn version(connection: &mut PgConnection) -> Result<i32> {
         let row = sqlx::query(
             "SELECT version FROM collaboration_identity_schema WHERE singleton FOR SHARE",
         )
         .fetch_one(connection)
         .await?;
-        if row.try_get::<i32, _>("version")? != 1 {
+        let version = row.try_get::<i32, _>("version")?;
+        if !matches!(version, 1 | 2) {
             return Err(IdentityStoreError::UnsupportedSchema);
         }
-        Ok(())
+        Ok(version)
     }
 
     async fn workspace(
@@ -194,12 +227,13 @@ impl CollaborationIdentityStore {
         .await
     }
 
-    /// Explicit provisioning with operator-pinned IDs. Repeating the same mapping is safe;
+    /// Pre-audit provisioning only; identity schema 2 fences this maintenance writer.
+    /// With schema 1, repeating the same operator-pinned mapping is safe;
     /// a different workspace ID is rejected, never silently adopted or created alongside it.
     pub async fn provision_legacy_workspace(&self, expected: WorkspaceRef) -> Result<Workspace> {
         bounded(async {
             let mut tx = self.transaction().await?;
-            Self::version(&mut tx).await?;
+            if Self::version(&mut tx).await? != 1 { return Err(IdentityStoreError::IdentityAuditContextRequired); }
             sqlx::query("INSERT INTO collaboration_authorities (authority_id) VALUES ($1) ON CONFLICT DO NOTHING")
                 .bind(expected.authority_id.as_uuid()).execute(&mut *tx).await?;
             sqlx::query("SELECT authority_id FROM collaboration_authorities WHERE authority_id = $1 FOR UPDATE")

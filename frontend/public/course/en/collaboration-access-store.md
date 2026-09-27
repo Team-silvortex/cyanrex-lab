@@ -4,6 +4,10 @@ Date: **2026-09-27**. Status: **implemented as the independent C1-B staging slic
 Implemented against **0.4.3** and included in source release **0.4.4**. Builds on [ADR-001](collaboration-foundation.md) and
 [ADR-002](collaboration-identity-store.md), without switching the live authority path.
 
+Follow-up: [ADR-004 / C1-C](collaboration-policy-audit.md) adds explicit access schema 2, attributed
+commands and transactional audit. The design and verification below retain the historical C1-B/schema 1
+scope; activation fences its old unattributed writer, without switching live authentication.
+
 ## Scope and implementation
 
 [The access store](../../engine/src/services/collaboration_identity_store/access.rs) extends the
@@ -142,8 +146,9 @@ CARGO_BUILD_JOBS=2 cargo test --manifest-path engine/Cargo.toml --locked \
 - Persist/verify stable account incarnations in the selected AuthService lifecycle and coordinate
   creation, deletion, sessions and policy under a reviewed single-writer cutover. The legacy memory
   fallback is not a durable identity provider and must not silently dual-write into these tables.
-- Add authenticated policy management, permission-change audit, general Workspace/Principal state
-  commands and the broader grant model before exposing this as live authorization.
+- [C1-C](collaboration-policy-audit.md) now supplies staging policy commands/audit; trusted identity
+  adaptation, lifecycle audit, general Workspace/Principal state commands and broader grants remain
+  prerequisites for live authorization.
 - Complete deployment inventory, restored-backup validation, source reconciliation and explicit cutover
   approval before touching real accounts; this synthetic registry is not a production backup or migration.
 - Integrate protected operations with policy at the transaction/admission boundary, then validate legacy

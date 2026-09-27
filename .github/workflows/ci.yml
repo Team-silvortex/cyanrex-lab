@@ -251,6 +251,58 @@ jobs:
             cargo test --manifest-path engine/Cargo.toml --locked --test collaboration_access_store_tdd "$task_access_pg_case" -- --ignored --list | grep -Fx "$task_access_pg_case: test"
             cargo test --manifest-path engine/Cargo.toml --locked --test collaboration_access_store_tdd "$task_access_pg_case" -- --ignored --exact --nocapture
           done
+      - name: Run real PostgreSQL collaboration policy audit integration
+        env:
+          CYANREX_TEST_DATABASE_URL: postgres://cyanrex_test:cyanrex-ci-only@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test
+        run: |
+          set -euo pipefail
+          for task_audit_pg_case in \
+            postgres_audit_upgrade_is_explicit_repeatable_and_preserves_observed_baselines \
+            postgres_audit_upgrade_rejects_unprepared_unknown_or_conflicting_storage \
+            postgres_audit_command_replay_returns_history_without_regranting \
+            postgres_audit_command_ids_bind_actor_revision_and_entire_desired_policy \
+            postgres_audit_concurrent_commands_deduplicate_and_reject_stale_revisions \
+            postgres_audit_noop_receipts_are_durable_and_role_order_is_canonical \
+            permissions::postgres_audit_authority_scopes_isolate_bootstrap_commands_and_history \
+            permissions::postgres_audit_requires_current_instance_authority_for_commands_and_history \
+            permissions::postgres_audit_preserves_last_manager_and_rechecks_authority_on_replay \
+            permissions::postgres_audit_history_is_bounded_keyset_scoped_and_append_only \
+            permissions::postgres_audit_retired_incarnations_never_inherit_commands_or_authority \
+            faults::postgres_audit_suppressed_or_tampered_receipt_rolls_back_policy_and_allows_retry \
+            faults::postgres_audit_deferred_commit_failure_never_commits_policy_alone \
+            faults::postgres_audit_cancellation_during_receipt_insert_rolls_back_prior_policy_writes \
+            faults::postgres_audit_missing_history_or_unlogged_policy_edits_fail_closed_without_cache \
+            faults::postgres_audit_invalid_baseline_rolls_back_schema_upgrade
+          do
+            cargo test --manifest-path engine/Cargo.toml --locked --test collaboration_policy_audit_tdd "$task_audit_pg_case" -- --ignored --list | grep -Fx "$task_audit_pg_case: test"
+            cargo test --manifest-path engine/Cargo.toml --locked --test collaboration_policy_audit_tdd "$task_audit_pg_case" -- --ignored --exact --nocapture
+          done
+      - name: Run real PostgreSQL collaboration identity audit integration
+        env:
+          CYANREX_TEST_DATABASE_URL: postgres://cyanrex_test:cyanrex-ci-only@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test
+        run: |
+          set -euo pipefail
+          for task_lifecycle_pg_case in \
+            postgres_lifecycle_upgrade_is_explicit_repeatable_and_fences_unattributed_writers \
+            postgres_lifecycle_upgrade_requires_policy_audit_and_effective_managers \
+            postgres_lifecycle_bind_retire_recreate_and_replay_never_reuse_an_incarnation \
+            postgres_lifecycle_command_ids_bind_actor_scope_and_action \
+            postgres_lifecycle_concurrent_commands_converge_and_record_noop_receipts \
+            permissions::postgres_lifecycle_requires_current_manager_and_rejects_retired_actor_replay \
+            permissions::postgres_lifecycle_retirement_and_grant_revocation_cannot_remove_all_managers \
+            permissions::postgres_lifecycle_retirement_invalidates_policy_but_does_not_invent_session_revocation \
+            permissions::postgres_lifecycle_conflicting_bindings_and_archived_workspace_never_gain_identity \
+            permissions::postgres_lifecycle_history_is_bounded_scoped_and_append_only \
+            faults::postgres_lifecycle_lookup_waits_for_binding_and_its_audit_before_reporting_absence \
+            faults::postgres_lifecycle_suppressed_or_altered_audit_rolls_back_binding_and_retirement \
+            faults::postgres_lifecycle_deferred_commit_failure_keeps_identity_and_audit_together \
+            faults::postgres_lifecycle_cancellation_before_audit_commit_restores_active_identity \
+            faults::postgres_lifecycle_missing_audit_or_unlogged_state_changes_fail_closed \
+            faults::postgres_lifecycle_bad_baseline_or_conflicting_table_rolls_back_upgrade
+          do
+            cargo test --manifest-path engine/Cargo.toml --locked --test collaboration_identity_audit_tdd "$task_lifecycle_pg_case" -- --ignored --list | grep -Fx "$task_lifecycle_pg_case: test"
+            cargo test --manifest-path engine/Cargo.toml --locked --test collaboration_identity_audit_tdd "$task_lifecycle_pg_case" -- --ignored --exact --nocapture
+          done
       - name: Run real Runner Agent compile integration
         run: cargo test --manifest-path engine/Cargo.toml --locked --test runner_agent_client_tdd -- --ignored --nocapture
 

@@ -75,6 +75,8 @@ stable_ids!(
     EventId,
     CorrelationId,
     LegacyAccountId,
+    PolicyCommandId,
+    IdentityCommandId,
 );
 
 macro_rules! validated_text {

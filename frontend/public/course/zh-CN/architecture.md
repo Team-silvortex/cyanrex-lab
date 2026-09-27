@@ -4,6 +4,10 @@
 [ADR-002](collaboration-identity-store.md)新增独立、显式的 PostgreSQL 身份注册表，
 [ADR-003](collaboration-access-store.md)新增持久化成员/部署策略准备层及当前权限预览。这些均未接入
 下文描述的在线运行拓扑、路由、认证或持久化路径。
+源码版本 0.4.5 收录 [ADR-004 / C1-C](collaboration-policy-audit.md)的独立策略命令与事务审计；
+操作者仍须来自可信适配器，现用数据库不会自动升级。
+[ADR-005 / C1-D](collaboration-identity-lifecycle.md)增加带审计的身份绑定/退役，覆盖最后管理者
+与空键读取边界；旧认证及会话仍未切换到该准备层。
 
 本文说明 Cyanrex Lab 的运行边界、代码职责、数据流和扩展规则。项目定位是自部署的 eBPF
 教学系统，适合可信工作站、教室服务器或受保护的局域网，不面向公网多租户场景。

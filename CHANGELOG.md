@@ -5,6 +5,23 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.4.5] - 2026-09-27
+
+### Added
+
+- Added C1-D attributed identity binding/retirement commands with atomic lifecycle audit, durable
+  replay and last-manager protection shared with policy revocation. Explicit identity-schema activation
+  fences old maintenance writers; audited reads also lock absent binding keys. Sixteen real PostgreSQL
+  cases are selected by CI. Bilingual ADR-005 and scoped maintenance guidance record the boundary:
+  legacy credentials/sessions remain untouched, with no live auth cutover or automatic migration.
+
+- Added C1-C attributed legacy policy commands with current-manager checks, revision fencing,
+  durable command-ID deduplication, last-manager grant protection and atomic append-only audit.
+  Explicit access-schema activation records observed baselines and fences unattributed writers;
+  policy reads fail closed on missing/inconsistent audit heads. Sixteen real PostgreSQL cases are
+  selected by CI. Bilingual ADR-004 documents the trusted-actor boundary and remaining lifecycle
+  gates. No live authentication wiring, account migration, public API or deployment is enabled.
+
 ## [0.4.4] - 2026-09-27
 
 ### Added

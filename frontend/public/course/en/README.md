@@ -16,6 +16,10 @@ The next slice, [ADR-002 / C1-A](collaboration-identity-store.md), adds an expli
 registry without connecting it to live login or authorization.
 [ADR-003 / C1-B](collaboration-access-store.md) adds durable membership/deployment policies and
 revision-checked revocation previews, still independent of live authentication and protected actions.
+[ADR-004 / C1-C](collaboration-policy-audit.md), included in 0.4.5, adds attributed policy commands,
+transactional audit and replay protection, still requiring a trusted identity adapter and explicit activation.
+[ADR-005 / C1-D](collaboration-identity-lifecycle.md) adds audited identity binding/retirement and
+last-manager protection, without treating registry retirement as revocation of old Sessions.
 
 ## Recommended Reading Order
 

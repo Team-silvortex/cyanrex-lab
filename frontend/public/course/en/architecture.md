@@ -9,6 +9,10 @@ Collaboration preparation in 0.4.4 and the C0/C-M1 source baseline are recorded 
 independent PostgreSQL identity registry. [ADR-003](collaboration-access-store.md) adds durable
 membership/deployment policy staging and fresh permission previews. None is composed into the live
 topology, routes, authentication or persistence paths described below.
+Source release 0.4.5 includes [ADR-004 / C1-C](collaboration-policy-audit.md), adding policy commands and
+transactional audit; actors still require a trusted adapter and live databases are never auto-upgraded.
+[ADR-005 / C1-D](collaboration-identity-lifecycle.md) adds audited identity binding/retirement,
+last-manager and absent-key read protection; legacy authentication/sessions remain outside this staging layer.
 
 ## 1. System Context
 

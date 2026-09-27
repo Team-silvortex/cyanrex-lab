@@ -154,7 +154,7 @@ CARGO_BUILD_JOBS=2 ./scripts/quality-gate.sh --backend-only
 | C0 源码基线 | 已记录源码层存储/权限/API 盘点及决策 |
 | C0 部署基线 | **待完成**：核实真实实例、持久/降级来源、恢复演练后的备份和运行资源归属 |
 | C-M1 | 已有类型契约及离线角色映射；不包含在线身份注册表或授权切换 |
-| C1 | [C1-A](collaboration-identity-store.md)持久保存身份映射；[C1-B](collaboration-access-store.md)新增旧成员/部署策略准备层；在线生命周期、通用 Grant 和受保护操作接入仍待完成 |
+| C1 | [C1-A](collaboration-identity-store.md)身份映射、[C1-B](collaboration-access-store.md)成员/部署策略及 0.4.5 的 [C1-C](collaboration-policy-audit.md)策略命令/审计、[C1-D](collaboration-identity-lifecycle.md)带操作者的绑定/退役准备层已实现；在线生命周期、通用 Grant 和受保护操作接入仍待完成 |
 | C-M2 | 待实现夹具驱动的离线 attempt 转换及 ID/摘要/所有者/进度/评语对账；先合成数据，再经批准的隔离副本 |
 
 本轮基础切片不自动创建新版本、提交、标签或部署。

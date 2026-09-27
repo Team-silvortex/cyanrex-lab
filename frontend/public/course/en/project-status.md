@@ -1,11 +1,33 @@
 # Project Status
 
 Snapshot date: **2026-09-27**
-Current release line: **0.4.4**
+Current release line: **0.4.5**
 
 This page is the capability-level progress baseline for Cyanrex Lab. It records what is usable now,
 what remains intentionally limited, and which decisions should drive the next development cycle.
 The detailed trust boundaries and data flows remain in the [system architecture](architecture.md).
+
+## Identity lifecycle commands (included in 0.4.5)
+
+- [ADR-005 / C1-D](collaboration-identity-lifecycle.md) adds attributed binding/retirement, idempotent
+  receipts and transactional audit, sharing locks and last-manager protection with policy revocation.
+  Explicit activation fences old unattributed identity writers.
+- Sixteen new PostgreSQL cases and the prior 46 regressions pass. An absent-key lookup race during
+  pending binding was reproduced/fixed; CI selects every case. New identities inherit no permissions.
+- Registry retirement denies subsequent staging access, but old accounts/Sessions remain untouched.
+  Real account-incarnation authority, session revocation and one transactional integration path remain
+  pending; source release 0.4.5 does not migrate or deploy any running database.
+
+## Policy commands and audit (included in 0.4.5)
+
+- [ADR-004 / C1-C](collaboration-policy-audit.md) adds actor-bound, command-ID/revision-fenced changes,
+  current-manager checks, transactional audit, idempotent receipts and last-manager grant protection.
+  Explicit activation fences the old unattributed writer.
+- Sixteen real PostgreSQL audit cases and the preceding 30 identity/access cases pass and are explicitly
+  selected in CI. Receipts are history, not current authority; baselines invent no historical actor.
+  Live authentication and deployed databases remain untouched.
+- C1-D adds attributed registry lifecycle management; next connect durable live accounts and session
+  revocation through one transactional authority path. Source release 0.4.5 does not perform that cutover.
 
 ## Collaboration foundation (included in 0.4.4)
 
@@ -34,7 +56,7 @@ The detailed trust boundaries and data flows remain in the [system architecture]
 | Local Runner | Operational | Replaceable driver boundary, global/per-user leases, timeout handling, and explicit `shared_kernel` reporting |
 | Runner Agent | Operational for remote checks | Signed registration, heartbeat, leases, cancellation, probes, and isolated compile-only diagnostics; remote eBPF loading is not enabled |
 | Deployment and distribution | Operational | Docker, WSL2, native Linux, hardened optional compiler Agent, and offline package/install tooling |
-| Release traceability | `0.4.4` synchronized source metadata; artifact acceptance remains separate | Changelog/version sync, annotated-tag preflight, checksum-bound source/archive metadata, per-image Docker content IDs, exact-image installation, and native Rust evidence/candidate verification with safe non-overwriting extraction; `0.3.0` is an API baseline only; publishing a source tag does not establish artifact acceptance |
+| Release traceability | `0.4.5` synchronized source metadata; artifact acceptance remains separate | Changelog/version sync, annotated-tag preflight, checksum-bound source/archive metadata, per-image Docker content IDs, exact-image installation, and native Rust evidence/candidate verification with safe non-overwriting extraction; `0.3.0` is an API baseline only; publishing a source tag does not establish artifact acceptance |
 | Module catalog | Operational, state-only | Versioned v1 manifests are discovered and validated at startup; lifecycle is in memory and never executes directory code |
 | JavaScript SDK | Operational internal package | Typed ESM client with 63 generated non-Agent operationId calls, a 77-member additive namespace baseline and deprecation policy, explicit `/openapi` and `/operations` exports, browser/Node sessions, cancellation, downloads, typed errors, and package-consumer smoke coverage |
 | API contract | Operational internal contract | Generated OpenAPI 3.1 served at `/openapi.json`; route/access/SDK/model drift and breaking changes against the frozen `0.3.0` baseline fail the quality gate |
