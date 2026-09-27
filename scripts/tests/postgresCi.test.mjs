@@ -2,6 +2,44 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
+test("Rust CI explicitly runs atomic session-authorized collaboration commands", async () => {
+  const workflow = await readFile(new URL("../../.github/workflows/ci.yml", import.meta.url), "utf8");
+  const step = workflow.split("- name: Run real PostgreSQL session-authorized collaboration integration")[1]?.split("\n      - name:")[0] ?? "";
+  let count = 0;
+  for (const [file, prefix] of [["durable_collaboration_tdd.rs", ""], ["durable_collaboration/faults.rs", "faults::"]]) {
+    const source = await readFile(new URL(`../../engine/tests/${file}`, import.meta.url), "utf8");
+    for (const [, name] of source.matchAll(/async fn (postgres_session_commands_\w+)\(/g)) {
+      count += 1;
+      assert.ok(step.includes(`${prefix}${name}`), name);
+    }
+  }
+  assert.equal(count, 16, "session command boundaries must be deliberately included in CI");
+  assert.ok(step.includes("@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test"));
+  assert.match(step, /--test durable_collaboration_tdd/);
+  assert.match(step, /--ignored --list/);
+  assert.match(step, /grep -Fx/);
+  assert.match(step, /--ignored --exact --nocapture/);
+});
+
+test("Rust CI explicitly runs durable account incarnation and session source boundaries", async () => {
+  const workflow = await readFile(new URL("../../.github/workflows/ci.yml", import.meta.url), "utf8");
+  const step = workflow.split("- name: Run real PostgreSQL durable authentication source integration")[1]?.split("\n      - name:")[0] ?? "";
+  let count = 0;
+  for (const [file, prefix] of [["durable_auth_source_tdd.rs", ""], ["durable_auth_source/faults.rs", "faults::"]]) {
+    const source = await readFile(new URL(`../../engine/tests/${file}`, import.meta.url), "utf8");
+    for (const [, name] of source.matchAll(/async fn (postgres_source_\w+)\(/g)) {
+      count += 1;
+      assert.ok(step.includes(`${prefix}${name}`), name);
+    }
+  }
+  assert.equal(count, 14, "new auth source cases must be deliberately included in CI");
+  assert.ok(step.includes("@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test"));
+  assert.match(step, /--test durable_auth_source_tdd/);
+  assert.match(step, /--ignored --list/);
+  assert.match(step, /grep -Fx/);
+  assert.match(step, /--ignored --exact --nocapture/);
+});
+
 test("Rust CI runs every identity lifecycle command and audit boundary against disposable PostgreSQL", async () => {
   const workflow = await readFile(new URL("../../.github/workflows/ci.yml", import.meta.url), "utf8");
   const step = workflow.split("- name: Run real PostgreSQL collaboration identity audit integration")[1]?.split("\n      - name:")[0] ?? "";

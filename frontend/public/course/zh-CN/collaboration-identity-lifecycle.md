@@ -103,6 +103,9 @@ SHA-256 摘要覆盖版本化 JSON 元组中的命令 ID、完整 actor、Worksp
 经过审查的权威事务路径；不能只是按 username 拼表，也不能先修改旧表再尽力双写新表。
 接触真实数据前仍需来源盘点、恢复验证、切换批准与回退边界；当前实现未完成这些生产门槛。
 
+后续：0.4.6 收录的 [ADR-006 / C1-E](collaboration-auth-source.md)实现显式空源账号/会话适配器与
+持久代次；认证源/注册表统一事务及真实数据切换仍待完成。下文验证保留 C1-D 原切片证据，不涵盖该后续。
+
 ## 验证
 
 [命令测试](../../engine/tests/collaboration_identity_audit_tdd.rs)、

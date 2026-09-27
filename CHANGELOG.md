@@ -5,6 +5,24 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.4.6] - 2026-09-27
+
+### Added
+
+- Added C1-F session-authorized identity binding and policy commands: source Session, exact account
+  incarnation, current manager, mutation and audit share one transaction without a caller-supplied actor.
+  Logout ordering, post-wait expiration and pre-commit source checks fail closed; a remaining manager
+  must match a current source account when revoking grants. Sixteen real PostgreSQL cases are selected
+  by CI, with bilingual ADR-007 and scoped maintenance rules. Account deletion/retirement composition,
+  bootstrap, public routes and live cutover remain pending.
+
+- Added C1-E durable authentication-source staging with committed account-incarnation IDs, exact
+  incarnation-bound hashed sessions, password/TOTP login and confirmed logout without memory fallback.
+  Explicit empty-source installation rejects existing accounts and incompatible schemas; 14 real
+  PostgreSQL lifecycle/concurrency/fault cases are selected by CI. Bilingual ADR-006 records the next
+  unified transaction gate. No live AuthService cutover, public API, role assignment, migration or
+  deployment is enabled.
+
 ## [0.4.5] - 2026-09-27
 
 ### Added

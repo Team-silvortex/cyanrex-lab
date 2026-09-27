@@ -20,6 +20,10 @@ revision-checked revocation previews, still independent of live authentication a
 transactional audit and replay protection, still requiring a trusted identity adapter and explicit activation.
 [ADR-005 / C1-D](collaboration-identity-lifecycle.md) adds audited identity binding/retirement and
 last-manager protection, without treating registry retirement as revocation of old Sessions.
+[ADR-006 / C1-E](collaboration-auth-source.md), included in 0.4.6, adds an empty-source-only durable
+account and session adapter; it is not composed into live AuthService.
+[ADR-007 / C1-F](collaboration-session-commands.md) composes current Sessions with identity binding and
+policy commands in one transaction; account deletion/retirement and live cutover remain pending.
 
 ## Recommended Reading Order
 

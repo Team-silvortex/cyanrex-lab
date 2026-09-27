@@ -1,11 +1,33 @@
 # Project Status
 
 Snapshot date: **2026-09-27**
-Current release line: **0.4.5**
+Current release line: **0.4.6**
 
 This page is the capability-level progress baseline for Cyanrex Lab. It records what is usable now,
 what remains intentionally limited, and which decisions should drive the next development cycle.
 The detailed trust boundaries and data flows remain in the [system architecture](architecture.md).
+
+## Session-authorized collaboration transactions (included in 0.4.6)
+
+- [ADR-007 / C1-F](collaboration-session-commands.md) derives actor from the current durable Session
+  and exact account incarnation, then binds identities or applies policy/audit on one transaction.
+  It accepts no caller-selected actor; binding assigns no permissions.
+- Sixteen PostgreSQL cases cover replay, source mismatch, last manager, concurrency, logout ordering,
+  expiration and write/commit failures. A reproduced last-manager hole now rejects fallback candidates
+  whose source account was deleted or recreated, rolling back policy and receipt together.
+- Initial bootstrap, account deletion/retirement, password changes and live route/CSRF integration remain
+  pending. Source release 0.4.6 leaves the existing runtime, deployed databases and frozen contracts unchanged.
+
+## Durable account/session source (included in 0.4.6)
+
+- [ADR-006 / C1-E](collaboration-auth-source.md) adds explicit empty-source installation, stable
+  committed account incarnations, password/TOTP login, hashed sessions and confirmed logout.
+  Storage failures cannot fall back to memory; same-name recreation cannot inherit a prior session.
+- Fourteen PostgreSQL cases cover concurrency, lifecycle and failed/cancelled writes, with exact CI
+  selection. Additional schema regressions reject incompatible empty tables instead of adopting them.
+- This source-only slice added no live AuthService wiring, account backfill, teacher bootstrap or
+  permission changes. C1-F now composes session-authorized binding/policy commands; account deletion,
+  password change and actual data cutover remain deliberately unavailable in this adapter.
 
 ## Identity lifecycle commands (included in 0.4.5)
 
@@ -56,7 +78,7 @@ The detailed trust boundaries and data flows remain in the [system architecture]
 | Local Runner | Operational | Replaceable driver boundary, global/per-user leases, timeout handling, and explicit `shared_kernel` reporting |
 | Runner Agent | Operational for remote checks | Signed registration, heartbeat, leases, cancellation, probes, and isolated compile-only diagnostics; remote eBPF loading is not enabled |
 | Deployment and distribution | Operational | Docker, WSL2, native Linux, hardened optional compiler Agent, and offline package/install tooling |
-| Release traceability | `0.4.5` synchronized source metadata; artifact acceptance remains separate | Changelog/version sync, annotated-tag preflight, checksum-bound source/archive metadata, per-image Docker content IDs, exact-image installation, and native Rust evidence/candidate verification with safe non-overwriting extraction; `0.3.0` is an API baseline only; publishing a source tag does not establish artifact acceptance |
+| Release traceability | `0.4.6` synchronized source metadata; artifact acceptance remains separate | Changelog/version sync, annotated-tag preflight, checksum-bound source/archive metadata, per-image Docker content IDs, exact-image installation, and native Rust evidence/candidate verification with safe non-overwriting extraction; `0.3.0` is an API baseline only; publishing a source tag does not establish artifact acceptance |
 | Module catalog | Operational, state-only | Versioned v1 manifests are discovered and validated at startup; lifecycle is in memory and never executes directory code |
 | JavaScript SDK | Operational internal package | Typed ESM client with 63 generated non-Agent operationId calls, a 77-member additive namespace baseline and deprecation policy, explicit `/openapi` and `/operations` exports, browser/Node sessions, cancellation, downloads, typed errors, and package-consumer smoke coverage |
 | API contract | Operational internal contract | Generated OpenAPI 3.1 served at `/openapi.json`; route/access/SDK/model drift and breaking changes against the frozen `0.3.0` baseline fail the quality gate |

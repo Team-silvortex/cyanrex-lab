@@ -38,6 +38,10 @@
 幂等回执；仍未接入在线身份权威或执行现用数据库升级。
 0.4.5 收录的 [ADR-005 / C1-D](collaboration-identity-lifecycle.md)补齐带操作者的身份绑定/退役审计，
 在身份 Schema 2 封锁旧写入口；现有账号代次来源和 Session 撤销的在线统一事务仍待接入。
+0.4.6 收录的 [ADR-006 / C1-E](collaboration-auth-source.md)新增显式空源安装、稳定账号代次和严格
+持久会话适配器；不迁移已有账号或切换在线 AuthService。
+后续 [ADR-007 / C1-F](collaboration-session-commands.md)将当前会话与注册表绑定/策略命令放入
+同一事务；删除/退役联动、统一引导和在线切换仍待完成。
 
 建议 Linux 侧按以下顺序启动：
 

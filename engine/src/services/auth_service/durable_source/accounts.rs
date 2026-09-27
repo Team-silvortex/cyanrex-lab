@@ -1,0 +1,73 @@
+use super::*;
+
+pub(super) struct AccountRecord {
+    pub account: DurableAccountRef,
+    pub user: UserRecord,
+}
+
+impl DurableAuthSource {
+    pub(super) async fn account_record(
+        &self,
+        connection: &mut PgConnection,
+        username: &LegacyUsername,
+    ) -> Result<Option<AccountRecord>> {
+        let row = sqlx::query("SELECT username, account_id, password_salt, password_hash, totp_secret FROM users WHERE username = $1 FOR SHARE")
+            .bind(username.as_str()).fetch_optional(connection).await?;
+        row.map(|row| {
+            let name: String = row.try_get("username")?;
+            let account = DurableAccountRef {
+                authority_id: self.authority_id,
+                username: name.clone().parse()?,
+                account_id: LegacyAccountId::try_from(row.try_get::<Uuid, _>("account_id")?)?,
+            };
+            let user = UserRecord {
+                username: name,
+                password_salt: row.try_get("password_salt")?,
+                password_hash: row.try_get("password_hash")?,
+                totp_secret: row.try_get("totp_secret")?,
+            };
+            if !user.password_hash.starts_with("$argon2")
+                || user.password_hash.len() > 1024
+                || user.password_salt.len() > 128
+                || user.totp_secret.len() > 128
+                || super::super::decode_base32_secret(&user.totp_secret)
+                    .is_none_or(|bytes| bytes.is_empty())
+            {
+                return Err(DurableAuthError::InvalidRecord);
+            }
+            Ok(AccountRecord { account, user })
+        })
+        .transpose()
+    }
+
+    /// Trusted registration-adapter primitive, not public enrollment or teacher bootstrap.
+    /// Commits a new random incarnation; never derives it from a name, credential or import time.
+    pub async fn register(
+        &self,
+        username: &LegacyUsername,
+        password: &str,
+    ) -> Result<DurableRegistration> {
+        if !(8..=4096).contains(&password.len()) {
+            return Err(DurableAuthError::InvalidInput);
+        }
+        bounded(async {
+            let salt = generate_password_salt();
+            let hash = derive_password_hash_async(password, &salt).await.ok_or(DurableAuthError::StorageUnavailable)?;
+            let secret = generate_totp_secret();
+            let mut tx = self.transaction().await?;
+            self.lock_source(&mut tx, true).await?;
+            if self.account_record(&mut tx, username).await?.is_some() { return Err(DurableAuthError::AccountExists); }
+            let account = DurableAccountRef { authority_id: self.authority_id, username: username.clone(), account_id: LegacyAccountId::try_from(Uuid::new_v4())? };
+            let expected = UserRecord { username: username.to_string(), password_salt: salt, password_hash: hash, totp_secret: secret.clone() };
+            confirmed_one(sqlx::query("INSERT INTO users (username, account_id, password_salt, password_hash, totp_secret) VALUES ($1, $2, $3, $4, $5)")
+                .bind(username.as_str()).bind(account.account_id.as_uuid()).bind(&expected.password_salt).bind(&expected.password_hash).bind(&secret)
+                .execute(&mut *tx).await?.rows_affected())?;
+            let actual = self.account_record(&mut tx, username).await?.ok_or(DurableAuthError::StorageUnavailable)?;
+            if actual.account != account || !same_credentials(&actual.user, &expected) { return Err(DurableAuthError::StorageUnavailable); }
+            let issuer = "cyanrex-lab".to_string();
+            let bootstrap = RegisterOk { issuer: issuer.clone(), account_name: username.to_string(), otpauth_uri: build_otpauth_uri(&issuer, username.as_str(), &secret), secret };
+            tx.commit().await?;
+            Ok(DurableRegistration { account, bootstrap })
+        }).await
+    }
+}

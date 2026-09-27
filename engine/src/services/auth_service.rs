@@ -23,6 +23,8 @@ use uuid::Uuid;
 
 type HmacSha1 = Hmac<Sha1>;
 
+pub mod durable_source;
+
 const DEFAULT_ADMIN_USERNAME: &str = "admin";
 const DEFAULT_ADMIN_PASSWORD: &str = "cyanrex-admin";
 const DEFAULT_ADMIN_TOTP_SECRET: &str = "JBSWY3DPEHPK3PXP";

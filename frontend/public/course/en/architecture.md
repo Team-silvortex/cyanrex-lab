@@ -13,6 +13,10 @@ Source release 0.4.5 includes [ADR-004 / C1-C](collaboration-policy-audit.md), a
 transactional audit; actors still require a trusted adapter and live databases are never auto-upgraded.
 [ADR-005 / C1-D](collaboration-identity-lifecycle.md) adds audited identity binding/retirement,
 last-manager and absent-key read protection; legacy authentication/sessions remain outside this staging layer.
+Source release 0.4.6 includes [ADR-006 / C1-E](collaboration-auth-source.md), adding a strict durable account-incarnation and
+session source for explicitly empty schemas, not live authentication or unified lifecycle integration.
+[ADR-007 / C1-F](collaboration-session-commands.md) composes that source with audited binding/policy
+commands on one transaction. Account deletion/retirement, bootstrap and live route cutover are still pending.
 
 ## 1. System Context
 

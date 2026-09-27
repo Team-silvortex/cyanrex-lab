@@ -127,6 +127,10 @@ deletion, old Session revocation and these internal commands within one reviewed
 Joining by username, or committing old tables before best-effort new writes, is insufficient. Real-data
 work still requires source inventory, restore verification, cutover approval and rollback boundaries.
 
+Follow-up: [ADR-006 / C1-E](collaboration-auth-source.md), included in 0.4.6, implements an explicit empty-source
+account/session adapter with durable incarnations. Unified source/registry transactions and real-data
+cutover remain pending; the verification below records the original C1-D slice, not that follow-up.
+
 ## Verification
 
 [Command tests](../../engine/tests/collaboration_identity_audit_tdd.rs),

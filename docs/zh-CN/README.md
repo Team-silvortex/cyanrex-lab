@@ -21,6 +21,10 @@ Cyanrex 是一个面向 eBPF 入门教学的实验系统。它把源码编辑、
 重复请求保护；仍需可信身份适配器，不自动升级现用数据库。
 [ADR-005 / C1-D](collaboration-identity-lifecycle.md)继续补齐身份绑定/退役的事务审计与最后管理者
 保护；不把注册表退役冒充已撤销旧 Session。
+[ADR-006 / C1-E](collaboration-auth-source.md)在 0.4.6 新增仅显式空源启用的持久账号/会话适配器，
+仍未接入在线 AuthService。
+[ADR-007 / C1-F](collaboration-session-commands.md)继续把当前 Session 与身份绑定/策略命令组合为
+单一事务；账号删除/退役联动和在线切换仍待完成。
 
 ## 推荐阅读顺序
 

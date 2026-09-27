@@ -1,6 +1,6 @@
 # cyanrex-lab
 
-Version: `0.4.5`
+Version: `0.4.6`
 
 Cyanrex monorepo for eBPF experiments: Axum engine + Next.js dashboard + module utilities.
 
@@ -18,6 +18,11 @@ private process in [SECURITY.md](SECURITY.md).
 ## Next-generation Architecture
 
 The [next-generation architecture draft (简体中文)](docs/zh-CN/next-architecture.md) describes Cyanrex's evolution from eBPF teaching to human, AI Agent, and compute collaboration for the Nuis ecosystem. It covers the collaboration model, legacy mappings, extension boundaries, migration gates, and milestones. This is a design proposal, not a claim of implemented capabilities or a version reset; Linux implementation starts with section 0.1 and the C0 baseline.
+
+Included in 0.4.6: [durable account/session source (English)](docs/en/collaboration-auth-source.md)
+· [持久认证源（简体中文）](docs/zh-CN/collaboration-auth-source.md). This is internal staging, not live authentication cutover.
+The next slice composes [session-authorized commands (English)](docs/en/collaboration-session-commands.md)
+· [会话授权事务（简体中文）](docs/zh-CN/collaboration-session-commands.md), still without switching live routes.
 
 ## Repository Layout
 
@@ -153,12 +158,12 @@ privileged and must not be exposed to untrusted users.
 For classroom deployment or offline distribution, create a packaged artifact with prebuilt Docker images:
 
 ```bash
-./scripts/package-distribution.sh --version 0.4.5
+./scripts/package-distribution.sh --version 0.4.6
 ```
 
 This produces:
-- `dist/cyanrex-lab-0.4.5-<timestamp>.tar.gz`
-- `dist/cyanrex-lab-0.4.5-<timestamp>.tar.gz.sha256`
+- `dist/cyanrex-lab-0.4.6-<timestamp>.tar.gz`
+- `dist/cyanrex-lab-0.4.6-<timestamp>.tar.gz.sha256`
 
 The archive contains the PostgreSQL, Engine, and frontend images. On a disposable Docker host,
 verify the freshly extracted package end to end with `./install-smoke.sh`. It checks the package
@@ -193,10 +198,10 @@ For an artifact downloaded from the Tag workflow, place its four files in a dedi
 verify the complete candidate from a trusted checkout of the matching source Tag before extracting it:
 
 ```bash
-release_revision="$(git rev-list -n 1 v0.4.5)"
+release_revision="$(git rev-list -n 1 v0.4.6)"
 cargo run --quiet --manifest-path engine/Cargo.toml --locked --bin cyanrex-release -- \
   candidate verify /path/to/downloaded-candidate \
-  --expect-version 0.4.5 --expect-revision "$release_revision" --expect-tag v0.4.5 \
+  --expect-version 0.4.6 --expect-revision "$release_revision" --expect-tag v0.4.6 \
   --extract-to /path/to/new-output-directory
 ```
 

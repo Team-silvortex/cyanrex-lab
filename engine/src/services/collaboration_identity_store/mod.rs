@@ -1,5 +1,6 @@
 //! Explicit, PostgreSQL-only C1 identity, lifecycle audit and legacy access staging. Not composed into AppState
-//! or AuthService. Stored policies and their previews are not credentials or live route guards.
+//! or the live AuthService. The explicit durable auth source can compose session-authorized commands
+//! on one transaction. Stored policies and their previews are not credentials or live route guards.
 //! All methods fail closed on storage errors, without caches, file fallback or environment reads.
 //! The trusted caller supplies verified scope and a stable account-incarnation ID. A username,
 //! credential digest, import timestamp or client claim cannot establish that incarnation.
@@ -29,6 +30,7 @@ mod policy_audit;
 mod policy_audit_schema;
 mod policy_command;
 mod schema;
+mod session_adapter;
 
 pub use access::{LegacyAccessPolicy, StoredLegacyAccessPolicy};
 pub use access_policy::LegacyPolicyResource;

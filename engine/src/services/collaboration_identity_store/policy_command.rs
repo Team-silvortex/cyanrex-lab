@@ -87,64 +87,77 @@ impl CollaborationIdentityStore {
         &self,
         command: &LegacyPolicyCommand,
     ) -> Result<LegacyPolicyReceipt> {
+        // Preserve validation-before-storage behavior of the existing trusted-adapter API.
+        let command = LegacyPolicyCommand {
+            desired: command.desired.canonical()?,
+            ..command.clone()
+        };
+        bounded(async {
+            let mut tx = self.transaction().await?;
+            let receipt = Self::apply_policy_in_transaction(&mut tx, &command).await?;
+            tx.commit().await?;
+            Ok(receipt)
+        })
+        .await
+    }
+
+    /// Pending receipt only; the composition owner must retain all admission locks and commit
+    /// before publishing. A Transaction argument prevents accidental autocommit composition.
+    pub(crate) async fn apply_policy_in_transaction(
+        tx: &mut Transaction<'_, Postgres>,
+        command: &LegacyPolicyCommand,
+    ) -> Result<LegacyPolicyReceipt> {
         let command = LegacyPolicyCommand {
             desired: command.desired.canonical()?,
             ..command.clone()
         };
         let digest = command.digest()?;
-        bounded(async {
-            let scope = command.desired.membership.workspace;
-            let principal = command.desired.membership.principal_id;
-            let mut tx = self.transaction().await?;
-            let workspace = Self::access_scope(&mut tx, scope, true).await?;
-            Self::require_policy_audit(&mut tx).await?;
-            Self::require_policy_manager(&mut tx, scope, command.actor).await?;
-            let row = sqlx::query(&format!(
-                "{} WHERE authority_id = $1 AND command_id = $2 FOR SHARE",
-                policy_audit::AUDIT_SELECT
-            ))
-            .bind(scope.authority_id.as_uuid())
-            .bind(command.command_id.as_uuid())
-            .fetch_optional(&mut *tx)
-            .await?;
-            if let Some(row) = row {
-                let entry = LegacyPolicyAuditEntry::decode(&row)?;
-                if entry.request_digest.as_ref() != Some(&digest) {
-                    return Err(IdentityStoreError::CommandConflict);
-                }
-                tx.commit().await?;
-                return Ok(LegacyPolicyReceipt {
-                    entry,
-                    replayed: true,
-                });
+        let scope = command.desired.membership.workspace;
+        let principal = command.desired.membership.principal_id;
+        let workspace = Self::access_scope(tx, scope, true).await?;
+        Self::require_policy_audit(tx).await?;
+        Self::require_policy_manager(tx, scope, command.actor).await?;
+        let row = sqlx::query(&format!(
+            "{} WHERE authority_id = $1 AND command_id = $2 FOR SHARE",
+            policy_audit::AUDIT_SELECT
+        ))
+        .bind(scope.authority_id.as_uuid())
+        .bind(command.command_id.as_uuid())
+        .fetch_optional(&mut **tx)
+        .await?;
+        if let Some(row) = row {
+            let entry = LegacyPolicyAuditEntry::decode(&row)?;
+            if entry.request_digest.as_ref() != Some(&digest) {
+                return Err(IdentityStoreError::CommandConflict);
             }
-            let current = Self::checked_access_record(&mut tx, scope, principal).await?;
-            if current.as_ref().map(|value| value.revision) != command.expected_revision {
-                return Err(IdentityStoreError::StaleAccess);
-            }
-            if !command.desired.deployment_granted
-                && current
-                    .as_ref()
-                    .is_some_and(|value| value.policy.deployment_granted)
-                && !Self::has_policy_manager(&mut tx, scope, Some(principal)).await?
-            {
-                return Err(IdentityStoreError::LastAuthorityManager);
-            }
-            let (before, after) = Self::replace_access_record(
-                &mut tx,
-                &workspace,
-                command.expected_revision,
-                &command.desired,
-            )
-            .await?;
-            let entry =
-                Self::append_policy_audit(&mut tx, Some(&command), before.as_ref(), &after).await?;
-            tx.commit().await?;
-            Ok(LegacyPolicyReceipt {
+            return Ok(LegacyPolicyReceipt {
                 entry,
-                replayed: false,
-            })
+                replayed: true,
+            });
+        }
+        let current = Self::checked_access_record(tx, scope, principal).await?;
+        if current.as_ref().map(|value| value.revision) != command.expected_revision {
+            return Err(IdentityStoreError::StaleAccess);
+        }
+        if !command.desired.deployment_granted
+            && current
+                .as_ref()
+                .is_some_and(|value| value.policy.deployment_granted)
+            && !Self::has_policy_manager(tx, scope, Some(principal)).await?
+        {
+            return Err(IdentityStoreError::LastAuthorityManager);
+        }
+        let (before, after) = Self::replace_access_record(
+            tx,
+            &workspace,
+            command.expected_revision,
+            &command.desired,
+        )
+        .await?;
+        let entry = Self::append_policy_audit(tx, Some(&command), before.as_ref(), &after).await?;
+        Ok(LegacyPolicyReceipt {
+            entry,
+            replayed: false,
         })
-        .await
     }
 }

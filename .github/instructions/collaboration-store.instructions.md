@@ -12,3 +12,9 @@ than independently reading missing identity/history rows and reporting absence; 
 in [the lifecycle fault tests](../../engine/tests/collaboration_identity_audit/faults.rs).
 Only the in-transaction writer/readback may use raw records before appending its receipt; ordinary reads
 must compare durable state with the current audit head, and no result should escape before commit.
+
+For auth-source composition, follow the additional
+[source-first locking rule](durable-auth-source.instructions.md); do not acquire the source lock from
+inside a registry-first command.
+Crate-internal command composition accepts a borrowed SQL transaction, not an autocommit connection
+or another pool, and returns only a pending receipt; the outer owner must confirm commit before publication.

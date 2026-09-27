@@ -63,83 +63,84 @@ impl CollaborationIdentityStore {
         &self,
         command: &LegacyIdentityCommand,
     ) -> Result<LegacyIdentityReceipt> {
-        let digest = command.digest()?;
         bounded(async {
-            let scope = command.workspace;
             let mut tx = self.transaction().await?;
-            let workspace = Self::access_scope(&mut tx, scope, true).await?;
-            Self::require_identity_audit(&mut tx).await?;
-            // Recheck effective actor even when replaying an already committed receipt.
-            Self::require_policy_manager(&mut tx, scope, command.actor).await?;
-            let row = sqlx::query(&format!(
-                "{} WHERE authority_id = $1 AND command_id = $2 FOR SHARE",
-                identity_audit::IDENTITY_AUDIT_SELECT
-            ))
-            .bind(scope.authority_id.as_uuid())
-            .bind(command.command_id.as_uuid())
-            .fetch_optional(&mut *tx)
-            .await?;
-            if let Some(row) = row {
-                let entry = LegacyIdentityAuditEntry::decode(&row)?;
-                if entry.request_digest.as_ref() != Some(&digest) {
-                    return Err(IdentityStoreError::CommandConflict);
-                }
-                tx.commit().await?;
-                return Ok(LegacyIdentityReceipt {
-                    entry,
-                    replayed: true,
-                });
-            }
-            let (before, after) = match &command.action {
-                LegacyIdentityAction::Bind {
-                    username,
-                    account_id,
-                } => {
-                    if workspace.status != WorkspaceStatus::Active {
-                        return Err(IdentityStoreError::ScopeInactive);
-                    }
-                    Self::bind_identity_record(&mut tx, scope, username, *account_id).await?
-                }
-                LegacyIdentityAction::Retire {
-                    username,
-                    account_id,
-                    expected_principal,
-                } => {
-                    let identity = Self::identity(&mut tx, scope, username, *account_id)
-                        .await?
-                        .ok_or(IdentityStoreError::StaleIdentity)?;
-                    if identity.binding.principal_id != *expected_principal {
-                        return Err(IdentityStoreError::StaleIdentity);
-                    }
-                    if identity.retired_at.is_none()
-                        && identity.principal.status == PrincipalStatus::Active
-                        && Self::checked_access_record(&mut tx, scope, *expected_principal)
-                            .await?
-                            .is_some_and(|value| value.policy.deployment_granted)
-                        && !Self::has_policy_manager(&mut tx, scope, Some(*expected_principal))
-                            .await?
-                    {
-                        return Err(IdentityStoreError::LastAuthorityManager);
-                    }
-                    Self::retire_identity_record(
-                        &mut tx,
-                        scope,
-                        username,
-                        *account_id,
-                        *expected_principal,
-                    )
-                    .await?
-                }
-            };
-            let entry =
-                Self::append_identity_audit(&mut tx, scope, Some(command), before.as_ref(), &after)
-                    .await?;
+            let receipt = Self::apply_identity_in_transaction(&mut tx, command).await?;
             tx.commit().await?;
-            Ok(LegacyIdentityReceipt {
-                entry,
-                replayed: false,
-            })
+            Ok(receipt)
         })
         .await
+    }
+
+    /// Crate-internal composition only. Caller owns the transaction and must not publish this
+    /// pending receipt until commit. The public trusted-adapter entry point uses the same logic.
+    pub(crate) async fn apply_identity_in_transaction(
+        tx: &mut Transaction<'_, Postgres>,
+        command: &LegacyIdentityCommand,
+    ) -> Result<LegacyIdentityReceipt> {
+        let digest = command.digest()?;
+        let scope = command.workspace;
+        let workspace = Self::access_scope(tx, scope, true).await?;
+        Self::require_identity_audit(tx).await?;
+        // Recheck effective actor even when replaying an already committed receipt.
+        Self::require_policy_manager(tx, scope, command.actor).await?;
+        let row = sqlx::query(&format!(
+            "{} WHERE authority_id = $1 AND command_id = $2 FOR SHARE",
+            identity_audit::IDENTITY_AUDIT_SELECT
+        ))
+        .bind(scope.authority_id.as_uuid())
+        .bind(command.command_id.as_uuid())
+        .fetch_optional(&mut **tx)
+        .await?;
+        if let Some(row) = row {
+            let entry = LegacyIdentityAuditEntry::decode(&row)?;
+            if entry.request_digest.as_ref() != Some(&digest) {
+                return Err(IdentityStoreError::CommandConflict);
+            }
+            return Ok(LegacyIdentityReceipt {
+                entry,
+                replayed: true,
+            });
+        }
+        let (before, after) = match &command.action {
+            LegacyIdentityAction::Bind {
+                username,
+                account_id,
+            } => {
+                if workspace.status != WorkspaceStatus::Active {
+                    return Err(IdentityStoreError::ScopeInactive);
+                }
+                Self::bind_identity_record(tx, scope, username, *account_id).await?
+            }
+            LegacyIdentityAction::Retire {
+                username,
+                account_id,
+                expected_principal,
+            } => {
+                let identity = Self::identity(tx, scope, username, *account_id)
+                    .await?
+                    .ok_or(IdentityStoreError::StaleIdentity)?;
+                if identity.binding.principal_id != *expected_principal {
+                    return Err(IdentityStoreError::StaleIdentity);
+                }
+                if identity.retired_at.is_none()
+                    && identity.principal.status == PrincipalStatus::Active
+                    && Self::checked_access_record(tx, scope, *expected_principal)
+                        .await?
+                        .is_some_and(|value| value.policy.deployment_granted)
+                    && !Self::has_policy_manager(tx, scope, Some(*expected_principal)).await?
+                {
+                    return Err(IdentityStoreError::LastAuthorityManager);
+                }
+                Self::retire_identity_record(tx, scope, username, *account_id, *expected_principal)
+                    .await?
+            }
+        };
+        let entry =
+            Self::append_identity_audit(tx, scope, Some(command), before.as_ref(), &after).await?;
+        Ok(LegacyIdentityReceipt {
+            entry,
+            replayed: false,
+        })
     }
 }
