@@ -4,6 +4,12 @@ This document describes the runtime boundaries, code ownership, data flows, and 
 Cyanrex Lab. It is the architecture source of truth for maintainers. The project is a self-hosted
 eBPF teaching system intended for a trusted workstation, classroom machine, or protected LAN.
 
+Collaboration preparation in 0.4.4 and the C0/C-M1 source baseline are recorded in
+[ADR-001](collaboration-foundation.md); [ADR-002](collaboration-identity-store.md) adds an explicit,
+independent PostgreSQL identity registry. [ADR-003](collaboration-access-store.md) adds durable
+membership/deployment policy staging and fresh permission previews. None is composed into the live
+topology, routes, authentication or persistence paths described below.
+
 ## 1. System Context
 
 ```mermaid

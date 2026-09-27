@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "version": "0.4.4",
+  "date": "2026-09-27",
+  "implementation_baseline": "feec8494189b6ee22f20bbd8737fe190df3b22f3",
+  "previous_release": "v0.4.3",
+  "source_inputs": {
+    "count": 1134,
+    "manifest_sha256": "0ffc1ab437b987579b1456415a1cff4349a2f7f2d55a3a6bac8a758bdbd80c80",
+    "selection": "deduplicated git ls-files -co --exclude-standard -z; JavaScript default sorted paths",
+    "excluded_prefix": "reports/releases/0.4.4/",
+    "manifest_encoding": "newline-terminated compact JSON objects with keys path, mode, sha256 in that order",
+    "mode": "120000 for symlinks; otherwise 100755 if any executable bit is set, else 100644",
+    "payload": "symlink link text or regular file bytes",
+    "validation_copy_mismatches": 0
+  },
+  "verification": {
+    "full_quality_gate_with_security": "passed",
+    "rust_default": { "passed": 329, "failed": 0, "ignored": 110 },
+    "postgres_identity": { "passed": 15, "failed": 0 },
+    "postgres_access": { "passed": 15, "failed": 0 },
+    "runner_agent_loopback_compile": { "passed": 1, "failed": 0 },
+    "remaining_default_ignored_not_run": 79,
+    "common_checks": 73,
+    "frontend_tests": 125,
+    "frontend_static_pages": 18,
+    "frontend_type_check": "passed",
+    "sdk_runtime_tests": 13,
+    "sdk_package_tests": 3,
+    "sdk_type_check": "passed",
+    "rustsec_vulnerabilities": 0,
+    "frontend_production_npm_vulnerabilities": 0,
+    "sdk_production_npm_vulnerabilities": 0
+  },
+  "unchanged_compatibility_baselines": {
+    "sdk-js/compatibility/openapi-baseline.json": "59626ac51895120c9111683f2d4a9d95d03334edd250c2e8f72413fc448cfca6",
+    "sdk-js/compatibility/public-surface.json": "5ab9e5308b06c25b8c67b141301a62281f48a2fe845249d7fe34ca1bf41bcab9"
+  },
+  "boundaries": {
+    "live_authentication_cutover": false,
+    "live_database_migration": false,
+    "deployment_or_runtime_data_changed": false,
+    "browser_lan_kernel_or_offline_artifact_acceptance": false,
+    "remote_ci_run": false,
+    "published": false,
+    "candidate_and_tag_preflight": "performed after committing this record"
+  }
+}

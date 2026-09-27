@@ -1,6 +1,7 @@
 pub mod auth;
 pub mod c_headers;
 pub mod classroom;
+pub mod collaboration;
 pub mod command;
 pub mod ebpf;
 pub mod environment;

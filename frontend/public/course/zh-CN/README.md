@@ -6,6 +6,18 @@ Cyanrex 是一个面向 eBPF 入门教学的实验系统。它把源码编辑、
 如需按当前源码查看功能及其连接，参见[功能链路网络](functional-network.md)，
 其中包含全部页面、API 与持久化边界。
 
+## 下一代设计与施工
+
+[下一代架构书](next-architecture.md) 描述从 eBPF 教学系统向人类、AI Agent 与计算资源协作软件的演进：通用身份/空间/内容/任务/运行/审阅模型、旧概念映射、扩展机制、生态集成和分阶段施工单。Linux 侧从第 0.1 节与 C0 基线开始，先保护现有数据及权限，再实施迁移。
+
+该文档为目标架构草案，不改变本手册的现有教学流程；已实现行为仍见 [系统架构](architecture.md) 和 [项目状态](project-status.md)。
+
+[ADR-001 与 C0/C-M1 基线](collaboration-foundation.md)记录首批 Rust 类型契约和旧权限离线预览。
+尚未切换在线权限或迁移数据；产品继续继承现有版本序列。
+[ADR-002 / C1-A](collaboration-identity-store.md)继续加入显式 PostgreSQL 身份注册表，仍未接入在线登录或授权。
+[ADR-003 / C1-B](collaboration-access-store.md)新增持久化成员/部署策略及带修订保护的撤权预览，
+仍未接入在线认证或受保护操作。
+
 ## 推荐阅读顺序
 
 ### 教师

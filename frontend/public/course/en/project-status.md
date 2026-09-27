@@ -1,11 +1,27 @@
 # Project Status
 
-Snapshot date: **2026-09-25**
-Current release line: **0.4.3**
+Snapshot date: **2026-09-27**
+Current release line: **0.4.4**
 
 This page is the capability-level progress baseline for Cyanrex Lab. It records what is usable now,
 what remains intentionally limited, and which decisions should drive the next development cycle.
 The detailed trust boundaries and data flows remain in the [system architecture](architecture.md).
+
+## Collaboration foundation (included in 0.4.4)
+
+- [ADR-001 / C0-C-M1](collaboration-foundation.md) records the source storage/permission/API baseline,
+  stable typed identities, scoped revision-pinned artifact references and a draft event envelope.
+- An offline legacy-role projection preserves private ownership, student-only teacher review and
+  explicit deployment authority limited to the original instance. It is not wired into live requests.
+- [ADR-002 / C1-A](collaboration-identity-store.md) now persists an independent authority/Principal/
+  legacy Workspace registry with account-incarnation tombstones, atomic binding/retirement and no
+  volatile fallback. All 15 isolated PostgreSQL cases pass and are explicitly selected by CI.
+- [ADR-003 / C1-B](collaboration-access-store.md) persists legacy membership and explicit instance
+  deployment policy with atomic revision fencing. Fresh previews check current identity/role state
+  without broadening private-content access. Fifteen additional real PostgreSQL cases pass and are
+  explicitly selected by CI; no policy-admin API, audit trail or live check/use integration is enabled.
+- The source version advances to `0.4.4`; no live schema migration, identity rewrite or deployment occurred.
+  Deployment inventory, live account lifecycle integration, general policy and attempt conversion remain pending.
 
 ## Capability Matrix
 
@@ -18,7 +34,7 @@ The detailed trust boundaries and data flows remain in the [system architecture]
 | Local Runner | Operational | Replaceable driver boundary, global/per-user leases, timeout handling, and explicit `shared_kernel` reporting |
 | Runner Agent | Operational for remote checks | Signed registration, heartbeat, leases, cancellation, probes, and isolated compile-only diagnostics; remote eBPF loading is not enabled |
 | Deployment and distribution | Operational | Docker, WSL2, native Linux, hardened optional compiler Agent, and offline package/install tooling |
-| Release traceability | `0.4.3` synchronized source metadata; artifact acceptance remains separate | Changelog/version sync, annotated-tag preflight, checksum-bound source/archive metadata, per-image Docker content IDs, exact-image installation, and native Rust evidence/candidate verification with safe non-overwriting extraction; `0.3.0` is an API baseline only; publishing a source tag does not establish artifact acceptance |
+| Release traceability | `0.4.4` synchronized source metadata; artifact acceptance remains separate | Changelog/version sync, annotated-tag preflight, checksum-bound source/archive metadata, per-image Docker content IDs, exact-image installation, and native Rust evidence/candidate verification with safe non-overwriting extraction; `0.3.0` is an API baseline only; publishing a source tag does not establish artifact acceptance |
 | Module catalog | Operational, state-only | Versioned v1 manifests are discovered and validated at startup; lifecycle is in memory and never executes directory code |
 | JavaScript SDK | Operational internal package | Typed ESM client with 63 generated non-Agent operationId calls, a 77-member additive namespace baseline and deprecation policy, explicit `/openapi` and `/operations` exports, browser/Node sessions, cancellation, downloads, typed errors, and package-consumer smoke coverage |
 | API contract | Operational internal contract | Generated OpenAPI 3.1 served at `/openapi.json`; route/access/SDK/model drift and breaking changes against the frozen `0.3.0` baseline fail the quality gate |

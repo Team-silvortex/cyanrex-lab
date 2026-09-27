@@ -2,6 +2,44 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
+test("Rust CI runs every collaboration access policy and revocation case against disposable PostgreSQL", async () => {
+  const workflow = await readFile(new URL("../../.github/workflows/ci.yml", import.meta.url), "utf8");
+  const step = workflow.split("- name: Run real PostgreSQL collaboration access integration")[1]?.split("\n      - name:")[0] ?? "";
+  let count = 0;
+  for (const [file, prefix] of [["collaboration_access_store_tdd.rs", ""], ["collaboration_access_store/policy.rs", "policy::"], ["collaboration_access_store/faults.rs", "faults::"]]) {
+    const source = await readFile(new URL(`../../engine/tests/${file}`, import.meta.url), "utf8");
+    for (const [, name] of source.matchAll(/async fn (postgres_access_\w+)\(/g)) {
+      count += 1;
+      assert.ok(step.includes(`${prefix}${name}`), name);
+    }
+  }
+  assert.equal(count, 15, "new durable access cases must be deliberately included in CI");
+  assert.ok(step.includes("@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test"));
+  assert.match(step, /--test collaboration_access_store_tdd/);
+  assert.match(step, /--ignored --list/);
+  assert.match(step, /grep -Fx/);
+  assert.match(step, /--ignored --exact --nocapture/);
+});
+
+test("Rust CI runs every collaboration identity persistence case against disposable PostgreSQL", async () => {
+  const workflow = await readFile(new URL("../../.github/workflows/ci.yml", import.meta.url), "utf8");
+  const step = workflow.split("- name: Run real PostgreSQL collaboration identity integration")[1]?.split("\n      - name:")[0] ?? "";
+  let count = 0;
+  for (const [file, prefix] of [["collaboration_identity_store_tdd.rs", ""], ["collaboration_identity_store/faults.rs", "faults::"]]) {
+    const source = await readFile(new URL(`../../engine/tests/${file}`, import.meta.url), "utf8");
+    for (const [, name] of source.matchAll(/async fn (postgres_identity_\w+)\(/g)) {
+      count += 1;
+      assert.ok(step.includes(`${prefix}${name}`), name);
+    }
+  }
+  assert.equal(count, 15, "new durable identity cases must be deliberately included in CI");
+  assert.ok(step.includes("@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test"));
+  assert.match(step, /--test collaboration_identity_store_tdd/);
+  assert.match(step, /--ignored --list/);
+  assert.match(step, /grep -Fx/);
+  assert.match(step, /--ignored --exact --nocapture/);
+});
+
 test("Rust CI explicitly runs every queued event persistence and retention boundary", async () => {
   const workflow = await readFile(new URL("../../.github/workflows/ci.yml", import.meta.url), "utf8");
   const step = workflow.split("- name: Run real PostgreSQL event ordering and retention")[1]?.split("\n      - name:")[0] ?? "";

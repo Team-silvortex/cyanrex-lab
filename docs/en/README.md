@@ -6,6 +6,17 @@ semantic completion, kernel loading, event observation, and program detach into 
 For a source-backed map of current features and their connections, see the
 [Functional Network](functional-network.md), including all pages, APIs and persistence boundaries.
 
+## Next-generation construction
+
+The [architecture proposal](../zh-CN/next-architecture.md) describes the move toward collaboration
+between humans, AI Agents and compute resources. [ADR-001 and the C0/C-M1 baseline](collaboration-foundation.md)
+record the first typed contracts and offline legacy-permission preview. These do not change the live
+teaching workflows or migrate existing data; the product continues its existing version sequence.
+The next slice, [ADR-002 / C1-A](collaboration-identity-store.md), adds an explicit PostgreSQL identity
+registry without connecting it to live login or authorization.
+[ADR-003 / C1-B](collaboration-access-store.md) adds durable membership/deployment policies and
+revision-checked revocation previews, still independent of live authentication and protected actions.
+
 ## Recommended Reading Order
 
 ### Teacher

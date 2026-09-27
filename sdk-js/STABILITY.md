@@ -19,10 +19,10 @@ wire contract, while compile-time fixtures protect representative generated-oper
 
 ## Change rules
 
-Patch releases within the `0.3.x` line are additive-only for protected surfaces. They may add optional
-fields, operations, namespaces, or methods, but must not remove or rename existing members, require a
-previously optional input, narrow an accepted input, weaken a successful response, or raise an access
-tier without an explicitly reviewed breaking release.
+Patch releases within every pre-1.0 minor line, including `0.4.x`, are additive-only for protected
+surfaces. They may add optional fields, operations, namespaces, or methods, but must not remove or
+rename existing members, require a previously optional input, narrow an accepted input, weaken a
+successful response, or raise an access tier without an explicitly reviewed breaking release.
 
 To retire a protected SDK member:
 
@@ -30,9 +30,9 @@ To retire a protected SDK member:
 2. retain it for at least the complete following minor release line;
 3. remove it only in a later minor release with a migration note and an intentional baseline update.
 
-For example, a member deprecated during `0.4.x` remains callable throughout `0.4.x` and may be removed
-no earlier than `0.5.0`. A critical security issue may shorten this window, but the release must state
-the impact and safe migration explicitly.
+For example, a member deprecated during `0.4.x` remains callable throughout `0.4.x` and the complete
+`0.5.x` line, and may be removed no earlier than `0.6.0`. A critical security issue may shorten this
+window, but the release must state the impact and safe migration explicitly.
 
 ## Intentional baseline updates
 

@@ -1,6 +1,7 @@
 pub mod auth_service;
 pub mod c_header_module;
 pub mod classroom;
+pub mod collaboration_identity_store;
 pub mod command_dispatcher;
 pub mod ebpf_loader;
 pub mod environment_checker;
@@ -14,6 +15,7 @@ mod event_bus_policy;
 pub mod learning_catalog;
 pub(crate) mod learning_source;
 pub mod learning_store;
+pub mod legacy_workspace;
 pub mod module_manager;
 pub mod runner_agent_authenticator;
 pub mod runner_agent_client;

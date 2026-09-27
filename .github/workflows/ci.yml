@@ -203,6 +203,54 @@ jobs:
             cargo test --manifest-path engine/Cargo.toml --locked --lib "$task_event_pg_case" -- --ignored --list | grep -Fx "$task_event_pg_case: test"
             cargo test --manifest-path engine/Cargo.toml --locked --lib "$task_event_pg_case" -- --ignored --exact --nocapture
           done
+      - name: Run real PostgreSQL collaboration identity integration
+        env:
+          CYANREX_TEST_DATABASE_URL: postgres://cyanrex_test:cyanrex-ci-only@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test
+        run: |
+          set -euo pipefail
+          for task_identity_pg_case in \
+            postgres_identity_schema_and_bootstrap_are_repeatable_and_concurrent \
+            postgres_identity_bootstrap_rejects_rebinding_and_preserves_archived_workspace \
+            postgres_identity_binding_survives_reload_and_converges_without_duplicate_principals \
+            postgres_identity_conflicting_generations_and_reused_account_ids_fail_closed \
+            postgres_identity_retirement_keeps_history_and_never_revives_a_recreated_name \
+            postgres_identity_scope_and_expected_principal_cannot_target_another_account \
+            postgres_identity_missing_or_unknown_schema_is_not_empty_or_repaired_silently \
+            postgres_identity_disabled_or_inconsistent_records_cannot_be_rebound \
+            faults::postgres_identity_failed_bootstrap_leaves_no_partial_authority_or_workspace \
+            faults::postgres_identity_binding_failure_rolls_back_the_principal \
+            faults::postgres_identity_suppressed_binding_is_not_success \
+            faults::postgres_identity_commit_failure_is_not_success \
+            faults::postgres_identity_retirement_failure_keeps_both_principal_and_binding_active \
+            faults::postgres_identity_retirement_commit_failure_preserves_the_active_mapping \
+            faults::postgres_identity_cancelled_binding_rolls_back_without_publishing_an_id; do
+            cargo test --manifest-path engine/Cargo.toml --locked --test collaboration_identity_store_tdd "$task_identity_pg_case" -- --ignored --list | grep -Fx "$task_identity_pg_case: test"
+            cargo test --manifest-path engine/Cargo.toml --locked --test collaboration_identity_store_tdd "$task_identity_pg_case" -- --ignored --exact --nocapture
+          done
+      - name: Run real PostgreSQL collaboration access integration
+        env:
+          CYANREX_TEST_DATABASE_URL: postgres://cyanrex_test:cyanrex-ci-only@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test
+        run: |
+          set -euo pipefail
+          for task_access_pg_case in \
+            postgres_access_schema_is_explicit_repeatable_and_fail_closed \
+            postgres_access_policy_reload_and_compare_swap_prevent_stale_regrant \
+            postgres_access_concurrent_writers_do_not_overwrite_reviewed_revisions \
+            postgres_access_scope_and_unknown_identities_never_gain_access \
+            policy::postgres_access_privacy_review_and_deployment_are_distinct \
+            policy::postgres_access_suspension_archival_and_explicit_revocation_take_effect \
+            policy::postgres_access_retirement_and_same_name_recreation_do_not_inherit_grants \
+            policy::postgres_access_unknown_duplicate_or_ambiguous_roles_are_rejected \
+            faults::postgres_access_failed_schema_install_rolls_back_without_repairing_legacy_data \
+            faults::postgres_access_revision_exhaustion_and_ambiguous_persisted_roles_fail_closed \
+            faults::postgres_access_altered_write_postcondition_is_not_acknowledged \
+            faults::postgres_access_partial_or_suppressed_writes_never_commit \
+            faults::postgres_access_deferred_commit_failure_preserves_prior_policy \
+            faults::postgres_access_corrupt_or_missing_state_never_uses_cached_allow \
+            faults::postgres_access_cancelled_change_and_waiting_preview_do_not_publish_stale_allow; do
+            cargo test --manifest-path engine/Cargo.toml --locked --test collaboration_access_store_tdd "$task_access_pg_case" -- --ignored --list | grep -Fx "$task_access_pg_case: test"
+            cargo test --manifest-path engine/Cargo.toml --locked --test collaboration_access_store_tdd "$task_access_pg_case" -- --ignored --exact --nocapture
+          done
       - name: Run real Runner Agent compile integration
         run: cargo test --manifest-path engine/Cargo.toml --locked --test runner_agent_client_tdd -- --ignored --nocapture
 

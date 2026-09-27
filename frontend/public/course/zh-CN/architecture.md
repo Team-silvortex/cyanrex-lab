@@ -1,5 +1,10 @@
 # 系统架构
 
+0.4.4 收录的协作准备层及 C0/C-M1 源码基线见 [ADR-001](collaboration-foundation.md)，后续
+[ADR-002](collaboration-identity-store.md)新增独立、显式的 PostgreSQL 身份注册表，
+[ADR-003](collaboration-access-store.md)新增持久化成员/部署策略准备层及当前权限预览。这些均未接入
+下文描述的在线运行拓扑、路由、认证或持久化路径。
+
 本文说明 Cyanrex Lab 的运行边界、代码职责、数据流和扩展规则。项目定位是自部署的 eBPF
 教学系统，适合可信工作站、教室服务器或受保护的局域网，不面向公网多租户场景。
 

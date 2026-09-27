@@ -5,6 +5,34 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.4.4] - 2026-09-27
+
+### Added
+
+- Started C0/C-M1 collaboration groundwork with typed stable IDs, Principal/Workspace/Membership
+  contracts, scoped revision-pinned Artifact references and a versioned event envelope. Added a pure
+  offline legacy-permission preview and regressions for ownership, teaching review and instance scope.
+  Bilingual ADR-001 records the source baseline and migration gates. Existing runtime authorization,
+  storage and routes are unchanged; no data migration or new public API is enabled.
+
+- Added the explicit C1-A PostgreSQL identity registry: operator-pinned authority/legacy Workspace
+  mappings, stable account-incarnation bindings, atomic Principal creation/retirement, historical
+  tombstones and fail-closed storage. Fifteen real isolated PostgreSQL concurrency/fault cases are
+  explicitly selected by CI. No startup migration, existing-account rewrite or live authorization
+  integration is enabled; bilingual ADR-002 documents the staging boundary and remaining gates.
+
+- Added C1-B durable legacy membership and explicit instance deployment-grant staging. Atomic
+  revision-checked policy replacement rejects stale re-grants, while fresh database previews retain
+  private ownership, student-only teaching review and scope boundaries. Fifteen real PostgreSQL
+  lifecycle/concurrency/fault cases are selected by CI. No live authentication or policy cutover is
+  enabled; bilingual ADR-003 records the check/use boundary and remaining migration requirements.
+
+### Changed
+
+- SDK patch compatibility applies to every pre-1.0 minor line. A member deprecated during `0.4.x`
+  remains for the complete `0.5.x` line and can be removed no earlier than a reviewed `0.6.0` release.
+  Frozen OpenAPI and SDK surface baselines are unchanged.
+
 ## [0.4.3] - 2026-09-25
 
 ### Fixed
@@ -446,7 +474,8 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 The canonical package metadata advanced directly from `0.2.9` to `0.3.1`. Version `0.3.0` identifies
 the frozen API compatibility snapshot only; it was not a package release and must not be tagged.
 
-[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.3...HEAD
+[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.4...HEAD
+[0.4.4]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.3...v0.4.4
 [0.4.3]: https://github.com/Team-silvortex/cyanrex-lab/compare/bea50cde4a4cbe087dff9a602f1c7e03970ed946...v0.4.3
 [0.4.2]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.1...bea50cde4a4cbe087dff9a602f1c7e03970ed946
 [0.4.1]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.0...v0.4.1
