@@ -27,12 +27,17 @@ use crate::{
 };
 
 mod accounts;
+mod bootstrap;
+mod credentials;
 mod deletion;
+pub(crate) mod reconciliation;
 mod schema;
 mod session_commands;
 mod sessions;
 
+pub use bootstrap::{AuthorityBootstrap, BootstrapError};
 pub use deletion::SessionDeleteAccountCommand;
+pub use reconciliation::{AuthorityReconciliation, ReconciliationError};
 pub use session_commands::{SessionBindCommand, SessionCommandError, SessionPolicyCommand};
 
 #[derive(Clone)]

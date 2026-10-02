@@ -1,6 +1,6 @@
 # ADR-008：受限的会话授权账号删除
 
-状态：**C1-G 受限内部准备层，尚未发布**，基于 0.4.6 提交
+状态：**C1-G 受限内部准备层，收录于 0.4.7**，最初基于 0.4.6 提交
 `0dc195086965f6ca6972c742a36f3c825bc6be41`，承接 [C1-F](collaboration-session-commands.md)。
 不切换 live AuthService，不改公共 API/SDK、旧迁移、已有账号接入或部署。
 

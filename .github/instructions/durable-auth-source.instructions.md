@@ -29,3 +29,26 @@ Restricted account deletion takes source `FOR UPDATE` before registry locks (nev
 Session after deletion. An identity retirement receipt is not durable deletion evidence: reject
 already-retired targets and receipt replay before source writes. Preserve both login/logout orderings,
 replacement-account protection and rollback tests in `durable_account_deletion_tdd`.
+
+Self-service password rotation derives its target from the current Session and requires the current
+password plus TOTP, not a manager grant. Release snapshot locks before Argon2; reacquire source
+`FOR UPDATE` and recheck the exact Session, incarnation and complete credentials before writing.
+Credential replacement and all-session revocation must commit together. After deliberately deleting
+the calling Session, check its verified expiry against fresh database time after the final writes;
+do not skip freshness or expect the deleted row to remain. Preserve identity/TOTP/grants, count and
+read back revocation, and retain the fault/concurrency/registry tests in `durable_password_change_tdd`.
+A failed acknowledgement is not proof of rollback, and no credential-change replay is available.
+
+Fresh-authority bootstrap is trusted provisioning, never public registration or first-login election.
+Before DDL, take the existing source/identity/access installer advisory fences in that order and reject
+any nonempty or ambiguous namespace. Use source -> registry metadata -> authority -> child lock order,
+commit account/identity/initial grant/audit activation together, and publish no Session or secret before
+confirmed commit. A repeated bootstrap or deleted first account must not trigger regrant/recovery.
+Keep the bootstrap fault injection counters: an early unrelated DDL error is not the intended row fault.
+
+Maintenance reconciliation is deliberately separate from locking authorization: use one bounded
+REPEATABLE READ, READ ONLY transaction, verify table/column shapes before payload reads, reject RLS
+and inheritance, and inspect full audit chains with strict row/metadata budgets. Fetch no credentials
+or token digests. Retired source accounts and unbound registrations can be valid, but account IDs
+cannot be reused under another name. Do not infer rollback, delivery, quiescence or retry authority
+from a read snapshot. Preserve read-only-role, corruption, MVCC and cancellation regressions.

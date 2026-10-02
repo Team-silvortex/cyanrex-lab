@@ -1,6 +1,6 @@
 # cyanrex-lab
 
-Version: `0.4.6`
+Version: `0.4.7`
 
 Cyanrex monorepo for eBPF experiments: Axum engine + Next.js dashboard + module utilities.
 
@@ -23,8 +23,13 @@ Included in 0.4.6: [durable account/session source (English)](docs/en/collaborat
 · [持久认证源（简体中文）](docs/zh-CN/collaboration-auth-source.md). This is internal staging, not live authentication cutover.
 Also included in 0.4.6: [session-authorized commands (English)](docs/en/collaboration-session-commands.md)
 · [会话授权事务（简体中文）](docs/zh-CN/collaboration-session-commands.md), still without switching live routes.
-Unreleased: [restricted account deletion (English)](docs/en/collaboration-account-deletion.md)
+Included in 0.4.7: [restricted account deletion (English)](docs/en/collaboration-account-deletion.md)
 · [受限账号删除（简体中文）](docs/zh-CN/collaboration-account-deletion.md) composes deletion/retirement for another active bound account only.
+The same release adds atomic password rotation, empty-authority bootstrap and the native local
+[provisioning CLI](docs/en/collaboration-provisioning.md) / [本地初始化](docs/zh-CN/collaboration-provisioning.md),
+plus [read-only lifecycle reconciliation](docs/en/collaboration-reconciliation.md) /
+[只读生命周期对账](docs/zh-CN/collaboration-reconciliation.md). These remain explicit internal staging;
+the source release does not migrate, deploy or switch live authentication.
 
 ## Repository Layout
 
@@ -160,12 +165,12 @@ privileged and must not be exposed to untrusted users.
 For classroom deployment or offline distribution, create a packaged artifact with prebuilt Docker images:
 
 ```bash
-./scripts/package-distribution.sh --version 0.4.6
+./scripts/package-distribution.sh --version 0.4.7
 ```
 
 This produces:
-- `dist/cyanrex-lab-0.4.6-<timestamp>.tar.gz`
-- `dist/cyanrex-lab-0.4.6-<timestamp>.tar.gz.sha256`
+- `dist/cyanrex-lab-0.4.7-<timestamp>.tar.gz`
+- `dist/cyanrex-lab-0.4.7-<timestamp>.tar.gz.sha256`
 
 The archive contains the PostgreSQL, Engine, and frontend images. On a disposable Docker host,
 verify the freshly extracted package end to end with `./install-smoke.sh`. It checks the package
@@ -200,10 +205,10 @@ For an artifact downloaded from the Tag workflow, place its four files in a dedi
 verify the complete candidate from a trusted checkout of the matching source Tag before extracting it:
 
 ```bash
-release_revision="$(git rev-list -n 1 v0.4.6)"
+release_revision="$(git rev-list -n 1 v0.4.7)"
 cargo run --quiet --manifest-path engine/Cargo.toml --locked --bin cyanrex-release -- \
   candidate verify /path/to/downloaded-candidate \
-  --expect-version 0.4.6 --expect-revision "$release_revision" --expect-tag v0.4.6 \
+  --expect-version 0.4.7 --expect-revision "$release_revision" --expect-tag v0.4.7 \
   --extract-to /path/to/new-output-directory
 ```
 

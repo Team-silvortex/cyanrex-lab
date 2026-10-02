@@ -5,7 +5,33 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.4.7] - 2026-10-02
+
 ### Added
+
+- Added C1-K `cyanrex-provision reconcile`: one bounded read-only snapshot checks staged account/
+  Session incarnations, identity bindings, paired policies, complete audit histories and a current
+  source-backed manager. No auth secrets, enrollment delivery or repair are involved; observations
+  never authorize a retry. Twelve explicit PostgreSQL cases cover corruption, limits, cancellation,
+  MVCC and read-only column privileges. Live runtime, frozen APIs and schema stay unchanged.
+
+- Added C1-J native `cyanrex-provision plan/inspect/apply` for explicitly pinned local staging
+  targets. Read-only preflight and target-bound confirmation precede C1-I bootstrap; private files
+  keep passwords/TOTP out of arguments and console output. Existing output is never overwritten,
+  and unconfirmed commit/delivery preserves evidence without automatic retry or reinitialization.
+  Eight default and nine PostgreSQL cases cover safety, concurrency, cancellation and short writes;
+  CI selects the database cases explicitly. No live runtime, public API or packaging change.
+
+- Added C1-I trusted-operator bootstrap for a fresh empty namespace: the initial durable account,
+  owner/teacher identity, legacy Workspace, explicit deployment grant and audit activation commit
+  together. Existing/partial schemas and repeat claims are rejected; no Session or success replay is
+  issued. Fourteen PostgreSQL fault/concurrency cases are selected by CI. No live API, migration of
+  existing accounts, startup hook or deployment change is enabled.
+
+- Added C1-H self-service password rotation on the explicit durable source: current Session,
+  password and TOTP verification, exact-incarnation credential replacement and all-session revocation
+  commit together. Seventeen PostgreSQL cases cover failures, concurrency and registry boundaries;
+  CI selects each explicitly. No live endpoint, schema, grant, recovery flow or deployment is changed.
 
 - Added restricted C1-G session-authorized deletion of another active bound source account: exact
   incarnation/Principal checks, audited retirement, all-session revocation and account deletion commit
@@ -14,6 +40,8 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
   cases are selected by CI. No live AuthService, public API, migration or deployment change.
 
 ### Fixed
+
+- Removed stray patch markers from the local provisioning CLI help text.
 
 - Corrected residual C1-F status wording: session-authorized binding/policy composition was already
   included in 0.4.6; bootstrap, general lifecycle integration and live cutover remain separate gates.
@@ -522,7 +550,10 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 The canonical package metadata advanced directly from `0.2.9` to `0.3.1`. Version `0.3.0` identifies
 the frozen API compatibility snapshot only; it was not a package release and must not be tagged.
 
-[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.4...HEAD
+[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.7...HEAD
+[0.4.7]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.6...v0.4.7
+[0.4.6]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.5...v0.4.6
+[0.4.5]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.4...v0.4.5
 [0.4.4]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.3...v0.4.4
 [0.4.3]: https://github.com/Team-silvortex/cyanrex-lab/compare/bea50cde4a4cbe087dff9a602f1c7e03970ed946...v0.4.3
 [0.4.2]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.1...bea50cde4a4cbe087dff9a602f1c7e03970ed946

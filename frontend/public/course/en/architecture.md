@@ -16,8 +16,17 @@ last-manager and absent-key read protection; legacy authentication/sessions rema
 Source release 0.4.6 includes [ADR-006 / C1-E](collaboration-auth-source.md), adding a strict durable account-incarnation and
 session source for explicitly empty schemas, not live authentication or unified lifecycle integration.
 [ADR-007 / C1-F](collaboration-session-commands.md) composes that source with audited binding/policy
-commands on one transaction. Unreleased [ADR-008 / C1-G](collaboration-account-deletion.md) adds restricted
-administrative deletion/retirement; general lifecycle, bootstrap and live route cutover remain pending.
+commands on one transaction. Version 0.4.7 includes [ADR-008 / C1-G](collaboration-account-deletion.md), adding restricted
+administrative deletion/retirement. [ADR-009 / C1-H](collaboration-password-change.md) adds self-service
+password rotation with atomic all-session revocation; it preserves identity/grants and does not change
+the live password endpoint. [ADR-010 / C1-I](collaboration-bootstrap.md) adds one-transaction operator
+bootstrap of an empty namespace, including the first owner/teacher and audited deployment grant.
+[ADR-011 / C1-J](collaboration-provisioning.md) adds a separate local `cyanrex-provision` binary with
+read-only plan/inspect, explicit target-bound apply and private enrollment delivery. It does not load
+AppState or live configuration. [ADR-012 / C1-K](collaboration-reconciliation.md) adds a bounded,
+read-only repeatable-read observer of the source/registry/full audit graph. It is not authorization,
+recovery or a replacement for runtime row locks. There is no public/startup entry; lifecycle recovery,
+existing-data migration and live cutover remain pending.
 
 ## 1. System Context
 

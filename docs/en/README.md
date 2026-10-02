@@ -23,7 +23,13 @@ last-manager protection, without treating registry retirement as revocation of o
 [ADR-006 / C1-E](collaboration-auth-source.md), included in 0.4.6, adds an empty-source-only durable
 account and session adapter; it is not composed into live AuthService.
 [ADR-007 / C1-F](collaboration-session-commands.md) composes current Sessions with identity binding and
-policy commands in one transaction; account deletion/retirement and live cutover remain pending.
+policy commands in one transaction. Included in 0.4.7, [ADR-008 / C1-G](collaboration-account-deletion.md)
+adds restricted account deletion/retirement; [ADR-009 / C1-H](collaboration-password-change.md) adds
+self-service password change and all-session revocation. [ADR-010 / C1-I](collaboration-bootstrap.md)
+adds atomic trusted-operator bootstrap of a fresh namespace. [ADR-011 / C1-J](collaboration-provisioning.md)
+adds controlled local planning, explicit application and private enrollment delivery.
+[ADR-012 / C1-K](collaboration-reconciliation.md) adds bounded read-only lifecycle reconciliation,
+including complete audit chains. Recovery, existing-data migration and live cutover remain pending.
 
 ## Recommended Reading Order
 

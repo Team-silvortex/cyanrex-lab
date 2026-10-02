@@ -41,7 +41,13 @@
 0.4.6 收录的 [ADR-006 / C1-E](collaboration-auth-source.md)新增显式空源安装、稳定账号代次和严格
 持久会话适配器；不迁移已有账号或切换在线 AuthService。
 后续 [ADR-007 / C1-F](collaboration-session-commands.md)将当前会话与注册表绑定/策略命令放入
-同一事务；删除/退役联动、统一引导和在线切换仍待完成。
+同一事务。0.4.7 收录的 [ADR-008 / C1-G](collaboration-account-deletion.md)增加受限删除/退役联动，
+[ADR-009 / C1-H](collaboration-password-change.md)增加自助改密和全部会话撤销原子事务；
+[ADR-010 / C1-I](collaboration-bootstrap.md)继续补齐全新空命名空间的首个账号、空间、管理权和审计
+原子引导。[ADR-011 / C1-J](collaboration-provisioning.md)继续提供只读预检、目标确认、显式执行与
+私有 TOTP 交付的本地 CLI。[ADR-012 / C1-K](collaboration-reconciliation.md)继续补全来源、
+注册表与完整审计链的有界只读对账，不把快照当成恢复或重试许可。恢复与凭据审计、实际迁移和
+在线切换仍待完成。
 
 建议 Linux 侧按以下顺序启动：
 

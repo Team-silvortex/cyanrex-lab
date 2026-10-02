@@ -1,13 +1,68 @@
 # Project Status
 
-Snapshot date: **2026-09-27**
-Current release line: **0.4.6**
+Snapshot date: **2026-10-02**
+Current release line: **0.4.7**
 
 This page is the capability-level progress baseline for Cyanrex Lab. It records what is usable now,
 what remains intentionally limited, and which decisions should drive the next development cycle.
 The detailed trust boundaries and data flows remain in the [system architecture](architecture.md).
 
-## Restricted account deletion (unreleased)
+Release validation for 0.4.7 passed the full local quality gate with existing locked dependencies:
+347 default Rust tests, 82 script regressions, 125 frontend tests and 16 SDK tests, plus the frontend
+production build, TypeScript and SDK type/package checks. The frontend production audit reported one
+low-severity DOMPurify advisory (GHSA-p98j-92pf-mc4p), with no moderate/high/critical findings; the SDK
+audit reported none. The existing gate blocks moderate or higher; dependencies were not changed in
+this release. Remote CI, exact-image distribution/kernel acceptance and deployment remain separate.
+
+## Read-only lifecycle reconciliation (included in 0.4.7)
+
+- [ADR-012 / C1-K](collaboration-reconciliation.md) adds native `cyanrex-provision reconcile` for
+  one bounded read-only source/identity/policy/full-audit snapshot. It checks exact account incarnations
+  and a current source-backed manager, without fetching credentials or changing records/enrollment.
+- Twelve new PostgreSQL cases cover legitimate unbound/retired states, missing or altered history,
+  schema/RLS/type/inheritance rejection, row/payload limits, concurrent commits, cancellation and
+  read-only column privileges. Two additional default source/CLI regressions pass; CI selects all cases.
+- A consistent observation is not current authorization, an uncertain command's outcome, secret
+  delivery or permission to retry. Recovery, reviewed migration/restore and live route/CSRF integration
+  remain pending. This source release enables no runtime, schema, frozen API or deployment change.
+- Development verification on 2026-10-02 passed the backend quality gate: 347 default Rust tests
+  (240 opt-in ignored) and 82 script regressions, plus all 182 selected PostgreSQL authentication/C1
+  cases. Twelve PostgreSQL CI step bodies ran locally against disposable PostgreSQL 16, not remote CI.
+  The twelve reconciliation cases also passed separately through loopback TCP with SCRAM authentication.
+
+## Controlled local provisioning (included in 0.4.7)
+
+- [ADR-011 / C1-J](collaboration-provisioning.md) adds native `cyanrex-provision plan/inspect/apply`:
+  explicit local database settings, read-only catalog preflight, physical-target/intent confirmation
+  and exclusive private enrollment delivery after C1-I commit. No password/TOTP appears in console output.
+- The original C1-J eight default plus nine real PostgreSQL cases pass, including concurrent processes, cancellation,
+  stale targets, unsafe files, lock timeout and post-commit short writes/path replacement. CI selects
+  each database case by exact name. Inspect is an occupancy snapshot, not full lifecycle reconciliation.
+- No live API/configuration, startup/packaging or deployment changes. C1-K now adds
+  bounded read-only reconciliation; secret recovery, reviewed migration/restore and live route integration
+  remain pending.
+
+## Empty-authority bootstrap (included in 0.4.7)
+
+- [ADR-010 / C1-I](collaboration-bootstrap.md) atomically initializes the first source account,
+  legacy Workspace, owner/teacher membership, explicit deployment grant and both audit baselines.
+  Only a fresh empty namespace is accepted; existing data, partial installs and repeat claims are rejected.
+- Fourteen PostgreSQL cases cover rollback of DDL/credentials/grants, concurrent installers, one-winner
+  bootstrap, scope isolation and compatibility with session-authorized commands and password rotation.
+- This remains trusted-operator Rust staging, with no HTTP/startup hook or automatic Session.
+  C1-J provides the explicit local CLI; secret recovery, reviewed migration and live route cutover remain pending.
+
+## Atomic password rotation (included in 0.4.7)
+
+- [ADR-009 / C1-H](collaboration-password-change.md) requires a current Session, password and TOTP,
+  replacing credentials and revoking every Session in one source transaction. Identity, TOTP, grants
+  and audit history stay unchanged; the caller must log in again.
+- Seventeen real PostgreSQL cases cover failed/cancelled writes, expiry, stale credential snapshots,
+  concurrent login/logout, binding/deletion ordering and retired identity isolation, with exact CI selection.
+- This is internal staging, not a live password-endpoint change. C1-I now provides fresh-namespace
+  bootstrap; recovery, credential audit, reviewed migration and live route/CSRF cutover remain pending.
+
+## Restricted account deletion (included in 0.4.7)
 
 - [ADR-008 / C1-G](collaboration-account-deletion.md) maps source, identity, policy/audit and retirement
   invariants and composes another active bound account's deletion, all-Session revocation and audited
@@ -87,7 +142,7 @@ The detailed trust boundaries and data flows remain in the [system architecture]
 | Local Runner | Operational | Replaceable driver boundary, global/per-user leases, timeout handling, and explicit `shared_kernel` reporting |
 | Runner Agent | Operational for remote checks | Signed registration, heartbeat, leases, cancellation, probes, and isolated compile-only diagnostics; remote eBPF loading is not enabled |
 | Deployment and distribution | Operational | Docker, WSL2, native Linux, hardened optional compiler Agent, and offline package/install tooling |
-| Release traceability | `0.4.6` synchronized source metadata; artifact acceptance remains separate | Changelog/version sync, annotated-tag preflight, checksum-bound source/archive metadata, per-image Docker content IDs, exact-image installation, and native Rust evidence/candidate verification with safe non-overwriting extraction; `0.3.0` is an API baseline only; publishing a source tag does not establish artifact acceptance |
+| Release traceability | `0.4.7` synchronized source metadata; artifact acceptance remains separate | Changelog/version sync, annotated-tag preflight, checksum-bound source/archive metadata, per-image Docker content IDs, exact-image installation, and native Rust evidence/candidate verification with safe non-overwriting extraction; `0.3.0` is an API baseline only; publishing a source tag does not establish artifact acceptance |
 | Module catalog | Operational, state-only | Versioned v1 manifests are discovered and validated at startup; lifecycle is in memory and never executes directory code |
 | JavaScript SDK | Operational internal package | Typed ESM client with 63 generated non-Agent operationId calls, a 77-member additive namespace baseline and deprecation policy, explicit `/openapi` and `/operations` exports, browser/Node sessions, cancellation, downloads, typed errors, and package-consumer smoke coverage |
 | API contract | Operational internal contract | Generated OpenAPI 3.1 served at `/openapi.json`; route/access/SDK/model drift and breaking changes against the frozen `0.3.0` baseline fail the quality gate |

@@ -73,7 +73,7 @@ impl DurableAuthSource {
         Ok(())
     }
 
-    async fn verify_schema(connection: &mut PgConnection) -> Result<()> {
+    pub(super) async fn verify_schema(connection: &mut PgConnection) -> Result<()> {
         Self::verify_legacy_shape(connection).await?;
         let columns: i64 = sqlx::query(
             "SELECT count(*) AS count FROM pg_attribute WHERE

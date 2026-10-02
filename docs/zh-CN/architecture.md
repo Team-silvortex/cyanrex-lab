@@ -11,8 +11,16 @@
 0.4.6 收录的 [ADR-006 / C1-E](collaboration-auth-source.md)新增仅显式空库启用、无内存降级的持久
 账号代次及会话来源，仍不是在线认证切换或统一生命周期事务。
 [ADR-007 / C1-F](collaboration-session-commands.md)把来源会话与带审计的绑定/策略命令组合为
-单一事务；尚未发布的 [ADR-008 / C1-G](collaboration-account-deletion.md)补齐受限管理删除/退役，
-完整生命周期、引导和在线路由切换仍待完成。
+单一事务；0.4.7 收录的 [ADR-008 / C1-G](collaboration-account-deletion.md)补齐受限管理删除/退役，
+[ADR-009 / C1-H](collaboration-password-change.md)继续增加自助改密与全部会话撤销原子事务，
+保留身份/Grant，不改变在线改密端点。[ADR-010 / C1-I](collaboration-bootstrap.md)增加全新空命名空间
+的运维引导事务，包含首个所有者/教师及带审计部署 Grant。
+[ADR-011 / C1-J](collaboration-provisioning.md)新增独立的本地 `cyanrex-provision` 二进制：只读
+plan/inspect、绑定目标确认的显式 apply，以及私有注册材料交付。不加载 AppState 或在线配置，
+仍无公共/启动入口。
+[ADR-012 / C1-K](collaboration-reconciliation.md)在同一个有界、只读可重复读事务内核对来源、
+注册表与完整审计图；它不是授权或恢复，也不替换在线读取的行锁。
+生命周期恢复、已有数据迁移和在线切换仍待完成。
 
 本文说明 Cyanrex Lab 的运行边界、代码职责、数据流和扩展规则。项目定位是自部署的 eBPF
 教学系统，适合可信工作站、教室服务器或受保护的局域网，不面向公网多租户场景。

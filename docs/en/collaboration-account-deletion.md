@@ -1,6 +1,6 @@
 # ADR-008: Restricted session-authorized account deletion
 
-Status: **C1-G restricted internal staging, unreleased**, based on 0.4.6 commit
+Status: **C1-G restricted internal staging, included in 0.4.7**, originally based on 0.4.6 commit
 `0dc195086965f6ca6972c742a36f3c825bc6be41`. Builds on [C1-F](collaboration-session-commands.md).
 No live AuthService, public API/SDK, old migration, automatic account adoption or deployment change.
 

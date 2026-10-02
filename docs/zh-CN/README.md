@@ -24,7 +24,12 @@ Cyanrex 是一个面向 eBPF 入门教学的实验系统。它把源码编辑、
 [ADR-006 / C1-E](collaboration-auth-source.md)在 0.4.6 新增仅显式空源启用的持久账号/会话适配器，
 仍未接入在线 AuthService。
 [ADR-007 / C1-F](collaboration-session-commands.md)继续把当前 Session 与身份绑定/策略命令组合为
-单一事务；账号删除/退役联动和在线切换仍待完成。
+单一事务。0.4.7 收录的 [ADR-008 / C1-G](collaboration-account-deletion.md)增加受限账号删除/退役，
+[ADR-009 / C1-H](collaboration-password-change.md)增加自助改密与全部会话撤销原子事务；
+[ADR-010 / C1-I](collaboration-bootstrap.md)补齐全新空命名空间的可信运维引导原子事务。
+[ADR-011 / C1-J](collaboration-provisioning.md)补齐受控本地计划、显式执行和私有注册材料交付。
+[ADR-012 / C1-K](collaboration-reconciliation.md)增加有界只读生命周期对账，覆盖完整审计链。
+恢复、已有数据迁移和在线切换仍待完成。
 
 ## 推荐阅读顺序
 

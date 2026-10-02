@@ -1,0 +1,83 @@
+# ADR-009：自助改密与全部会话撤销的原子事务
+
+状态：**C1-H 内部准备层，收录于 0.4.7**，最初基于 0.4.6 提交
+`45e0abcca25c3e795ad78882a293d060b12c208e`，承接显式
+[认证源](collaboration-auth-source.md)、[会话命令](collaboration-session-commands.md)与
+[受限删除](collaboration-account-deletion.md)。不改 live AuthService、公共 API/SDK、Schema 模板、
+已有账号或部署；本次只发布源码。
+
+## 支持的操作
+
+[`change_session_password`](../../engine/src/services/auth_service/durable_source/credentials.rs)
+接收 Session token、当前密码、新密码和 TOTP。准确账号来自当前持久 Session，调用方不能指定
+用户名、目标代次或 actor；来源必须已显式安装。这是自助凭据轮换，不是管理者重置、注册、恢复
+或迁移入口。
+
+成功返回表示新密码与该准确账号的**全部** Session 删除一起提交，包含当前及已过期会话。
+不签发替代 token，调用方必须重新登录。用户名、账号代次、TOTP 密钥及其他账号和会话保持不变；
+即使改回相同密码，也生成新盐并注销所有设备。
+
+这个来源级操作不要求、也不创建注册表绑定或 Grant。未绑定账号、普通成员及唯一管理者都可自助
+改密；注册表已退役但来源仍存在的账号也可改密，其 Principal 仍保持退役，协作命令仍拒绝访问。
+认证不等于恢复授权。本操作不改写或追加 Membership、部署 Grant、所有权、策略修订及身份/策略
+审计历史；本切片没有新增凭据变更审计账本。
+
+## 事务与授权边界
+
+1. 在短暂的源 `FOR SHARE` 事务中读取当前未过期 Session 及准确凭据快照，然后提交只读事务。
+2. 共用已有的有界登录准入预算；在数据库锁和连接之外验证当前密码/TOTP、生成新 Argon2 哈希。
+   新密码为 8–4096 字节，当前密码和 OTP 保留来源已有的 4096/64 字节上限。
+3. 新事务在子行之前取得源 `FOR UPDATE`。锁等待后复核准确 Session、账号代次、完整旧凭据和
+   TOTP；不将持有的源共享锁升级为写锁。
+4. 统计全部匹配会话，以已验证的代次和旧凭据为条件更新且仅更新一行。UPDATE 后、主动撤销前
+   再核对授权 Session，然后删除准确数量的会话。
+5. 回读新凭据、原代次/TOTP 及会话不存在的状态。由于授权会话已被主动删除，改用其已验证的
+   到期时间与最后写入/触发器等待后的数据库实时时间比较；确认 COMMIT 才返回成功并清除准入计数。
+
+源写锁与登录、退出、C1-F 命令、C1-G 删除互斥。改密不修改注册表，因而不需要注册表锁，也没有
+引入注册表到来源的反向锁序。先提交的登录会被撤销；仍在验证旧凭据的登录须复核凭据后才能发
+token。改密之后的验证看不到旧 Session。退出先提交会使改密失去准入；改密先提交则退出保持幂等。
+并发改密不能都消费同一旧凭据。先准入的绑定可以在改密前完成，排在改密后的绑定不能再用旧 token。
+管理删除可在改密后继续，改密不能在删除后作用于旧账号或同名替代账号。
+
+准入预算在同一来源实例的 clone 和登录之间共享：每用户名每五分钟窗口最多五次准入，最多记录
+1024 个名字；它不是持久化的跨进程限流。沿用操作十秒、锁两秒、SQL 五秒限制。
+
+## 失败与恢复限制
+
+抑制写入、凭据/代次变化、会话被改写或重插、等待后过期、延迟提交失败及提交前取消，都不能返回
+成功。不使用内存降级，不执行 DDL、bootstrap 或自动重试；结果 DTO 与日志不包含秘密。
+
+取消、超时、提交响应丢失**不证明回滚**。这里没有命令 ID、持久改密回执或成功重放；成功后授权
+token 本就必须失效。结果不确定时，重新认证并通过可信维护入口核对当前来源状态；不能恢复旧
+Session、覆盖后来的密码，或用历史身份回执推断是哪次操作提交。迟到的 COMMIT 可能跨越到期时刻
+或丢响应，最终新鲜度检查不等于覆盖任意提交延迟的持续授权。
+
+特权 SQL/DDL 和旧在线 AuthService 不遵守这个来源锁，禁止在 live AuthService 使用的表上启用
+准备层来源。在线改密端点保持原有行为，本文不宣称该端点现在已支持全设备注销。
+
+## 验证与后续门槛
+
+[主测试](../../engine/tests/durable_password_change_tdd.rs)、
+[故障测试](../../engine/tests/durable_password_change/faults.rs)、
+[并发测试](../../engine/tests/durable_password_change/concurrency.rs)及
+[注册表边界](../../engine/tests/durable_password_change/registry.rs)新增 1 条默认关闭连接池测试和
+17 条显式 PostgreSQL 用例。实现前已观察到缺失 API 编译失败和 CI 缺少选择项失败。2026-10-02
+在独立 PostgreSQL 16 实例运行，18 条全部通过。CI 先核对 ignored 用例存在，再逐条准确执行；
+[选择回归](../../scripts/tests/postgresCi.test.mjs)拒绝漏项。
+
+```bash
+CYANREX_TEST_DATABASE_URL='<一次性 PostgreSQL URL>' CARGO_BUILD_JOBS=2 \
+  cargo test --manifest-path engine/Cargo.toml --locked --test durable_password_change_tdd \
+  -- --include-ignored --test-threads=2
+```
+
+同轮还通过 336 条默认 Rust 测试（205 条 opt-in 用例忽略）、147 条显式选取的 PostgreSQL
+认证/C1 用例及格式/公共质量门禁，后者包含 79 条脚本回归、契约/版本/课程同步与工具检查。
+九个认证/C1 CI 步骤的脚本体已在本地执行，包含 C1-G 的 16 条数据库用例；这不表示启动过远程 CI。
+冻结的 API/SDK 基线不变。一次性数据库、运行目录和 Cargo 产物相互隔离；为控制磁盘占用，本次
+验证关闭调试信息并保持非增量编译。未运行前端生产构建、真实内核验收或在线部署。
+
+统一 bootstrap、密码重置/TOTP 恢复、凭据审计/对账、带 CSRF 与分布式准入的公开路由、经过审阅的
+迁移/恢复和在线切换仍是独立门槛。本轮不代表候选版、部署或内核验收；历史 ADR 的验证记录不变，
+后续回归结果记录在本切片。

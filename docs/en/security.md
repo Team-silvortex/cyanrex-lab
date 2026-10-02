@@ -93,6 +93,29 @@ invalidations cannot reappear merely because a subsequent query fails. The exist
 fallback still cannot discover revocations or credential changes made elsewhere while the database is
 unavailable; this is not a distributed revocation guarantee or a replacement for incident recovery.
 
+The [C1-H source adapter](collaboration-password-change.md), included in 0.4.7, separately supports atomic
+self-service password change and all-session revocation with current Session/password/TOTP checks.
+It is not wired to the live endpoint described above, does not restore retired identity permissions,
+and must not share activated source tables with the legacy live writer.
+
+[C1-I bootstrap](collaboration-bootstrap.md) is explicit trusted-operator code for a fresh namespace,
+not an unauthenticated setup endpoint or first-registration claim. It rejects existing/partially installed
+schemas, commits initial identity/grants/audits together, and issues no Session. Lost acknowledgement
+requires reconciliation, not deleting data or automatically creating a replacement manager.
+
+The separate [C1-J local CLI](collaboration-provisioning.md) restricts endpoints to Unix sockets or
+literal loopback, ignores ambient database/runtime settings, and requires private owned inputs plus
+an explicit reviewed target digest. TOTP is written only after confirmed commit into an exclusively
+reserved private file, never the console. Database commit and file delivery are not atomic: failure
+can leave a committed account with missing/partial enrollment material. Preserve evidence and reconcile;
+catalog-only `inspect` is neither a healthy-authority check nor a secret recovery or replay mechanism.
+
+[C1-K reconciliation](collaboration-reconciliation.md) reads source/registry/full audit histories in
+one bounded read-only snapshot. It rejects filtered/incompatible layouts and reports aggregate counts,
+not credentials, token digests or individual identities. A consistent snapshot can precede an in-flight
+commit; it neither proves an uncertain command's outcome nor authorizes reinitialization, secret
+recovery or protected actions. Existing authorization still needs fresh Session checks and row locks.
+
 ### Browser diagnostic boundary
 
 Browser inline compiler caches and pending checks belong to one editor mount and exact Engine/target/

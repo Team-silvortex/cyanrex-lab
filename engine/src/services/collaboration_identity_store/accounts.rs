@@ -1,5 +1,43 @@
 use super::*;
 
+impl StoredLegacyIdentity {
+    pub(super) fn decode(row: &sqlx_postgres::PgRow) -> Result<Self> {
+        let authority_id = AuthorityId::try_from(row.try_get::<uuid::Uuid, _>("authority_id")?)?;
+        let principal_id = PrincipalId::try_from(row.try_get::<uuid::Uuid, _>("principal_id")?)?;
+        // Shared by locked runtime reads and the separate read-only reconciliation snapshot.
+        if row.try_get::<&str, _>("kind")? != "human" {
+            return Err(IdentityStoreError::InvalidRecord);
+        }
+        let status = match row.try_get::<&str, _>("status")? {
+            "active" => PrincipalStatus::Active,
+            "disabled" => PrincipalStatus::Disabled,
+            _ => return Err(IdentityStoreError::InvalidRecord),
+        };
+        let record = Self {
+            binding: LegacyIdentityBinding {
+                authority_id,
+                username: row.try_get::<String, _>("username")?.parse()?,
+                principal_id,
+            },
+            account_id: LegacyAccountId::try_from(row.try_get::<uuid::Uuid, _>("account_id")?)?,
+            principal: Principal {
+                reference: PrincipalRef {
+                    authority_id,
+                    principal_id,
+                },
+                kind: PrincipalKind::Human,
+                display_name: row.try_get("display_name")?,
+                status,
+            },
+            retired_at: row.try_get("retired_at")?,
+        };
+        if record.retired_at.is_some() && status != PrincipalStatus::Disabled {
+            return Err(IdentityStoreError::InvalidRecord);
+        }
+        Ok(record)
+    }
+}
+
 impl CollaborationIdentityStore {
     pub(super) async fn bound_principal(
         connection: &mut PgConnection,
@@ -34,44 +72,7 @@ impl CollaborationIdentityStore {
             WHERE i.authority_id = $1 AND i.username = $2 AND i.account_id = $3 FOR SHARE OF i, p")
             .bind(scope.authority_id.as_uuid()).bind(username.as_str()).bind(account_id.as_uuid())
             .fetch_optional(connection).await?;
-        row.map(|row| {
-            let authority_id =
-                AuthorityId::try_from(row.try_get::<uuid::Uuid, _>("authority_id")?)?;
-            let principal_id =
-                PrincipalId::try_from(row.try_get::<uuid::Uuid, _>("principal_id")?)?;
-            // Legacy account bindings must never turn into machine/Agent identities on a read.
-            if row.try_get::<&str, _>("kind")? != "human" {
-                return Err(IdentityStoreError::InvalidRecord);
-            }
-            let status = match row.try_get::<&str, _>("status")? {
-                "active" => PrincipalStatus::Active,
-                "disabled" => PrincipalStatus::Disabled,
-                _ => return Err(IdentityStoreError::InvalidRecord),
-            };
-            let record = StoredLegacyIdentity {
-                binding: LegacyIdentityBinding {
-                    authority_id,
-                    username: row.try_get::<String, _>("username")?.parse()?,
-                    principal_id,
-                },
-                account_id: LegacyAccountId::try_from(row.try_get::<uuid::Uuid, _>("account_id")?)?,
-                principal: Principal {
-                    reference: PrincipalRef {
-                        authority_id,
-                        principal_id,
-                    },
-                    kind: PrincipalKind::Human,
-                    display_name: row.try_get("display_name")?,
-                    status,
-                },
-                retired_at: row.try_get("retired_at")?,
-            };
-            if record.retired_at.is_some() && status != PrincipalStatus::Disabled {
-                return Err(IdentityStoreError::InvalidRecord);
-            }
-            Ok(record)
-        })
-        .transpose()
+        row.as_ref().map(StoredLegacyIdentity::decode).transpose()
     }
 
     pub(super) async fn identity(

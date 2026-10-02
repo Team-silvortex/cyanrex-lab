@@ -6,6 +6,41 @@ pub(super) struct AccountRecord {
 }
 
 impl DurableAuthSource {
+    /// Caller holds the source writer fence and owns commit. Never publish this pending result.
+    pub(super) async fn insert_prepared_account(
+        &self,
+        tx: &mut Transaction<'_, Postgres>,
+        expected: &UserRecord,
+    ) -> Result<DurableRegistration> {
+        let username: LegacyUsername = expected.username.parse()?;
+        if self.account_record(tx, &username).await?.is_some() {
+            return Err(DurableAuthError::AccountExists);
+        }
+        let account = DurableAccountRef {
+            authority_id: self.authority_id,
+            username: username.clone(),
+            account_id: LegacyAccountId::try_from(Uuid::new_v4())?,
+        };
+        confirmed_one(sqlx::query("INSERT INTO users (username, account_id, password_salt, password_hash, totp_secret) VALUES ($1, $2, $3, $4, $5)")
+            .bind(username.as_str()).bind(account.account_id.as_uuid()).bind(&expected.password_salt).bind(&expected.password_hash).bind(&expected.totp_secret)
+            .execute(&mut **tx).await?.rows_affected())?;
+        let actual = self
+            .account_record(tx, &username)
+            .await?
+            .ok_or(DurableAuthError::StorageUnavailable)?;
+        if actual.account != account || !same_credentials(&actual.user, expected) {
+            return Err(DurableAuthError::StorageUnavailable);
+        }
+        let issuer = "cyanrex-lab".to_string();
+        let bootstrap = RegisterOk {
+            issuer: issuer.clone(),
+            account_name: username.to_string(),
+            otpauth_uri: build_otpauth_uri(&issuer, username.as_str(), &expected.totp_secret),
+            secret: expected.totp_secret.clone(),
+        };
+        Ok(DurableRegistration { account, bootstrap })
+    }
+
     pub(super) async fn account_record(
         &self,
         connection: &mut PgConnection,
@@ -52,22 +87,22 @@ impl DurableAuthSource {
         }
         bounded(async {
             let salt = generate_password_salt();
-            let hash = derive_password_hash_async(password, &salt).await.ok_or(DurableAuthError::StorageUnavailable)?;
+            let hash = derive_password_hash_async(password, &salt)
+                .await
+                .ok_or(DurableAuthError::StorageUnavailable)?;
             let secret = generate_totp_secret();
             let mut tx = self.transaction().await?;
             self.lock_source(&mut tx, true).await?;
-            if self.account_record(&mut tx, username).await?.is_some() { return Err(DurableAuthError::AccountExists); }
-            let account = DurableAccountRef { authority_id: self.authority_id, username: username.clone(), account_id: LegacyAccountId::try_from(Uuid::new_v4())? };
-            let expected = UserRecord { username: username.to_string(), password_salt: salt, password_hash: hash, totp_secret: secret.clone() };
-            confirmed_one(sqlx::query("INSERT INTO users (username, account_id, password_salt, password_hash, totp_secret) VALUES ($1, $2, $3, $4, $5)")
-                .bind(username.as_str()).bind(account.account_id.as_uuid()).bind(&expected.password_salt).bind(&expected.password_hash).bind(&secret)
-                .execute(&mut *tx).await?.rows_affected())?;
-            let actual = self.account_record(&mut tx, username).await?.ok_or(DurableAuthError::StorageUnavailable)?;
-            if actual.account != account || !same_credentials(&actual.user, &expected) { return Err(DurableAuthError::StorageUnavailable); }
-            let issuer = "cyanrex-lab".to_string();
-            let bootstrap = RegisterOk { issuer: issuer.clone(), account_name: username.to_string(), otpauth_uri: build_otpauth_uri(&issuer, username.as_str(), &secret), secret };
+            let expected = UserRecord {
+                username: username.to_string(),
+                password_salt: salt,
+                password_hash: hash,
+                totp_secret: secret,
+            };
+            let pending = self.insert_prepared_account(&mut tx, &expected).await?;
             tx.commit().await?;
-            Ok(DurableRegistration { account, bootstrap })
-        }).await
+            Ok(pending)
+        })
+        .await
     }
 }

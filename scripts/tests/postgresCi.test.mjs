@@ -2,6 +2,80 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
+test("Rust CI explicitly runs read-only lifecycle reconciliation and corruption boundaries", async () => {
+  const workflow = await readFile(new URL("../../.github/workflows/ci.yml", import.meta.url), "utf8");
+  const step = workflow.split("- name: Run real PostgreSQL lifecycle reconciliation integration")[1]?.split("\n      - name:")[0] ?? "";
+  let count = 0;
+  for (const [file, prefix] of [["durable_reconciliation_tdd.rs", ""], ["durable_reconciliation/faults.rs", "faults::"], ["durable_reconciliation/cli.rs", "cli::"]]) {
+    const source = await readFile(new URL(`../../engine/tests/${file}`, import.meta.url), "utf8");
+    for (const [, name] of source.matchAll(/async fn (postgres_reconcile_\w+)\(/g)) {
+      count += 1;
+      assert.ok(step.includes(`${prefix}${name}`), name);
+    }
+  }
+  assert.equal(count, 12, "reconciliation boundaries require deliberate CI inclusion");
+  assert.ok(step.includes("@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test"));
+  assert.match(step, /CYANREX_TEST_DATABASE_PASSWORD: cyanrex-ci-only/);
+  assert.match(step, /--test durable_reconciliation_tdd/);
+  assert.match(step, /--ignored --list/);
+  assert.match(step, /grep -Fx/);
+  assert.match(step, /--ignored --exact --nocapture/);
+});
+
+test("Rust CI explicitly runs local provisioning and secret delivery boundaries", async () => {
+  const workflow = await readFile(new URL("../../.github/workflows/ci.yml", import.meta.url), "utf8");
+  const step = workflow.split("- name: Run real PostgreSQL local provisioning integration")[1]?.split("\n      - name:")[0] ?? "";
+  const source = await readFile(new URL("../../engine/tests/provision_postgres_tdd.rs", import.meta.url), "utf8");
+  const cases = [...source.matchAll(/async fn (postgres_provision_\w+)\(/g)].map((match) => match[1]);
+  assert.equal(cases.length, 9, "provisioning boundaries require deliberate CI inclusion");
+  for (const name of cases) assert.ok(step.includes(name), name);
+  assert.ok(step.includes("@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test"));
+  assert.match(step, /CYANREX_TEST_DATABASE_PASSWORD: cyanrex-ci-only/);
+  assert.match(step, /--test provision_postgres_tdd/);
+  assert.match(step, /--ignored --list/);
+  assert.match(step, /grep -Fx/);
+  assert.match(step, /--ignored --exact --nocapture/);
+});
+
+test("Rust CI explicitly runs every empty-authority bootstrap and rollback boundary", async () => {
+  const workflow = await readFile(new URL("../../.github/workflows/ci.yml", import.meta.url), "utf8");
+  const step = workflow.split("- name: Run real PostgreSQL authority bootstrap integration")[1]?.split("\n      - name:")[0] ?? "";
+  let count = 0;
+  for (const [file, prefix] of [["durable_bootstrap_tdd.rs", ""], ["durable_bootstrap/faults.rs", "faults::"], ["durable_bootstrap/concurrency.rs", "concurrency::"]]) {
+    const source = await readFile(new URL(`../../engine/tests/${file}`, import.meta.url), "utf8");
+    for (const [, name] of source.matchAll(/async fn (postgres_bootstrap_\w+)\(/g)) {
+      count += 1;
+      assert.ok(step.includes(`${prefix}${name}`), name);
+      assert.ok(source.includes(`async fn ${name}() {\n    let _guard = fixture_guard().await;`), `${name} must isolate database-global event hooks`);
+    }
+  }
+  assert.equal(count, 14, "bootstrap boundaries must be deliberately included in CI");
+  assert.ok(step.includes("@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test"));
+  assert.match(step, /--test durable_bootstrap_tdd/);
+  assert.match(step, /--ignored --list/);
+  assert.match(step, /grep -Fx/);
+  assert.match(step, /--ignored --exact --nocapture/);
+});
+
+test("Rust CI explicitly runs every atomic password change and revocation boundary", async () => {
+  const workflow = await readFile(new URL("../../.github/workflows/ci.yml", import.meta.url), "utf8");
+  const step = workflow.split("- name: Run real PostgreSQL password change integration")[1]?.split("\n      - name:")[0] ?? "";
+  let count = 0;
+  for (const [file, prefix] of [["durable_password_change_tdd.rs", ""], ["durable_password_change/faults.rs", "faults::"], ["durable_password_change/concurrency.rs", "concurrency::"], ["durable_password_change/registry.rs", "registry::"]]) {
+    const source = await readFile(new URL(`../../engine/tests/${file}`, import.meta.url), "utf8");
+    for (const [, name] of source.matchAll(/async fn (postgres_password_change_\w+)\(/g)) {
+      count += 1;
+      assert.ok(step.includes(`${prefix}${name}`), name);
+    }
+  }
+  assert.equal(count, 17, "password/session boundaries must be deliberately included in CI");
+  assert.ok(step.includes("@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test"));
+  assert.match(step, /--test durable_password_change_tdd/);
+  assert.match(step, /--ignored --list/);
+  assert.match(step, /grep -Fx/);
+  assert.match(step, /--ignored --exact --nocapture/);
+});
+
 test("Rust CI explicitly runs every account deletion transaction and fault", async () => {
   const workflow = await readFile(new URL("../../.github/workflows/ci.yml", import.meta.url), "utf8");
   const step = workflow.split("- name: Run real PostgreSQL account deletion integration")[1]?.split("\n      - name:")[0] ?? "";

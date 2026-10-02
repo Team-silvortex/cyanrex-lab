@@ -21,6 +21,7 @@ mod access_policy;
 mod access_schema;
 mod access_write;
 mod accounts;
+mod bootstrap;
 mod identity_audit;
 mod identity_audit_entry;
 mod identity_audit_schema;
@@ -29,6 +30,7 @@ mod identity_write;
 mod policy_audit;
 mod policy_audit_schema;
 mod policy_command;
+mod reconciliation;
 mod schema;
 mod session_adapter;
 

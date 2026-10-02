@@ -17,6 +17,52 @@ pub struct StoredLegacyAccessPolicy {
     pub revision: RevisionNumber,
 }
 
+impl StoredLegacyAccessPolicy {
+    pub(super) fn decode(
+        scope: WorkspaceRef,
+        principal: PrincipalId,
+        row: &sqlx_postgres::PgRow,
+        grant: &sqlx_postgres::PgRow,
+    ) -> Result<Self> {
+        let revision = row.try_get::<i64, _>("revision")?;
+        if grant.try_get::<uuid::Uuid, _>("source_workspace_id")? != scope.workspace_id.as_uuid()
+            || grant.try_get::<i64, _>("revision")? != revision
+        {
+            return Err(IdentityStoreError::InvalidRecord);
+        }
+        let status = match row.try_get::<&str, _>("status")? {
+            "active" => MembershipStatus::Active,
+            "suspended" => MembershipStatus::Suspended,
+            _ => return Err(IdentityStoreError::InvalidRecord),
+        };
+        let deployment_granted = match grant.try_get::<&str, _>("status")? {
+            "active" => true,
+            "revoked" => false,
+            _ => return Err(IdentityStoreError::InvalidRecord),
+        };
+        let role_refs = row
+            .try_get::<Vec<String>, _>("role_refs")?
+            .into_iter()
+            .map(|role| role.parse())
+            .collect::<std::result::Result<_, _>>()?;
+        let policy = LegacyAccessPolicy {
+            membership: Membership {
+                workspace: scope,
+                principal_id: principal,
+                role_refs,
+                status,
+            },
+            deployment_granted,
+        };
+        Ok(Self {
+            policy: policy.canonical()?,
+            revision: RevisionNumber::try_from(
+                u64::try_from(revision).map_err(|_| IdentityStoreError::InvalidRecord)?,
+            )?,
+        })
+    }
+}
+
 impl LegacyAccessPolicy {
     pub(super) fn canonical(&self) -> Result<Self> {
         let mut policy = self.clone();
@@ -91,7 +137,6 @@ impl CollaborationIdentityStore {
         let Some(row) = row else {
             return Ok(None);
         };
-        let revision = row.try_get::<i64, _>("revision")?;
         let grant = sqlx::query(
             "SELECT source_workspace_id, status, revision FROM collaboration_deployment_grants
             WHERE authority_id = $1 AND principal_id = $2 FOR SHARE",
@@ -101,41 +146,7 @@ impl CollaborationIdentityStore {
         .fetch_optional(connection)
         .await?
         .ok_or(IdentityStoreError::InvalidRecord)?;
-        if grant.try_get::<uuid::Uuid, _>("source_workspace_id")? != scope.workspace_id.as_uuid()
-            || grant.try_get::<i64, _>("revision")? != revision
-        {
-            return Err(IdentityStoreError::InvalidRecord);
-        }
-        let status = match row.try_get::<&str, _>("status")? {
-            "active" => MembershipStatus::Active,
-            "suspended" => MembershipStatus::Suspended,
-            _ => return Err(IdentityStoreError::InvalidRecord),
-        };
-        let deployment_granted = match grant.try_get::<&str, _>("status")? {
-            "active" => true,
-            "revoked" => false,
-            _ => return Err(IdentityStoreError::InvalidRecord),
-        };
-        let role_refs = row
-            .try_get::<Vec<String>, _>("role_refs")?
-            .into_iter()
-            .map(|role| role.parse())
-            .collect::<std::result::Result<_, _>>()?;
-        let policy = LegacyAccessPolicy {
-            membership: Membership {
-                workspace: scope,
-                principal_id: principal,
-                role_refs,
-                status,
-            },
-            deployment_granted,
-        };
-        Ok(Some(StoredLegacyAccessPolicy {
-            policy: policy.canonical()?,
-            revision: RevisionNumber::try_from(
-                u64::try_from(revision).map_err(|_| IdentityStoreError::InvalidRecord)?,
-            )?,
-        }))
+        StoredLegacyAccessPolicy::decode(scope, principal, &row, &grant).map(Some)
     }
 
     /// Operator/history read, not authorization. Retirement/disabling blocks effective access;

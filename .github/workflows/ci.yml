@@ -378,6 +378,96 @@ jobs:
             cargo test --manifest-path engine/Cargo.toml --locked --test durable_collaboration_tdd "$task_session_command_pg_case" -- --ignored --list | grep -Fx "$task_session_command_pg_case: test"
             cargo test --manifest-path engine/Cargo.toml --locked --test durable_collaboration_tdd "$task_session_command_pg_case" -- --ignored --exact --nocapture
           done
+      - name: Run real PostgreSQL password change integration
+        env:
+          CYANREX_TEST_DATABASE_URL: postgres://cyanrex_test:cyanrex-ci-only@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test
+        run: |
+          set -euo pipefail
+          for task_password_pg_case in \
+            postgres_password_change_revokes_all_sessions_and_preserves_identity \
+            postgres_password_change_requires_reauthentication_and_bounded_inputs \
+            postgres_password_change_rejects_absent_revoked_expired_and_recreated_sessions \
+            postgres_password_change_shares_bounded_admission_with_login_and_clones \
+            postgres_password_change_requires_valid_source_without_install_or_fallback \
+            faults::postgres_password_change_suppressed_writes_roll_back_both_components \
+            faults::postgres_password_change_post_write_checks_reject_trigger_side_effects \
+            faults::postgres_password_change_deferred_commit_failure_never_reports_success \
+            faults::postgres_password_change_cancellation_before_commit_rolls_back \
+            faults::postgres_password_change_checks_expiry_after_writer_and_delete_waits \
+            concurrency::postgres_password_change_concurrent_reauthentication_commits_only_once \
+            concurrency::postgres_password_change_serializes_login_without_surviving_old_tokens \
+            concurrency::postgres_password_change_rechecks_snapshot_after_writer_wait \
+            concurrency::postgres_password_change_serializes_logout_and_blocks_session_validation \
+            registry::postgres_password_change_preserves_grants_and_never_reactivates_retired_identity \
+            registry::postgres_password_change_serializes_session_authorized_binding \
+            registry::postgres_password_change_serializes_administrative_account_deletion; do
+            cargo test --manifest-path engine/Cargo.toml --locked --test durable_password_change_tdd "$task_password_pg_case" -- --ignored --list | grep -Fx "$task_password_pg_case: test"
+            cargo test --manifest-path engine/Cargo.toml --locked --test durable_password_change_tdd "$task_password_pg_case" -- --ignored --exact --nocapture
+          done
+      - name: Run real PostgreSQL authority bootstrap integration
+        env:
+          CYANREX_TEST_DATABASE_URL: postgres://cyanrex_test:cyanrex-ci-only@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test
+        run: |
+          set -euo pipefail
+          for task_bootstrap_pg_case in \
+            postgres_bootstrap_commits_source_owner_grant_and_audit_together \
+            postgres_bootstrap_repeated_or_changed_requests_never_regrant_or_reveal_secrets \
+            postgres_bootstrap_rejects_existing_data_schema_objects_and_partial_installation \
+            postgres_bootstrap_rejects_bad_input_scope_and_ambiguous_search_path \
+            postgres_bootstrap_pins_each_namespace_without_cross_authority_access \
+            postgres_bootstrap_manager_uses_audited_commands_without_granting_new_accounts \
+            faults::postgres_bootstrap_suppressed_graph_writes_leave_no_schema_or_manager \
+            faults::postgres_bootstrap_post_write_checks_reject_tampered_graph_and_credentials \
+            faults::postgres_bootstrap_deferred_commit_failure_rolls_back_ddl_and_authority \
+            faults::postgres_bootstrap_cancelled_write_is_not_published_and_confirmed_rollback_can_retry \
+            faults::postgres_bootstrap_installer_lock_timeout_never_seeds_state \
+            concurrency::postgres_bootstrap_concurrent_requests_choose_only_one_complete_authority \
+            concurrency::postgres_bootstrap_installers_wait_for_commit_without_partial_activation \
+            concurrency::postgres_bootstrap_existing_installer_wins_without_implicit_manager_adoption; do
+            cargo test --manifest-path engine/Cargo.toml --locked --test durable_bootstrap_tdd "$task_bootstrap_pg_case" -- --ignored --list | grep -Fx "$task_bootstrap_pg_case: test"
+            cargo test --manifest-path engine/Cargo.toml --locked --test durable_bootstrap_tdd "$task_bootstrap_pg_case" -- --ignored --exact --nocapture
+          done
+      - name: Run real PostgreSQL local provisioning integration
+        env:
+          CYANREX_TEST_DATABASE_URL: postgres://cyanrex_test:cyanrex-ci-only@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test
+          CYANREX_TEST_DATABASE_PASSWORD: cyanrex-ci-only
+        run: |
+          set -euo pipefail
+          for task_provision_pg_case in \
+            postgres_provision_plan_and_inspect_are_read_only_and_ignore_ambient_configuration \
+            postgres_provision_apply_delivers_private_enrollment_only_after_atomic_commit \
+            postgres_provision_confirmation_binds_target_intent_and_namespace_incarnation \
+            postgres_provision_existing_or_partial_namespaces_are_never_adopted_or_replayed \
+            postgres_provision_unsafe_or_existing_secret_destinations_prevent_database_writes \
+            postgres_provision_competing_processes_publish_only_one_bootstrap_secret \
+            postgres_provision_unconfirmed_write_retains_marker_and_never_automatically_retries \
+            postgres_provision_post_commit_delivery_failure_preserves_database_and_replaced_file \
+            postgres_provision_process_cancellation_never_removes_evidence_or_seeds_a_session; do
+            cargo test --manifest-path engine/Cargo.toml --locked --test provision_postgres_tdd "$task_provision_pg_case" -- --ignored --list | grep -Fx "$task_provision_pg_case: test"
+            cargo test --manifest-path engine/Cargo.toml --locked --test provision_postgres_tdd "$task_provision_pg_case" -- --ignored --exact --nocapture
+          done
+      - name: Run real PostgreSQL lifecycle reconciliation integration
+        env:
+          CYANREX_TEST_DATABASE_URL: postgres://cyanrex_test:cyanrex-ci-only@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test
+          CYANREX_TEST_DATABASE_PASSWORD: cyanrex-ci-only
+        run: |
+          set -euo pipefail
+          for task_reconcile_pg_case in \
+            postgres_reconcile_bootstrap_is_consistent_secret_free_and_read_only \
+            postgres_reconcile_unbound_disabled_retired_and_expired_states_are_distinct \
+            postgres_reconcile_deletion_recreation_and_password_rotation_preserve_history \
+            postgres_reconcile_management_requires_source_binding_and_explicit_grant_not_roles \
+            faults::postgres_reconcile_schema_scope_and_row_security_fail_closed_without_installing \
+            faults::postgres_reconcile_missing_or_recreated_source_and_malformed_sessions_are_detected \
+            faults::postgres_reconcile_identity_and_policy_heads_must_match_current_rows \
+            faults::postgres_reconcile_checks_entire_history_not_only_the_latest_receipt \
+            faults::postgres_reconcile_audit_payload_limits_and_missing_manager_never_report_success \
+            faults::postgres_reconcile_keeps_one_mvcc_snapshot_across_interleaved_commits \
+            faults::postgres_reconcile_timeout_and_cancellation_publish_no_partial_result_or_write \
+            cli::postgres_reconcile_cli_requires_only_read_privileges_and_never_returns_enrollment; do
+            cargo test --manifest-path engine/Cargo.toml --locked --test durable_reconciliation_tdd "$task_reconcile_pg_case" -- --ignored --list | grep -Fx "$task_reconcile_pg_case: test"
+            cargo test --manifest-path engine/Cargo.toml --locked --test durable_reconciliation_tdd "$task_reconcile_pg_case" -- --ignored --exact --nocapture
+          done
       - name: Run real Runner Agent compile integration
         run: cargo test --manifest-path engine/Cargo.toml --locked --test runner_agent_client_tdd -- --ignored --nocapture
 
