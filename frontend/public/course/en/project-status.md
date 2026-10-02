@@ -7,6 +7,15 @@ This page is the capability-level progress baseline for Cyanrex Lab. It records 
 what remains intentionally limited, and which decisions should drive the next development cycle.
 The detailed trust boundaries and data flows remain in the [system architecture](architecture.md).
 
+## Restricted account deletion (unreleased)
+
+- [ADR-008 / C1-G](collaboration-account-deletion.md) maps source, identity, policy/audit and retirement
+  invariants and composes another active bound account's deletion, all-Session revocation and audited
+  retirement in one transaction. No new schema or live route is enabled.
+- Self-delete, unbound/retired cleanup, deletion receipt replay/recovery, bootstrap and live cutover
+  remain outside this slice. Sixteen PostgreSQL cases are explicitly selected by CI.
+- The release-specific sections below describe their original scopes and verification.
+
 ## Session-authorized collaboration transactions (included in 0.4.6)
 
 - [ADR-007 / C1-F](collaboration-session-commands.md) derives actor from the current durable Session

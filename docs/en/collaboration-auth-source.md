@@ -85,12 +85,12 @@ backpressure and HTTP/CSRF integration remain gates before exposing this adapter
 
 ## Next integration gate
 
-The source establishes the durable incarnation needed by C1-D, not its live composition. Next design
-one transaction/lock order for current session verification, registry binding/retirement, policy/audit
-and credential/session lifecycle. Do not commit auth changes and then best-effort write the registry.
-The source deliberately exposes no password change, account deletion, teacher bootstrap or permission
-mutation until their last-manager and revocation effects can be coordinated. Existing C1-D retirement
-still does not revoke legacy Sessions, and logout here does not retire a Principal.
+C1-E established the durable incarnation needed by C1-D. Included in 0.4.6, [C1-F](collaboration-session-commands.md)
+already composes current-session verification, binding, policy/audit and commit with one lock order.
+The unreleased [C1-G slice](collaboration-account-deletion.md) adds restricted deletion/retirement of
+another active bound account. General lifecycle/recovery, password changes, teacher bootstrap and live
+composition remain pending. Never commit auth changes and then best-effort write the registry.
+Standalone C1-D retirement still does not revoke Sessions, and logout does not retire a Principal.
 
 Real-data adoption separately requires source inventory, restore-tested backup, explicit migration
 mapping, writer fencing, cutover approval and rollback/reconciliation boundaries. No deployed database,

@@ -36,32 +36,37 @@ pub enum SessionCommandError {
     InvalidSession,
     #[error("target does not match the current durable source account")]
     AccountMismatch,
+    #[error("self-deletion is not supported by this staging command")]
+    SelfDeletionUnsupported,
 }
-type CommandResult<T> = std::result::Result<T, SessionCommandError>;
+pub(super) type CommandResult<T> = std::result::Result<T, SessionCommandError>;
 impl From<sqlx::Error> for SessionCommandError {
     fn from(_: sqlx::Error) -> Self {
         Self::Authentication(DurableAuthError::StorageUnavailable)
     }
 }
-async fn command_bounded<T>(operation: impl Future<Output = CommandResult<T>>) -> CommandResult<T> {
+pub(super) async fn command_bounded<T>(
+    operation: impl Future<Output = CommandResult<T>>,
+) -> CommandResult<T> {
     tokio::time::timeout(Duration::from_secs(10), operation)
         .await
         .map_err(|_| SessionCommandError::Authentication(DurableAuthError::StorageUnavailable))?
 }
 
 impl DurableAuthSource {
-    async fn command_actor(
+    pub(super) async fn command_actor(
         &self,
         tx: &mut Transaction<'_, Postgres>,
         scope: WorkspaceRef,
         digest: &str,
+        source_writer: bool,
     ) -> CommandResult<(DurableSession, PrincipalRef)> {
         if scope.authority_id != self.authority_id {
             return Err(DurableAuthError::SourceMismatch.into());
         }
-        // Share lock fences register/login/logout until this command ends; no lock upgrade.
+        // Choose the source lock up front: deletion writes, bind/policy only read. Never upgrade.
         // Auth metadata -> registry metadata -> authority -> account/session/registry child rows.
-        self.lock_source(tx, false).await?;
+        self.lock_source(tx, source_writer).await?;
         Registry::lock_session_command_scope(tx, scope).await?;
         let session = self
             .session_record(tx, digest)
@@ -77,7 +82,7 @@ impl DurableAuthSource {
         Ok((session, actor))
     }
 
-    async fn command_target(
+    pub(super) async fn command_target(
         &self,
         tx: &mut Transaction<'_, Postgres>,
         target: &DurableAccountRef,
@@ -100,7 +105,7 @@ impl DurableAuthSource {
         Ok(())
     }
 
-    async fn recheck_command_session(
+    pub(super) async fn recheck_command_session(
         &self,
         tx: &mut Transaction<'_, Postgres>,
         digest: &str,
@@ -147,7 +152,7 @@ impl DurableAuthSource {
             let digest = hash_session_token(token);
             let mut tx = self.transaction().await?;
             let (session, actor) = self
-                .command_actor(&mut tx, request.workspace, &digest)
+                .command_actor(&mut tx, request.workspace, &digest, false)
                 .await?;
             self.command_target(&mut tx, &request.target).await?;
             let command = LegacyIdentityCommand {
@@ -183,7 +188,7 @@ impl DurableAuthSource {
             let digest = hash_session_token(token);
             let scope = request.desired.membership.workspace;
             let mut tx = self.transaction().await?;
-            let (session, actor) = self.command_actor(&mut tx, scope, &digest).await?;
+            let (session, actor) = self.command_actor(&mut tx, scope, &digest, false).await?;
             let identity = Registry::session_policy_target(
                 &mut tx,
                 scope,

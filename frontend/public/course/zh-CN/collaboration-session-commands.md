@@ -4,6 +4,10 @@
 承接[持久认证源](collaboration-auth-source.md)、[身份生命周期命令](collaboration-identity-lifecycle.md)
 及[策略审计](collaboration-policy-audit.md)。不切换在线 AuthService、路由或部署。
 
+
+后续：尚未发布的 [C1-G](collaboration-account-deletion.md)追加另一个活跃绑定账号的受限一次性删除。
+下文交付边界及验证记录仍描述 0.4.6 的 C1-F。
+
 ## 本轮交付
 
 [认证源适配器](../../engine/src/services/auth_service/durable_source/session_commands.rs)把会话核实、

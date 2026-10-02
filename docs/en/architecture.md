@@ -16,7 +16,8 @@ last-manager and absent-key read protection; legacy authentication/sessions rema
 Source release 0.4.6 includes [ADR-006 / C1-E](collaboration-auth-source.md), adding a strict durable account-incarnation and
 session source for explicitly empty schemas, not live authentication or unified lifecycle integration.
 [ADR-007 / C1-F](collaboration-session-commands.md) composes that source with audited binding/policy
-commands on one transaction. Account deletion/retirement, bootstrap and live route cutover are still pending.
+commands on one transaction. Unreleased [ADR-008 / C1-G](collaboration-account-deletion.md) adds restricted
+administrative deletion/retirement; general lifecycle, bootstrap and live route cutover remain pending.
 
 ## 1. System Context
 

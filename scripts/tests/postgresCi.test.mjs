@@ -2,6 +2,25 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
+test("Rust CI explicitly runs every account deletion transaction and fault", async () => {
+  const workflow = await readFile(new URL("../../.github/workflows/ci.yml", import.meta.url), "utf8");
+  const step = workflow.split("- name: Run real PostgreSQL account deletion integration")[1]?.split("\n      - name:")[0] ?? "";
+  let count = 0;
+  for (const [file, prefix] of [["durable_account_deletion_tdd.rs", ""], ["durable_account_deletion/faults.rs", "faults::"], ["durable_account_deletion/concurrency.rs", "concurrency::"]]) {
+    const source = await readFile(new URL(`../../engine/tests/${file}`, import.meta.url), "utf8");
+    for (const [, name] of source.matchAll(/async fn (postgres_deletion_\w+)\(/g)) {
+      count += 1;
+      assert.ok(step.includes(`${prefix}${name}`), name);
+    }
+  }
+  assert.equal(count, 16, "deletion boundaries must be deliberately included in CI");
+  assert.ok(step.includes("@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test"));
+  assert.match(step, /--test durable_account_deletion_tdd/);
+  assert.match(step, /--ignored --list/);
+  assert.match(step, /grep -Fx/);
+  assert.match(step, /--ignored --exact --nocapture/);
+});
+
 test("Rust CI explicitly runs atomic session-authorized collaboration commands", async () => {
   const workflow = await readFile(new URL("../../.github/workflows/ci.yml", import.meta.url), "utf8");
   const step = workflow.split("- name: Run real PostgreSQL session-authorized collaboration integration")[1]?.split("\n      - name:")[0] ?? "";

@@ -327,6 +327,31 @@ jobs:
             cargo test --manifest-path engine/Cargo.toml --locked --test durable_auth_source_tdd "$task_auth_source_pg_case" -- --ignored --list | grep -Fx "$task_auth_source_pg_case: test"
             cargo test --manifest-path engine/Cargo.toml --locked --test durable_auth_source_tdd "$task_auth_source_pg_case" -- --ignored --exact --nocapture
           done
+      - name: Run real PostgreSQL account deletion integration
+        env:
+          CYANREX_TEST_DATABASE_URL: postgres://cyanrex_test:cyanrex-ci-only@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test
+        run: |
+          set -euo pipefail
+          for task_deletion_pg_case in \
+            postgres_deletion_atomically_retires_revokes_all_sessions_and_preserves_history \
+            postgres_deletion_exact_coordinates_actor_and_scope_are_required \
+            postgres_deletion_self_and_last_manager_are_out_of_scope \
+            postgres_deletion_replay_and_recreation_never_delete_a_replacement \
+            postgres_deletion_standalone_retirement_is_not_a_delete_receipt \
+            postgres_deletion_requires_explicit_schemas_and_current_audit \
+            faults::postgres_deletion_suppressed_writes_roll_back_source_identity_and_audit \
+            faults::postgres_deletion_post_write_checks_reject_trigger_side_effects \
+            faults::postgres_deletion_deferred_commit_failure_does_not_publish_success \
+            faults::postgres_deletion_cancellation_before_commit_rolls_back_every_component \
+            faults::postgres_deletion_expiry_after_lock_or_delete_wait_rolls_back \
+            concurrency::postgres_deletion_serializes_with_login_without_surviving_sessions \
+            concurrency::postgres_deletion_concurrent_duplicate_commits_only_once \
+            concurrency::postgres_deletion_racing_policy_revoke_preserves_a_source_manager \
+            concurrency::postgres_deletion_serializes_with_logout_in_both_orders \
+            concurrency::postgres_deletion_blocks_validation_and_recreation_until_commit; do
+            cargo test --manifest-path engine/Cargo.toml --locked --test durable_account_deletion_tdd "$task_deletion_pg_case" -- --ignored --list | grep -Fx "$task_deletion_pg_case: test"
+            cargo test --manifest-path engine/Cargo.toml --locked --test durable_account_deletion_tdd "$task_deletion_pg_case" -- --ignored --exact --nocapture
+          done
       - name: Run real PostgreSQL session-authorized collaboration integration
         env:
           CYANREX_TEST_DATABASE_URL: postgres://cyanrex_test:cyanrex-ci-only@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test

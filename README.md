@@ -21,8 +21,10 @@ The [next-generation architecture draft (简体中文)](docs/zh-CN/next-architec
 
 Included in 0.4.6: [durable account/session source (English)](docs/en/collaboration-auth-source.md)
 · [持久认证源（简体中文）](docs/zh-CN/collaboration-auth-source.md). This is internal staging, not live authentication cutover.
-The next slice composes [session-authorized commands (English)](docs/en/collaboration-session-commands.md)
+Also included in 0.4.6: [session-authorized commands (English)](docs/en/collaboration-session-commands.md)
 · [会话授权事务（简体中文）](docs/zh-CN/collaboration-session-commands.md), still without switching live routes.
+Unreleased: [restricted account deletion (English)](docs/en/collaboration-account-deletion.md)
+· [受限账号删除（简体中文）](docs/zh-CN/collaboration-account-deletion.md) composes deletion/retirement for another active bound account only.
 
 ## Repository Layout
 

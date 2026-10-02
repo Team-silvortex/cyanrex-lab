@@ -5,6 +5,10 @@ Builds on the [durable authentication source](collaboration-auth-source.md),
 [identity lifecycle commands](collaboration-identity-lifecycle.md) and
 [policy audit](collaboration-policy-audit.md). No live AuthService, route or deployment is switched.
 
+
+Follow-up: unreleased [C1-G](collaboration-account-deletion.md) adds a restricted, one-shot deletion
+of another active bound account. The delivered boundary and verification below record C1-F in 0.4.6.
+
 ## Delivered boundary
 
 [The source adapter](../../engine/src/services/auth_service/durable_source/session_commands.rs) now
