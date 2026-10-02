@@ -1,6 +1,6 @@
 //! Explicit PostgreSQL authentication-source staging, not composed into AuthService or AppState.
 //! Only an empty legacy auth schema can be activated; registration assigns no roles or Principal.
-//! Separately initialized audited registries support explicit session-authorized bind/policy commands.
+//! Separately initialized audited registries support explicit session-authorized staging commands.
 //! No import, public registration/route, environment switch or memory credential/session fallback.
 //! Account references and session snapshots are not reusable authorization for later commands.
 
@@ -27,10 +27,12 @@ use crate::{
 };
 
 mod accounts;
+mod deletion;
 mod schema;
 mod session_commands;
 mod sessions;
 
+pub use deletion::SessionDeleteAccountCommand;
 pub use session_commands::{SessionBindCommand, SessionCommandError, SessionPolicyCommand};
 
 #[derive(Clone)]

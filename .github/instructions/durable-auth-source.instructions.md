@@ -23,3 +23,9 @@ When revoking management, a remaining registry grant counts only if its audited 
 matches a current durable source account incarnation; deleted or same-name recreated accounts cannot
 serve as the last-manager safety net, as covered by
 [the composition integration tests](../../engine/tests/durable_collaboration_tdd.rs).
+
+Restricted account deletion takes source `FOR UPDATE` before registry locks (never upgrade from
+`FOR SHARE`), admits only another active bound incarnation, and rechecks the surviving manager and
+Session after deletion. An identity retirement receipt is not durable deletion evidence: reject
+already-retired targets and receipt replay before source writes. Preserve both login/logout orderings,
+replacement-account protection and rollback tests in `durable_account_deletion_tdd`.

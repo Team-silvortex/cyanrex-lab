@@ -6,6 +6,14 @@
 本文是 Cyanrex Lab 的能力级进度基线，用来说明目前可用的内容、主动保留的限制，以及下一阶段需要
 决策的方向。详细信任边界与数据流仍以[系统架构](architecture.md)为准。
 
+## 受限账号删除（尚未发布）
+
+- [ADR-008 / C1-G](collaboration-account-deletion.md)映射来源、身份、策略/审计和退役不变量，
+  将另一个活跃绑定账号的删除、全部 Session 撤销及带审计退役放入同一事务，不新增 Schema 或在线路由。
+- 自删、未绑定/退役后清理、删除回执重放/恢复、bootstrap 及 live cutover 均在本切片之外。
+  16 条 PostgreSQL 用例由 CI 显式选取。
+- 下列各版本小节保留各自原始范围与验证记录。
+
 ## 会话授权的协作事务（收录于 0.4.6）
 
 - [ADR-007 / C1-F](collaboration-session-commands.md)从当前持久 Session 和准确账号代次解析

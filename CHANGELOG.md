@@ -5,6 +5,19 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Added restricted C1-G session-authorized deletion of another active bound source account: exact
+  incarnation/Principal checks, audited retirement, all-session revocation and account deletion commit
+  together. Self-delete, unbound/retired cleanup and successful deletion replay remain unsupported;
+  old retirement receipts are not deletion evidence. Sixteen explicit PostgreSQL fault/concurrency
+  cases are selected by CI. No live AuthService, public API, migration or deployment change.
+
+### Fixed
+
+- Corrected residual C1-F status wording: session-authorized binding/policy composition was already
+  included in 0.4.6; bootstrap, general lifecycle integration and live cutover remain separate gates.
+
 ## [0.4.6] - 2026-09-27
 
 ### Added
