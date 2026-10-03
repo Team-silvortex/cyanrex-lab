@@ -1,35 +1,60 @@
-# Cyanrex eBPF Learning Handbook
+# Cyanrex project documentation
 
-Cyanrex is an eBPF teaching system for beginners. It brings source editing, clang diagnostics,
-semantic completion, kernel loading, event observation, and program detach into one Web interface.
+Cyanrex is moving from an eBPF teaching application to a self-hosted collaboration platform for
+people, AI Agents and compute resources. The existing teaching runtime remains usable. General
+identity, content, task and review services are explicitly configured preparation layers; the task
+payload editor is local-only, and autonomous AI and general Run orchestration are not implemented.
 
-For a source-backed map of current features and their connections, see the
-[Functional Network](functional-network.md), including all pages, APIs and persistence boundaries.
+This index describes the whole project, not only its first teaching domain. The source version is
+0.4.9; source-release contents, live runtime capabilities and target architecture are distinguished
+in the documents below. A built module or passing test does not imply an online deployment.
 
-## Next-generation construction
+## Start with your question
 
-The [architecture proposal](../zh-CN/next-architecture.md) describes the move toward collaboration
-between humans, AI Agents and compute resources. [ADR-001 and the C0/C-M1 baseline](collaboration-foundation.md)
-record the first typed contracts and offline legacy-permission preview. These do not change the live
-teaching workflows or migrate existing data; the product continues its existing version sequence.
-The next slice, [ADR-002 / C1-A](collaboration-identity-store.md), adds an explicit PostgreSQL identity
-registry without connecting it to live login or authorization.
-[ADR-003 / C1-B](collaboration-access-store.md) adds durable membership/deployment policies and
-revision-checked revocation previews, still independent of live authentication and protected actions.
-[ADR-004 / C1-C](collaboration-policy-audit.md), included in 0.4.5, adds attributed policy commands,
-transactional audit and replay protection, still requiring a trusted identity adapter and explicit activation.
-[ADR-005 / C1-D](collaboration-identity-lifecycle.md) adds audited identity binding/retirement and
-last-manager protection, without treating registry retirement as revocation of old Sessions.
-[ADR-006 / C1-E](collaboration-auth-source.md), included in 0.4.6, adds an empty-source-only durable
-account and session adapter; it is not composed into live AuthService.
-[ADR-007 / C1-F](collaboration-session-commands.md) composes current Sessions with identity binding and
-policy commands in one transaction. Included in 0.4.7, [ADR-008 / C1-G](collaboration-account-deletion.md)
-adds restricted account deletion/retirement; [ADR-009 / C1-H](collaboration-password-change.md) adds
-self-service password change and all-session revocation. [ADR-010 / C1-I](collaboration-bootstrap.md)
-adds atomic trusted-operator bootstrap of a fresh namespace. [ADR-011 / C1-J](collaboration-provisioning.md)
-adds controlled local planning, explicit application and private enrollment delivery.
-[ADR-012 / C1-K](collaboration-reconciliation.md) adds bounded read-only lifecycle reconciliation,
-including complete audit chains. Recovery, existing-data migration and live cutover remain pending.
+| What you need | Read first |
+|---|---|
+| Understand the project and its boundaries | [Architecture](architecture.md), [platform and teaching concepts](concepts.md) |
+| See all current modules and connections | [Current platform feature map](platform-network.md) |
+| Know what is implemented and what comes next | [Project status](project-status.md), [target architecture](../zh-CN/next-architecture.md) |
+| Edit task contents such as notes, code or configuration | [Task payload editor](editor.md) |
+| Run or teach the existing eBPF workflow | [Student guide](student-guide.md), [teacher guide](teacher-guide.md), labs below |
+| Deploy or operate a trusted instance | [Security](security.md), [classroom connection and SSH](classroom-connection.md), [Runner Agent](runner-agent.md), [troubleshooting](troubleshooting.md) |
+| Develop or verify a change | [Contributor guide](../../CONTRIBUTING.md), [current testing guide](testing-guide.md), [SDK](../../sdk-js/README.md), [tools](../../scripts/README.md) |
+| Inspect past evidence | [Development history](development-history.md), [historical acceptance](acceptance.md), [historical test network](testing-network.md), [0.3.8 functional baseline](functional-network.md) |
+
+## Platform contracts and implementation references
+
+Read the conceptual model before selecting an adapter. Owner filtering in a direct store is not
+authentication. Public teaching APIs still use the existing runtime; general Session commands are
+not automatically HTTP endpoints or a replacement for live login.
+
+| Boundary | Design and implementation references |
+|---|---|
+| Foundation and scoped identity | [Foundation](collaboration-foundation.md), [identity registry](collaboration-identity-store.md), [membership and policy](collaboration-access-store.md) |
+| Audited lifecycle and commands | [Policy audit](collaboration-policy-audit.md), [identity lifecycle](collaboration-identity-lifecycle.md), [current-Session commands](collaboration-session-commands.md) |
+| Durable authentication | [Account and Session source](collaboration-auth-source.md), [account deletion](collaboration-account-deletion.md), [password change](collaboration-password-change.md) |
+| Explicit provisioning and observation | [Fresh bootstrap](collaboration-bootstrap.md), [local provisioning CLI](collaboration-provisioning.md), [read-only reconciliation](collaboration-reconciliation.md) |
+| Tasks and domain definitions | [Task/domain separation](task-domain-boundary.md), [task instances](task-instance-store.md), [catalogue admission](session-catalog-tasks.md) |
+| Immutable content | [Artifact revisions](artifact-revision-store.md), [private Artifact commands](session-artifact-commands.md) |
+| Task content access and changes | [Private manual tasks](session-task-commands.md), [exact inputs](session-task-inputs.md), [Draft input replacement](session-task-revisions.md) |
+| Judgment and history | [Review records](review-record-store.md), [authorized private human Reviews](session-review-commands.md) |
+
+The preparation layers do not migrate existing teaching records. Task schema 2 is fresh-install-only;
+a storage version is not the software version. Code is optional task content, not a mandatory Task
+field. Publishing content, replacing a Task input, executing a Run and recording a Review are different
+operations. None implies the others or grants cross-user access.
+
+## Existing runtime reference
+
+The teaching package is the first active domain, with its established teacher-managed deployment,
+student learning history and kernel execution boundaries. Keep these operational guides separate from
+general-platform commands that are not connected to the live runtime.
+
+- [Learning storage and feedback](learning-storage.md) and [event streams and recovery](event-stream.md).
+- [Desktop and LAN isolation target](classroom-isolation.md): a design boundary, not completed VM provisioning.
+- [Root quick start and runtime API reference](../../README.md#quick-start).
+- [Module manifests](../../modules/README.md): a declarative catalogue, not executable domain packages.
+- [Troubleshooting](troubleshooting.md): distinguish local drafts, live runtime failures and preparatory-store failures.
 
 ## Recommended Reading Order
 
@@ -94,7 +119,7 @@ For high event traffic classes, you can tune persistence queue alerting in `dock
 ## CI and Merge Gate
 
 - CI workflow now includes an aggregate gate job `ci-gate` in `.github/workflows/ci.yml`.
-- `ci-gate` requires `security-audit`, `file-lengths`, `engine`, `frontend`, `permissions`, and
+- `ci-gate` requires `security-audit`, `file-lengths`, `engine`, `frontend`, `sdk`, `permissions`, and
   `distribution`, and fails if any required job fails.
 - For branch protection, enable required status check for **`CI gate`** on your main branch.
 - An annotated version Tag triggers `Release Candidate Validation`, which binds the clean Tag commit to

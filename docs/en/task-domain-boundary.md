@@ -84,10 +84,18 @@ that rejects missing source instead of reading the old facade. The dated 0.3.8 i
 remain untouched; their expected drift is not a newly accepted baseline. See [project status](project-status.md)
 for executed checks and limitations.
 
-[ADR-014 / C2-B](task-instance-store.md) now stores Task instances with definition/policy snapshots,
-revision-fenced status changes and atomic task events, without live or authentication wiring.
-[C2-C](artifact-revision-store.md) adds private immutable Artifact versions and verified content reads;
-[C2-D](review-record-store.md) adds pinned Review judgments and comment history, without authenticated
-provenance or public command composition. Validate offline attempt
+[ADR-014 / C2-B](task-instance-store.md) stores Task snapshots and atomic events through a trusted direct
+API. [C2-I](session-catalog-tasks.md) now admits those exact definitions for current-Session
+private Tasks: its handle copies metadata and survives provider disposal, without calling `assess`.
+Reads/transitions compare the entire saved definition; changed metadata under the same pin is rejected,
+and missing entries never fall back to latest. Its 0–32 exact owned inputs still require valid Artifact
+metadata when empty. C2-E/G manual adapters remain definition-free. This is metadata admission, not
+conversion to typed Evidence, assessment-policy execution or Task acceptance.
+
+[C2-J](session-task-revisions.md) also checks the full configured definition when replacing
+a Draft's inputs. It does not upgrade the definition or reinterpret content under a newer policy.
+
+[C2-H](session-review-commands.md) separately authorizes private human Review of exact owned Artifacts;
+it does not establish historical Session provenance or cross-user review rights. Validate offline attempt
 mapping and unchanged visibility before any storage cutover. A non-teaching multi-person review workflow
 and durable Run/outbox remain separate C2/C3 milestones; these slices do not claim C-M2, C-M3 or C-M5 completion.

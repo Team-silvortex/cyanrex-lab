@@ -1,44 +1,31 @@
 # 系统架构
 
-0.4.4 收录的协作准备层及 C0/C-M1 源码基线见 [ADR-001](collaboration-foundation.md)，后续
-[ADR-002](collaboration-identity-store.md)新增独立、显式的 PostgreSQL 身份注册表，
-[ADR-003](collaboration-access-store.md)新增持久化成员/部署策略准备层及当前权限预览。这些均未接入
-下文描述的在线运行拓扑、路由、认证或持久化路径。
-源码版本 0.4.5 收录 [ADR-004 / C1-C](collaboration-policy-audit.md)的独立策略命令与事务审计；
-操作者仍须来自可信适配器，现用数据库不会自动升级。
-[ADR-005 / C1-D](collaboration-identity-lifecycle.md)增加带审计的身份绑定/退役，覆盖最后管理者
-与空键读取边界；旧认证及会话仍未切换到该准备层。
-0.4.6 收录的 [ADR-006 / C1-E](collaboration-auth-source.md)新增仅显式空库启用、无内存降级的持久
-账号代次及会话来源，仍不是在线认证切换或统一生命周期事务。
-[ADR-007 / C1-F](collaboration-session-commands.md)把来源会话与带审计的绑定/策略命令组合为
-单一事务；0.4.7 收录的 [ADR-008 / C1-G](collaboration-account-deletion.md)补齐受限管理删除/退役，
-[ADR-009 / C1-H](collaboration-password-change.md)继续增加自助改密与全部会话撤销原子事务，
-保留身份/Grant，不改变在线改密端点。[ADR-010 / C1-I](collaboration-bootstrap.md)增加全新空命名空间
-的运维引导事务，包含首个所有者/教师及带审计部署 Grant。
-[ADR-011 / C1-J](collaboration-provisioning.md)新增独立的本地 `cyanrex-provision` 二进制：只读
-plan/inspect、绑定目标确认的显式 apply，以及私有注册材料交付。不加载 AppState 或在线配置，
-仍无公共/启动入口。
-[ADR-012 / C1-K](collaboration-reconciliation.md)在同一个有界、只读可重复读事务内核对来源、
-注册表与完整审计图；它不是授权或恢复，也不替换在线读取的行锁。
-生命周期恢复、已有数据迁移和在线切换仍待完成。
+Cyanrex Lab 正从 eBPF 教学应用转向面向人、未来 AI 参与者和计算资源的自部署协作平台。
+任务及其内容是组织工作的核心；eBPF 教学是第一个已实现的领域，不是所有未来任务必须遵循的形态。
+部署范围仍是可信工作站和受保护局域网，不面向公网多租户。
 
-源码版本 0.4.8 收录的 [ADR-013 / C2-A](task-domain-boundary.md)抽出领域无关的版本化任务目录与类型化规则调用，
-旧教学门面通过内置 eBPF 教学包实际使用该通用层。实验规则和源码证据移出共享服务层，公共 API、
-存储和授权不变。[ADR-014 / C2-B](task-instance-store.md)增加独立、显式安装的任务存储，固定定义
-快照，状态变更带修订检查并与事件原子提交；直接接口仍要求可信归属，不接入在线状态或教学存储。
-[ADR-015 / C2-C](artifact-revision-store.md)增加私有不可变版本文件、数据库元数据/事件与确切内容读取，
-并验证 Task 固定引用的链路。[ADR-016 / C2-D](review-record-store.md)增加绑定版本的 Review 记录，
-区分人工/规则判断并保留评语历史，不自动验证证据或验收 Task。
-[ADR-017 / C2-E](session-task-commands.md)将当前 Session、经审计成员与私人手工 Task/事件组合为
-同一来源事务；不要求教学/部署角色，也不授权访问他人任务。
-[ADR-018 / C2-F](session-artifact-commands.md)通过同一授权检查增加私人 Artifact 发布和精确读取，
-借用事务的读取锁住版本头；数据库发布失败可能保留私有文件。Task 引用授权、认证 Review、旧写入
-栅栏、保留策略、公共工作流和进程隔离仍待完成；当前没有在线接入。
+本文是维护者了解当前组合方式、代码职责与信任边界的依据。平台转型不等于迁移已经完成：现有教学
+应用、显式组合的后端准备层、本地任务 payload 编辑器仍是三条独立路径。AI 参与者、通用任务执行
+和平台多人审阅尚未实现。目标设计见[下一代架构](next-architecture.md)，已连接与待连接边界见
+[平台链路地图](platform-network.md)、[项目进度](project-status.md)和[测试指南](testing-guide.md)。
 
-本文说明 Cyanrex Lab 的运行边界、代码职责、数据流和扩展规则。项目定位是自部署的 eBPF
-教学系统，适合可信工作站、教室服务器或受保护的局域网，不面向公网多租户场景。
+### 当前连接到哪里
+
+| 层次 | 已实现行为 | 尚未打通的边界 |
+|---|---|---|
+| 在线教学应用 | 浏览器登录、eBPF 编辑与检查运行、学习记录和教师反馈、事件、部署运维 | 仍使用原 AuthService、AppState 和教学存储；没有通用 Task HTTP 工作流 |
+| 共享领域契约 | 准确版本 TaskCatalog 与类型化规则调用；教学门面已使用内置 eBPF 教学包 | 没有动态提供器加载、通用调度器或自动类型化证据适配 |
+| 显式后端准备层 | 持久身份/Session 命令及私人 Task、Artifact、Review 操作，已有数据库回归覆盖 | 不由 AppState 构建、不暴露公共路由，不是已有数据迁移 |
+| 本地任务 payload 编辑器 | 任务草稿持有可选文本项，支持 14 种本地语言配置及 JSON 导入导出 | 没有服务端 Task/Artifact 保存、可靠浏览器恢复、LSP 进程或执行 |
+| 目标平台 | 人与 AI、计算资源协作，领域无关工作流及隔离执行 | 没有明确标为已实现的部分仍是目标设计 |
+
+源码版本 0.4.9 收录 Session 输入、Review、目录任务、Draft 换版及本地 payload 编辑器；
+C2-A 至 C2-F 首次收录于 0.4.8。源码发布不等于部署，各决策文档保留自己的日期与验证证据，不表示其中所有路径
+已经上线。
 
 ## 1. 系统全景
+
+下图是当前运行的教学应用，不是目标平台已经部署的拓扑。
 
 ```mermaid
 flowchart LR
@@ -51,9 +38,21 @@ flowchart LR
     E -->|头文件与脚本降级存储| D["实例数据目录"]
 ```
 
-浏览器是控制面，不直接执行任何内核特权操作。Engine 是执行面，负责身份、权限、编译、
-加载、挂载、事件投递与持久化。PostgreSQL 保存持久数据，Linux 工具链和内核组成特权执行边界，
-不是多学生安全沙箱。
+浏览器是控制界面，不直接执行内核特权操作。控制与执行尚未隔离成服务：同一个 Engine 进程
+负责身份、权限、编译、加载、挂载、事件投递与持久化。PostgreSQL 保存持久数据，Linux 工具链
+和内核组成特权执行边界，不是多学生安全沙箱。Rust 模块拆分和新权限模型都不会消除这一进程风险。
+
+### 转型期间的三条路径
+
+| 路径 | 当前序列 | 不应由此推断的能力 |
+|---|---|---|
+| 教学运行时 | `/ebpf` → 现有 HTTP 权限与 AppState → Runner/加载器 → 学习记录和 EventBus | 不自动创建通用 Task、Artifact、Review 或持久 Run |
+| 后端准备层 | 可信显式组合 → DurableAuthSource 和身份注册表 → 私人存储与原子 outbox | 没有公共 API、启动安装、在线认证替换或事件投递服务 |
+| 本地 payload 编辑 | `/tasks/new` 或 `/editor` → TaskDraftWorkspace → 所选文本编辑器 → 本地 JSON 导出 | 本地 ID/修订不是服务端引用；不发送发布、换版或执行请求 |
+
+目前只有教学规则路径真正接入共享 TaskCatalog。未来浏览器保存适配器需要把本地内容连接到
+Session 授权的 Artifact 发布，再显式更换 Task 输入；执行适配器还须单独把持久 Task 连接到 Run。
+存在各自的类型或后端方法，不代表这两条连接已经实现。
 
 ### 教师权威与单人使用
 
@@ -86,7 +85,7 @@ SSH 凭据留在系统客户端，不进入 Engine/浏览器；没有新增 Runn
 |---|---|---|
 | `frontend/` | Next.js 页面、编辑器、界面状态与多语言 | 浏览器应用 |
 | `engine/` | Axum API、业务服务、持久化与 eBPF 运行时 | 服务端行为 |
-| `docs/` | 英文、中文教程和运维文档 | 课程文档源 |
+| `docs/` | 双语平台、架构、教学与运维文档 | 维护文档源 |
 | `frontend/public/course/` | `docs/` 的构建副本 | 由 `npm run sync:course` 生成 |
 | `docker/` | Docker 与分发拓扑 | 容器部署 |
 | `scripts/` | 启动、打包、审计、质量和性能脚本 | 运维流程 |
@@ -97,12 +96,31 @@ Engine 启动时会发现直接子目录中的合法 v1 `module.json`。`ModuleM
 过大、重复或名称与目录不一致的清单，并在内存中保存 start/stop 控制状态；发现过程不会加载
 动态库、启动进程或执行模块目录中的文件。
 
+平台代码的职责边界比顶层目录更具体：
+
+| 源码位置 | 职责与依赖边界 |
+|---|---|
+| `engine/src/models/collaboration/` | 领域无关身份、准确引用、Task/Artifact/Review 契约与业务事件信封；解码不等于授权 |
+| `engine/src/services/task_catalog.rs` | 不可变定义注册、准确查找、类型化评估调用；不负责发现、调度或权限 |
+| `engine/src/domain_packs/ebpf_teaching/` | 实验定义、源码证据与 eBPF 评估规则；教学假设留在此处 |
+| `engine/src/services/learning_catalog.rs` | 从现有教学操作到共享目录的兼容门面 |
+| `engine/src/services/collaboration_identity_store/` | 显式身份绑定、工作区成员、部署策略及审计存储 |
+| `engine/src/services/auth_service/durable_source/` | 独立持久账号/会话来源，以及由同一事务持有的命令授权 |
+| `engine/src/services/{task_store,artifact_store,review_store}/` | 显式私人工作存储；直接接口要求可信调用方，Session 适配器提供授权 |
+| `frontend/src/features/tasks/` | 本地草稿归属、payload 修订及导入导出；不是持久 Task 存储 |
+| `frontend/src/features/editor/` | 受控文本模型及本地语言服务；不负责任务策略或执行授权 |
+
+声明式 `modules/` 目录、内置 TaskProvider、Runner Agent 是三类不同扩展边界。发现模块不等于
+安装提供器，注册它们也不会获得代码执行权限或创建 AI 参与者。
+
 ## 3. 前端架构
 
 ```text
 pages/                    页面路由与流程编排
 src/components/           共享界面和导航组件
 src/features/ebpf/        eBPF 编辑器状态与工作流
+src/features/tasks/       本地任务草稿与可选文本 payload
+src/features/editor/      受控文本内容编辑及本地语言服务
 src/features/runner/      Runner Agent 清单与教师部署运维
 src/features/settings/    经核实的设置表单、请求、指标轮询与面板
 src/config/               运行端点和产品级设置
@@ -122,9 +140,20 @@ src/utils/                分析器、安全与页面状态工具
 - `useConfirmedAction` 负责绑定目标的界面确认、键盘焦点和重复点击保护。导航会丢弃待确认操作
   与过期的本地文件导入，但不能撤销已发给 Engine 的变更。进入实验保留草稿，加载模板需单独确认。
 - eBPF 编辑器行为放进 `src/features/ebpf/`，页面结构放在 `pages/ebpf.tsx`。
+- `/tasks/new` 持有任务草稿及可选 payload，`/editor` 是同一容器的兼容入口。受控文本编辑器提供
+  14 种本地语言配置，不依赖具体任务类型或 eBPF 控制器。仍沿用侧栏登录门禁；语言工具不授予执行权，
+  服务端 Task/Artifact 保存尚未接通。
 - 设置页指标与 Agent 运维逻辑放在各自 feature 中，`pages/settings.tsx` 只协调事件/编译器设置并组合
   教师部署管理面板。
 - `docs/` 是文档源；`frontend/public/course/` 是为 Docker 构建保留的同步副本。
+
+0.4.9 收录的[任务 payload 编辑器](editor.md)由父任务草稿持有全部已接受内容，切换内容项或语言时替换
+显示模型，保留正文但不保留撤销历史。预期内容修订、任务代次和目标确认共同拒绝过期回调，父内容同步
+不重复产生编辑。每项文本上限为 256 KiB、最多 32 项，严格 JSON 导入导出上限为 8 MiB。
+本地草稿 ID 不是服务端 Task/Artifact 身份；后台已有不可变版本发布及授权换版准备层，但编辑器尚未接通。
+发起下载不证明文件已经落盘，没有自动保存或可靠的导航恢复。
+内置工作线程使用本地资源，不连接外部 Schema、包下载或 LSP 传输。自定义提供器核对模型身份和
+语言，销毁时释放注册。JS/TS 默认配置及工作线程仍共享；强制模块解析不等于安全沙箱或多工作区隔离。
 
 `useSettingsForm` 负责读取代次、确认后的草稿以及顺序执行的事件/编译器保存；`settingsRequest`
 校验响应结构和精确回执，以携带会话且不缓存、不跟随重定向的请求限定等待：每次读取 10 秒、
@@ -155,9 +184,10 @@ Runner 运维现在先校验 Agent 与任务两份响应，再成对发布到界
 这只是浏览器生命周期隔离，不检测其他位置改变的 HttpOnly 会话，也不代替服务端权限。
 复现与限制见[沿链路抓虫 03](functional-network-bug-hunt-03.md)。
 
-语义补全等语言服务只作用于所属编辑器的当前模型，销毁编辑器时注销全部 6 个服务。
-`semanticCompletion.ts` 独立保留 5 秒/18 条完整键缓存，整次请求限时 10 秒；模型版本、光标请求和
-头文件刷新会使旧回调失效。服务失败仍提供静态片段，不运行代码，也不切换到 Agent。
+eBPF 语义补全等语言服务只作用于所属编辑器的当前 C 模型，销毁编辑器时注销全部 6 个服务。
+`semanticCompletion.ts` 独立保留 5 秒/18 条完整键缓存，整次请求限时 10 秒；模型版本、光标请求、语言
+切换和头文件刷新会使旧回调失效。语言切换还会清空缓存，从 C 切走再切回也不能恢复旧请求结果。
+服务失败仍提供静态片段，不运行代码，也不切换到 Agent。
 `useSelectedHeaders` 负责后发优先、限时 10 秒的元数据读取，主动刷新会递增上下文版本，即使文件名
 不变也会失效旧检查。失败时保留并明确标注上次成功列表，不伪装成空选择。
 `useHeaderInjectionCheck` 复用本地 20 秒检查传输，阻止重复派发，源码/上下文变化或离开时丢弃旧结果。
@@ -200,7 +230,8 @@ metrics.rs        编译检查的进程内指标
 config.rs         环境变量、进程与实例配置
 routes/           HTTP/WebSocket 处理器和权限守卫
 models/           请求、响应和领域数据结构
-services/         身份、eBPF、事件、脚本、模块和头文件服务
+services/         在线服务与显式组合的平台准备层
+domain_packs/     内置任务定义及领域专属证据和规则
 migrations/       PostgreSQL 表结构模板
 ```
 
@@ -219,7 +250,9 @@ flowchart LR
 ```
 
 `AppState` 是 Axum 的依赖组合根，只负责连接服务实例，不承载路由定义或基础设施算法。
-路由负责转换 HTTP 输入输出，可复用行为必须进入服务层。
+路由负责转换 HTTP 输入输出，可复用行为必须进入服务层。当前字段不包含 DurableAuthSource、
+CollaborationIdentityStore、TaskStore、ArtifactStore 或 ReviewStore。Rust 服务可导入、集成测试
+可运行，都不表示启动或 HTTP 路由已经使用它们。
 
 ### 路由权限层
 
@@ -255,6 +288,43 @@ flowchart LR
 大型服务可以拆成私有子模块或 `include!` 片段，但调用者只依赖公开服务类型，不得跨层引用内部文件。
 
 ## 5. 核心数据流
+
+### 平台工作与授权
+
+显式准备层将工作、内容、判断和执行分开：
+
+| 对象 | 含义 | 不能混同为 |
+|---|---|---|
+| TaskDefinition | 准确的包/任务版本，另行固定证据 Schema 和评估策略 | 调度器、已安装插件或权限 |
+| TaskSnapshot | 有归属的工作项，可含冻结定义、准确输入引用、状态及预期修订 | 源码、内核作业或已验收结果 |
+| ArtifactRevision | 不可变字节及其所有者、类型、继承关系、准确版本 ID 和摘要 | 浮动最新版、执行安全证明或按相同摘要共享的权限 |
+| ReviewRecord | 绑定版本的人工/规则判断、目标与证据引用、不可变修改历史 | 自动 Task 验收、跨用户访问或仅靠解码成立的证据验证 |
+| Run | 未来持久执行身份，与工作状态独立 | 已实现的通用执行存储；当前 Runner 租约/作业仍是教学运行时状态 |
+| EventEnvelope 与 outbox | 业务状态事件契约及存储侧原子记录 | EventBus 遥测、投递服务或恰好一次执行 |
+
+Task 当前状态包括 Draft、Ready、InProgress、Blocked、InReview、Cancelled，没有 Accepted/Done。
+取消 Task 不会取消 Runner 租约、卸载程序或清理文件；规则 Passed 和人工 Approved 也不自动推进任务。
+
+当前 Session 适配器在同一个来源持有的数据库事务内解析有效账号代次、身份绑定、活跃工作区成员
+及经审计策略。所有者来自这一核实后的上下文，不来自客户端 Principal 或角色名。私人工作 API
+默认不允许教师或工作区管理者访问他人的 Task/Artifact/Review，实例部署权也独立于工作区成员身份。
+提交前会再次检查命名空间身份、当前 Session 和受影响记录；超时不证明回滚，也不允许盲目重试。
+详见[Session 命令](collaboration-session-commands.md)。
+
+Task 输入命令在任务/outbox 写入前后验证准确且属于本人的 Artifact 引用，先锁 Task，再按统一顺序
+锁 Artifact。手工输入适配器要求 1–32 项，目录适配器允许 0–32 项；零输入仍须验证 Artifact
+命名空间元数据。目录准入比较完整冻结定义，但不把字节转换成类型化证据，也不执行提供器评估策略。
+
+修改内容分两步：先发布新的不可变 Artifact 版本，再用预期修订替换 Draft Task 的输入引用。
+换版同时检查旧、新引用，包括被移除的输入；保留 Task 身份、定义及早期内容/审阅记录。
+旧修订、未改变的输入列表和非 Draft 换版都会明确失败。发布与换版是两个事务：后者失败不会撤销
+前者、授权删除文件或证明可以安全重试。浏览器尚未调用这条流程。
+
+这些存储只使用 PostgreSQL，失败时拒绝操作，不继承在线教学服务的内存/文件降级。Schema 只能
+显式安装到空命名空间。当前 Task 存储 Schema 为 **2**，核心契约 Schema 仍为 **1**；已有 Task
+Schema 1 会被拒绝，不自动升级。不可将全新安装模板直接用于在线命名空间，也不能修改旧元数据
+绕过检查。准备层账号/身份生命周期、本地 `cyanrex-provision` 工具和只读核对器，同样不会迁移
+或替换在线认证。
 
 ### 从历史提交继续
 
@@ -564,13 +634,23 @@ Engine 容器需要内核能力、宿主 PID、bpffs、tracefs 和内核模块�
 7. 用户文本先补英文目录，再覆盖其他支持语言。
 8. 信任边界或部署拓扑变化时，同步修改架构和运维文档。
 9. 路由或线上数据模型变化时，重新生成 OpenAPI 文档并同步维护组件 Schema。
+10. 任务类型假设、证据解析和规则留在 `domain_packs/`，用非教学夹具证明共享改动。不能让编辑器
+    语言或扩展名隐式选择任务策略或执行权限。
+11. 私人平台操作通过当前 Session 授权组合，不能把浏览器提供的所有者直接交给可信存储接口。
+    同一事务中保留命名空间固定、锁顺序、写后检查及最后授权复核。
+12. Task 修改、Artifact 发布、Review 与执行各自独立。连接前必须有显式适配器与失败契约；
+    不增加双写者，不静默收编旧数据、孤立内容或未知 Schema 版本。
 
 维护源码不得超过 600 行，文档不得超过 2000 行。CI 会检查文件长度、Rust 格式与测试、
 前端构建、权限回归和安全审计，并从新构建、新解压的离线发行包执行真实安装冒烟测试。
 
 ## 8. 当前有意保留的限制
 
-- 系统面向可信自部署教学环境，不面向公网多租户。
+- 平台方向仍是可信自部署/局域网协作；在线运行时仍为教学应用，不面向公网多租户。
+- AI 参与、通用持久 Run 调度、平台跨用户审阅、Task 验收及 outbox 投递尚未实现，契约名称和
+  私有集成测试不提供这些能力。
+- 浏览器 payload 保存与在线认证/存储切换仍未连接。切换前需要既有数据核对、旧写入栅栏、
+  生命周期恢复及经过验证的迁移/回滚方案。
 - Engine 是单进程；挂载、模块和降级状态不会在多个副本间共享。
 - PostgreSQL 可以共享，但 Engine 横向扩容前必须先设计 eBPF 挂载所有权与协调机制。
 - `sdk-js` 保留稳定的人工分组接口，并为全部非 Agent 操作增加生成的 operationId 调用层。
@@ -581,3 +661,20 @@ Engine 容器需要内核能力、宿主 PID、bpffs、tracefs 和内核模块�
   未知模块名会被拒绝。
 
 这些是显式架构约束。若要移除某项限制，应同时提供协调模型、安全审计、迁移方案和回归测试。
+
+## 9. 决策与实现指南
+
+下列记录说明当前模型背后的详细契约和历史测试证据，与本文互补；某项准备层决策已接受，不代表
+功能已经部署。
+
+| 主题 | 详细记录 |
+|---|---|
+| 基线与身份 | [基础契约和旧系统映射](collaboration-foundation.md)、[身份注册表](collaboration-identity-store.md)、[成员与部署策略](collaboration-access-store.md) |
+| 带审计的权限 | [策略审计](collaboration-policy-audit.md)、[身份绑定与退役](collaboration-identity-lifecycle.md) |
+| Session 生命周期 | [持久认证来源](collaboration-auth-source.md)、[Session 命令](collaboration-session-commands.md)、[账号删除](collaboration-account-deletion.md)、[密码轮换](collaboration-password-change.md) |
+| 显式开通 | [空命名空间引导](collaboration-bootstrap.md)、[本地开通工具](collaboration-provisioning.md)、[只读核对](collaboration-reconciliation.md) |
+| 领域无关性 | [任务目录与 eBPF 适配](task-domain-boundary.md) |
+| 工作存储 | [Task 存储](task-instance-store.md)、[不可变 Artifact 版本](artifact-revision-store.md)、[Review 历史](review-record-store.md) |
+| 私人 Session 操作 | [手工 Task](session-task-commands.md)、[Artifact](session-artifact-commands.md)、[Task 输入](session-task-inputs.md)、[人工 Review](session-review-commands.md) |
+| 定义与内容版本 | [目录任务](session-catalog-tasks.md)、[Draft 输入换版](session-task-revisions.md) |
+| 用户内容编辑 | [本地任务 payload 编辑器](editor.md) |

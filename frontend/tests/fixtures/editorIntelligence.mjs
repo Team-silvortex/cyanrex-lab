@@ -7,7 +7,7 @@ import { useEbpfPageController } from "../../src/features/ebpf/useEbpfPageContro
 function event() {
   const listeners = new Set();
   return { subscribe: callback => { listeners.add(callback); return { dispose: () => listeners.delete(callback) }; },
-    fire: () => { for (const callback of listeners) callback(); } };
+    fire: value => { for (const callback of listeners) callback(value); } };
 }
 const registrations = [], markerCalls = [];
 const kinds = { Function: 1, Constant: 2, Snippet: 3, Struct: 4, Field: 5 };
@@ -26,9 +26,15 @@ for (const kind of ["CompletionItem", "Hover", "SignatureHelp", "DocumentSymbol"
   };
 }
 function model(id, source = "int fixture;") {
-  const changed = event(), disposed = event();
-  return { id, source, version: 1, dead: false, uri: { toString: () => `inmemory:///${id}` },
+  const changed = event(), disposed = event(), languageChanged = event();
+  return { id, source, version: 1, dead: false, language: "c", uri: { toString: () => `inmemory:///${id}` },
     getValue() { return this.source; }, getVersionId() { return this.version; }, isDisposed() { return this.dead; },
+    getLanguageId() { return this.language; }, onDidChangeLanguage: languageChanged.subscribe,
+    setLanguage(language) {
+      const oldLanguage = this.language;
+      if (oldLanguage === language) return;
+      this.language = language; languageChanged.fire({ oldLanguage, newLanguage: language });
+    },
     getLineContent(line) { return this.source.split("\n")[line - 1] || ""; }, getLineCount() { return this.source.split("\n").length; },
     getWordUntilPosition: position => ({ startColumn: 1, endColumn: position.column, word: "fixture" }),
     getWordAtPosition: () => ({ startColumn: 1, endColumn: 11, word: "bpf_printk" }),

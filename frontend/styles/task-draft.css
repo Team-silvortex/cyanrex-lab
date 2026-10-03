@@ -1,0 +1,32 @@
+.task-draft-workspace { display: grid; gap: 16px; min-width: 0; }
+.task-draft-workspace .page-header { margin-bottom: 0; }
+.task-draft-local-note { margin: 0; padding: 12px 16px; border: 1px solid var(--line); border-radius: 12px; color: var(--muted); overflow-wrap: anywhere; }
+.task-draft-summary { display: grid; gap: 12px; min-width: 0; }
+.task-draft-summary .field-label { display: grid; gap: 6px; min-width: 0; }
+.task-draft-summary input { width: 100%; min-width: 0; }
+.task-draft-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.task-draft-status, .task-draft-notice { margin: 0; overflow-wrap: anywhere; }
+.task-draft-layout { display: grid; grid-template-columns: minmax(190px, 250px) minmax(0, 1fr); gap: 16px; align-items: start; min-width: 0; }
+.task-payload-panel, .task-payload-content, .task-payload-empty { min-width: 0; }
+.task-payload-panel { display: grid; gap: 12px; }
+.task-payload-panel > .meta { margin: 0; }
+.task-payload-heading { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; justify-content: space-between; }
+.task-payload-heading h3 { margin: 0; }
+.task-payload-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; max-height: 520px; overflow-y: auto; min-width: 0; }
+.task-payload-list li { min-width: 0; }
+.task-payload-item { display: grid; gap: 4px; width: 100%; min-width: 0; text-align: left; padding: 10px; border: 1px solid var(--line); border-radius: 8px; color: var(--text); background: transparent; cursor: pointer; }
+.task-payload-item.is-selected { border-color: #7aa2ff; background: rgba(122, 162, 255, .1); }
+.task-payload-item:focus-visible { outline: 2px solid #7aa2ff; outline-offset: 2px; }
+.task-payload-item:disabled { cursor: not-allowed; opacity: .6; }
+.task-payload-filename { min-width: 0; overflow-wrap: anywhere; white-space: normal; }
+.task-payload-empty h3 { margin-top: 0; }
+.task-payload-empty p { margin-bottom: 0; }
+.task-draft-actions button, .task-payload-panel > button, .task-payload-item { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+@media (max-width: 900px) {
+  .task-draft-layout { grid-template-columns: minmax(0, 1fr); }
+  .task-payload-list { grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr)); max-height: 260px; }
+}
+@media (max-width: 600px) {
+  .task-draft-actions { flex-direction: column; align-items: stretch; }
+  .task-payload-panel, .task-draft-summary, .task-payload-empty { padding: 12px; }
+}

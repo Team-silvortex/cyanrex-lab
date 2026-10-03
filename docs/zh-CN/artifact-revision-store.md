@@ -11,7 +11,7 @@
 `models/collaboration/artifact.rs` 中的 `ArtifactRevision` 包含带作用域的 `ArtifactRef`、所有者、
 正的 JSON 安全序号、可选准确父版本、命名空间类型、标题、媒体类型、长度和创建时间。引用固定
 authority、Workspace、制品 ID、版本 ID 及服务端计算的 SHA-256；这些契约独立于继续沿用的产品
-版本 0.4.8。内容是不透明字节，不会执行，也不被核心解释成领域专用 JSON。
+版本 0.4.9。内容是不透明字节，不会执行，也不被核心解释成领域专用 JSON。
 
 仅在 Unix 构建的 `services/artifact_store/` 提供四个显式操作：
 
@@ -82,7 +82,8 @@ authority、Workspace、制品 ID、版本 ID 及服务端计算的 SHA-256；�
 
 Principal 必须由可信适配器完成认证、授权后传入。所有者过滤不是认证，知道他人的 UUID 不是合法
 凭据；相同摘要也不会扩大读取权限，文件不做全局去重。Workspace/Principal 存在性、成员、退役、撤权
-和 C1 Session 事务尚未组合。没有新增路由、AppState 入口、启动安装器、CLI 或教学存储写入者。
+和 C1 Session 事务不在此直接存储接口内组合。没有新增路由、AppState 入口、启动安装器、CLI
+或教学存储写入者。
 
 ## 任务边界与验证
 
@@ -91,7 +92,8 @@ Principal 必须由可信适配器完成认证、授权后传入。所有者过�
 任务创建还需要组合内容查询与当前授权。本切片不宣称已经具备经过认证的 Review、任务验收或完整
 公共工作流。
 
-4 条默认用例覆盖输入上限、数据库关闭、危险目录拒绝和禁止在线/领域耦合。17 条显式 PostgreSQL
+原 C2-C 测试包含 4 条默认用例，验证输入上限、数据库关闭、危险目录拒绝和禁止在线/领域耦合；
+17 条显式 PostgreSQL
 用例覆盖历史不可变、所有者/作用域/摘要错配、并发、Task 链接、安装拒绝、失败/抑制/延迟提交、取消、
 文件丢失/损坏、链接/FIFO 替换、根目录替换、一致读取、元数据/事件故障、RLS/临时表、冲突、指针倒退
 及严格有界解码。CI 脚本 `scripts/test-artifact-storage.sh` 确认每个准确名称存在后，才在一次性数据库
@@ -99,5 +101,7 @@ Principal 必须由可信适配器完成认证、授权后传入。所有者过�
 
 [C2-D](review-record-store.md)已增加固定版本的 Review 判断与历史，但该存储本身不验证 Artifact
 证据或认证审阅者。[C2-F](session-artifact-commands.md)现已组合 Session 与私人 Artifact 命令，
-此处直接接口仍要求可信归属。Task 引用/Review 授权、对账、配额和保留策略仍须在正式接入前完成。
+此处直接接口仍要求可信归属。[C2-G](session-task-inputs.md)在 Task 事务内验证准确私人
+输入，不写入或清理 Artifact 文件。[C2-H](session-review-commands.md)增加私人人工
+Review 授权及准确所属目标/证据检查。跨用户审阅权、对账、配额和保留策略仍须在正式接入前完成。
 经明确验证的迁移之前，既有教学历史、私人所有权及 API/SDK 契约继续保持不变。

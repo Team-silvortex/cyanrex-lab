@@ -1,6 +1,6 @@
 # ADR-014 Durable task instances
 
-Status: **C2-B included in source release 0.4.8**. Decision date: **2026-10-03**.
+Status: **C2-B included in source release 0.4.8; C2-J storage changes included in 0.4.9**. Decision date: **2026-10-03**.
 
 The shared platform can now persist a manual or catalogue-defined task without depending on a
 teaching role, compiler or Run. A task keeps its exact definition and assessment-policy metadata;
@@ -14,6 +14,7 @@ service, not a live workflow, authorization service or replacement for existing 
 | `models/collaboration/work.rs` and `references.rs` | Scoped Task reference, snapshot and lifecycle |
 | `services/task_store/draft.rs` | Validate manual input or snapshot an exact trusted catalogue definition |
 | `services/task_store/commands.rs` | Create and revision-fenced lifecycle changes |
+| `services/task_store/replace.rs` | Crate-internal, revision-fenced Draft input replacement |
 | `services/task_store/records.rs` | Bounded records and task/outbox-head consistency |
 | `services/task_store/schema.rs` | Explicit empty-namespace installation and scope checks |
 | `migrations/0011_collaboration_tasks.sql` | Metadata, tasks and transactional outbox tables |
@@ -31,14 +32,23 @@ installed, but a saved snapshot does not preserve executable evaluator code.
 
 A task has one owner, a caller-selected stable ID, a title, optional definition metadata, input
 Artifact references and a positive JSON-safe revision. This slice does not support reassignment,
-content edits, dependencies or definition upgrades. Title, definition and inputs remain fixed during
+direct content edits, dependencies or definition upgrades. Title, definition and inputs remain fixed during
 every transition. Titles are nonblank, control-free and at most 256 UTF-8 bytes. At most 32 inputs
 are accepted, with no duplicate artifact/revision coordinates, even with different digests.
+
+[C2-J](session-task-revisions.md) permits explicit Draft input replacement through a
+crate-internal store operation and current-Session adapters. It does not edit Artifact bytes or other
+Task fields, and uses a distinct revision-bound event rather than a status transition.
 
 Input references must belong to the selected Workspace. Shape and scope checks do **not** establish
 content existence, digest integrity or access rights. [C2-C](artifact-revision-store.md) now provides
 verified content reads, but this draft constructor does not call that service or compose authorization.
-References must not yet be presented as verified execution or review evidence.
+The constructor alone does not establish verified execution or review evidence. The separate
+[C2-G Session adapter](session-task-inputs.md) now checks current private-input access and exact content
+inside the Task transaction. [C2-I](session-catalog-tasks.md) uses the same transaction for exact
+server-admitted definitions with 0–32 inputs, checking complete definition equality on reads/transitions
+and Artifact metadata even when inputs are empty. Neither adapter executes provider policy or validates
+typed Evidence; the direct constructor still does not authenticate content or Review evidence.
 
 ## Lifecycle independent of execution and review
 
@@ -73,7 +83,9 @@ installers. Existing relations, functions or types cause refusal; repeated or pa
 is not adopted or repaired. DDL and authority/Workspace metadata commit together. There is no startup
 hook, migration of old teaching records, CLI entry or automatic memory/file fallback.
 
-Each operation verifies schema version 1 and the selected scope. Runtime checks require three
+Source release 0.4.9 verifies Task storage schema version 2 and the selected scope. The C2-B schema 1
+from 0.4.8 is rejected; only fresh empty installation is supported, with no automatic migration.
+Shared `CoreSchemaVersion` stays 1. Runtime checks require three
 permanent ordinary tables without row-level security, partitioning, inheritance or temporary-table
 shadowing. Relation locks pin the checked identities; writers also lock metadata before the task row
 and recheck scope after the event write. These are targeted compatibility/corruption checks, not a
@@ -81,9 +93,11 @@ complete column/constraint/function fingerprint or protection against a privileg
 
 ## Transaction and failure semantics
 
-Creation or a status change writes the task and one uniquely revision-bound outbox entry in the same
+Creation, a status change or Draft input replacement writes the task and one uniquely revision-bound outbox entry in the same
 transaction. Events have a stable generated event ID, owner actor, full resulting snapshot and type
-`cyanrex.task.created` or `cyanrex.task.status_changed`. Row counts and post-write readback must match;
+`cyanrex.task.created`, `cyanrex.task.status_changed`, or `cyanrex.task.inputs_replaced` (added in 0.4.9).
+Draft revision 1 is creation; later Draft revisions are replacements, since the lifecycle cannot
+transition back to Draft. Row counts and post-write readback must match;
 success is returned only after confirmed commit. Existing outbox entries are never modified by this
 service. A failed or suppressed event insert cannot publish a successful task change.
 
@@ -106,9 +120,10 @@ This outbox is not wired to the legacy telemetry event bus.
 
 ## Verification and remaining work
 
-Four default tests cover draft construction, the state graph, unavailable storage and absence of live
-or domain-specific composition. Fifteen opt-in PostgreSQL cases cover reopening, exact pins, scopes,
-owner filtering, concurrent winners, stale revisions, installer refusal, event failures/suppression,
+The original C2-B suite includes four default tests covering draft construction, the state graph,
+unavailable storage and absence of live or domain-specific composition. Fifteen opt-in PostgreSQL cases
+cover reopening, exact pins, scopes, owner filtering, concurrent winners, stale revisions, installer refusal,
+event failures/suppression,
 tampering, deferred commit failure, cancellation before commit, missing events/RLS, temporary shadowing,
 post-write scope changes, consistent reads, metadata lock waits and revision overflow.
 
@@ -122,7 +137,11 @@ fixture. [C2-D](review-record-store.md) adds revision-bound Review judgments and
 authenticated provenance or acceptance. [C2-E](session-task-commands.md) now composes current Sessions,
 audited memberships and private manual Task commands. This direct store still expects trusted ownership
 without a legacy-writer fence. [C2-F](session-artifact-commands.md) adds Session-authorized private
-Artifact access; next compose exact references and authenticated Review into protected Task workflows.
+Artifact access. [C2-G](session-task-inputs.md) now composes exact private inputs with Task
+creation, reads and transitions. [C2-H](session-review-commands.md) adds private human Review
+commands with exact owned evidence. [C2-I](session-catalog-tasks.md) adds catalogue metadata
+admission without retaining providers; policy execution, cross-user review authority and acceptance remain pending.
 Verify offline attempt mapping, ownership and unchanged teaching visibility before any
-live cutover. Public Task APIs/UI, reliable Run orchestration and a non-teaching multi-person workflow
+live cutover. The [local task payload UI](editor.md) exists, but public Task editing APIs and browser
+save/conflict handling are not connected. Those, reliable Run orchestration and a non-teaching multi-person workflow
 remain separate milestones; C2, C-M2 and C-M5 are not complete.

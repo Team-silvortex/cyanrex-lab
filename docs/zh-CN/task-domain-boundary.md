@@ -68,9 +68,15 @@ JSON 安全整数，不是产品版本或模块清单的 SemVer。内置教学�
 功能链路检查器改从教学包枚举当前实验 ID，并用回归测试确认缺少源码时拒绝降级到旧门面。0.3.8 的历史
 清单及指纹不变，预期漂移不被重写成新的验收基线。实际执行的检查与限制见[项目状态](project-status.md)。
 
-[ADR-014 / C2-B](task-instance-store.md)已保存带定义/策略快照的 Task 实例，增加修订保护的状态转换
-及原子任务事件，未接入在线状态或认证。[C2-C](artifact-revision-store.md)增加私有不可变 Artifact 版本
-和校验后的内容读取；[C2-D](review-record-store.md)增加固定目标的 Review 判断和评语历史，仍未
-完成经过认证的来源及公共命令组合。
-在切换存储前，先验证离线 attempt 映射和可见性不扩大。非教学多人审阅工作流、持久 Run/outbox 仍是
+[ADR-014 / C2-B](task-instance-store.md)通过可信直接接口保存 Task 快照及原子事件。[C2-I](session-catalog-tasks.md)现已为当前 Session 的私人 Task 准入准确定义：句柄只复制元数据，
+提供器销毁后仍能使用，不调用 `assess`。读取/状态转换比较完整保存的定义，同编号信息改变直接拒绝，
+缺失条目不回退到 latest。支持 0–32 个确切所属输入，空输入仍要求有效的 Artifact 元数据。C2-E/G
+手工入口仍不接受定义；这不是类型化 Evidence 转换、评估策略执行或 Task 验收。
+
+[C2-J](session-task-revisions.md)在替换 Draft 输入时同样检查配置中的完整定义，
+不升级定义，也不按新版策略重新解释内容。
+
+[C2-H](session-review-commands.md)另行授权对准确所属 Artifact 的私人人工 Review，不证明历史
+Session 写入来源或授予跨用户审阅权。在切换存储前，先验证离线 attempt 映射和可见性不扩大。
+非教学多人审阅工作流、持久 Run/outbox 仍是
 独立的 C2/C3 里程碑；这些切片均不宣称 C-M2、C-M3 或 C-M5 已完成。

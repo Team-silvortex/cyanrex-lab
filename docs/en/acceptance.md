@@ -1,5 +1,9 @@
 # Acceptance checklist
 
+This is a historical integration checkpoint. Use the [current testing guide](testing-guide.md) for
+today's module/boundary plan and [project status](project-status.md) for recent results. The checks
+below are not complete acceptance of the collaboration platform, local payload saving or current release.
+
 Snapshot: **2026-09-09**, working tree on the **0.3.5** version line with Unreleased changes.
 These increments are now recorded in **0.3.6**. The measurements, input manifests and binary hashes
 remain bound to their pre-bump snapshots; they have not been rewritten as 0.3.6 artifact acceptance.

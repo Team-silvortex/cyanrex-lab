@@ -5,8 +5,9 @@ Status: **C2-F included in source release 0.4.8**. Decision date: **2026-10-03**
 Current durable Sessions now authorize a member's own Artifact creation, revision and exact-content
 reads. The same source transaction checks identity/membership, changes metadata/events, rechecks the
 Session and confirms commit before returning metadata or bytes. This extends private-work authorization
-without teaching roles, Task types or Runs. It does not enable public uploads, sharing, authenticated
-Review, Task acceptance, live authentication cutover or migration. The source release is 0.4.8.
+without teaching roles, Task types or Runs. This Artifact-only slice does not itself enable public
+uploads, sharing, Review commands, Task acceptance, live authentication cutover or migration.
+This slice first appeared in 0.4.8; the separate Review adapter included in 0.4.9 is described below.
 
 ## Configuration and operations
 
@@ -75,8 +76,8 @@ against a same-UID/privileged host operator or a complete database schema/histor
 
 ## Verification and remaining boundary
 
-Three default tests cover explicit configuration, directory refusal without repair, unavailable source
-without file writes and no detached/live composition. Eighteen explicit PostgreSQL cases cover exact
+The original C2-F suite includes three default tests covering explicit configuration, directory refusal
+without repair, unavailable source without file writes and no detached/live composition. Eighteen explicit PostgreSQL cases cover exact
 history, cross-owner/scope/digest isolation, revision races and collisions, unbound/revoked/retired/recreated
 accounts, schema/audit refusal, suppressed/deferred writes, post-write authority changes, RLS/temp shadows,
 valid cloned-namespace substitution, corrupt roots/bytes, both logout orders, expiry during write/read
@@ -87,9 +88,11 @@ disposable database; CI uses that runner and tests the full selection. Never inj
 deployed data. See [project status](project-status.md) for executed checks and omissions.
 
 Direct trusted ArtifactStore and TaskStore writers remain available without a cutover fence; existing
-events cannot prove they all passed a Session adapter. Task commands still reject Artifact inputs and
-domain definitions. ReviewStore still accepts trusted provenance and does not validate access to evidence.
-Next compose exact-reference authorization into Task/Review transactions and define reviewer/source
-permissions and acceptance policy. Merely calling this read API and later writing a Review would reintroduce
-a check/use gap. Cross-user collaboration, public HTTP/CSRF/UI, offline migration and retention remain
-separate gates; C2 and C-M2/C-M5 are not complete.
+events cannot prove they all passed a Session adapter. C2-E manual Task commands still reject Artifact
+inputs and domain definitions. [C2-G](session-task-inputs.md) separately composes private
+exact-input authorization with Task commands on one source transaction. [C2-H](session-review-commands.md) adds private human Review commands and exact owned target/evidence
+checks on that same source transaction, instead of treating an earlier Artifact read as later authority.
+Direct ReviewStore calls still trust attribution and do not validate content access. C2-H's configured
+policy label proves neither policy execution nor historical Session authorship. Cross-user review
+rights, domain policy, Task acceptance, legacy-writer fencing, public HTTP/CSRF/UI, offline migration
+and retention remain separate gates; C2 and C-M2/C-M5 are not complete.

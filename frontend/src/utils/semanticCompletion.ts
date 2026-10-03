@@ -11,16 +11,25 @@ export function createSemanticCompletion(
   let disposed = false;
   let generation = 0;
   let active: AbortController | null = null;
+  let languageChanged: Monaco.IDisposable | undefined;
   const cache = new Map<string, { expiresAt: number; items: EbpfCompletionItem[] }>();
-  const owns = (model: Monaco.editor.ITextModel) => !disposed && !model.isDisposed() && editor.getModel() === model;
+  const owns = (model: Monaco.editor.ITextModel) => !disposed && !model.isDisposed()
+    && editor.getModel() === model && model.getLanguageId() === "c";
   const cancel = () => { generation++; active?.abort(); active = null; };
-  const changed = editor.onDidChangeModel(() => { cancel(); cache.clear(); });
+  const invalidate = () => { cancel(); cache.clear(); };
+  const bindLanguage = () => {
+    languageChanged?.dispose();
+    // Language changes need not change the model identity or content version.
+    languageChanged = editor.getModel()?.onDidChangeLanguage(invalidate);
+  };
+  bindLanguage();
+  const changed = editor.onDidChangeModel(() => { invalidate(); bindLanguage(); });
   const removed = editor.onDidDispose(dispose);
 
   function dispose() {
     if (disposed) return;
     disposed = true;
-    cancel(); cache.clear(); changed.dispose(); removed.dispose();
+    invalidate(); languageChanged?.dispose(); changed.dispose(); removed.dispose();
   }
 
   async function request(
@@ -28,12 +37,12 @@ export function createSemanticCompletion(
   ): Promise<EbpfCompletionItem[] | null> {
     if (!owns(model) || token.isCancellationRequested) return null;
     cancel();
-    const current = generation, version = model.getVersionId();
+    const current = generation, version = model.getVersionId(), language = model.getLanguageId();
     const isCurrent = () => owns(model) && !token.isCancellationRequested
-      && generation === current && model.getVersionId() === version;
+      && generation === current && model.getVersionId() === version && model.getLanguageId() === language;
     const code = model.getValue();
     if (!code.trim() || new TextEncoder().encode(code).byteLength > 256 * 1024) return [];
-    const key = JSON.stringify([engineUrl, headerContextKey, model.uri.toString(), code, position.lineNumber, position.column]);
+    const key = JSON.stringify([engineUrl, headerContextKey, model.uri.toString(), language, code, position.lineNumber, position.column]);
     const cached = cache.get(key);
     if (cached && cached.expiresAt > Date.now()) return cached.items;
     const controller = new AbortController(); active = controller;

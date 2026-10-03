@@ -1,6 +1,10 @@
 # Runner Agent 使用指南
 
-独立的 `cyanrex-runner-agent` 用于把可信 Linux、WSL2 或容器节点接入 Engine 控制面。0.4.8 版本
+本文的 Agent 指通过签名协议接入的远程计算工作节点，不是自主 AI 协作者。它不消费通用 Task
+payload，也不实现规划中的持久 Run 编排器。现有在线作业与通用平台工作模型仍然分开；扩展协议前
+先看[概念说明](concepts.md)和[当前状态](project-status.md)。
+
+独立的 `cyanrex-runner-agent` 用于把可信 Linux、WSL2 或容器节点接入 Engine 控制面。0.4.9 版本
 执行内置 `control_probe`，并可选择开启只编译的 `ebpf_compile_check`。编译检查默认关闭；两种模式
 都不接受 Shell 命令或任意可执行载荷，也不需要 root 和 Linux Capability。编译作业不会加载 eBPF，
 也不会返回目标文件。
@@ -96,7 +100,7 @@ docker run --rm --name cyanrex-runner-agent \
   --entrypoint cyanrex-runner-agent \
   --env-file ./runner-agent.env \
   --mount type=bind,src="$PWD/agent-token",dst=/run/secrets/cyanrex-agent-token,ro \
-  cyanrex/cyanrex-engine:0.4.8
+  cyanrex/cyanrex-engine:0.4.9
 ```
 
 配置可以从 [`docker/runner-agent.env.example`](../../docker/runner-agent.env.example) 开始。源码更新后

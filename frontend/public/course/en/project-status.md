@@ -1,563 +1,159 @@
 # Project Status
 
-Snapshot date: **2026-10-03**
-Current release line: **0.4.8**
+Snapshot date: **2026-10-03**. Source version: **0.4.9**.
 
-This page is the capability-level progress baseline for Cyanrex Lab. It records what is usable now,
-what remains intentionally limited, and which decisions should drive the next development cycle.
-The detailed trust boundaries and data flows remain in the [system architecture](architecture.md).
+Cyanrex is becoming a domain-neutral collaboration platform, with eBPF teaching retained as its first
+domain rather than the definition of all work. The transition has produced a durable collaboration
+preparation layer and a local task-payload editor. It has **not** yet produced a server-backed generic
+task workflow or replaced the existing teaching runtime. This page describes the whole project now;
+dated implementation and verification details are preserved in [Development History](development-history.md).
 
-Release validation for 0.4.8 passed the full local quality gate with existing locked dependencies:
-381 default Rust tests, 88 script regressions, 125 frontend tests and 16 SDK tests, plus the frontend
-production build, TypeScript and SDK type/package checks. The frontend production audit reported one
-low-severity DOMPurify advisory (GHSA-p98j-92pf-mc4p), with no moderate/high/critical findings; the SDK
-audit reported none. The existing gate blocks moderate or higher; dependencies were not changed in
-this release. Remote CI, exact-image distribution/kernel acceptance and deployment remain separate.
+## Release and implementation boundaries
 
-## Task and domain separation in progress
-
-- Source release 0.4.8 includes [ADR-013 / C2-A](task-domain-boundary.md), moving the five labs and their source/runtime
-  rules into an explicit eBPF teaching pack. Legacy teaching reads/assessment now use the shared,
-  versioned `TaskCatalog`; history, progress, permissions, public API and database formats are unchanged.
-- A text-only provider exercises the same typed interface without a Run or teaching role. Exact
-  package/definition/schema/policy pins, rejected fallback and bounded metadata/results are tested.
-- [ADR-014 / C2-B](task-instance-store.md) adds explicit PostgreSQL task staging: manual or pinned
-  definitions, revision-fenced lifecycle changes and atomic task/outbox commits. Owner filtering is not
-  authentication; the direct store is not wired to live state or teaching storage.
-  No automatic assessment or Run result can accept a task.
-- [ADR-015 / C2-C](artifact-revision-store.md) adds private immutable version files and PostgreSQL
-  metadata/events. A non-teaching fixture proves that saved Task inputs still read original bytes
-  after an Artifact edit. Failed publication preserves files for reconciliation, not automatic deletion.
-- [ADR-016 / C2-D](review-record-store.md) adds pinned Review targets/evidence, distinct human/rule
-  judgments and immutable comment history with revision-fenced edits and atomic events. A text-only
-  Artifact/Task/Review fixture preserves old judgments after content edits without changing Task state.
-  Attribution is trusted input, not authentication or verified evidence.
-- [ADR-017 / C2-E](session-task-commands.md) composes current Sessions, audited active memberships
-  and private manual Task/events on one source transaction. Ownership is server-derived without
-  teaching/deployment roles or access to other owners' work. Logout, expiry, retirement and account
-  recreation are checked.
-- [ADR-018 / C2-F](session-artifact-commands.md) adds current-Session private Artifact creation,
-  revision and exact-content reads. It shares the Task authorization guard and locks read heads;
-  final checks and commit precede returning bytes. Failed database publication can retain private files,
-  without automatic cleanup or adoption. Authorized Task references, authenticated Review, legacy-writer
-  fencing, acceptance, public workflows, retention and migration remain pending; live auth/data are unchanged.
-- Release verification on 2026-10-03 passed the full local quality gate described above; 324 opt-in
-  Rust cases remain outside the default run. Eighteen Session Artifact, seventeen Session Task,
-  seventeen Review, seventeen Artifact and fifteen Task cases also passed through their exact CI
-  runners on disposable PostgreSQL 16. Fourteen auth-source and sixteen Session collaboration cases
-  passed through the corresponding CI step bodies, for 114 database regressions in total. C2-F adds
-  three default cases, eighteen database cases and one CI-selection regression. Remaining opt-in
-  database/live-kernel tests, remote CI, crash/disk-full recovery and deployed-instance checks were
-  not rerun. The database used only this run's private Unix socket and synthetic data.
-
-## Read-only lifecycle reconciliation (included in 0.4.7)
-
-- [ADR-012 / C1-K](collaboration-reconciliation.md) adds native `cyanrex-provision reconcile` for
-  one bounded read-only source/identity/policy/full-audit snapshot. It checks exact account incarnations
-  and a current source-backed manager, without fetching credentials or changing records/enrollment.
-- Twelve new PostgreSQL cases cover legitimate unbound/retired states, missing or altered history,
-  schema/RLS/type/inheritance rejection, row/payload limits, concurrent commits, cancellation and
-  read-only column privileges. Two additional default source/CLI regressions pass; CI selects all cases.
-- A consistent observation is not current authorization, an uncertain command's outcome, secret
-  delivery or permission to retry. Recovery, reviewed migration/restore and live route/CSRF integration
-  remain pending. This source release enables no runtime, schema, frozen API or deployment change.
-- Development verification on 2026-10-02 passed the backend quality gate: 347 default Rust tests
-  (240 opt-in ignored) and 82 script regressions, plus all 182 selected PostgreSQL authentication/C1
-  cases. Twelve PostgreSQL CI step bodies ran locally against disposable PostgreSQL 16, not remote CI.
-  The twelve reconciliation cases also passed separately through loopback TCP with SCRAM authentication.
-
-## Controlled local provisioning (included in 0.4.7)
-
-- [ADR-011 / C1-J](collaboration-provisioning.md) adds native `cyanrex-provision plan/inspect/apply`:
-  explicit local database settings, read-only catalog preflight, physical-target/intent confirmation
-  and exclusive private enrollment delivery after C1-I commit. No password/TOTP appears in console output.
-- The original C1-J eight default plus nine real PostgreSQL cases pass, including concurrent processes, cancellation,
-  stale targets, unsafe files, lock timeout and post-commit short writes/path replacement. CI selects
-  each database case by exact name. Inspect is an occupancy snapshot, not full lifecycle reconciliation.
-- No live API/configuration, startup/packaging or deployment changes. C1-K now adds
-  bounded read-only reconciliation; secret recovery, reviewed migration/restore and live route integration
-  remain pending.
-
-## Empty-authority bootstrap (included in 0.4.7)
-
-- [ADR-010 / C1-I](collaboration-bootstrap.md) atomically initializes the first source account,
-  legacy Workspace, owner/teacher membership, explicit deployment grant and both audit baselines.
-  Only a fresh empty namespace is accepted; existing data, partial installs and repeat claims are rejected.
-- Fourteen PostgreSQL cases cover rollback of DDL/credentials/grants, concurrent installers, one-winner
-  bootstrap, scope isolation and compatibility with session-authorized commands and password rotation.
-- This remains trusted-operator Rust staging, with no HTTP/startup hook or automatic Session.
-  C1-J provides the explicit local CLI; secret recovery, reviewed migration and live route cutover remain pending.
-
-## Atomic password rotation (included in 0.4.7)
-
-- [ADR-009 / C1-H](collaboration-password-change.md) requires a current Session, password and TOTP,
-  replacing credentials and revoking every Session in one source transaction. Identity, TOTP, grants
-  and audit history stay unchanged; the caller must log in again.
-- Seventeen real PostgreSQL cases cover failed/cancelled writes, expiry, stale credential snapshots,
-  concurrent login/logout, binding/deletion ordering and retired identity isolation, with exact CI selection.
-- This is internal staging, not a live password-endpoint change. C1-I now provides fresh-namespace
-  bootstrap; recovery, credential audit, reviewed migration and live route/CSRF cutover remain pending.
-
-## Restricted account deletion (included in 0.4.7)
-
-- [ADR-008 / C1-G](collaboration-account-deletion.md) maps source, identity, policy/audit and retirement
-  invariants and composes another active bound account's deletion, all-Session revocation and audited
-  retirement in one transaction. No new schema or live route is enabled.
-- Self-delete, unbound/retired cleanup, deletion receipt replay/recovery, bootstrap and live cutover
-  remain outside this slice. Sixteen PostgreSQL cases are explicitly selected by CI.
-- The release-specific sections below describe their original scopes and verification.
-
-## Session-authorized collaboration transactions (included in 0.4.6)
-
-- [ADR-007 / C1-F](collaboration-session-commands.md) derives actor from the current durable Session
-  and exact account incarnation, then binds identities or applies policy/audit on one transaction.
-  It accepts no caller-selected actor; binding assigns no permissions.
-- Sixteen PostgreSQL cases cover replay, source mismatch, last manager, concurrency, logout ordering,
-  expiration and write/commit failures. A reproduced last-manager hole now rejects fallback candidates
-  whose source account was deleted or recreated, rolling back policy and receipt together.
-- Initial bootstrap, account deletion/retirement, password changes and live route/CSRF integration remain
-  pending. Source release 0.4.6 leaves the existing runtime, deployed databases and frozen contracts unchanged.
-
-## Durable account/session source (included in 0.4.6)
-
-- [ADR-006 / C1-E](collaboration-auth-source.md) adds explicit empty-source installation, stable
-  committed account incarnations, password/TOTP login, hashed sessions and confirmed logout.
-  Storage failures cannot fall back to memory; same-name recreation cannot inherit a prior session.
-- Fourteen PostgreSQL cases cover concurrency, lifecycle and failed/cancelled writes, with exact CI
-  selection. Additional schema regressions reject incompatible empty tables instead of adopting them.
-- This source-only slice added no live AuthService wiring, account backfill, teacher bootstrap or
-  permission changes. C1-F now composes session-authorized binding/policy commands; account deletion,
-  password change and actual data cutover remain deliberately unavailable in this adapter.
-
-## Identity lifecycle commands (included in 0.4.5)
-
-- [ADR-005 / C1-D](collaboration-identity-lifecycle.md) adds attributed binding/retirement, idempotent
-  receipts and transactional audit, sharing locks and last-manager protection with policy revocation.
-  Explicit activation fences old unattributed identity writers.
-- Sixteen new PostgreSQL cases and the prior 46 regressions pass. An absent-key lookup race during
-  pending binding was reproduced/fixed; CI selects every case. New identities inherit no permissions.
-- Registry retirement denies subsequent staging access, but old accounts/Sessions remain untouched.
-  Real account-incarnation authority, session revocation and one transactional integration path remain
-  pending; source release 0.4.5 does not migrate or deploy any running database.
-
-## Policy commands and audit (included in 0.4.5)
-
-- [ADR-004 / C1-C](collaboration-policy-audit.md) adds actor-bound, command-ID/revision-fenced changes,
-  current-manager checks, transactional audit, idempotent receipts and last-manager grant protection.
-  Explicit activation fences the old unattributed writer.
-- Sixteen real PostgreSQL audit cases and the preceding 30 identity/access cases pass and are explicitly
-  selected in CI. Receipts are history, not current authority; baselines invent no historical actor.
-  Live authentication and deployed databases remain untouched.
-- C1-D adds attributed registry lifecycle management; next connect durable live accounts and session
-  revocation through one transactional authority path. Source release 0.4.5 does not perform that cutover.
-
-## Collaboration foundation (included in 0.4.4)
-
-- [ADR-001 / C0-C-M1](collaboration-foundation.md) records the source storage/permission/API baseline,
-  stable typed identities, scoped revision-pinned artifact references and a draft event envelope.
-- An offline legacy-role projection preserves private ownership, student-only teacher review and
-  explicit deployment authority limited to the original instance. It is not wired into live requests.
-- [ADR-002 / C1-A](collaboration-identity-store.md) now persists an independent authority/Principal/
-  legacy Workspace registry with account-incarnation tombstones, atomic binding/retirement and no
-  volatile fallback. All 15 isolated PostgreSQL cases pass and are explicitly selected by CI.
-- [ADR-003 / C1-B](collaboration-access-store.md) persists legacy membership and explicit instance
-  deployment policy with atomic revision fencing. Fresh previews check current identity/role state
-  without broadening private-content access. Fifteen additional real PostgreSQL cases pass and are
-  explicitly selected by CI; no policy-admin API, audit trail or live check/use integration is enabled.
-- The source version advances to `0.4.4`; no live schema migration, identity rewrite or deployment occurred.
-  Deployment inventory, live account lifecycle integration, general policy and attempt conversion remain pending.
-
-## Capability Matrix
-
-| Area | State | Current scope |
+| Scope | What it contains | What that status does not mean |
 |---|---|---|
-| Identity and authorization | Operational | Argon2 passwords, TOTP, cookie sessions, CSRF origin checks, teacher teaching/deployment authority and student guards; legacy admin compatibility |
-| eBPF workbench | Operational | Monaco editing, local Clang diagnostics/completion, bpftool execution, Aya tracepoint execution, attachments, source probes, and kernel event streaming |
-| Learning workflow | Operational | Five assessed labs, persisted attempts, student progress, teacher overview, bounded source review, student-visible teacher feedback, and confirmed resume from a previous submission |
-| Events and persistence | Operational | User-scoped event center and live queues, shared lazy event JSON, FIFO retention, bounded filtered reads, explicit WebSocket lag closure and recent-history recovery, PostgreSQL storage, and documented memory/file fallbacks |
-| Local Runner | Operational | Replaceable driver boundary, global/per-user leases, timeout handling, and explicit `shared_kernel` reporting |
-| Runner Agent | Operational for remote checks | Signed registration, heartbeat, leases, cancellation, probes, and isolated compile-only diagnostics; remote eBPF loading is not enabled |
-| Deployment and distribution | Operational | Docker, WSL2, native Linux, hardened optional compiler Agent, and offline package/install tooling |
-| Release traceability | `0.4.8` synchronized source metadata; artifact acceptance remains separate | Changelog/version sync, annotated-tag preflight, checksum-bound source/archive metadata, per-image Docker content IDs, exact-image installation, and native Rust evidence/candidate verification with safe non-overwriting extraction; `0.3.0` is an API baseline only; publishing a source tag does not establish artifact acceptance |
-| Module catalog | Operational, state-only | Versioned v1 manifests are discovered and validated at startup; lifecycle is in memory and never executes directory code |
-| JavaScript SDK | Operational internal package | Typed ESM client with 63 generated non-Agent operationId calls, a 77-member additive namespace baseline and deprecation policy, explicit `/openapi` and `/operations` exports, browser/Node sessions, cancellation, downloads, typed errors, and package-consumer smoke coverage |
-| API contract | Operational internal contract | Generated OpenAPI 3.1 served at `/openapi.json`; route/access/SDK/model drift and breaking changes against the frozen `0.3.0` baseline fail the quality gate |
-| Terminal page | Operational for teachers | Permission-aware List/Start/Stop module commands, structured results/history, and a safe handoff to the eBPF experiment workspace; it is not a shell |
+| Source releases through 0.4.8 | Existing teaching product, collaboration identity preparation through C1-K, and task/domain separation C2-A through C2-F | A source release does not install, migrate or validate a running deployment |
+| New in source release 0.4.9 | Session task inputs, private human Reviews, catalogue task admission and Draft input replacement C2-G through C2-J; local task-payload and language editing UI; project-wide documentation refresh | Source inclusion does not expose public platform APIs, connect browser drafts to storage, or update an installed deployment |
+| Architecture targets | Shared collaboration, generic Run orchestration, AI delegation, reliable business-event delivery, isolated workers and ecosystem integration | A proposed type, diagram or milestone is not an implemented user workflow |
 
-## TLS dependency security fix (included in 0.4.3)
+Product version, API compatibility baseline and individual storage schema versions are independent.
+The source version is 0.4.9 and the public API compatibility baseline remains 0.3.0. The current Task
+store requires schema 2 in a fresh dedicated namespace and rejects schema 1 without migration. Neither
+the normal startup path nor this source release upgrades a database.
 
-- Updated locked rustls to 0.23.45 and rustls-webpki to 0.103.15, addressing
-  [RUSTSEC-2026-0285](https://rustsec.org/advisories/RUSTSEC-2026-0285.html), which blocked CI.
-- Added an offline security-floor regression; live RustSec auditing remains enabled with no accepted
-  advisory exceptions. Teacher authority, Agent protocol and API compatibility are unchanged.
-- Rebuild and redeploy Engine and Runner Agent binaries/images to apply the fix. A source version
-  or tag does not patch a running deployment or establish LAN/kernel/offline artifact acceptance.
+## Whole project capability map
 
-## Settings and Runner browser safety (included in 0.4.2)
+“Existing workflow” means the current application implements the path, not that a particular installed
+instance or newly built release artifact has been accepted. “Preparation layer” means tested Rust
+contracts/services that are not connected to the live application's authentication and storage.
 
-- [Pass 13](functional-network-bug-hunt-13.md) binds settings reads and ordered saves to navigation,
-  validates acknowledgements, and requires explicit verification after partial or unconfirmed writes.
-- [Pass 14](functional-network-bug-hunt-14.md) validates metrics before rendering, bounds refreshes,
-  marks retained samples stale and keeps feedback independent from the settings form and Runner panel.
-- [Pass 15](functional-network-bug-hunt-15.md) validates Runner inventories, requires probe/cancel review,
-  rejects obsolete targets/results, and keeps uncertain operations locked through background polling.
-- Historical reports and the frozen network retain their original versions and fingerprints. These are
-  browser lifecycle fixes, not new Agent authority, remote kernel loading, distributed transactions or
-  artifact acceptance. Source version/tag creation does not change a running deployment.
+| Module | Available implementation | Remaining boundary |
+|---|---|---|
+| Application shell and task editing | Existing four-language navigation and action confirmations; local task draft with optional text payload and 14 language profiles, included in 0.4.9 | No server save, browser persistence, autosave, binary attachment or generic task list |
+| Live identity and classroom access | Password/TOTP, cookie Sessions, CSRF checks, teacher management, student guards and link-based invitation onboarding | Still the existing instance authority; new Workspace ownership is not a deployment grant |
+| Collaboration identity and policy | Stable identities, audited membership/deployment policy, durable Sessions, lifecycle commands, explicit provisioning and read-only reconciliation | No live AuthService cutover, reviewed data migration or complete recovery flow |
+| Domain definitions | Versioned TaskCatalog; the five teaching labs use the explicit eBPF pack; a text-only fixture exercises a non-teaching provider | Catalogue metadata admission is not typed input validation or policy execution |
+| Task instances | Private manual/catalogue tasks, fixed definitions, revision-fenced states, atomic task/outbox records; Draft input replacement included in 0.4.9 | No public task command adapter, cross-user assignment, dependencies or acceptance policy |
+| Artifact content | Private immutable revision files, exact digest-bound references, transactional metadata/events and Session-authorized publication/reads | No UI metadata mapping, public content workflow, retention/garbage collection or cross-user sharing |
+| Review | Immutable revision history; Session-authorized private human opinions on exact Artifact targets/evidence included in 0.4.9 | No cross-user reviewer grants, generic Task approval, automatic rule execution or AI review |
+| Teaching and eBPF workbench | Five labs, attempts/progress, teacher feedback, historical resume, Clang assistance, bpftool and supported Aya tracepoint execution | Remains a separate compatible workflow; old attempts have not been migrated into generic Tasks/Runs/Reviews |
+| Execution and resources | Local leases/quotas/timeouts; signed remote Agent registration, jobs, probes and optional compile-only diagnostics | Local kernel remains shared; no durable generic Run service, remote eBPF loading or VM lifecycle |
+| Events and persistence | Owner-scoped telemetry, bounded history/reconnect recovery and service-specific persistence; preparation stores commit their own outbox records | No generic durable business-event dispatcher, cursor replay or multi-Engine coordination |
+| Extensions and integrations | State-only module manifests, structured teacher commands, generated OpenAPI and internal JavaScript SDK | No executable plugin runtime, AI Agent planning/delegation or implemented Viento/Lese/Nuis integration |
+| Operations and distribution | Linux/WSL2/Docker paths, explicit SSH management of preinstalled packages, offline tooling and artifact verification | No automatic bare-host bootstrap, deployment cutover or current-candidate LAN/kernel/artifact acceptance claim |
 
-## Event storage confirmation (included in 0.4.1)
+The [system architecture](architecture.md) explains ownership and trust boundaries. The
+[current platform network](platform-network.md) distinguishes connected workflows from unfinished links;
+the older functional/testing maps retain their original teaching-era evidence.
 
-- [Pass 09](functional-network-bug-hunt-09.md) fixes cold DropNew capacity accounting and persistence
-  worker lifetime. [Pass 10](functional-network-bug-hunt-10.md) makes HTTP history/export/unread reads
-  reject storage faults and invalid filters without false empty/partial success.
-- [Pass 11](functional-network-bug-hunt-11.md) and [pass 12](functional-network-bug-hunt-12.md) require
-  confirmed storage for HTTP mark-read, deletion and retention settings. Admitted SQL retains owner
-  ordering through cancellation; bounded caller waits report unconfirmed, not rollback. Legacy runtime
-  fallback and explicit memory-only behavior remain; repair/restart does not reconcile volatile events.
-- Final pre-bump verification passed 310 default Rust cases (80 ignored), 52 explicitly run event
-  PostgreSQL cases, 69 common checks, 93 frontend checks, and SDK 13 runtime/3 package checks with types.
-  Historical reports/fingerprints retain their original 0.4.0 inputs; they are not 0.4.1 artifact acceptance.
-- This patch does not change a running deployment. Settings-page navigation/partial-save handling,
-  cross-Engine coordination, durable replay and current-version LAN/kernel/distribution acceptance remain separate.
+## Task content is not a code requirement
 
-## Event workflow and build footprint (included in 0.4.0)
+A Task describes work. Its optional payload may contain notes, code or configuration; editing one
+text item does not turn that Task into a Run. The new `/tasks/new` page owns the draft, and `/editor`
+opens the same container. The original `/ebpf` workbench remains separate.
 
-- [Pass 07](functional-network-bug-hunt-07.md) fixes event filtering, export/deletion admission,
-  navigation cancellation, read acknowledgements and unread polling, with explicit four-locale errors.
-- [Pass 08](functional-network-bug-hunt-08.md) fixes SQL/JSON persistence and serializes publications,
-  deletion, replacement and retention through bounded queues, owner admission and transactions.
-  PostgreSQL fault, ordering and cancellation regressions now run explicitly in CI.
-- Development/test builds retain line-level backtraces with smaller debug information and no incremental
-  cache; generated TypeScript build metadata is no longer tracked. Release build settings are unchanged.
-- Original maps and bug-hunt evidence retain their recorded 0.3.8/0.3.9 baselines, not 0.4.0 artifact
-  acceptance. Teacher authority, API compatibility and running deployments remain unchanged; durable
-  event replay, cross-process coordination and current-version LAN/kernel/distribution acceptance remain separate.
+The local draft supports up to 32 text items, at most 256 KiB each, with bounded whole-draft JSON
+import/export. Filename, language and text belong to the parent draft. Confirmations and revision
+checks prevent obsolete imports or callbacks from replacing newer work. Drafts live only in page
+memory; a download is a local export, not a server save. See [Task payload editing](editor.md).
 
-## Functional-network bug fixes (included in 0.3.9)
+JS/TS provide browser-local semantic assistance; JSON/HTML/CSS use their configured local providers.
+Rust, Python, C/C++ and the other basic profiles provide highlighting/snippets, not external language
+servers. There is no rust-analyzer, Pyright, clangd, project filesystem or LSP transport. Language
+feedback is neither execution nor assessment, and shared browser workers are not a security sandbox.
 
-- The [functional-network map](functional-network.md) enumerates 12 modules, 40 workflows and 69 links.
-  Six linked bug-hunt passes cover learning reads/private commits, Runner Agent capacity/leases/body
-  limits, compiler diagnostics, editor/header ownership, run/detach races and breakpoint/event recovery.
-- The original map, source fingerprints and six reports retain their 0.3.8 pre-release inputs. Version
-  and repaired-source drift against that frozen inventory is expected; it is not a refreshed 0.3.9 snapshot.
-- Teacher authority, owner-scoped access, explicit confirmations and API compatibility remain unchanged.
-  Local regressions do not establish current-version LAN/TLS, SSH deployment, live-kernel or offline
-  artifact acceptance, and this source release does not modify a running deployment.
+The server has a different identity contract: exact owned Artifact revisions, current Session
+authorization and a Task revision check. [Draft replacement](session-task-revisions.md) validates old
+and new content around the task/outbox write while preserving prior content and Reviews. Artifact
+publication remains a separate operation. Filenames/languages, title changes, import semantics and
+browser save/conflict handling still need an explicit public contract; local IDs cannot supply one.
 
-## Authentication and persistence fixes (included in 0.3.8)
+## Security and compatibility retained during transition
 
-- All nine findings from the [module/boundary network](testing-network.md) are fixed: four auth,
-  three local-script consistency, and two destructive event-filter cases. Login/session creation and
-  account deletion require confirmed transactional state; local scripts commit atomically before cache
-  publication; event deletion removes matches, rejects unsafe filters, and preserves SQL-only rows.
-- Registration/TOTP encoding, observed session revocation, normalized account mutations and four-locale
-  logout error/retry handling are covered. Auth, event and script SQL boundaries now run explicitly in CI.
-- Pre-bump verification on 2026-09-09 passed 290 distinct Rust cases, 35 mocked-Engine browser cases,
-  44 frontend units, 55 tooling cases and 16 SDK/package cases; two performance-only tests were not run.
-  [Original reports](acceptance.md) retain their 0.3.7 inputs/hashes, not 0.3.8 artifact acceptance claims.
-- Real LAN/TLS onboarding, current-source kernel acceptance, actual SSH deployment and asynchronous
-  event queue/restart/failover validation remain separate. No running deployment is changed by this patch.
+- Existing self-hosted teaching remains teacher-authoritative, including deployment management for
+  the personal-use teacher. The preparation layer separates membership from explicit instance grants;
+  it does not grant a new workspace owner access to other people's private content or other instances.
+- Session-authorized resource commands derive ownership on the server and recheck account incarnation,
+  audited active membership and current Session before confirmed commit. Direct owner-supplied stores
+  are trusted internal primitives, not authorization APIs.
+- New durable stores reject unavailable or incompatible storage rather than silently adopting the
+  legacy runtime's memory/file fallbacks. Existing teaching storage has not been switched or migrated.
+- A timeout, cancellation or lost commit acknowledgement is not proof of rollback. Failed content
+  publication/replacement does not authorize deleting immutable files or blindly retrying a command.
+- The privileged local Engine is for trusted self-hosted use, not public multi-tenancy. Shared-kernel
+  quotas are not student isolation; a registered compiler Agent is not an AI participant or a remote
+  kernel sandbox. In-memory jobs, attachments and module state have no multi-replica coordination.
+- Task state, execution success and Review judgment remain separate. Generic Task acceptance, shared
+  review authority and policy execution must not be inferred from private records or frozen metadata.
 
-## SSH and classroom entry (2026-09-09, included in 0.3.7)
+## Verification recorded so far
 
-- Native SSH plan/apply manages pre-installed offline packages, with strict host verification,
-  target-bound confirmation, exact version/control-file checks and no retries or volume deletion.
-- Opt-in `/join` and minimal discovery metadata support teacher-approved student enrollment through
-  name-bound, single-use 10-minute invitations. Password/TOTP, confirmed teacher origins, CSRF,
-  independent protocol/capability checks, revocation and no-store handling are retained.
-- This is link-based discovery, not mDNS or network scanning. Package upload, bare-host installation,
-  certificate/ingress setup, classroom member removal and VM isolation remain pending.
-- OpenAPI/SDK now cover 68 Engine operations and 63 non-Agent generated/convenience operations.
-  Frontend builds accept an explicit Engine origin; old images require rebuilding for LAN use.
-  See [Classroom Connection](classroom-connection.md) for configuration and acceptance boundaries.
-- Verification: security-enabled full gate plus final backend regressions passed (233 Rust tests,
-  5 default-ignored integrations/benchmarks; 41 frontend regressions; 51 common checks; 13 SDK tests,
-  type checks and 3 package checks; 18 production routes). All 27 optional Chromium cases passed.
-  The first RustSec fetch failed and was not counted; subsequent RustSec/npm audits reported no
-  vulnerabilities. Compose configuration used synthetic inputs. No real SSH host, deployment,
-  network exposure, credentials or VM was changed; current SSH/browser coverage is synthetic.
+### 0.4.9 source release checks
 
-## Teacher authority (2026-09-09, earlier increment included in 0.3.7)
+On 2026-10-03, the full local quality gate passed: 402 default Rust tests (395 opt-in cases ignored),
+92 common script tests, 164 frontend tests and 16 SDK tests, with production build, TypeScript,
+package, API compatibility, version and document checks. Installed dependencies matched the unchanged
+dependency locks; the gate used `--no-npm-install`. Separate production-browser fixtures passed all
+59 cases: 16 task-payload, 18 multi-language and 25 editor-intelligence cases. They mock Engine responses,
+not server saving. The temporary frontend and browsers were stopped after testing.
 
-- The seeded personal-use account and legacy administrator allowlist now return `teacher`. Teachers
-  manage modules/headers, settings, Runner Agents and Terminal without a separate admin session;
-  students remain excluded from management. Review teacher allowlists before upgrading: all entries
-  now confer full deployment authority. Credentials and historical records are not rewritten.
-- Public registration cannot claim reserved teacher/legacy-admin names or choose elevated roles.
-  The deployment owner cannot delete itself. TOTP, CSRF, owner-bound data and confirmations remain.
-- Docker, offline Compose and native/WSL pass both role allowlists. Four-locale navigation identifies
-  teacher/student authority, and OpenAPI retains legacy category identifiers with truthful role lists.
-- The security-enabled quality gate passed: 218 Rust tests (5 default-ignored integrations/benchmarks),
-  38 frontend regressions, 49 common checks, SDK checks and 17 production routes. All 24 optional
-  Chromium cases passed, including teacher management with confirmations, student navigation and
-  four-locale narrow layouts. Browser Engine responses are synthetic; no deployment was changed.
-- RustSec and production npm audits passed; the first RustSec fetch failed on a network error and
-  was not counted as a result. Both Compose configurations were validated with synthetic inputs only.
-- This is role/ownership consolidation, not a VM Runner, remote kernel loading, classroom enrollment,
-  browser role editor or deployment restart. Teacher-owned control remains the LAN architecture target.
-  See [Teacher Guide](teacher-guide.md) and [Classroom Isolation](classroom-isolation.md).
+Six initial Rust loopback tests were blocked by sandbox permissions; all six and then the full gate
+passed with loopback testing permitted and deployment configuration removed. Fresh npm audits reported
+one low-severity frontend DOMPurify finding, no moderate/high/critical findings, and none for the SDK.
+This release check did not rerun opt-in PostgreSQL suites, Rust advisory audit, deployment, kernel or
+LAN acceptance; remote CI and tag-built artifacts require their own results.
 
-## Verified 0.3.6 Baseline
+### Earlier implementation checks
 
-The following checks cover the confirmation, layout, submission-resume and cold-load increments now
-included in 0.3.6 and the changes recorded in 0.3.5 below. Browser, real-integration, kernel and benchmark
-evidence was collected before the version bump; its original source and binary fingerprints remain
-unchanged and do not represent acceptance of a 0.3.6 release artifact.
+The records below are separate dated runs, not a combined whole-project acceptance run. Their counts
+are preserved from the corresponding implementation stages, not relabeled as a new 0.4.9 release check.
+Counts include the scope indicated, not all ignored or optional suites.
 
-- Rust formatting and the locked Engine suite: 213 tests passed; 5 tests remain ignored in the default
-  gate (external PostgreSQL and Runner Agent integrations, plus three explicitly manual benchmarks).
-- Next.js production build: 17 statically generated routes with TypeScript validation.
-- Frontend regressions: 37 tests covering permissions, Terminal commands, teacher review/feedback, submission
-  resume, safe action scopes, event recovery, performance hotspot logic, security headers, and macOS metadata cleanup; the SDK has 12 transport/operation
-  regressions, a compile-time operation fixture, plus 3 package-manifest/import smoke checks.
-- Optional Chromium UI regressions: all 22 passed against the updated production build. The 12 safety
-  cases also passed in development Strict Mode before the dependency update. Four-locale 320 px bounds
-  passed automated checks, and the final Chinese dialog screenshot was visually checked.
-- File-length, version/changelog/course-copy sync, OpenAPI generation/route/access/model/compatibility checks
-  with 47 common tooling regressions, plus Runner Agent and distribution tooling checks.
-- Production npm dependency audits and the RustSec audit passed, with no reported vulnerabilities.
-  Next.js 15.5.24 and sharp 0.35.4 (bundled libheif 1.23.2) replace the earlier vulnerable frontend lock.
-  Existing running deployments require a rebuild; see the [security guide](security.md).
+| Recorded run on 2026-10-03 | Passed checks | Limits |
+|---|---|---|
+| 0.4.8 source release baseline | 381 default Rust, 88 script, 125 frontend and 16 SDK tests; production build/type/package checks; 114 selected PostgreSQL cases | 324 Rust cases were default-ignored; remote CI, deployment and current artifact/kernel acceptance were separate |
+| Local task-payload frontend slice | 164 frontend tests, 91 common script checks, production build/full TypeScript; 35 browser cases | Temporary frontend and synthetic identity/network responses; did not rerun backend, SDK runtime or live dependency audits |
+| C2-J backend slice | 402 default Rust tests, 92 common script checks; 155 PostgreSQL cases comprising 17 new and 138 preceding resource cases | 395 Rust cases were default-ignored; separate auth-source/collaboration suites, frontend/browser tests and deployment acceptance were not rerun |
 
-The portable quality gate did not start a privileged Engine or run the destructive disposable-host offline
-installation smoke. Separate source-level kernel acceptance ran inside an explicitly approved disposable
-VM, as recorded below; it does not establish release-artifact acceptance. The annotated-Tag candidate workflow enables the packaged live Aya
-attach/ring-buffer-event/exact-detach check and retains a candidate-bound report; its result is
-environment-level evidence and is not claimed by the local checks listed above. The packaged verifier
-can recheck v1/v2 schema, release metadata binding, event identity, and cleanup without kernel access;
-the repository verifier additionally checks the complete downloaded artifact and can manually extract
-only verified regular files without invoking `tar` or replacing an existing output.
-
-## Disposable-VM kernel acceptance (2026-09-09, included in 0.3.6)
-
-- Created an explicitly approved, resource-bounded QEMU/KVM guest from a signature/checksum-verified
-  Ubuntu image. Package setup was followed by a shutdown/restart into restricted user networking;
-  a dedicated canary confirmed guest-to-host access was blocked while loopback SSH remained usable.
-- The pre-bump native dev snapshot passed real Aya attach → matched ring-buffer event → exact detach
-  on Ubuntu 24.04.5 / Linux 6.8.0-139. No bpffs pins remained; kernel program/link ID inventories were
-  unchanged before/after, and the Rust evidence verifier passed in the guest and on the host.
-- The VM and test processes are stopped; existing VMs and deployments were not changed. Retained
-  source/binary hashes and `candidate: null` evidence are described in [Acceptance checklist](acceptance.md).
-  This does not ship a VM Runner, prove multi-student isolation, or accept an offline package/Tag/LAN flow.
-
-## First real integration acceptance (2026-09-09, included in 0.3.6)
-
-- Explicitly ran both external integrations skipped by the default gate: one passed against disposable
-  PostgreSQL 16.14 and one passed using real loopback HTTP, signed Runner Agent requests and Clang 18.
-- PostgreSQL coverage now includes owner-bound historical submission reads, current teacher feedback,
-  missing/foreign-owner records and read failures without local fallback, alongside legacy migration,
-  concurrent revision conflicts and persistence. This is service-level SQL acceptance, not a full browser flow.
-- Rust CI now provisions its own loopback-only PostgreSQL service and requires the exact ignored test
-  to exist before running it. A common regression checks this wiring. The configuration was checked
-  locally; the recorded PostgreSQL result is local acceptance, not a remote CI result.
-- The temporary database was removed; existing containers, data and kernel attachments were left alone.
-  This does not establish VM isolation, LAN security, packaged installation or live-kernel acceptance.
-  Evidence, reproduction and the remaining gates are in [Acceptance checklist](acceptance.md).
-
-## Consequential-action confirmations (2026-09-09, included in 0.3.6)
-
-- Kernel runs, detach, script/header/event deletion, draft replacement, remote compiler selection and
-  consequential account/admin controls share a target/impact review with Cancel focused by default.
-  Bulk cleanup requires an exact phrase. Duplicate clicks cannot resubmit a pending action; failures
-  require inspecting state and a fresh confirmation instead of an automatic retry. Read-only work stays direct.
-- Single detach requires an exact path and never falls back to all. Event deletion freezes its absolute
-  cutoff and explains that all matching records are affected, not just 200 visible rows. Header batches
-  stop at the first failure and report completed items without pretending to roll back earlier deletions.
-- Entering a lab preserves the draft; **Load lab template** is explicit and separate from running.
-  Navigation discards unconfirmed actions and late local file imports. Source transfer to a remote
-  diagnostic Agent also needs consent. Already-dispatched Engine mutations are not undone by navigation.
-- Three pure regressions cover exact detach targeting and deletion scopes; twelve optional Chromium
-  checks (`npm --prefix frontend run test:safety-browser`) cover keyboard focus, cancellation, duplicates,
-  failures, target binding, draft/navigation races, four locales and 320 px dialogs. Development Strict
-  Mode replay also preserves confirmation/focus. Tests use synthetic Engine responses, not real account,
-  database, kernel or LAN changes. Existing server authorization and runtime boundaries are unchanged.
-
-## Task-focused interface (2026-09-08, included in 0.3.6)
-
-- Desktop navigation stays available while scrolling; compact screens use an expandable menu with
-  Escape dismissal, active-page semantics and a skip link, retaining the same role-filtered routes.
-- The editor groups import/save/run in a sticky action bar, places diagnostics and results directly
-  below source, and puts runtime settings and attachment cleanup alongside on wide screens. Section
-  shortcuts work on smaller screens; saved scripts, metadata, headers and breakpoint details expand
-  without remounting Monaco. The same 1440 × 900 synthetic case moves source from about 623 to 315 px
-  below the page top. No runtime, session or API contract changes are introduced by the layout work.
-- Learning progress precedes reference material, with direct history/resource links. Classroom summaries
-  are compact, roster rows become labelled narrow-screen cards, and selecting a student focuses the review.
-- Five optional Chromium layout checks (`npm --prefix frontend run test:layout-browser`) cover source
-  position, sticky actions, 320–1440 px widths, four locales, menu/section navigation, review focus/draft
-  retention, and import/save/reload without execution. Existing resume, feedback and event browser checks
-  remain available. Browser Engine calls are synthetic; these are UI checks, not kernel/LAN acceptance.
-
-## Resume a historical submission (2026-09-08, included in 0.3.6)
-
-- **Learn → My lab history → Continue from this attempt** opens a source/current-feedback preview in
-  the editor. Explicit confirmation restores that submission's code and lab/template context; keeping
-  the draft, failed loads and cancelled/late responses do not replace it. Templates cannot overwrite
-  resume drafts, and visiting a target again requires a fresh decision. Nothing runs/attaches/detaches
-  automatically; editing and manually running creates a new attempt while preserving the old record.
-- Added owner-bound `GET /learning/attempt?attempt_id=...` with no-store responses and explicit storage
-  errors, plus typed `learning.attempt()` and generated `getLearningAttempt` SDK calls. Staff still use
-  the separate authorized review path for another student's source; the resume endpoint has no username
-  override. SQL/file formats and existing API contracts stay compatible.
-- Added 2 Rust permission/error regressions, 5 frontend request/validation regressions, 1 SDK transport
-  regression and typed/package checks; the full security-enabled quality gate passed. Four optional Chromium
-  checks passed, exercising confirmation, real Monaco
-  edits, manual mocked runs, retry/cancellation, same-page target races and desktop/mobile layout, alongside
-  the existing teacher feedback smoke. Only synthetic Engine responses are used in browser tests; this
-  does not claim real PostgreSQL, kernel or LAN execution acceptance. Usage is in the
-  [student guide](student-guide.md), with teacher and four-locale UI updates.
-
-## Cancellation-safe learning initialization (2026-09-08, included in 0.3.6)
-
-- First local reads validate UTF-8 and decode JSON on an admitted blocking worker, constructing shared
-  records directly. Initialization and commits share one lock; a queued/running load completes after its
-  caller is cancelled, and concurrent readers reuse the successful snapshot. Only `NotFound` initializes
-  an empty store; other I/O/decode failures remain retryable without partial publication.
-- Six Rust regressions cover cancellation, concurrent first reads/writes, invalid paths and differential
-  legacy decoding, including invalid UTF-8 in ignored fields. They also passed 20 consecutive focused
-  rounds. One JS regression validates five-round paired ordering; the full security-enabled gate passed.
-- The final 40-process comparison against the 0.3.5 library uses the same new read-only example and
-  identical synthetic files created outside measured processes. At 50,000 rows / 4,184-byte source,
-  median maximum 2 ms timer lateness fell 218.641 → 2.037 ms and peak RSS 461.7 → 448.9 MiB, but first
-  read latency rose 405.9 → 485.5 ms (+19.6%). The 10k and smaller-source 50k first reads also regressed;
-  this improves cancellation safety and executor responsiveness, not uniform initialization speed.
-- Measurements are cold-process/store with warm OS page cache, not cold disk, HTTP, PostgreSQL or LAN
-  acceptance. Input and decoded records still coexist in memory without a new size limit; whole-file writes,
-  crash recovery, fsync and cross-process coordination remain unchanged. Behavior and reproduction are in
-  [Learning Record Storage](learning-storage.md); evidence is in
-  `reports/benchmarks/2026-09-08-learning-cold-load-final`. The incompatible byte-slice prototype's separate
-  40-process dataset is retained without overwriting its hashes or results.
-
-## Streaming local learning commits (2026-09-08, included in 0.3.5)
-
-- Local writes stream byte-compatible pretty JSON through a 64 KiB buffer on a blocking worker,
-  explicitly flush before rename, then publish memory. No full encoded-file buffer is allocated;
-  the complete file is still rewritten and source snapshots/SQL/HTTP/SDK contracts remain unchanged.
-- Admission is acquired before dispatch; one queued/running worker per store retains the write lock
-  after request cancellation through final publication. This fixes disk/memory divergence and stale
-  subsequent overwrites. Cancellation before handoff remains harmless; after handoff a save may finish
-  without a response, so reload before retrying. No append idempotency or crash/power-loss guarantee is added.
-- Added 9 Rust regressions covering cancellation before admission, blocking-pool queuing, cancellation
-  after rename for append/feedback, failed detached commits, streaming, exact bytes, interrupted/partial
-  writes and flush failures. The full security-enabled quality gate passed.
-- A fresh 72-run paired disk matrix compares with the preceding snapshot optimization, not the clean
-  release. At 50,000 rows / 1,112-byte source, write mean was 144.6 → 111.3 ms and p95 152.5 → 122.1 ms.
-  At 10,000 rows, whole-process write peak RSS fell 63.2 → 39.2 MiB. Small-write mean/p50 and some unchanged
-  read controls regressed; large-source disk tails varied widely, so this is not a uniform speedup claim.
-- Source-bound raw measurements are in `reports/benchmarks/2026-09-08-learning-streaming-writes`, with
-  a separate 72-run tmpfs control. See [Learning Record Storage](learning-storage.md) for cancellation,
-  retry and shutdown behavior. Fsync, recovery logs, incremental persistence and cross-process coordination
-  remain future work. Benchmark source/version fingerprints remain unchanged by the patch bump and are
-  not release-artifact acceptance evidence.
-
-## LearningStore snapshots and queries (2026-09-08, included in 0.3.5)
-
-- Local readers share immutable snapshots. Recent review selects bounded references before copying
-  response records; progress and teacher overview aggregate in one pass without cloning submitted source.
-  Appends copy the pointer index; feedback additionally copies only the edited record, preserving old readers.
-- Added 12 Rust regressions and 2 benchmark-ordering regressions; the full security-enabled gate passed.
-  Plain pretty JSON, legacy records, SQL queries, authorization, revision conflicts and response schemas
-  remain compatible. Write/rename failure, concurrent updates and reload behavior have regression coverage.
-- In a corrected-order 72-run disk comparison, 50,000 records with 1,112-byte source reduced recent-20
-  p95 from 1.744 to 0.220 ms and teacher overview from 41.907 to 4.446 ms; write-process peak RSS fell
-  from 296.3 to 180.1 MiB. These are warm local-service measurements, not HTTP or classroom capacity.
-- Disk writes are not uniformly faster: 50,000 records with 4,184-byte source increased mean write
-  latency by 28%. A separate 72-run tmpfs control improved writes but does not establish durable-disk
-  performance. The initial 72-run ordering-defect dataset is retained separately, not merged or replaced.
-- This measurement stage still used a complete encoded-file buffer and cancellable rename/publication;
-  the follow-up above replaces those mechanisms without rewriting these historical measurements.
-  Whole-file replacement, unbounded resident records, pointer-index copying and old reader snapshots
-  remain, without new fsync, recovery logs or cross-process coordination.
-- See [Learning Record Storage](learning-storage.md) and
-  `reports/benchmarks/2026-09-08-learning-snapshots-final` for evidence and remaining limits.
-
-## Owner-scoped event distribution (2026-09-08, included in 0.3.5)
-
-- `/ws/events` uses the authenticated owner's bounded live queue. Another user's burst cannot evict
-  this owner's pending events; own-overload closure, authentication/Origin checks and raw JSON remain
-  compatible. The global EventBus service subscription API remains available.
-- Same-owner connections share immutable events and one lazy JSON encoding. Last-connection drop or
-  cancellation removes the queue, with generation-safe cleanup during simultaneous reconnections.
-- Added 10 regressions and passed the full security-enabled quality gate. A final 30-run release-mode
-  experiment (24 current-path comparisons and 6 no-subscriber binary controls) found 24–64% higher
-  one-owner and 40–56% higher eight-owner service/frame-construction throughput at equal matching
-  output. Nine separate real-loopback checks preserved delivery, explicit overload and five-second
-  stalled-peer cleanup. The regressing uncached prototype's evidence is retained, not overwritten.
-- These are local synthetic results, not LAN/kernel or release acceptance. Queue capacity is per active
-  owner; aggregate memory and cached JSON costs grow with active owners/payloads. Shared locks,
-  persistence and CPU remain shared; global admission limits and durable replay are not implemented.
-- Details and reproducible commands are in [Event Stream Recovery](event-stream.md); measurements are
-  under `reports/benchmarks/2026-09-08-owner-fanout-final` and `2026-09-08-owner-event-stream`.
-
-## Event performance and recovery (2026-09-08, included in 0.3.4)
-
-- Replaced full-history head shifts with FIFO deques and selected matching references before copying
-  limited snapshots. Added isolated release benchmarks; their original source/version fingerprints remain
-  unchanged by the patch bump and are not release-artifact acceptance evidence.
-- WebSocket lag now closes explicitly, blocked sends time out, and both browser consumers reconnect with
-  bounded snapshots, cancellation and visible possible-gap notices. Recovery is limited to retained history.
-- Cookie-authenticated WebSocket handshakes also enforce the Origin/Referer policy; native clients must
-  supply an allowed source. See [Event Stream Recovery](event-stream.md) for compatibility and limits.
-- Separately verified nine real loopback pressure runs and a production-page Chromium smoke with mock
-  HTTP/WebSocket fixtures. Those 0.3.4 measurements used global broadcast; the 0.3.5 increment above
-  adds owner-scoped distribution. Durable cursor-based replay remains future work.
-- Fixed Docker build input coverage and bounded retry handling for transient npm audit failures.
-
-## Teaching mainline update (2026-09-05, included in 0.3.3)
-
-- Teachers/admins can save the current comment on an existing student submission; students read it in
-  **Learn → My lab history**. Multiline plain text, reviewer/time, and a 2000-character limit are supported;
-  automated acceptance and the submitted source remain unchanged.
-- Revision checks reject stale writes with `409`. The page retains the draft and lets the teacher load
-  the latest comment before explicitly resubmitting. Failed local writes do not publish unsaved changes,
-  and failed PostgreSQL writes do not write a local fallback copy.
-- Added 8 backend route, 2 frontend request-builder, and 2 SDK regressions. Separately verified legacy-table
-  migration, concurrent updates, and failure without fallback against a disposable UTF-8 PostgreSQL database,
-  plus Chromium interactions using a mocked Engine API.
-- This increment completes the teaching feedback loop without changing privileged kernel execution
-  or remote Agent trust boundaries.
-
-## LAN/desktop Runner preparation (2026-09-06, included in 0.3.3)
-
-- Recorded the [Linux desktop/LAN isolation target](classroom-isolation.md): teaching control separate
-  from exclusive student VMs, with desktop virtualization hosts supported by the design.
-- Runner execution validates the lease owner. Attachment inventory, detach, and cleanup reports now
-  use the selected driver, with operation deadlines and no local fallback on backend failure.
-- Added ownership, lifecycle, timeout, authentication/CSRF, and local-adapter regression coverage.
-- VM provisioning/loading, persistent environment ownership, full runtime/event delegation, and LAN
-  ingress hardening remain pending. This increment does not make the local Engine a student sandbox.
-
-## Compiler Runner increment (2026-09-06, included in 0.3.3)
-
-- Check/completion routes now pass session ownership, source, selected headers, and cursor data to the
-  selected Runner driver, preserving diagnostics and optional cache-status reporting without local fallback.
-- Compiler capacity is per-manager (2 checks, 3 completions); operation deadlines and cancellation-safe
-  metrics/permits prevent stuck requests from retaining capacity or inflating in-flight counts.
-- The local adapter isolates cache keys by owner and cleans private source workspaces on return/cancellation.
-  Added 4 route, 2 cache-scope, 2 workspace, and 1 required-owner regressions.
-- Attach verification, event streaming, environment/settings, remote header delivery, and VM lifecycle
-  remain pending; the actual runtime is still local and shared-kernel.
-
-## Intentional Boundaries
-
-- The privileged Engine is for trusted self-hosted teaching environments, not public multi-tenancy.
-- Local execution shares one Linux kernel; quotas are resource controls, not student isolation.
-- Engine state is single-process. Agent registration, remote jobs, attachments, and module lifecycle
-  do not yet have a multi-replica coordination model.
-- Aya currently covers the supported tracepoint path; bpftool remains the broad compatibility path.
-- Remote Agents compile and diagnose only. `/ebpf/run` remains local.
+The release baseline's frontend dependency audit reported one low-severity DOMPurify advisory and no
+moderate/high/critical findings; the SDK audit reported none. That is a dated result, not a fresh
+security audit. The [testing guide](testing-guide.md) describes which suites establish which boundary;
+[acceptance](acceptance.md) keeps real integration, kernel, LAN and distribution evidence separate.
+Historical performance results likewise retain their original sources and do not establish current
+platform capacity or classroom isolation.
 
 ## Next Decision Points
 
-1. Define a signed, isolated executable-module adapter and durable ownership model before extending
-   the state-only module catalog into a process or library plugin runtime.
-2. Define registry publication, support ownership, and 1.0 readiness criteria before making the SDK
-   a stable independently consumed package.
-3. Implement the desktop/LAN isolation target's full runtime boundary, durable environment ownership,
-   and VM recovery before enabling remote eBPF execution or Engine replicas.
-4. Sign and publish accepted candidate artifacts after choosing a release trust/key ownership model.
-5. Collect the first annotated-Tag live-kernel evidence, then decide whether release acceptance needs a
-   dedicated self-hosted kernel-version matrix beyond the GitHub-hosted privileged Docker environment.
+The immediate mainline is to complete one private, non-teaching task-content workflow before adding
+generic execution or AI. The following order is proposed work, not an enabled feature:
 
-`engine/Cargo.toml` is the canonical release version. `scripts/check-version-sync.sh` prevents the
-frontend, SDK, OpenAPI document, lockfiles, and release-facing documentation from drifting again.
+1. Define server payload metadata and exact Artifact references, including empty tasks, supported
+   filename/language fields, task title changes and whole-draft import. Keep local IDs non-authoritative.
+2. Design reviewed public command adapters with current Session/CSRF checks, request limits, explicit
+   conflicts and outcome semantics. Decide the authenticated installation path before exposing the
+   preparation layer; do not silently switch live authentication or migrate existing storage.
+3. Connect explicit browser save, reload and conflict handling. Preserve unsaved work and distinguish
+   content publication from Task reference replacement; verify uncertain results before retrying.
+4. Verify browser-to-server persistence across restart, authorization rejection and concurrent edits.
+   Only then call the private task workflow connected; it still does not establish cross-user collaboration.
+5. Add separately reviewed sharing/reviewer grants and domain evidence/acceptance policies, then prove
+   a non-teaching version-specific collaboration workflow without teacher/student or Run requirements.
+
+## Longer term platform roadmap
+
+| Track | Existing foundation | Gate before claiming completion |
+|---|---|---|
+| Identity and migration | C0 contracts and C1 preparation through provisioning/reconciliation | Actual deployment inventory, restored backups, reviewed migration, single write authority and live route/CSRF cutover |
+| Artifact Task Review | C2-A–F first included in 0.4.8; C2-G–J and local UI included in 0.4.9 | Saved user workflow, sharing/acceptance policy and compatible legacy projections; C2 is not complete |
+| Reliable execution and events | Local Runner and compile-only Agent protocol; transactional resource outboxes | Durable Runs/jobs/leases, outcome reconciliation, business-event delivery/replay and restart/fault evidence |
+| Runtime isolation | Explicit shared-kernel boundary and desktop/LAN VM design | Full execution/resource ownership, cleanup/reset evidence and recovery before remote eBPF or Engine replicas |
+| Agents and ecosystem | Typed core references, internal SDK and proposed integration contracts | Bounded Agent delegation, tools/budgets, independent Review and real partner integration evidence |
+| Distribution and support | Source/version/API checks and candidate verification tooling | Accepted candidate artifacts, signing/key ownership, publishing/support policy and current kernel/LAN evidence |
+
+The [next architecture proposal](../zh-CN/next-architecture.md) retains its original 0.4.3 source
+inventory and target milestones; it is not a claim that those milestones are delivered. In particular,
+offline attempt conversion, a reliable compile-only Run, multi-user document review and Viento
+integration remain outstanding. No calendar date or new version is implied by this roadmap.
+
+`engine/Cargo.toml` remains the canonical product version. Version checks protect release-facing
+metadata; they do not merge working-tree features into a release or certify a deployed instance.

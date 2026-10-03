@@ -120,14 +120,26 @@ impl TaskStore {
             .map_err(|_| TaskStoreError::InvalidRecord)?;
         snapshot.status = status;
         snapshot.updated_at = Utc::now();
-        let raw = records::encode(&snapshot)?;
+        self.update_and_confirm(tx, &snapshot, expected_revision)
+            .await?;
+        Ok(snapshot)
+    }
+
+    /// Shared pending row/outbox write; the caller already holds the verified Task row lock.
+    pub(super) async fn update_and_confirm(
+        &self,
+        tx: &mut Tx<'_>,
+        snapshot: &TaskSnapshot,
+        expected_revision: RevisionNumber,
+    ) -> Result<()> {
+        let raw = records::encode(snapshot)?;
         confirmed_one(
             sqlx::query(
                 "UPDATE collaboration_tasks SET revision = $3, snapshot = $4
                 WHERE task_id = $1 AND owner_id = $2 AND revision = $5",
             )
-            .bind(reference.task_id.as_uuid())
-            .bind(owner.principal_id.as_uuid())
+            .bind(snapshot.reference.task_id.as_uuid())
+            .bind(snapshot.owner.principal_id.as_uuid())
             .bind(u64::from(snapshot.revision) as i64)
             .bind(&raw)
             .bind(u64::from(expected_revision) as i64)
@@ -135,7 +147,6 @@ impl TaskStore {
             .await?
             .rows_affected(),
         )?;
-        self.append_and_confirm(tx, &snapshot, &raw).await?;
-        Ok(snapshot)
+        self.append_and_confirm(tx, snapshot, &raw).await
     }
 }

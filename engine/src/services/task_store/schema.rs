@@ -34,7 +34,8 @@ impl TaskStore {
                 sqlx::query(statement).execute(&mut *tx).await?;
             }
             confirmed_one(sqlx::query("INSERT INTO collaboration_task_schema (singleton, version, authority_id, workspace_id)
-                VALUES (TRUE, 1, $1, $2)")
+                VALUES (TRUE, $1, $2, $3)")
+                .bind(TASK_STORAGE_VERSION)
                 .bind(self.scope.authority_id.as_uuid()).bind(self.scope.workspace_id.as_uuid())
                 .execute(&mut *tx).await?.rows_affected())?;
             self.check_schema(&mut tx, true).await?;
@@ -79,7 +80,7 @@ impl TaskStore {
             .fetch_optional(&mut **tx)
             .await?
             .ok_or(TaskStoreError::UnsupportedSchema)?;
-        if row.try_get::<i32, _>("version")? != 1 {
+        if row.try_get::<i32, _>("version")? != TASK_STORAGE_VERSION {
             return Err(TaskStoreError::UnsupportedSchema);
         }
         if row.try_get::<uuid::Uuid, _>("authority_id")? != self.scope.authority_id.as_uuid()

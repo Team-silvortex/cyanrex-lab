@@ -1,9 +1,9 @@
 # Contributing to cyanrex-lab
 
-Thanks for helping make eBPF education easier to access. cyanrex-lab is a free,
-open-source, self-hosted teaching platform. Contributions to the runtime,
-course material, translations, documentation, tests, and deployment tooling
-are all welcome.
+cyanrex-lab is a free, open-source, self-hosted project moving from eBPF teaching toward a
+domain-neutral collaboration platform. The teaching runtime remains supported while general identity,
+Task, Artifact and Review services are developed separately. Contributions to the platform, domain
+packages, runtime, editors, course material, translations, tests and deployment tooling are welcome.
 
 ## Before You Start
 
@@ -12,8 +12,10 @@ are all welcome.
 - Read the [security guide](docs/en/security.md) before changing privileged
   Engine behavior, eBPF loading, remote access, or classroom isolation.
 - Search existing issues before opening a new one.
-- For a large feature or architectural change, open a proposal issue first so
-  the teaching use case and compatibility impact can be discussed.
+- Read [current project status](docs/en/project-status.md) and the [feature map](docs/en/platform-network.md)
+  to distinguish live services, local-only UI and explicit preparation layers before choosing an entry point.
+- For a large feature or architectural change, open a proposal issue first so the platform or domain
+  use case, authorization boundary and compatibility impact can be discussed.
 - Report vulnerabilities privately as described in [SECURITY.md](SECURITY.md).
 
 ## Development Setup
@@ -35,6 +37,23 @@ mode-specific instructions.
 
 ## Change Workflow
 
+### Choose the right boundary
+
+- Generic identity, content, task and review contracts belong in the shared collaboration model, not
+  in an eBPF controller. Code is optional task payload; a Task need not execute a Run.
+- Domain definitions and typed assessment rules belong in an explicit domain package. A catalogue
+  entry does not grant execution, read access, verified evidence or Task acceptance.
+- Local editor state belongs to its owning task draft. Do not treat local IDs, filenames, language
+  labels or browser confirmation as server authority, filesystem access or persisted Artifact references.
+- Direct stores assume trusted ownership. Untrusted commands need the current-Session transaction
+  guard, exact namespace/scope checks and post-write verification, not a detached permission precheck.
+- Live AuthService/teaching tables and preparatory stores remain separate. Do not wire startup
+  installers, automatic migration, new fallback behavior or cross-user access as incidental refactoring.
+- Source-level control/execution separation does not isolate the privileged Engine. Runner Agents are
+  compute workers; AI orchestration and executable plugins need separately reviewed boundaries.
+
+### Test the change
+
 The repository follows test-driven development:
 
 1. Add or update a test that describes the intended behavior.
@@ -45,6 +64,10 @@ The repository follows test-driven development:
 Backend route changes should update tests under `engine/tests/`. Frontend
 permission changes should update `frontend/tests/sidebarPermissions.test.mjs`
 when applicable.
+
+Use the [current testing guide](docs/en/testing-guide.md) for service, transaction, browser, SDK and
+real external-boundary coverage. Default Cargo tests deliberately skip opt-in database/kernel cases;
+browser fixtures with mocked Engine responses do not establish production authorization or server saving.
 
 Run the full local quality gate before submitting a pull request:
 
@@ -107,13 +130,13 @@ remain explicit operations so a local validation run cannot publish accidentally
 
 ```bash
 ./scripts/quality-gate.sh
-git commit -m "0.4.8"
+git commit -m "0.4.9"
 git fetch origin --tags --prune
-node scripts/release-preflight.mjs --version 0.4.8
-git tag -a v0.4.8 -m "cyanrex-lab 0.4.8"
-node scripts/release-preflight.mjs --tag v0.4.8
+node scripts/release-preflight.mjs --version 0.4.9
+git tag -a v0.4.9 -m "cyanrex-lab 0.4.9"
+node scripts/release-preflight.mjs --tag v0.4.9
 git push origin main
-git push origin v0.4.8
+git push origin v0.4.9
 ```
 
 The release owner should verify the tag target, distribution checksum, extracted-package smoke result,
@@ -121,6 +144,12 @@ and changelog links before publication. A pushed version tag also runs the dedic
 workflow; this validates the tag but does not publish a release or move any ref.
 
 ## Course Material and Translations
+
+Project-wide documentation starts at [the index](docs/en/README.md). Keep current capability summaries
+in project status, source relationships in architecture/the platform map, and prior runs in development
+history or dated evidence. Do not rewrite historical hashes, versions or failure counts to imply new acceptance.
+Update English and Chinese sources under `docs/`, then run `node frontend/scripts/sync-course-docs.mjs`;
+the `frontend/public/course/` tree is generated from those sources, not a second place to author changes.
 
 English is the primary source language for new interface strings and course
 material. When practical, update the matching Simplified Chinese content in
@@ -142,7 +171,7 @@ Examples must not assume that a shared classroom Engine is a security boundary.
 
 A pull request should explain:
 
-- the teaching or operational problem being solved;
+- the platform, domain or operational problem being solved;
 - the chosen behavior and important tradeoffs;
 - how it was tested;
 - any security, migration, deployment, or translation impact.

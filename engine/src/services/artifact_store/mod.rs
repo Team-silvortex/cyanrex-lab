@@ -144,6 +144,11 @@ impl ArtifactStore {
         self.read_content(tx, reference, owner, true).await
     }
 
+    /// Pin schema metadata even when a trusted composition has no content references to read.
+    pub(crate) async fn validate_namespace_in_transaction(&self, tx: &mut Tx<'_>) -> Result<()> {
+        self.check_schema(tx, true).await
+    }
+
     async fn read_content(
         &self,
         tx: &mut Tx<'_>,

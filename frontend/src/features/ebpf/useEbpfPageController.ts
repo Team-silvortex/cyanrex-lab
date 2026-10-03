@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { loader } from "@monaco-editor/react";
+import "../../utils/monacoLoader";
 
 import { getEngineUrl } from "../../config/runtime";
 import { analyzeCCode } from "../../utils/cAnalyzer";
@@ -217,14 +217,6 @@ export function useEbpfPageController(
     const registration = registerEbpfIntelligence(intelligenceEditor.monaco, engineUrl, intelligenceEditor.editor, injectedHeaderContext);
     return () => registration.dispose();
   }, [intelligenceEditor, engineUrl, injectedHeaderContext]);
-
-  useEffect(() => {
-    loader.config({
-      paths: {
-        vs: "/monaco/vs",
-      },
-    });
-  }, []);
 
   const onUpload = async (file: File, signal?: AbortSignal) => {
     if (file.size > MAX_UPLOAD_BYTES) {

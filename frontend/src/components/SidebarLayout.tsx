@@ -27,6 +27,7 @@ type NavItem = {
 const navItems: NavItem[] = [
   { href: "/dashboard", key: "layout.nav.dashboard" },
   { href: "/ebpf", key: "layout.nav.ebpf" },
+  { href: "/tasks/new", key: "taskDraft.nav" },
   { href: "/learn", key: "layout.nav.learn" },
   {
     href: "/teaching",

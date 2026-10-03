@@ -1,5 +1,10 @@
 # SSH Deployment and Student Classroom Entry
 
+These are the existing teaching/deployment entry points. Classroom enrollment is not generic
+Workspace membership provisioning, and SSH management is not an AI Agent or Task execution API.
+The collaboration preparation layer has its own [explicit provisioning boundary](collaboration-provisioning.md);
+the two identity sources are not automatically synchronized.
+
 ## Decision and current scope
 
 | Entry | Direction | Authorization | Implemented slice |

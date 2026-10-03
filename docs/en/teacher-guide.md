@@ -1,5 +1,11 @@
 # Teacher Quick Start
 
+This guide covers Cyanrex's existing eBPF teaching domain, not the entire collaboration platform.
+For the overall model and development status, see [architecture](architecture.md) and
+[project status](project-status.md). The new [task payload editor](editor.md) is local-only; it does
+not submit coursework or create server Tasks. General private Task/Artifact/Review commands do not
+grant a teacher access to another owner's work, and do not replace the teaching feedback endpoints.
+
 ## 1. Course Positioning
 
 Use Cyanrex for 4–8 hour beginner eBPF classes. It is suitable for teaching:

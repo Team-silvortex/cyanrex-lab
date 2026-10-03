@@ -34,6 +34,8 @@ mod credentials;
 mod deletion;
 mod private_work;
 pub(crate) mod reconciliation;
+#[cfg(unix)]
+mod review_commands;
 mod schema;
 mod session_commands;
 mod sessions;
@@ -44,7 +46,13 @@ pub use artifact_commands::{SessionArtifactError, SessionArtifactWorkspace};
 pub use bootstrap::{AuthorityBootstrap, BootstrapError};
 pub use deletion::SessionDeleteAccountCommand;
 pub use reconciliation::{AuthorityReconciliation, ReconciliationError};
+#[cfg(unix)]
+pub use review_commands::{SessionReviewError, SessionReviewWorkspace};
 pub use session_commands::{SessionBindCommand, SessionCommandError, SessionPolicyCommand};
+#[cfg(unix)]
+pub use task_commands::{
+    SessionCatalogTaskWorkspace, SessionTaskInputs, SessionTaskInputsWorkspace,
+};
 pub use task_commands::{SessionTaskError, SessionTaskWorkspace};
 
 #[derive(Clone)]

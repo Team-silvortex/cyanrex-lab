@@ -6,12 +6,18 @@ const items = [{ label: "field", insert_text: "field", detail: "fixture", kind: 
 function event() {
   const listeners = new Set();
   return { on: callback => { listeners.add(callback); return { dispose: () => listeners.delete(callback) }; },
-    fire: () => { for (const callback of listeners) callback(); }, get size() { return listeners.size; } };
+    fire: value => { for (const callback of listeners) callback(value); }, get size() { return listeners.size; } };
 }
 function fixture(t) {
-  const content = event(), removed = event(), changed = event(), disposed = event(), cancelled = event();
-  const model = { source: "int field;", version: 1, dead: false, uri: { toString: () => "inmemory:///fixture" },
+  const content = event(), removed = event(), changed = event(), disposed = event(), cancelled = event(), languageChanged = event();
+  const model = { source: "int field;", version: 1, dead: false, language: "c", uri: { toString: () => "inmemory:///fixture" },
     isDisposed() { return this.dead; }, getValue() { return this.source; }, getVersionId() { return this.version; },
+    getLanguageId() { return this.language; }, onDidChangeLanguage: languageChanged.on,
+    setLanguage(language) {
+      const oldLanguage = this.language;
+      if (oldLanguage === language) return;
+      this.language = language; languageChanged.fire({ oldLanguage, newLanguage: language });
+    },
     onDidChangeContent: content.on, onWillDispose: removed.on,
     change(source) { this.source = source; this.version++; content.fire(); } };
   const editor = { model, getModel() { return this.model; }, onDidChangeModel: changed.on, onDidDispose: disposed.on };
@@ -23,7 +29,7 @@ function fixture(t) {
   const calls = [];
   let respond = () => Response.json({ ok: true, items, message: "fixture" });
   t.mock.method(globalThis, "fetch", (url, init) => { calls.push({ url, ...init }); return respond(init); });
-  return { client, model, editor, token, calls, content, removed, changed, disposed, cancelled,
+  return { client, model, editor, token, calls, content, removed, changed, disposed, cancelled, languageChanged,
     respond: fn => { respond = fn; }, request: (column = 3) => client.request(model, { lineNumber: 1, column }, token) };
 }
 
@@ -57,6 +63,38 @@ test("foreign, disposed and pre-cancelled models dispatch nothing", async t => {
   f.token.cancel(); assert.equal(await f.request(), null); assert.equal(f.calls.length, 0);
 });
 
+test("an owned non-C model cannot request eBPF semantic completion", async t => {
+  const f = fixture(t);
+  for (const language of ["python", "cpp", "plaintext"]) {
+    f.model.setLanguage(language);
+    assert.equal(f.client.owns(f.model), false);
+    assert.equal(await f.request(), null);
+  }
+  assert.equal(f.calls.length, 0);
+  f.model.setLanguage("c"); assert.equal(f.client.owns(f.model), true);
+  assert.deepEqual(await f.request(), items); assert.equal(f.calls.length, 1);
+});
+
+test("a C to Python to C round trip aborts and invalidates an already-delivered request", async t => {
+  const f = fixture(t); let release;
+  f.respond(() => ({ ok: true, json: () => new Promise(resolve => { release = resolve; }) }));
+  const pending = f.request(); await Promise.resolve();
+  assert.equal(typeof release, "function", "the response body is already pending");
+  f.model.setLanguage("python");
+  assert.equal(f.calls[0].signal.aborted, true, "language changes abort immediately");
+  f.model.setLanguage("c"); assert.equal(f.model.getVersionId(), 1);
+  release({ ok: true, items }); assert.equal(await pending, null);
+  f.respond(() => Response.json({ ok: true, items }));
+  assert.deepEqual(await f.request(), items); assert.equal(f.calls.length, 2);
+});
+
+test("a language round trip clears cached C completions without a content edit", async t => {
+  const f = fixture(t); await f.request(); await f.request(); assert.equal(f.calls.length, 1);
+  f.model.setLanguage("python"); f.model.setLanguage("c");
+  assert.equal(f.model.getVersionId(), 1);
+  assert.deepEqual(await f.request(), items); assert.equal(f.calls.length, 2);
+});
+
 test("empty and UTF-8 oversized source remains snippet-only without dispatch", async t => {
   const f = fixture(t);
   for (const source of [" ", "你".repeat(90000), "x".repeat(262145)]) {
@@ -80,6 +118,7 @@ test("owner disposal aborts active work and releases listeners without publishin
   const pending = f.request(); f.disposed.fire(); assert.equal(f.calls[0].signal.aborted, true);
   release(Response.json({ ok: true, items })); assert.equal(await pending, null);
   assert.equal(f.changed.size, 0); assert.equal(f.disposed.size, 0); assert.equal(f.content.size, 0);
+  assert.equal(f.languageChanged.size, 0);
 });
 
 test("model replacement invalidates pending work and all model-local cache reuse", async t => {
@@ -87,6 +126,21 @@ test("model replacement invalidates pending work and all model-local cache reuse
   let release; f.respond(() => new Promise(resolve => { release = resolve; }));
   const pending = f.request(4); f.editor.model = null; f.changed.fire();
   release(Response.json({ ok: true, items })); assert.equal(await pending, null);
+});
+
+test("language listeners move to the new model and release on owner disposal", async t => {
+  const f = fixture(t), languageChanged = event();
+  assert.equal(f.languageChanged.size, 1);
+  const replacement = { ...f.model, onDidChangeLanguage: languageChanged.on,
+    setLanguage(language) { const oldLanguage = this.language; this.language = language; languageChanged.fire({ oldLanguage, newLanguage: language }); } };
+  f.editor.model = replacement; f.changed.fire();
+  assert.equal(f.languageChanged.size, 0); assert.equal(languageChanged.size, 1);
+  let release; f.respond(() => new Promise(resolve => { release = resolve; }));
+  const pending = f.client.request(replacement, { lineNumber: 1, column: 3 }, f.token);
+  f.model.setLanguage("python"); assert.equal(f.calls[0].signal.aborted, false);
+  replacement.setLanguage("python"); assert.equal(f.calls[0].signal.aborted, true);
+  replacement.setLanguage("c"); release(Response.json({ ok: true, items })); assert.equal(await pending, null);
+  f.client.dispose(); assert.equal(languageChanged.size, 0);
 });
 
 test("a stalled semantic JSON body has a ten-second whole-request deadline", async t => {

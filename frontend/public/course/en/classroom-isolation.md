@@ -3,6 +3,9 @@
 Decision date: 2026-09-06. This is the target architecture, not a deployment feature already shipped.
 The current release is still a privileged local Engine with an optional compile-only Agent.
 
+This teaching-domain isolation proposal complements the [platform architecture](architecture.md).
+It is not an implemented generic Workspace permission model or a completed control/execution split.
+
 Authority clarification (2026-09-09): the teacher owns teaching policy and deployment management.
 Personal use seeds the owner as a teacher; classroom use keeps the teacher-managed control instance as
 the authority for identity, enrollment, records and trusted assessment. Students' personal teacher

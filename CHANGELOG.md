@@ -5,6 +5,66 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.4.9] - 2026-10-03
+
+### Added
+
+- Added task-owned text payload editing at `/tasks/new`, with `/editor` as a compatibility entry.
+  Empty tasks do not invent code; up to 32 optional contents retain their filename, language and text
+  when switching editors. Controlled edits carry local revisions, confirmations bind reviewed targets,
+  and whole-task replacement invalidates old editor generations, even with matching imported IDs.
+  Strict local JSON import/export is capped at 8 MiB and each text item at 256 KiB. This local format
+  cannot import server ownership or Artifact references; browser integration with server saving and
+  Task-input rebinding remains pending. Downloads never claim persistence or submission.
+- Added 14 built-in language profiles for task text contents: richer TypeScript and
+  JavaScript services, structured JSON/CSS services, HTML assistance without diagnostics, eight
+  highlighting/snippet profiles and plain text. Local Monaco assets have no CDN fallback; no external
+  LSP, schema/package acquisition, Engine source request or execution is added. Individual contents
+  support confirmed strict UTF-8 import and explicit download, not server saving, autosave or recovery.
+  Language changes retain text in a new model but discard old undo history;
+  shared JS/TS workers are not a security sandbox. Existing C/eBPF completion now rejects non-C models
+  and invalidates pending work/cache on language changes, including same-model round trips. See the
+  [editor guide](docs/en/editor.md) for capabilities and navigation limitations.
+- Added C2-J Session-authorized Draft input replacement for manual and catalogue tasks. Expected
+  revisions prevent lost updates; old and new exact owned inputs are checked before and after the
+  atomic Task/outbox write, followed by the final Session check. A separate `inputs_replaced` event
+  requires Task storage schema 2 on fresh installation; schema 1 is rejected without migration.
+  Artifact publication remains separate, with no file deletion or automatic retry after failure.
+  No browser save adapter, public HTTP API, live cutover or Task acceptance is added.
+- Added C2-I Session-authorized catalogue tasks: trusted configuration copies full definition snapshots
+  without retaining or executing a provider. Private tasks accept 0–32 exact owned inputs; even zero
+  inputs require pinned Artifact namespace/schema metadata. Reads and transitions require complete
+  definition equality, rejecting unknown versions and changed metadata under the same pin without
+  fallback. The shared Task-input transaction retains namespace, post-write and final Session checks;
+  C2-E/G manual adapters remain strict. Three default and sixteen explicit PostgreSQL cases cover the
+  boundary. This is metadata admission, not typed evidence validation, policy execution or acceptance;
+  no live cutover, legacy-writer fence or public API/SDK contract change is added.
+- Added C2-H Session-authorized private human Reviews: current audited membership, exact owned
+  Artifact targets/evidence, immutable Review history and outbox writes share one source transaction.
+  Review heads precede globally ordered Artifact locks; content and pending records are rechecked
+  after writes, then final Session checks and confirmed commit precede publication. The configured
+  policy remains a label, not evidence of policy execution or historical Session authorship; no
+  cross-user review authority, Task acceptance, live route or legacy-writer fence is added.
+  Regression coverage comprises three default and eighteen explicit PostgreSQL cases, selected by
+  an exact CI runner. Public API/SDK contracts stay unchanged apart from release metadata.
+- Added C2-G Session-authorized private Task inputs: definition-free tasks with 1–32 exact owned
+  Artifact references share source authorization, Task/outbox changes and content checks on one
+  transaction. Namespace pins survive cross-store switching, locks follow Task then Artifact IDs,
+  and inputs are revalidated after writes before final Task/Session checks and confirmed commit.
+  Reads preserve input order; missing or corrupt content also prevents cancellation. No content
+  file write/repair, teacher access to private work, domain policy, authenticated Review, acceptance,
+  public route, migration or live cutover is added. Three default and twenty explicit PostgreSQL
+  cases cover ownership, exact references, multi-namespace faults and Session/transaction races;
+  CI verifies and executes each database case.
+
+### Changed
+
+- Reorganized project-wide English and Chinese documentation around the platform transition, with
+  a current feature map, module/boundary testing guide and concise status/roadmap. Preserved prior
+  development history and dated acceptance evidence separately. Architecture, contributor, SDK,
+  teaching and operations guides now distinguish the live runtime, preparatory services and local
+  editing; source publication does not imply deployment, database migration or a connected save flow.
+
 ## [0.4.8] - 2026-10-03
 
 ### Added
@@ -599,7 +659,8 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 The canonical package metadata advanced directly from `0.2.9` to `0.3.1`. Version `0.3.0` identifies
 the frozen API compatibility snapshot only; it was not a package release and must not be tagged.
 
-[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.8...HEAD
+[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.9...HEAD
+[0.4.9]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.8...v0.4.9
 [0.4.8]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.7...v0.4.8
 [0.4.7]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.6...v0.4.7
 [0.4.6]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.5...v0.4.6

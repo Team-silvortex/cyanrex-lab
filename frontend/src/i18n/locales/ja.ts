@@ -2,9 +2,11 @@ import type { TranslationDict } from "../translations";
 import { safetyMessages } from "./safety";
 import { classroomMessages } from "./classroom";
 import { runnerSafetyMessages } from "./runnerSafety";
+import { editorMessages } from "./editor";
 
 export const ja: TranslationDict = {
     classroom: classroomMessages.ja,
+    editor: editorMessages.ja,
     safety: safetyMessages.ja,
     layout: {
       menu: "ナビゲーション",
@@ -19,6 +21,7 @@ export const ja: TranslationDict = {
       logoutFailed: "ログアウトの完了を確認できません。セッションが有効な可能性があります。接続を確認して手動で再試行し、完了を確認してから端末を離れてください。",
       language: "言語",
       nav: {
+        editor: "エディター",
         dashboard: "ダッシュボード",
         ebpf: "eBPF ランナー",
         learn: "学習センター",

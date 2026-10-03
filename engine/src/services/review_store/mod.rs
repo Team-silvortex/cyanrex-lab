@@ -108,29 +108,59 @@ impl ReviewStore {
         self.check_scope(reference.workspace, reviewer)?;
         bounded(async {
             let mut tx = self.transaction(true).await?;
-            self.check_schema(&mut tx, false).await?;
-            let result = match self
-                .head(&mut tx, reference.review_id, reviewer, false)
-                .await?
-            {
-                None => None,
-                Some(head)
-                    if u64::from(reference.revision) > u64::from(head.reference.revision) =>
-                {
-                    None
-                }
-                Some(head) if head.reference == reference => Some(head),
-                Some(head) => {
-                    let historical = self.record(&mut tx, reference, reviewer).await?;
-                    if !records::same_subject(&head, &historical) {
-                        return Err(ReviewStoreError::InvalidRecord);
-                    }
-                    Some(historical)
-                }
-            };
+            let result = self
+                .read_record(&mut tx, reference, reviewer, false)
+                .await?;
             tx.commit().await?;
             Ok(result)
         })
         .await
+    }
+
+    /// Pending exact history read; the caller must retain the locks through authorization/commit.
+    pub(crate) async fn read_in_transaction(
+        &self,
+        tx: &mut Tx<'_>,
+        reference: ReviewRef,
+        reviewer: PrincipalRef,
+    ) -> Result<Option<ReviewRecord>> {
+        self.check_scope(reference.workspace, reviewer)?;
+        self.read_record(tx, reference, reviewer, true).await
+    }
+
+    /// Pending current record for a trusted composition, never an approval projection.
+    pub(crate) async fn head_in_transaction(
+        &self,
+        tx: &mut Tx<'_>,
+        review_id: ReviewId,
+        reviewer: PrincipalRef,
+    ) -> Result<Option<ReviewRecord>> {
+        self.check_scope(self.scope, reviewer)?;
+        self.check_schema(tx, true).await?;
+        self.head(tx, review_id, reviewer, true).await
+    }
+
+    async fn read_record(
+        &self,
+        tx: &mut Tx<'_>,
+        reference: ReviewRef,
+        reviewer: PrincipalRef,
+        lock: bool,
+    ) -> Result<Option<ReviewRecord>> {
+        self.check_schema(tx, lock).await?;
+        match self.head(tx, reference.review_id, reviewer, lock).await? {
+            None => Ok(None),
+            Some(head) if u64::from(reference.revision) > u64::from(head.reference.revision) => {
+                Ok(None)
+            }
+            Some(head) if head.reference == reference => Ok(Some(head)),
+            Some(head) => {
+                let historical = self.record(tx, reference, reviewer).await?;
+                if !records::same_subject(&head, &historical) {
+                    return Err(ReviewStoreError::InvalidRecord);
+                }
+                Ok(Some(historical))
+            }
+        }
     }
 }

@@ -2,6 +2,12 @@
 
 Typed browser and Node.js client for the Cyanrex Lab Engine API.
 
+This package describes the registered, existing runtime HTTP/WebSocket contract. It does not yet
+expose the general collaboration Task/Artifact/Review Session commands or persist the local task
+payload editor. Do not invent task endpoints from Rust method names or treat local draft IDs as server
+references. New platform APIs require explicit route, authorization, OpenAPI and SDK work together;
+see [project status](../docs/en/project-status.md) and the [testing guide](../docs/en/testing-guide.md).
+
 ## Use
 
 ```ts

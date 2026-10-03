@@ -1,8 +1,11 @@
 use super::*;
 
-pub(super) fn event_type(revision: RevisionNumber) -> &'static str {
-    if u64::from(revision) == 1 {
+pub(super) fn event_type(snapshot: &TaskSnapshot) -> &'static str {
+    // The lifecycle has no transition into Draft: a later Draft revision can only replace inputs.
+    if u64::from(snapshot.revision) == 1 {
         "cyanrex.task.created"
+    } else if snapshot.status == TaskStatus::Draft {
+        "cyanrex.task.inputs_replaced"
     } else {
         "cyanrex.task.status_changed"
     }
@@ -19,7 +22,6 @@ impl TaskStore {
             .iter()
             .any(|input| input.workspace != self.scope)
             || (u64::from(snapshot.revision) == 1 && snapshot.status != TaskStatus::Draft)
-            || (u64::from(snapshot.revision) > 1 && snapshot.status == TaskStatus::Draft)
         {
             return Err(TaskStoreError::InvalidRecord);
         }
@@ -78,7 +80,7 @@ impl TaskStore {
             || event.try_get::<uuid::Uuid, _>("event_id")?.is_nil()
             || event.try_get::<uuid::Uuid, _>("actor_id")? != owner.principal_id.as_uuid()
             || event.try_get::<i64, _>("revision")? != u64::from(snapshot.revision) as i64
-            || event.try_get::<String, _>("event_type")? != event_type(snapshot.revision)
+            || event.try_get::<String, _>("event_type")? != event_type(&snapshot)
         {
             return Err(TaskStoreError::InvalidRecord);
         }
@@ -95,7 +97,7 @@ impl TaskStore {
             (event_id, task_id, revision, actor_id, event_type, snapshot) VALUES ($1, $2, $3, $4, $5, $6)")
             .bind(uuid::Uuid::new_v4()).bind(snapshot.reference.task_id.as_uuid())
             .bind(u64::from(snapshot.revision) as i64).bind(snapshot.owner.principal_id.as_uuid())
-            .bind(event_type(snapshot.revision)).bind(raw).execute(&mut **tx).await?.rows_affected())?;
+            .bind(event_type(snapshot)).bind(raw).execute(&mut **tx).await?.rows_affected())?;
         self.check_schema(tx, true).await?;
         if self
             .read(tx, snapshot.reference, snapshot.owner, true)

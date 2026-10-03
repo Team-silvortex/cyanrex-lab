@@ -26,6 +26,40 @@ test("completion providers never send another editor's model to their Engine", (
   assert.deepEqual(await f.labels("wrong"), []);
 }));
 
+test("C providers refuse an owned model after it switches to another language", () => run(async f => {
+  await f.act(() => {
+    fixture.register("owned"); fixture.models.owned.setLanguage("python");
+    fixture.complete("owned", "semantic"); fixture.complete("owned", "static", "owned", false, 1);
+  });
+  assert.equal((await f.requests()).length, 0);
+  assert.deepEqual(await f.labels("semantic"), []); assert.deepEqual(await f.labels("static"), []);
+}));
+
+test("a same-model language round trip aborts pending C completion and rejects late results", () => run(async f => {
+  await f.act(() => {
+    fixture.register("owned"); fixture.complete("owned", "old");
+    fixture.models.owned.setLanguage("python"); fixture.models.owned.setLanguage("c");
+  });
+  assert.equal((await f.requests())[0].aborted, true);
+  assert.equal(await f.act(() => fixture.models.owned.getVersionId()), 1);
+  await f.respond(0, semantic("obsolete_c_field")); assert.deepEqual(await f.labels("old"), []);
+  await f.act(() => fixture.complete("owned", "fresh"));
+  assert.equal((await f.requests()).length, 2);
+  await f.respond(1, semantic("fresh_c_field")); assert.ok((await f.labels("fresh")).includes("fresh_c_field"));
+}));
+
+test("same-model language changes clear the completed C semantic cache", () => run(async f => {
+  await f.act(() => { fixture.register("owned"); fixture.complete("owned", "cached"); });
+  await f.respond(0, semantic("before_switch"));
+  await f.act(() => {
+    fixture.models.owned.setLanguage("python"); fixture.models.owned.setLanguage("c"); fixture.complete("owned", "fresh");
+  });
+  assert.equal((await f.requests()).length, 2);
+  await f.respond(1, semantic("after_switch"));
+  assert.ok((await f.labels("fresh")).includes("after_switch"));
+  assert.equal((await f.labels("fresh")).includes("before_switch"), false);
+}));
+
 test("disposing a provider aborts pending completions and discards late items", () => run(async f => {
   await f.act(() => { fixture.register("owned"); fixture.complete("owned"); fixture.handles.owned.dispose(); });
   assert.equal((await f.requests())[0].aborted, true);

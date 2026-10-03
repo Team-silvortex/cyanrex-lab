@@ -1,4 +1,8 @@
-# Security and Classroom Deployment
+# Security and deployment boundaries
+
+This guide covers the current runtime, local editing and general collaboration preparation. The
+platform direction does not make the deployed Engine unprivileged or migrate its authentication.
+For relationships between modules, see [architecture](architecture.md) and the [feature map](platform-network.md).
 
 ## Key Conclusion
 
@@ -8,7 +12,31 @@ Docker requires access to host/VM eBPF, tracefs, BTF, and bpffs. Authenticated u
 can perform kernel experiments; teachers also control deployment settings. Do not expose Engine to
 untrusted networks or treat application roles as kernel isolation.
 
+## General platform security boundaries
+
+| Surface | Current guarantee | Not a guarantee |
+|---|---|---|
+| Local task payload editor | Bounded text/JSON, parent-owned revisions and target-bound confirmations | Persistence, server identity, execution safety or isolated JS/TS workers |
+| Direct Task/Artifact/Review stores | Explicit scope and trusted-owner filtering, bounded records and confirmed database writes | Authentication of a caller-supplied owner or historical Session provenance |
+| Session resource commands | Current account incarnation, audited membership, namespace pins and final Session checks in one transaction | Teacher access to others' private content, cross-user Review authority or Task acceptance |
+| Artifact publication and Task replacement | Immutable exact references; Draft changes check old/new inputs and expected revision | Atomic file/database rollback, automatic adoption or permission to delete newly published files on failure |
+| Domain catalogue | Exact configured definition metadata | Trusted package installation, typed evidence validation by admission alone, or policy execution |
+| Telemetry and business events | Separate live event history and transactional resource outboxes | Reliable dispatch, exactly-once workflow delivery or a complete security audit from the Events page |
+
+Preparatory installers accept only explicit empty namespaces. Task storage schema 2 rejects schema 1;
+do not edit a version number, drop data or rerun bootstrap to bypass refusal. Live teaching tables,
+credentials, private Artifact roots and rollback material are not synthetic test fixtures. Retain
+uncertain outcomes for reviewed reconciliation; timeout or lost acknowledgement is not proof of rollback.
+
+For source-owned private work, see [Task inputs](session-task-inputs.md), [Draft replacement](session-task-revisions.md)
+and [private Reviews](session-review-commands.md). These paths are not yet public browser APIs, so
+their service tests do not establish live HTTP/CSRF or deployment acceptance. Application roles and
+source-level abstractions still do not isolate the shared Linux kernel.
+
 ## Default Protections
+
+The protections in this section apply to the existing runtime unless a preparation-layer contract is
+explicitly named. They must not be treated as interchangeable authentication or storage policies.
 
 - Docker published ports default to `127.0.0.1`. The native/WSL launcher currently sets
   `ENGINE_HOST=0.0.0.0`; verify actual listeners and restrict access before starting that mode on a LAN.

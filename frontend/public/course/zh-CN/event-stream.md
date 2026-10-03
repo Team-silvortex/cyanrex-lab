@@ -2,6 +2,10 @@
 
 事件中心和 eBPF 断点面板是尽力而为的最近历史视图，不是持久订阅或“恰好一次”的审计日志。
 
+本文描述现有教学运行时的 EventBus 与浏览器消费者。协作准备层将 Task、Artifact 和 Review
+变更记入各自的事务 outbox；这些记录尚不通过此 WebSocket 投递，也不显示在事件页面中。
+两者都不是通用工作流投递服务，见[当前平台地图](platform-network.md)。
+
 ## 协议与访问
 
 - `GET /ws/events` 仍通过 WebSocket 文本帧发送原始 `EventRecord` JSON，没有新增消息封装、

@@ -4,8 +4,9 @@ Status: **C2-D included in source release 0.4.8**. Decision date: **2026-10-03**
 
 Review is now a separate durable judgment over exact Artifact revisions, without requiring a Task,
 Run or teaching role. Human comments retain their revision history; rule results cannot become human
-approvals through an edit. This is trusted-adapter PostgreSQL staging, not authenticated review,
-verified evidence or task acceptance. This staging slice is included in source release 0.4.8.
+approvals through an edit. The direct store is trusted-adapter PostgreSQL staging, not authentication,
+verified evidence or task acceptance. This staging slice is included in source release 0.4.8;
+the separate [C2-H adapter](session-review-commands.md), included in 0.4.9, adds private Session-authorized human commands.
 
 ## Contracts and source separation
 
@@ -72,8 +73,9 @@ types `cyanrex.review.recorded` and `cyanrex.review.amended`. No previous revisi
 by the service. Row counts, post-write scope and readback must agree before confirmed commit succeeds.
 
 Writers lock schema metadata then the Review head. Related reads occur after that lock so a waiting
-writer sees the concurrent winner under read-committed isolation. Readers use one read-only,
-repeatable-read snapshot. A head must match both the newest stored revision and newest event; a
+writer sees the concurrent winner under read-committed isolation. Standalone readers use one read-only,
+repeatable-read snapshot. C2-H's borrowed-transaction readers instead lock the head before related
+queries under the source's READ COMMITTED transaction. A head must match both the newest stored revision and newest event; a
 rewound head cannot hide a later judgment. Each requested revision must match its event, reference
 and reviewer. Historical reads also compare their fixed subject/policy with the head. This is bounded
 head/requested-revision validation, not full-history reconciliation or protection against coordinated
@@ -105,10 +107,12 @@ does not test an authenticated user workflow or claim automatic evidence verific
 before execution. CI uses the same runner and guards its selection. See [project status](project-status.md)
 for executed results and omitted checks. Never run fault injection against deployed data.
 
-[C2-E](session-task-commands.md) now composes current Sessions with private manual Task commands, but
-does not authorize this store. [C2-F](session-artifact-commands.md) adds private Artifact authorization,
-not a grant to create Reviews. Next compose reviewer/source grants, Artifact resolution and protected
-commands in one reviewed authority path. Task acceptance must check the exact Task/content/Review
-revisions and applicable policy rather than merely consume a stored `approved` string. Public UI/API,
-offline teaching migration, retention and reliable Run/event delivery remain separate work. C2 and
-C-M2/C-M5 are not complete.
+[C2-E](session-task-commands.md) and [C2-F](session-artifact-commands.md) authorize private Tasks and
+Artifacts. [C2-H](session-review-commands.md) now composes current audited Human membership,
+private Review commands and exact owned target/evidence checks on one source transaction. It accepts
+only human opinions matching the configured policy label; the label does not prove policy execution.
+Direct trusted writers remain available without provenance markers or a cutover fence, so reading a
+record through C2-H does not certify that it was originally Session-authored. Cross-user review rights,
+rule/Agent issuance and applicable domain policy remain separate. Task acceptance must check exact
+Task/content/Review revisions and that policy, not merely consume `approved`. Public UI/API, offline
+teaching migration, retention and reliable Run/event delivery remain pending; C2 and C-M2/C-M5 are not complete.

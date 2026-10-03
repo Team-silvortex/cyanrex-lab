@@ -1,13 +1,19 @@
 # cyanrex-lab
 
-Version: `0.4.8`
+Version: `0.4.9`
 
-Cyanrex monorepo for eBPF experiments: Axum engine + Next.js dashboard + module utilities.
+Cyanrex is evolving into a self-hosted collaboration platform for people, AI Agents and compute
+resources. Tasks, content versions, execution and reviews have separate responsibilities; eBPF teaching
+is the first domain package, not the definition of every task.
 
-Architecture: [English](docs/en/architecture.md) · [简体中文](docs/zh-CN/architecture.md)
-Functional network: [English](docs/en/functional-network.md) · [简体中文](docs/zh-CN/functional-network.md) · [JSON inventory](docs/functional-network.json)
-SSH deployment / Student entry: [English](docs/en/classroom-connection.md) · [简体中文](docs/zh-CN/classroom-connection.md)
-· Project status: [English](docs/en/project-status.md) · [简体中文](docs/zh-CN/project-status.md)
+The current application still runs the teaching workflow. The general collaboration backend is an
+explicit preparation layer, the new task editor keeps local drafts, and AI orchestration is not implemented.
+
+Documentation: [English](docs/en/README.md) · [简体中文](docs/zh-CN/README.md)
+· Architecture: [English](docs/en/architecture.md) · [简体中文](docs/zh-CN/architecture.md)
+· Current feature map: [English](docs/en/platform-network.md) · [简体中文](docs/zh-CN/platform-network.md)
+· Progress and roadmap: [English](docs/en/project-status.md) · [简体中文](docs/zh-CN/project-status.md)
+· Testing: [English](docs/en/testing-guide.md) · [简体中文](docs/zh-CN/testing-guide.md)
 · [Changelog](CHANGELOG.md)
 
 cyanrex-lab is free and open source under the [Apache License 2.0](LICENSE).
@@ -15,64 +21,89 @@ Contributions are welcome; start with [CONTRIBUTING.md](CONTRIBUTING.md), follow
 [community code of conduct](CODE_OF_CONDUCT.md), and report vulnerabilities through the
 private process in [SECURITY.md](SECURITY.md).
 
+## Current development snapshot
+
+As of **2026-10-03**, the source version is **0.4.9**. This release includes the local task editor and
+Session-authorized private work below; neither a source release nor passing tests switch an existing deployment.
+
+| Area | Implemented boundary | Still separate |
+|---|---|---|
+| Existing teaching workflow | eBPF editing, checks, execution, learning history and teacher feedback | Shared-kernel execution is not student isolation |
+| Task payload editor | Local task drafts with optional text items and 14 language profiles | No server saving, external LSP or code execution from this editor |
+| Collaboration preparation | Explicit identity/session, Task, Artifact and Review stores and authorized private commands | No live authentication cutover or cross-user collaboration UI |
+| Draft input replacement | Owner/revision checks and exact old/new Artifact verification | Content publication is separate; browser save/conflict handling is not connected |
+
+Code is one optional payload item, not a mandatory Task field. Task storage schema 2 is a fresh-install
+preparation format and rejects schema 1 without automatic migration; storage and product versions evolve independently.
+Start with the [documentation index](docs/en/README.md) / [文档索引](docs/zh-CN/README.md) and
+[current progress and next steps](docs/en/project-status.md#next-decision-points) /
+[当前进度与下一步](docs/zh-CN/project-status.md#下一阶段决策点). Dated test and network snapshots remain historical evidence.
+
 ## Next-generation Architecture
 
-The [next-generation architecture draft (简体中文)](docs/zh-CN/next-architecture.md) describes Cyanrex's evolution from eBPF teaching to human, AI Agent, and compute collaboration for the Nuis ecosystem. It covers the collaboration model, legacy mappings, extension boundaries, migration gates, and milestones. This is a design proposal, not a claim of implemented capabilities or a version reset; Linux implementation starts with section 0.1 and the C0 baseline.
+The platform separates four kinds of work that the original teaching attempt combined:
 
-Included in 0.4.6: [durable account/session source (English)](docs/en/collaboration-auth-source.md)
-· [持久认证源（简体中文）](docs/zh-CN/collaboration-auth-source.md). This is internal staging, not live authentication cutover.
-Also included in 0.4.6: [session-authorized commands (English)](docs/en/collaboration-session-commands.md)
-· [会话授权事务（简体中文）](docs/zh-CN/collaboration-session-commands.md), still without switching live routes.
-Included in 0.4.7: [restricted account deletion (English)](docs/en/collaboration-account-deletion.md)
-· [受限账号删除（简体中文）](docs/zh-CN/collaboration-account-deletion.md) composes deletion/retirement for another active bound account only.
-The same release adds atomic password rotation, empty-authority bootstrap and the native local
-[provisioning CLI](docs/en/collaboration-provisioning.md) / [本地初始化](docs/zh-CN/collaboration-provisioning.md),
-plus [read-only lifecycle reconciliation](docs/en/collaboration-reconciliation.md) /
-[只读生命周期对账](docs/zh-CN/collaboration-reconciliation.md). These remain explicit internal staging;
-the source release does not migrate, deploy or switch live authentication.
+| Concept | Responsibility | Current boundary |
+|---|---|---|
+| Task | Goal, definition, owner, exact inputs and lifecycle | Private persistent commands; no general completion or acceptance policy |
+| Artifact | Immutable content revision and digest | Private files plus transactional metadata; independent of a task type |
+| Run | One execution attempt and its resources | General model is preparatory; the existing eBPF Runner remains the active execution path |
+| Review | Version-bound judgment and comment history | Private human commands; no general cross-user reviewer grant |
 
-Included in 0.4.8: [task and domain separation](docs/en/task-domain-boundary.md) /
-[任务与领域解耦](docs/zh-CN/task-domain-boundary.md) extracts a shared versioned catalogue and typed rule
-dispatch, used by the existing teaching facade through a built-in eBPF pack. This preserves teaching
-APIs and history. [Durable task staging](docs/en/task-instance-store.md) /
-[持久任务实例](docs/zh-CN/task-instance-store.md) now stores manual or definition-pinned tasks and
-revision-fenced status changes with a transactional outbox. Its direct API expects trusted ownership;
-[immutable Artifact revisions](docs/en/artifact-revision-store.md) /
-[不可变制品版本](docs/zh-CN/artifact-revision-store.md) add private version files, verified reads and
-atomic metadata/events, including a pinned Task integration test. [Revision-bound Review records](docs/en/review-record-store.md)
-/ [绑定版本的审阅记录](docs/zh-CN/review-record-store.md) add distinct human/rule judgments and immutable
-comment history. [Session-authorized private manual tasks](docs/en/session-task-commands.md) /
-[会话授权的私人手工任务](docs/zh-CN/session-task-commands.md) now derive ownership from current audited
-membership and commit Task/events on the same source transaction, without granting teachers access to
-other users' private work. [Session-authorized private Artifacts](docs/en/session-artifact-commands.md) /
-[会话授权的私人制品](docs/zh-CN/session-artifact-commands.md) use the same identity checks for publishing
-and exact-content reads; failed publication can retain private files without committed metadata.
-There is still no live wiring. Authorized Task references, authenticated Review, verified review evidence,
-Task acceptance, public workflows, retention and migration remain future work.
+Identity and Workspace scope resource ownership. A current Session command rechecks authority within
+the storage transaction; supplying an owner ID is not authentication. Domain packages define typed
+evidence and assessment rules without becoming the platform's identity or persistence model. The
+existing teaching adapter uses the built-in eBPF package; admitting a catalogue definition does not
+execute its policy or automatically approve a Task.
+
+Three paths coexist today:
+
+- **Teaching runtime:** browser → existing authenticated APIs → teaching stores and local eBPF Runner.
+- **Local task editing:** task draft → selected text payload → local language providers → explicit download.
+- **Collaboration preparation:** configured durable Session source → authorized private Task/Artifact/Review commands.
+
+The last two paths are not connected through public task APIs. A task draft download is not server
+publication. Publishing an Artifact does not move a Task to its latest revision, and a private Review
+does not accept a Task. Runner Agents are remote compile/probe workers, not autonomous AI Agents.
+
+See the [concepts](docs/en/concepts.md), [system architecture](docs/en/architecture.md) and
+[next-generation design (简体中文)](docs/zh-CN/next-architecture.md) for model and migration decisions.
+The design remains a target, not a declaration that process isolation, generic Runs, AI coordination,
+cross-user collaboration or live migration is complete. Development chronology is kept separately in
+[English](docs/en/development-history.md) / [简体中文](docs/zh-CN/development-history.md).
 
 ## Repository Layout
 
 ```text
 cyanrex-lab/
-├ frontend/        # Next.js UI
-├ engine/          # Axum backend
+├ frontend/        # Next.js shell, local task/editor features and teaching UI
+├ engine/          # Rust/Axum runtime and explicit collaboration preparation
+│  └ src/
+│     ├ models/collaboration/ # domain-neutral identity and work contracts
+│     ├ services/            # live services and separate durable stores/commands
+│     └ domain_packs/        # built-in eBPF teaching definitions and rules
 ├ sdk-js/          # typed browser/Node.js API client
 ├ modules/         # versioned module catalog and manifest contract
 │  ├ module-ebpf
 │  ├ module-network
 │  └ module-protocol
-├ scripts/         # saved experiment scripts
+├ scripts/         # development, validation, provisioning and release tools
 ├ CHANGELOG.md      # auditable release history and unreleased changes
-├ docs/zh-CN/      # Chinese course and lab manual
+├ docs/            # English/Chinese platform, runtime, course and historical evidence guides
 ├ docker/          # compose and container assets
 └ start.sh         # unified launcher
 ```
 
-The browser is the control plane, while the privileged Rust Engine is the execution plane. The
-Engine owns authentication, authorization, persistence, compilation, eBPF loading, and event
-streaming. See the architecture document before adding a service, route, or deployment mode.
+The browser is the interaction layer. The privileged Rust Engine currently combines control and
+execution: live authentication, authorization, persistence, compilation, eBPF loading, and event
+streaming. General stores are not wired into that live AppState. See the architecture document before
+adding a service, route or deployment mode; code-level separation is not separate operating-system processes.
 
 ## Current Capabilities
+
+This section describes the running application and explicitly labelled local-only additions.
+General collaboration commands are covered by the [platform feature map](docs/en/platform-network.md),
+not implied by the teaching HTTP endpoints below.
 
 - TDD-first backend workflow (`engine/tests/routes_tdd.rs`)
 - Axum API server with:
@@ -103,11 +134,19 @@ streaming. See the architecture document before adding a service, route, or depl
   - persisted session tokens are stored as SHA-256 digests
 - Auth persistence:
   - PostgreSQL-backed `users` + `sessions`
-  - fallback to in-memory if DB temporarily unavailable
+  - limited volatile fallback when `CYANREX_DB_FALLBACK` permits it; not a durable-write guarantee
+  - configured durable logout/password changes/account deletion fail closed on unconfirmed writes;
+    SQL-admitted login cannot silently publish a memory-only session
+  - see [database-outage boundaries](docs/en/security.md#sessions-and-database-outages)
 - Frontend pages:
-  - `/dashboard`, `/ebpf`, `/learn`, `/teaching`, `/helper`, `/modules`, `/events`, `/terminal`
+  - `/dashboard`, `/ebpf`, `/tasks/new`, `/editor`, `/learn`, `/teaching`, `/helper`, `/modules`, `/events`, `/terminal`
   - `/login`, `/register`, `/join`, `/otp-setup`, `/account`
   - teacher-managed Terminal with structured results, module snapshots, and session history
+  - `/tasks/new` (also `/editor`), added in 0.4.9: a local task draft owns up to 32 text payload items;
+    code is optional and edited through 14 built-in language profiles. Confirmed file/whole-task JSON
+    imports and explicit downloads do not imply server Task/Artifact saving, execution or autosave.
+    JS/TS workers are shared, not a multi-workspace security sandbox;
+    see the [editor guide](docs/en/editor.md) for persistence and navigation limits.
 - JavaScript SDK:
   - typed ESM package covering the browser-facing Engine API
   - public request/response models generated from 85 OpenAPI component schemas
@@ -138,7 +177,7 @@ streaming. See the architecture document before adding a service, route, or depl
 
 ## Quick Start
 
-中文教程入口：[Cyanrex eBPF 教学手册](docs/zh-CN/README.md)。教师建议先阅读
+完整文档入口：[Cyanrex 项目文档](docs/zh-CN/README.md)。现有教学流程中，教师建议先阅读
 [教师快速开始](docs/zh-CN/teacher-guide.md)，学生从
 [学生快速开始](docs/zh-CN/student-guide.md)进入课程。
 
@@ -179,17 +218,22 @@ privileged and must not be exposed to untrusted users.
 - Engine health: `http://localhost:8080/health`
 - Postgres: `127.0.0.1:15432` (not exposed to the LAN)
 
+Use `/ebpf` and `/learn` for the existing teaching workflow. In the current development tree,
+`/tasks/new` opens the local task payload editor (`/editor` is its compatibility entry). Read the
+[editor guide](docs/en/editor.md) before relying on persistence: it does not save to the server.
+Starting the application does not initialize or migrate the separate collaboration stores.
+
 ### 2.5) Build a distribution package
 
 For classroom deployment or offline distribution, create a packaged artifact with prebuilt Docker images:
 
 ```bash
-./scripts/package-distribution.sh --version 0.4.8
+./scripts/package-distribution.sh --version 0.4.9
 ```
 
 This produces:
-- `dist/cyanrex-lab-0.4.8-<timestamp>.tar.gz`
-- `dist/cyanrex-lab-0.4.8-<timestamp>.tar.gz.sha256`
+- `dist/cyanrex-lab-0.4.9-<timestamp>.tar.gz`
+- `dist/cyanrex-lab-0.4.9-<timestamp>.tar.gz.sha256`
 
 The archive contains the PostgreSQL, Engine, and frontend images. On a disposable Docker host,
 verify the freshly extracted package end to end with `./install-smoke.sh`. It checks the package
@@ -224,10 +268,10 @@ For an artifact downloaded from the Tag workflow, place its four files in a dedi
 verify the complete candidate from a trusted checkout of the matching source Tag before extracting it:
 
 ```bash
-release_revision="$(git rev-list -n 1 v0.4.8)"
+release_revision="$(git rev-list -n 1 v0.4.9)"
 cargo run --quiet --manifest-path engine/Cargo.toml --locked --bin cyanrex-release -- \
   candidate verify /path/to/downloaded-candidate \
-  --expect-version 0.4.8 --expect-revision "$release_revision" --expect-tag v0.4.8 \
+  --expect-version 0.4.9 --expect-revision "$release_revision" --expect-tag v0.4.9 \
   --extract-to /path/to/new-output-directory
 ```
 
@@ -421,6 +465,11 @@ node scripts/generate-sdk-types.mjs
 
 ## Auth Persistence
 
+These tables belong to the existing runtime, not the explicit durable collaboration source. Its
+namespace installation, account incarnations and current-Session transactions are documented in
+[durable authentication](docs/en/collaboration-auth-source.md); do not point preparatory installers
+at an existing deployment or assume the stores are automatically synchronized.
+
 - Tables: `users`, `sessions`
 - Migration template: `engine/migrations/0001_auth_users_sessions.sql`
 
@@ -444,8 +493,13 @@ node scripts/generate-sdk-types.mjs
 Run the same checks used by CI before submitting changes:
 
 ```bash
-./scripts/quality-gate.sh --format-only
+./scripts/quality-gate.sh
 ```
+
+`--format-only` runs common preflight and formatting, not application tests. See the
+[testing guide](docs/en/testing-guide.md) for default, disposable-database, browser, SDK and privileged
+acceptance boundaries. The [historical network](docs/en/functional-network.md) and its
+[JSON snapshot](docs/functional-network.json) are preserved evidence, not today's complete inventory.
 
 ### CI Gate (`ci-gate`)
 

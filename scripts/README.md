@@ -1,6 +1,20 @@
 # scripts
 
-Utility scripts for Cyanrex local operation.
+Development, validation, operation and distribution tools for Cyanrex. They cover both the existing
+teaching runtime and explicit collaboration preparation; a test runner or provisioning tool does not
+activate the general platform in an existing deployment.
+
+| Need | Start here |
+|---|---|
+| Choose tests by module and boundary | [Current testing guide](../docs/en/testing-guide.md) |
+| Understand which services are live or preparatory | [Platform map](../docs/en/platform-network.md) |
+| Initialize or inspect a fresh collaboration authority | [Native provisioning guide](../docs/en/collaboration-provisioning.md) |
+| Deploy an existing package through SSH | [Classroom connection](../docs/en/classroom-connection.md) |
+| Distinguish current results from old snapshots | [Project status](../docs/en/project-status.md), [development history](../docs/en/development-history.md) |
+
+Database fault runners require disposable synthetic data; privileged smoke tests require an explicitly
+disposable host. Do not repurpose runtime data, `.run/` configuration, backups or rollback images as test
+fixtures or build-cache cleanup targets. The script catalogue below retains individual prerequisites.
 
 - `check-instance-conflicts.sh`: preflight checker for multi-instance launches:
   - verifies requested engine/frontend/Postgres ports are free
@@ -40,6 +54,27 @@ Utility scripts for Cyanrex local operation.
   including exact-content access, revision locks, account lifecycle and file/database failure boundaries.
   Requires an explicit disposable `CYANREX_TEST_DATABASE_URL` and private temporary files; CI verifies
   the complete list and executes every exact case. Retained files in these fixtures are not live data.
+- `test-session-task-inputs.sh`: runs all twenty Session-authorized Task/Artifact input cases,
+  including pinned content, private ownership, multi-namespace checks, post-write verification and
+  concurrent logout/expiry/revocation. Requires an explicit disposable `CYANREX_TEST_DATABASE_URL`;
+  CI checks and executes every exact case. File corruption and database fault fixtures are synthetic.
+- `test-session-review-storage.sh`: runs all eighteen Session-authorized private human Review cases,
+  including exact targets/evidence, policy/source restrictions, namespace pins, post-write checks,
+  lifecycle revocation, expiry/logout ordering and cancellation. Requires an explicit disposable
+  `CYANREX_TEST_DATABASE_URL`; the runner checks every exact name before execution. These fixtures
+  do not establish cross-user review authority, policy execution, historical Session authorship or
+  Task acceptance. Executed results are recorded separately in project status.
+- `test-session-catalog-tasks.sh`: runs all sixteen Session-authorized catalogue Task cases, including
+  exact definition snapshots, provider independence, zero-input metadata checks, private inputs,
+  namespace/write faults and Session ordering. Requires an explicit disposable `CYANREX_TEST_DATABASE_URL`;
+  the runner checks each exact name before execution. Synthetic fixtures verify metadata admission,
+  not provider assessment, typed evidence validation or Task acceptance. Executed results remain in
+  project status.
+- `test-session-task-revisions.sh`: runs all seventeen Session-authorized Draft input replacement
+  cases. Covers exact old/new content, ordered 32+32 references, schema 2/1 compatibility, catalogue
+  policy, private ownership, stale saves, trigger/commit faults, expiry and cancellation. Requires an
+  explicit disposable `CYANREX_TEST_DATABASE_URL`; checks each exact test exists before execution.
+  Artifact publication is separate; these synthetic tests never target deployed data.
 - `check-npm-audit.mjs <package-directory>`: shared local/CI production-dependency audit with the
   existing moderate severity threshold. Retries only transient connection errors, rate limits/server
   failures, and npm's retired Quick fallback, at most three attempts with 1s/2s backoff and a 60s limit

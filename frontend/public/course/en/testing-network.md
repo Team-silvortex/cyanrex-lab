@@ -1,5 +1,12 @@
 # Module and boundary test network
 
+This page preserves the **0.3.7 historical test run**, not the current complete test plan. For current
+module selection and safety requirements, use the [testing guide](testing-guide.md).
+For the 0.4.9 collaboration and payload mainline, see [project status](project-status.md), the
+[editor coverage](editor.md) and [Draft replacement boundary](session-task-revisions.md).
+Those later default, browser and disposable-PostgreSQL runs have separate dates and scopes; their
+passing counts do not replace the historical failures below or prove a browser-to-server save workflow.
+
 Follow-up **2026-09-09**: all nine findings below are fixed and their original regression assertions
 pass. See the separate [fix verification](../../reports/acceptance/2026-09-09-boundary-fixes/result.json)
 for post-fix runs and added race/cancellation/SQL-cache checks. The running deployment was not updated.

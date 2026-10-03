@@ -4,6 +4,12 @@ cyanrex-lab compiles and loads eBPF programs through a privileged Engine. A
 security issue can therefore affect the host running a lab, not only the web
 application. Please report suspected vulnerabilities privately.
 
+The security scope also includes the in-development collaboration identity, Session, Task, Artifact
+and Review layers, local task payload editing, package verification and Runner Agent protocols.
+Report the exact commit and whether the affected path is live, local-only or explicitly initialized
+preparation code; being unreleased does not make a boundary defect out of scope. Do not include real
+private task contents, Artifact blobs or Review records in public reports.
+
 ## Reporting a Vulnerability
 
 Use [GitHub private vulnerability reporting](https://github.com/Team-silvortex/cyanrex-lab/security/advisories/new).

@@ -1,51 +1,36 @@
 # System Architecture
 
-This document describes the runtime boundaries, code ownership, data flows, and extension rules of
-Cyanrex Lab. It is the architecture source of truth for maintainers. The project is a self-hosted
-eBPF teaching system intended for a trusted workstation, classroom machine, or protected LAN.
+Cyanrex Lab is evolving from an eBPF teaching application into a self-hosted collaboration platform
+for people, future AI participants and computing resources. Tasks and their content are the organizing
+model; eBPF teaching is the first implemented domain, not a mandatory shape for every future task.
+The deployment scope remains trusted workstations and protected LANs, not public multi-tenant hosting.
 
-Collaboration preparation in 0.4.4 and the C0/C-M1 source baseline are recorded in
-[ADR-001](collaboration-foundation.md); [ADR-002](collaboration-identity-store.md) adds an explicit,
-independent PostgreSQL identity registry. [ADR-003](collaboration-access-store.md) adds durable
-membership/deployment policy staging and fresh permission previews. None is composed into the live
-topology, routes, authentication or persistence paths described below.
-Source release 0.4.5 includes [ADR-004 / C1-C](collaboration-policy-audit.md), adding policy commands and
-transactional audit; actors still require a trusted adapter and live databases are never auto-upgraded.
-[ADR-005 / C1-D](collaboration-identity-lifecycle.md) adds audited identity binding/retirement,
-last-manager and absent-key read protection; legacy authentication/sessions remain outside this staging layer.
-Source release 0.4.6 includes [ADR-006 / C1-E](collaboration-auth-source.md), adding a strict durable account-incarnation and
-session source for explicitly empty schemas, not live authentication or unified lifecycle integration.
-[ADR-007 / C1-F](collaboration-session-commands.md) composes that source with audited binding/policy
-commands on one transaction. Version 0.4.7 includes [ADR-008 / C1-G](collaboration-account-deletion.md), adding restricted
-administrative deletion/retirement. [ADR-009 / C1-H](collaboration-password-change.md) adds self-service
-password rotation with atomic all-session revocation; it preserves identity/grants and does not change
-the live password endpoint. [ADR-010 / C1-I](collaboration-bootstrap.md) adds one-transaction operator
-bootstrap of an empty namespace, including the first owner/teacher and audited deployment grant.
-[ADR-011 / C1-J](collaboration-provisioning.md) adds a separate local `cyanrex-provision` binary with
-read-only plan/inspect, explicit target-bound apply and private enrollment delivery. It does not load
-AppState or live configuration. [ADR-012 / C1-K](collaboration-reconciliation.md) adds a bounded,
-read-only repeatable-read observer of the source/registry/full audit graph. It is not authorization,
-recovery or a replacement for runtime row locks. There is no public/startup entry; lifecycle recovery,
-existing-data migration and live cutover remain pending.
+This document is the maintainer's source of truth for current composition, ownership and trust
+boundaries. The platform direction is not a claim that the migration is complete: the live teaching
+application, explicitly composed backend preparation, and local task-payload editor are separate paths.
+AI participants, general task execution and multi-person platform review are not implemented.
+For the target design see [next architecture](../zh-CN/next-architecture.md); for navigation across
+implemented and missing links see the [platform network](platform-network.md), [project status](project-status.md)
+and [testing guide](testing-guide.md).
 
-Source release 0.4.8 includes [ADR-013 / C2-A](task-domain-boundary.md), extracting a domain-neutral, versioned task catalogue
-and typed rule dispatch. The existing teaching facade now uses it through the built-in eBPF teaching
-pack. Lab rules/source evidence leave the shared service layer; public APIs, storage and authorization
-stay unchanged. [ADR-014 / C2-B](task-instance-store.md) adds separate, explicitly installed task
-storage with definition snapshots, revision-fenced status changes and atomic outbox writes. It is not
-wired to live state or teaching storage; its direct API expects trusted ownership. [ADR-015 / C2-C](artifact-revision-store.md)
-adds private immutable version files with PostgreSQL metadata/events and verified exact reads, including
-a pinned Task integration fixture. [ADR-016 / C2-D](review-record-store.md) adds revision-bound Review
-records, distinct human/rule judgments and immutable comment history, without Task acceptance or
-automatic evidence verification. [ADR-017 / C2-E](session-task-commands.md) composes current Sessions,
-audited membership and private manual Task/events on one source transaction, without requiring teaching/
-deployment roles or granting access to other owners' work. [ADR-018 / C2-F](session-artifact-commands.md)
-adds private Artifact publishing and exact-content reads through the same source-owned guard. Borrowed
-reads lock revision heads; failed database publication can retain private files. Authorized Task references,
-authenticated Review, legacy-writer fencing, retention, public workflows and process isolation remain pending;
-there is no live wiring.
+### What is connected today
+
+| Layer | Implemented behavior | Boundary still open |
+|---|---|---|
+| Live teaching application | Browser authentication, eBPF editing/check/run, learning records and teacher feedback, events, deployment operations | Still uses the existing AuthService, AppState and teaching stores; no generic Task HTTP workflow |
+| Shared domain contract | Exact-version TaskCatalog and typed rule dispatch; the teaching facade uses the built-in eBPF teaching pack | No dynamic provider loading, general scheduler or automatic typed-evidence adapter |
+| Explicit backend preparation | Durable identity/Session commands and private Task, Artifact and Review operations, with database regression coverage | Not constructed by AppState, not exposed through public routes, not an existing-data migration |
+| Local task-payload editor | A Task draft owns optional text items and 14 local language profiles; JSON import/export | No server Task/Artifact save, durable browser recovery, LSP process or execution |
+| Target platform | Human/AI/compute collaboration, domain-independent workflows and isolated execution | Design direction only where no implemented boundary is stated |
+
+Source release 0.4.9 includes the Session input, Review, catalogue and Draft replacement slices and
+the local payload editor; C2-A through C2-F were first included in 0.4.8. Source inclusion is not deployment.
+The detailed decision records retain their own dates and verification evidence; they are not a
+statement that every described path is live.
 
 ## 1. System Context
+
+The following topology is the running teaching application, not the target platform deployment.
 
 ```mermaid
 flowchart LR
@@ -58,10 +43,24 @@ flowchart LR
     E -->|selected headers and fallback scripts| D["Instance data directory"]
 ```
 
-The browser is the control plane. It never performs privileged kernel work itself. The Engine is
-the execution plane and owns authentication, authorization, compilation, loading, attachment,
-event delivery, and persistence. PostgreSQL stores durable application data. The Linux toolchain
-and kernel form a privileged execution boundary, not a multi-student security sandbox.
+The browser is a control interface; it never performs privileged kernel work itself. Control and
+execution are not isolated services: the same Engine process owns authentication, authorization,
+compilation, loading, attachment, event delivery and persistence. PostgreSQL stores durable application
+data. The Linux toolchain and kernel form a privileged execution boundary, not a multi-student
+security sandbox. Rust module separation and new permission models do not remove this process risk.
+
+### Three paths during the transition
+
+| Path | Current sequence | Not implied by this path |
+|---|---|---|
+| Teaching runtime | `/ebpf` → existing HTTP guards and AppState → Runner/loader → learning records and EventBus | A generic Task, Artifact, Review or durable Run is not created automatically |
+| Backend preparation | Trusted explicit composition → DurableAuthSource and identity registry → private stores and atomic outboxes | No public API, startup installation, live auth replacement or event delivery service |
+| Local payload editing | `/tasks/new` or `/editor` → TaskDraftWorkspace → selected text editor → local JSON export | Local IDs/revisions are not server references; no publish, replacement or execution request is sent |
+
+Only the teaching rule path currently crosses into the shared TaskCatalog. The future browser save
+adapter must bridge local content to Session-authorized Artifact publication and then Task input
+replacement; the execution adapter must separately bridge a durable Task to a Run. Neither connection
+can be inferred from the fact that their individual types or backend methods exist.
 
 ### Teacher authority and personal use
 
@@ -102,7 +101,7 @@ version compatibility, enrollment failure semantics and limitations.
 |---|---|---|
 | `frontend/` | Next.js pages, UI state, editor integration, localization | Browser application |
 | `engine/` | Axum API, application services, persistence, eBPF runtime | Server behavior |
-| `docs/` | English and Chinese teaching and operations material | Course documents |
+| `docs/` | Bilingual platform, architecture, teaching and operations documentation | Maintained documentation source |
 | `frontend/public/course/` | Build-time copy of `docs/` | Generated by `npm run sync:course` |
 | `docker/` | Docker and distribution topology | Container deployment |
 | `scripts/` | Launch, package, audit, quality, and benchmark automation | Operator workflows |
@@ -114,6 +113,24 @@ Direct child directories containing a valid v1 `module.json` are discovered when
 their start/stop control state in memory. Discovery never loads a library, launches a process, or
 executes module-directory files.
 
+The platform-specific source boundaries are more precise than the top-level directory names:
+
+| Source area | Responsibility and dependency boundary |
+|---|---|
+| `engine/src/models/collaboration/` | Domain-neutral identity, exact references, Task/Artifact/Review contracts and business-event envelope; decoding is not authorization |
+| `engine/src/services/task_catalog.rs` | Immutable definition registration, exact lookup and typed assessment dispatch; no discovery, scheduling or permissions |
+| `engine/src/domain_packs/ebpf_teaching/` | Lab definitions, source evidence and eBPF assessment rules; teaching assumptions stay here |
+| `engine/src/services/learning_catalog.rs` | Compatibility facade from live teaching operations to the shared catalogue |
+| `engine/src/services/collaboration_identity_store/` | Explicit identity binding, workspace membership, deployment policy and audit storage |
+| `engine/src/services/auth_service/durable_source/` | Separate durable account/session source and transaction-owned command authorization |
+| `engine/src/services/{task_store,artifact_store,review_store}/` | Explicit private work storage; direct APIs require a trusted caller, Session adapters provide authorization |
+| `frontend/src/features/tasks/` | Local draft ownership, payload revisions and import/export; not a durable Task store |
+| `frontend/src/features/editor/` | Controlled text models and local language services; no task policy or execution authority |
+
+The declarative `modules/` catalogue, a built-in TaskProvider, and a Runner Agent are three different
+extension boundaries. Discovering a module does not install a provider; registering either does not
+authorize code execution or create an AI participant.
+
 ## 3. Frontend Architecture
 
 The frontend follows four practical layers:
@@ -122,6 +139,8 @@ The frontend follows four practical layers:
 pages/                    Route-level screens and orchestration
 src/components/           Shared visual and navigation components
 src/features/ebpf/        eBPF editor feature state and workflows
+src/features/tasks/       Local task drafts and their optional text payloads
+src/features/editor/      Controlled text-content editing and local language services
 src/features/runner/      Runner Agent inventory and teacher deployment operations
 src/features/settings/    Verified settings forms, requests, metrics polling and panels
 src/config/               Runtime endpoints and product-level settings
@@ -141,6 +160,10 @@ Important rules:
 - `SidebarLayout` is the client-side navigation and route visibility gate. It improves the user
   experience, but the Engine remains the authoritative authorization boundary.
 - eBPF editing behavior belongs in `src/features/ebpf/`; route markup belongs in `pages/ebpf.tsx`.
+- `/tasks/new` owns a task draft and optional payload items; `/editor` is a compatibility entry to
+  the same container. The controlled editor has 14 local language profiles and does not depend on
+  task type or the eBPF controller. The sidebar login gate remains; language tools confer no execution
+  authority, and server Task/Artifact saving is not connected.
 - `useConfirmedAction` owns target-bound UI confirmations, keyboard focus and duplicate-click guards.
   Navigation discards pending confirmations and late local file imports, but cannot undo a dispatched
   Engine mutation. Lab navigation preserves drafts; loading a template is a separate reviewed action.
@@ -148,6 +171,17 @@ Important rules:
   coordinates event/compiler settings and composes the teacher deployment panels.
 - `docs/` is authoritative. `frontend/public/course/` is synchronized for builds whose Docker
   context cannot access the repository-level documentation directory.
+
+The [task payload editor](editor.md), included in 0.4.9, keeps all accepted content in its parent task draft.
+Selecting an item or changing language replaces the displayed model, retaining content but not undo
+history. Expected item revisions, task generations and target-bound confirmations reject obsolete
+callbacks. Reconciliation does not produce another edit. Text items are bounded to 256 KiB each,
+with up to 32 items and an 8 MiB strict JSON import/export limit. Local draft IDs are not server
+Task/Artifact identities. Backend preparation supports immutable publication and authorized reference
+replacement, but the editor is not connected. Downloads do not prove a disk write, and there is no autosave or reliable navigation
+recovery. Bundled workers use local assets without external schemas, packages or LSP transport.
+Custom providers check model identity/language and release registrations on disposal. JS/TS defaults
+and workers remain shared: forced module detection is not a security sandbox or multi-workspace isolation.
 
 `useSettingsForm` owns settings read generations, reviewed drafts and ordered event/compiler writes.
 `settingsRequest` validates exact response shapes and acknowledgements, uses private credentialed
@@ -188,10 +222,11 @@ issues. Remote cleanup is best effort, never rollback or automatic local fallbac
 lifecycle isolation, not detection of an HttpOnly session changed elsewhere or server authorization.
 See [the third chain-guided bug hunt](functional-network-bug-hunt-03.md) for reproduction and limits.
 
-Semantic language providers belong to their owning editor and current model; disposal unregisters all
+eBPF semantic language providers belong to their owning editor and current C model; disposal unregisters all
 six providers. `semanticCompletion.ts` holds an independent five-second/18-entry exact cache and a
-ten-second complete-request deadline. Model versions, cursor requests and header refreshes invalidate
+ten-second complete-request deadline. Model versions, cursor requests, language changes and header refreshes invalidate
 obsolete continuations; failures keep static snippets, without running code or switching to an Agent.
+Language changes also clear the cache; switching away from C and back cannot revive a pending result.
 `useSelectedHeaders` owns latest-wins ten-second metadata reads and an explicit refresh revision, including
 unchanged filenames. Failure preserves a clearly labelled last-successful list, not an empty selection.
 `useHeaderInjectionCheck` uses the existing local-only 20-second transport, blocks duplicate dispatch,
@@ -245,7 +280,8 @@ metrics.rs        In-process compiler/check metrics
 config.rs         Environment-backed process and instance configuration
 routes/           HTTP/WebSocket transport handlers and guards
 models/           Request/response and domain data structures
-services/         Authentication, eBPF, events, scripts, modules, and headers
+services/         Live services plus explicitly composed platform preparation
+domain_packs/     Built-in task definitions and domain-specific evidence/rules
 migrations/       PostgreSQL schema templates
 ```
 
@@ -265,7 +301,9 @@ flowchart LR
 
 `AppState` is the composition root shared by Axum handlers. It wires service instances together but
 does not contain route declarations or infrastructure algorithms. Route handlers translate HTTP
-input and output; reusable behavior belongs in services.
+input and output; reusable behavior belongs in services. Its current fields do not include
+DurableAuthSource, CollaborationIdentityStore, TaskStore, ArtifactStore or ReviewStore. Importable Rust
+services and successful integration fixtures are not evidence that startup or HTTP routes use them.
 
 ### Route access tiers
 
@@ -303,6 +341,51 @@ Large service implementations may use private submodules or `include!` fragments
 continue to depend on the public service type rather than internal files.
 
 ## 5. Main Data Flows
+
+### Platform work and authorization
+
+The explicit preparation layer separates work from content, judgment and execution:
+
+| Object | Meaning | Must not be mistaken for |
+|---|---|---|
+| TaskDefinition | Exact package/task version with separately pinned evidence schema and assessment policy | A scheduler, installed plugin or permission |
+| TaskSnapshot | Owned work item, optional frozen definition, exact input references, status and expected revision | Source code, a kernel job or an accepted result |
+| ArtifactRevision | Immutable bytes plus owner, type, lineage, exact revision ID and digest | A floating latest file, proof of safe execution or permission based on equal hashes |
+| ReviewRecord | Revision-bound human/rule judgment, target/evidence pins and immutable amendment history | Automatic Task acceptance, cross-user access or verified evidence merely because it decodes |
+| Run | Future durable execution identity, distinct from work status | An implemented general execution store; current Runner leases/jobs remain teaching runtime state |
+| EventEnvelope and outbox | Business-state event contract and atomic store-side records | EventBus telemetry, a delivery service or exactly-once execution |
+
+The supported Task states are Draft, Ready, InProgress, Blocked, InReview and Cancelled. There is no
+Accepted/Done state. Cancelling a Task does not cancel a Runner lease, detach a program or clean files.
+A rule's Passed result and a human's Approved review also do not advance a Task automatically.
+
+Current Session adapters resolve the live account incarnation, identity binding, active workspace
+membership and audited policy inside one source-owned database transaction. They derive the owner
+from that verified context, not from a client Principal or role name. Their private work APIs do not
+allow a teacher or workspace manager to access another owner's Tasks/Artifacts/Reviews by default.
+Instance deployment authority is separate from workspace membership. Namespace identity, current
+Session validity and affected records are checked again before commit; a timeout does not establish
+rollback or permission to retry blindly. See [Session commands](collaboration-session-commands.md).
+
+Task input commands verify exact owned Artifact references before and after the Task/outbox write.
+Task locks precede Artifact locks, with a consistent order across references. The manual input adapter
+requires 1–32 inputs; the catalogue adapter permits 0–32, including valid Artifact namespace metadata
+for zero inputs. Catalogue admission compares the complete frozen definition, but neither converts
+bytes into typed evidence nor invokes the provider's assessment policy.
+
+Changing content is a two-step operation: publish a new immutable Artifact revision, then replace a
+Draft Task's references using its expected revision. Replacement checks the old and new references,
+including removed inputs, and preserves the Task identity, definition and earlier content/reviews.
+Stale revisions, unchanged input lists and non-Draft changes fail explicitly. Publication and
+replacement are separate transactions: failure of the second does not undo the first, authorize file
+deletion or imply that a retry is safe. The browser does not call this sequence yet.
+
+The stores are PostgreSQL-only and fail closed; they do not inherit the live teaching services'
+memory/file fallback. Their schema installation is explicit and limited to empty namespaces.
+The current Task storage schema is **2**, while core contract schema remains **1**; existing Task
+schema 1 is rejected, not upgraded. Do not apply a fresh-install template to a live namespace or
+relabel old metadata to bypass the check. The prepared auth source/identity lifecycle, local
+`cyanrex-provision` tool and read-only reconciler also do not migrate or replace live authentication.
 
 ### Resuming a learning submission
 
@@ -673,6 +756,15 @@ Use these ownership rules when adding functionality:
    changes.
 9. Regenerate the OpenAPI document and update its component schemas when a route or wire model
    changes.
+10. Keep task-type assumptions, evidence parsing and rules in `domain_packs/`; prove shared changes
+    with a non-teaching fixture. An editor language or file extension must not choose a task policy
+    or execution permission implicitly.
+11. Compose private platform operations through current Session authorization, not a trusted-store
+    API supplied with browser ownership. Preserve namespace pins, lock ordering, post-write checks
+    and the final authorization check on the same transaction.
+12. Keep Task changes, Artifact publication, Review and execution separate. An explicit adapter and
+    failure contract are required before connecting them; do not add dual writers or silently adopt
+    legacy data, orphaned content or unknown schema versions.
 
 Maintained source files must stay within 600 lines and documentation files within 2000 lines. Split
 by responsibility before reaching the limit. The CI gate verifies file length, Rust formatting and
@@ -681,7 +773,12 @@ test performed from a newly built and extracted offline distribution archive.
 
 ## 8. Intentional Limitations
 
-- The system targets trusted self-hosted teaching environments, not public multi-tenant hosting.
+- The platform direction remains trusted self-hosted/LAN collaboration; the deployed runtime is still
+  a teaching application, not public multi-tenant hosting.
+- AI participation, generic durable Run scheduling, cross-user platform review, Task acceptance and
+  outbox delivery are not implemented. Contract names and private integration tests do not provide them.
+- Browser payload saving and live authentication/storage cutover remain disconnected. Existing data,
+  writer fencing, lifecycle recovery and a verified migration/rollback plan are prerequisites to cutover.
 - The Engine is one process; in-memory attachment, module, and fallback state is not shared between
   replicas.
 - PostgreSQL is shared infrastructure, but horizontal Engine scaling requires explicit ownership and
@@ -697,3 +794,20 @@ test performed from a newly built and extracted offline distribution archive.
 
 These are architectural constraints, not hidden guarantees. A change that removes one should include
 the coordination model, security review, migration path, and regression coverage.
+
+## 9. Decision and implementation guides
+
+Use these records for the detailed contracts and historical test evidence behind the current model.
+They complement this architecture; an accepted preparation slice is not a deployed feature.
+
+| Topic | Detailed records |
+|---|---|
+| Baseline and identity | [Foundation and legacy mapping](collaboration-foundation.md), [identity registry](collaboration-identity-store.md), [membership and deployment policy](collaboration-access-store.md) |
+| Audited authority | [Policy audit](collaboration-policy-audit.md), [identity binding and retirement](collaboration-identity-lifecycle.md) |
+| Session lifecycle | [Durable auth source](collaboration-auth-source.md), [Session commands](collaboration-session-commands.md), [account deletion](collaboration-account-deletion.md), [password rotation](collaboration-password-change.md) |
+| Explicit provisioning | [Empty-namespace bootstrap](collaboration-bootstrap.md), [local provisioning tool](collaboration-provisioning.md), [read-only reconciliation](collaboration-reconciliation.md) |
+| Domain independence | [Task catalogue and eBPF adapter](task-domain-boundary.md) |
+| Work storage | [Task store](task-instance-store.md), [immutable Artifact revisions](artifact-revision-store.md), [Review history](review-record-store.md) |
+| Private Session operations | [Manual Tasks](session-task-commands.md), [Artifacts](session-artifact-commands.md), [Task inputs](session-task-inputs.md), [human Reviews](session-review-commands.md) |
+| Definition and content revisions | [Catalogue-backed Tasks](session-catalog-tasks.md), [Draft input replacement](session-task-revisions.md) |
+| User-facing content editing | [Local task payload editor](editor.md) |

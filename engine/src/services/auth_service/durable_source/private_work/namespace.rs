@@ -16,6 +16,10 @@ pub(super) struct NamespacePin {
     oid: i64,
 }
 impl NamespacePin {
+    pub fn has_same_oid(&self, other: &Self) -> bool {
+        self.oid == other.oid
+    }
+
     pub async fn capture(tx: &mut Transaction<'_, Postgres>) -> WorkResult<Self> {
         let row = sqlx::query(
             "SELECT current_schema()::text AS name,

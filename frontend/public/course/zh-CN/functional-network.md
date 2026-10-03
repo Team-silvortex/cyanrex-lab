@@ -1,10 +1,18 @@
-# 当前功能链路网络
+# 功能链路网络基线
 
 [English](../en/functional-network.md) · [机器可读清单](../functional-network.json)
 
 快照: **2026-09-13 · 0.3.8 · main@c26a529**. 完整源码提交: `c26a529aecc0ab64d0a1743be10972e5d8ac137b`.
 
 这是一份**源码快照**，不是新一轮验收报告。枚举粒度是有限的用户可见功能链路与直接交接/依赖关系，不是全部内部函数、所有可能执行路径、已安装实例或真实局域网节点。
+
+**2026-10-03 当前工作树范围说明**：这份 0.3.8 清单没有枚举新增的
+[`/tasks/new` payload 编辑器](editor.md)、其 `/editor` 兼容入口，或 Session 授权的
+Task/Artifact/Review 准备层，包括 [Draft 输入换版](session-task-revisions.md)。编辑器仍是本地
+草稿，换版仍是内部后端命令，不是已经接通的浏览器保存链路。当前能力和测试证据请看
+[当前平台地图](platform-network.md)、[测试指南](testing-guide.md)与[项目状态](project-status.md)。
+下方数量、链路编号与 JSON 指纹保留原始
+基线，漂移检查器不应把这份历史清单报告成与今天的工作树同步。
 
 后续记录：[第 1 轮——学习与持久化](functional-network-bug-hunt-01.md) ·
 [第 2 轮——Runner/Agent 生命周期](functional-network-bug-hunt-02.md) ·
@@ -321,7 +329,7 @@ flowchart TD
 
 边界 / 失败分支: 仅带实验 ID 且到达 record_learning_run 的运行被记录。校验/配额/驱动提前返回跳过记录；持久化失败只记警告，不撤销执行。
 
-源码: [ebpf/learning.inc.rs](../../engine/src/routes/ebpf/learning.inc.rs) · [services/learning_catalog.rs](../../engine/src/services/learning_catalog.rs) · [learning_store/attempt.rs](../../engine/src/services/learning_store/attempt.rs) · [services/learning_source.rs](../../engine/src/services/learning_source.rs)
+源码: [ebpf/learning.inc.rs](../../engine/src/routes/ebpf/learning.inc.rs) · [services/learning_catalog.rs](../../engine/src/services/learning_catalog.rs) · [learning_store/attempt.rs](../../engine/src/services/learning_store/attempt.rs) · [services/learning_source.rs（历史快照）](https://github.com/Team-silvortex/cyanrex-lab/blob/c26a529aecc0ab64d0a1743be10972e5d8ac137b/engine/src/services/learning_source.rs)
 
 #### F29 · 提交历史与恢复
 

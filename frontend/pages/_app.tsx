@@ -4,6 +4,8 @@ import { I18nProvider } from "../src/i18n/context";
 import "../styles/globals.css";
 import "../styles/workspace.css";
 import "../styles/safety.css";
+import "../styles/editor.css";
+import "../styles/task-draft.css";
 
 export default function App({ Component, pageProps }: AppProps) {
   return (

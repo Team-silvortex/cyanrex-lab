@@ -1,6 +1,6 @@
 {
   "name": "@cyanrex/frontend",
-  "version": "0.4.8",
+  "version": "0.4.9",
   "private": true,
   "scripts": {
     "postinstall": "node scripts/sync-monaco-assets.mjs",
@@ -24,6 +24,9 @@
     "test:event-actions-browser": "node --test tests/eventActions.browser.mjs",
     "test:compiler-check": "node --experimental-strip-types --test tests/compilerCheck.test.mjs",
     "test:semantic-completion": "node --experimental-strip-types --test tests/semanticCompletion.test.mjs",
+    "test:editor-languages": "node --experimental-strip-types --test tests/editorLanguages.test.mjs tests/editorDocument.test.mjs tests/taskDraft.test.mjs",
+    "test:multi-language-editor-browser": "node --test tests/multiLanguageEditor.browser.mjs",
+    "test:task-payload-browser": "node --test tests/taskPayloadEditor.browser.mjs",
     "test:runtime-request": "node --experimental-strip-types --test tests/runtimeRequest.test.mjs",
     "test:runtime-lifecycle-browser": "node --test tests/runtimeLifecycle.browser.mjs",
     "test:runtime-safety-browser": "node --test tests/runtimeSafety.browser.mjs",

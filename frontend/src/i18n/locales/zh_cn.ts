@@ -2,9 +2,11 @@ import type { TranslationDict } from "../translations";
 import { safetyMessages } from "./safety";
 import { classroomMessages } from "./classroom";
 import { runnerSafetyMessages } from "./runnerSafety";
+import { editorMessages } from "./editor";
 
 export const zhCN: TranslationDict = {
     classroom: classroomMessages.zhCN,
+    editor: editorMessages["zh-CN"],
     safety: safetyMessages.zhCN,
     layout: {
       menu: "导航菜单",
@@ -19,6 +21,7 @@ export const zhCN: TranslationDict = {
       logoutFailed: "无法确认退出成功，会话可能仍然有效。请检查连接并手动重试，确认成功后再离开这台设备。",
       language: "语言",
       nav: {
+        editor: "多语言编辑器",
         dashboard: "仪表盘",
         ebpf: "eBPF 运行器",
         learn: "学习中心",

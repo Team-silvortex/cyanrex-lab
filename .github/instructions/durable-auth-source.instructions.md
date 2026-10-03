@@ -47,6 +47,35 @@ transaction; the standalone reader's unlocked lookup depends on its own REPEATAB
 File publication is not rolled back with PostgreSQL. Cancellation can leave a blocking writer running;
 never delete, adopt or automatically retry an unpublished file based only on a failed acknowledgment.
 
+Task-input composition pins every namespace before writes and verifies the departing and revisited
+name/OID instead of recapturing a replacement. Lock the Task snapshot before resolving its saved
+Artifact references, with stable Artifact-head ordering. Recheck all exact owned content after
+Task/outbox writes and reread the pending Task: row locks cannot prevent a trigger's same-transaction
+side effects. Retained input bytes still require final source/membership/Session checks and commit.
+Preserve `session_task_inputs_tdd` namespace-substitution and post-write Session-deletion regressions.
+
+Catalogue Task admission snapshots only the trusted catalogue's immutable definitions, never retains
+or executes a provider during authorization. Compare the complete saved definition with its exact
+configured entry; the same reference cannot hide changed policy, evidence schema or display metadata.
+Keep manual Task entry points strict. Zero-input catalogue tasks still pin and validate Artifact
+namespace/schema metadata before and after writes; an empty loop is not a storage check. Preserve
+`session_catalog_task_tdd` provider-drop, same-pin drift and zero-input metadata-wait regressions.
+
+Draft input replacement must verify the full old/new union in one global Artifact lock order,
+including removed references, before and after the Task/outbox write. Do not deduplicate matching
+coordinates with different digests. Keep exact revision and no-op checks, a distinct replacement
+event, the Task schema-version gate and final pending Task/Session checks. Publication is separate:
+replacement failure never authorizes file deletion or blind retry. Preserve `session_task_revision_tdd`
+same-coordinate digest, removed-content corruption, schema-version and post-write tampering regressions.
+
+Private human Review commands derive the reviewer from the Session and pin policy in trusted server
+configuration. They verify both targets and evidence as exact owned content, in one globally sorted
+Artifact-head order, not two independently sorted lists. Borrowed Review history reads lock the current
+head before checking the requested revision under READ COMMITTED. Recheck every reference after
+Review/outbox writes and compare the pending Review before the final guard/commit. A stored `approved`
+opinion is not Task acceptance, cross-user review authority or proof of historical Session provenance.
+Preserve `session_review_tdd` evidence-only corruption, exact-history wait and Session-deletion tests.
+
 Fresh-authority bootstrap is trusted provisioning, never public registration or first-login election.
 Before DDL, take the existing source/identity/access installer advisory fences in that order and reject
 any nonempty or ambiguous namespace. Use source -> registry metadata -> authority -> child lock order,

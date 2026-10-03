@@ -2,9 +2,11 @@ import type { TranslationDict } from "../translations";
 import { safetyMessages } from "./safety";
 import { classroomMessages } from "./classroom";
 import { runnerSafetyMessages } from "./runnerSafety";
+import { editorMessages } from "./editor";
 
 export const en: TranslationDict = {
     classroom: classroomMessages.en,
+    editor: editorMessages.en,
     safety: safetyMessages.en,
     layout: {
       menu: "Navigation menu",
@@ -19,6 +21,7 @@ export const en: TranslationDict = {
       logoutFailed: "Logout could not be confirmed. Your session may still be active; check your connection and retry explicitly before leaving this device.",
       language: "Language",
       nav: {
+        editor: "Editor",
         dashboard: "Dashboard",
         ebpf: "eBPF Runner",
         learn: "Learn",

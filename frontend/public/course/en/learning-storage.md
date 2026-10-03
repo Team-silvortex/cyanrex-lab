@@ -1,5 +1,9 @@
 # Learning Record Storage and Query Costs
 
+This is the existing teaching-domain store, not the generic Task/Artifact/Review preparation layer.
+Attempts, stored source and teacher feedback have not been migrated to those resources. The local
+task payload editor also does not save here; see the [current platform map](platform-network.md).
+
 Learning attempts retain submitted source, automated feedback, completion evidence and the current
 teacher comment. Local-memory ownership, query work and file writing retain learning acceptance,
 authorization, successful HTTP/SDK payloads, PostgreSQL queries and the stored JSON format. The

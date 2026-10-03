@@ -121,6 +121,7 @@ run_frontend_checks() {
   npm --prefix "$PROJECT_ROOT/frontend" run test:runner-inventory
   npm --prefix "$PROJECT_ROOT/frontend" run test:compiler-check
   npm --prefix "$PROJECT_ROOT/frontend" run test:semantic-completion
+  npm --prefix "$PROJECT_ROOT/frontend" run test:editor-languages
   npm --prefix "$PROJECT_ROOT/frontend" run test:runtime-request
   npm --prefix "$PROJECT_ROOT/frontend" run test:security-headers
   npm --prefix "$PROJECT_ROOT/frontend" run test:tooling

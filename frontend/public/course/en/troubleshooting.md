@@ -1,5 +1,9 @@
 # Troubleshooting Guide
 
+First identify which path you are using: the existing teaching runtime, the local task draft editor,
+or an explicitly initialized collaboration store. They have different persistence and authorization
+contracts; see the [platform map](platform-network.md). An absent future feature is not a deployment fault.
+
 ## First Determine Which Stage Failed
 
 | Symptom | Priority Check |
@@ -12,6 +16,22 @@
 | attach failed | hook name, bpftool version, tracefs |
 | run success but no events | trigger condition, sampling, filters, read path |
 | dirty detach | attachment list, pin path, Engine logs |
+
+## Task drafts and collaboration preparation
+
+| Symptom | Meaning and safe next step |
+|---|---|
+| Task draft disappeared after navigation/restart | Drafts are page memory, not server records. Explicitly download important work before leaving; no autosave/recovery is implemented |
+| Rust/Python/C++ editing has no type errors or project navigation | These local profiles are highlighting/snippet-only. Do not diagnose this through clang or install a server expecting automatic LSP hookup |
+| Download succeeded but no server Task exists | Download is a local export; public Task saving is not connected |
+| Preparatory command reports stale revision | Preserve edited content and reread the current authorized record; do not overwrite with a guessed revision |
+| Task storage reports unsupported schema | Schema 2 requires a fresh dedicated installation. Preserve old data; do not change metadata, drop tables or let a live writer share the namespace |
+| Replacement fails after Artifact publication | The published immutable version may remain. Do not delete files, adopt content or automatically replay the command |
+| Teacher cannot read another member's general Task | Private preparation APIs derive ownership from the Session; classroom teaching authority is not a cross-user resource grant |
+
+The [editor guide](editor.md), [replacement contract](session-task-revisions.md) and
+[provisioning guide](collaboration-provisioning.md) describe the supported operations. These failures
+are not instructions to run migrations or fault-injection tests on a deployment.
 
 ## Services and Logs
 
@@ -29,8 +49,9 @@ Health check:
 curl http://127.0.0.1:8080/health
 ```
 
-By default, services bind only loopback. On remote hosts, do not directly open `SERVER:3000`;
-use SSH tunnel.
+Docker published ports default to loopback; native/WSL startup currently sets `ENGINE_HOST=0.0.0.0`.
+Inspect actual listeners and restrict LAN ingress. On remote hosts, prefer the reviewed SSH tunnel
+instead of opening an unprotected `SERVER:3000`; see [security](security.md).
 
 ## Login and TOTP
 
@@ -47,7 +68,7 @@ Do not share `.env` in chat, issues, or class screensharing.
 
 If status stays `unavailable`:
 
-1. Confirm admin account login.
+1. Confirm the current authenticated session; local checks do not require teacher/admin authority.
 2. Check Engine health.
 3. Confirm source size not over 256 KiB.
 4. Confirm Engine logs show clang available.

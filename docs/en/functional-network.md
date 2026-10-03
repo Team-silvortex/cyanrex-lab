@@ -1,10 +1,19 @@
-# Current functional network
+# Functional network baseline
 
 [简体中文](../zh-CN/functional-network.md) · [Machine-readable inventory](../functional-network.json)
 
 Snapshot: **2026-09-13 · 0.3.8 · main@c26a529**. Full source commit: `c26a529aecc0ab64d0a1743be10972e5d8ac137b`.
 
 This is a **source snapshot**, not a new acceptance report. It enumerates finite user-visible functional workflows and direct handoffs/dependencies, not every internal function, possible execution trace, installed instance or live LAN node.
+
+**Current working-tree scope, 2026-10-03:** this 0.3.8 inventory does not include the new
+[`/tasks/new` payload editor](editor.md), its `/editor` compatibility entry or the Session-authorized
+Task/Artifact/Review preparation layer, including [Draft input replacement](session-task-revisions.md).
+The editor remains local; replacement is an internal backend command, not a connected browser save path.
+Use the [current platform map](platform-network.md), [testing guide](testing-guide.md) and
+[project status](project-status.md) for current capabilities and test evidence.
+Counts, workflow IDs and JSON fingerprints below retain their original baseline;
+the drift checker is not expected to report this historical inventory as synchronized with today's tree.
 
 Follow-ups: [01 — learning and persistence](functional-network-bug-hunt-01.md) ·
 [02 — Runner/Agent lifecycle](functional-network-bug-hunt-02.md) ·
@@ -323,7 +332,7 @@ Chain: returned run result + lab/source/attach evidence → structural assessmen
 
 Boundary / failure branch: Only runs reaching record_learning_run with a lab ID are recorded. Validation/quota/driver early exits skip it; persistence error logs a warning without reverting execution.
 
-Source: [ebpf/learning.inc.rs](../../engine/src/routes/ebpf/learning.inc.rs) · [services/learning_catalog.rs](../../engine/src/services/learning_catalog.rs) · [learning_store/attempt.rs](../../engine/src/services/learning_store/attempt.rs) · [services/learning_source.rs](../../engine/src/services/learning_source.rs)
+Source: [ebpf/learning.inc.rs](../../engine/src/routes/ebpf/learning.inc.rs) · [services/learning_catalog.rs](../../engine/src/services/learning_catalog.rs) · [learning_store/attempt.rs](../../engine/src/services/learning_store/attempt.rs) · [services/learning_source.rs (historical snapshot)](https://github.com/Team-silvortex/cyanrex-lab/blob/c26a529aecc0ab64d0a1743be10972e5d8ac137b/engine/src/services/learning_source.rs)
 
 #### F29 · Attempt history and resume
 

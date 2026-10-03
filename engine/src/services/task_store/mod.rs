@@ -11,8 +11,13 @@ use std::{future::Future, time::Duration};
 mod commands;
 mod draft;
 mod records;
+mod replace;
 mod schema;
+pub(crate) use draft::validate_input_refs;
 pub use draft::TaskDraft;
+
+// Fresh namespaces only. Older staging schemas are rejected, never silently migrated.
+const TASK_STORAGE_VERSION: i32 = 2;
 
 #[derive(Clone)]
 pub struct TaskStore {

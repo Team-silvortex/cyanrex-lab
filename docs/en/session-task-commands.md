@@ -24,10 +24,12 @@ teaching role or deployment grant: a valid member with no role presets can use i
 managers gain no access to someone else's private tasks. Unbound, missing, suspended, retired, logged-out,
 expired or audit-inconsistent actors fail closed. A recreated username cannot inherit the old Principal's work.
 
-Existing tasks with catalogue definitions or Artifact inputs return `UnsupportedTask`, even to their
-owner. Until domain policies and referenced-resource access are composed, they cannot be treated as
-authorized manual work. There is no listing, reassignment, sharing, acceptance or automatic-completion
-operation. A passing rule or successful Run still cannot accept a Task.
+These three C2-E commands continue to return `UnsupportedTask` for catalogue definitions or Artifact
+inputs, even to their owner. [C2-G](session-task-inputs.md) adds a separate same-transaction adapter
+for definition-free private tasks with exact Artifact inputs. [C2-I](session-catalog-tasks.md) separately
+admits complete server-configured catalogue definitions with 0–32 inputs, without executing providers.
+Neither widens these manual methods. There is no listing, reassignment, sharing, acceptance or
+automatic-completion operation. A passing rule or successful Run still cannot accept a Task.
 
 ## Database and transaction boundary
 
@@ -76,9 +78,10 @@ environment switch, HTTP/CSRF integration, UI, startup hook or provisioning CLI.
 
 ## Verification and next boundary
 
-Three default tests cover namespace input, failure without fallback and absence of detached authentication
-or live composition. Seventeen explicit PostgreSQL cases cover private ownership without teaching/deployment
-roles, unbound/revoked actors, domain-task rejection, revision races, terminal states, retirement/recreation,
+The original C2-E suite includes three default tests covering namespace input, failure without fallback
+and absence of detached authentication or live composition. Seventeen explicit PostgreSQL cases cover
+private ownership without teaching/deployment roles, unbound/revoked actors, domain-task rejection,
+revision races, terminal states, retirement/recreation,
 target namespaces, missing audits, suspension/archive, event/commit faults, post-write authority changes,
 RLS/temp shadows, a valid cloned-namespace replacement, logout/expiry/revocation ordering, cancellation and
 pooled search-path restoration.
@@ -88,8 +91,9 @@ before running it. CI uses the same list; a script regression checks completenes
 synthetic fixtures only, never deployed data. See [project status](project-status.md) for executed results
 and checks not rerun.
 
-[C2-F](session-artifact-commands.md) now provides current-Session private Artifact access. Next compose
-exact references into Task/Review transactions, then reviewer provenance, applicable policies and Task acceptance.
+[C2-F](session-artifact-commands.md) provides current-Session private Artifact access. [C2-G](session-task-inputs.md) composes exact private inputs with Task commands on one source transaction.
+[C2-H](session-review-commands.md) adds private human Review commands with owned exact
+evidence. Domain policies, historical writer provenance and Task acceptance remain pending.
 Cross-user collaboration needs explicit resource authorization, not an inferred teacher/deployment grant.
 Public entry points, offline legacy mapping, trusted-writer
 fencing, retention and reliable Run/event delivery remain pending. C2 and C-M2/C-M5 are not complete.

@@ -3,6 +3,11 @@
 The event center and eBPF breakpoint panel are best-effort recent-history views. They do not provide
 durable subscriptions or an exactly-once audit log.
 
+This page describes the existing teaching runtime's EventBus and browser consumers. The collaboration
+preparation layer records Task, Artifact and Review changes in separate transactional outboxes; those
+records are not delivered through this WebSocket or shown by the Events page. Neither mechanism is a
+general workflow-delivery service. See the [current platform map](platform-network.md).
+
 ## Wire compatibility and access
 
 - `GET /ws/events` still upgrades to a WebSocket and sends one raw `EventRecord` JSON object per text

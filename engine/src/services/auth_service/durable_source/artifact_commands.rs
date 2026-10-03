@@ -15,9 +15,9 @@ use std::path::Path;
 /// Trusted server configuration, not a request, owner assertion or separate transaction owner.
 #[derive(Clone)]
 pub struct SessionArtifactWorkspace {
-    namespace: String,
-    scope: WorkspaceRef,
-    store: ArtifactStore,
+    pub(super) namespace: String,
+    pub(super) scope: WorkspaceRef,
+    pub(super) store: ArtifactStore,
 }
 #[derive(Debug, Clone, Copy, PartialEq, Eq, thiserror::Error)]
 pub enum SessionArtifactError {

@@ -1,5 +1,10 @@
 # 教师快速开始
 
+本指南面向现有 eBPF 教学领域，不代表整个协作平台。项目全貌和开发进度见[系统架构](architecture.md)
+与[项目状态](project-status.md)。新增[任务 payload 编辑器](editor.md)目前只编辑本地草稿，
+不会提交作业或创建服务端 Task。通用私人 Task/Artifact/Review 命令不会授予教师读取他人内容的
+权限，也不替换已有教学评语接口。
+
 ## 1. 课程定位
 
 建议把 Cyanrex 用于 4～8 学时的 eBPF 入门实践。系统适合讲授：

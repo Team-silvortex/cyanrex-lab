@@ -12,7 +12,7 @@ read. It is explicit staging, not live authorization, a general file server or a
 `ArtifactRevision` in `models/collaboration/artifact.rs` carries a scoped `ArtifactRef`, owner, positive
 JSON-safe sequence, optional exact parent, qualified kind, title, media type, byte length and creation
 time. Its reference includes authority, Workspace, artifact ID, revision ID and server-computed SHA-256.
-These are independent of the product version, now 0.4.8. Content is opaque bytes, not executable
+These are independent of the product version, now 0.4.9. Content is opaque bytes, not executable
 code or an arbitrary domain-specific JSON payload.
 
 The Unix-only `services/artifact_store/` service exposes four explicit operations:
@@ -100,7 +100,8 @@ The supplied Principal must already be authenticated and authorized by a trusted
 filtering is not authentication; knowledge of another owner's UUID is not a supported credential.
 Equal digests never grant access to someone else's artifact, and files are not globally deduplicated.
 Workspace/Principal existence, membership, retirement, revocation and C1 Session transactions are not
-yet composed. No route, AppState entry, startup installer, CLI or teaching-storage writer is added.
+composed into this direct store. No route, AppState entry, startup installer, CLI or teaching-storage
+writer is added.
 
 ## Task boundary and verification
 
@@ -110,8 +111,8 @@ or teacher role. This exercises the two services together; `TaskDraft` itself st
 shape/scope only. Public task creation must later compose content lookup and current authorization.
 This slice does not claim authenticated Review, task acceptance or a complete public workflow.
 
-Four default tests cover input limits, closed storage, unsafe directory refusal and no live/domain
-coupling. Seventeen explicit PostgreSQL cases cover immutable history, ownership/scope/digest mismatch,
+The original C2-C suite includes four default tests covering input limits, closed storage, unsafe
+directory refusal and no live/domain coupling. Seventeen explicit PostgreSQL cases cover immutable history, ownership/scope/digest mismatch,
 concurrency, the Task link, installer refusal, failed/suppressed/deferred writes, cancellation, corrupt
 or missing files, link/FIFO substitution, root replacement, consistent reads, metadata/event faults,
 RLS/temp tables, collisions, pointer rewind and bounded strict decoding. The CI helper
@@ -120,6 +121,8 @@ database. See [project status](project-status.md) for executed checks and limits
 
 [C2-D](review-record-store.md) now adds pinned Review judgments and history; it does not itself verify
 Artifact evidence or authenticate reviewers. [C2-F](session-artifact-commands.md) now composes current
-Sessions and private Artifact commands; this direct store still expects trusted ownership. Task-reference/
-Review authorization, reconciliation, quotas and retention remain required before live adoption. Keep
+Sessions and private Artifact commands; this direct store still expects trusted ownership. [C2-G](session-task-inputs.md) validates exact private inputs on the Task transaction without writing
+or cleaning Artifact files. [C2-H](session-review-commands.md) adds private human Review
+authorization and exact owned target/evidence checks. Cross-user review rights, reconciliation, quotas
+and retention remain required before live adoption. Keep
 the existing teaching history, private ownership and API/SDK contract unchanged until an explicitly verified migration.

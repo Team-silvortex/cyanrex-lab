@@ -10,6 +10,11 @@ use crate::{
 
 use super::private_work::{valid_namespace, PrivateWorkError};
 
+#[cfg(unix)]
+mod inputs;
+#[cfg(unix)]
+pub use inputs::{SessionCatalogTaskWorkspace, SessionTaskInputs, SessionTaskInputsWorkspace};
+
 /// Exact server-configured storage namespace, no deserializer or separate pool.
 #[derive(Debug, Clone)]
 pub struct SessionTaskWorkspace {
@@ -34,10 +39,16 @@ pub enum SessionTaskError {
     Session(#[from] SessionCommandError),
     #[error(transparent)]
     Task(#[from] TaskStoreError),
+    #[cfg(unix)]
+    #[error(transparent)]
+    Artifact(#[from] crate::services::artifact_store::ArtifactStoreError),
     #[error("session tasks require separate pinned non-system namespaces")]
     InvalidNamespace,
-    #[error("session tasks support only manual work without artifact references")]
+    #[error("task is outside the selected session adapter's supported scope")]
     UnsupportedTask,
+    #[cfg(unix)]
+    #[error("stored task definition differs from the configured catalogue entry")]
+    DefinitionMismatch,
 }
 type TaskResult<T> = std::result::Result<T, SessionTaskError>;
 impl From<PrivateWorkError> for SessionTaskError {

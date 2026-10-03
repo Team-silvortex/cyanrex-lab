@@ -1,35 +1,55 @@
-# Cyanrex eBPF 教学手册
+# Cyanrex 项目文档
 
-Cyanrex 是一个面向 eBPF 入门教学的实验系统。它把源码编辑、clang 诊断、语义补全、
-内核加载、事件观察和程序卸载放进同一个 Web 界面。
+Cyanrex 正从 eBPF 教学应用转向面向人类、AI Agent 与计算资源的自部署协作平台。现有教学运行时
+继续可用；通用身份、内容、任务和审阅服务属于显式配置的准备层，任务 payload 编辑器目前只保存
+本地草稿。自主 AI 与通用 Run 编排尚未实现。
 
-如需按当前源码查看功能及其连接，参见[功能链路网络](functional-network.md)，
-其中包含全部页面、API 与持久化边界。
+本索引覆盖整个项目，不只覆盖首个教学领域。源码版本为 0.4.9，以下文档区分源码发布内容、现用
+运行能力和目标架构。模块存在或测试通过，不表示已有在线部署。
 
-## 下一代设计与施工
+## 按问题选择入口
 
-[下一代架构书](next-architecture.md) 描述从 eBPF 教学系统向人类、AI Agent 与计算资源协作软件的演进：通用身份/空间/内容/任务/运行/审阅模型、旧概念映射、扩展机制、生态集成和分阶段施工单。Linux 侧从第 0.1 节与 C0 基线开始，先保护现有数据及权限，再实施迁移。
+| 你想了解什么 | 先读这里 |
+|---|---|
+| 项目定位与整体边界 | [系统架构](architecture.md)、[平台与教学概念](concepts.md) |
+| 当前全部模块及连接关系 | [当前平台功能地图](platform-network.md) |
+| 哪些已完成以及下一步 | [项目状态](project-status.md)、[目标架构](next-architecture.md) |
+| 编辑笔记、代码或配置等任务内容 | [任务 payload 编辑器](editor.md) |
+| 使用或讲授现有 eBPF 流程 | [学生指南](student-guide.md)、[教师指南](teacher-guide.md)及下方实验 |
+| 部署或运维可信实例 | [安全](security.md)、[课堂接入与 SSH](classroom-connection.md)、[Runner Agent](runner-agent.md)、[故障排查](troubleshooting.md) |
+| 开发或验证改动 | [贡献指南](../../CONTRIBUTING.md)、[当前测试指南](testing-guide.md)、[SDK](../../sdk-js/README.md)、[工具](../../scripts/README.md) |
+| 查阅历史证据 | [开发历史](development-history.md)、[历史验收](acceptance.md)、[历史测试网络](testing-network.md)、[0.3.8 功能基线](functional-network.md) |
 
-该文档为目标架构草案，不改变本手册的现有教学流程；已实现行为仍见 [系统架构](architecture.md) 和 [项目状态](project-status.md)。
+## 平台契约与实现依据
 
-[ADR-001 与 C0/C-M1 基线](collaboration-foundation.md)记录首批 Rust 类型契约和旧权限离线预览。
-尚未切换在线权限或迁移数据；产品继续继承现有版本序列。
-[ADR-002 / C1-A](collaboration-identity-store.md)继续加入显式 PostgreSQL 身份注册表，仍未接入在线登录或授权。
-[ADR-003 / C1-B](collaboration-access-store.md)新增持久化成员/部署策略及带修订保护的撤权预览，
-仍未接入在线认证或受保护操作。
-[ADR-004 / C1-C](collaboration-policy-audit.md)在 0.4.5 准备层中增加带操作者的策略命令、事务审计和
-重复请求保护；仍需可信身份适配器，不自动升级现用数据库。
-[ADR-005 / C1-D](collaboration-identity-lifecycle.md)继续补齐身份绑定/退役的事务审计与最后管理者
-保护；不把注册表退役冒充已撤销旧 Session。
-[ADR-006 / C1-E](collaboration-auth-source.md)在 0.4.6 新增仅显式空源启用的持久账号/会话适配器，
-仍未接入在线 AuthService。
-[ADR-007 / C1-F](collaboration-session-commands.md)继续把当前 Session 与身份绑定/策略命令组合为
-单一事务。0.4.7 收录的 [ADR-008 / C1-G](collaboration-account-deletion.md)增加受限账号删除/退役，
-[ADR-009 / C1-H](collaboration-password-change.md)增加自助改密与全部会话撤销原子事务；
-[ADR-010 / C1-I](collaboration-bootstrap.md)补齐全新空命名空间的可信运维引导原子事务。
-[ADR-011 / C1-J](collaboration-provisioning.md)补齐受控本地计划、显式执行和私有注册材料交付。
-[ADR-012 / C1-K](collaboration-reconciliation.md)增加有界只读生命周期对账，覆盖完整审计链。
-恢复、已有数据迁移和在线切换仍待完成。
+先理解概念模型，再选择具体适配器。直接存储接口的所有者过滤不等于认证；公共教学 API 仍使用原有
+运行时，通用 Session 命令不会自动成为 HTTP 接口，也不会替换在线登录。
+
+| 边界 | 设计与实现文档 |
+|---|---|
+| 基础与作用域身份 | [基础契约](collaboration-foundation.md)、[身份注册表](collaboration-identity-store.md)、[成员与策略](collaboration-access-store.md) |
+| 审计生命周期与命令 | [策略审计](collaboration-policy-audit.md)、[身份生命周期](collaboration-identity-lifecycle.md)、[当前会话命令](collaboration-session-commands.md) |
+| 持久认证 | [账号与会话来源](collaboration-auth-source.md)、[账号删除](collaboration-account-deletion.md)、[密码修改](collaboration-password-change.md) |
+| 显式初始化与观察 | [全新引导](collaboration-bootstrap.md)、[本地初始化 CLI](collaboration-provisioning.md)、[只读对账](collaboration-reconciliation.md) |
+| 任务与领域定义 | [任务领域解耦](task-domain-boundary.md)、[任务实例](task-instance-store.md)、[目录准入](session-catalog-tasks.md) |
+| 不可变内容 | [制品修订](artifact-revision-store.md)、[私人制品命令](session-artifact-commands.md) |
+| 任务内容访问与修改 | [私人手工任务](session-task-commands.md)、[准确输入](session-task-inputs.md)、[Draft 输入换版](session-task-revisions.md) |
+| 判断与历史 | [审阅记录](review-record-store.md)、[会话授权的私人人工审阅](session-review-commands.md) |
+
+准备层不会迁移现有教学记录。Task Schema 2 仅支持全新安装，存储格式版本不等于软件版本。代码是
+可选任务内容，不是 Task 的必填字段。发布内容、替换任务输入、执行 Run 和记录 Review 是不同操作，
+彼此不能推导成功，也不因此扩大跨用户权限。
+
+## 现有运行时参考
+
+教学包是首个实际运行的领域，保留教师管理部署、学生学习记录和内核执行边界。以下操作指南应与
+尚未接入现用运行时的通用平台命令区分阅读。
+
+- [学习存储与评语](learning-storage.md)、[事件流与恢复](event-stream.md)。
+- [桌面与局域网隔离目标](classroom-isolation.md)：设计边界，不代表 VM 初始化已完成。
+- [根目录快速开始与运行时 API](../../README.md#quick-start)。
+- [模块清单](../../modules/README.md)：声明式目录，不等于可执行领域包。
+- [故障排查](troubleshooting.md)：区分本地草稿、现有运行时和准备层存储的问题。
 
 ## 推荐阅读顺序
 
@@ -94,7 +114,7 @@ eBPF 永远运行在 Linux 内核中。Windows 和 macOS 的 Docker 模式观察
 ## CI 与合并门禁
 
 - CI 流程已加入聚合任务 `CI gate`（位于 `.github/workflows/ci.yml`）。
-- `CI gate` 会依赖 `security-audit`、`file-lengths`、`engine`、`frontend`、`permissions` 和
+- `CI gate` 会依赖 `security-audit`、`file-lengths`、`engine`、`frontend`、`sdk`、`permissions` 和
   `distribution`，并在任一任务失败时直接失败。
 - 建议在分支保护中只配置必需检查项为 **`CI gate`**，这样合并统一受该门禁控制。
 - 推送注解版本 Tag 会触发 `Release Candidate Validation`：它把干净的 Tag 提交绑定到新构建的
