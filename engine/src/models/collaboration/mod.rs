@@ -11,6 +11,7 @@
 //! ```
 
 mod artifact;
+mod content;
 mod event;
 mod identity;
 mod references;
@@ -20,6 +21,7 @@ mod task;
 mod work;
 
 pub use artifact::*;
+pub use content::*;
 pub use event::*;
 pub use identity::*;
 pub use references::*;

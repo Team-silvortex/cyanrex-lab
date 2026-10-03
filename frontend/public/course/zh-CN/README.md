@@ -4,7 +4,7 @@ Cyanrex 正从 eBPF 教学应用转向面向人类、AI Agent 与计算资源的
 继续可用；通用身份、内容、任务和审阅服务属于显式配置的准备层，任务 payload 编辑器目前只保存
 本地草稿。自主 AI 与通用 Run 编排尚未实现。
 
-本索引覆盖整个项目，不只覆盖首个教学领域。源码版本为 0.4.9，以下文档区分源码发布内容、现用
+本索引覆盖整个项目，不只覆盖首个教学领域。源码版本为 0.5.0，收录 C2-K–N 内容准备层；以下文档区分源码发布内容、现用
 运行能力和目标架构。模块存在或测试通过，不表示已有在线部署。
 
 ## 按问题选择入口
@@ -13,8 +13,13 @@ Cyanrex 正从 eBPF 教学应用转向面向人类、AI Agent 与计算资源的
 |---|---|
 | 项目定位与整体边界 | [系统架构](architecture.md)、[平台与教学概念](concepts.md) |
 | 当前全部模块及连接关系 | [当前平台功能地图](platform-network.md) |
+| 按架构、功能、实现和成熟度切片 | [功能张量与证据评分](capability-maturity.md) |
 | 哪些已完成以及下一步 | [项目状态](project-status.md)、[目标架构](next-architecture.md) |
 | 编辑笔记、代码或配置等任务内容 | [任务 payload 编辑器](editor.md) |
+| 查看内部服务端内容结构与精确快照校验 | [任务内容清单](task-content-manifest.md) |
+| 查看独立内容持久化与原子编辑 | [任务内容存储](task-content-store.md) |
+| 查看同一事务内的当前会话与内容字节检查 | [会话授权任务内容](session-task-content.md) |
+| 查看显式构造且尚未挂载的 HTTP 边界 | [任务内容 HTTP 适配](task-content-http.md) |
 | 使用或讲授现有 eBPF 流程 | [学生指南](student-guide.md)、[教师指南](teacher-guide.md)及下方实验 |
 | 部署或运维可信实例 | [安全](security.md)、[课堂接入与 SSH](classroom-connection.md)、[Runner Agent](runner-agent.md)、[故障排查](troubleshooting.md) |
 | 开发或验证改动 | [贡献指南](../../CONTRIBUTING.md)、[当前测试指南](testing-guide.md)、[SDK](../../sdk-js/README.md)、[工具](../../scripts/README.md) |

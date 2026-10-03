@@ -470,7 +470,7 @@ jobs:
           done
       - name: Run real PostgreSQL task artifact and review storage integration
         env: { CYANREX_TEST_DATABASE_URL: "postgres://cyanrex_test:cyanrex-ci-only@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test" }
-        run: bash scripts/test-task-storage.sh && bash scripts/test-artifact-storage.sh && bash scripts/test-review-storage.sh && bash scripts/test-session-task-storage.sh && bash scripts/test-session-artifact-storage.sh && bash scripts/test-session-task-inputs.sh && bash scripts/test-session-review-storage.sh && bash scripts/test-session-catalog-tasks.sh && bash scripts/test-session-task-revisions.sh
+        run: bash scripts/test-task-storage.sh && bash scripts/test-artifact-storage.sh && bash scripts/test-review-storage.sh && bash scripts/test-session-task-storage.sh && bash scripts/test-session-artifact-storage.sh && bash scripts/test-session-task-inputs.sh && bash scripts/test-session-review-storage.sh && bash scripts/test-session-catalog-tasks.sh && bash scripts/test-session-task-revisions.sh && bash scripts/test-task-content-storage.sh && bash scripts/test-session-task-content.sh && bash scripts/test-platform-task-content-http.sh
       - name: Run real Runner Agent compile integration
         run: cargo test --manifest-path engine/Cargo.toml --locked --test runner_agent_client_tdd -- --ignored --nocapture
 

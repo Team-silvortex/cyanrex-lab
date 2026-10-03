@@ -9,6 +9,10 @@ This frontend, included in source release 0.4.9, does not yet create a server Ta
 page memory until explicitly downloaded; editing never uploads, executes or assesses their contents.
 Source inclusion does not connect this local editor to the backend preparation layer.
 
+Fixes included in 0.5.0 preserve the draft and editor during same-page fragment navigation,
+without suppressing identity checks for pathname/query changes. Bounded import/download filenames
+also retain whole Unicode characters at the length limit; this does not relax content validation.
+
 ## Language capabilities
 
 The 14 profiles below reflect the configured providers in
@@ -91,8 +95,18 @@ Local IDs and revisions prevent accidental editor races; they are not server ide
 or an immutable Artifact version. The Rust preparation layer pins `TaskSnapshot.input_refs` to exact
 Artifact revisions. [C2-J](session-task-revisions.md) now adds Session-authorized replacement for Draft
 tasks, after separately publishing new Artifact content. A failed replacement never permits deleting
-that content. Public Task editing APIs and browser saving are still absent; this frontend does not
+that content. Mounted Task editing APIs and browser saving are still absent; this frontend does not
 bypass authorization, expected-revision checks or the missing server adapter.
+
+The [C2-K content manifest](task-content-manifest.md), included in 0.5.0, defines independent server metadata
+and pure supplied-snapshot checks. It is not this local import format or a save command: no metadata
+is persisted by that pure contract, empty local titles still need a save decision, and the browser's language allowlist is
+unchanged. Filename labels and language hints do not grant filesystem or execution access.
+
+The separate [C2-L trusted store](task-content-store.md) persists metadata in schema 3;
+[C2-M](session-task-content.md) adds internal Session and text-byte checks. Neither connects this
+browser draft or makes local export a server save. The same release includes the unmounted
+[C2-N HTTP router](task-content-http.md), without a Session issuer or browser save integration.
 
 ## Implementation and regression coverage
 

@@ -1,7 +1,12 @@
 # 当前平台功能与模块网络
 
-源码核对日期：**2026-10-03**。范围：**源码版本 0.4.9**，包括协作命令与本地任务 payload
-编辑器。这是一份持续维护的当前源码地图，不是发布验收报告，也不代表正在运行的部署已更新。
+源码核对日期：**2026-10-03**。范围：**0.5.0 源码，包括导航/文件名修复和 C2-K/L/M/N 内容准备层**，
+以及此前的协作命令与本地任务 payload 编辑器。评审保留 0.4.9 基线提交及原日期证据；源码收录
+不是新的发布验收报告，也不代表正在运行的部署已更新。
+
+按“架构 × 功能 × 实现 × 成熟度”查看请使用新增的[功能张量与评分规则](capability-maturity.md)和
+[机器清单](../platform-capability-tensor.json)：57 个实现坐标、73 条定向边、16 条代表链路。
+本文保留路由与模块拓扑；评分和证据独立维护，不计算整体完成百分比。
 
 Cyanrex 正从 eBPF 教学应用转向以任务为中心的协作平台。目前并存三部分：已连接的教学运行链路、
 独立准备中的通用后端，以及仅在本地工作的任务编辑器。代码只是任务 payload 的一种可选内容，
@@ -92,6 +97,10 @@ Review。它们使用带范围的引用，不是用户名、路径、编辑器 I
 | Review 存储 | [`review_store`](../../engine/src/services/review_store) | 精确目标/证据修订 → 不可变判断与评论历史；人工和规则判断分离，都不自动验收 Task。 |
 | 会话授权的私人工作 | [`task_commands`](../../engine/src/services/auth_service/durable_source/task_commands)、[`private_work`](../../engine/src/services/auth_service/durable_source/private_work) | 新鲜 Session + 当前账户/成员关系 → 本人 Task、Artifact 与人工 Review，验证命名空间及写后状态；教师也不能借此读取他人私人工作。 |
 | 目录准入与 Draft 换版 | [目录命令](session-catalog-tasks.md)、[换版命令](session-task-revisions.md) | 精确的服务端准入定义元数据；Draft 换版验证旧、新输入并只增加一个任务修订；不运行领域 provider，不生成证据或验收工作。 |
+| 内容元数据（0.5.0 C2-K） | [清单契约](task-content-manifest.md)、[`task_content.rs`](../../engine/src/services/task_content.rs) | 给定 Task/Artifact 快照 → 元数据、所有者与字节一致性；不读写存储，不授权当前 Session。 |
+| 内容存储（0.5.0 C2-L） | [独立 Schema 3 存储](task-content-store.md)、[`content.rs`](../../engine/src/services/task_store/content.rs) | 可信所有者 + 元数据 → Task/清单/outbox 原子保存并增一版；无 Session/Artifact 字节适配、公共 API 或 Schema 2 迁移。 |
+| 授权内容（0.5.0 C2-M） | [会话内容适配器](session-task-content.md)、[`content.rs`](../../engine/src/services/auth_service/durable_source/task_commands/content.rs) | 当前 Session → 旧新精确 Artifact 文本 → Schema 3 原子编辑 → 最终授权与提交；无现用应用/浏览器接线。 |
+| HTTP 内容边界（0.5.0 C2-N） | [显式路由](task-content-http.md)、[`platform_http`](../../engine/src/platform_http/mod.rs) | 有界 HTTP → C2-M → 私有版本化响应；仅独立构造，没有主应用挂载、Session 签发、公共发布或浏览器接线。 |
 
 ## 跨模块链路与尚未连接的边界
 
@@ -104,7 +113,7 @@ Review。它们使用带范围的引用，不是用户名、路径、编辑器 I
 | 持久化 Session → 本人 Artifact 修订 → 本人 Task 精确输入 → Draft 换版 | 后端准备链已实现；尚无公共 API 或浏览器适配器。 |
 | 持久化 Session → 精确的本人 Artifact 目标/证据 → 人工 Review 历史 | 后端准备链已实现；尚无跨用户审阅权限与验收。 |
 | 旧账户/脚本/尝试 → 持久化身份/Artifact/Task/Review | 迁移、旧写入方隔离与切换待实现；没有隐式双写或数据收编。 |
-| 浏览器保存任务 → 发布 Artifact → 创建/换版 Task → 冲突恢复 | 公共认证/CSRF 契约、payload 元数据及冲突/结果核对待实现；本地导出不是服务端持久化。 |
+| 浏览器保存任务 → 发布 Artifact → 创建/换版 Task → 冲突恢复 | W10–W13 提供契约、存储、Session/文本检查及未挂载 HTTP 适配；仍缺显式登录/安装、公共内容发布和浏览器映射、冲突与结果处理。 |
 | 通用 Task → 执行计划 → 类型化证据 → 规则 Review → 验收 | 组合流程待实现；目录元数据与进程内规则评估不能单独建立此链路。 |
 | 教师管理的隔离学生运行环境、托管 VM 生命周期、外部 LSP 进程 | 待实现；现有 Linux 执行和本地语言 worker 不构成这些隔离边界。 |
 
@@ -113,8 +122,8 @@ Review。这些影响必须通过显式适配器连接，并单独定义权限�
 
 ## 地图维护方式
 
-新增页面、组装字段、公共路由、provider、持久化存储或跨模块适配器时，同步更新本文及
-[英文版](../en/platform-network.md)。标明连接是公开、内部还是仅本地，并说明失败边界。通过
+新增页面、组装字段、公共路由、provider、持久化存储或跨模块适配器时，同步更新本文、
+[功能张量](capability-maturity.md)及对应英文版。标明连接是公开、内部还是仅本地，并说明失败边界。通过
 [当前测试指南](testing-guide.md) 查找测试，不以旧通过数量代替验证。
 
 [0.3.8 功能网络](functional-network.md) 及其机器清单保留历史源码快照；

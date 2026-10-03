@@ -9,20 +9,24 @@ use sqlx_core::transaction::Transaction;
 use std::{future::Future, time::Duration};
 
 mod commands;
+mod content;
 mod draft;
 mod records;
 mod replace;
 mod schema;
+pub use content::{TaskContentSnapshot, TaskContentStore};
 pub(crate) use draft::validate_input_refs;
 pub use draft::TaskDraft;
 
 // Fresh namespaces only. Older staging schemas are rejected, never silently migrated.
 const TASK_STORAGE_VERSION: i32 = 2;
+const TASK_CONTENT_STORAGE_VERSION: i32 = 3;
 
 #[derive(Clone)]
 pub struct TaskStore {
     pool: PgPool,
     scope: WorkspaceRef,
+    storage_version: i32,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, thiserror::Error)]
@@ -80,7 +84,11 @@ fn confirmed_one(rows: u64) -> Result<()> {
 
 impl TaskStore {
     pub fn new(pool: PgPool, scope: WorkspaceRef) -> Self {
-        Self { pool, scope }
+        Self {
+            pool,
+            scope,
+            storage_version: TASK_STORAGE_VERSION,
+        }
     }
 
     fn check_scope(&self, reference: TaskRef, owner: PrincipalRef) -> Result<()> {

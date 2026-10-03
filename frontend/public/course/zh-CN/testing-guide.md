@@ -1,8 +1,10 @@
 # 当前项目测试指南
 
-本文按 **2026-10-03 的源码版本 0.4.9** 核对，包含任务 payload 与 Session 命令工作。
+本文按 **2026-10-03 的源码版本 0.5.0** 核对，包含任务 payload、Session 命令与独立内容 HTTP 适配。
 它说明各模块和边界应测什么、每层通过能证明什么，以及如何避免使用线上数据。本文是测试方案和
 源码清单，不是一次新的测试结果。先用[平台链路地图](platform-network.md) 区分已连接与未连接路径。
+[功能张量](capability-maturity.md)将实现切片关联到测试源码与分日期证据；公共脚本检查其结构、引用
+及中英文评分表一致性，不执行被引用的产品测试，也不建立部署成熟度。
 
 ## 测试分层
 
@@ -39,8 +41,11 @@ Rust 公告审计，前端/SDK 检查也包含生产依赖的 npm 审计。因�
 | 通用身份与权威 | `collaboration_*_tdd`、`legacy_workspace_projection_tdd` | 审计绑定/成员/授权修订、缺席键竞争、最后管理者、角色与部署权限分离 |
 | 持久化认证源与生命周期 | `durable_auth_source_tdd`、`durable_collaboration_tdd`、删除/改密/初始化/核对测试目标 | 账户世代 → 精确当前 Session → 同事务身份/策略、命名空间替换、写后事实 |
 | 运维初始化 | `provision_cli_tdd`、`provision_postgres_tdd` | 只读计划、目标绑定 apply、私密配置交付、确认丢失与取消；不收编现有配置 |
-| 通用 Task、Artifact 与 Review | 下方九个存储 runner 及对应默认 Rust 测试 | 精确修订/摘要、Task/outbox 原子性、不可变文件边界、私人所有权、Review 历史、当前 Session 检查 |
+| 通用 Task、Artifact 与 Review | 下方显式存储 runner 及对应默认 Rust 测试 | 精确修订/摘要、Task/outbox 原子性、不可变文件边界、私人所有权、Review 历史、当前 Session 检查 |
 | 本地任务 payload 与编辑器 | `test:editor-languages`、`test:task-payload-browser`、`test:multi-language-editor-browser` | 可选 payload、已接受内容/修订、导入导出、过期编辑、模型释放与禁止网络写入 |
+| 内部任务内容元数据 | Rust `task_content_contract_tdd`、`task_content_binding_tdd` | 严格对象结构、字段/数量上限、有序准确引用、给定所有者/字节/摘要一致性；默认纯测试，不验证存储或 Session 授权 |
+| 独立内容存储 | Rust `task_content_store_tdd`、`scripts/test-task-content-storage.sh` | Schema 2/3 隔离、完整元数据/outbox 原子性、修订冲突与存储故障；不是 Session 内容或浏览器适配 |
+| 会话任务内容 | Rust `session_task_content_tdd`、`scripts/test-session-task-content.sh` | 同一事务内当前授权、旧新精确文本、元数据编辑、移除、命名空间身份及写后复验；不是公共/浏览器验收 |
 | UI 导航与安全 | `test:ui-permissions`、布局/动作/账户/运行浏览器套件 | 绑定目标的确认、防重复操作、路由切换、键盘操作、未保存草稿保护 |
 | API、SDK、打包与部署 | 公共契约测试、SDK 门禁、发布/SSH Rust 目标与工具夹具 | Engine 路由 → OpenAPI → 生成 SDK；归档来源 → 精确已审阅 SSH 目标；夹具与实际安装分离 |
 
@@ -80,6 +85,7 @@ PostgreSQL 连接变量和 dotenv 预加载设置，再只添加所选夹具需�
 | Runner | 当前源码快照的用例数 | 主要边界 |
 |---|---:|---|
 | `scripts/test-task-storage.sh` | 15 | 受信任 Task 存储、生命周期修订与 outbox |
+| `scripts/test-task-content-storage.sh` | 21 | 独立 Schema 3 手工 Task/清单持久化、原子编辑、旧格式拒绝与故障/并发检查 |
 | `scripts/test-artifact-storage.sh` | 17 | 精确不可变内容、私有文件故障与固定输入 |
 | `scripts/test-review-storage.sh` | 17 | Review 历史、人工/规则分离、非教学集成 |
 | `scripts/test-session-task-storage.sh` | 17 | 当前 Session → 私人手工 Task |
@@ -88,8 +94,10 @@ PostgreSQL 连接变量和 dotenv 预加载设置，再只添加所选夹具需�
 | `scripts/test-session-review-storage.sh` | 18 | Session → 带精确目标/证据的私人人工 Review |
 | `scripts/test-session-catalog-tasks.sh` | 16 | 精确准入定义元数据和 0–32 个输入 |
 | `scripts/test-session-task-revisions.sh` | 17 | Draft 换版、旧/新输入并集、schema 2 兼容性与并发保存 |
+| `scripts/test-session-task-content.sh` | 25 | Schema 3 当前 Session 内容、精确文本、旧新复验、命名空间替换、生命周期与并发故障 |
+| `scripts/test-platform-task-content-http.sh` | 11 | 独立 HTTP → C2-M、私有归属、等待锁时 Session 过期、精确文本、提交/outbox 故障与并发编辑 |
 
-九个 runner 共选择 **155 条用例**，不是仓库全部 PostgreSQL 覆盖。旧认证/事件/脚本/学习与通用
+十二个 runner 共选择 **212 条用例**（此前资源 155 条、内容存储 21 条、会话内容 25 条、独立 HTTP 11 条），不是仓库全部 PostgreSQL 覆盖。旧认证/事件/脚本/学习与通用
 身份/认证源/生命周期/初始化用例在 CI 中另有精确清单。
 [`postgresCi.test.mjs`](../../scripts/tests/postgresCi.test.mjs) 检查 runner 清单完整性。
 
@@ -141,7 +149,14 @@ SSH 夹具通过也不授权远程 apply。执行这些操作前阅读[离线部
 
 ## 证据与维护
 
-最新已记录的 **C2-J 后端开发验收**通过 402 条默认 Rust、92 条公共脚本和上述 155 条选定数据库
+未发布的 **C2-L 存储验证**通过 436 项默认 Rust（忽略 416 项）、111 项公共脚本，另通过 176 项
+精确 PostgreSQL 用例：新增 21 项及此前 155 项资源回归。数据库为全新私有 socket PostgreSQL 16
+实例，不是部署服务；没有执行内容 Session/浏览器适配或迁移。清理与限定范围见项目进度对应日期记录。
+
+未发布的 **C2-K 纯契约验证**通过 428 项默认 Rust（忽略 395 项）、110 项公共脚本，含 26 项新增
+元数据/快照回归；没有重跑 PostgreSQL 或浏览器测试。
+
+此前的 **C2-J 后端开发验收**通过 402 条默认 Rust、92 条公共脚本和原有 155 条资源数据库
 用例；此前的**任务 payload/编辑器验收**通过 164 条默认前端及 35 条浏览器用例。它们是
 2026-10-03 分别进行的限定范围验证，不能相加后宣称新的一次端到端验收。后端该轮未重跑全部
 认证源/生命周期数据库套件，浏览器 mock 也不能证明真实服务端保存。完整限定和此前各阶段见

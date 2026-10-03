@@ -6,7 +6,7 @@ identity, content, task and review services are explicitly configured preparatio
 payload editor is local-only, and autonomous AI and general Run orchestration are not implemented.
 
 This index describes the whole project, not only its first teaching domain. The source version is
-0.4.9; source-release contents, live runtime capabilities and target architecture are distinguished
+0.5.0, including C2-K–N content preparation; source-release contents, live runtime capabilities and target architecture are distinguished
 in the documents below. A built module or passing test does not imply an online deployment.
 
 ## Start with your question
@@ -15,8 +15,13 @@ in the documents below. A built module or passing test does not imply an online 
 |---|---|
 | Understand the project and its boundaries | [Architecture](architecture.md), [platform and teaching concepts](concepts.md) |
 | See all current modules and connections | [Current platform feature map](platform-network.md) |
+| Compare architecture, capabilities, implementations and maturity | [Capability tensor and evidence-backed scores](capability-maturity.md) |
 | Know what is implemented and what comes next | [Project status](project-status.md), [target architecture](../zh-CN/next-architecture.md) |
 | Edit task contents such as notes, code or configuration | [Task payload editor](editor.md) |
+| Inspect the internal server content shape and exact snapshot checks | [Task content manifest](task-content-manifest.md) |
+| Inspect separate content persistence and atomic editing | [Task content storage](task-content-store.md) |
+| Inspect current Session and content-byte checks in one transaction | [Session task content](session-task-content.md) |
+| Inspect the explicitly constructed, unmounted HTTP boundary | [Task content HTTP adapter](task-content-http.md) |
 | Run or teach the existing eBPF workflow | [Student guide](student-guide.md), [teacher guide](teacher-guide.md), labs below |
 | Deploy or operate a trusted instance | [Security](security.md), [classroom connection and SSH](classroom-connection.md), [Runner Agent](runner-agent.md), [troubleshooting](troubleshooting.md) |
 | Develop or verify a change | [Contributor guide](../../CONTRIBUTING.md), [current testing guide](testing-guide.md), [SDK](../../sdk-js/README.md), [tools](../../scripts/README.md) |

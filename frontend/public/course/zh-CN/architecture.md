@@ -19,7 +19,8 @@ Cyanrex Lab 正从 eBPF 教学应用转向面向人、未来 AI 参与者和计�
 | 本地任务 payload 编辑器 | 任务草稿持有可选文本项，支持 14 种本地语言配置及 JSON 导入导出 | 没有服务端 Task/Artifact 保存、可靠浏览器恢复、LSP 进程或执行 |
 | 目标平台 | 人与 AI、计算资源协作，领域无关工作流及隔离执行 | 没有明确标为已实现的部分仍是目标设计 |
 
-源码版本 0.4.9 收录 Session 输入、Review、目录任务、Draft 换版及本地 payload 编辑器；
+源码版本 0.5.0 收录 C2-K 至 C2-N 内容准备层及本地导航/文件名修复。
+Session 输入、Review、目录任务、Draft 换版及本地 payload 编辑器收录于 0.4.9；
 C2-A 至 C2-F 首次收录于 0.4.8。源码发布不等于部署，各决策文档保留自己的日期与验证证据，不表示其中所有路径
 已经上线。
 
@@ -53,6 +54,17 @@ flowchart LR
 目前只有教学规则路径真正接入共享 TaskCatalog。未来浏览器保存适配器需要把本地内容连接到
 Session 授权的 Artifact 发布，再显式更换 Task 输入；执行适配器还须单独把持久 Task 连接到 Run。
 存在各自的类型或后端方法，不代表这两条连接已经实现。
+
+0.5.0 收录的 [C2-K 内容元数据](task-content-manifest.md)独立描述标题、显示标签与准确 Artifact 引用，
+不复用本地草稿身份。纯校验器只检查给定快照，不是持久化、当前 Session 授权或缺失的浏览器适配。
+
+同样收录于 0.5.0 的 [C2-L 内容存储](task-content-store.md)在独立 Schema 3 命名空间中原子保存 Task/清单/outbox。
+可信句柄不暴露旧 Schema 2 写入口，两种格式互不接管。[C2-M](session-task-content.md)另行在同一事务
+组合当前 Session 授权与 Artifact 文本验证，现用应用及浏览器链路仍未接通。
+
+[C2-N](task-content-http.md)新增这些命令之上的独立 HTTP 路由，采用专用 Session Cookie、固定
+可信 Origin 与有界请求准入。它没有挂载到 `build_router`，现用 OpenAPI/SDK 也不声明它；登录
+签发、部署组合、内容发布及浏览器保存仍独立推进，不把旧 Session 变成平台权限。
 
 ### 教师权威与单人使用
 

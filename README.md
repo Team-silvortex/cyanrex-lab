@@ -1,6 +1,6 @@
 # cyanrex-lab
 
-Version: `0.4.9`
+Version: `0.5.0`
 
 Cyanrex is evolving into a self-hosted collaboration platform for people, AI Agents and compute
 resources. Tasks, content versions, execution and reviews have separate responsibilities; eBPF teaching
@@ -12,6 +12,7 @@ explicit preparation layer, the new task editor keeps local drafts, and AI orche
 Documentation: [English](docs/en/README.md) · [简体中文](docs/zh-CN/README.md)
 · Architecture: [English](docs/en/architecture.md) · [简体中文](docs/zh-CN/architecture.md)
 · Current feature map: [English](docs/en/platform-network.md) · [简体中文](docs/zh-CN/platform-network.md)
+· Capability maturity: [English](docs/en/capability-maturity.md) · [简体中文](docs/zh-CN/capability-maturity.md)
 · Progress and roadmap: [English](docs/en/project-status.md) · [简体中文](docs/zh-CN/project-status.md)
 · Testing: [English](docs/en/testing-guide.md) · [简体中文](docs/zh-CN/testing-guide.md)
 · [Changelog](CHANGELOG.md)
@@ -23,8 +24,10 @@ private process in [SECURITY.md](SECURITY.md).
 
 ## Current development snapshot
 
-As of **2026-10-03**, the source version is **0.4.9**. This release includes the local task editor and
-Session-authorized private work below; neither a source release nor passing tests switch an existing deployment.
+As of **2026-10-03**, the source version is **0.5.0**. This release adds task-content contracts,
+atomic metadata storage, current-Session text commands and an explicitly constructed HTTP adapter.
+The adapter remains unmounted, and the task editor remains local-only; neither a source release nor
+passing tests switch an existing deployment.
 
 | Area | Implemented boundary | Still separate |
 |---|---|---|
@@ -32,9 +35,11 @@ Session-authorized private work below; neither a source release nor passing test
 | Task payload editor | Local task drafts with optional text items and 14 language profiles | No server saving, external LSP or code execution from this editor |
 | Collaboration preparation | Explicit identity/session, Task, Artifact and Review stores and authorized private commands | No live authentication cutover or cross-user collaboration UI |
 | Draft input replacement | Owner/revision checks and exact old/new Artifact verification | Content publication is separate; browser save/conflict handling is not connected |
+| Task content | Schema-3 Task/manifest/outbox transactions, exact text checks and a standalone HTTP boundary | No public Session issuer, application mounting or browser saving |
 
-Code is one optional payload item, not a mandatory Task field. Task storage schema 2 is a fresh-install
-preparation format and rejects schema 1 without automatic migration; storage and product versions evolve independently.
+Code is one optional payload item, not a mandatory Task field. Task storage schema 2 and the separate
+content schema 3 remain explicit preparation formats with no automatic migration between them;
+storage and product versions evolve independently.
 Start with the [documentation index](docs/en/README.md) / [文档索引](docs/zh-CN/README.md) and
 [current progress and next steps](docs/en/project-status.md#next-decision-points) /
 [当前进度与下一步](docs/zh-CN/project-status.md#下一阶段决策点). Dated test and network snapshots remain historical evidence.
@@ -228,12 +233,12 @@ Starting the application does not initialize or migrate the separate collaborati
 For classroom deployment or offline distribution, create a packaged artifact with prebuilt Docker images:
 
 ```bash
-./scripts/package-distribution.sh --version 0.4.9
+./scripts/package-distribution.sh --version 0.5.0
 ```
 
 This produces:
-- `dist/cyanrex-lab-0.4.9-<timestamp>.tar.gz`
-- `dist/cyanrex-lab-0.4.9-<timestamp>.tar.gz.sha256`
+- `dist/cyanrex-lab-0.5.0-<timestamp>.tar.gz`
+- `dist/cyanrex-lab-0.5.0-<timestamp>.tar.gz.sha256`
 
 The archive contains the PostgreSQL, Engine, and frontend images. On a disposable Docker host,
 verify the freshly extracted package end to end with `./install-smoke.sh`. It checks the package
@@ -268,10 +273,10 @@ For an artifact downloaded from the Tag workflow, place its four files in a dedi
 verify the complete candidate from a trusted checkout of the matching source Tag before extracting it:
 
 ```bash
-release_revision="$(git rev-list -n 1 v0.4.9)"
+release_revision="$(git rev-list -n 1 v0.5.0)"
 cargo run --quiet --manifest-path engine/Cargo.toml --locked --bin cyanrex-release -- \
   candidate verify /path/to/downloaded-candidate \
-  --expect-version 0.4.9 --expect-revision "$release_revision" --expect-tag v0.4.9 \
+  --expect-version 0.5.0 --expect-revision "$release_revision" --expect-tag v0.5.0 \
   --extract-to /path/to/new-output-directory
 ```
 

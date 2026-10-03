@@ -13,7 +13,8 @@ export function decodeEditorBytes(bytes: Uint8Array): string {
 export function safeEditorFilename(name: string): string {
   const basename = (name.split(/[/\\]/).at(-1) || "")
     .replace(/[<>:"|?*\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/g, "_")
-    .trim().slice(0, 128).replace(/[. ]+$/, "");
+    // The parent bounds UTF-16 length but rejects lone surrogates. Keep truncation code-point safe.
+    .trim().slice(0, 128).replace(/[\uD800-\uDBFF]$/, "").replace(/[. ]+$/, "");
   if (!basename || /^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(basename)) return "untitled.txt";
   return basename;
 }

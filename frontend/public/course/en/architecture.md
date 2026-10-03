@@ -23,8 +23,9 @@ and [testing guide](testing-guide.md).
 | Local task-payload editor | A Task draft owns optional text items and 14 local language profiles; JSON import/export | No server Task/Artifact save, durable browser recovery, LSP process or execution |
 | Target platform | Human/AI/compute collaboration, domain-independent workflows and isolated execution | Design direction only where no implemented boundary is stated |
 
-Source release 0.4.9 includes the Session input, Review, catalogue and Draft replacement slices and
-the local payload editor; C2-A through C2-F were first included in 0.4.8. Source inclusion is not deployment.
+Source release 0.5.0 includes C2-K through C2-N content preparation and local navigation/filename fixes.
+The Session input, Review, catalogue and Draft replacement slices and local payload editor were included
+in 0.4.9; C2-A through C2-F were first included in 0.4.8. Source inclusion is not deployment.
 The detailed decision records retain their own dates and verification evidence; they are not a
 statement that every described path is live.
 
@@ -61,6 +62,20 @@ Only the teaching rule path currently crosses into the shared TaskCatalog. The f
 adapter must bridge local content to Session-authorized Artifact publication and then Task input
 replacement; the execution adapter must separately bridge a durable Task to a Run. Neither connection
 can be inferred from the fact that their individual types or backend methods exist.
+
+[C2-K content metadata](task-content-manifest.md), included in 0.5.0, describes title, display labels and exact
+Artifact pins independently from the local draft. Its pure verifier checks supplied snapshots only;
+it is not persistence, current-Session authorization or the missing browser adapter.
+
+[C2-L content storage](task-content-store.md), also included in 0.5.0, persists Task/manifest/outbox in a separate
+schema 3 namespace. Its trusted handle does not expose the old schema 2 write paths; neither format
+adopts the other. [C2-M](session-task-content.md) separately composes it with current-Session and
+Artifact-text verification in one transaction; the live/browser connection remains absent.
+
+[C2-N](task-content-http.md) adds a separately constructed HTTP router over those commands, with a
+dedicated Session cookie, fixed trusted Origin and bounded request admission. It is not mounted in
+`build_router` or advertised by the live OpenAPI/SDK. Login issuance, deployment composition, content
+publication and browser saving remain separate; no legacy Session becomes platform authority.
 
 ### Teacher authority and personal use
 

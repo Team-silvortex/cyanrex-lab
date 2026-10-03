@@ -1,0 +1,3472 @@
+{
+  "schema_version": 1,
+  "snapshot": {
+    "date": "2026-10-03",
+    "source_version": "0.4.9",
+    "base_commit": "5928508b95276a44de73dba04dd9cfc952fbfb5a",
+    "scope": "Historical source review against the recorded 0.4.9 base commit, including task navigation/Unicode filename fixes, C2-K content manifest/snapshot validation, C2-L separate content storage, C2-M Session content composition and C2-N explicit unmounted HTTP routing, now included in 0.5.0. Source inclusion does not refresh evidence dates or establish a new release/deployment acceptance. Capability slices, not every function, endpoint or execution path.",
+    "verification": "Source and scoped recorded-evidence inventory, including the separately recorded C2-K pure-contract and C2-L/C2-M/C2-N isolated PostgreSQL runs. Generating or validating this inventory does not execute its referenced tests or establish deployment acceptance or security certification; scores are reviewer judgments scoped to each coordinate."
+  },
+  "axes": {
+    "architecture": [
+      {
+        "id": "ui",
+        "label": {
+          "en": "Browser and local content",
+          "zh-CN": "浏览器与本地内容"
+        }
+      },
+      {
+        "id": "authority",
+        "label": {
+          "en": "Live instance authority",
+          "zh-CN": "现用实例权威"
+        }
+      },
+      {
+        "id": "identity",
+        "label": {
+          "en": "Collaboration identity",
+          "zh-CN": "协作身份准备层"
+        }
+      },
+      {
+        "id": "work",
+        "label": {
+          "en": "Task Artifact Review",
+          "zh-CN": "任务内容与审阅"
+        }
+      },
+      {
+        "id": "domain",
+        "label": {
+          "en": "Domains and teaching",
+          "zh-CN": "领域与教学"
+        }
+      },
+      {
+        "id": "execution",
+        "label": {
+          "en": "Execution and resources",
+          "zh-CN": "执行与资源"
+        }
+      },
+      {
+        "id": "delivery",
+        "label": {
+          "en": "Events and integration",
+          "zh-CN": "事件与集成"
+        }
+      },
+      {
+        "id": "operations",
+        "label": {
+          "en": "Operations and distribution",
+          "zh-CN": "运维与分发"
+        }
+      }
+    ],
+    "maturity": [
+      {
+        "id": "D",
+        "label": {
+          "en": "Implementation",
+          "zh-CN": "实现深度"
+        },
+        "levels": [
+          "Design only or absent",
+          "Explicit contract or type only",
+          "Functional implementation",
+          "Implemented boundary safeguards and regression cases"
+        ]
+      },
+      {
+        "id": "C",
+        "label": {
+          "en": "Connection",
+          "zh-CN": "接线程度"
+        },
+        "levels": [
+          "Required connection absent",
+          "Explicit internal composition only",
+          "Wired into current application, local workflow or operator tool",
+          "Exact current deployment cross-component acceptance"
+        ]
+      },
+      {
+        "id": "V",
+        "label": {
+          "en": "Verification",
+          "zh-CN": "验证证据"
+        },
+        "levels": [
+          "No capability execution evidence",
+          "Test source reviewed, execution not credited",
+          "Dated unit, mock, browser or tool-fixture execution record",
+          "Dated real database or service integration record within named scope"
+        ]
+      },
+      {
+        "id": "O",
+        "label": {
+          "en": "Operations",
+          "zh-CN": "运行保障"
+        },
+        "levels": [
+          "No operational procedure for this capability",
+          "Documented limits and operating prerequisites",
+          "Explicit bounded operating or reconciliation controls with regression coverage",
+          "Exact current deployment recovery or rollback acceptance"
+        ]
+      }
+    ]
+  },
+  "functions": [
+    {
+      "id": "session-shell",
+      "label": {
+        "en": "Session shell and navigation",
+        "zh-CN": "会话外壳与导航"
+      }
+    },
+    {
+      "id": "task-draft",
+      "label": {
+        "en": "Local Task draft ownership",
+        "zh-CN": "本地任务草稿归属"
+      }
+    },
+    {
+      "id": "draft-transfer",
+      "label": {
+        "en": "Whole draft import and export",
+        "zh-CN": "整份草稿导入导出"
+      }
+    },
+    {
+      "id": "controlled-editor",
+      "label": {
+        "en": "Controlled payload editor",
+        "zh-CN": "受控 payload 编辑器"
+      }
+    },
+    {
+      "id": "local-language",
+      "label": {
+        "en": "Local language assistance",
+        "zh-CN": "本地语言辅助"
+      }
+    },
+    {
+      "id": "text-transfer",
+      "label": {
+        "en": "Bounded text import and download",
+        "zh-CN": "有界文本导入与下载"
+      }
+    },
+    {
+      "id": "confirmation",
+      "label": {
+        "en": "Target-bound confirmations",
+        "zh-CN": "目标绑定操作确认"
+      }
+    },
+    {
+      "id": "live-auth",
+      "label": {
+        "en": "Password TOTP and teacher authority",
+        "zh-CN": "密码 TOTP 与教师权威"
+      }
+    },
+    {
+      "id": "classroom-join",
+      "label": {
+        "en": "Teacher discovery and invitation join",
+        "zh-CN": "教师发现与邀请加入"
+      }
+    },
+    {
+      "id": "shared-contract",
+      "label": {
+        "en": "Scoped collaboration contracts",
+        "zh-CN": "带范围的协作契约"
+      }
+    },
+    {
+      "id": "identity-registry",
+      "label": {
+        "en": "Identity binding and retirement",
+        "zh-CN": "身份绑定与退役"
+      }
+    },
+    {
+      "id": "membership-policy",
+      "label": {
+        "en": "Membership grants and audit",
+        "zh-CN": "成员授权与策略审计"
+      }
+    },
+    {
+      "id": "durable-session",
+      "label": {
+        "en": "Durable authentication and Sessions",
+        "zh-CN": "持久认证与会话"
+      }
+    },
+    {
+      "id": "session-management",
+      "label": {
+        "en": "Session-authorized policy commands",
+        "zh-CN": "会话授权策略命令"
+      }
+    },
+    {
+      "id": "account-lifecycle",
+      "label": {
+        "en": "Account deletion and password rotation",
+        "zh-CN": "账号删除与密码轮换"
+      }
+    },
+    {
+      "id": "provision",
+      "label": {
+        "en": "Explicit authority provisioning",
+        "zh-CN": "显式权威初始化"
+      }
+    },
+    {
+      "id": "reconcile",
+      "label": {
+        "en": "Read-only authority reconciliation",
+        "zh-CN": "权威图只读核对"
+      }
+    },
+    {
+      "id": "task-store",
+      "label": {
+        "en": "Revision-fenced Task storage",
+        "zh-CN": "修订约束任务存储"
+      }
+    },
+    {
+      "id": "artifact-store",
+      "label": {
+        "en": "Immutable Artifact revisions",
+        "zh-CN": "不可变 Artifact 修订"
+      }
+    },
+    {
+      "id": "review-store",
+      "label": {
+        "en": "Immutable Review history",
+        "zh-CN": "不可变 Review 历史"
+      }
+    },
+    {
+      "id": "session-task",
+      "label": {
+        "en": "Private manual Task commands",
+        "zh-CN": "私人手工任务命令"
+      }
+    },
+    {
+      "id": "session-artifact",
+      "label": {
+        "en": "Session-authorized content publication",
+        "zh-CN": "会话授权内容发布"
+      }
+    },
+    {
+      "id": "session-inputs",
+      "label": {
+        "en": "Exact owned Task inputs",
+        "zh-CN": "本人任务的精确输入"
+      }
+    },
+    {
+      "id": "session-review",
+      "label": {
+        "en": "Private human Review commands",
+        "zh-CN": "私人人工审阅命令"
+      }
+    },
+    {
+      "id": "catalog-admission",
+      "label": {
+        "en": "Exact catalogue Task admission",
+        "zh-CN": "精确目录任务准入"
+      }
+    },
+    {
+      "id": "draft-replacement",
+      "label": {
+        "en": "Draft input replacement",
+        "zh-CN": "Draft 输入换版"
+      }
+    },
+    {
+      "id": "domain-catalog",
+      "label": {
+        "en": "Versioned domain catalogue",
+        "zh-CN": "版本化领域目录"
+      }
+    },
+    {
+      "id": "learning-loop",
+      "label": {
+        "en": "Lab attempts feedback and resume",
+        "zh-CN": "实验尝试反馈与恢复"
+      }
+    },
+    {
+      "id": "saved-script",
+      "label": {
+        "en": "Owner-scoped saved scripts",
+        "zh-CN": "所有者范围脚本存储"
+      }
+    },
+    {
+      "id": "compiler-assistance",
+      "label": {
+        "en": "eBPF compiler and C assistance",
+        "zh-CN": "eBPF 编译与 C 辅助"
+      }
+    },
+    {
+      "id": "local-kernel",
+      "label": {
+        "en": "Local eBPF run observe and detach",
+        "zh-CN": "本地 eBPF 运行观测卸载"
+      }
+    },
+    {
+      "id": "local-leases",
+      "label": {
+        "en": "Local capacity leases and quotas",
+        "zh-CN": "本地容量租约与配额"
+      }
+    },
+    {
+      "id": "agent-compile",
+      "label": {
+        "en": "Signed Agent probe and compile jobs",
+        "zh-CN": "签名 Agent 探针与编译作业"
+      }
+    },
+    {
+      "id": "runtime-events",
+      "label": {
+        "en": "Owner telemetry and bounded recovery",
+        "zh-CN": "所有者遥测与有界恢复"
+      }
+    },
+    {
+      "id": "transaction-outbox",
+      "label": {
+        "en": "Transactional resource outbox records",
+        "zh-CN": "资源事务 outbox 记录"
+      }
+    },
+    {
+      "id": "public-sdk",
+      "label": {
+        "en": "Public API and SDK compatibility",
+        "zh-CN": "公共 API 与 SDK 兼容"
+      }
+    },
+    {
+      "id": "startup",
+      "label": {
+        "en": "Instance startup and diagnostics",
+        "zh-CN": "实例启动与诊断"
+      }
+    },
+    {
+      "id": "release-ssh",
+      "label": {
+        "en": "Package verification and SSH deployment",
+        "zh-CN": "包校验与 SSH 部署"
+      }
+    },
+    {
+      "id": "admin-console",
+      "label": {
+        "en": "Settings metrics and Agent administration",
+        "zh-CN": "设置指标与 Agent 管理"
+      }
+    },
+    {
+      "id": "modules-headers",
+      "label": {
+        "en": "Module headers and typed commands",
+        "zh-CN": "模块头文件与结构化命令"
+      }
+    },
+    {
+      "id": "browser-save",
+      "label": {
+        "en": "Browser to server Task save",
+        "zh-CN": "浏览器到服务端任务保存"
+      }
+    },
+    {
+      "id": "authority-cutover",
+      "label": {
+        "en": "Live authority cutover and migration",
+        "zh-CN": "在线权威切换与迁移"
+      }
+    },
+    {
+      "id": "shared-review",
+      "label": {
+        "en": "Sharing and cross-user Review",
+        "zh-CN": "分享与跨用户审阅"
+      }
+    },
+    {
+      "id": "rule-review",
+      "label": {
+        "en": "Artifact evidence to authorized rule Review",
+        "zh-CN": "Artifact 证据到授权规则审阅"
+      }
+    },
+    {
+      "id": "task-acceptance",
+      "label": {
+        "en": "Generic Task acceptance",
+        "zh-CN": "通用任务验收"
+      }
+    },
+    {
+      "id": "generic-run",
+      "label": {
+        "en": "Durable generic Run orchestration",
+        "zh-CN": "持久通用 Run 编排"
+      }
+    },
+    {
+      "id": "outbox-delivery",
+      "label": {
+        "en": "Reliable business-event delivery",
+        "zh-CN": "可靠业务事件投递"
+      }
+    },
+    {
+      "id": "managed-isolation",
+      "label": {
+        "en": "Managed isolated student runtimes",
+        "zh-CN": "托管学生隔离运行环境"
+      }
+    },
+    {
+      "id": "external-lsp",
+      "label": {
+        "en": "External LSP and project workspaces",
+        "zh-CN": "外部 LSP 与项目工作区"
+      }
+    },
+    {
+      "id": "ai-delegation",
+      "label": {
+        "en": "Bounded AI delegation",
+        "zh-CN": "有界 AI 委派"
+      }
+    },
+    {
+      "id": "ecosystem",
+      "label": {
+        "en": "External ecosystem adapters",
+        "zh-CN": "外部生态适配"
+      }
+    },
+    {
+      "id": "executable-plugin",
+      "label": {
+        "en": "Executable domain plugins",
+        "zh-CN": "可执行领域插件"
+      }
+    },
+    {
+      "id": "task-content-metadata",
+      "label": {
+        "en": "Task content manifest and snapshot checks",
+        "zh-CN": "任务内容清单与快照校验"
+      }
+    },
+    {
+      "id": "task-content-storage",
+      "label": {
+        "en": "Atomic Task content storage",
+        "zh-CN": "任务内容原子存储"
+      }
+    },
+    {
+      "id": "session-task-content",
+      "label": {
+        "en": "Session-authorized Task content",
+        "zh-CN": "会话授权任务内容"
+      }
+    },
+    {
+      "id": "task-content-http",
+      "label": {
+        "en": "Explicit Task content HTTP adapter",
+        "zh-CN": "显式任务内容 HTTP 适配"
+      }
+    }
+  ],
+  "implementations": [
+    {
+      "id": "impl-U01",
+      "sources": [
+        "frontend/src/components/SidebarLayout.tsx"
+      ],
+      "tests": [
+        "frontend/tests/taskNavigation.browser.mjs",
+        "frontend/tests/authSession.browser.mjs",
+        "frontend/tests/workspaceLayout.browser.mjs"
+      ]
+    },
+    {
+      "id": "impl-U02",
+      "sources": [
+        "frontend/src/features/tasks/taskDraft.ts",
+        "frontend/src/features/tasks/TaskDraftWorkspace.tsx"
+      ],
+      "tests": [
+        "frontend/tests/taskDraft.test.mjs",
+        "frontend/tests/taskPayloadEditor.browser.mjs"
+      ]
+    },
+    {
+      "id": "impl-U03",
+      "sources": [
+        "frontend/src/features/tasks/TaskDraftWorkspace.tsx",
+        "frontend/src/features/tasks/taskDraft.ts"
+      ],
+      "tests": [
+        "frontend/tests/taskPayloadEditor.browser.mjs"
+      ]
+    },
+    {
+      "id": "impl-U04",
+      "sources": [
+        "frontend/src/features/editor/EditorWorkspace.tsx",
+        "frontend/src/features/editor/useEditorSession.ts"
+      ],
+      "tests": [
+        "frontend/tests/taskPayloadEditor.browser.mjs",
+        "frontend/tests/multiLanguageEditor.browser.mjs"
+      ]
+    },
+    {
+      "id": "impl-U05",
+      "sources": [
+        "frontend/src/features/editor/languages.ts",
+        "frontend/src/features/editor/languageServices.ts"
+      ],
+      "tests": [
+        "frontend/tests/editorLanguages.test.mjs",
+        "frontend/tests/multiLanguageEditor.browser.mjs"
+      ]
+    },
+    {
+      "id": "impl-U06",
+      "sources": [
+        "frontend/src/features/editor/document.ts",
+        "frontend/src/features/editor/EditorWorkspace.tsx"
+      ],
+      "tests": [
+        "frontend/tests/editorDocument.test.mjs",
+        "frontend/tests/editorFilenameImport.browser.mjs"
+      ]
+    },
+    {
+      "id": "impl-U07",
+      "sources": [
+        "frontend/src/components/useConfirmedAction.tsx",
+        "frontend/src/features/editor/useDraftWarning.ts"
+      ],
+      "tests": [
+        "frontend/tests/actionSafety.test.mjs",
+        "frontend/tests/taskPayloadEditor.browser.mjs"
+      ]
+    },
+    {
+      "id": "impl-A01",
+      "sources": [
+        "engine/src/services/auth_service.rs",
+        "engine/src/routes/auth.rs",
+        "engine/src/application.rs"
+      ],
+      "tests": [
+        "engine/tests/routes_tdd.rs",
+        "frontend/tests/authSession.browser.mjs"
+      ]
+    },
+    {
+      "id": "impl-A02",
+      "sources": [
+        "engine/src/services/classroom.rs",
+        "frontend/pages/join.tsx",
+        "frontend/src/features/classroom/connection.js"
+      ],
+      "tests": [
+        "engine/tests/classroom_tdd.rs",
+        "frontend/tests/classroomConnection.test.mjs"
+      ]
+    },
+    {
+      "id": "impl-I01",
+      "sources": [
+        "engine/src/models/collaboration/mod.rs",
+        "engine/src/services/legacy_workspace.rs"
+      ],
+      "tests": [
+        "engine/tests/collaboration_contract_tdd.rs",
+        "engine/tests/legacy_workspace_projection_tdd.rs"
+      ]
+    },
+    {
+      "id": "impl-I02",
+      "sources": [
+        "engine/src/services/collaboration_identity_store/identity_command.rs",
+        "engine/src/services/collaboration_identity_store/identity_audit.rs"
+      ],
+      "tests": [
+        "engine/tests/collaboration_identity_store_tdd.rs",
+        "engine/tests/collaboration_identity_audit_tdd.rs"
+      ]
+    },
+    {
+      "id": "impl-I03",
+      "sources": [
+        "engine/src/services/collaboration_identity_store/access_policy.rs",
+        "engine/src/services/collaboration_identity_store/policy_command.rs"
+      ],
+      "tests": [
+        "engine/tests/collaboration_access_store_tdd.rs",
+        "engine/tests/collaboration_policy_audit_tdd.rs"
+      ]
+    },
+    {
+      "id": "impl-I04",
+      "sources": [
+        "engine/src/services/auth_service/durable_source/mod.rs",
+        "engine/src/services/auth_service/durable_source/sessions.rs"
+      ],
+      "tests": [
+        "engine/tests/durable_auth_source_tdd.rs"
+      ]
+    },
+    {
+      "id": "impl-I05",
+      "sources": [
+        "engine/src/services/auth_service/durable_source/session_commands.rs",
+        "engine/src/services/collaboration_identity_store/session_adapter.rs"
+      ],
+      "tests": [
+        "engine/tests/durable_collaboration_tdd.rs"
+      ]
+    },
+    {
+      "id": "impl-I06",
+      "sources": [
+        "engine/src/services/auth_service/durable_source/deletion.rs",
+        "engine/src/services/auth_service/durable_source/credentials.rs"
+      ],
+      "tests": [
+        "engine/tests/durable_account_deletion_tdd.rs",
+        "engine/tests/durable_password_change_tdd.rs"
+      ]
+    },
+    {
+      "id": "impl-O01",
+      "sources": [
+        "engine/src/bin/cyanrex-provision/main.rs",
+        "engine/src/services/auth_service/durable_source/bootstrap.rs"
+      ],
+      "tests": [
+        "engine/tests/provision_cli_tdd.rs",
+        "engine/tests/provision_postgres_tdd.rs",
+        "engine/tests/durable_bootstrap_tdd.rs"
+      ]
+    },
+    {
+      "id": "impl-O02",
+      "sources": [
+        "engine/src/services/auth_service/durable_source/reconciliation/mod.rs",
+        "engine/src/services/collaboration_identity_store/reconciliation/mod.rs"
+      ],
+      "tests": [
+        "engine/tests/durable_reconciliation_tdd.rs"
+      ]
+    },
+    {
+      "id": "impl-W01",
+      "sources": [
+        "engine/src/services/task_store/mod.rs",
+        "engine/src/services/task_store/replace.rs"
+      ],
+      "tests": [
+        "engine/tests/task_store_tdd.rs",
+        "engine/tests/task_store/faults.rs"
+      ]
+    },
+    {
+      "id": "impl-W02",
+      "sources": [
+        "engine/src/services/artifact_store/mod.rs",
+        "engine/src/services/artifact_store/blob.rs"
+      ],
+      "tests": [
+        "engine/tests/artifact_store_tdd.rs",
+        "engine/tests/artifact_store/faults.rs"
+      ]
+    },
+    {
+      "id": "impl-W03",
+      "sources": [
+        "engine/src/services/review_store/mod.rs",
+        "engine/src/services/review_store/records.rs"
+      ],
+      "tests": [
+        "engine/tests/review_store_tdd.rs",
+        "engine/tests/review_store/integration.rs"
+      ]
+    },
+    {
+      "id": "impl-W04",
+      "sources": [
+        "engine/src/services/auth_service/durable_source/task_commands/mod.rs",
+        "engine/src/services/auth_service/durable_source/private_work/mod.rs"
+      ],
+      "tests": [
+        "engine/tests/session_task_tdd.rs"
+      ]
+    },
+    {
+      "id": "impl-W05",
+      "sources": [
+        "engine/src/services/auth_service/durable_source/artifact_commands.rs"
+      ],
+      "tests": [
+        "engine/tests/session_artifact_tdd.rs"
+      ]
+    },
+    {
+      "id": "impl-W06",
+      "sources": [
+        "engine/src/services/auth_service/durable_source/task_commands/inputs.rs"
+      ],
+      "tests": [
+        "engine/tests/session_task_inputs_tdd.rs",
+        "engine/tests/session_task_inputs/concurrency.rs"
+      ]
+    },
+    {
+      "id": "impl-W07",
+      "sources": [
+        "engine/src/services/auth_service/durable_source/review_commands.rs"
+      ],
+      "tests": [
+        "engine/tests/session_review_tdd.rs",
+        "engine/tests/session_review/concurrency.rs"
+      ]
+    },
+    {
+      "id": "impl-W08",
+      "sources": [
+        "engine/src/services/auth_service/durable_source/task_commands/inputs/catalog.rs"
+      ],
+      "tests": [
+        "engine/tests/session_catalog_task_tdd.rs"
+      ]
+    },
+    {
+      "id": "impl-W09",
+      "sources": [
+        "engine/src/services/auth_service/durable_source/task_commands/inputs/replacement.rs"
+      ],
+      "tests": [
+        "engine/tests/session_task_revision_tdd.rs",
+        "engine/tests/session_task_revision/concurrency.rs"
+      ]
+    },
+    {
+      "id": "impl-D01",
+      "sources": [
+        "engine/src/services/task_catalog.rs"
+      ],
+      "tests": [
+        "engine/tests/task_catalog_tdd.rs"
+      ]
+    },
+    {
+      "id": "impl-D02",
+      "sources": [
+        "engine/src/services/learning_catalog.rs",
+        "engine/src/domain_packs/ebpf_teaching/mod.rs"
+      ],
+      "tests": [
+        "engine/tests/teaching_task_adapter_tdd.rs"
+      ]
+    },
+    {
+      "id": "impl-D03",
+      "sources": [
+        "engine/src/services/learning_store.rs",
+        "engine/src/routes/learning.rs",
+        "frontend/pages/teaching.tsx"
+      ],
+      "tests": [
+        "engine/tests/module_boundaries/learning_flow.rs",
+        "frontend/tests/learningFeedback.browser.mjs",
+        "frontend/tests/learningResume.browser.mjs"
+      ]
+    },
+    {
+      "id": "impl-D04",
+      "sources": [
+        "engine/src/services/script_store.rs",
+        "engine/src/routes/scripts.rs"
+      ],
+      "tests": [
+        "engine/tests/module_boundaries/storage.rs",
+        "engine/tests/module_boundaries/script_postgres.rs"
+      ]
+    },
+    {
+      "id": "impl-R01",
+      "sources": [
+        "engine/src/routes/ebpf/check.inc.rs",
+        "frontend/src/utils/semanticCompletion.ts"
+      ],
+      "tests": [
+        "engine/tests/routes_tdd/runner_compiler.inc.rs",
+        "frontend/tests/editorIntelligence.browser.mjs"
+      ]
+    },
+    {
+      "id": "impl-R02",
+      "sources": [
+        "engine/src/routes/ebpf/handlers.inc.rs",
+        "engine/src/services/ebpf_loader/attach.inc.rs",
+        "frontend/src/features/ebpf/useRuntimeActions.ts"
+      ],
+      "tests": [
+        "frontend/tests/runtimeLifecycle.browser.mjs",
+        "frontend/tests/runtimeSafety.browser.mjs",
+        "engine/src/services/runner_manager/tests.rs"
+      ]
+    },
+    {
+      "id": "impl-R03",
+      "sources": [
+        "engine/src/services/runner_manager.rs",
+        "engine/src/services/runner_driver.rs"
+      ],
+      "tests": [
+        "engine/tests/routes_tdd/runner_capacity.inc.rs",
+        "engine/tests/routes_tdd/runner_lifecycle.inc.rs"
+      ]
+    },
+    {
+      "id": "impl-R04",
+      "sources": [
+        "engine/src/services/runner_agent_client.rs",
+        "engine/src/services/runner_agent_executor.rs",
+        "engine/src/services/runner_job_queue.rs"
+      ],
+      "tests": [
+        "engine/tests/runner_agent_client_tdd.rs",
+        "engine/tests/routes_tdd/runner_job.inc.rs"
+      ]
+    },
+    {
+      "id": "impl-E01",
+      "sources": [
+        "engine/src/services/event_bus.rs",
+        "frontend/src/features/events/eventStream.ts",
+        "frontend/src/features/events/useEventActions.ts"
+      ],
+      "tests": [
+        "engine/tests/module_boundaries/events.rs",
+        "engine/tests/module_boundaries/event_mutations.rs",
+        "frontend/tests/eventStream.test.mjs"
+      ]
+    },
+    {
+      "id": "impl-E02",
+      "sources": [
+        "engine/src/services/task_store/records.rs",
+        "engine/src/services/artifact_store/records.rs",
+        "engine/src/services/review_store/records.rs",
+        "engine/src/services/task_store/content_records.rs"
+      ],
+      "tests": [
+        "engine/tests/task_store/faults.rs",
+        "engine/tests/artifact_store/faults.rs",
+        "engine/tests/review_store/faults.rs",
+        "engine/tests/task_content_store_tdd.rs"
+      ]
+    },
+    {
+      "id": "impl-E03",
+      "sources": [
+        "engine/src/application.rs",
+        "engine/openapi/openapi.json",
+        "sdk-js/src/index.ts"
+      ],
+      "tests": [
+        "scripts/tests/openapiContract.test.mjs",
+        "scripts/tests/sdkSurfaceCompatibility.test.mjs",
+        "sdk-js/tests/client.test.mjs",
+        "sdk-js/tests/package-smoke.mjs"
+      ]
+    },
+    {
+      "id": "impl-O03",
+      "sources": [
+        "start.sh",
+        "engine/src/config.rs",
+        "engine/src/state.rs"
+      ],
+      "tests": [
+        "scripts/tests/teacherAuthority.test.mjs",
+        "scripts/test-distribution-tools.sh"
+      ]
+    },
+    {
+      "id": "impl-O04",
+      "sources": [
+        "engine/src/bin/cyanrex-release/package.rs",
+        "engine/src/bin/cyanrex-release/ssh_cli.rs"
+      ],
+      "tests": [
+        "engine/tests/release_package_tdd.rs",
+        "engine/tests/ssh_deploy_tdd.rs",
+        "scripts/test-distribution-tools.sh"
+      ]
+    },
+    {
+      "id": "impl-O05",
+      "sources": [
+        "frontend/src/features/settings/useSettingsForm.ts",
+        "frontend/src/features/settings/usePerformanceMetrics.ts",
+        "frontend/src/features/runner/useRunnerAgentAdmin.ts"
+      ],
+      "tests": [
+        "frontend/tests/settingsRequest.test.mjs",
+        "frontend/tests/runnerInventory.test.mjs",
+        "frontend/tests/settingsPage.browser.mjs"
+      ]
+    },
+    {
+      "id": "impl-O06",
+      "sources": [
+        "engine/src/services/module_manager.rs",
+        "engine/src/services/c_header_module.rs",
+        "engine/src/services/command_dispatcher.rs"
+      ],
+      "tests": [
+        "engine/tests/routes_tdd/modules.inc.rs",
+        "engine/tests/routes_tdd/command.inc.rs",
+        "engine/tests/module_boundaries/storage.rs"
+      ]
+    },
+    {
+      "id": "impl-P01",
+      "sources": [],
+      "tests": []
+    },
+    {
+      "id": "impl-P02",
+      "sources": [],
+      "tests": []
+    },
+    {
+      "id": "impl-P03",
+      "sources": [],
+      "tests": []
+    },
+    {
+      "id": "impl-P04",
+      "sources": [],
+      "tests": []
+    },
+    {
+      "id": "impl-P05",
+      "sources": [],
+      "tests": []
+    },
+    {
+      "id": "impl-P06",
+      "sources": [
+        "engine/src/models/collaboration/references.rs"
+      ],
+      "tests": []
+    },
+    {
+      "id": "impl-P07",
+      "sources": [
+        "engine/src/models/collaboration/event.rs"
+      ],
+      "tests": []
+    },
+    {
+      "id": "impl-P08",
+      "sources": [],
+      "tests": []
+    },
+    {
+      "id": "impl-P09",
+      "sources": [],
+      "tests": []
+    },
+    {
+      "id": "impl-P10",
+      "sources": [
+        "engine/src/models/collaboration/identity.rs"
+      ],
+      "tests": []
+    },
+    {
+      "id": "impl-P11",
+      "sources": [],
+      "tests": []
+    },
+    {
+      "id": "impl-P12",
+      "sources": [],
+      "tests": []
+    },
+    {
+      "id": "impl-W10",
+      "sources": [
+        "engine/src/models/collaboration/content.rs",
+        "engine/src/services/task_content.rs"
+      ],
+      "tests": [
+        "engine/tests/task_content_contract_tdd.rs",
+        "engine/tests/task_content_binding_tdd.rs"
+      ]
+    },
+    {
+      "id": "impl-W11",
+      "sources": [
+        "engine/src/services/task_store/content.rs",
+        "engine/src/services/task_store/content_commands.rs",
+        "engine/src/services/task_store/content_records.rs",
+        "engine/src/services/task_store/schema.rs",
+        "engine/migrations/0014_collaboration_task_content.sql"
+      ],
+      "tests": [
+        "engine/src/services/task_store/content_tests.rs",
+        "engine/tests/task_content_store_tdd.rs",
+        "engine/tests/task_content_store/behavior.rs",
+        "engine/tests/task_content_store/faults.rs",
+        "engine/tests/task_content_store/concurrency.rs",
+        "scripts/tests/postgresCi.test.mjs"
+      ]
+    },
+    {
+      "id": "impl-W12",
+      "sources": [
+        "engine/src/services/auth_service/durable_source/task_commands/content.rs",
+        "engine/src/services/auth_service/durable_source/private_work/mod.rs",
+        "engine/src/services/task_content.rs"
+      ],
+      "tests": [
+        "engine/tests/session_task_content_tdd.rs",
+        "engine/tests/session_task_content",
+        "scripts/tests/postgresCi.test.mjs"
+      ]
+    },
+    {
+      "id": "impl-W13",
+      "sources": [
+        "engine/src/platform_http/mod.rs",
+        "engine/src/platform_http/security.rs",
+        "engine/src/platform_http/handlers.rs",
+        "engine/src/platform_http/contract.rs",
+        "engine/src/platform_http/errors.rs"
+      ],
+      "tests": [
+        "engine/tests/platform_http_tdd.rs",
+        "engine/tests/platform_http",
+        "scripts/tests/postgresCi.test.mjs"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "release-049",
+      "date": "2026-10-03",
+      "kind": "release-record",
+      "reference": "docs/en/project-status.md",
+      "note": "0.4.9 source release checks: 402 default Rust, 395 ignored, 92 scripts, 164 frontend, 16 SDK; 59 separate browser cases. No fresh opt-in database, kernel or LAN acceptance."
+    },
+    {
+      "id": "bughunt-local",
+      "date": "2026-10-03",
+      "kind": "browser-record",
+      "reference": "docs/en/project-status.md",
+      "note": "Unreleased bug hunt after 0.4.9: 165 frontend, 92 scripts and 72 browser cases across seven named suites. Engine responses mocked; real local Monaco/file behavior. This precedes the tensor review."
+    },
+    {
+      "id": "c2-database",
+      "date": "2026-10-03",
+      "kind": "database-record",
+      "reference": "docs/en/project-status.md",
+      "note": "C2-J implementation run: 155 selected Task/Artifact/Review PostgreSQL cases, not every identity/lifecycle suite. Separate from release/browser runs."
+    },
+    {
+      "id": "c1-identity",
+      "date": "2026-09-27",
+      "kind": "database-record",
+      "reference": "docs/en/collaboration-identity-lifecycle.md",
+      "note": "Original C1-D isolated PostgreSQL identity binding/retirement and preceding registry/policy cases; historical scope, not current deployment."
+    },
+    {
+      "id": "c1-policy",
+      "date": "2026-09-27",
+      "kind": "database-record",
+      "reference": "docs/en/collaboration-policy-audit.md",
+      "note": "Original C1-C isolated PostgreSQL membership/grant audit evidence; no live cutover."
+    },
+    {
+      "id": "c1-auth",
+      "date": "2026-09-27",
+      "kind": "database-record",
+      "reference": "docs/en/collaboration-auth-source.md",
+      "note": "Original C1-E durable authentication source PostgreSQL evidence; public AuthService was not switched."
+    },
+    {
+      "id": "c1-session",
+      "date": "2026-09-27",
+      "kind": "database-record",
+      "reference": "docs/en/collaboration-session-commands.md",
+      "note": "Original C1-F current-Session transaction composition evidence; internal staging only."
+    },
+    {
+      "id": "c1-password",
+      "date": "2026-10-02",
+      "kind": "database-record",
+      "reference": "docs/en/collaboration-password-change.md",
+      "note": "18 password lifecycle cases and separately listed preceding regressions on isolated PostgreSQL; no live recovery."
+    },
+    {
+      "id": "c1-provision",
+      "date": "2026-10-02",
+      "kind": "database-record",
+      "reference": "docs/en/collaboration-provisioning.md",
+      "note": "Explicit CLI and disposable PostgreSQL, including loopback SCRAM; no installed platform cutover."
+    },
+    {
+      "id": "c1-reconcile",
+      "date": "2026-10-02",
+      "kind": "database-record",
+      "reference": "docs/en/collaboration-reconciliation.md",
+      "note": "C1-K development run on 2026-10-02 (also dated in development-history.md), including read-only SQL/CLI and SCRAM fixtures; not repairs or migration."
+    },
+    {
+      "id": "design",
+      "date": "2026-10-03",
+      "kind": "design",
+      "reference": "docs/en/project-status.md",
+      "note": "Current remaining boundaries and proposed next steps; no execution evidence."
+    },
+    {
+      "id": "target",
+      "date": "2026-10-03",
+      "kind": "design",
+      "reference": "docs/zh-CN/next-architecture.md",
+      "note": "Reviewed target architecture; its original 0.4.3 inventory and external-project assumptions remain historical, not verified integrations."
+    },
+    {
+      "id": "agent-history",
+      "date": "2026-09-25",
+      "kind": "service-integration",
+      "reference": "reports/releases/0.4.3/README.md",
+      "note": "Historical signed loopback HTTP and Clang integration; not current 0.4.9 Agent transport, TLS/LAN or remote kernel acceptance."
+    },
+    {
+      "id": "kernel-history",
+      "date": "2026-09-09",
+      "kind": "historical-integration",
+      "reference": "reports/acceptance/2026-09-09-kernel-vm/README.md",
+      "note": "Historical manual VM/native dirty-build tracepoint acceptance, candidate null. Does not establish managed VM isolation or current kernel acceptance."
+    },
+    {
+      "id": "content-contract",
+      "date": "2026-10-03",
+      "kind": "unit-record",
+      "reference": "docs/en/task-content-manifest.md",
+      "note": "C2-K pure metadata and supplied-snapshot validation regressions. No metadata persistence, Session authorization, public API, browser save or database integration is established; execution totals are recorded separately in project-status.md."
+    },
+    {
+      "id": "content-storage",
+      "date": "2026-10-03",
+      "kind": "database-record",
+      "reference": "docs/en/task-content-store.md",
+      "note": "21 exact content-storage cases on a disposable PostgreSQL 16 instance over a private Unix socket, plus separately recorded default/shared-store regressions. Trusted schema-3 persistence only; no Session content adapter, Artifact byte authentication, public save or deployment acceptance."
+    },
+    {
+      "id": "session-content",
+      "date": "2026-10-03",
+      "kind": "database-record",
+      "reference": "docs/en/session-task-content.md",
+      "note": "Scoped exact schema-3 Session-content PostgreSQL 16 cases over a private Unix socket. Source-owned authorization, old/new text, namespace and transaction failure checks only; execution totals are recorded in project-status.md. No public/browser save, live-auth cutover or deployment acceptance."
+    },
+    {
+      "id": "content-http",
+      "date": "2026-10-03",
+      "kind": "database-record",
+      "reference": "docs/en/task-content-http.md",
+      "note": "Scoped PostgreSQL 16.15 HTTP-to-C2-M cases over a private Unix socket cover exact snapshots, current Session authority and storage faults. In-process routing only: no HTTP listener, browser, TLS/proxy or live cutover; dated totals and omissions are recorded in project status."
+    }
+  ],
+  "cells": [
+    {
+      "id": "U01",
+      "architecture": "ui",
+      "function": "session-shell",
+      "implementation": "impl-U01",
+      "state": "live",
+      "scores": {
+        "D": 3,
+        "C": 2,
+        "V": 2,
+        "O": 1
+      },
+      "evidence": [
+        "bughunt-local"
+      ],
+      "gap": {
+        "en": "Client visibility is not Engine authorization; fragment fixes are included in 0.5.0.",
+        "zh-CN": "侧栏不授予服务端权限；锚点导航修复收录于 0.5.0。"
+      }
+    },
+    {
+      "id": "U02",
+      "architecture": "ui",
+      "function": "task-draft",
+      "implementation": "impl-U02",
+      "state": "local",
+      "scores": {
+        "D": 3,
+        "C": 2,
+        "V": 2,
+        "O": 1
+      },
+      "evidence": [
+        "bughunt-local"
+      ],
+      "gap": {
+        "en": "No server save, browser persistence, task list or binary payload.",
+        "zh-CN": "无服务端保存、浏览器持久化、任务列表或二进制 payload。"
+      }
+    },
+    {
+      "id": "U03",
+      "architecture": "ui",
+      "function": "draft-transfer",
+      "implementation": "impl-U03",
+      "state": "local",
+      "scores": {
+        "D": 3,
+        "C": 2,
+        "V": 2,
+        "O": 1
+      },
+      "evidence": [
+        "bughunt-local"
+      ],
+      "gap": {
+        "en": "Download is local export, not server commit or guaranteed disk persistence.",
+        "zh-CN": "下载只是本地导出，不是服务端提交或磁盘落盘保证。"
+      }
+    },
+    {
+      "id": "U04",
+      "architecture": "ui",
+      "function": "controlled-editor",
+      "implementation": "impl-U04",
+      "state": "local",
+      "scores": {
+        "D": 3,
+        "C": 2,
+        "V": 2,
+        "O": 1
+      },
+      "evidence": [
+        "bughunt-local"
+      ],
+      "gap": {
+        "en": "Single selected model; switching does not retain undo or create a filesystem project.",
+        "zh-CN": "单个选中模型；切换不保留 undo，也不创建文件系统项目。"
+      }
+    },
+    {
+      "id": "U05",
+      "architecture": "ui",
+      "function": "local-language",
+      "implementation": "impl-U05",
+      "state": "local",
+      "scores": {
+        "D": 3,
+        "C": 2,
+        "V": 2,
+        "O": 1
+      },
+      "evidence": [
+        "bughunt-local"
+      ],
+      "gap": {
+        "en": "14 profiles are not 14 LSP servers; shared JS/TS workers are not a security sandbox.",
+        "zh-CN": "14 种配置不等于 14 个 LSP；共享 JS/TS worker 不是安全沙箱。"
+      }
+    },
+    {
+      "id": "U06",
+      "architecture": "ui",
+      "function": "text-transfer",
+      "implementation": "impl-U06",
+      "state": "local",
+      "scores": {
+        "D": 3,
+        "C": 2,
+        "V": 2,
+        "O": 1
+      },
+      "evidence": [
+        "bughunt-local"
+      ],
+      "gap": {
+        "en": "Text only; Unicode truncation fix is included in 0.5.0; filenames confer no filesystem access.",
+        "zh-CN": "仅文本；Unicode 截断修复收录于 0.5.0，文件名不授予文件系统访问权。"
+      }
+    },
+    {
+      "id": "U07",
+      "architecture": "ui",
+      "function": "confirmation",
+      "implementation": "impl-U07",
+      "state": "live",
+      "scores": {
+        "D": 3,
+        "C": 2,
+        "V": 2,
+        "O": 1
+      },
+      "evidence": [
+        "release-049",
+        "bughunt-local"
+      ],
+      "gap": {
+        "en": "Confirmation is not authorization or rollback; history/programmatic navigation recovery is incomplete.",
+        "zh-CN": "确认不等于授权或回滚；不覆盖全部历史与程序导航恢复。"
+      }
+    },
+    {
+      "id": "A01",
+      "architecture": "authority",
+      "function": "live-auth",
+      "implementation": "impl-A01",
+      "state": "live",
+      "scores": {
+        "D": 3,
+        "C": 2,
+        "V": 2,
+        "O": 1
+      },
+      "evidence": [
+        "release-049",
+        "bughunt-local"
+      ],
+      "gap": {
+        "en": "Legacy instance authority, not new Workspace grants; no durable-source cutover.",
+        "zh-CN": "仍为旧实例权威，不是新 Workspace Grant；尚未切换持久认证源。"
+      }
+    },
+    {
+      "id": "A02",
+      "architecture": "authority",
+      "function": "classroom-join",
+      "implementation": "impl-A02",
+      "state": "live",
+      "scores": {
+        "D": 3,
+        "C": 2,
+        "V": 2,
+        "O": 1
+      },
+      "evidence": [
+        "release-049"
+      ],
+      "gap": {
+        "en": "Discovery is not authentication; no multicast discovery or current LAN/TLS acceptance.",
+        "zh-CN": "发现不是认证；无组播发现或当前局域网 TLS 验收。"
+      }
+    },
+    {
+      "id": "I01",
+      "architecture": "identity",
+      "function": "shared-contract",
+      "implementation": "impl-I01",
+      "state": "prepared",
+      "scores": {
+        "D": 2,
+        "C": 1,
+        "V": 2,
+        "O": 1
+      },
+      "evidence": [
+        "release-049"
+      ],
+      "gap": {
+        "en": "Scoped types and implemented pure legacy projections do not migrate, authenticate or authorize.",
+        "zh-CN": "带范围类型与已实现的旧权限纯投影不执行迁移、认证或授权。"
+      }
+    },
+    {
+      "id": "I02",
+      "architecture": "identity",
+      "function": "identity-registry",
+      "implementation": "impl-I02",
+      "state": "prepared",
+      "scores": {
+        "D": 3,
+        "C": 1,
+        "V": 3,
+        "O": 1
+      },
+      "evidence": [
+        "c1-identity"
+      ],
+      "gap": {
+        "en": "Historical SQL evidence; production adoption, writer fencing and recovery are absent.",
+        "zh-CN": "已有历史 SQL 证据；生产数据收编、旧写入隔离与恢复未实现。"
+      }
+    },
+    {
+      "id": "I03",
+      "architecture": "identity",
+      "function": "membership-policy",
+      "implementation": "impl-I03",
+      "state": "prepared",
+      "scores": {
+        "D": 3,
+        "C": 1,
+        "V": 3,
+        "O": 1
+      },
+      "evidence": [
+        "c1-policy"
+      ],
+      "gap": {
+        "en": "Membership is not deployment permission or private-content sharing.",
+        "zh-CN": "成员关系不自动授予部署权或私人内容分享权。"
+      }
+    },
+    {
+      "id": "I04",
+      "architecture": "identity",
+      "function": "durable-session",
+      "implementation": "impl-I04",
+      "state": "prepared",
+      "scores": {
+        "D": 3,
+        "C": 1,
+        "V": 3,
+        "O": 1
+      },
+      "evidence": [
+        "c1-auth"
+      ],
+      "gap": {
+        "en": "Public login still uses the legacy source; new public CSRF/auth adapter absent.",
+        "zh-CN": "公共登录仍走旧源；新的公共认证与 CSRF 适配未接入。"
+      }
+    },
+    {
+      "id": "I05",
+      "architecture": "identity",
+      "function": "session-management",
+      "implementation": "impl-I05",
+      "state": "prepared",
+      "scores": {
+        "D": 3,
+        "C": 1,
+        "V": 3,
+        "O": 1
+      },
+      "evidence": [
+        "c1-session"
+      ],
+      "gap": {
+        "en": "Internal transaction-owned authorization only; no public management workflow.",
+        "zh-CN": "仅内部事务持有授权；无公共管理流程。"
+      }
+    },
+    {
+      "id": "I06",
+      "architecture": "identity",
+      "function": "account-lifecycle",
+      "implementation": "impl-I06",
+      "state": "prepared",
+      "scores": {
+        "D": 3,
+        "C": 1,
+        "V": 3,
+        "O": 1
+      },
+      "evidence": [
+        "c1-password"
+      ],
+      "gap": {
+        "en": "No live account migration or recovery; cancelled waiting does not prove rollback.",
+        "zh-CN": "无在线账号迁移或恢复；取消等待不证明回滚。"
+      }
+    },
+    {
+      "id": "O01",
+      "architecture": "operations",
+      "function": "provision",
+      "implementation": "impl-O01",
+      "state": "prepared",
+      "scores": {
+        "D": 3,
+        "C": 2,
+        "V": 3,
+        "O": 2
+      },
+      "evidence": [
+        "c1-provision"
+      ],
+      "gap": {
+        "en": "Local explicit empty-namespace tool, not startup bootstrap or old-data import.",
+        "zh-CN": "仅本地显式空命名空间工具，不是启动安装器或旧数据导入器。"
+      }
+    },
+    {
+      "id": "O02",
+      "architecture": "operations",
+      "function": "reconcile",
+      "implementation": "impl-O02",
+      "state": "prepared",
+      "scores": {
+        "D": 3,
+        "C": 2,
+        "V": 3,
+        "O": 2
+      },
+      "evidence": [
+        "c1-reconcile"
+      ],
+      "gap": {
+        "en": "A bounded read-only snapshot, not repair, permission or secret-delivery proof.",
+        "zh-CN": "有界只读快照，不是修复、授权或秘密送达证明。"
+      }
+    },
+    {
+      "id": "W01",
+      "architecture": "work",
+      "function": "task-store",
+      "implementation": "impl-W01",
+      "state": "prepared",
+      "scores": {
+        "D": 3,
+        "C": 1,
+        "V": 3,
+        "O": 1
+      },
+      "evidence": [
+        "c2-database"
+      ],
+      "gap": {
+        "en": "Schema 2 fresh namespace only; no schema 1 migration, assignment or acceptance.",
+        "zh-CN": "仅 Schema 2 新命名空间；无 Schema 1 迁移、分配或验收。"
+      }
+    },
+    {
+      "id": "W02",
+      "architecture": "work",
+      "function": "artifact-store",
+      "implementation": "impl-W02",
+      "state": "prepared",
+      "scores": {
+        "D": 3,
+        "C": 1,
+        "V": 3,
+        "O": 1
+      },
+      "evidence": [
+        "c2-database"
+      ],
+      "gap": {
+        "en": "Files and SQL are not one atomic write; no metadata mapping, sharing or garbage collection.",
+        "zh-CN": "文件与 SQL 不是同一原子提交；无元数据映射、分享或垃圾回收。"
+      }
+    },
+    {
+      "id": "W03",
+      "architecture": "work",
+      "function": "review-store",
+      "implementation": "impl-W03",
+      "state": "prepared",
+      "scores": {
+        "D": 3,
+        "C": 1,
+        "V": 3,
+        "O": 1
+      },
+      "evidence": [
+        "c2-database"
+      ],
+      "gap": {
+        "en": "Trusted direct caller; a stored rule judgment does not prove rule execution or Task acceptance.",
+        "zh-CN": "直接调用方受信任；存储规则判断不证明规则已运行或任务已验收。"
+      }
+    },
+    {
+      "id": "W04",
+      "architecture": "work",
+      "function": "session-task",
+      "implementation": "impl-W04",
+      "state": "prepared",
+      "scores": {
+        "D": 3,
+        "C": 1,
+        "V": 3,
+        "O": 1
+      },
+      "evidence": [
+        "c2-database"
+      ],
+      "gap": {
+        "en": "Internal own-task adapter; no public API, payload metadata or Task title edit.",
+        "zh-CN": "仅内部本人任务适配；无公共 API、payload 元数据或任务改名。"
+      }
+    },
+    {
+      "id": "W05",
+      "architecture": "work",
+      "function": "session-artifact",
+      "implementation": "impl-W05",
+      "state": "prepared",
+      "scores": {
+        "D": 3,
+        "C": 1,
+        "V": 3,
+        "O": 1
+      },
+      "evidence": [
+        "c2-database"
+      ],
+      "gap": {
+        "en": "No browser upload adapter; uncertain database outcome does not authorize file deletion.",
+        "zh-CN": "无浏览器上传适配；数据库结果不确定不授权删除文件。"
+      }
+    },
+    {
+      "id": "W06",
+      "architecture": "work",
+      "function": "session-inputs",
+      "implementation": "impl-W06",
+      "state": "prepared",
+      "scores": {
+        "D": 3,
+        "C": 1,
+        "V": 3,
+        "O": 1
+      },
+      "evidence": [
+        "c2-database"
+      ],
+      "gap": {
+        "en": "Pins owned revisions with byte checks, not domain evidence or a Run.",
+        "zh-CN": "固定本人修订并核对内容，不生成领域证据或 Run。"
+      }
+    },
+    {
+      "id": "W07",
+      "architecture": "work",
+      "function": "session-review",
+      "implementation": "impl-W07",
+      "state": "prepared",
+      "scores": {
+        "D": 3,
+        "C": 1,
+        "V": 3,
+        "O": 1
+      },
+      "evidence": [
+        "c2-database"
+      ],
+      "gap": {
+        "en": "Own content only; no cross-user grant, AI review or rule-authorized adapter.",
+        "zh-CN": "仅本人内容；无跨用户授权、AI 审阅或规则授权适配。"
+      }
+    },
+    {
+      "id": "W08",
+      "architecture": "work",
+      "function": "catalog-admission",
+      "implementation": "impl-W08",
+      "state": "prepared",
+      "scores": {
+        "D": 3,
+        "C": 1,
+        "V": 3,
+        "O": 1
+      },
+      "evidence": [
+        "c2-database"
+      ],
+      "gap": {
+        "en": "Admits definition metadata only; does not retain or execute a provider.",
+        "zh-CN": "仅准入定义元数据；不保留或执行 provider。"
+      }
+    },
+    {
+      "id": "W09",
+      "architecture": "work",
+      "function": "draft-replacement",
+      "implementation": "impl-W09",
+      "state": "prepared",
+      "scores": {
+        "D": 3,
+        "C": 1,
+        "V": 3,
+        "O": 1
+      },
+      "evidence": [
+        "c2-database"
+      ],
+      "gap": {
+        "en": "No UI conflict recovery; publication is separate and old content/Reviews stay unchanged.",
+        "zh-CN": "无界面冲突恢复；内容发布独立，旧内容与审阅不变。"
+      }
+    },
+    {
+      "id": "W10",
+      "architecture": "work",
+      "function": "task-content-metadata",
+      "implementation": "impl-W10",
+      "state": "prepared",
+      "scores": {
+        "D": 3,
+        "C": 1,
+        "V": 2,
+        "O": 1
+      },
+      "evidence": [
+        "content-contract"
+      ],
+      "gap": {
+        "en": "Pure supplied-snapshot checks only. Separate W11 persists metadata, but this validator establishes neither provenance nor authorization.",
+        "zh-CN": "仅给定快照纯校验。独立 W11 可持久化元数据，但本验证器不证明来源或授权。"
+      }
+    },
+    {
+      "id": "W11",
+      "architecture": "work",
+      "function": "task-content-storage",
+      "implementation": "impl-W11",
+      "state": "prepared",
+      "scores": {
+        "D": 3,
+        "C": 1,
+        "V": 3,
+        "O": 1
+      },
+      "evidence": [
+        "content-storage"
+      ],
+      "gap": {
+        "en": "Trusted schema-3 primitive only; W12 adds separate authorization/text composition. No catalogue admission, public saving or migration.",
+        "zh-CN": "仅可信 Schema 3 基础设施；W12 另行提供授权/文本组合。无目录准入、公共保存或迁移。"
+      }
+    },
+    {
+      "id": "W12",
+      "architecture": "work",
+      "function": "session-task-content",
+      "implementation": "impl-W12",
+      "state": "prepared",
+      "scores": {
+        "D": 3,
+        "C": 1,
+        "V": 3,
+        "O": 1
+      },
+      "evidence": [
+        "session-content"
+      ],
+      "gap": {
+        "en": "Internal source-owned authorization/text checks; W13 is a separate unmounted HTTP adapter. No browser save, catalogue admission, migration or live-auth cutover.",
+        "zh-CN": "内部认证源同事务授权/文本检查；W13 为独立未挂载 HTTP 适配。无浏览器保存、目录准入、迁移或在线认证切换。"
+      }
+    },
+    {
+      "id": "W13",
+      "architecture": "work",
+      "function": "task-content-http",
+      "implementation": "impl-W13",
+      "state": "prepared",
+      "scores": {
+        "D": 3,
+        "C": 1,
+        "V": 3,
+        "O": 1
+      },
+      "evidence": [
+        "content-http"
+      ],
+      "gap": {
+        "en": "Explicit standalone router only, not mounted in the current app. No Session issuer, public Artifact publication, browser mapping/save, live OpenAPI/SDK or migration.",
+        "zh-CN": "仅显式独立路由，未挂载到现用应用。无 Session 签发、公共 Artifact 发布、浏览器映射/保存、现用 OpenAPI/SDK 或迁移。"
+      }
+    },
+    {
+      "id": "D01",
+      "architecture": "domain",
+      "function": "domain-catalog",
+      "implementation": "impl-D01",
+      "state": "prepared",
+      "scores": {
+        "D": 3,
+        "C": 1,
+        "V": 2,
+        "O": 1
+      },
+      "evidence": [
+        "release-049"
+      ],
+      "gap": {
+        "en": "Trusted static providers; non-teaching provider remains a fixture, not a product workflow.",
+        "zh-CN": "受信任静态 provider；非教学 provider 仍为夹具，非产品流程。"
+      }
+    },
+    {
+      "id": "D02",
+      "architecture": "domain",
+      "function": "domain-catalog",
+      "implementation": "impl-D02",
+      "state": "live",
+      "scores": {
+        "D": 3,
+        "C": 2,
+        "V": 2,
+        "O": 1
+      },
+      "evidence": [
+        "release-049"
+      ],
+      "gap": {
+        "en": "Only the teaching facade is wired; its assessment is not a generic persisted Review.",
+        "zh-CN": "仅教学门面已接入；评估不等于通用持久 Review。"
+      }
+    },
+    {
+      "id": "D03",
+      "architecture": "domain",
+      "function": "learning-loop",
+      "implementation": "impl-D03",
+      "state": "live",
+      "scores": {
+        "D": 3,
+        "C": 2,
+        "V": 2,
+        "O": 1
+      },
+      "evidence": [
+        "release-049"
+      ],
+      "gap": {
+        "en": "Legacy attempts and feedback; source resume does not rerun or migrate to Task/Review.",
+        "zh-CN": "仍是旧尝试与反馈；恢复源码不自动运行或迁移为 Task/Review。"
+      }
+    },
+    {
+      "id": "D04",
+      "architecture": "domain",
+      "function": "saved-script",
+      "implementation": "impl-D04",
+      "state": "live",
+      "scores": {
+        "D": 3,
+        "C": 2,
+        "V": 2,
+        "O": 1
+      },
+      "evidence": [
+        "release-049"
+      ],
+      "gap": {
+        "en": "Existing script identity and fallback policy; not generic Artifact storage.",
+        "zh-CN": "沿用脚本身份与降级策略；不是通用 Artifact 存储。"
+      }
+    },
+    {
+      "id": "R01",
+      "architecture": "execution",
+      "function": "compiler-assistance",
+      "implementation": "impl-R01",
+      "state": "live",
+      "scores": {
+        "D": 3,
+        "C": 2,
+        "V": 2,
+        "O": 1
+      },
+      "evidence": [
+        "release-049",
+        "bughunt-local"
+      ],
+      "gap": {
+        "en": "Engine-backed C tooling may send source; separate from local Task language services.",
+        "zh-CN": "Engine C 工具可能发送源码；与本地任务语言服务分离。"
+      }
+    },
+    {
+      "id": "R02",
+      "architecture": "execution",
+      "function": "local-kernel",
+      "implementation": "impl-R02",
+      "state": "live",
+      "scores": {
+        "D": 3,
+        "C": 2,
+        "V": 2,
+        "O": 1
+      },
+      "evidence": [
+        "release-049",
+        "kernel-history"
+      ],
+      "gap": {
+        "en": "No current kernel acceptance; privileged shared kernel is not hostile-student isolation.",
+        "zh-CN": "无当前内核验收；特权共享内核不隔离恶意学生。"
+      }
+    },
+    {
+      "id": "R03",
+      "architecture": "execution",
+      "function": "local-leases",
+      "implementation": "impl-R03",
+      "state": "live",
+      "scores": {
+        "D": 3,
+        "C": 2,
+        "V": 2,
+        "O": 1
+      },
+      "evidence": [
+        "release-049"
+      ],
+      "gap": {
+        "en": "In-memory admission; no durable Run, restart recovery or multi-Engine attachment ownership.",
+        "zh-CN": "内存准入；无持久 Run、重启恢复或多 Engine 挂载归属。"
+      }
+    },
+    {
+      "id": "R04",
+      "architecture": "execution",
+      "function": "agent-compile",
+      "implementation": "impl-R04",
+      "state": "live",
+      "scores": {
+        "D": 3,
+        "C": 2,
+        "V": 3,
+        "O": 2
+      },
+      "evidence": [
+        "release-049",
+        "agent-history"
+      ],
+      "gap": {
+        "en": "No remote kernel execution; jobs/registration are ephemeral. Self-reported isolation is not VM/container proof; no implicit fallback.",
+        "zh-CN": "无远程内核执行；作业与注册易失。自报隔离能力不证明 VM/容器隔离，也不隐式回退。"
+      }
+    },
+    {
+      "id": "E01",
+      "architecture": "delivery",
+      "function": "runtime-events",
+      "implementation": "impl-E01",
+      "state": "live",
+      "scores": {
+        "D": 3,
+        "C": 2,
+        "V": 2,
+        "O": 1
+      },
+      "evidence": [
+        "release-049"
+      ],
+      "gap": {
+        "en": "Recent-history best effort; no business-event cursor, exactly-once or cross-Engine ordering.",
+        "zh-CN": "近期历史尽力恢复；无业务游标、恰好一次或跨 Engine 排序。"
+      }
+    },
+    {
+      "id": "E02",
+      "architecture": "delivery",
+      "function": "transaction-outbox",
+      "implementation": "impl-E02",
+      "state": "prepared",
+      "scores": {
+        "D": 3,
+        "C": 1,
+        "V": 3,
+        "O": 1
+      },
+      "evidence": [
+        "c2-database",
+        "content-storage"
+      ],
+      "gap": {
+        "en": "Atomic recording only; no delivery service or consumer replay.",
+        "zh-CN": "仅原子记录；无投递服务或消费者重放。"
+      }
+    },
+    {
+      "id": "E03",
+      "architecture": "delivery",
+      "function": "public-sdk",
+      "implementation": "impl-E03",
+      "state": "live",
+      "scores": {
+        "D": 3,
+        "C": 2,
+        "V": 2,
+        "O": 2
+      },
+      "evidence": [
+        "release-049"
+      ],
+      "gap": {
+        "en": "Generic preparation commands are not public; registry publication/support ownership pending.",
+        "zh-CN": "通用准备层命令尚未公开；包注册发布与长期支持待落实。"
+      }
+    },
+    {
+      "id": "O03",
+      "architecture": "operations",
+      "function": "startup",
+      "implementation": "impl-O03",
+      "state": "live",
+      "scores": {
+        "D": 3,
+        "C": 2,
+        "V": 2,
+        "O": 2
+      },
+      "evidence": [
+        "release-049"
+      ],
+      "gap": {
+        "en": "Health is not kernel readiness; startup does not initialize prepared stores.",
+        "zh-CN": "健康检查不等于内核就绪；启动不安装准备层存储。"
+      }
+    },
+    {
+      "id": "O04",
+      "architecture": "operations",
+      "function": "release-ssh",
+      "implementation": "impl-O04",
+      "state": "live",
+      "scores": {
+        "D": 3,
+        "C": 2,
+        "V": 2,
+        "O": 2
+      },
+      "evidence": [
+        "release-049"
+      ],
+      "gap": {
+        "en": "Preinstalled package targets only; no fresh candidate/LAN/SSH acceptance or bare-host bootstrap.",
+        "zh-CN": "面向已装包目标；无新候选制品、局域网 SSH 验收或裸机初始化。"
+      }
+    },
+    {
+      "id": "O05",
+      "architecture": "operations",
+      "function": "admin-console",
+      "implementation": "impl-O05",
+      "state": "live",
+      "scores": {
+        "D": 3,
+        "C": 2,
+        "V": 2,
+        "O": 2
+      },
+      "evidence": [
+        "release-049"
+      ],
+      "gap": {
+        "en": "Legacy teacher authority; uncertain mutations require explicit reconciliation, not blind retry.",
+        "zh-CN": "沿用教师权威；写入不确定需显式核对，不盲目重试。"
+      }
+    },
+    {
+      "id": "O06",
+      "architecture": "operations",
+      "function": "modules-headers",
+      "implementation": "impl-O06",
+      "state": "live",
+      "scores": {
+        "D": 3,
+        "C": 2,
+        "V": 2,
+        "O": 1
+      },
+      "evidence": [
+        "release-049"
+      ],
+      "gap": {
+        "en": "Module state is not executable plugin loading; terminal is not an arbitrary shell.",
+        "zh-CN": "模块状态不等于执行插件；终端不是任意 shell。"
+      }
+    },
+    {
+      "id": "P01",
+      "architecture": "work",
+      "function": "browser-save",
+      "implementation": "impl-P01",
+      "state": "planned",
+      "scores": {
+        "D": 0,
+        "C": 0,
+        "V": 0,
+        "O": 0
+      },
+      "evidence": [
+        "design",
+        "target"
+      ],
+      "gap": {
+        "en": "W10-W13 provide contracts, storage, Session/text checks and an unmounted HTTP boundary; secure login/installation, publication, draft mapping and browser save/read/conflict/outcome handling remain absent.",
+        "zh-CN": "W10-W13 提供契约、存储、Session/文本检查和未挂载 HTTP 边界；仍缺安全登录/安装、内容发布、草稿映射及浏览器保存/读取/冲突/结果处理。"
+      }
+    },
+    {
+      "id": "P02",
+      "architecture": "identity",
+      "function": "authority-cutover",
+      "implementation": "impl-P02",
+      "state": "planned",
+      "scores": {
+        "D": 0,
+        "C": 0,
+        "V": 0,
+        "O": 0
+      },
+      "evidence": [
+        "design",
+        "target"
+      ],
+      "gap": {
+        "en": "Inventory data, restore backups, fence old writers and review install/migration/rollback before routing.",
+        "zh-CN": "先盘点数据、验证备份恢复、隔离旧写入方并审阅安装迁移回滚，再切换路由。"
+      }
+    },
+    {
+      "id": "P03",
+      "architecture": "work",
+      "function": "shared-review",
+      "implementation": "impl-P03",
+      "state": "planned",
+      "scores": {
+        "D": 0,
+        "C": 0,
+        "V": 0,
+        "O": 0
+      },
+      "evidence": [
+        "design",
+        "target"
+      ],
+      "gap": {
+        "en": "Explicit content grants and reviewer delegation before any private-owner relaxation.",
+        "zh-CN": "先建立内容分享权与审阅者委派，不放宽本人范围冒充协作。"
+      }
+    },
+    {
+      "id": "P04",
+      "architecture": "domain",
+      "function": "rule-review",
+      "implementation": "impl-P04",
+      "state": "planned",
+      "scores": {
+        "D": 0,
+        "C": 0,
+        "V": 0,
+        "O": 0
+      },
+      "evidence": [
+        "design",
+        "target"
+      ],
+      "gap": {
+        "en": "Bind exact bytes and policy/provider version to authorized typed evidence and stored judgment.",
+        "zh-CN": "需将精确内容、策略与 provider 版本绑定到授权证据和持久判断。"
+      }
+    },
+    {
+      "id": "P05",
+      "architecture": "work",
+      "function": "task-acceptance",
+      "implementation": "impl-P05",
+      "state": "planned",
+      "scores": {
+        "D": 0,
+        "C": 0,
+        "V": 0,
+        "O": 0
+      },
+      "evidence": [
+        "design",
+        "target"
+      ],
+      "gap": {
+        "en": "Define acceptance policy/state and explicit Review effect; execution success is insufficient.",
+        "zh-CN": "缺验收策略、状态与 Review 影响定义；执行成功不够。"
+      }
+    },
+    {
+      "id": "P06",
+      "architecture": "execution",
+      "function": "generic-run",
+      "implementation": "impl-P06",
+      "state": "planned",
+      "scores": {
+        "D": 1,
+        "C": 0,
+        "V": 0,
+        "O": 0
+      },
+      "evidence": [
+        "design",
+        "target"
+      ],
+      "gap": {
+        "en": "Run reference exists, not scheduler/store; define inputs, leases, cancellation and restart reconciliation.",
+        "zh-CN": "只有 Run 引用，无调度器与存储；缺输入、租约、取消和重启核对。"
+      }
+    },
+    {
+      "id": "P07",
+      "architecture": "delivery",
+      "function": "outbox-delivery",
+      "implementation": "impl-P07",
+      "state": "planned",
+      "scores": {
+        "D": 1,
+        "C": 0,
+        "V": 0,
+        "O": 0
+      },
+      "evidence": [
+        "design",
+        "target"
+      ],
+      "gap": {
+        "en": "Envelope and rows exist, not dispatcher, consumer deduplication or cursor replay.",
+        "zh-CN": "只有信封与记录，无投递器、消费者去重或游标重放。"
+      }
+    },
+    {
+      "id": "P08",
+      "architecture": "execution",
+      "function": "managed-isolation",
+      "implementation": "impl-P08",
+      "state": "planned",
+      "scores": {
+        "D": 0,
+        "C": 0,
+        "V": 0,
+        "O": 0
+      },
+      "evidence": [
+        "design",
+        "target"
+      ],
+      "gap": {
+        "en": "Implement unprivileged control, VM ownership, reset/quarantine and cleanup acceptance.",
+        "zh-CN": "缺无特权控制面、VM 归属、重置隔离与清理验收。"
+      }
+    },
+    {
+      "id": "P09",
+      "architecture": "ui",
+      "function": "external-lsp",
+      "implementation": "impl-P09",
+      "state": "planned",
+      "scores": {
+        "D": 0,
+        "C": 0,
+        "V": 0,
+        "O": 0
+      },
+      "evidence": [
+        "design",
+        "target"
+      ],
+      "gap": {
+        "en": "Define file/process authorization, transport, lifecycle and resource isolation.",
+        "zh-CN": "缺文件与进程授权、传输、生命周期和资源隔离。"
+      }
+    },
+    {
+      "id": "P10",
+      "architecture": "execution",
+      "function": "ai-delegation",
+      "implementation": "impl-P10",
+      "state": "planned",
+      "scores": {
+        "D": 1,
+        "C": 0,
+        "V": 0,
+        "O": 0
+      },
+      "evidence": [
+        "design",
+        "target"
+      ],
+      "gap": {
+        "en": "Agent principal is a type, not planner, tool authorization, budget or independent Review.",
+        "zh-CN": "Agent 主体只是类型，不是规划器、工具授权、预算或独立审阅。"
+      }
+    },
+    {
+      "id": "P11",
+      "architecture": "delivery",
+      "function": "ecosystem",
+      "implementation": "impl-P11",
+      "state": "planned",
+      "scores": {
+        "D": 0,
+        "C": 0,
+        "V": 0,
+        "O": 0
+      },
+      "evidence": [
+        "design",
+        "target"
+      ],
+      "gap": {
+        "en": "No implemented partner adapter; external project assumptions have not been verified.",
+        "zh-CN": "无已实现合作项目适配器；外部项目假设未核实。"
+      }
+    },
+    {
+      "id": "P12",
+      "architecture": "domain",
+      "function": "executable-plugin",
+      "implementation": "impl-P12",
+      "state": "planned",
+      "scores": {
+        "D": 0,
+        "C": 0,
+        "V": 0,
+        "O": 0
+      },
+      "evidence": [
+        "design",
+        "target"
+      ],
+      "gap": {
+        "en": "Define installation, trust, runtime loading and revocation independently of manifests.",
+        "zh-CN": "安装、信任、运行时加载与撤销须独立于声明清单设计。"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e01",
+      "from": "U01",
+      "to": "U02",
+      "state": "connected",
+      "boundary": {
+        "en": "Legacy session gates the local page, not Task ownership on the server.",
+        "zh-CN": "旧会话只门禁本地页面，不建立服务端 Task 归属。"
+      }
+    },
+    {
+      "id": "e02",
+      "from": "U02",
+      "to": "U04",
+      "state": "connected",
+      "boundary": {
+        "en": "Parent accepted content/revision owns the selected model; stale callbacks are rejected.",
+        "zh-CN": "父级接受的内容与修订拥有选中模型；拒绝过期回调。"
+      }
+    },
+    {
+      "id": "e03",
+      "from": "U04",
+      "to": "U05",
+      "state": "connected",
+      "boundary": {
+        "en": "Language/model identity controls local providers; no source upload or execution.",
+        "zh-CN": "语言与模型身份控制本地 provider；不上传源码或执行。"
+      }
+    },
+    {
+      "id": "e04",
+      "from": "U04",
+      "to": "U06",
+      "state": "connected",
+      "boundary": {
+        "en": "Target-bound replacement checks bytes and filename before parent acceptance.",
+        "zh-CN": "目标绑定替换先核对字节与文件名，再由父级接纳。"
+      }
+    },
+    {
+      "id": "e05",
+      "from": "U06",
+      "to": "U02",
+      "state": "connected",
+      "boundary": {
+        "en": "File reads cannot bypass draft generation/revision checks.",
+        "zh-CN": "文件读取不能绕过草稿代次与修订核验。"
+      }
+    },
+    {
+      "id": "e06",
+      "from": "U02",
+      "to": "U03",
+      "state": "connected",
+      "boundary": {
+        "en": "Strict local JSON export/import preserves identities without server authority.",
+        "zh-CN": "严格本地 JSON 导入导出保留身份字段，但不产生服务端权威。"
+      }
+    },
+    {
+      "id": "e07",
+      "from": "U07",
+      "to": "U06",
+      "state": "connected",
+      "boundary": {
+        "en": "Confirmation names the current replacement target; cancellation preserves existing content.",
+        "zh-CN": "确认绑定当前替换目标；取消保留原内容。"
+      }
+    },
+    {
+      "id": "e08",
+      "from": "A02",
+      "to": "A01",
+      "state": "connected",
+      "boundary": {
+        "en": "Invitation consumption enters the normal account/session path; discovery alone grants nothing.",
+        "zh-CN": "消费邀请进入正常账号会话流程；发现本身不授予权限。"
+      }
+    },
+    {
+      "id": "e09",
+      "from": "A01",
+      "to": "D04",
+      "state": "connected",
+      "boundary": {
+        "en": "Engine derives the owner and enforces CSRF for writes.",
+        "zh-CN": "Engine 派生所有者并对写入执行 CSRF 检查。"
+      }
+    },
+    {
+      "id": "e10",
+      "from": "D04",
+      "to": "R01",
+      "state": "connected",
+      "boundary": {
+        "en": "Loading a saved script is explicit; compilation and execution are separate actions.",
+        "zh-CN": "加载已存脚本需显式操作；编译与执行是独立动作。"
+      }
+    },
+    {
+      "id": "e11",
+      "from": "R01",
+      "to": "R03",
+      "state": "connected",
+      "boundary": {
+        "en": "The workbench can separately request a confirmed run; checking never auto-runs.",
+        "zh-CN": "工作台可另行请求确认运行；检查不自动执行。"
+      }
+    },
+    {
+      "id": "e12",
+      "from": "R03",
+      "to": "R02",
+      "state": "connected",
+      "boundary": {
+        "en": "Owner-scoped capacity admission precedes privileged local loading; leases are volatile.",
+        "zh-CN": "所有者容量准入先于特权加载；租约易失。"
+      }
+    },
+    {
+      "id": "e13",
+      "from": "R02",
+      "to": "D02",
+      "state": "connected",
+      "boundary": {
+        "en": "Run observations reach the trusted teaching pack, not arbitrary client evidence.",
+        "zh-CN": "运行观测进入受信任教学包，不接受任意客户端证据。"
+      }
+    },
+    {
+      "id": "e14",
+      "from": "D02",
+      "to": "D03",
+      "state": "connected",
+      "boundary": {
+        "en": "Teaching assessment becomes legacy attempts/feedback, not a generic Review.",
+        "zh-CN": "教学评估形成旧尝试与反馈，不是通用 Review。"
+      }
+    },
+    {
+      "id": "e15",
+      "from": "D03",
+      "to": "R01",
+      "state": "connected",
+      "boundary": {
+        "en": "Historical resume loads owner-bound source only; it does not rerun.",
+        "zh-CN": "历史恢复仅加载本人源码，不自动运行。"
+      }
+    },
+    {
+      "id": "e16",
+      "from": "R02",
+      "to": "E01",
+      "state": "connected",
+      "boundary": {
+        "en": "Runtime observations feed bounded owner telemetry; delivery can gap.",
+        "zh-CN": "运行观测进入有界所有者遥测；交付可能缺口。"
+      }
+    },
+    {
+      "id": "e17",
+      "from": "R01",
+      "to": "R04",
+      "state": "connected",
+      "boundary": {
+        "en": "Explicit remote compile selection creates an owner job; failure grants no local fallback.",
+        "zh-CN": "显式选择远程编译才创建本人作业；失败不授权本地回退。"
+      }
+    },
+    {
+      "id": "e18",
+      "from": "O06",
+      "to": "R01",
+      "state": "connected",
+      "boundary": {
+        "en": "Verified teacher-selected headers supply compile context; client metadata is not a snapshot.",
+        "zh-CN": "教师选择的校验头文件提供编译上下文；客户端元数据不是原子快照。"
+      }
+    },
+    {
+      "id": "e19",
+      "from": "O03",
+      "to": "A01",
+      "state": "connected",
+      "boundary": {
+        "en": "Current AppState constructs legacy AuthService, not DurableAuthSource.",
+        "zh-CN": "当前 AppState 构造旧 AuthService，不是 DurableAuthSource。"
+      }
+    },
+    {
+      "id": "e20",
+      "from": "O04",
+      "to": "O03",
+      "state": "connected",
+      "boundary": {
+        "en": "Explicit reviewed SSH apply targets a preinstalled package; no bare-host bootstrap.",
+        "zh-CN": "审阅后的显式 SSH apply 面向已装包，不初始化裸机。"
+      }
+    },
+    {
+      "id": "e21",
+      "from": "O05",
+      "to": "R04",
+      "state": "connected",
+      "boundary": {
+        "en": "Teacher inventory/probe/cancel uses confirmed identities; uncertain writes require read-back.",
+        "zh-CN": "教师清单、探针和取消使用已确认身份；不确定写入需重读核对。"
+      }
+    },
+    {
+      "id": "e22",
+      "from": "I04",
+      "to": "W05",
+      "state": "internal",
+      "boundary": {
+        "en": "Current Session/account/member are rechecked around private content publication.",
+        "zh-CN": "在私人内容发布前后复查当前 Session、账号与成员。"
+      }
+    },
+    {
+      "id": "e23",
+      "from": "W05",
+      "to": "W06",
+      "state": "internal",
+      "boundary": {
+        "en": "A separately published exact owned revision can be pinned as a Task input.",
+        "zh-CN": "独立发布的本人精确修订可固定为任务输入。"
+      }
+    },
+    {
+      "id": "e24",
+      "from": "W06",
+      "to": "W09",
+      "state": "internal",
+      "boundary": {
+        "en": "Draft replacement checks expected revision and the stable union of old/new inputs.",
+        "zh-CN": "Draft 换版核对预期修订与旧新输入稳定并集。"
+      }
+    },
+    {
+      "id": "e25",
+      "from": "W09",
+      "to": "E02",
+      "state": "internal",
+      "boundary": {
+        "en": "Task revision and outbox record commit together; delivery is not part of the transaction.",
+        "zh-CN": "任务修订与 outbox 同事务提交；投递不在事务内。"
+      }
+    },
+    {
+      "id": "e26",
+      "from": "W05",
+      "to": "W07",
+      "state": "internal",
+      "boundary": {
+        "en": "The current Session adapter independently rechecks private ownership and exact Artifact targets/evidence before recording a human Review.",
+        "zh-CN": "当前会话适配器在写人工 Review 前，独立复查私人归属与精确 Artifact 目标及证据。"
+      }
+    },
+    {
+      "id": "e27",
+      "from": "W07",
+      "to": "W03",
+      "state": "internal",
+      "boundary": {
+        "en": "The Session adapter checks scope before and after immutable Review storage.",
+        "zh-CN": "会话适配在不可变审阅存储前后检查范围。"
+      }
+    },
+    {
+      "id": "e28",
+      "from": "I04",
+      "to": "I05",
+      "state": "internal",
+      "boundary": {
+        "en": "Actor resolution and final Session check share the command transaction.",
+        "zh-CN": "actor 解析与最终 Session 复查共享命令事务。"
+      }
+    },
+    {
+      "id": "e29",
+      "from": "I05",
+      "to": "I03",
+      "state": "internal",
+      "boundary": {
+        "en": "Membership and deployment grants have separate audited authorization.",
+        "zh-CN": "成员与部署 Grant 分别执行审计授权。"
+      }
+    },
+    {
+      "id": "e30",
+      "from": "I05",
+      "to": "I02",
+      "state": "internal",
+      "boundary": {
+        "en": "Identity binding uses exact account incarnation and audited target state.",
+        "zh-CN": "身份绑定使用精确账号代次与审计目标状态。"
+      }
+    },
+    {
+      "id": "e31",
+      "from": "O01",
+      "to": "I04",
+      "state": "internal",
+      "boundary": {
+        "en": "Explicit empty-namespace apply initializes staged auth, without changing live configuration.",
+        "zh-CN": "显式空命名空间 apply 初始化准备层认证，不改变在线配置。"
+      }
+    },
+    {
+      "id": "e32",
+      "from": "O01",
+      "to": "I02",
+      "state": "internal",
+      "boundary": {
+        "en": "Bootstrap pins registry and source namespaces in one reviewed target.",
+        "zh-CN": "初始化将注册表与认证源命名空间固定在同一审阅目标。"
+      }
+    },
+    {
+      "id": "e33",
+      "from": "I04",
+      "to": "O02",
+      "state": "internal",
+      "boundary": {
+        "en": "Read-only reconciliation inspects a bounded snapshot; it cannot repair or authorize.",
+        "zh-CN": "只读核对检查有界快照，不修复或授权。"
+      }
+    },
+    {
+      "id": "e34",
+      "from": "D01",
+      "to": "W08",
+      "state": "internal",
+      "boundary": {
+        "en": "The admission handle freezes exact definition metadata, not a provider invocation.",
+        "zh-CN": "准入句柄冻结精确定义元数据，不调用 provider。"
+      }
+    },
+    {
+      "id": "e35",
+      "from": "W08",
+      "to": "W09",
+      "state": "internal",
+      "boundary": {
+        "en": "Catalogue Draft replacement retains the admitted definition and revision checks.",
+        "zh-CN": "目录 Draft 换版保留已准入定义与修订核验。"
+      }
+    },
+    {
+      "id": "e36",
+      "from": "U02",
+      "to": "P01",
+      "state": "missing",
+      "boundary": {
+        "en": "No explicit browser save/read/conflict adapter exists.",
+        "zh-CN": "尚无显式浏览器保存、重读与冲突适配。"
+      }
+    },
+    {
+      "id": "e37",
+      "from": "P01",
+      "to": "W05",
+      "state": "missing",
+      "boundary": {
+        "en": "Browser/public admission remains absent. W10/W11 do not compose current-Session authorization or publication of verified Artifact bytes.",
+        "zh-CN": "浏览器/公共准入仍缺失；W10/W11 尚未组合当前 Session 授权或经过校验的 Artifact 字节发布。"
+      }
+    },
+    {
+      "id": "e38",
+      "from": "U01",
+      "to": "P02",
+      "state": "missing",
+      "boundary": {
+        "en": "Legacy session cookies are not automatically staged durable Sessions.",
+        "zh-CN": "旧会话 cookie 不自动成为准备层持久 Session。"
+      }
+    },
+    {
+      "id": "e39",
+      "from": "P02",
+      "to": "I04",
+      "state": "missing",
+      "boundary": {
+        "en": "Reviewed migration, old-writer fencing and recovery precede live cutover.",
+        "zh-CN": "在线切换前需审阅迁移、旧写入隔离与恢复。"
+      }
+    },
+    {
+      "id": "e40",
+      "from": "W07",
+      "to": "P03",
+      "state": "missing",
+      "boundary": {
+        "en": "Private ownership cannot be relaxed by a teacher/deployment role.",
+        "zh-CN": "不能凭教师或部署角色放宽私人归属。"
+      }
+    },
+    {
+      "id": "e41",
+      "from": "W02",
+      "to": "P04",
+      "state": "missing",
+      "boundary": {
+        "en": "Exact byte revisions need an authorized typed-evidence conversion.",
+        "zh-CN": "精确内容修订还需授权的类型化证据转换。"
+      }
+    },
+    {
+      "id": "e42",
+      "from": "P04",
+      "to": "W03",
+      "state": "missing",
+      "boundary": {
+        "en": "No adapter persists verified provider/version-bound rule judgments.",
+        "zh-CN": "无适配器持久化经过验证且绑定 provider 版本的规则判断。"
+      }
+    },
+    {
+      "id": "e43",
+      "from": "W03",
+      "to": "P05",
+      "state": "missing",
+      "boundary": {
+        "en": "Review storage does not trigger Task acceptance.",
+        "zh-CN": "写入 Review 不触发任务验收。"
+      }
+    },
+    {
+      "id": "e44",
+      "from": "W01",
+      "to": "P06",
+      "state": "missing",
+      "boundary": {
+        "en": "Task state/references do not dispatch or cancel Runner jobs.",
+        "zh-CN": "Task 状态与引用不派发或取消 Runner 作业。"
+      }
+    },
+    {
+      "id": "e45",
+      "from": "P06",
+      "to": "R03",
+      "state": "missing",
+      "boundary": {
+        "en": "No durable Run-to-lease execution adapter or restart reconciliation.",
+        "zh-CN": "无持久 Run 到租约的执行适配或重启核对。"
+      }
+    },
+    {
+      "id": "e46",
+      "from": "E02",
+      "to": "P07",
+      "state": "missing",
+      "boundary": {
+        "en": "Atomic rows do not provide delivery, deduplication or cursor replay.",
+        "zh-CN": "原子记录不提供投递、去重或游标重放。"
+      }
+    },
+    {
+      "id": "e47",
+      "from": "R03",
+      "to": "P08",
+      "state": "missing",
+      "boundary": {
+        "en": "Shared-kernel quotas do not create per-student VM ownership or isolation.",
+        "zh-CN": "共享内核配额不建立每学生 VM 归属或隔离。"
+      }
+    },
+    {
+      "id": "e48",
+      "from": "U05",
+      "to": "P09",
+      "state": "missing",
+      "boundary": {
+        "en": "Local workers do not provide external process or project filesystem access.",
+        "zh-CN": "本地 worker 不提供外部进程或项目文件系统访问。"
+      }
+    },
+    {
+      "id": "e49",
+      "from": "I01",
+      "to": "P10",
+      "state": "missing",
+      "boundary": {
+        "en": "Agent principal types do not implement bounded AI delegation.",
+        "zh-CN": "Agent 主体类型不实现有界 AI 委派。"
+      }
+    },
+    {
+      "id": "e50",
+      "from": "E03",
+      "to": "P11",
+      "state": "missing",
+      "boundary": {
+        "en": "A public SDK is not a verified cross-product identity/content adapter.",
+        "zh-CN": "公共 SDK 不是已验证的跨产品身份内容适配器。"
+      }
+    },
+    {
+      "id": "e51",
+      "from": "O06",
+      "to": "P12",
+      "state": "missing",
+      "boundary": {
+        "en": "Declarative module control state does not execute a domain plugin.",
+        "zh-CN": "声明模块控制状态不执行领域插件。"
+      }
+    },
+    {
+      "id": "e52",
+      "from": "I04",
+      "to": "W04",
+      "state": "internal",
+      "boundary": {
+        "en": "Every command independently rechecks the current Session/account/member; earlier Artifact publication conveys no later authority.",
+        "zh-CN": "每次命令独立复查当前会话、账号与成员；此前 Artifact 发布不携带后续权限。"
+      }
+    },
+    {
+      "id": "e53",
+      "from": "I04",
+      "to": "W06",
+      "state": "internal",
+      "boundary": {
+        "en": "Every command independently rechecks the current Session/account/member; earlier Artifact publication conveys no later authority.",
+        "zh-CN": "每次命令独立复查当前会话、账号与成员；此前 Artifact 发布不携带后续权限。"
+      }
+    },
+    {
+      "id": "e54",
+      "from": "I04",
+      "to": "W07",
+      "state": "internal",
+      "boundary": {
+        "en": "Every command independently rechecks the current Session/account/member; earlier Artifact publication conveys no later authority.",
+        "zh-CN": "每次命令独立复查当前会话、账号与成员；此前 Artifact 发布不携带后续权限。"
+      }
+    },
+    {
+      "id": "e55",
+      "from": "I04",
+      "to": "W08",
+      "state": "internal",
+      "boundary": {
+        "en": "Every command independently rechecks the current Session/account/member; earlier Artifact publication conveys no later authority.",
+        "zh-CN": "每次命令独立复查当前会话、账号与成员；此前 Artifact 发布不携带后续权限。"
+      }
+    },
+    {
+      "id": "e56",
+      "from": "I04",
+      "to": "W09",
+      "state": "internal",
+      "boundary": {
+        "en": "Every command independently rechecks the current Session/account/member; earlier Artifact publication conveys no later authority.",
+        "zh-CN": "每次命令独立复查当前会话、账号与成员；此前 Artifact 发布不携带后续权限。"
+      }
+    },
+    {
+      "id": "e57",
+      "from": "W01",
+      "to": "E02",
+      "state": "internal",
+      "boundary": {
+        "en": "This store commits its resource change and outbox record atomically; it does not deliver the event.",
+        "zh-CN": "该存储将资源变更与 outbox 记录原子提交，但不负责投递事件。"
+      }
+    },
+    {
+      "id": "e58",
+      "from": "W02",
+      "to": "E02",
+      "state": "internal",
+      "boundary": {
+        "en": "Artifact metadata and outbox records commit atomically in SQL; private files are a separate boundary and the event is not delivered.",
+        "zh-CN": "Artifact 元数据与 outbox 记录在 SQL 中原子提交；私有文件属于另一边界，也不负责投递事件。"
+      }
+    },
+    {
+      "id": "e59",
+      "from": "W03",
+      "to": "E02",
+      "state": "internal",
+      "boundary": {
+        "en": "This store commits its resource change and outbox record atomically; it does not deliver the event.",
+        "zh-CN": "该存储将资源变更与 outbox 记录原子提交，但不负责投递事件。"
+      }
+    },
+    {
+      "id": "e60",
+      "from": "W01",
+      "to": "W10",
+      "state": "internal",
+      "boundary": {
+        "en": "The pure validator accepts a supplied TaskSnapshot shape; it does not call storage or establish currentness/authorization.",
+        "zh-CN": "纯验证器接受给定 TaskSnapshot 形态；不调用存储，也不证明当前性或授权。"
+      }
+    },
+    {
+      "id": "e61",
+      "from": "W02",
+      "to": "W10",
+      "state": "internal",
+      "boundary": {
+        "en": "Supplied ArtifactContent is checked for exact pins, owner and bytes; this is not an authorized store read or reusable grant.",
+        "zh-CN": "核对给定 ArtifactContent 的精确引用、所有者与字节；不是授权存储读取或可重用凭据。"
+      }
+    },
+    {
+      "id": "e62",
+      "from": "P01",
+      "to": "W10",
+      "state": "missing",
+      "boundary": {
+        "en": "Browser metadata is not mapped or accepted through a public command; W11 trusted persistence is a separate path.",
+        "zh-CN": "浏览器元数据尚未映射或通过公共命令准入；W11 可信持久化是独立路径。"
+      }
+    },
+    {
+      "id": "e63",
+      "from": "W10",
+      "to": "W11",
+      "state": "internal",
+      "boundary": {
+        "en": "Schema-3 storage uses the manifest shape and Task-match contract, not the separate byte verifier; supplied owner/pins remain trusted.",
+        "zh-CN": "Schema 3 存储使用清单结构与 Task 匹配契约，不调用独立字节验证器；传入所有者与引用仍依赖可信调用方。"
+      }
+    },
+    {
+      "id": "e64",
+      "from": "W11",
+      "to": "E02",
+      "state": "internal",
+      "boundary": {
+        "en": "One transaction records the complete Task and manifest in head/outbox; no event delivery or history-recovery API.",
+        "zh-CN": "同一事务在当前记录/outbox 保存完整 Task 与清单；不提供事件投递或历史恢复 API。"
+      }
+    },
+    {
+      "id": "e65",
+      "from": "P01",
+      "to": "W11",
+      "state": "missing",
+      "boundary": {
+        "en": "No browser save or importer is connected; the W13 router must call W12 authorization, never admit clients directly to the trusted store.",
+        "zh-CN": "未接通浏览器保存或导入；W13 路由必须调用 W12 授权，不直接将客户端交给可信存储。"
+      }
+    },
+    {
+      "id": "e66",
+      "from": "I04",
+      "to": "W12",
+      "state": "internal",
+      "boundary": {
+        "en": "Each schema-3 content command derives the owner and rechecks exact current Session/account/membership and namespace pins before commit; no public authentication cutover.",
+        "zh-CN": "每条 Schema 3 内容命令派生所有者，并在提交前复查精确当前 Session/账户/成员及命名空间身份；不切换公共认证。"
+      }
+    },
+    {
+      "id": "e67",
+      "from": "W12",
+      "to": "W11",
+      "state": "internal",
+      "boundary": {
+        "en": "The source-owned transaction borrows schema-3 operations and verifies the complete expected Task/manifest around atomic head/outbox writes; v2 adapters remain separate.",
+        "zh-CN": "认证源拥有的事务借用 Schema 3 操作，在当前记录/outbox 原子写入前后核验完整预期 Task/清单；Schema 2 适配器仍独立。"
+      }
+    },
+    {
+      "id": "e68",
+      "from": "W02",
+      "to": "W12",
+      "state": "internal",
+      "boundary": {
+        "en": "Read every old/new exact owned revision in one stable order, retain conflicting digests, validate bytes and recheck after mutation, including removed items and empty storage admission.",
+        "zh-CN": "按统一稳定顺序读取旧新所属精确修订，保留冲突摘要，检查字节并在变更后复验，包括移除项及空清单存储准入。"
+      }
+    },
+    {
+      "id": "e69",
+      "from": "W10",
+      "to": "W12",
+      "state": "internal",
+      "boundary": {
+        "en": "Reuse the pure per-item UTF-8/length/control/digest validator on transaction-read content; metadata labels confer no execution or filesystem access.",
+        "zh-CN": "复用纯逐项 UTF-8/长度/控制符/摘要校验器检查事务读取的内容；元数据标签不授予执行或文件系统访问。"
+      }
+    },
+    {
+      "id": "e70",
+      "from": "P01",
+      "to": "W13",
+      "state": "missing",
+      "boundary": {
+        "en": "The explicit HTTP router is not mounted or connected to the browser. Login issuance, publication, draft mapping and conflict/outcome UI remain missing.",
+        "zh-CN": "显式 HTTP 路由未挂载，也未连接浏览器；仍缺登录签发、内容发布、草稿映射及冲突/结果界面。"
+      }
+    },
+    {
+      "id": "e71",
+      "from": "W13",
+      "to": "W12",
+      "state": "internal",
+      "boundary": {
+        "en": "Strict HTTP admission dispatches only C2-M source-owned transactions; response text follows confirmed authorized reads, and all dispatched errors remain conservatively unconfirmed.",
+        "zh-CN": "严格 HTTP 准入仅调用 C2-M 认证源同事务命令；正文只来自确认的授权读取，调用后错误保守标记为结果未确认。"
+      }
+    },
+    {
+      "id": "e72",
+      "from": "I04",
+      "to": "W13",
+      "state": "internal",
+      "boundary": {
+        "en": "Trusted construction supplies the durable source; the dedicated cookie carries its reusable token. HTTP does not issue sessions or grant authority independently of W12.",
+        "zh-CN": "可信构造传入持久认证源，专用 Cookie 携带其可重用 token；HTTP 不签发会话，也不脱离 W12 独立授权。"
+      }
+    },
+    {
+      "id": "e73",
+      "from": "P02",
+      "to": "W13",
+      "state": "missing",
+      "boundary": {
+        "en": "No normal-app mounting, credential issuer or reviewed deployment/migration path. The live legacy source is not silently reused or switched.",
+        "zh-CN": "没有正常应用挂载、凭据签发或经审阅的部署/迁移路径；不静默复用或切换现用旧认证源。"
+      }
+    }
+  ],
+  "chains": [
+    {
+      "id": "local-content",
+      "label": {
+        "en": "Local content editing",
+        "zh-CN": "本地内容编辑"
+      },
+      "cells": [
+        "U01",
+        "U02",
+        "U04",
+        "U05"
+      ],
+      "edges": [
+        "e01",
+        "e02",
+        "e03"
+      ],
+      "boundary": {
+        "en": "Connected in the browser, with mocked Engine shell tests; content is not saved to the server.",
+        "zh-CN": "浏览器内接通，外壳测试模拟 Engine；内容不保存到服务端。"
+      }
+    },
+    {
+      "id": "teaching-loop",
+      "label": {
+        "en": "Existing teaching workflow",
+        "zh-CN": "现有教学流程"
+      },
+      "cells": [
+        "A02",
+        "A01",
+        "D04",
+        "R01",
+        "R03",
+        "R02",
+        "D02",
+        "D03"
+      ],
+      "edges": [
+        "e08",
+        "e09",
+        "e10",
+        "e11",
+        "e12",
+        "e13",
+        "e14"
+      ],
+      "boundary": {
+        "en": "Source-wired workflow; not a fresh real LAN/kernel end-to-end acceptance.",
+        "zh-CN": "源码已接线；不是新执行的真实局域网内核端到端验收。"
+      }
+    },
+    {
+      "id": "remote-compile",
+      "label": {
+        "en": "Optional remote compilation",
+        "zh-CN": "可选远程编译"
+      },
+      "cells": [
+        "R01",
+        "R04"
+      ],
+      "edges": [
+        "e17"
+      ],
+      "boundary": {
+        "en": "Compile/probe only; no remote loading, artifact return or implicit local fallback.",
+        "zh-CN": "仅编译探针；不远程加载、不返回目标文件、不隐式本地回退。"
+      }
+    },
+    {
+      "id": "private-inputs",
+      "label": {
+        "en": "Private content and Task revisions",
+        "zh-CN": "私人内容与任务换版"
+      },
+      "cells": [
+        "I04",
+        "W05",
+        "W06",
+        "W09",
+        "E02"
+      ],
+      "edges": [
+        "e22",
+        "e23",
+        "e24",
+        "e25"
+      ],
+      "boundary": {
+        "en": "Explicit preparatory composition; content publication and Task update are separate operations.",
+        "zh-CN": "显式准备层组合；内容发布与任务更新是分开的操作。"
+      }
+    },
+    {
+      "id": "private-review",
+      "label": {
+        "en": "Private human review",
+        "zh-CN": "私人人工审阅"
+      },
+      "cells": [
+        "I04",
+        "W05",
+        "W07",
+        "W03"
+      ],
+      "edges": [
+        "e22",
+        "e26",
+        "e27"
+      ],
+      "boundary": {
+        "en": "Private owner only; no cross-user review or automatic acceptance.",
+        "zh-CN": "仅私人所有者；无跨用户审阅或自动验收。"
+      }
+    },
+    {
+      "id": "browser-save",
+      "label": {
+        "en": "Missing server save bridge",
+        "zh-CN": "缺失的服务端保存桥"
+      },
+      "cells": [
+        "U02",
+        "P01",
+        "W05",
+        "W06",
+        "W09"
+      ],
+      "edges": [
+        "e36",
+        "e37",
+        "e23",
+        "e24"
+      ],
+      "boundary": {
+        "en": "Missing browser/public bridge blocks a saved user workflow despite tested backend components.",
+        "zh-CN": "尽管后端组件有测试，缺失的浏览器公共桥仍阻断保存闭环。"
+      }
+    },
+    {
+      "id": "auth-cutover",
+      "label": {
+        "en": "Missing live authority cutover",
+        "zh-CN": "缺失的在线权威切换"
+      },
+      "cells": [
+        "U01",
+        "P02",
+        "I04",
+        "W05"
+      ],
+      "edges": [
+        "e38",
+        "e39",
+        "e22"
+      ],
+      "boundary": {
+        "en": "Requires an explicit installation/authentication decision and reviewed recovery/migration.",
+        "zh-CN": "需明确安装认证决策并审阅恢复迁移。"
+      }
+    },
+    {
+      "id": "rule-acceptance",
+      "label": {
+        "en": "Missing rule review and acceptance",
+        "zh-CN": "缺失的规则审阅与验收"
+      },
+      "cells": [
+        "W02",
+        "P04",
+        "W03",
+        "P05"
+      ],
+      "edges": [
+        "e41",
+        "e42",
+        "e43"
+      ],
+      "boundary": {
+        "en": "No transitive acceptance from content, catalogue, execution or stored judgment.",
+        "zh-CN": "内容、目录、执行或已存判断都不能传递出验收结论。"
+      }
+    },
+    {
+      "id": "generic-execution",
+      "label": {
+        "en": "Missing generic execution bridge",
+        "zh-CN": "缺失的通用执行桥"
+      },
+      "cells": [
+        "W01",
+        "P06",
+        "R03",
+        "P08"
+      ],
+      "edges": [
+        "e44",
+        "e45",
+        "e47"
+      ],
+      "boundary": {
+        "en": "Durable orchestration and isolated resource ownership are separate missing boundaries.",
+        "zh-CN": "持久编排与隔离资源归属是两个独立缺口。"
+      }
+    },
+    {
+      "id": "event-delivery",
+      "label": {
+        "en": "Missing business-event delivery",
+        "zh-CN": "缺失的业务事件投递"
+      },
+      "cells": [
+        "W09",
+        "E02",
+        "P07"
+      ],
+      "edges": [
+        "e25",
+        "e46"
+      ],
+      "boundary": {
+        "en": "Store-side atomicity stops at the outbox; no delivery or replay claim.",
+        "zh-CN": "存储侧原子性止于 outbox；不宣称投递或重放。"
+      }
+    },
+    {
+      "id": "operator-source",
+      "label": {
+        "en": "Explicit prepared authority setup",
+        "zh-CN": "显式准备层权威设置"
+      },
+      "cells": [
+        "O01",
+        "I04",
+        "O02"
+      ],
+      "edges": [
+        "e31",
+        "e33"
+      ],
+      "boundary": {
+        "en": "Local operator tooling exists; no deployed-data migration, repair or live source switch.",
+        "zh-CN": "本地运维工具已存在；不迁移已部署数据、不修复、不切换在线认证源。"
+      }
+    },
+    {
+      "id": "ssh-startup",
+      "label": {
+        "en": "Package to existing runtime",
+        "zh-CN": "发行包到现用运行面"
+      },
+      "cells": [
+        "O04",
+        "O03",
+        "A01"
+      ],
+      "edges": [
+        "e20",
+        "e19"
+      ],
+      "boundary": {
+        "en": "Source/tooling path only; actual target apply and acceptance remain explicit separate work.",
+        "zh-CN": "仅源码工具链路；实际目标 apply 与验收须独立显式执行。"
+      }
+    },
+    {
+      "id": "content-snapshot",
+      "label": {
+        "en": "Pure Task content snapshot validation",
+        "zh-CN": "纯任务内容快照校验"
+      },
+      "cells": [
+        "W01",
+        "W10"
+      ],
+      "edges": [
+        "e60"
+      ],
+      "boundary": {
+        "en": "Supplied snapshots only, with Artifact bytes independently checked via e61; no persistence or Session admission.",
+        "zh-CN": "仅给定快照，Artifact 字节另经 e61 检查；不持久化或执行会话准入。"
+      }
+    },
+    {
+      "id": "content-storage",
+      "label": {
+        "en": "Trusted atomic content storage",
+        "zh-CN": "可信内容原子存储"
+      },
+      "cells": [
+        "W10",
+        "W11",
+        "E02"
+      ],
+      "edges": [
+        "e63",
+        "e64"
+      ],
+      "boundary": {
+        "en": "Metadata and exact pins persist atomically in a separate namespace; owner authority, actual bytes and browser saving are not established.",
+        "zh-CN": "元数据与精确引用在独立命名空间原子持久化；不证明所有者权限、实际字节或浏览器保存。"
+      }
+    },
+    {
+      "id": "session-content",
+      "label": {
+        "en": "Authorized content editing",
+        "zh-CN": "授权内容编辑"
+      },
+      "cells": [
+        "I04",
+        "W12",
+        "W11",
+        "E02"
+      ],
+      "edges": [
+        "e66",
+        "e67",
+        "e64"
+      ],
+      "boundary": {
+        "en": "Internal current-Session/text composition on one source-owned transaction, including e68/e69 content checks; public/browser e70 remains missing.",
+        "zh-CN": "认证源同一事务内的当前 Session/文本组合，包括 e68/e69 内容检查；公共/浏览器 e70 仍缺失。"
+      }
+    },
+    {
+      "id": "content-http",
+      "label": {
+        "en": "Explicit HTTP to authorized content",
+        "zh-CN": "显式 HTTP 到授权内容"
+      },
+      "cells": [
+        "W13",
+        "W12",
+        "W11",
+        "E02"
+      ],
+      "edges": [
+        "e71",
+        "e67",
+        "e64"
+      ],
+      "boundary": {
+        "en": "Explicit in-process router to real source-owned transactions; no mounted listener, browser path or live authentication deployment is established.",
+        "zh-CN": "显式进程内路由到真实认证源事务；不证明已挂载监听、浏览器流程或在线认证部署。"
+      }
+    }
+  ]
+}

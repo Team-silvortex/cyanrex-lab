@@ -1,8 +1,15 @@
 # Current platform feature and module network
 
-Source review date: **2026-10-03**. Scope: **source release 0.4.9**, including
-collaboration commands and the local task payload editor. This is a maintainable map of the current
-source, not a release acceptance report or a claim about an installed deployment.
+Source review date: **2026-10-03**. Scope: **0.5.0 source, including navigation/filename fixes and C2-K/L/M/N content preparation**,
+alongside the preceding collaboration commands and local task payload editor. The review retains its
+0.4.9 base commit and dated evidence; source inclusion is not a new release acceptance report or a
+claim about an installed deployment.
+
+For architecture × capability × implementation × maturity, use the new
+[capability tensor and score rubric](capability-maturity.md) and its
+[machine inventory](../platform-capability-tensor.json): 57 implementation coordinates, 73 directed
+edges and 16 representative paths. This page remains the route/module topology view; scores and
+evidence are maintained separately, with no aggregate completion percentage.
 
 Cyanrex is moving from an eBPF teaching application toward a task-oriented collaboration platform.
 Three areas coexist: the connected teaching runtime, the separately prepared generic backend, and a
@@ -96,6 +103,10 @@ paths, editor IDs or client role claims. See [collaboration concepts](collaborat
 | Review store | [`review_store`](../../engine/src/services/review_store) | Exact target/evidence revisions → immutable judgment/comment history. Human and rule judgments are distinct; neither automatically accepts a Task. |
 | Session-authorized private work | [`task_commands`](../../engine/src/services/auth_service/durable_source/task_commands), [`private_work`](../../engine/src/services/auth_service/durable_source/private_work) | Fresh Session + current account/membership → own Tasks, Artifacts and human Reviews with namespace and post-write checks. A teacher cannot use these adapters to read another owner's private work. |
 | Catalogue admission and Draft replacement | [catalogue commands](session-catalog-tasks.md), [replacement commands](session-task-revisions.md) | Exact server-admitted definition metadata; Draft replacement verifies old and new inputs and increments one Task revision. It does not run the domain provider, create evidence or accept work. |
+| Content metadata (0.5.0 C2-K) | [manifest contract](task-content-manifest.md), [`task_content.rs`](../../engine/src/services/task_content.rs) | Supplied Task/Artifact snapshots → metadata, owner and byte consistency; no storage read/write or current-Session authorization. |
+| Content storage (0.5.0 C2-L) | [separate schema 3 store](task-content-store.md), [`content.rs`](../../engine/src/services/task_store/content.rs) | Trusted owner + metadata → atomic Task/manifest/outbox and one revision; no Session/Artifact-byte adapter, public API or schema 2 migration. |
+| Authorized content (0.5.0 C2-M) | [Session content adapter](session-task-content.md), [`content.rs`](../../engine/src/services/auth_service/durable_source/task_commands/content.rs) | Current Session → old/new exact Artifact text → atomic schema 3 edit → final authorization and commit; no live/browser connection. |
+| HTTP content boundary (0.5.0 C2-N) | [explicit router](task-content-http.md), [`platform_http`](../../engine/src/platform_http/mod.rs) | Bounded HTTP → C2-M → private versioned response; standalone only, no main-app mounting, Session issuer, public publication or browser wiring. |
 
 ## Cross-module paths and unconnected boundaries
 
@@ -108,7 +119,7 @@ paths, editor IDs or client role claims. See [collaboration concepts](collaborat
 | Durable Session → own Artifact revision → own Task exact inputs → Draft replacement | Implemented preparatory backend path; public API and browser adapter are absent. |
 | Durable Session → exact owned Artifact target/evidence → human Review history | Implemented preparatory backend path; cross-user review authority and acceptance remain absent. |
 | Legacy accounts/scripts/attempts → durable identity/Artifacts/Tasks/Reviews | Planned migration, writer fencing and cutover; no implicit dual write or adoption. |
-| Browser task save → Artifact publication → Task create/replace → conflict recovery | Planned public authentication/CSRF contract, payload metadata and conflict/outcome handling. Local export is not server persistence. |
+| Browser task save → Artifact publication → Task create/replace → conflict recovery | W10–W13 provide contracts, storage, Session/text checks and an unmounted HTTP adapter; explicit login/installation, public publication and browser mapping/conflict/outcome handling remain missing. |
 | Generic Task → execution plan → typed evidence → rule Review → acceptance | Planned composition. Catalogue metadata and in-process assessment alone do not establish this workflow. |
 | Teacher-managed isolated student runtime, managed VM lifecycle, external LSP process | Planned; existing Linux execution and local language workers do not establish these isolation boundaries. |
 
@@ -118,7 +129,7 @@ authorization and failure semantics.
 
 ## Keeping this map current
 
-Update this page and its [Chinese counterpart](../zh-CN/platform-network.md) when adding a page,
+Update this page, the [capability tensor](capability-maturity.md) and their Chinese counterparts when adding a page,
 composition field, public route, provider, persistent store or cross-module adapter. Record whether a
 connection is public, internal or local-only and name its failure boundary. Verify its tests through
 the [current testing guide](testing-guide.md), not a historical passing total.

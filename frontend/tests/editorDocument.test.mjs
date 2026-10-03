@@ -29,6 +29,13 @@ test("download names are basenames, not paths or injected control text", () => {
   assert.equal(safeEditorFilename("中文.ts"), "中文.ts");
 });
 
+test("bounded filenames never truncate a supplementary character into an invalid surrogate", () => {
+  assert.equal(safeEditorFilename(`${"a".repeat(127)}😀.txt`), "a".repeat(127));
+  assert.equal(safeEditorFilename(`${"a".repeat(126)}😀.txt`), `${"a".repeat(126)}😀`);
+  assert.equal(safeEditorFilename("😀".repeat(65)), "😀".repeat(64));
+  assert.equal(safeEditorFilename(`${"a".repeat(126)}.😀.txt`), "a".repeat(126));
+});
+
 test("empty or reserved names have a safe download fallback", () => {
   for (const value of ["", "  ", ".", "..", "CON", "nul.txt", "LPT1.json"]) {
     assert.equal(safeEditorFilename(value), "untitled.txt");

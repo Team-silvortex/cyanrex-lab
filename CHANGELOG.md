@@ -5,6 +5,48 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-03
+
+This source release advances the domain-neutral task-content foundation. The existing teaching
+runtime and local editor remain supported; the new HTTP adapter is not mounted in the application.
+It does not enable public content publication, Session issuance, browser saving, migration or
+cross-user collaboration. The frozen public API compatibility baseline remains 0.3.0.
+
+### Added
+
+- Added C2-N explicitly constructed Task-content HTTP routing over the current-Session transaction.
+  Dedicated cookies, exact Origin admission, bounded strict JSON, ordered text reads and private
+  versioned errors preserve the storage/authorization boundary. Normal startup, legacy authentication,
+  live OpenAPI/SDK and browser saving remain unchanged; no login issuer or content upload is added.
+- Added a bilingual architecture/capability/implementation/maturity tensor, a machine-readable
+  inventory of 57 implementation coordinates and 73 explicit edges, and reference/score/view
+  consistency checks. Independent implementation, connection, verification and operations scores
+  retain dated evidence and missing boundaries instead of implying an aggregate completion rate.
+- Added C2-K Task content metadata contracts and pure snapshot/byte checks: bounded title and text
+  display labels, extensible language hints, exact ordered Artifact pins, owner consistency, UTF-8,
+  byte limits and recomputed digests. Strict object decoding rejects alternate array/enum shapes.
+  This does not persist metadata, authorize a Session, add public routes or connect browser saving;
+  existing Task/Artifact storage formats and public APIs remain unchanged.
+- Added C2-L separate schema-3 Task content storage with atomic title, filename/language and ordered
+  payload edits, complete Task/manifest outbox records and revision-fenced lifecycle transitions.
+  Legacy schema-2 handles remain fixed and mutually reject the new namespace; no automatic migration.
+  Added exact PostgreSQL CI selection for corruption, commit and concurrency boundaries. This trusted
+  store remains a trusted primitive, not authorization or browser saving.
+- Added C2-M internal Session-authorized schema-3 content commands. One source-owned transaction
+  checks old/new exact Artifact text, metadata, namespace identity and current authorization around
+  atomic edits. Metadata-only changes and removal cannot bypass old-content validation; legacy
+  schema-2 adapters stay separate. C2-M itself adds no HTTP boundary; the separate C2-N adapter above
+  remains unmounted, with no browser save or live-auth cutover.
+
+### Fixed
+
+- Preserve local task drafts during same-page fragment navigation. Sidebar authentication and logout
+  lifetimes now follow the pathname and query rather than the fragment; actual route changes still
+  recheck identity and permissions, and login return paths retain their fragment.
+- Keep truncated text-import and download filenames Unicode-safe. A supplementary character at the
+  128-code-unit boundary no longer becomes an invalid surrogate that rejects otherwise valid content.
+  Filename bounds, content validation and explicit import confirmation remain unchanged.
+
 ## [0.4.9] - 2026-10-03
 
 ### Added
@@ -659,7 +701,8 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 The canonical package metadata advanced directly from `0.2.9` to `0.3.1`. Version `0.3.0` identifies
 the frozen API compatibility snapshot only; it was not a package release and must not be tagged.
 
-[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.9...HEAD
+[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.9...v0.5.0
 [0.4.9]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.8...v0.4.9
 [0.4.8]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.7...v0.4.8
 [0.4.7]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.6...v0.4.7

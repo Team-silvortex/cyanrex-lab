@@ -11,7 +11,11 @@ use crate::{
 use super::private_work::{valid_namespace, PrivateWorkError};
 
 #[cfg(unix)]
+mod content;
+#[cfg(unix)]
 mod inputs;
+#[cfg(unix)]
+pub use content::{SessionTaskContent, SessionTaskContentWorkspace};
 #[cfg(unix)]
 pub use inputs::{SessionCatalogTaskWorkspace, SessionTaskInputs, SessionTaskInputsWorkspace};
 

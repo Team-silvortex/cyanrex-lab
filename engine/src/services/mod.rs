@@ -28,4 +28,5 @@ pub mod runner_job_queue;
 pub mod runner_manager;
 pub mod script_store;
 pub mod task_catalog;
+pub mod task_content;
 pub mod task_store;

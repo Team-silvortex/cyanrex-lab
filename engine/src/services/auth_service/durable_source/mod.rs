@@ -51,7 +51,8 @@ pub use review_commands::{SessionReviewError, SessionReviewWorkspace};
 pub use session_commands::{SessionBindCommand, SessionCommandError, SessionPolicyCommand};
 #[cfg(unix)]
 pub use task_commands::{
-    SessionCatalogTaskWorkspace, SessionTaskInputs, SessionTaskInputsWorkspace,
+    SessionCatalogTaskWorkspace, SessionTaskContent, SessionTaskContentWorkspace,
+    SessionTaskInputs, SessionTaskInputsWorkspace,
 };
 pub use task_commands::{SessionTaskError, SessionTaskWorkspace};
 

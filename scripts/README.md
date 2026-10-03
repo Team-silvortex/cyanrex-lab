@@ -38,6 +38,19 @@ fixtures or build-cache cleanup targets. The script catalogue below retains indi
   `CYANREX_TEST_DATABASE_URL` for a disposable database. Each exact test name must exist before it runs.
   CI uses the same script; tests create their own schemas and inject faults. Never point it at a
   deployed database. `tests/postgresCi.test.mjs` checks that the explicit list includes every case.
+- `test-session-task-content.sh`: runs twenty-five exact schema-3 current-Session content PostgreSQL
+  cases: ordered text, private ownership, metadata edits/removal, old/new post-write byte checks,
+  namespace pins, lifecycle expiry/revocation, commit/cancellation and competing edits. Requires only
+  an explicit disposable database; does not expose public commands or connect the browser editor.
+- `test-platform-task-content-http.sh`: runs eleven exact standalone HTTP-to-C2-M PostgreSQL cases.
+  Covers private snapshots, transport admission without writes, current authorization after lock waits,
+  exact text, transaction faults and concurrent edits. Requires an explicit disposable database and
+  private temporary files. The router is not mounted in the live app; these tests open no HTTP listener
+  and do not establish browser, TLS/proxy, public content publication or deployment acceptance.
+- `test-task-content-storage.sh`: runs twenty-one exact schema-3 content-storage PostgreSQL cases,
+  including metadata-only edits, schema-2 rejection, complete outbox snapshots and injected faults.
+  Requires a disposable database; this trusted-store suite does not prove Session or browser saving.
+  CI and `tests/postgresCi.test.mjs` verify the full exact selection before execution.
 - `test-artifact-storage.sh`: runs all seventeen immutable-content PostgreSQL cases, including private
   file faults and Task revision pins. Requires an explicit disposable `CYANREX_TEST_DATABASE_URL`;
   private file fixtures use the temporary directory. CI runs the storage scripts and validates exact
@@ -109,6 +122,13 @@ fixtures or build-cache cleanup targets. The script catalogue below retains indi
   that runtime acceptance passed or failed. It never refreshes hashes or changes a service.
 - `tests/functionalNetwork.test.mjs`: positive/negative inventory and drift-checker regressions,
   included in the common tooling tests. These do not dynamically execute product workflows.
+- `check-capability-tensor.mjs`: read-only validation of the current reviewed
+  [architecture/capability/implementation/maturity inventory](../docs/en/capability-maturity.md).
+  Checks sparse coordinates, four independent scores, evidence/path references and ordered edges;
+  it does not run referenced tests or certify deployment. The exported `renderTensorRows` produces
+  the bilingual score tables. `tests/capabilityTensor*.test.mjs` validate constraints, the repository
+  inventory and both reading views as part of the common test glob. Historical functional-network
+  fingerprints and evidence dates remain untouched.
 - `tests/openapiContract.test.mjs`: parser and drift-reporting regressions for the contract checks.
 - `generate-sdk-types.mjs`: converts OpenAPI component schemas into the committed
   `sdk-js/src/generated/openapi.ts` type map; use `--check` to reject stale SDK models.

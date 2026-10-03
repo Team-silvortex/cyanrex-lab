@@ -62,6 +62,11 @@ export default function SidebarLayout({ title, children }: SidebarLayoutProps) {
   const logoutRequest = useRef<AbortController | null>(null);
   const menuButton = useRef<HTMLButtonElement>(null);
   const engineUrl = useMemo(getEngineUrl, []);
+  // A fragment only moves within the same page. Rechecking here would temporarily
+  // unmount children and silently discard page-owned drafts on ordinary anchor links.
+  const authPath = router.asPath.split("#", 1)[0];
+  const currentLocation = useRef(router.asPath);
+  currentLocation.current = router.asPath;
 
   useEffect(() => { setMenuOpen(false); }, [router.asPath]);
 
@@ -72,7 +77,7 @@ export default function SidebarLayout({ title, children }: SidebarLayoutProps) {
       logoutRequest.current?.abort();
       logoutRequest.current = null;
     };
-  }, [router.asPath]);
+  }, [authPath]);
 
   useEffect(() => {
     const desktop = window.matchMedia("(min-width: 981px)");
@@ -94,7 +99,7 @@ export default function SidebarLayout({ title, children }: SidebarLayoutProps) {
         if (!json.authenticated) {
           if (active) {
             const next = encodeURIComponent(
-              parseSafeRedirectPath(router.asPath || "/dashboard"),
+              parseSafeRedirectPath(currentLocation.current || "/dashboard"),
             );
             router.replace(`/login?next=${next}`);
           }
@@ -109,7 +114,7 @@ export default function SidebarLayout({ title, children }: SidebarLayoutProps) {
       } catch {
         if (active) {
             const next = encodeURIComponent(
-              parseSafeRedirectPath(router.asPath || "/dashboard"),
+              parseSafeRedirectPath(currentLocation.current || "/dashboard"),
             );
             router.replace(`/login?next=${next}`);
         }
@@ -124,7 +129,7 @@ export default function SidebarLayout({ title, children }: SidebarLayoutProps) {
     return () => {
       active = false;
     };
-  }, [engineUrl, router.asPath]);
+  }, [engineUrl, authPath]);
 
   const routeRequiredRoles = useMemo(() => getRequiredRolesForRoute(router.pathname), [router.pathname]);
   const currentRouteAllowed = useMemo(

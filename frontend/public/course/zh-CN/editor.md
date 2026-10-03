@@ -7,6 +7,9 @@
 这项前端能力收录于源码版本 `0.4.9`，尚不创建服务端 Task 或保存 Artifact。下载之前，草稿只在页面内存中；编辑
 不会上传、执行或评估内容。源码发布不代表本地编辑器已连接后端准备层。
 
+0.5.0 收录的修复让同页锚点跳转保留草稿与编辑器；路径或查询参数变化仍会复查身份。
+导入/下载文件名在长度边界保留完整 Unicode 字符，不放宽正文校验。
+
 ## 语言能力
 
 以下 14 个配置来自 [`languages.ts`](../../frontend/src/features/editor/languages.ts) 中实际启用的
@@ -73,6 +76,15 @@ TypeScript 和 JavaScript 内置服务在页面内共享 Monaco 工作线程及�
 通过 `TaskSnapshot.input_refs` 固定 Artifact 修订；[C2-J](session-task-revisions.md)现已增加
 Session 授权的 Draft 任务引用换版，前提是另行发布新的 Artifact 内容。换版失败不授权删除该内容。
 公共任务编辑 API 和浏览器保存仍未接通，本前端不绕过授权、预期修订检查或缺失的服务端适配。
+
+0.5.0 收录的 [C2-K 内容清单](task-content-manifest.md)定义独立服务端元数据与给定快照纯校验，
+不是本地导入格式或保存命令：纯契约本身不持久化元数据，本地空标题仍需保存时明确处理，浏览器语言白名单
+保持不变。文件名标签与语言提示不授予文件系统或执行权限。
+
+独立的 [C2-L 可信存储](task-content-store.md)在 Schema 3 中持久化元数据；
+[C2-M](session-task-content.md)增加内部 Session 与文本字节检查，但都没有连接浏览器草稿，
+不会让本地导出变成服务端保存。同一版本还收录未挂载的 [C2-N HTTP 路由](task-content-http.md)，
+但没有 Session 签发器或浏览器保存接线。
 
 ## 实现与回归范围
 

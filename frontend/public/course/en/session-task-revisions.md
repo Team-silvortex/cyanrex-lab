@@ -4,7 +4,8 @@ Status: **C2-J included in source release 0.4.9**. Decision date: **2026-10-03**
 
 An owner can explicitly replace a Draft task's ordered Artifact references after publishing new
 immutable content. This connects the backend preparation layers for task payload editing; it does
-not connect the browser draft to a server or introduce public HTTP commands. The source version is 0.4.9.
+not connect the browser draft to a server or introduce public HTTP commands. This slice first shipped
+in source version 0.4.9; later content HTTP preparation is separate.
 
 ## Command contract
 
@@ -65,6 +66,9 @@ new content validation, private ownership, schema compatibility, lifecycle revoc
 trigger faults, deferred commit failure, expiry/logout and cancellation. The CI runner verifies exact
 test names before executing them. Actual results are recorded in [project status](project-status.md).
 
-HTTP authentication and CSRF integration, server-backed payload metadata, browser saving/conflict UI,
+The unreleased [C2-K content manifest](task-content-manifest.md) adds a pure metadata/snapshot contract,
+without changing this store or command. The separate [C2-L trusted store](task-content-store.md) adds
+atomic metadata editing in schema 3, which these schema 2 Session adapters reject. Dedicated Session
+content/byte composition is now provided separately by [C2-M](session-task-content.md); public authentication/CSRF and browser saving/conflict UI,
 binary attachments, migration and live cutover remain separate work. This does not execute code,
 validate typed domain evidence, issue rule Reviews, grant cross-user access or accept a Task.

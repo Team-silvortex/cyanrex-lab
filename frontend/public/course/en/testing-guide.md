@@ -1,9 +1,12 @@
 # Current project testing guide
 
-Reviewed against **source release 0.4.9 on 2026-10-03**, including task payload and
-Session command work. This guide explains what to run for each module and boundary, what each layer
+Reviewed against **source release 0.5.0 on 2026-10-03**, including task payload, Session commands and
+the standalone content HTTP adapter. This guide explains what to run for each module and boundary, what each layer
 proves, and how to avoid using live data. It is a test plan and source inventory, not a new test run.
 Use the [platform network](platform-network.md) to identify connected and unconnected product paths.
+The [capability tensor](capability-maturity.md) links each implementation slice to test sources and
+dated evidence. Its common-script checks validate structure, references and bilingual score-table
+consistency; they do not execute the referenced product tests or establish deployment maturity.
 
 ## Test layers
 
@@ -41,8 +44,11 @@ compilation; consult its explicit lists rather than assuming `cargo test` covers
 | Generic identity and authority | `collaboration_*_tdd`, `legacy_workspace_projection_tdd` | Audited binding/member/grant revisions, absent-key races, last manager, role versus deployment authority |
 | Durable source and lifecycle | `durable_auth_source_tdd`, `durable_collaboration_tdd`, deletion/password/bootstrap/reconciliation targets | Account incarnation → exact current Session → identity/policy on one transaction, namespace replacement, post-write facts |
 | Operator provisioning | `provision_cli_tdd`, `provision_postgres_tdd` | Read-only plan, target-bound apply, private enrollment delivery, lost acknowledgement and cancellation; no live configuration adoption |
-| Generic Task, Artifact and Review | Nine storage runners below; their default Rust tests | Exact revisions/digests, Task/outbox atomicity, immutable file boundaries, private ownership, Review history, current Session checks |
+| Generic Task, Artifact and Review | Explicit storage runners below; their default Rust tests | Exact revisions/digests, Task/outbox atomicity, immutable file boundaries, private ownership, Review history, current Session checks |
 | Local task payload and editor | `test:editor-languages`, `test:task-payload-browser`, `test:multi-language-editor-browser` | Optional payloads, accepted content/revisions, import/export, stale edits, model disposal and forbidden network writes |
+| Internal Task content metadata | Rust `task_content_contract_tdd`, `task_content_binding_tdd` | Strict object shape, scalar/item limits, exact ordered pins, supplied owner/bytes/digest consistency; pure default tests, not storage or Session authorization |
+| Separate content storage | Rust `task_content_store_tdd`, `scripts/test-task-content-storage.sh` | Schema 2/3 isolation, complete metadata/outbox atomicity, revision conflicts and storage faults; not a Session content or browser adapter |
+| Session task content | Rust `session_task_content_tdd`, `scripts/test-session-task-content.sh` | Current authorization, old/new exact text, metadata-only edits, removal, namespace pins and post-write checks on one transaction; no public/browser acceptance |
 | UI navigation and safety | `test:ui-permissions`, layout/action/account/runtime/browser suites | Target-bound confirmations, duplicate actions, route changes, keyboard access, keeping unsaved drafts |
 | API, SDK, packaging and deployment | Common contract tests, SDK gate, release/SSH Rust targets and tool fixture runners | Engine route → OpenAPI → generated SDK; archive provenance → exact reviewed SSH target; fixtures versus real installation |
 
@@ -88,6 +94,7 @@ authorization to accept fallback as successful persistence. Provisioning SQL fix
 | Runner | Cases in this source snapshot | Main boundary |
 |---|---:|---|
 | `scripts/test-task-storage.sh` | 15 | Trusted Task storage, lifecycle revisions and outbox |
+| `scripts/test-task-content-storage.sh` | 21 | Separate schema 3 manual Task/manifest persistence, atomic edits, legacy rejection and fault/concurrency checks |
 | `scripts/test-artifact-storage.sh` | 17 | Exact immutable content, private file faults and pinned inputs |
 | `scripts/test-review-storage.sh` | 17 | Review history, human/rule separation and non-teaching integration |
 | `scripts/test-session-task-storage.sh` | 17 | Current Session → private manual Task |
@@ -96,8 +103,11 @@ authorization to accept fallback as successful persistence. Provisioning SQL fix
 | `scripts/test-session-review-storage.sh` | 18 | Session → private human Review with exact target/evidence |
 | `scripts/test-session-catalog-tasks.sh` | 16 | Exact admitted definition metadata and 0–32 inputs |
 | `scripts/test-session-task-revisions.sh` | 17 | Draft replacement, old/new input union, schema 2 compatibility and competing saves |
+| `scripts/test-session-task-content.sh` | 25 | Schema 3 current-Session content, exact text, old/new rechecks, namespace substitution, lifecycle and concurrent faults |
+| `scripts/test-platform-task-content-http.sh` | 11 | Standalone HTTP → C2-M, private ownership, Session expiry during lock waits, exact text, commit/outbox faults and competing edits |
 
-These nine runners total **155 selected cases**, not all PostgreSQL coverage in the repository.
+These twelve runners total **212 selected cases** (155 preceding resource cases, 21 content-store, 25 Session-content and 11 standalone HTTP cases),
+not all PostgreSQL coverage in the repository.
 Legacy auth/events/scripts/learning and generic identity/source/lifecycle/provisioning cases have
 separate explicit lists in CI. The runner inventory is guarded by
 [`postgresCi.test.mjs`](../../scripts/tests/postgresCi.test.mjs).
@@ -156,8 +166,16 @@ mock tool checks, dependency advisory scans and benchmarks as separate evidence 
 
 ## Evidence and maintenance
 
-The latest recorded **C2-J backend development run** passed 402 default Rust cases, 92 common script
-cases and the 155 selected PostgreSQL cases above. The earlier **task payload/editor run** passed
+The unreleased **C2-L storage run** passed 436 default Rust cases (416 ignored), 111 common script
+checks and, separately, 176 exact PostgreSQL cases: 21 new plus the preceding 155 resource cases.
+The database was a fresh private-socket PostgreSQL 16 instance, not a deployed service. No content
+Session/browser adapter or migration was exercised; see the dated cleanup and scope in project status.
+
+The unreleased **C2-K pure-contract run** passed 428 default Rust cases (395 ignored) and 110 common
+script checks, including 26 new metadata/snapshot cases. It did not rerun PostgreSQL or browser tests.
+
+The earlier **C2-J backend development run** passed 402 default Rust cases, 92 common script
+cases and the preceding 155 resource PostgreSQL cases. The earlier **task payload/editor run** passed
 164 default frontend tests and 35 browser cases. These were separate scoped runs recorded on
 2026-10-03; they must not be added into a single fresh end-to-end acceptance claim. The backend run
 did not rerun every durable-source or lifecycle database suite, and browser mocks do not prove live

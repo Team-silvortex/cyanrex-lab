@@ -3,6 +3,8 @@ pub mod config;
 pub mod domain_packs;
 mod metrics;
 pub mod models;
+#[cfg(unix)]
+pub mod platform_http;
 pub mod routes;
 pub mod services;
 mod sqlx_compat;

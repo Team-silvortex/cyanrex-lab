@@ -2,6 +2,83 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
+test("Rust CI explicitly runs every prepared Task content HTTP transaction boundary", async () => {
+  const workflow = await readFile(new URL("../../.github/workflows/ci.yml", import.meta.url), "utf8");
+  const step = workflow.split("- name: Run real PostgreSQL task artifact and review storage integration")[1]?.split("\n      - name:")[0] ?? "";
+  const runner = await readFile(new URL("../test-platform-task-content-http.sh", import.meta.url), "utf8");
+  const cases = [];
+  for (const [file, prefix] of [["platform_http_tdd.rs", ""], ["platform_http/behavior.rs", "behavior::"], ["platform_http/faults.rs", "faults::"]]) {
+    const source = await readFile(new URL(`../../engine/tests/${file}`, import.meta.url), "utf8");
+    for (const [, name] of source.matchAll(/async fn (postgres_platform_http_\w+)\(/g)) cases.push(`${prefix}${name}`);
+  }
+  assert.equal(cases.length, 11, "HTTP transaction boundaries require deliberate CI inclusion");
+  const listed = [...runner.matchAll(/^  ((?:\w+::)*postgres_platform_http_\w+)\b/gm)].map((match) => match[1]);
+  assert.deepEqual(listed.sort(), cases.sort(), "runner must enumerate every exact case once");
+  assert.ok(step.includes("@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test"));
+  assert.match(step, /&& bash scripts\/test-platform-task-content-http\.sh/);
+  assert.match(runner, /set -euo pipefail/);
+  assert.match(runner, /CYANREX_TEST_DATABASE_URL:\?/);
+  assert.match(runner, /--test platform_http_tdd/);
+  assert.match(runner, /--ignored --list/);
+  assert.match(runner, /grep -Fx/);
+  assert.match(runner, /--ignored --exact --nocapture/);
+});
+
+test("prepared Task content HTTP does not claim live Engine OpenAPI or SDK integration", async () => {
+  for (const file of ["engine/src/application.rs", "engine/openapi/openapi.json", "sdk-js/src/index.ts", "sdk-js/src/generated/openapi.ts", "sdk-js/src/generated/operations.ts"]) {
+    const source = await readFile(new URL(`../../${file}`, import.meta.url), "utf8");
+    assert.doesNotMatch(source, /\/platform\/v1\/tasks|build_task_content_router|TaskContentHttpState/, file);
+  }
+  const router = await readFile(new URL("../../engine/src/platform_http/mod.rs", import.meta.url), "utf8");
+  assert.match(router, /pub fn build_task_content_router/);
+  assert.match(router, /\/platform\/v1\/tasks/);
+  assert.doesNotMatch(router, /install_empty\s*\(|\bAuthService\s*[:,{]|std::env/);
+});
+
+test("Rust CI explicitly runs every Session content and exact-byte boundary", async () => {
+  const workflow = await readFile(new URL("../../.github/workflows/ci.yml", import.meta.url), "utf8");
+  const step = workflow.split("- name: Run real PostgreSQL task artifact and review storage integration")[1]?.split("\n      - name:")[0] ?? "";
+  const runner = await readFile(new URL("../test-session-task-content.sh", import.meta.url), "utf8");
+  const cases = [];
+  for (const [file, prefix] of [["session_task_content_tdd.rs", ""], ["session_task_content/behavior.rs", "behavior::"], ["session_task_content/lifecycle.rs", "lifecycle::"], ["session_task_content/faults.rs", "faults::"], ["session_task_content/namespaces.rs", "namespaces::"], ["session_task_content/concurrency.rs", "concurrency::"]]) {
+    const source = await readFile(new URL(`../../engine/tests/${file}`, import.meta.url), "utf8");
+    for (const [, name] of source.matchAll(/async fn (postgres_session_content_\w+)\(/g)) cases.push(`${prefix}${name}`);
+  }
+  assert.equal(cases.length, 25, "Session content boundaries require deliberate CI inclusion");
+  const listed = [...runner.matchAll(/^  ((?:\w+::)*postgres_session_content_\w+)\b/gm)].map((match) => match[1]);
+  assert.deepEqual(listed.sort(), cases.sort(), "runner must enumerate every exact case once");
+  assert.ok(step.includes("@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test"));
+  assert.match(step, /&& bash scripts\/test-session-task-content\.sh/);
+  assert.match(runner, /set -euo pipefail/);
+  assert.match(runner, /CYANREX_TEST_DATABASE_URL:\?/);
+  assert.match(runner, /--test session_task_content_tdd/);
+  assert.match(runner, /--ignored --list/);
+  assert.match(runner, /grep -Fx/);
+  assert.match(runner, /--ignored --exact --nocapture/);
+});
+
+test("Rust CI explicitly runs every schema-3 Task content atomic storage boundary", async () => {
+  const workflow = await readFile(new URL("../../.github/workflows/ci.yml", import.meta.url), "utf8");
+  const step = workflow.split("- name: Run real PostgreSQL task artifact and review storage integration")[1]?.split("\n      - name:")[0] ?? "";
+  const runner = await readFile(new URL("../test-task-content-storage.sh", import.meta.url), "utf8");
+  const cases = [];
+  for (const [file, prefix] of [["task_content_store_tdd.rs", ""], ["task_content_store/behavior.rs", "behavior::"], ["task_content_store/faults.rs", "faults::"], ["task_content_store/concurrency.rs", "concurrency::"]]) {
+    const source = await readFile(new URL(`../../engine/tests/${file}`, import.meta.url), "utf8");
+    for (const [, name] of source.matchAll(/async fn (postgres_task_content_\w+)\(/g)) cases.push(`${prefix}${name}`);
+  }
+  assert.equal(cases.length, 21, "task content storage boundaries require deliberate CI inclusion");
+  const listed = [...runner.matchAll(/^  ((?:\w+::)*postgres_task_content_\w+)\b/gm)].map((match) => match[1]);
+  assert.deepEqual(listed.sort(), cases.sort(), "runner must enumerate every exact case once");
+  assert.ok(step.includes("@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test"));
+  assert.match(step, /&& bash scripts\/test-task-content-storage\.sh/);
+  assert.match(runner, /set -euo pipefail/);
+  assert.match(runner, /CYANREX_TEST_DATABASE_URL:\?/);
+  assert.match(runner, /--test task_content_store_tdd/);
+  assert.match(runner, /--ignored --list/);
+  assert.match(runner, /grep -Fx/);
+  assert.match(runner, /--ignored --exact --nocapture/);
+});
+
 test("Rust CI explicitly runs every Session Task input replacement boundary", async () => {
   const workflow = await readFile(new URL("../../.github/workflows/ci.yml", import.meta.url), "utf8");
   const step = workflow.split("- name: Run real PostgreSQL task artifact and review storage integration")[1]?.split("\n      - name:")[0] ?? "";
