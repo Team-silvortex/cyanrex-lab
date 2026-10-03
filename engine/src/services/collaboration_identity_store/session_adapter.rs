@@ -3,6 +3,33 @@
 use super::*;
 
 impl CollaborationIdentityStore {
+    /// Explicit private-work policy: active audited Human membership, not a teaching role or
+    /// deployment grant. Caller holds source metadata, registry metadata and authority locks.
+    pub(crate) async fn session_private_work_actor(
+        tx: &mut Transaction<'_, Postgres>,
+        scope: WorkspaceRef,
+        username: &LegacyUsername,
+        account_id: LegacyAccountId,
+    ) -> Result<PrincipalRef> {
+        let workspace = Self::scope(tx, scope, false).await?;
+        if workspace.status != WorkspaceStatus::Active {
+            return Err(IdentityStoreError::ScopeInactive);
+        }
+        let identity = Self::identity(tx, scope, username, account_id)
+            .await?
+            .ok_or(IdentityStoreError::AccessDenied)?;
+        if identity.retired_at.is_some()
+            || identity.principal.kind != PrincipalKind::Human
+            || identity.principal.status != PrincipalStatus::Active
+            || !Self::checked_access_record(tx, scope, identity.principal.reference.principal_id)
+                .await?
+                .is_some_and(|access| access.policy.membership.status == MembershipStatus::Active)
+        {
+            return Err(IdentityStoreError::AccessDenied);
+        }
+        Ok(identity.principal.reference)
+    }
+
     pub(crate) async fn session_manager_candidates(
         tx: &mut Transaction<'_, Postgres>,
         scope: WorkspaceRef,

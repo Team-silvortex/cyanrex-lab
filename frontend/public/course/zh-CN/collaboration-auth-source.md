@@ -68,9 +68,11 @@
 ## 下一接入门槛
 
 C1-E 建立 C1-D 所需的持久代次来源。0.4.6 已包含的 [C1-F](collaboration-session-commands.md)
-已用统一锁顺序把当前会话、绑定、策略/审计和提交组合起来；尚未发布的
-[C1-G](collaboration-account-deletion.md)追加另一个活跃绑定账号的受限删除/退役联动。
-完整生命周期/恢复、改密码、教师引导及在线接入仍待完成；不能先提交认证变更，再“尽力”写注册表。
+已用统一锁顺序把当前会话、绑定、策略/审计和提交组合起来；0.4.7 收录的
+[C1-G](collaboration-account-deletion.md)追加另一个活跃绑定账号的受限删除/退役联动。同版还收录
+[C1-H 改密](collaboration-password-change.md)、[C1-I 空实例引导](collaboration-bootstrap.md)、
+[C1-J 本地初始化](collaboration-provisioning.md)和 [C1-K 只读对账](collaboration-reconciliation.md)内部准备层。
+完整生命周期/恢复及在线接入仍待完成；不能先提交认证变更，再“尽力”写注册表。
 独立 C1-D 退役仍不撤销 Session，本源退出也不退役 Principal。
 
 真实数据接入另须来源盘点、恢复验证后的备份、明确迁移映射、旧写入封锁、切换批准及回退/对账边界。

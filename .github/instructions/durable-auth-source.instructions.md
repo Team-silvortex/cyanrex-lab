@@ -39,6 +39,14 @@ do not skip freshness or expect the deleted row to remain. Preserve identity/TOT
 read back revocation, and retain the fault/concurrency/registry tests in `durable_password_change_tdd`.
 A failed acknowledgement is not proof of rollback, and no credential-change replay is available.
 
+Private Task/Artifact commands share the `private_work` guard: current audited Human membership
+permits only the caller's own resources, without a teaching/deployment grant. Keep target/source
+namespace pins and return neither records nor content bytes before the final Session check and commit.
+Borrowed Artifact reads must lock the head before related queries under the source's READ COMMITTED
+transaction; the standalone reader's unlocked lookup depends on its own REPEATABLE READ snapshot.
+File publication is not rolled back with PostgreSQL. Cancellation can leave a blocking writer running;
+never delete, adopt or automatically retry an unpublished file based only on a failed acknowledgment.
+
 Fresh-authority bootstrap is trusted provisioning, never public registration or first-login election.
 Before DDL, take the existing source/identity/access installer advisory fences in that order and reject
 any nonempty or ambiguous namespace. Use source -> registry metadata -> authority -> child lock order,

@@ -1,5 +1,6 @@
 pub mod application;
 pub mod config;
+pub mod domain_packs;
 mod metrics;
 pub mod models;
 pub mod routes;

@@ -1,6 +1,6 @@
 # cyanrex-lab
 
-Version: `0.4.7`
+Version: `0.4.8`
 
 Cyanrex monorepo for eBPF experiments: Axum engine + Next.js dashboard + module utilities.
 
@@ -30,6 +30,25 @@ The same release adds atomic password rotation, empty-authority bootstrap and th
 plus [read-only lifecycle reconciliation](docs/en/collaboration-reconciliation.md) /
 [只读生命周期对账](docs/zh-CN/collaboration-reconciliation.md). These remain explicit internal staging;
 the source release does not migrate, deploy or switch live authentication.
+
+Included in 0.4.8: [task and domain separation](docs/en/task-domain-boundary.md) /
+[任务与领域解耦](docs/zh-CN/task-domain-boundary.md) extracts a shared versioned catalogue and typed rule
+dispatch, used by the existing teaching facade through a built-in eBPF pack. This preserves teaching
+APIs and history. [Durable task staging](docs/en/task-instance-store.md) /
+[持久任务实例](docs/zh-CN/task-instance-store.md) now stores manual or definition-pinned tasks and
+revision-fenced status changes with a transactional outbox. Its direct API expects trusted ownership;
+[immutable Artifact revisions](docs/en/artifact-revision-store.md) /
+[不可变制品版本](docs/zh-CN/artifact-revision-store.md) add private version files, verified reads and
+atomic metadata/events, including a pinned Task integration test. [Revision-bound Review records](docs/en/review-record-store.md)
+/ [绑定版本的审阅记录](docs/zh-CN/review-record-store.md) add distinct human/rule judgments and immutable
+comment history. [Session-authorized private manual tasks](docs/en/session-task-commands.md) /
+[会话授权的私人手工任务](docs/zh-CN/session-task-commands.md) now derive ownership from current audited
+membership and commit Task/events on the same source transaction, without granting teachers access to
+other users' private work. [Session-authorized private Artifacts](docs/en/session-artifact-commands.md) /
+[会话授权的私人制品](docs/zh-CN/session-artifact-commands.md) use the same identity checks for publishing
+and exact-content reads; failed publication can retain private files without committed metadata.
+There is still no live wiring. Authorized Task references, authenticated Review, verified review evidence,
+Task acceptance, public workflows, retention and migration remain future work.
 
 ## Repository Layout
 
@@ -165,12 +184,12 @@ privileged and must not be exposed to untrusted users.
 For classroom deployment or offline distribution, create a packaged artifact with prebuilt Docker images:
 
 ```bash
-./scripts/package-distribution.sh --version 0.4.7
+./scripts/package-distribution.sh --version 0.4.8
 ```
 
 This produces:
-- `dist/cyanrex-lab-0.4.7-<timestamp>.tar.gz`
-- `dist/cyanrex-lab-0.4.7-<timestamp>.tar.gz.sha256`
+- `dist/cyanrex-lab-0.4.8-<timestamp>.tar.gz`
+- `dist/cyanrex-lab-0.4.8-<timestamp>.tar.gz.sha256`
 
 The archive contains the PostgreSQL, Engine, and frontend images. On a disposable Docker host,
 verify the freshly extracted package end to end with `./install-smoke.sh`. It checks the package
@@ -205,10 +224,10 @@ For an artifact downloaded from the Tag workflow, place its four files in a dedi
 verify the complete candidate from a trusted checkout of the matching source Tag before extracting it:
 
 ```bash
-release_revision="$(git rev-list -n 1 v0.4.7)"
+release_revision="$(git rev-list -n 1 v0.4.8)"
 cargo run --quiet --manifest-path engine/Cargo.toml --locked --bin cyanrex-release -- \
   candidate verify /path/to/downloaded-candidate \
-  --expect-version 0.4.7 --expect-revision "$release_revision" --expect-tag v0.4.7 \
+  --expect-version 0.4.8 --expect-revision "$release_revision" --expect-tag v0.4.8 \
   --extract-to /path/to/new-output-directory
 ```
 

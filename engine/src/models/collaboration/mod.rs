@@ -10,15 +10,23 @@
 //! let principal: PrincipalId = workspace;
 //! ```
 
+mod artifact;
 mod event;
 mod identity;
 mod references;
+mod review;
 mod scalars;
+mod task;
+mod work;
 
+pub use artifact::*;
 pub use event::*;
 pub use identity::*;
 pub use references::*;
+pub use review::*;
 pub use scalars::*;
+pub use task::*;
+pub use work::*;
 
 #[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
 #[error("{0}")]

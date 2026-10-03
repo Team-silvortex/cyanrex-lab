@@ -5,9 +5,10 @@ Builds on the [durable authentication source](collaboration-auth-source.md),
 [identity lifecycle commands](collaboration-identity-lifecycle.md) and
 [policy audit](collaboration-policy-audit.md). No live AuthService, route or deployment is switched.
 
-
-Follow-up: unreleased [C1-G](collaboration-account-deletion.md) adds a restricted, one-shot deletion
-of another active bound account. The delivered boundary and verification below record C1-F in 0.4.6.
+Follow-up: 0.4.7 includes [C1-G restricted deletion](collaboration-account-deletion.md),
+[C1-H password rotation](collaboration-password-change.md), [C1-I empty-authority bootstrap](collaboration-bootstrap.md),
+[C1-J local provisioning](collaboration-provisioning.md) and [C1-K read-only reconciliation](collaboration-reconciliation.md)
+as internal staging, without live cutover. The delivered boundary and verification below record C1-F in 0.4.6.
 
 ## Delivered boundary
 
@@ -80,7 +81,7 @@ their existing registry-only guard; they are not silently turned into authentica
 this adapter. Privileged SQL/DDL can bypass source and registry protocols. Full lifecycle integration
 must close those separate writer paths before a live cutover.
 
-## What remains deliberately unavailable
+## Outside the original C1-F slice
 
 - Account registration plus Principal/initial-policy bootstrap in one transaction.
 - Account deletion plus Session revocation and identity retirement in one transaction.

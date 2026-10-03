@@ -87,8 +87,10 @@ backpressure and HTTP/CSRF integration remain gates before exposing this adapter
 
 C1-E established the durable incarnation needed by C1-D. Included in 0.4.6, [C1-F](collaboration-session-commands.md)
 already composes current-session verification, binding, policy/audit and commit with one lock order.
-The unreleased [C1-G slice](collaboration-account-deletion.md) adds restricted deletion/retirement of
-another active bound account. General lifecycle/recovery, password changes, teacher bootstrap and live
+Included in 0.4.7, [C1-G](collaboration-account-deletion.md) adds restricted deletion/retirement of
+another active bound account. The same release includes internal staging for [C1-H password rotation](collaboration-password-change.md),
+[C1-I empty-authority bootstrap](collaboration-bootstrap.md), [C1-J local provisioning](collaboration-provisioning.md)
+and [C1-K read-only reconciliation](collaboration-reconciliation.md). General lifecycle/recovery and live
 composition remain pending. Never commit auth changes and then best-effort write the registry.
 Standalone C1-D retirement still does not revoke Sessions, and logout does not retire a Principal.
 

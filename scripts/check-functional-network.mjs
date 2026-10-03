@@ -97,6 +97,11 @@ export function frontendPageEntries(files) {
     }));
 }
 
+export async function teachingLabIds(root) {
+  const source = await readFile(path.join(root, "engine/src/domain_packs/ebpf_teaching/rules.rs"), "utf8");
+  return [...source.matchAll(/^\s+id: "([^"]+)"/gm)].map(match => match[1]);
+}
+
 export async function checkFunctionalNetwork(root) {
   const network = JSON.parse(await readFile(path.join(root, "docs/functional-network.json"), "utf8"));
   const contract = await checkRepositoryContract(root);
@@ -107,8 +112,7 @@ export async function checkFunctionalNetwork(root) {
   const templates = (await Promise.all(templateSources.map(async source =>
     [...(await readFile(path.join(root, source), "utf8")).matchAll(/id: "([^"]+)"/g)].map(match => match[1]),
   ))).flat();
-  const labs = [...(await readFile(path.join(root, "engine/src/services/learning_catalog.rs"), "utf8"))
-    .matchAll(/id: "([^"]+)"/g)].map(match => match[1]);
+  const labs = await teachingLabIds(root);
   const moduleSources = (await filesUnder(root, "modules"))
     .filter(source => /^modules\/[^/]+\/module\.json$/.test(source));
   const bundledModules = await Promise.all(moduleSources.map(async source =>

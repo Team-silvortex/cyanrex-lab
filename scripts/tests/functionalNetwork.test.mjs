@@ -1,7 +1,27 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 
-import { frontendPageEntries, validateNetwork } from "../check-functional-network.mjs";
+import { frontendPageEntries, teachingLabIds, validateNetwork } from "../check-functional-network.mjs";
+
+test("functional network reads current lab IDs from the domain pack, not the compatibility facade", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "cyanrex-lab-catalog-"));
+  try {
+    const pack = path.join(root, "engine/src/domain_packs/ebpf_teaching");
+    const services = path.join(root, "engine/src/services");
+    await mkdir(pack, { recursive: true });
+    await mkdir(services, { recursive: true });
+    await writeFile(path.join(pack, "rules.rs"), '    id: "01-first-program",\n    template_id: Some("xdp-pass"),\n');
+    await writeFile(path.join(services, "learning_catalog.rs"), '    id: "obsolete",\n');
+    assert.deepEqual(await teachingLabIds(root), ["01-first-program"]);
+    await rm(path.join(pack, "rules.rs"));
+    await assert.rejects(teachingLabIds(root), { code: "ENOENT" });
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
 
 function fixture() {
   const network = {

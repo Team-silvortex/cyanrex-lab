@@ -27,18 +27,25 @@ use crate::{
 };
 
 mod accounts;
+#[cfg(unix)]
+mod artifact_commands;
 mod bootstrap;
 mod credentials;
 mod deletion;
+mod private_work;
 pub(crate) mod reconciliation;
 mod schema;
 mod session_commands;
 mod sessions;
+mod task_commands;
 
+#[cfg(unix)]
+pub use artifact_commands::{SessionArtifactError, SessionArtifactWorkspace};
 pub use bootstrap::{AuthorityBootstrap, BootstrapError};
 pub use deletion::SessionDeleteAccountCommand;
 pub use reconciliation::{AuthorityReconciliation, ReconciliationError};
 pub use session_commands::{SessionBindCommand, SessionCommandError, SessionPolicyCommand};
+pub use task_commands::{SessionTaskError, SessionTaskWorkspace};
 
 #[derive(Clone)]
 pub struct DurableAuthSource {

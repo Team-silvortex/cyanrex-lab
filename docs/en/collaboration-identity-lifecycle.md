@@ -122,15 +122,17 @@ Errors, timeout, cancellation or a lost response can race commit and **do not pr
 the exact command ID and payload for reconciliation; do not compensate by inventing a new incarnation
 or command. After self-retirement, another effective manager must inspect the result.
 
-The remaining lifecycle gate coordinates account creation/deletion and Session revocation with these
-internal commands within one reviewed transaction path; the source/composition follow-ups are below.
+The original lifecycle gate required account creation/deletion and Session revocation to share a reviewed
+transaction path with these internal commands; restricted source/composition follow-ups are below.
 Joining by username, or committing old tables before best-effort new writes, is insufficient. Real-data
 work still requires source inventory, restore verification, cutover approval and rollback boundaries.
 
 Follow-up: [ADR-006 / C1-E](collaboration-auth-source.md), included in 0.4.6, implements an explicit empty-source
 account/session adapter with durable incarnations. Also included in 0.4.6, [C1-F](collaboration-session-commands.md)
-unifies source verification with binding/policy transactions. Unreleased [C1-G](collaboration-account-deletion.md)
-adds restricted administrative deletion/retirement. Full lifecycle and real-data cutover remain pending;
+unifies source verification with binding/policy transactions. Included in 0.4.7, [C1-G](collaboration-account-deletion.md)
+adds restricted administrative deletion/retirement, alongside internal staging for [C1-H password rotation](collaboration-password-change.md),
+[C1-I empty-authority bootstrap](collaboration-bootstrap.md), [C1-J local provisioning](collaboration-provisioning.md)
+and [C1-K read-only reconciliation](collaboration-reconciliation.md). Full lifecycle and real-data cutover remain pending;
 the verification below records the original C1-D slice, not those follow-ups.
 
 ## Verification

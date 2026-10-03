@@ -28,6 +28,23 @@ read-only repeatable-read observer of the source/registry/full audit graph. It i
 recovery or a replacement for runtime row locks. There is no public/startup entry; lifecycle recovery,
 existing-data migration and live cutover remain pending.
 
+Source release 0.4.8 includes [ADR-013 / C2-A](task-domain-boundary.md), extracting a domain-neutral, versioned task catalogue
+and typed rule dispatch. The existing teaching facade now uses it through the built-in eBPF teaching
+pack. Lab rules/source evidence leave the shared service layer; public APIs, storage and authorization
+stay unchanged. [ADR-014 / C2-B](task-instance-store.md) adds separate, explicitly installed task
+storage with definition snapshots, revision-fenced status changes and atomic outbox writes. It is not
+wired to live state or teaching storage; its direct API expects trusted ownership. [ADR-015 / C2-C](artifact-revision-store.md)
+adds private immutable version files with PostgreSQL metadata/events and verified exact reads, including
+a pinned Task integration fixture. [ADR-016 / C2-D](review-record-store.md) adds revision-bound Review
+records, distinct human/rule judgments and immutable comment history, without Task acceptance or
+automatic evidence verification. [ADR-017 / C2-E](session-task-commands.md) composes current Sessions,
+audited membership and private manual Task/events on one source transaction, without requiring teaching/
+deployment roles or granting access to other owners' work. [ADR-018 / C2-F](session-artifact-commands.md)
+adds private Artifact publishing and exact-content reads through the same source-owned guard. Borrowed
+reads lock revision heads; failed database publication can retain private files. Authorized Task references,
+authenticated Review, legacy-writer fencing, retention, public workflows and process isolation remain pending;
+there is no live wiring.
+
 ## 1. System Context
 
 ```mermaid

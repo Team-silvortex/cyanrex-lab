@@ -1,18 +1,54 @@
 # Project Status
 
-Snapshot date: **2026-10-02**
-Current release line: **0.4.7**
+Snapshot date: **2026-10-03**
+Current release line: **0.4.8**
 
 This page is the capability-level progress baseline for Cyanrex Lab. It records what is usable now,
 what remains intentionally limited, and which decisions should drive the next development cycle.
 The detailed trust boundaries and data flows remain in the [system architecture](architecture.md).
 
-Release validation for 0.4.7 passed the full local quality gate with existing locked dependencies:
-347 default Rust tests, 82 script regressions, 125 frontend tests and 16 SDK tests, plus the frontend
+Release validation for 0.4.8 passed the full local quality gate with existing locked dependencies:
+381 default Rust tests, 88 script regressions, 125 frontend tests and 16 SDK tests, plus the frontend
 production build, TypeScript and SDK type/package checks. The frontend production audit reported one
 low-severity DOMPurify advisory (GHSA-p98j-92pf-mc4p), with no moderate/high/critical findings; the SDK
 audit reported none. The existing gate blocks moderate or higher; dependencies were not changed in
 this release. Remote CI, exact-image distribution/kernel acceptance and deployment remain separate.
+
+## Task and domain separation in progress
+
+- Source release 0.4.8 includes [ADR-013 / C2-A](task-domain-boundary.md), moving the five labs and their source/runtime
+  rules into an explicit eBPF teaching pack. Legacy teaching reads/assessment now use the shared,
+  versioned `TaskCatalog`; history, progress, permissions, public API and database formats are unchanged.
+- A text-only provider exercises the same typed interface without a Run or teaching role. Exact
+  package/definition/schema/policy pins, rejected fallback and bounded metadata/results are tested.
+- [ADR-014 / C2-B](task-instance-store.md) adds explicit PostgreSQL task staging: manual or pinned
+  definitions, revision-fenced lifecycle changes and atomic task/outbox commits. Owner filtering is not
+  authentication; the direct store is not wired to live state or teaching storage.
+  No automatic assessment or Run result can accept a task.
+- [ADR-015 / C2-C](artifact-revision-store.md) adds private immutable version files and PostgreSQL
+  metadata/events. A non-teaching fixture proves that saved Task inputs still read original bytes
+  after an Artifact edit. Failed publication preserves files for reconciliation, not automatic deletion.
+- [ADR-016 / C2-D](review-record-store.md) adds pinned Review targets/evidence, distinct human/rule
+  judgments and immutable comment history with revision-fenced edits and atomic events. A text-only
+  Artifact/Task/Review fixture preserves old judgments after content edits without changing Task state.
+  Attribution is trusted input, not authentication or verified evidence.
+- [ADR-017 / C2-E](session-task-commands.md) composes current Sessions, audited active memberships
+  and private manual Task/events on one source transaction. Ownership is server-derived without
+  teaching/deployment roles or access to other owners' work. Logout, expiry, retirement and account
+  recreation are checked.
+- [ADR-018 / C2-F](session-artifact-commands.md) adds current-Session private Artifact creation,
+  revision and exact-content reads. It shares the Task authorization guard and locks read heads;
+  final checks and commit precede returning bytes. Failed database publication can retain private files,
+  without automatic cleanup or adoption. Authorized Task references, authenticated Review, legacy-writer
+  fencing, acceptance, public workflows, retention and migration remain pending; live auth/data are unchanged.
+- Release verification on 2026-10-03 passed the full local quality gate described above; 324 opt-in
+  Rust cases remain outside the default run. Eighteen Session Artifact, seventeen Session Task,
+  seventeen Review, seventeen Artifact and fifteen Task cases also passed through their exact CI
+  runners on disposable PostgreSQL 16. Fourteen auth-source and sixteen Session collaboration cases
+  passed through the corresponding CI step bodies, for 114 database regressions in total. C2-F adds
+  three default cases, eighteen database cases and one CI-selection regression. Remaining opt-in
+  database/live-kernel tests, remote CI, crash/disk-full recovery and deployed-instance checks were
+  not rerun. The database used only this run's private Unix socket and synthetic data.
 
 ## Read-only lifecycle reconciliation (included in 0.4.7)
 
@@ -142,7 +178,7 @@ this release. Remote CI, exact-image distribution/kernel acceptance and deployme
 | Local Runner | Operational | Replaceable driver boundary, global/per-user leases, timeout handling, and explicit `shared_kernel` reporting |
 | Runner Agent | Operational for remote checks | Signed registration, heartbeat, leases, cancellation, probes, and isolated compile-only diagnostics; remote eBPF loading is not enabled |
 | Deployment and distribution | Operational | Docker, WSL2, native Linux, hardened optional compiler Agent, and offline package/install tooling |
-| Release traceability | `0.4.7` synchronized source metadata; artifact acceptance remains separate | Changelog/version sync, annotated-tag preflight, checksum-bound source/archive metadata, per-image Docker content IDs, exact-image installation, and native Rust evidence/candidate verification with safe non-overwriting extraction; `0.3.0` is an API baseline only; publishing a source tag does not establish artifact acceptance |
+| Release traceability | `0.4.8` synchronized source metadata; artifact acceptance remains separate | Changelog/version sync, annotated-tag preflight, checksum-bound source/archive metadata, per-image Docker content IDs, exact-image installation, and native Rust evidence/candidate verification with safe non-overwriting extraction; `0.3.0` is an API baseline only; publishing a source tag does not establish artifact acceptance |
 | Module catalog | Operational, state-only | Versioned v1 manifests are discovered and validated at startup; lifecycle is in memory and never executes directory code |
 | JavaScript SDK | Operational internal package | Typed ESM client with 63 generated non-Agent operationId calls, a 77-member additive namespace baseline and deprecation policy, explicit `/openapi` and `/operations` exports, browser/Node sessions, cancellation, downloads, typed errors, and package-consumer smoke coverage |
 | API contract | Operational internal contract | Generated OpenAPI 3.1 served at `/openapi.json`; route/access/SDK/model drift and breaking changes against the frozen `0.3.0` baseline fail the quality gate |

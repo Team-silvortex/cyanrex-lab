@@ -4,9 +4,10 @@
 承接[持久认证源](collaboration-auth-source.md)、[身份生命周期命令](collaboration-identity-lifecycle.md)
 及[策略审计](collaboration-policy-audit.md)。不切换在线 AuthService、路由或部署。
 
-
-后续：尚未发布的 [C1-G](collaboration-account-deletion.md)追加另一个活跃绑定账号的受限一次性删除。
-下文交付边界及验证记录仍描述 0.4.6 的 C1-F。
+后续：0.4.7 已收录 [C1-G 受限删除](collaboration-account-deletion.md)、
+[C1-H 改密](collaboration-password-change.md)、[C1-I 空实例引导](collaboration-bootstrap.md)、
+[C1-J 本地初始化](collaboration-provisioning.md)和 [C1-K 只读对账](collaboration-reconciliation.md)
+内部准备层，没有在线切换。下文交付边界及验证记录仍描述 0.4.6 的 C1-F。
 
 ## 本轮交付
 
@@ -63,7 +64,7 @@
 仍是沿用注册表检查的准备层工具；本适配器没有悄悄将它们变成认证接口或封锁它们。
 特权 SQL/DDL 可以绕过协议，完整生命周期接入必须在在线切换前关闭这些独立写入路径。
 
-## 仍未开放
+## 原 C1-F 切片之外
 
 - 账号注册、Principal 及初始策略的统一引导事务。
 - 账号删除、全部会话撤销和身份退役的统一事务。

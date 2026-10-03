@@ -1,3 +1,4 @@
+//! Teaching-specific lexical evidence; not a generic task or compiler service.
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum Token {
     Identifier(String),

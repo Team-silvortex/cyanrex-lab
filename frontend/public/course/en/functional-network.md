@@ -24,6 +24,10 @@ Follow-ups: [01 — learning and persistence](functional-network-bug-hunt-01.md)
 pre-hunt baseline; drift checks report later learning, Runner/Agent, browser, event storage and quality-gate changes. Per-pass results
 are not all-workflow acceptance.
 
+Source release 0.4.8 includes [C2-A task/domain separation](task-domain-boundary.md), routing F27/F28 through a shared
+task catalogue and the built-in teaching pack. The checker reads current lab IDs from the pack; the
+source paths and fingerprints below remain the dated baseline, including the now-moved source parser.
+
 The teacher is the teaching and deployment authority; solo mode seeds its own teacher. `admin` is a compatibility alias, and the `staff`/`admin` route groups both require teacher authority. A teacher on one instance does not inherit teacher rights on another.
 
 **Inventory: 12 modules / 40 workflows / 69 directed connections / 16 pages / 68 API / 48 templates / 5 labs / 2 loadable module manifests.**

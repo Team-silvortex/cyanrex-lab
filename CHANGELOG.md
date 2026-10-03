@@ -5,6 +5,55 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.4.8] - 2026-10-03
+
+### Added
+
+- Added C2-F Session-authorized private Artifact creation, immutable revision and exact-content reads.
+  Task and Artifact adapters share source-owned identity, namespace and final Session checks; pending
+  bytes are returned only after confirmed commit. Borrowed reads lock revision heads, preserving
+  consistency under READ COMMITTED. Three default and eighteen PostgreSQL cases cover ownership,
+  lifecycle, concurrency, file faults and publication failures; CI selects every case. Database rollback
+  can retain unpublished private files and never authorizes automatic deletion/retry. No shared access,
+  Task-input/Review authorization, public upload, live cutover or existing-data migration is enabled.
+- Added C2-E Session-authorized private manual Task commands: current account incarnation, audited
+  active Human/membership and Task/outbox operations share one source-owned transaction. Ownership
+  is server-derived; private work requires no teaching/deployment role and managers gain no access
+  to other owners' tasks. Pinned namespaces and post-wait Session checks fail closed. Three default
+  and seventeen PostgreSQL cases cover lifecycle, concurrency, rollback and connection restoration;
+  CI selects every database case. No domain/Artifact-backed Task authorization, authenticated Review,
+  acceptance, public route, live cutover, schema migration or legacy-writer fence is introduced.
+- Added C2-D revision-bound Review staging, with separate human and rule judgments, immutable
+  opinion history, exact target/evidence/policy pins and atomic revision/outbox writes. Human edits
+  are revision-fenced; rule results cannot be amended into approvals. Four default and seventeen
+  PostgreSQL cases include a non-teaching Artifact/Task/Review fixture; CI selects every database
+  case. Reviewer/source attribution remains trusted input, not authentication or verified evidence.
+  No Task acceptance, public workflow, live auth change or teaching-data migration is enabled.
+- Added C2-B PostgreSQL task-instance staging: manual or exact-definition snapshots, owner/scoped
+  references, lifecycle transitions, optimistic revisions and atomic task/outbox commits. There is
+  no automatic acceptance from Run or assessment success. Explicit empty-schema installation,
+  bounded records, metadata/task locking and post-write checks fail closed. Four default and fifteen
+  database regressions cover concurrency, corruption, cancellation and commit failures; CI selects
+  every database case. No live route/authentication wiring, teaching migration or authenticated Review
+  is enabled.
+- Added C2-C immutable Artifact staging using PostgreSQL metadata/events and private Unix version
+  files. Exact bytes/digests and parent revisions are verified without domain or Run dependencies;
+  old Task inputs remain pinned after content edits. Publication failure rolls back database state
+  but preserves files for future reconciliation, without overwrite, adoption or automatic deletion.
+  Four default and seventeen explicit PostgreSQL cases cover concurrency, corruption, links, cancelled
+  publication, pointer rewind and cross-service references. CI runs every database case. No live
+  authorization, public file service, retention worker or existing-data migration is introduced.
+
+### Changed
+
+- Extracted C2-A versioned task definitions and typed rule dispatch from the eBPF teaching catalogue.
+  The five existing labs now use a built-in domain pack through a compatibility adapter; source parsing,
+  runtime/attachment requirements and legacy feedback remain domain-owned. A non-teaching text provider
+  verifies the same core without a Run. Unknown pins fail closed; stored attempts, progress, permissions
+  and HTTP/SDK contracts stay unchanged. The catalogue is not a plugin loader or a Review service.
+- Updated functional-network lab discovery for the new domain-pack location without rewriting the
+  historical inventory or source fingerprints.
+
 ## [0.4.7] - 2026-10-02
 
 ### Added
@@ -550,7 +599,8 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 The canonical package metadata advanced directly from `0.2.9` to `0.3.1`. Version `0.3.0` identifies
 the frozen API compatibility snapshot only; it was not a package release and must not be tagged.
 
-[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.7...HEAD
+[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.8...HEAD
+[0.4.8]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.7...v0.4.8
 [0.4.7]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.6...v0.4.7
 [0.4.6]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.5...v0.4.6
 [0.4.5]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.4...v0.4.5

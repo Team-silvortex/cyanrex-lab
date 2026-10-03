@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 
 use super::{
-    ArtifactId, ArtifactRevisionId, AuthorityId, PrincipalId, ReviewId, RunId, Sha256Digest,
-    TaskId, WorkspaceId,
+    ArtifactId, ArtifactRevisionId, AuthorityId, PrincipalId, ReviewId, RevisionNumber, RunId,
+    Sha256Digest, TaskId, WorkspaceId,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -17,6 +17,22 @@ pub struct PrincipalRef {
 pub struct WorkspaceRef {
     pub authority_id: AuthorityId,
     pub workspace_id: WorkspaceId,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TaskRef {
+    pub workspace: WorkspaceRef,
+    pub task_id: TaskId,
+}
+
+/// An exact opinion revision, not a current approval or a bearer credential.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ReviewRef {
+    pub workspace: WorkspaceRef,
+    pub review_id: ReviewId,
+    pub revision: RevisionNumber,
 }
 
 /// A pinned revision, never a floating "latest" link or a network-fetch instruction.

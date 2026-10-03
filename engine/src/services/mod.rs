@@ -1,3 +1,5 @@
+#[cfg(unix)]
+pub mod artifact_store;
 pub mod auth_service;
 pub mod c_header_module;
 pub mod classroom;
@@ -13,10 +15,10 @@ mod event_bus_db_parser;
 mod event_bus_filter;
 mod event_bus_policy;
 pub mod learning_catalog;
-pub(crate) mod learning_source;
 pub mod learning_store;
 pub mod legacy_workspace;
 pub mod module_manager;
+pub mod review_store;
 pub mod runner_agent_authenticator;
 pub mod runner_agent_client;
 pub mod runner_agent_executor;
@@ -25,3 +27,5 @@ pub mod runner_driver;
 pub mod runner_job_queue;
 pub mod runner_manager;
 pub mod script_store;
+pub mod task_catalog;
+pub mod task_store;

@@ -107,13 +107,13 @@ remain explicit operations so a local validation run cannot publish accidentally
 
 ```bash
 ./scripts/quality-gate.sh
-git commit -m "0.4.7"
+git commit -m "0.4.8"
 git fetch origin --tags --prune
-node scripts/release-preflight.mjs --version 0.4.7
-git tag -a v0.4.7 -m "cyanrex-lab 0.4.7"
-node scripts/release-preflight.mjs --tag v0.4.7
+node scripts/release-preflight.mjs --version 0.4.8
+git tag -a v0.4.8 -m "cyanrex-lab 0.4.8"
+node scripts/release-preflight.mjs --tag v0.4.8
 git push origin main
-git push origin v0.4.7
+git push origin v0.4.8
 ```
 
 The release owner should verify the tag target, distribution checksum, extracted-package smoke result,

@@ -20,6 +20,26 @@ Utility scripts for Cyanrex local operation.
   - `--security`: add the security audit to the default backend/frontend/SDK checks
   - `--security-only`: run common preflight + security audit check
   - `--no-npm-install`: skip `npm ci` during frontend and SDK checks
+- `test-task-storage.sh`: explicitly runs all fifteen task-instance PostgreSQL cases, requiring
+  `CYANREX_TEST_DATABASE_URL` for a disposable database. Each exact test name must exist before it runs.
+  CI uses the same script; tests create their own schemas and inject faults. Never point it at a
+  deployed database. `tests/postgresCi.test.mjs` checks that the explicit list includes every case.
+- `test-artifact-storage.sh`: runs all seventeen immutable-content PostgreSQL cases, including private
+  file faults and Task revision pins. Requires an explicit disposable `CYANREX_TEST_DATABASE_URL`;
+  private file fixtures use the temporary directory. CI runs the storage scripts and validates exact
+  case selection. No deployed database or runtime content directory is suitable for these tests.
+- `test-review-storage.sh`: runs all seventeen Review PostgreSQL cases, including immutable comment
+  history, human/rule separation, rollback/corruption and a non-teaching Artifact/Task/Review fixture.
+  Requires an explicit disposable `CYANREX_TEST_DATABASE_URL`; CI verifies and executes each exact case.
+  Reviewer attribution in these fixtures is trusted input, not a Session authorization test.
+- `test-session-task-storage.sh`: runs all seventeen Session-authorized private manual Task cases,
+  including ownership, retirement/recreation, logout/expiry ordering, transaction faults and namespace
+  restoration. Requires an explicit disposable `CYANREX_TEST_DATABASE_URL`; CI verifies and executes
+  every exact case. These are synthetic internal authorization fixtures, not deployed workflow tests.
+- `test-session-artifact-storage.sh`: runs all eighteen Session-authorized private Artifact cases,
+  including exact-content access, revision locks, account lifecycle and file/database failure boundaries.
+  Requires an explicit disposable `CYANREX_TEST_DATABASE_URL` and private temporary files; CI verifies
+  the complete list and executes every exact case. Retained files in these fixtures are not live data.
 - `check-npm-audit.mjs <package-directory>`: shared local/CI production-dependency audit with the
   existing moderate severity threshold. Retries only transient connection errors, rate limits/server
   failures, and npm's retired Quick fallback, at most three attempts with 1s/2s backoff and a 60s limit

@@ -2,6 +2,123 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
+test("Rust CI explicitly runs every session-authorized artifact and publication boundary", async () => {
+  const workflow = await readFile(new URL("../../.github/workflows/ci.yml", import.meta.url), "utf8");
+  const step = workflow.split("- name: Run real PostgreSQL task artifact and review storage integration")[1]?.split("\n      - name:")[0] ?? "";
+  const runner = await readFile(new URL("../test-session-artifact-storage.sh", import.meta.url), "utf8");
+  const cases = [];
+  for (const [file, prefix] of [["session_artifact_tdd.rs", ""], ["session_artifact/lifecycle.rs", "lifecycle::"], ["session_artifact/faults.rs", "faults::"], ["session_artifact/concurrency.rs", "concurrency::"]]) {
+    const source = await readFile(new URL(`../../engine/tests/${file}`, import.meta.url), "utf8");
+    for (const [, name] of source.matchAll(/async fn (postgres_session_artifacts_\w+)\(/g)) {
+      cases.push(`${prefix}${name}`);
+    }
+  }
+  assert.equal(cases.length, 18, "session/artifact boundaries require deliberate CI inclusion");
+  const listed = [...runner.matchAll(/^  ((?:\w+::)*postgres_session_artifacts_\w+)\b/gm)].map((match) => match[1]);
+  assert.deepEqual(listed.sort(), cases.sort(), "runner must enumerate each exact case once");
+  assert.ok(step.includes("@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test"));
+  assert.match(step, /&& bash scripts\/test-session-artifact-storage\.sh/);
+  assert.match(runner, /set -euo pipefail/);
+  assert.match(runner, /CYANREX_TEST_DATABASE_URL:\?/);
+  assert.match(runner, /--test session_artifact_tdd/);
+  assert.match(runner, /--ignored --list/);
+  assert.match(runner, /grep -Fx/);
+  assert.match(runner, /--ignored --exact --nocapture/);
+});
+
+test("Rust CI explicitly runs every session-authorized task and transaction boundary", async () => {
+  const workflow = await readFile(new URL("../../.github/workflows/ci.yml", import.meta.url), "utf8");
+  const step = workflow.split("- name: Run real PostgreSQL task artifact and review storage integration")[1]?.split("\n      - name:")[0] ?? "";
+  const runner = await readFile(new URL("../test-session-task-storage.sh", import.meta.url), "utf8");
+  const cases = [];
+  for (const [file, prefix] of [["session_task_tdd.rs", ""], ["session_task/faults.rs", "faults::"], ["session_task/concurrency.rs", "concurrency::"]]) {
+    const source = await readFile(new URL(`../../engine/tests/${file}`, import.meta.url), "utf8");
+    for (const [, name] of source.matchAll(/async fn (postgres_session_tasks_\w+)\(/g)) {
+      cases.push(`${prefix}${name}`);
+    }
+  }
+  assert.equal(cases.length, 17, "session/task boundaries require deliberate CI inclusion");
+  const listed = [...runner.matchAll(/^  ((?:\w+::)*postgres_session_tasks_\w+)\b/gm)].map((match) => match[1]);
+  assert.deepEqual(listed.sort(), cases.sort(), "runner must enumerate each exact case once");
+  assert.ok(step.includes("@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test"));
+  assert.match(step, /&& bash scripts\/test-session-task-storage\.sh/);
+  assert.match(runner, /set -euo pipefail/);
+  assert.match(runner, /CYANREX_TEST_DATABASE_URL:\?/);
+  assert.match(runner, /--test session_task_tdd/);
+  assert.match(runner, /--ignored --list/);
+  assert.match(runner, /grep -Fx/);
+  assert.match(runner, /--ignored --exact --nocapture/);
+});
+
+test("Rust CI explicitly runs review history, judgment and cross-store boundaries", async () => {
+  const workflow = await readFile(new URL("../../.github/workflows/ci.yml", import.meta.url), "utf8");
+  const step = workflow.split("- name: Run real PostgreSQL task artifact and review storage integration")[1]?.split("\n      - name:")[0] ?? "";
+  const runner = await readFile(new URL("../test-review-storage.sh", import.meta.url), "utf8");
+  let count = 0;
+  for (const [file, prefix] of [["review_store_tdd.rs", ""], ["review_store/faults.rs", "faults::"], ["review_store/integration.rs", "integration::"]]) {
+    const source = await readFile(new URL(`../../engine/tests/${file}`, import.meta.url), "utf8");
+    for (const [, name] of source.matchAll(/async fn (postgres_reviews_\w+)\(/g)) {
+      count += 1;
+      assert.ok(runner.includes(`${prefix}${name}`), name);
+    }
+  }
+  assert.equal(count, 17, "review boundaries require deliberate CI inclusion");
+  assert.ok(step.includes("@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test"));
+  assert.match(step, /&& bash scripts\/test-review-storage\.sh/);
+  assert.match(runner, /set -euo pipefail/);
+  assert.match(runner, /CYANREX_TEST_DATABASE_URL:\?/);
+  assert.match(runner, /--test review_store_tdd/);
+  assert.match(runner, /--ignored --list/);
+  assert.match(runner, /grep -Fx/);
+  assert.match(runner, /--ignored --exact --nocapture/);
+});
+
+test("Rust CI explicitly runs durable task, revision and outbox boundaries", async () => {
+  const workflow = await readFile(new URL("../../.github/workflows/ci.yml", import.meta.url), "utf8");
+  const step = workflow.split("- name: Run real PostgreSQL task artifact and review storage integration")[1]?.split("\n      - name:")[0] ?? "";
+  const runner = await readFile(new URL("../test-task-storage.sh", import.meta.url), "utf8");
+  let count = 0;
+  for (const [file, prefix] of [["task_store_tdd.rs", ""], ["task_store/faults.rs", "faults::"]]) {
+    const source = await readFile(new URL(`../../engine/tests/${file}`, import.meta.url), "utf8");
+    for (const [, name] of source.matchAll(/async fn (postgres_tasks_\w+)\(/g)) {
+      count += 1;
+      assert.ok(runner.includes(`${prefix}${name}`), name);
+    }
+  }
+  assert.equal(count, 15, "task storage boundaries require deliberate CI inclusion");
+  assert.ok(step.includes("@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test"));
+  assert.match(step, /run: bash scripts\/test-task-storage\.sh/);
+  assert.match(runner, /set -euo pipefail/);
+  assert.match(runner, /CYANREX_TEST_DATABASE_URL:\?/);
+  assert.match(runner, /--test task_store_tdd/);
+  assert.match(runner, /--ignored --list/);
+  assert.match(runner, /grep -Fx/);
+  assert.match(runner, /--ignored --exact --nocapture/);
+});
+
+test("Rust CI explicitly runs immutable artifact, file and publication boundaries", async () => {
+  const workflow = await readFile(new URL("../../.github/workflows/ci.yml", import.meta.url), "utf8");
+  const step = workflow.split("- name: Run real PostgreSQL task artifact and review storage integration")[1]?.split("\n      - name:")[0] ?? "";
+  const runner = await readFile(new URL("../test-artifact-storage.sh", import.meta.url), "utf8");
+  let count = 0;
+  for (const [file, prefix] of [["artifact_store_tdd.rs", ""], ["artifact_store/faults.rs", "faults::"]]) {
+    const source = await readFile(new URL(`../../engine/tests/${file}`, import.meta.url), "utf8");
+    for (const [, name] of source.matchAll(/async fn (postgres_artifacts_\w+)\(/g)) {
+      count += 1;
+      assert.ok(runner.includes(`${prefix}${name}`), name);
+    }
+  }
+  assert.equal(count, 17, "artifact boundaries require deliberate CI inclusion");
+  assert.ok(step.includes("@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test"));
+  assert.match(step, /&& bash scripts\/test-artifact-storage\.sh/);
+  assert.match(runner, /set -euo pipefail/);
+  assert.match(runner, /CYANREX_TEST_DATABASE_URL:\?/);
+  assert.match(runner, /--test artifact_store_tdd/);
+  assert.match(runner, /--ignored --list/);
+  assert.match(runner, /grep -Fx/);
+  assert.match(runner, /--ignored --exact --nocapture/);
+});
+
 test("Rust CI explicitly runs read-only lifecycle reconciliation and corruption boundaries", async () => {
   const workflow = await readFile(new URL("../../.github/workflows/ci.yml", import.meta.url), "utf8");
   const step = workflow.split("- name: Run real PostgreSQL lifecycle reconciliation integration")[1]?.split("\n      - name:")[0] ?? "";
