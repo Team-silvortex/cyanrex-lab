@@ -17,14 +17,14 @@ use sqlx_postgres::PgConnection;
 use uuid::Uuid;
 
 use super::{
-    build_otpauth_uri, derive_password_hash_async, generate_password_salt, generate_totp_secret,
-    hash_session_token, same_credentials, verify_password_async, verify_totp, RegisterOk,
-    UserRecord,
+    build_otpauth_uri, generate_password_salt, generate_totp_secret, hash_session_token,
+    same_credentials, RegisterOk, UserRecord,
 };
 use crate::{
     models::collaboration::{AuthorityId, ContractError, LegacyAccountId, LegacyUsername},
     sqlx_compat::{self as sqlx, PgPool, Postgres, Row},
 };
+use password_work::{derive_password_hash, verify_password};
 
 mod accounts;
 #[cfg(unix)]
@@ -32,13 +32,21 @@ mod artifact_commands;
 mod bootstrap;
 mod credentials;
 mod deletion;
+mod namespace;
+mod otp;
+mod otp_consumption;
+mod otp_storage;
+mod password_profile;
+mod password_work;
 mod private_work;
 pub(crate) mod reconciliation;
 #[cfg(unix)]
 mod review_commands;
 mod schema;
 mod session_commands;
+mod session_source;
 mod sessions;
+mod source_relations;
 mod task_commands;
 
 #[cfg(unix)]
@@ -61,6 +69,8 @@ pub struct DurableAuthSource {
     pool: PgPool,
     authority_id: AuthorityId,
     attempts: Arc<Mutex<HashMap<String, (u8, Instant)>>>,
+    #[cfg(test)]
+    otp_clock: Option<Arc<dyn Fn() -> DateTime<Utc> + Send + Sync>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -111,6 +121,15 @@ pub enum DurableAuthError {
     RateLimited,
 }
 type Result<T> = std::result::Result<T, DurableAuthError>;
+const SOURCE_SCHEMA_VERSION: i32 = 2;
+impl From<otp_consumption::ConsumptionError> for DurableAuthError {
+    fn from(error: otp_consumption::ConsumptionError) -> Self {
+        match error {
+            otp_consumption::ConsumptionError::InvalidState => Self::InvalidRecord,
+            otp_consumption::ConsumptionError::InvalidCredentials => Self::InvalidCredentials,
+        }
+    }
+}
 impl From<sqlx::Error> for DurableAuthError {
     fn from(_: sqlx::Error) -> Self {
         Self::StorageUnavailable
@@ -146,6 +165,8 @@ impl DurableAuthSource {
             pool,
             authority_id,
             attempts: Arc::new(Mutex::new(HashMap::new())),
+            #[cfg(test)]
+            otp_clock: None,
         }
     }
     async fn transaction(&self) -> Result<Transaction<'_, Postgres>> {
@@ -166,7 +187,7 @@ impl DurableAuthSource {
             "SELECT version, authority_id FROM collaboration_auth_source_schema WHERE singleton FOR SHARE"
         };
         let row = sqlx::query(query).fetch_one(connection).await?;
-        if row.try_get::<i32, _>("version")? != 1 {
+        if row.try_get::<i32, _>("version")? != SOURCE_SCHEMA_VERSION {
             return Err(DurableAuthError::UnsupportedSchema);
         }
         if AuthorityId::try_from(row.try_get::<Uuid, _>("authority_id")?)? != self.authority_id {

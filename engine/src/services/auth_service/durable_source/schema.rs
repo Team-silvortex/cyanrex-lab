@@ -25,12 +25,16 @@ impl DurableAuthSource {
                 .fetch_one(&mut *tx).await?.try_get("nonempty")?;
             if nonempty { return Err(DurableAuthError::LegacyDataPresent); }
             Self::verify_legacy_shape(&mut tx).await?;
-            for statement in include_str!("../../../../migrations/0010_durable_auth_source.sql")
-                .split("-- cyanrex-statement").map(str::trim).filter(|s| !s.is_empty()) {
-                sqlx::query(statement).execute(&mut *tx).await?;
+            for template in [
+                include_str!("../../../../migrations/0010_durable_auth_source.sql"),
+                include_str!("../../../../migrations/0015_durable_otp_consumption.sql"),
+            ] {
+                for statement in template.split("-- cyanrex-statement").map(str::trim).filter(|s| !s.is_empty()) {
+                    sqlx::query(statement).execute(&mut *tx).await?;
+                }
             }
-            confirmed_one(sqlx::query("INSERT INTO collaboration_auth_source_schema (singleton, version, authority_id) VALUES (TRUE, 1, $1)")
-                .bind(self.authority_id.as_uuid()).execute(&mut *tx).await?.rows_affected())?;
+            confirmed_one(sqlx::query("INSERT INTO collaboration_auth_source_schema (singleton, version, authority_id) VALUES (TRUE, $1, $2)")
+                .bind(SOURCE_SCHEMA_VERSION).bind(self.authority_id.as_uuid()).execute(&mut *tx).await?.rows_affected())?;
             self.lock_source(&mut tx, false).await?;
             Self::verify_schema(&mut tx).await?;
             tx.commit().await?;
@@ -103,6 +107,37 @@ impl DurableAuthSource {
                 OR (conrelid = 'sessions'::REGCLASS AND conname = 'collaboration_auth_session_digest' AND contype = 'c'))")
             .fetch_one(&mut *connection).await?.try_get("count")?;
         if columns != 2 || triggers != 2 || constraints != 4 {
+            return Err(DurableAuthError::InvalidRecord);
+        }
+        Self::verify_otp_shape(connection).await?;
+        Ok(())
+    }
+
+    async fn verify_otp_shape(connection: &mut PgConnection) -> Result<()> {
+        // Accept the explicit template's constant/default and exact CHECK, not an equal name
+        // attached to CHECK(TRUE), a changed boundary, a function or a generated column.
+        let valid: bool = sqlx::query(
+            "SELECT EXISTS (
+            SELECT 1 FROM pg_catalog.pg_attribute a
+            JOIN pg_catalog.pg_attrdef d ON d.adrelid=a.attrelid AND d.adnum=a.attnum
+            WHERE a.attrelid='users'::regclass AND a.attname='otp_last_counter'
+                AND a.atttypid='pg_catalog.int8'::regtype AND a.attnotnull AND NOT a.attisdropped
+                AND a.attidentity='' AND a.attgenerated=''
+                AND pg_catalog.pg_get_expr(d.adbin, d.adrelid, false) = $1
+                AND EXISTS (SELECT 1 FROM pg_catalog.pg_constraint c
+                    WHERE c.conrelid=a.attrelid AND c.contype='c'
+                        AND c.conname='collaboration_auth_otp_last_counter'
+                        AND c.convalidated AND NOT c.condeferrable AND NOT c.condeferred
+                        AND c.conislocal AND c.coninhcount=0 AND NOT c.connoinherit
+                        AND c.conkey=ARRAY[a.attnum]::smallint[]
+                        AND pg_catalog.pg_get_expr(c.conbin, c.conrelid, false) = $2)) AS valid",
+        )
+        .bind("'-1'::bigint")
+        .bind("(otp_last_counter >= '-1'::bigint)")
+        .fetch_one(connection)
+        .await?
+        .try_get("valid")?;
+        if !valid {
             return Err(DurableAuthError::InvalidRecord);
         }
         Ok(())

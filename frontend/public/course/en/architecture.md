@@ -28,6 +28,8 @@ The Session input, Review, catalogue and Draft replacement slices and local payl
 in 0.4.9; C2-A through C2-F were first included in 0.4.8. Source inclusion is not deployment.
 The detailed decision records retain their own dates and verification evidence; they are not a
 statement that every described path is live.
+Prepared authentication included in 0.5.1 now requires fresh source schema 2 and commits OTP consumption
+with login/rotation. Schema 1 is rejected unchanged; this does not migrate or replace live AuthService.
 
 ## 1. System Context
 

@@ -1,5 +1,7 @@
 use super::*;
-use cyanrex_engine::services::auth_service::durable_source::{DurableLogin, DurableRegistration};
+use cyanrex_engine::services::auth_service::durable_source::{
+    DurableAccountRef, DurableLogin, DurableRegistration, DurableSession,
+};
 use hmac::{Hmac, Mac};
 use sha1::Sha1;
 use sha2::{Digest, Sha256};
@@ -21,10 +23,18 @@ pub fn token_hash(token: &str) -> String {
     format!("{:x}", Sha256::digest(token.as_bytes()))
 }
 pub fn otp(secret: &str) -> String {
+    otp_at_counter(secret, Utc::now().timestamp().div_euclid(30))
+}
+/// A distinct next-step code for a second real authentication within the accepted drift window.
+/// Never use this to claim arbitrary repeated logins or to reset a consumed counter.
+pub fn next_otp(secret: &str) -> String {
+    otp_at_counter(secret, Utc::now().timestamp().div_euclid(30) + 1)
+}
+fn otp_at_counter(secret: &str, counter: i64) -> String {
     let mut mac =
         Hmac::<Sha1>::new_from_slice(&data_encoding::BASE32.decode(secret.as_bytes()).unwrap())
             .unwrap();
-    mac.update(&(Utc::now().timestamp().div_euclid(30) as u64).to_be_bytes());
+    mac.update(&(counter as u64).to_be_bytes());
     let digest = mac.finalize().into_bytes();
     let offset = (digest[19] & 15) as usize;
     let number = u32::from_be_bytes(digest[offset..offset + 4].try_into().unwrap()) & 0x7fff_ffff;
@@ -84,6 +94,37 @@ impl Fixture {
             .await
             .unwrap();
         (created, login)
+    }
+    /// Explicit synthetic Session setup for downstream authorization/rotation tests. Registration
+    /// remains real; this is not login evidence and does not alter the account's OTP watermark.
+    #[allow(dead_code)] // Shared fixture: only rotation/shape targets need synthetic Session setup.
+    pub async fn seed_account_session(&self) -> (DurableRegistration, DurableLogin) {
+        let created = self.source.register(&username(), PASSWORD).await.unwrap();
+        let login = self.seed_session(&created.account).await;
+        (created, login)
+    }
+    /// Add a test device without consuming another real authentication counter.
+    #[allow(dead_code)] // Shared fixture: ordinary source tests retain real login instead.
+    pub async fn seed_session(&self, account: &DurableAccountRef) -> DurableLogin {
+        let token = Uuid::new_v4().to_string();
+        let expires_at = query(
+            "INSERT INTO sessions (token, username, account_id, expires_at)
+            VALUES ($1, $2, $3, clock_timestamp() + INTERVAL '12 hours') RETURNING expires_at",
+        )
+        .bind(token_hash(&token))
+        .bind(account.username.as_str())
+        .bind(account.account_id.as_uuid())
+        .fetch_one(&self.pool)
+        .await
+        .unwrap()
+        .get("expires_at");
+        DurableLogin {
+            token,
+            session: DurableSession {
+                account: account.clone(),
+                expires_at,
+            },
+        }
     }
     pub async fn sql(&self, statement: &str) {
         query(statement).execute(&self.pool).await.unwrap();

@@ -3,8 +3,8 @@
 Status: **C1-H internal staging, included in 0.4.7**, originally based on 0.4.6 commit
 `45e0abcca25c3e795ad78882a293d060b12c208e`. Builds on the explicit
 [authentication source](collaboration-auth-source.md), [session commands](collaboration-session-commands.md)
-and [restricted deletion](collaboration-account-deletion.md). No live AuthService, public API/SDK,
-schema template, existing account or deployment is changed by this source release.
+and [restricted deletion](collaboration-account-deletion.md). The original C1-H slice did not change
+live AuthService, public API/SDK, schema templates, existing accounts or deployment.
 
 ## Supported operation
 
@@ -16,7 +16,7 @@ a manager reset, enrollment, recovery or migration primitive.
 
 A successful return confirms both the new password and deletion of **all** Sessions for that exact
 account, including the calling Session and expired Sessions. No replacement token is issued; the
-caller must log in again. Username, account incarnation and TOTP secret are preserved, as are other
+caller must log in again (with a later OTP under the schema-2 follow-up). Username, account incarnation and TOTP secret are preserved, as are other
 accounts and their Sessions. Rotating to the same password still changes the salt and logs out devices.
 
 This source-level operation does not require or create a registry binding or grant. Unbound accounts,
@@ -28,20 +28,34 @@ There is no credential-change audit ledger in this slice.
 
 ## Transaction and authorization boundaries
 
+Included in 0.5.1: both password verification and replacement hashing now use the
+[shared prepared password-work gate](collaboration-auth-source.md). Its four dispatched/twenty total
+limits span other source instances and prepared entry points, outside SQL locks and within the same
+ten-second operation budget. A separate prepared PHC policy validates account snapshots before
+admission and pins replacement hashing to the existing Argon2id profile; unsupported records fail
+with `InvalidRecord`, not a credential rewrite. The schema-2 OTP follow-up consumes a counter together
+with credential replacement and revocation, never resetting the watermark. It rechecks the bound exact
+counter after the final database-time query, before requesting commit; it does not promise freshness
+at acknowledgement. Existing schema 1 is rejected unchanged, not migrated. Original release evidence
+below is historical; current verification is in [project status](project-status.md).
+
 1. Under a short source `FOR SHARE` transaction, resolve the fresh unexpired Session and its exact
    credential snapshot, then commit that read transaction.
 2. Share the existing bounded login admission budget; verify the current password/TOTP and derive
    a fresh Argon2 hash outside database locks and connections. New passwords are 8–4096 bytes;
    current password and OTP inputs retain the source's 4096/64-byte ceilings.
 3. Start a new transaction with source `FOR UPDATE` **before** child rows. Recheck the exact Session,
-   incarnation, complete old credentials and TOTP after the lock wait. Never upgrade a held source
+   incarnation, complete old credentials and current OTP watermark after the lock wait, preserving
+   the original namespace/relation pins across both transactions. Never upgrade a held source
    shared lock to a writer lock.
 4. Count every matching Session; update exactly one account using the verified incarnation and old
-   credentials as predicates. Recheck the authorizing Session after the UPDATE, before intentional
+   credentials and watermark as predicates; replace the password and advance consumption together.
+   Recheck the authorizing Session after the UPDATE, before intentional
    revocation, then delete exactly the counted Sessions.
-5. Read back the new credentials, preserved incarnation/TOTP and absence of Sessions. Since the
+5. Read back the new credentials, preserved incarnation/TOTP, expected watermark and absence of Sessions. Since the
    calling Session is now intentionally deleted, compare its verified expiry with fresh database time
-   after the final write/trigger waits. Confirm COMMIT before returning success or clearing admission.
+   after the final write/trigger waits. The follow-up included in 0.5.1 then rechecks OTP without another SQL
+   wait before requesting COMMIT. Confirm COMMIT before returning success or clearing admission.
 
 The source writer fence serializes login, logout, C1-F commands and C1-G deletion. Registry locks are
 not needed for a source-only change; no reverse registry-to-source lock order is introduced. A login

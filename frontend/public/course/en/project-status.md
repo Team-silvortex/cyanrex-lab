@@ -1,6 +1,6 @@
 # Project Status
 
-Snapshot date: **2026-10-03**. Source version: **0.5.0**.
+Snapshot date: **2026-10-04**. Source version: **0.5.1**.
 
 Cyanrex is becoming a domain-neutral collaboration platform, with eBPF teaching retained as its first
 domain rather than the definition of all work. The transition has produced a durable collaboration
@@ -18,14 +18,21 @@ dated implementation and verification details are preserved in [Development Hist
 | 0.5.0 · C2-L preparation | Separate schema 3 content storage with atomic Task/manifest/outbox edits | Trusted owner interface only; no Session content adapter, Artifact byte verification, browser connection or schema 2 migration in this storage layer |
 | 0.5.0 · C2-M preparation | Dedicated Session content adapter with old/new text-byte verification and atomic edits | Internal composition only; does not itself mount HTTP, save browser drafts, switch live authentication or migrate storage |
 | 0.5.0 · C2-N preparation | Explicit standalone Task-content HTTP router over C2-M, strict Origin/cookie/JSON admission and private errors | Not mounted in the normal app; no Session issuer, Artifact publication, browser connection, live OpenAPI/SDK exposure or migration |
+| 0.5.1 · Session source | Login, validation and logout pin source namespace/table identity, including the password-worker gap and post-write checks | Source-only hardening, not a public issuer, uniform redesign of all auth primitives, installation or live cutover |
+| 0.5.1 · Password work | Shared prepared registration/login/rotation/bootstrap gate, four dispatched jobs and twenty total admissions retained for the job lifetime | Job-count limits only; not single-job PHC cost, legacy runtime or distributed limits, public Session issuance or live cutover |
+| 0.5.1 · Password profile | Pre-admission PHC checks and explicit existing Argon2id cost/profile for prepared reads and writers | No imported profile adoption, implicit Session revocation, legacy change, process RSS bound or public issuer |
+| 0.5.1 · OTP freshness | Login/rotation recheck the existing OTP window behind writer locks and after final SQL before requesting commit | Freshness alone is not consumption, complete clock-rollback defense or a commit-ack freshness guarantee |
+| 0.5.1 · OTP consumption | Schema-2 per-account monotonic consumption commits with login Session issuance or password rotation/revocation; pure collision-aware exact-counter policy | Fresh explicit installation only; old schema 1 rejected unchanged. No live-auth switch, public issuer, secret recovery or existing-data migration |
 | Architecture targets | Shared collaboration, generic Run orchestration, AI delegation, reliable business-event delivery, isolated workers and ecosystem integration | A proposed type, diagram or milestone is not an implemented user workflow |
 
 Product version, API compatibility baseline and individual storage schema versions are independent.
-The source version is 0.5.0 and the public API compatibility baseline remains 0.3.0. The current Task
+The source version is 0.5.1 and the public API compatibility baseline remains 0.3.0. The current Task
 store requires schema 2 in a fresh dedicated namespace and rejects schema 1 without migration. Neither
 the normal startup path nor this source release upgrades a database.
 The content store included in 0.5.0 separately requires schema 3; the schema 2 handle and existing Session
 adapters reject it. Both formats require their own explicitly installed fresh namespace.
+Prepared authentication now separately requires source schema 2 for atomic OTP consumption. Its
+installer and readers reject existing source schema 1, including empty instances, without migration.
 
 ## Whole project capability map
 
@@ -104,6 +111,270 @@ application, issue credentials, publish Artifacts or connect the browser.
   review authority and policy execution must not be inferred from private records or frozen metadata.
 
 ## Verification recorded so far
+
+### 0.5.1 source release checks
+
+On 2026-10-04, the complete local quality gate passed **504 default Rust tests, 129 common checks,
+165 frontend tests and 16 SDK tests**. The default Rust run ignored **494** opt-in cases. Production
+build, TypeScript, package checks, formatting, version/course/tensor consistency and public API/SDK
+compatibility passed. Installed dependencies were reused with `--no-npm-install`; only root package
+versions changed in lockfiles, not dependency resolutions. The public API baseline remains 0.3.0.
+
+The first full attempt stopped at npm audit after registry timeouts, not a passing security result.
+Fresh frontend/SDK audits then succeeded and the entire gate passed again. The frontend reports one
+low-severity DOMPurify advisory, no moderate/high/critical findings; the SDK reports none. Rust had no
+compiler warnings; existing Node module-type notices remain non-blocking. The release archives the
+Session-source, password-work/profile and OTP changes without enabling public issuance or live cutover.
+
+The **304 isolated PostgreSQL cases** in the immediately preceding atomic-OTP record were not rerun
+for this version/documentation step. Browser suites, Rust advisories, real kernel/LAN, distribution
+artifacts, deployed migration/restore and remote CI were not revalidated by this local release gate.
+Auth source schema 2 is fresh-install only; source publication does not upgrade an existing instance.
+Release links use the recorded 0.5.0 commit as the comparison base because its tag remains local;
+only the new v0.5.1 tag is intended for publication with main.
+
+The following implementation records preserve their original working-tree versions and then-unreleased
+status. Session-source, password-work/profile and OTP changes are now included in 0.5.1; inclusion
+does not rerun their historical tests, migrate storage or establish deployment acceptance.
+
+### Unreleased atomic OTP consumption and source schema 2
+
+On 2026-10-04, a real PostgreSQL regression against independent source instances first produced
+**two successful logins for one code**, where exactly one was required. After integration, the same
+case passed and **11 exact consumption cases plus four exact schema cases passed**. They cover
+reopen/logout persistence, login versus rotation, separate accounts/recreated incarnations, suppressed
+or tampered writes, deferred COMMIT failure, cancellation, real adjacent-counter collisions, actual
+schema-1 empty/populated rejection, ten incompatible counter shapes and hit-proven registration/
+bootstrap initialization faults. This is prepared-source atomicity evidence, not a live login rollout.
+
+Fresh explicit source installation/bootstrap now activates schema 2 with watermark `-1`. Existing
+schema 1 is refused without writes or repair; password rotation never resets consumption. Current
+credentials/incarnation, the old watermark and source pins fence both transactions; post-write
+readbacks and the final exact-counter proof precede COMMIT. Uncertain acknowledgement still does
+not prove rollback or authorize counter reset. See [ADR-006](collaboration-auth-source.md).
+
+**304 PostgreSQL cases passed** on the private PostgreSQL 16 instance: consumption 11, schema 4,
+freshness 7, source 14, rotation 17, bootstrap 14, Session boundary 14, password profile 6, collaboration
+commands 16, deletion 16, reconciliation 12, provisioning 9, Session Tasks 17, Artifacts 18, inputs 20,
+Reviews 18, catalogue 16, revisions 17, content 25, standalone content HTTP 11 and unchanged legacy auth
+22. The legacy subprocess alone explicitly enabled its fallback setting. Exact runner names
+or nonempty target lists were checked before execution. Existing rotation tests use explicit synthetic
+Sessions when login is not under test; fault-hit counters prevent premature OTP rejection from being
+counted as rollback coverage. The freshness suite retains its real waits and now distinguishes the
+reusable pure freshness predicate from composed counter consumption.
+
+The backend gate passed **504 default Rust tests and 129 common script checks**, with **494 opt-in
+cases ignored** by the default run. The SQL executions above were separate, not all ignored cases.
+The ten OTP source/CI guards also passed directly. Bilingual contracts, security, testing and
+architecture views were updated in place; the tensor now has **24 evidence items and 237 paths**,
+still **57 cells / 73 edges / 16 chains**, with maturity scores and public connection gaps unchanged.
+Earlier dated records below retain their original outcomes and limitations.
+
+Tests use synthetic accounts, private temporary files and a 0700 Unix socket with no TCP listener.
+Inherited deployment/database configuration was cleared. Provisioning's synthetic local socket tests
+do not establish SCRAM/transport or deployed credential security. No frontend/browser, SDK runtime,
+live advisories, kernel/LAN, deployment/migration/restore acceptance or remote CI run is claimed.
+Product version remains 0.5.0; no commit, push, installation or live authentication switch was performed.
+After local fixture-only unused-method warnings were corrected, the full backend gate passed again
+with the same totals and no compiler warnings. Formatting, lengths, course/tensor/version consistency,
+API/SDK compatibility and synthetic management/distribution checks passed. The database had no remaining
+test namespaces, event hooks, extra roles or clients; its server was stopped and the exact 217 MiB data
+directory, socket and 2.6 MiB generated fixtures removed. Diagnostic logs were retained; no live data,
+dependency cache or unrelated checkout was deleted.
+
+### Earlier pure OTP consumption stage
+
+This records the initial pure-only stage on 2026-10-04, before the atomic schema-2 integration above;
+its unchanged-file and unwired statements describe that earlier run, not the current source.
+
+On 2026-10-04, **16 pure policy tests passed**, after the unimplemented policy seam failed 13 positive
+cases (three rejection/state cases already passed). This was TDD for a new, unwired contract, not a
+new reproduction or fix of runtime replay. Fixed public HMAC fixtures prove adjacent counters can
+share one code and different keys can share a code/counter. Tests cover all-match watermark rejection,
+highest selection, credential-bound exact-counter rechecks, normalization/byte bounds, epoch, negative
+time, large counters and caller-supplied state. Preparing twice still proposes the same transition;
+only a future atomic persistence layer can choose a winner.
+
+**Three source guards passed**: the module remains private and dormant, takes explicit inputs with
+no database/environment/current-time effects, and does not expose/copy/serialize its private binding.
+Independent review confirmed the pure boundaries. Login, rotation, source schema/install/bootstrap,
+reconciliation, old AuthService and migrations were left unchanged; runtime code reuse remains possible.
+The [contract](collaboration-auth-source.md) records the necessary account-bound transaction, versioning
+and existing fault-test adaptation before activation. No public clock, endpoint or runtime feature switch
+was added. The tensor records a twenty-third evidence item for I04/I06 without changing scores or edges.
+
+The backend-only gate passed **504 default Rust tests and 126 common script checks**, with **479
+opt-in cases ignored** and no compiler warnings. The first full attempt stopped when the new test
+parent directory inherited group-write permission and the unchanged Artifact root check refused it.
+After restricting that disposable parent to 0700, the complete gate passed; no product check was weakened.
+Formatting, file lengths, version/course/tensor consistency, API/SDK compatibility and synthetic
+management/distribution checks passed. Inherited database/deployment settings were cleared.
+Hashes of existing login/rotation, OTP freshness, account/install/bootstrap/reconciliation, legacy-auth
+implementation and migration files stayed unchanged; the parent gained only a private module declaration.
+PostgreSQL opt-in cases, frontend/
+browser, SDK runtime, live advisories, kernel/LAN, deployment and remote CI were not rerun; the prior
+day's SQL evidence below remains historical. Version stays 0.5.0, without commit, push or installation.
+The final common/format gate passed all 126 checks again. The 2.6 MiB generated fixtures were removed,
+with diagnostic logs retained; no database server was started or live data/dependency cache removed.
+
+### Earlier prepared OTP freshness stage
+
+This historical run preceded consumption; the current source now rejects committed counter reuse.
+
+On 2026-10-03, a PostgreSQL regression observed login waiting on the exact source writer fence,
+advanced only its private test clock beyond the accepted OTP window, and reproduced an incorrect
+`Ok(())` result. After adding the missing checks, **all seven exact SQL cases passed**: login writer
+and INSERT waits, rotation's post-revocation wait, unchanged-clock success at four corresponding
+barriers, the existing rotation writer check, snapshot release while the password executor is held,
+and same-window reuse across independent sources. Trigger counters prove post-write faults were reached; full source snapshots
+and still-valid old Sessions prove rejected rotations restore credentials and revocations.
+The held-executor case observes the read transaction's COMMIT, not exact dispatch into Tokio's
+queue; a separate source guard ensures OTP is checked after awaiting password verification.
+
+**11 pure tests passed**, covering the existing six-digit SHA-1 adaptation of RFC test vectors,
+exact 30-second/one-step-window edges, input/secret normalization, malformed/empty secrets, negative
+time, epoch, large counters and deliberate lack of consumption. Three source guards preserve the
+three checks in each command, no awaited SQL between final OTP check and commit, and a test-only clock
+without legacy changes. A separate CI guard keeps all seven library SQL names selected explicitly.
+
+The contract is current application-UTC validity **before requesting commit**, after the last SQL
+read/time check. It is not commit-acknowledgement freshness, clock-rollback protection or one-time
+consumption; the same code can still create two Sessions inside the window. Session expiry remains
+on the database clock. No machine clock, schema version, public route or old AuthService changed.
+See [ADR-006](collaboration-auth-source.md) for this boundary and the remaining public-issuer gates.
+
+**108 PostgreSQL cases passed** on the private PostgreSQL 16 test instance: OTP 7, password profile 6,
+source 14, password rotation 17, bootstrap 14, source Session boundary 14, Session content 25 and
+standalone HTTP 11. The seven OTP cases and 11 pure cases passed again after tightening the
+held-executor test's name and evidence description; this rerun does not add distinct cases.
+
+The backend-only gate passed **488 default Rust tests and 123 common script checks**, with **479
+opt-in tests ignored** and no compiler warnings. Formatting, file lengths, version/course/tensor
+consistency, public API/SDK compatibility and synthetic management/distribution checks passed.
+After the final test/document changes, the common/format gate passed all 123 checks again.
+Inherited deployment/database settings were cleared; tests used only synthetic data and private
+temporary files. Frontend/browser, SDK runtime, provisioning CLI/transport, independent identity/
+deletion suites, advisories, kernel/LAN, deployment/migration and remote CI were not rerun. These
+results are scoped adjacent coverage, not all ignored tests or end-to-end deployment acceptance.
+No test schemas, event triggers or other clients remained. The server was stopped and its 133 MiB
+database, 2.6 MiB generated fixtures and private socket directory removed; diagnostic logs were
+retained. No live data or dependency cache was removed.
+
+The tensor adds a twenty-second evidence record for I04 and I06 only; scores and missing connections
+remain unchanged. Version remains 0.5.0 with no commit, push, installation or live-auth cutover.
+
+### Unreleased prepared password profile
+
+On 2026-10-03, a safe low-cost PHC regression first returned `Ok(true)` for a valid but unsupported
+Argon2 profile instead of `InvalidRecord`. The fixed prepared policy then passed **25 targeted unit
+tests**: 13 profile cases and 12 worker cases, including the new rejection and updated malformed-record
+classification. Extreme numeric costs are exercised only through pure validation, never expensive KDF
+execution. Three source checks cover the prepared call sites, pre-admission/account validation and
+separation from legacy crypto; a new exact-selection CI guard covers the six SQL cases.
+
+The accepted profile is the former official writer output: Argon2id v19, m19456/t2/p1, 32-byte digest.
+Duplicate, missing, extra and malformed parameters fail closed. Salt is fully decoded and bounded,
+not newly required to be a UUID or match the separate column. Writers now use explicit constants.
+This does not migrate credentials, silently repair storage or revoke existing Sessions; it adds no
+public issuer or process RSS/wall-clock bound. [ADR-006](collaboration-auth-source.md) records the contract.
+
+**101 PostgreSQL cases passed** on a fresh private PostgreSQL 16.15 instance: new profile 6, source 14,
+password rotation 17, bootstrap 14, source Session boundary 14, Session content 25 and standalone HTTP
+11. The new six use an exact-name runner; they cover rejected stored records without writes, existing
+Session/logout behavior, supported writer compatibility and register/rotation post-write rollback.
+The original source/rotation/bootstrap lists were verified before execution; the other suites use
+their existing exact runners. No selected SQL assertion failed, and compiler output had no warnings.
+
+The backend-only gate passed **477 default Rust tests and 119 common script checks**, with **472
+opt-in tests ignored** and no compiler warnings. Formatting, file lengths, version/course/tensor
+consistency, public API/SDK compatibility and synthetic management/distribution checks passed.
+After documentation updates, the final common/format rerun also passed all 119 checks. A restricted
+attempt first failed in two tool fixtures (including a confirmed loopback `listen EPERM`); rerunning
+with the same scoped local-test permission as the full gate passed without a product change.
+
+Inherited deployment/database settings were cleared. Tests used only synthetic accounts/content and
+private temporary files; no test schemas, event triggers or other database clients remained after SQL.
+Frontend/browser, SDK runtime, provisioning CLI/transport, independent identity/deletion suites,
+advisories, kernel/LAN, deployment/migration and remote CI were not rerun. This is scoped adjacent
+coverage, not every ignored test or a fresh end-to-end deployment acceptance.
+The test server was stopped and its 133 MiB database plus 2.6 MiB generated fixtures removed; logs
+were retained. No live data or dependency cache was removed.
+
+The tensor adds a twenty-first evidence record for I04, I06 and O01; scores and missing edges remain
+unchanged. Source version remains 0.5.0, without commit, push, installation or live-auth cutover.
+
+### Unreleased prepared password work
+
+On 2026-10-03, a deterministic regression against an unguarded worker stub returned `Ok(99)` when
+cancellation should have left its occupied capacity unavailable. After implementing the gate,
+**all 11 unit cases passed**: dispatched/total saturation, unpolled and queued cancellation, running
+timeout/cancellation, cancellation while queued in Tokio, panic/closed recovery, deferred secret
+copies, shared process identity and real Argon2 verification. Two source-wiring checks cover every
+prepared hash/verification call site and preserve the separate legacy helpers.
+
+The gate covers all five computation points across registration, login, password rotation and
+bootstrap without changing SQL transaction order, credentials, public routes or configuration.
+Both permits follow actual blocking work, not the request's lifetime; admission waits remain within
+existing operation deadlines. It is not a single-job memory/time limit, OTP consumption policy or
+protection against all live runtime work. [ADR-006](collaboration-auth-source.md) records the scope.
+
+The backend-only gate passed **463 default Rust tests and 117 common script checks**, with **466
+opt-in tests ignored** and no compiler warnings. Formatting, source lengths, version/document/tensor
+synchronization, public API/SDK compatibility and synthetic management/distribution checks passed.
+
+Separately, **95 PostgreSQL cases passed** on a fresh private PostgreSQL 16 instance: source 14,
+password rotation 17, bootstrap 14, source Session boundary 14, Session content 25 and standalone HTTP
+11. The first three targets had their ignored-case lists checked before running; the other three
+used exact runners. An initial count assertion stopped before the password suite because 18 included
+its one default test; the verified SQL count is 17, not 18. No product assertion failed in these runs.
+This is selected adjacent coverage, not a rerun of all 240 SQL cases from the preceding slice.
+
+Inherited deployment/database settings were cleared; only synthetic accounts/content and private
+temporary files were used. The database had no remaining test schemas, event triggers or other
+clients before shutdown. Frontend/browser, SDK runtime, provisioning CLI/transport, independent
+identity/deletion suites, advisories, kernel/LAN, deployment/migration and remote CI were not rerun.
+After the final common/format gate passed, its 133 MiB database and 2.6 MiB generated fixtures were
+removed; diagnostic logs were retained. No live data or dependency cache was removed.
+
+The tensor adds a twentieth evidence record for I04, I06 and O01 without changing any scores or
+connecting a missing edge. Version remains 0.5.0; no commit, push, install or live-auth cutover.
+
+### Unreleased source-only Session boundary
+
+On 2026-10-03, fault injection reproduced a false logout acknowledgement: a trigger suppressed the
+delete and redirected readback to an empty shadow table while the real Session remained usable.
+The regression first failed against 0.5.0 and then passed with the source guard. Login now retains
+namespace/table identity across password verification; all three Session methods check compatible
+source relations and authority, with final expiry validation after guard waits. Source-only operation
+still needs no registry. Installation, registration, password/deletion and live authentication are
+not redesigned; [ADR-006](collaboration-auth-source.md) records the tighter connection rules.
+
+The new exact runner passed **14 PostgreSQL cases**, and the original durable-source target passed
+all **14 SQL cases** separately. Tests cover normal three-table operation, ambiguous/temporary paths,
+RLS/views/incompatible storage, authority/schema drift, same-valued relation and namespace replacement,
+logout ordering and expiry. The password-gap case holds the worker queue and observes the completed
+first transaction before replacing the namespace; it does not rely on a sleep winning a race.
+CI selection is guarded against omissions and zero matches; remote CI was not run.
+
+All **212 preceding resource/content SQL cases** also passed through the twelve exact runners in the
+[testing guide](testing-guide.md), giving **240 separate database passes** with the two source suites.
+This covers the shared private-work guard through Task, Artifact, Review, schema-3 content and HTTP
+composition, not all identity/lifecycle or ignored tests in the repository.
+
+The backend-only gate passed **452 default Rust tests and 115 common script checks**, with **466
+opt-in Rust cases ignored**. The SQL cases are executed separately, not counted as default passes.
+Formatting, public API/SDK compatibility, synthetic management/distribution tooling, source lengths,
+version metadata and document/tensor consistency checks passed; no compiler warnings were reported.
+
+Execution cleared inherited deployment/database settings and used PostgreSQL 16 with a private 0700
+Unix socket, no TCP listener and only synthetic accounts/content. No test schemas or other clients
+remained; the exact server was stopped and its 152 MiB data plus 2.6 MiB generated fixtures removed,
+retaining diagnostic logs. Frontend/browser and SDK runtime tests, independent lifecycle SQL,
+dependency advisories, kernel/LAN, deployment/migration and browser-to-server acceptance were not rerun.
+
+The capability tensor retains 57 coordinates, 73 edges and 16 paths, with a separate 19th evidence
+record for I04. Its scores remain **3 / 1 / 3 / 1**: worker admission, OTP reuse/timing policy and
+public issuer/installation composition remain pending. Version stays 0.5.0; no commit or push.
 
 ### 0.5.0 source release checks
 

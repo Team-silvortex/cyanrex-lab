@@ -13,6 +13,57 @@ Preserve the missing-session-primary-key and malformed-empty-schema regressions 
 The account incarnation must come from committed registration, never username-based backfill;
 a returned session snapshot is not authority to execute a later identity or policy command.
 
+Prepared source schema 2 is fresh-install only: apply new template 0015 without rewriting released
+0010, and reject schema 1 even when empty. Verify the OTP watermark's int8/non-null/default/CHECK
+expression contract, not just a constraint name. Registration verifies schema before and after its
+write; registration and bootstrap must read back initial watermark -1. Never initialize a missing or
+corrupt consumption record by falling back to -1. Version gates reject older prepared writers, not
+legacy AuthService writers that ignore source metadata; keep those writers isolated.
+
+Source-only `login`, `validate_session`, `logout` and password rotation pin one private namespace and
+the three actual auth relations without requiring a collaboration registry. Retain the original
+namespace/table OIDs and path across login and rotation password-worker gaps; do not recapture a
+replacement as the accepted source.
+After writes, verify the current path before unqualified readback, never reset it to hide drift.
+Recheck relation/schema/authority and use fresh Session time after guard waits. An empty redirected
+table cannot confirm logout. Preserve `durable_session_boundary_tdd` and its exact CI runner; these
+guards neither repair storage nor make the trusted primitives a public Session issuer.
+
+Every prepared password hash/verification uses the process-local shared `password_work` gate, including
+registration, login, rotation and bootstrap. Keep admission before secret copies and SQL locks out
+of worker waits. Both total and worker permits belong to the blocking job after dispatch, including
+Tokio queue time; caller cancellation/timeout must not release them early. Preserve deterministic
+`password_work_tests` and five-call-site wiring checks. Do not silently widen this gate to legacy
+AuthService, treat worker failure as wrong credentials, or describe job counts as a PHC cost bound.
+
+Prepared PHC records require `password_profile` validation on account reads and before worker admission.
+Keep the explicit Argon2id v19/m19456/t2/p1/32-byte writer and verifier profile in sync; no legacy fallback
+or automatic profile adoption. Bound text before parsing, reject duplicate/missing/extra parameters,
+and decode salt into a fixed buffer. Do not pass unchecked PHC values to Argon2 Params: parser lookups
+and conversion disagree on duplicates, and extreme parallelism can overflow before library validation.
+Invalid records are not wrong passwords; cost policy must not implicitly revoke existing Sessions.
+
+Prepared login and password rotation recheck TOTP after password work, behind the writer fence, and
+after the last SQL read/time check immediately before requesting COMMIT. Do not move an awaited query
+after the final OTP check or treat an earlier success as permanent proof. OTP uses application UTC,
+Session expiry uses fresh database time; the per-source test clock exists only under `cfg(test)`.
+Keep deterministic SQL wait/rollback regressions. Freshness alone is not single-use consumption, protection
+against every wall-clock rollback, or a guarantee at commit acknowledgement; consumption requires the
+same source-owned transaction described below.
+
+The `otp_consumption` module remains pure, but prepared login and rotation now use it with durable
+account watermarks. Collect all matching counters; any match at/below the supplied watermark rejects,
+otherwise choose the highest.
+Recheck the same credential binding and chosen counter against the original watermark. Preserve real
+collision tests and authentication-wiring guards. Under the source writer fence, compare-and-update
+the exact account/credentials and previous watermark to the proposed next value in the same transaction
+as Session issuance or password change/revocation. Recheck source identity, exact watermark and all
+business effects after writes; the final proof recheck follows the last SQL wait and precedes COMMIT.
+Never reset the watermark during password changes or consume OTP in a separate best-effort write.
+Monotonic counters do not make six-digit strings permanently unique. Unknown commit outcomes do not
+prove rollback or authorize automatic retry/reset. Preserve fault barriers and trigger-hit evidence
+when adapting tests that formerly reused one OTP; early replay rejection is not a rollback regression.
+
 Session-authorized commands hold one transaction from source verification through registry mutation,
 audit and confirmed commit: acquire source metadata, registry metadata, authority, then child rows;
 recheck the exact session with fresh database time after waits and before committing.
@@ -33,8 +84,8 @@ replacement-account protection and rollback tests in `durable_account_deletion_t
 Self-service password rotation derives its target from the current Session and requires the current
 password plus TOTP, not a manager grant. Release snapshot locks before Argon2; reacquire source
 `FOR UPDATE` and recheck the exact Session, incarnation and complete credentials before writing.
-Credential replacement and all-session revocation must commit together. After deliberately deleting
-the calling Session, check its verified expiry against fresh database time after the final writes;
+Credential replacement, OTP consumption and all-session revocation must commit together. After
+deliberately deleting the calling Session, check its verified expiry against fresh database time after the final writes;
 do not skip freshness or expect the deleted row to remain. Preserve identity/TOTP/grants, count and
 read back revocation, and retain the fault/concurrency/registry tests in `durable_password_change_tdd`.
 A failed acknowledgement is not proof of rollback, and no credential-change replay is available.
@@ -79,13 +130,16 @@ Preserve `session_review_tdd` evidence-only corruption, exact-history wait and S
 Fresh-authority bootstrap is trusted provisioning, never public registration or first-login election.
 Before DDL, take the existing source/identity/access installer advisory fences in that order and reject
 any nonempty or ambiguous namespace. Use source -> registry metadata -> authority -> child lock order,
-commit account/identity/initial grant/audit activation together, and publish no Session or secret before
-confirmed commit. A repeated bootstrap or deleted first account must not trigger regrant/recovery.
+commit account/identity/initial grant/audit activation together with initial OTP watermark -1, and
+publish no Session or secret before confirmed commit. A repeated bootstrap or deleted first account
+must not trigger regrant/recovery.
 Keep the bootstrap fault injection counters: an early unrelated DDL error is not the intended row fault.
 
 Maintenance reconciliation is deliberately separate from locking authorization: use one bounded
 REPEATABLE READ, READ ONLY transaction, verify table/column shapes before payload reads, reject RLS
 and inheritance, and inspect full audit chains with strict row/metadata budgets. Fetch no credentials
-or token digests. Retired source accounts and unbound registrations can be valid, but account IDs
-cannot be reused under another name. Do not infer rollback, delivery, quiescence or retry authority
+or token digests. The reader's users-column grants now include otp_last_counter solely for an SQL
+range-validity boolean; neither fetch nor report its value, and never treat a snapshot as a consumption
+receipt or permission to reset state. Retired source accounts and unbound registrations can be valid,
+but account IDs cannot be reused under another name. Do not infer rollback, delivery, quiescence or retry authority
 from a read snapshot. Preserve read-only-role, corruption, MVCC and cancellation regressions.

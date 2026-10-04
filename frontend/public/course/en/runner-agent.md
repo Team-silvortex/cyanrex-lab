@@ -6,7 +6,7 @@ and the general platform's work model remain separate; see [concepts](concepts.m
 [current status](project-status.md) before extending this protocol.
 
 The standalone `cyanrex-runner-agent` connects a trusted Linux, WSL2, or container node to the
-Engine control plane. Version 0.5.0 executes built-in `control_probe` jobs and can optionally run
+Engine control plane. Version 0.5.1 executes built-in `control_probe` jobs and can optionally run
 compile-only `ebpf_compile_check` jobs. Compile checking is disabled by default. Neither mode
 accepts shell commands or arbitrary executable payloads, and neither needs root or Linux
 capabilities. A compile job never loads eBPF or returns its object file.
@@ -107,7 +107,7 @@ docker run --rm --name cyanrex-runner-agent \
   --entrypoint cyanrex-runner-agent \
   --env-file ./runner-agent.env \
   --mount type=bind,src="$PWD/agent-token",dst=/run/secrets/cyanrex-agent-token,ro \
-  cyanrex/cyanrex-engine:0.5.0
+  cyanrex/cyanrex-engine:0.5.1
 ```
 
 Start from [`docker/runner-agent.env.example`](../../docker/runner-agent.env.example). Rebuild the

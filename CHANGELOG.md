@@ -5,6 +5,40 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-10-04
+
+This patch hardens the explicit collaboration authentication preparation layer. Auth source schema 2
+is fresh-install only: schema 1 is rejected unchanged, not upgraded. Legacy live authentication and
+the public API compatibility baseline 0.3.0 remain unchanged; this is not a deployment or public issuer.
+
+### Added
+
+- Atomically consume prepared login/password-rotation OTP counters with Session issuance or credential
+  replacement and revocation. Collision-aware selection, account-bound compare-and-update and final
+  exact-counter rechecks prevent committed step reuse across independent sources. Fresh explicit auth
+  installation/bootstrap now uses schema 2; existing schema 1 is rejected unchanged, without migration.
+  This does not switch legacy live authentication or add public issuance/recovery.
+
+### Fixed
+
+- Recheck prepared login/password-rotation TOTP validity after writer waits and after the final SQL
+  readback, before requesting commit. Expired codes fail without publishing a token or confirming a
+  password change. Freshness alone is not one-time consumption; the atomic follow-up above adds that
+  separate prepared-source boundary, not a live-auth cutover or commit-acknowledgement freshness promise.
+- Validate prepared stored password hashes before worker admission and pin both hashing and verification
+  to the existing Argon2id v19, m=19456/t=2/p=1, 32-byte profile. Reject malformed, duplicate or unsupported
+  parameters as invalid records, without migrating credentials, revoking existing Sessions or changing
+  legacy live authentication. This bounds accepted computation parameters, not wall-clock time or process RSS.
+- Bound prepared password work across registration, login, password rotation and authority bootstrap
+  with one in-process limit of four dispatched jobs and twenty admitted jobs in total. Blocking
+  work retains its slots after caller cancellation or timeout until it actually finishes. Excess
+  admission is rejected; legacy live authentication, password formats and public routing are unchanged.
+- Pin source namespace and auth-table identities for prepared durable Session login, validation and
+  logout. Recheck schema and authority before confirming results, retain the original pins across
+  password verification, and check expiration after guard waits. A redirected, suppressed deletion
+  can no longer acknowledge logout against an empty shadow table while the real Session survives.
+  These source-only guards do not require a registry or enable public Session issuance/live cutover.
+
 ## [0.5.0] - 2026-10-03
 
 This source release advances the domain-neutral task-content foundation. The existing teaching
@@ -701,8 +735,9 @@ cross-user collaboration. The frozen public API compatibility baseline remains 0
 The canonical package metadata advanced directly from `0.2.9` to `0.3.1`. Version `0.3.0` identifies
 the frozen API compatibility snapshot only; it was not a package release and must not be tagged.
 
-[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.0...HEAD
-[0.5.0]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.9...v0.5.0
+[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.1...HEAD
+[0.5.1]: https://github.com/Team-silvortex/cyanrex-lab/compare/a9523ec052f701e447d2e59fcd38d3a8d8186740...v0.5.1
+[0.5.0]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.9...a9523ec052f701e447d2e59fcd38d3a8d8186740
 [0.4.9]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.8...v0.4.9
 [0.4.8]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.7...v0.4.8
 [0.4.7]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.6...v0.4.7

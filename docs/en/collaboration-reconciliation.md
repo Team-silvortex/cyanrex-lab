@@ -4,7 +4,9 @@ Status: **C1-K internal staging, included in 0.4.7**. The local
 `cyanrex-provision reconcile` command checks whether the staged durable accounts, Sessions, identity
 bindings, policies and their audit histories agree. It reports one bounded, read-only snapshot, not
 an authorization decision, bootstrap receipt, secret-delivery confirmation or permission to retry.
-There is no live Engine wiring, migration, repair, credential recovery or new database schema.
+The observer neither installs nor migrates storage, repairs records, recovers credentials or wires
+the live Engine. The OTP-consumption follow-up included in 0.5.1 now requires prepared source schema 2;
+the original C1-K introduction remains the 0.4.7 milestone.
 
 ## Operator entry and scope
 
@@ -26,11 +28,13 @@ The Rust entry is `DurableAuthSource::reconcile_authority`; neither entry calls 
 
 A database administrator can prepare a reader with CONNECT, schema USAGE, catalog visibility and
 EXECUTE on `pg_catalog.pg_control_system()`, plus SELECT on the twelve collaboration tables. On auth
-tables the reader needs only `users(username, account_id)` and
+tables the reader now needs only `users(username, account_id, otp_last_counter)` and
 `sessions(username, account_id, expires_at, token)`. CREATE, DML, sequence access and password/salt/TOTP
 column privileges are unnecessary. The token column privilege is needed for an in-database digest-shape
-check; the CLI does not fetch token digests. Privileges and trusted endpoint authentication must be
-prepared separately; this tool never grants them to itself.
+check; the CLI does not fetch token digests. Likewise, the watermark column is used only to select
+an in-database range-validity boolean; its value is neither fetched nor added to the report. Update
+older reader grants explicitly rather than granting credential columns. Privileges and trusted
+endpoint authentication must be prepared separately; this tool never grants them to itself.
 
 ## Snapshot consistency and resource bounds
 
@@ -39,12 +43,19 @@ installer fences or advisory writer locks; normal relation read locks still appl
 authorization and mutation readers retain their source-first locking and fresh Session checks.
 Reconciliation is a separate observer, not a lock-free replacement for those paths.
 
-Before reading data, it requires supported source/identity/access metadata versions 1/2/2, exact source
+Before reading data, it requires supported source/identity/access metadata versions 2/2/2, exact source
 authority and legacy Workspace mapping, ordinary persistent tables, expected primary keys and selected
 column types/nullability. Views, inheritance/partitions and RLS layouts are rejected even for superusers,
 so filtered rows cannot silently become a successful empty observation. Existing source constraints and
 source/audit trigger-shape checks also remain required. This is not an attestation of every DDL object,
 trigger function body or historical action against a privileged database administrator.
+
+Source schema 2 includes the non-null signed 64-bit OTP watermark with exact default `-1` and the
+validated lower-bound check. The reader checks that stored counters are at least `-1`, without
+reconstructing which code or operation advanced them. Source schema 1 is rejected, including an empty
+source; reconciliation cannot upgrade it or initialize missing counters. These version checks also
+do not fence legacy AuthService writers that ignore prepared-source metadata. The prepared source
+must remain separate from those writers.
 
 The graph read has a ten-second total deadline, five-second statement deadline and two-second lock
 deadline. Each scanned collection is limited to **10,000 rows, 4 MiB of selected variable metadata in
@@ -60,7 +71,7 @@ individual audit payloads are not emitted. The command does not prune expired Se
 
 | Boundary | Required observation |
 |---|---|
-| Source accounts and Sessions | Valid unique account IDs and canonical usernames; every Session matches the current exact account incarnation; stored digest has the expected shape |
+| Source accounts and Sessions | Valid unique account IDs and canonical usernames; OTP watermark is in range; every Session matches the current exact account incarnation; stored digest has the expected shape |
 | Identity bindings | Each binding has its retained Human Principal, matching coordinates and legal status; every unretired binding still matches its source account |
 | Membership and deployment | Every legacy policy has a bound subject, the exact Workspace and paired member/grant records with equal valid revisions and canonical roles/status |
 | Identity and policy history | Decode every entry, verify coordinates, request digests and transition semantics, follow each subject's complete before/after chain, and match final heads to current records |
@@ -100,6 +111,9 @@ Failures exit 2. Configuration, connection and preflight failures can instead us
 codes. A successful exit 0 is still only an observation: an in-flight mutation can commit after the
 snapshot, or the snapshot can legitimately precede that mutation. The report neither establishes a
 maintenance window nor proves that a particular uncertain command committed or rolled back.
+This also applies to atomic OTP consumption: a successful snapshot is not a receipt for a particular
+login or password change. Never lower/reset a watermark or blindly repeat an operation because a
+previous commit acknowledgement was lost.
 
 After uncertain bootstrap, preserve the private marker/output and establish that earlier operations
 have finished before any recovery decision. `inspect` shows catalog occupancy; `reconcile` checks the
@@ -109,6 +123,9 @@ privileged rewrite that consistently replaces both current state and all evidenc
 reviewed backup/restore and live route/CSRF cutover remain separate work.
 
 ## Verification
+
+The following preserves the C1-K introduction evidence against source/identity/access versions 1/2/2.
+Current schema-2 follow-up results and their limits are recorded separately in [Project Status](project-status.md).
 
 The [reconciliation suite](../../engine/tests/durable_reconciliation_tdd.rs) defines one default
 source-isolation test and twelve explicit PostgreSQL cases. They exercise normal lifecycle states,

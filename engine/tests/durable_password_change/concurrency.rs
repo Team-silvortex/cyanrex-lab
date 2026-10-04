@@ -5,7 +5,7 @@ use faults::trigger;
 #[ignore = "requires a disposable CYANREX_TEST_DATABASE_URL"]
 async fn postgres_password_change_concurrent_reauthentication_commits_only_once() {
     let f = Fixture::ready().await;
-    let (account, login) = f.login().await;
+    let (account, login) = f.seed_account_session().await;
     let other = f.reopen().await;
     let code = otp(&account.bootstrap.secret);
     let (first, second) = tokio::join!(
@@ -26,7 +26,7 @@ async fn postgres_password_change_concurrent_reauthentication_commits_only_once(
     };
     assert_eq!(
         other
-            .login(&username(), password, &otp(&account.bootstrap.secret))
+            .login(&username(), password, &next_otp(&account.bootstrap.secret))
             .await
             .unwrap()
             .session
@@ -41,7 +41,7 @@ async fn postgres_password_change_concurrent_reauthentication_commits_only_once(
 async fn postgres_password_change_serializes_login_without_surviving_old_tokens() {
     for change_first in [false, true] {
         let f = Fixture::ready().await;
-        let (account, login) = f.login().await;
+        let (account, login) = f.seed_account_session().await;
         let mut blocker = f.pool.begin().await.unwrap();
         query("SELECT pg_advisory_xact_lock(hashtext(current_schema()), 70903)")
             .execute(&mut *blocker)
@@ -83,7 +83,8 @@ async fn postgres_password_change_serializes_login_without_surviving_old_tokens(
         f.wait_blocked().await;
         let other = f.reopen().await;
         let token = login.token;
-        let code = otp(&account.bootstrap.secret);
+        // The ordering test uses a second fresh counter, not the first operation's consumed OTP.
+        let code = next_otp(&account.bootstrap.secret);
         let mut second = tokio::spawn(async move {
             if change_first {
                 other
@@ -137,7 +138,7 @@ async fn postgres_password_change_rechecks_snapshot_after_writer_wait() {
         "pending-login",
     ] {
         let f = Fixture::ready().await;
-        let (account, login) = f.login().await;
+        let (account, login) = f.seed_account_session().await;
         let replacement = f
             .source
             .register(&"replacement-source".parse().unwrap(), NEW_PASSWORD)
@@ -225,7 +226,7 @@ async fn postgres_password_change_rechecks_snapshot_after_writer_wait() {
 async fn postgres_password_change_serializes_logout_and_blocks_session_validation() {
     for change_first in [false, true] {
         let f = Fixture::ready().await;
-        let (account, login) = f.login().await;
+        let (account, login) = f.seed_account_session().await;
         let before = state(&f).await;
         let mut blocker = f.pool.begin().await.unwrap();
         query("SELECT pg_advisory_xact_lock(hashtext(current_schema()), 70904)")

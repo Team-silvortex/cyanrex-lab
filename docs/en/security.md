@@ -144,6 +144,38 @@ not credentials, token digests or individual identities. A consistent snapshot c
 commit; it neither proves an uncertain command's outcome nor authorizes reinitialization, secret
 recovery or protected actions. Existing authorization still needs fresh Session checks and row locks.
 
+The unreleased [durable Session-source follow-up](collaboration-auth-source.md) pins namespace and
+auth-table identity for login, validation and logout, including login's password-worker gap and
+post-write path drift. Only one effective private schema and unfiltered permanent source tables are
+accepted; no registry, migration or live authentication switch is implied. This prevents an empty
+shadow read from falsely confirming logout, but is not public-issuer readiness.
+
+Prepared registration, login, password rotation and bootstrap now share a process-local gate of four
+dispatched password jobs and twenty admitted jobs in total. A blocking job retains its capacity after
+caller cancellation/timeout until it actually finishes; work waiting for a slot stays inside the
+caller's existing deadline. Separately, prepared account reads and pre-admission verification enforce
+the existing Argon2id v19/m19456/t2/p1/32-byte profile, including bounded PHC text, decoded salt and
+rejection of duplicate/unknown parameters. Other profiles return `InvalidRecord`, without credential
+rewrites or implicit Session revocation. This does not limit old live AuthService work, other processes,
+wall-clock time or process RSS, and does not kill running computation. Timing enumeration
+and ingress/session limits remain gates before untrusted Session issuance.
+
+Prepared login and rotation also recheck OTP freshness behind the writer fence and after the last
+SQL wait before requesting commit. Expiry at that point rejects issuance or rolls back rotation.
+The schema-2 follow-up also consumes a monotonic per-account counter in the same transaction as
+Session issuance or password replacement/revocation. Current full credentials and the old watermark
+guard the update; post-write checks and a bound exact-counter recheck precede COMMIT. Independent
+sources cannot both commit the same step. Password changes preserve consumption; re-login needs a
+later OTP. Collision handling rejects any matching consumed counter, not all future appearances of
+the same six digits. Pure proposals alone are not durable state or account authority.
+
+Only fresh explicit installation/bootstrap creates schema 2; existing schema 1 is rejected unchanged.
+There is no counter reset, secret recovery, automatic migration or live AuthService switch. A lost
+COMMIT reply may leave consumption committed without delivering a token: do not assume rollback or
+reset state to retry. This is neither freshness at acknowledgement nor protection against every clock
+rollback. Version fencing applies to cooperating prepared writers, not legacy or privileged SQL
+writers; they must remain isolated. See [the full OTP contract](collaboration-auth-source.md).
+
 ### Browser diagnostic boundary
 
 Browser inline compiler caches and pending checks belong to one editor mount and exact Engine/target/

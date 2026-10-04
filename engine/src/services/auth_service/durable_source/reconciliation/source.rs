@@ -18,7 +18,8 @@ pub(super) async fn read(
         authority,
     )
     .await?;
-    let rows = sqlx::query("SELECT username, account_id FROM users LIMIT 10001")
+    // Only expose whether the fixed-width state is in range, never credentials or OTP material.
+    let rows = sqlx::query("SELECT username, account_id, otp_last_counter >= '-1'::bigint AS valid_otp_state FROM users LIMIT 10001")
         .fetch_all(&mut *connection)
         .await?;
     let mut accounts = HashMap::new();
@@ -30,7 +31,10 @@ pub(super) async fn read(
             .map_err(|_| ReconciliationError::InvalidSource)?;
         let account = LegacyAccountId::try_from(row.try_get::<Uuid, _>("account_id")?)
             .map_err(|_| ReconciliationError::InvalidSource)?;
-        if !names.insert(username.clone()) || accounts.insert(account, username).is_some() {
+        if !row.try_get::<bool, _>("valid_otp_state")?
+            || !names.insert(username.clone())
+            || accounts.insert(account, username).is_some()
+        {
             return Err(ReconciliationError::InvalidSource);
         }
     }

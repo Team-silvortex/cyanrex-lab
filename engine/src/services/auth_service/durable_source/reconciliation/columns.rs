@@ -4,7 +4,7 @@ use super::*;
 /// replaced by unbounded text, and nullable values must not bypass metadata-size arithmetic.
 pub(super) async fn verify(connection: &mut PgConnection) -> CheckResult<()> {
     let invalid: bool = sqlx::query("WITH layouts(relation, fields) AS (VALUES
-        ('users', ARRAY['username','account_id']),
+        ('users', ARRAY['username','account_id','otp_last_counter']),
         ('sessions', ARRAY['username','account_id','expires_at','token']),
         ('collaboration_auth_source_schema', ARRAY['singleton','version','authority_id']),
         ('collaboration_identity_schema', ARRAY['singleton','version']),
@@ -22,7 +22,7 @@ pub(super) async fn verify(connection: &mut PgConnection) -> CheckResult<()> {
         ('collaboration_policy_audit', ARRAY['sequence','authority_id','workspace_id','principal_id',
             'revision','kind','command_id','actor_principal_id','request_digest','recorded_at','before_state','after_state'])
         ), types(field, type_name, nullable) AS (VALUES
-        ('username','text',false), ('token','text',false), ('account_id','uuid',false),
+        ('username','text',false), ('token','text',false), ('account_id','uuid',false), ('otp_last_counter','int8',false),
         ('authority_id','uuid',false), ('workspace_id','uuid',false), ('principal_id','uuid',false),
         ('source_workspace_id','uuid',false), ('actor_principal_id','uuid',true), ('command_id','uuid',true),
         ('singleton','bool',false), ('version','int4',false), ('sequence','int8',false), ('revision','int8',false),

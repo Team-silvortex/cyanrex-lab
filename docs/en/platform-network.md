@@ -1,7 +1,8 @@
 # Current platform feature and module network
 
-Source review date: **2026-10-03**. Scope: **0.5.0 source, including navigation/filename fixes and C2-K/L/M/N content preparation**,
-alongside the preceding collaboration commands and local task payload editor. The review retains its
+Base source review date: **2026-10-03**. Current scope: **0.5.1 source**, including prepared-authentication
+hardening, the 0.5.0 navigation/filename fixes and C2-K/L/M/N content preparation, alongside the preceding
+collaboration commands and local task payload editor. The review retains its
 0.4.9 base commit and dated evidence; source inclusion is not a new release acceptance report or a
 claim about an installed deployment.
 
@@ -96,7 +97,7 @@ paths, editor IDs or client role claims. See [collaboration concepts](collaborat
 |---|---|---|
 | Contract and legacy projection | [`models/collaboration`](../../engine/src/models/collaboration), [`legacy_workspace.rs`](../../engine/src/services/legacy_workspace.rs) | Domain-neutral values and a pure preview of selected legacy permissions; not migration or runtime authorization. |
 | Durable identity and policy | [`collaboration_identity_store`](../../engine/src/services/collaboration_identity_store) | Explicit namespaces → bindings, active membership, deployment grants and audited revisions. No implicit teacher-role upgrade or ambient database adoption. |
-| Durable authentication and commands | [`durable_source`](../../engine/src/services/auth_service/durable_source) | Account incarnation/session → audited identity/policy/lifecycle commands in one transaction. The public login and account endpoints still use legacy `AuthService`. |
+| Durable authentication and commands | [`durable_source`](../../engine/src/services/auth_service/durable_source) | Account incarnation/session → audited identity/policy/lifecycle commands in one transaction. Source schema 2, included in 0.5.1, consumes OTP counters with login/rotation, fresh-install only; rejects schema 1 without migration. Public login/account endpoints still use legacy `AuthService`. |
 | Bootstrap and reconciliation | [`cyanrex-provision`](../../engine/src/bin/cyanrex-provision), [`reconciliation`](../../engine/src/services/collaboration_identity_store/reconciliation) | Explicit target-bound empty-namespace bootstrap and private enrollment delivery; bounded read-only graph inspection. Not a startup hook, repair tool or existing-data importer. |
 | Task instance store | [`task_store`](../../engine/src/services/task_store) | Definition snapshot + exact inputs → revision-fenced lifecycle + atomic outbox. Current fresh-install storage schema is 2; schema 1 is rejected without migration. |
 | Artifact revision store | [`artifact_store`](../../engine/src/services/artifact_store) | Private immutable files + metadata/outbox → exact scoped revision/digest read. Publication is separate from Task changes; a failed database write can leave a private file. |

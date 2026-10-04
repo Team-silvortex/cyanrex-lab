@@ -1,7 +1,8 @@
 # 当前平台功能与模块网络
 
-源码核对日期：**2026-10-03**。范围：**0.5.0 源码，包括导航/文件名修复和 C2-K/L/M/N 内容准备层**，
-以及此前的协作命令与本地任务 payload 编辑器。评审保留 0.4.9 基线提交及原日期证据；源码收录
+基础源码核对日期：**2026-10-03**。当前范围：**0.5.1 源码**，包括准备层认证加固、0.5.0 的
+导航/文件名修复和 C2-K/L/M/N 内容准备层，以及此前的协作命令与本地任务 payload 编辑器。
+评审保留 0.4.9 基线提交及原日期证据；源码收录
 不是新的发布验收报告，也不代表正在运行的部署已更新。
 
 按“架构 × 功能 × 实现 × 成熟度”查看请使用新增的[功能张量与评分规则](capability-maturity.md)和
@@ -90,7 +91,7 @@ Review。它们使用带范围的引用，不是用户名、路径、编辑器 I
 |---|---|---|
 | 契约与旧系统投影 | [`models/collaboration`](../../engine/src/models/collaboration)、[`legacy_workspace.rs`](../../engine/src/services/legacy_workspace.rs) | 领域中立值类型与部分旧权限的纯预览；不是迁移或运行时授权。 |
 | 持久化身份与策略 | [`collaboration_identity_store`](../../engine/src/services/collaboration_identity_store) | 显式命名空间 → 绑定、有效成员关系、部署授权与审计修订；不会隐式提升教师权限或收编环境中的数据库。 |
-| 持久化认证与命令 | [`durable_source`](../../engine/src/services/auth_service/durable_source) | 账户世代/会话 → 同一事务内的审计身份、策略与生命周期命令；公共登录与账户端点仍使用旧 `AuthService`。 |
+| 持久化认证与命令 | [`durable_source`](../../engine/src/services/auth_service/durable_source) | 账户世代/会话 → 同一事务内的审计身份、策略与生命周期命令。收录于 0.5.1 的来源 Schema 2 随登录/改密原子消费 OTP，仅全新安装，拒绝 Schema 1 不迁移；公共登录与账户端点仍使用旧 `AuthService`。 |
 | 初始化与核对 | [`cyanrex-provision`](../../engine/src/bin/cyanrex-provision)、[`reconciliation`](../../engine/src/services/collaboration_identity_store/reconciliation) | 显式目标绑定的空命名空间初始化、私密交付配置材料及有界只读图核对；不是启动钩子、修复工具或旧数据导入器。 |
 | Task 实例存储 | [`task_store`](../../engine/src/services/task_store) | 定义快照 + 精确输入 → 修订约束的生命周期 + 原子 outbox；当前新安装存储 schema 为 2，拒绝 schema 1，不做迁移。 |
 | Artifact 修订存储 | [`artifact_store`](../../engine/src/services/artifact_store) | 私有不可变文件 + 元数据/outbox → 精确范围、修订和摘要读取；发布独立于任务变更，数据库写入失败可能留下私有文件。 |

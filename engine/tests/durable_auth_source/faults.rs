@@ -38,7 +38,7 @@ async fn postgres_source_missing_or_unknown_storage_never_uses_a_cached_identity
         f.source.install_empty_schema().await,
         Err(DurableAuthError::UnsupportedSchema)
     );
-    f.sql("UPDATE collaboration_auth_source_schema SET version = 1")
+    f.sql("UPDATE collaboration_auth_source_schema SET version = 2")
         .await;
     f.sql("ALTER TABLE users DISABLE TRIGGER collaboration_auth_account_immutable")
         .await;

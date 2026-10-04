@@ -30,7 +30,7 @@ async fn postgres_reconcile_cli_requires_only_read_privileges_and_never_returns_
             f.db.schema
         ),
         format!("REVOKE SELECT ON users, sessions FROM {role}"),
-        format!("GRANT SELECT (username, account_id) ON users TO {role}"),
+        format!("GRANT SELECT (username, account_id, otp_last_counter) ON users TO {role}"),
         format!("GRANT SELECT (username, account_id, expires_at, token) ON sessions TO {role}"),
     ] {
         f.db.sql(&statement).await;
@@ -67,7 +67,7 @@ async fn postgres_reconcile_cli_requires_only_read_privileges_and_never_returns_
             "REVOKE ALL ON ALL TABLES IN SCHEMA {} FROM {role}",
             f.db.schema
         ),
-        format!("REVOKE SELECT (username, account_id) ON users FROM {role}"),
+        format!("REVOKE SELECT (username, account_id, otp_last_counter) ON users FROM {role}"),
         format!("REVOKE SELECT (username, account_id, expires_at, token) ON sessions FROM {role}"),
         format!("REVOKE ALL ON SCHEMA {} FROM {role}", f.db.schema),
         format!("REVOKE EXECUTE ON FUNCTION pg_catalog.pg_control_system() FROM {role}"),

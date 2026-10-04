@@ -1,13 +1,15 @@
 //! Shared private-work policy and namespace guard, never a detached or reusable access grant.
 use super::*;
+use super::{
+    namespace::{self, NamespaceError, NamespacePin},
+    source_relations::RelationPin,
+};
 use crate::{
     models::collaboration::{PrincipalRef, WorkspaceRef},
     services::collaboration_identity_store::{
         CollaborationIdentityStore as Registry, IdentityStoreError,
     },
 };
-mod namespace;
-use namespace::NamespacePin;
 
 pub(super) enum PrivateWorkError {
     Session(SessionCommandError),
@@ -32,6 +34,14 @@ impl From<IdentityStoreError> for PrivateWorkError {
 impl From<sqlx::Error> for PrivateWorkError {
     fn from(_: sqlx::Error) -> Self {
         DurableAuthError::StorageUnavailable.into()
+    }
+}
+impl From<NamespaceError> for PrivateWorkError {
+    fn from(error: NamespaceError) -> Self {
+        match error {
+            NamespaceError::InvalidNamespace => Self::InvalidNamespace,
+            NamespaceError::StorageUnavailable => DurableAuthError::StorageUnavailable.into(),
+        }
     }
 }
 pub(super) fn valid_namespace(name: &str) -> bool {
@@ -64,12 +74,12 @@ impl DurableAuthSource {
         if source.name == target {
             return Err(PrivateWorkError::InvalidNamespace);
         }
-        namespace::verify_source_relations(tx).await?;
-        Self::verify_schema(tx).await?;
+        RelationPin::capture(tx, true).await?;
         if scope.authority_id != self.authority_id {
             return Err(DurableAuthError::SourceMismatch.into());
         }
         self.lock_source(tx, false).await?;
+        Self::verify_schema(tx).await?;
         Registry::lock_session_command_scope(tx, scope).await?;
         let session = self
             .session_record(tx, &digest)
@@ -138,7 +148,7 @@ impl PrivateWorkContext {
         }
         NamespacePin::select(tx, &self.source.name).await?;
         self.source.verify(tx).await?;
-        namespace::verify_source_relations(tx).await?;
+        RelationPin::capture(tx, true).await?;
         source.lock_source(tx, false).await?;
         Registry::lock_session_command_scope(tx, self.scope).await?;
         let current = Registry::session_private_work_actor(

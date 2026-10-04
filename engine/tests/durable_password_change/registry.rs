@@ -48,7 +48,7 @@ async fn registry_state(f: &CollaborationFixture) -> Vec<String> {
 #[ignore = "requires a disposable CYANREX_TEST_DATABASE_URL"]
 async fn postgres_password_change_preserves_grants_and_never_reactivates_retired_identity() {
     for kind in ["manager", "learner", "retired"] {
-        let f = CollaborationFixture::ready().await;
+        let f = CollaborationFixture::ready_for_password_change().await;
         let (identity, token) = if kind == "manager" {
             (&f.manager, &f.manager_token)
         } else {
@@ -84,7 +84,7 @@ async fn postgres_password_change_preserves_grants_and_never_reactivates_retired
         );
         let login = f
             .source
-            .login(&identity.binding.username, NEW_PASSWORD, &otp(&secret))
+            .login(&identity.binding.username, NEW_PASSWORD, &next_otp(&secret))
             .await
             .unwrap();
         assert_eq!(login.session.account.account_id, identity.account_id);
@@ -113,7 +113,7 @@ async fn postgres_password_change_preserves_grants_and_never_reactivates_retired
 #[ignore = "requires a disposable CYANREX_TEST_DATABASE_URL"]
 async fn postgres_password_change_serializes_session_authorized_binding() {
     for change_first in [false, true] {
-        let f = CollaborationFixture::ready().await;
+        let f = CollaborationFixture::ready_for_password_change().await;
         let secret = secret(&f, &f.manager.binding.username).await;
         let mut blocker = f.base.pool.begin().await.unwrap();
         query("SELECT pg_advisory_xact_lock(hashtext(current_schema()), 70905)")
@@ -199,7 +199,7 @@ async fn postgres_password_change_serializes_session_authorized_binding() {
 #[ignore = "requires a disposable CYANREX_TEST_DATABASE_URL"]
 async fn postgres_password_change_serializes_administrative_account_deletion() {
     for change_first in [false, true] {
-        let f = CollaborationFixture::ready().await;
+        let f = CollaborationFixture::ready_for_password_change().await;
         let secret = secret(&f, &f.learner.binding.username).await;
         let deletion = SessionDeleteAccountCommand {
             command_id: id(),

@@ -52,12 +52,9 @@ async fn closed_password_source_never_changes_credentials_from_memory() {
 #[ignore = "requires a disposable CYANREX_TEST_DATABASE_URL"]
 async fn postgres_password_change_revokes_all_sessions_and_preserves_identity() {
     let f = Fixture::ready().await;
-    let (account, first) = f.login().await;
-    let second = f
-        .source
-        .login(&username(), PASSWORD, &otp(&account.bootstrap.secret))
-        .await
-        .unwrap();
+    let (account, first) = f.seed_account_session().await;
+    // Device inventory is explicit fixture state; the rotation below is the real OTP consumer.
+    let second = f.seed_session(&account.account).await;
     let expired = Uuid::new_v4().to_string();
     query("INSERT INTO sessions (token, username, account_id, expires_at) VALUES ($1, $2, $3, clock_timestamp() - INTERVAL '1 second')")
         .bind(token_hash(&expired)).bind(username().as_str()).bind(account.account.account_id.as_uuid())
@@ -90,12 +87,16 @@ async fn postgres_password_change_revokes_all_sessions_and_preserves_identity() 
     );
     assert!(matches!(
         reopened
-            .login(&username(), PASSWORD, &otp(&account.bootstrap.secret))
+            .login(&username(), PASSWORD, &next_otp(&account.bootstrap.secret))
             .await,
         Err(DurableAuthError::InvalidCredentials)
     ));
     let new_login = reopened
-        .login(&username(), NEW_PASSWORD, &otp(&account.bootstrap.secret))
+        .login(
+            &username(),
+            NEW_PASSWORD,
+            &next_otp(&account.bootstrap.secret),
+        )
         .await
         .unwrap();
     assert_eq!(new_login.session.account, account.account);
@@ -111,7 +112,7 @@ async fn postgres_password_change_revokes_all_sessions_and_preserves_identity() 
 #[ignore = "requires a disposable CYANREX_TEST_DATABASE_URL"]
 async fn postgres_password_change_requires_reauthentication_and_bounded_inputs() {
     let f = Fixture::ready().await;
-    let (account, login) = f.login().await;
+    let (account, login) = f.seed_account_session().await;
     let before = state(&f).await;
     let code = otp(&account.bootstrap.secret);
     for (current, new, otp, error) in [
@@ -168,7 +169,7 @@ async fn postgres_password_change_requires_reauthentication_and_bounded_inputs()
     assert_eq!(f.count("sessions").await, 0);
     assert_ne!(state(&f).await.0, before.0);
     f.source
-        .login(&username(), PASSWORD, &otp(&account.bootstrap.secret))
+        .login(&username(), PASSWORD, &next_otp(&account.bootstrap.secret))
         .await
         .unwrap();
     f.cleanup().await;
@@ -186,7 +187,7 @@ async fn postgres_password_change_rejects_absent_revoked_expired_and_recreated_s
         "recreated",
     ] {
         let f = Fixture::ready().await;
-        let (account, login) = f.login().await;
+        let (account, login) = f.seed_account_session().await;
         let token = match failure {
             "shape" => "not-a-token".to_string(),
             "digest" => token_hash(&login.token),
@@ -229,7 +230,7 @@ async fn postgres_password_change_rejects_absent_revoked_expired_and_recreated_s
 #[ignore = "requires a disposable CYANREX_TEST_DATABASE_URL"]
 async fn postgres_password_change_shares_bounded_admission_with_login_and_clones() {
     let f = Fixture::ready().await;
-    let (account, login) = f.login().await;
+    let (account, login) = f.seed_account_session().await;
     let before = state(&f).await;
     let clone = f.source.clone();
     for _ in 0..5 {
@@ -313,7 +314,7 @@ async fn postgres_password_change_requires_valid_source_without_install_or_fallb
         ),
     ] {
         let f = Fixture::ready().await;
-        let (account, login) = f.login().await;
+        let (account, login) = f.seed_account_session().await;
         let original = state(&f).await;
         f.sql(damage).await;
         assert_eq!(

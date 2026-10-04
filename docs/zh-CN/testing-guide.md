@@ -39,7 +39,13 @@ Rust 公告审计，前端/SDK 检查也包含生产依赖的 npm 审计。因�
 | 教学包与通用目录 | `task_catalog_tdd`、`teaching_task_adapter_tdd`、`collaboration_contract_tdd` | 类型化证据、精确定义/策略身份；目录准入不执行规则、不验收 Task |
 | 事件和设置 | `module_boundaries_tdd`、EventBus、显式事件 SQL、事件/设置单元与浏览器套件 | 发布顺序 → 持久化历史 → 重新同步、导出/删除筛选安全、确认设置写入和读取失败 |
 | 通用身份与权威 | `collaboration_*_tdd`、`legacy_workspace_projection_tdd` | 审计绑定/成员/授权修订、缺席键竞争、最后管理者、角色与部署权限分离 |
-| 持久化认证源与生命周期 | `durable_auth_source_tdd`、`durable_collaboration_tdd`、删除/改密/初始化/核对测试目标 | 账户世代 → 精确当前 Session → 同事务身份/策略、命名空间替换、写后事实 |
+| 持久化认证源与生命周期 | `durable_auth_source_tdd`、`durable_session_boundary_tdd`、`durable_collaboration_tdd`、删除/改密/初始化/核对测试目标 | 来源命名空间/表身份 → 账户世代 → 精确当前 Session → 同事务身份/策略、命名空间替换、写后事实 |
+| 准备层密码工作 | 默认 `auth_service::durable_source::password_work` 单测及源码接线守卫 | 派发/排队容量、取消/超时生命周期、panic 回收与真实哈希；各入口另重跑来源、改密和初始化 SQL |
+| 准备层密码参数 | `test-durable-password-profile.sh`，默认 `password_profile`/`password_work` 单测与源码/CI 守卫 | 六条准确 SQL 覆盖坏记录、写入兼容、已有 Session 和回滚；极端数字仅做纯预检测试，不执行巨量计算 |
+| 准备层 OTP 时效 | `test-durable-otp-freshness.sh` 准确选择七条 `--lib` SQL；默认 `otp::tests` 及源码/CI 守卫 | 观察 SQL 等待，或执行器占用时读事务释放后，再推进私有时钟；不证明准确入队时刻。覆盖回滚、成功与时效/组合消费区别，不改机器时间或提供公开时钟覆盖 |
+| OTP 消费策略 | 默认 `otp_consumption::tests` 与 `durableOtpConsumption` 源码守卫 | 纯计数器选择、真实碰撞、凭据绑定、准确末次计数器和输入/时间边界；纯单测不证明持久化/原子性。策略现用于准备层登录/改密 |
+| OTP 原子消费 | `test-durable-otp-consumption.sh`：11 条准确库内 SQL | 独立来源、重开/退出、登录改密竞争、账号代次、版本/格式拒绝、抑制/篡改/延迟失败/取消及真实碰撞 |
+| OTP 来源格式 | `test-durable-otp-schema.sh`：四条准确 SQL | 真实 Schema 1 原样拒绝、Schema 2 列/默认值/约束损坏拒绝、注册/初始化水位 -1 及命中证明的初始化故障；不测试或宣称存量迁移 |
 | 运维初始化 | `provision_cli_tdd`、`provision_postgres_tdd` | 只读计划、目标绑定 apply、私密配置交付、确认丢失与取消；不收编现有配置 |
 | 通用 Task、Artifact 与 Review | 下方显式存储 runner 及对应默认 Rust 测试 | 精确修订/摘要、Task/outbox 原子性、不可变文件边界、私人所有权、Review 历史、当前 Session 检查 |
 | 本地任务 payload 与编辑器 | `test:editor-languages`、`test:task-payload-browser`、`test:multi-language-editor-browser` | 可选 payload、已接受内容/修订、导入导出、过期编辑、模型释放与禁止网络写入 |
@@ -100,6 +106,12 @@ PostgreSQL 连接变量和 dotenv 预加载设置，再只添加所选夹具需�
 十二个 runner 共选择 **212 条用例**（此前资源 155 条、内容存储 21 条、会话内容 25 条、独立 HTTP 11 条），不是仓库全部 PostgreSQL 覆盖。旧认证/事件/脚本/学习与通用
 身份/认证源/生命周期/初始化用例在 CI 中另有精确清单。
 [`postgresCi.test.mjs`](../../scripts/tests/postgresCi.test.mjs) 检查 runner 清单完整性。
+
+另有 `scripts/test-durable-session-boundary.sh` 精确选择 **14 条来源层 Session 用例**，覆盖
+歧义/临时命名空间、过滤或不兼容关系、写后路径/关系替换、元数据变化、登录两段事务身份以及
+退出/过期锁顺序，不需要协作注册表。`durableSessionBoundaryCi.test.mjs` 检查其清单；它与上述
+212 条资源用例、原 `durable_auth_source_tdd` 的 14 条 SQL 分开计数。入口数量不证明全部已重跑，
+实际执行见带日期的项目进度。
 
 例如，在一次性 URL 已配置后运行：
 

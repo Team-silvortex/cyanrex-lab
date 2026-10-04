@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
   "snapshot": {
-    "date": "2026-10-03",
-    "source_version": "0.4.9",
-    "base_commit": "5928508b95276a44de73dba04dd9cfc952fbfb5a",
-    "scope": "Historical source review against the recorded 0.4.9 base commit, including task navigation/Unicode filename fixes, C2-K content manifest/snapshot validation, C2-L separate content storage, C2-M Session content composition and C2-N explicit unmounted HTTP routing, now included in 0.5.0. Source inclusion does not refresh evidence dates or establish a new release/deployment acceptance. Capability slices, not every function, endpoint or execution path.",
-    "verification": "Source and scoped recorded-evidence inventory, including the separately recorded C2-K pure-contract and C2-L/C2-M/C2-N isolated PostgreSQL runs. Generating or validating this inventory does not execute its referenced tests or establish deployment acceptance or security certification; scores are reviewer judgments scoped to each coordinate."
+    "date": "2026-10-04",
+    "source_version": "0.5.1",
+    "base_commit": "a9523ec052f701e447d2e59fcd38d3a8d8186740",
+    "scope": "Source review of 0.5.1, based on the recorded 0.5.0 commit plus Session source pins, prepared password admission/profile checks, OTP freshness and schema-2 atomic counter consumption for login/rotation. Fresh explicit auth installation only; schema 1 is rejected unchanged. Includes C2-K/L/M/N content preparation and explicit unmounted HTTP routing. Historical evidence retains its original scope; no public issuer, live cutover, migration or deployment acceptance. Capability slices, not every function, endpoint or execution path.",
+    "verification": "Source and scoped recorded-evidence inventory, with separately dated content/Session PostgreSQL runs, password-work units, hash-profile/freshness regressions, pure OTP policy and atomic-consumption/schema SQL cases. Generating or validating this inventory does not execute its referenced tests or establish deployment acceptance or security certification; scores are reviewer judgments scoped to each coordinate."
   },
   "axes": {
     "architecture": [
@@ -653,10 +653,48 @@
       "id": "impl-I04",
       "sources": [
         "engine/src/services/auth_service/durable_source/mod.rs",
-        "engine/src/services/auth_service/durable_source/sessions.rs"
+        "engine/src/services/auth_service/durable_source/sessions.rs",
+        "engine/src/services/auth_service/durable_source/session_source.rs",
+        "engine/src/services/auth_service/durable_source/namespace.rs",
+        "engine/src/services/auth_service/durable_source/source_relations.rs",
+        "engine/src/services/auth_service/durable_source/password_work.rs",
+        "engine/src/services/auth_service/durable_source/password_profile.rs",
+        "engine/src/services/auth_service/durable_source/otp.rs",
+        "engine/src/services/auth_service/durable_source/otp_consumption.rs",
+        "engine/src/services/auth_service/durable_source/otp_storage.rs",
+        "engine/src/services/auth_service/durable_source/schema.rs",
+        "engine/src/services/auth_service/durable_source/accounts.rs",
+        "engine/migrations/0015_durable_otp_consumption.sql"
       ],
       "tests": [
-        "engine/tests/durable_auth_source_tdd.rs"
+        "engine/tests/durable_auth_source_tdd.rs",
+        "engine/tests/durable_session_boundary_tdd.rs",
+        "engine/tests/durable_session_boundary",
+        "scripts/test-durable-session-boundary.sh",
+        "scripts/tests/durableSessionBoundaryCi.test.mjs",
+        "engine/src/services/auth_service/durable_source/password_work_tests.rs",
+        "scripts/tests/durablePasswordWork.test.mjs",
+        "engine/src/services/auth_service/durable_source/password_profile_tests.rs",
+        "engine/tests/durable_password_profile_tdd.rs",
+        "scripts/test-durable-password-profile.sh",
+        "scripts/tests/durablePasswordProfileCi.test.mjs",
+        "engine/src/services/auth_service/durable_source/otp_tests.rs",
+        "engine/src/services/auth_service/durable_source/otp_sql_tests.rs",
+        "engine/src/services/auth_service/durable_source/otp_sql_support.rs",
+        "scripts/test-durable-otp-freshness.sh",
+        "scripts/tests/durableOtpFreshness.test.mjs",
+        "scripts/tests/durableOtpFreshnessCi.test.mjs",
+        "engine/src/services/auth_service/durable_source/otp_consumption_tests.rs",
+        "scripts/tests/durableOtpConsumption.test.mjs",
+        "engine/src/services/auth_service/durable_source/otp_consumption_sql_tests.rs",
+        "engine/src/services/auth_service/durable_source/otp_consumption_sql_behavior.rs",
+        "engine/src/services/auth_service/durable_source/otp_consumption_sql_faults.rs",
+        "engine/src/services/auth_service/durable_source/otp_consumption_sql_support.rs",
+        "engine/tests/durable_otp_schema_tdd.rs",
+        "scripts/test-durable-otp-consumption.sh",
+        "scripts/test-durable-otp-schema.sh",
+        "scripts/tests/durableOtpConsumptionCi.test.mjs",
+        "scripts/tests/durableOtpSchemaCi.test.mjs"
       ]
     },
     {
@@ -673,23 +711,45 @@
       "id": "impl-I06",
       "sources": [
         "engine/src/services/auth_service/durable_source/deletion.rs",
-        "engine/src/services/auth_service/durable_source/credentials.rs"
+        "engine/src/services/auth_service/durable_source/credentials.rs",
+        "engine/src/services/auth_service/durable_source/password_work.rs",
+        "engine/src/services/auth_service/durable_source/password_profile.rs",
+        "engine/src/services/auth_service/durable_source/otp.rs",
+        "engine/src/services/auth_service/durable_source/otp_consumption.rs"
       ],
       "tests": [
         "engine/tests/durable_account_deletion_tdd.rs",
-        "engine/tests/durable_password_change_tdd.rs"
+        "engine/tests/durable_password_change_tdd.rs",
+        "engine/src/services/auth_service/durable_source/password_work_tests.rs",
+        "engine/src/services/auth_service/durable_source/password_profile_tests.rs",
+        "engine/tests/durable_password_profile_tdd.rs",
+        "engine/src/services/auth_service/durable_source/otp_tests.rs",
+        "engine/src/services/auth_service/durable_source/otp_sql_tests.rs",
+        "engine/src/services/auth_service/durable_source/otp_consumption_tests.rs",
+        "engine/src/services/auth_service/durable_source/otp_consumption_sql_tests.rs",
+        "engine/src/services/auth_service/durable_source/otp_consumption_sql_behavior.rs",
+        "engine/src/services/auth_service/durable_source/otp_consumption_sql_faults.rs",
+        "scripts/tests/durableOtpConsumption.test.mjs"
       ]
     },
     {
       "id": "impl-O01",
       "sources": [
         "engine/src/bin/cyanrex-provision/main.rs",
-        "engine/src/services/auth_service/durable_source/bootstrap.rs"
+        "engine/src/services/auth_service/durable_source/bootstrap.rs",
+        "engine/src/services/auth_service/durable_source/password_work.rs",
+        "engine/src/services/auth_service/durable_source/password_profile.rs"
       ],
       "tests": [
         "engine/tests/provision_cli_tdd.rs",
         "engine/tests/provision_postgres_tdd.rs",
-        "engine/tests/durable_bootstrap_tdd.rs"
+        "engine/tests/durable_bootstrap_tdd.rs",
+        "engine/src/services/auth_service/durable_source/password_work_tests.rs",
+        "engine/src/services/auth_service/durable_source/password_profile_tests.rs",
+        "engine/tests/durable_password_profile_tdd.rs",
+        "engine/tests/durable_otp_schema_tdd.rs",
+        "scripts/test-durable-otp-schema.sh",
+        "scripts/tests/durableOtpSchemaCi.test.mjs"
       ]
     },
     {
@@ -1225,6 +1285,48 @@
       "kind": "database-record",
       "reference": "docs/en/task-content-http.md",
       "note": "Scoped PostgreSQL 16.15 HTTP-to-C2-M cases over a private Unix socket cover exact snapshots, current Session authority and storage faults. In-process routing only: no HTTP listener, browser, TLS/proxy or live cutover; dated totals and omissions are recorded in project status."
+    },
+    {
+      "id": "session-boundary",
+      "date": "2026-10-03",
+      "kind": "database-record",
+      "reference": "docs/en/collaboration-auth-source.md",
+      "note": "14 exact source-only Session cases passed on disposable PostgreSQL 16 over a private Unix socket after a reproduced false logout acknowledgement. Covers namespace/table identity, post-write metadata and path drift, login's password-worker gap, filtered/incompatible storage and logout/expiry ordering. No registry required, public issuer or live cutover; preceding regressions and gate totals are recorded separately in project status."
+    },
+    {
+      "id": "password-work",
+      "date": "2026-10-03",
+      "kind": "unit-record",
+      "reference": "docs/en/collaboration-auth-source.md",
+      "note": "11 deterministic prepared password-work tests passed after a real unguarded cancellation regression. Covers 4 dispatched/20 total admission, waiting/running/Tokio-queued cancellation, timeout, panic/closed recovery, deferred secret copies, shared gate and real Argon2 semantics. Two source checks cover all five prepared call sites. Adjacent database and gate reruns are recorded separately; no single-job PHC cost limit, legacy AuthService limit, public issuer or CLI/deployment acceptance."
+    },
+    {
+      "id": "password-profile",
+      "date": "2026-10-03",
+      "kind": "database-record",
+      "reference": "docs/en/collaboration-auth-source.md",
+      "note": "Six exact prepared PHC PostgreSQL cases plus 25 profile/worker units after a real low-cost-profile rejection regression. Fixed Argon2id v19/m19456/t2/p1/32-byte validation, writer compatibility, existing Session preservation and post-write rollback. Hostile costs are tested only by pure validation. No live-auth switch, credential migration, CLI/deployment acceptance or wall-clock/process RSS bound; adjacent suite and gate results are dated separately."
+    },
+    {
+      "id": "otp-freshness",
+      "date": "2026-10-03",
+      "kind": "database-record",
+      "reference": "docs/en/collaboration-auth-source.md",
+      "note": "Historical freshness-only stage: seven exact library-test PostgreSQL cases and 11 pure OTP cases after a real writer-wait expiry regression. Private clocks and observed SQL waits/snapshot release cover rollback, success and same-window reuse; exact queue dispatch is not observed. At this stage production checked application UTC before requesting commit, with no consumption ledger or live switch. The later otp-consumption record covers atomic integration; neither record proves freshness at acknowledgement."
+    },
+    {
+      "id": "otp-consumption-policy",
+      "date": "2026-10-04",
+      "kind": "unit-record",
+      "reference": "docs/en/collaboration-auth-source.md",
+      "note": "Historical pure-only stage: 16 policy tests and three dormant-boundary guards passed after an unimplemented seam failed 13 positive cases. Explicit watermarks, real collisions, bound exact-counter rechecks and byte/time limits only. At that stage login/rotation were unwired and schema 1 unchanged; this record is not atomic-consumption proof. The subsequent otp-consumption record covers integration."
+    },
+    {
+      "id": "otp-consumption",
+      "date": "2026-10-04",
+      "kind": "database-record",
+      "reference": "docs/en/collaboration-auth-source.md",
+      "note": "11 exact atomic-consumption and four schema PostgreSQL cases passed after independent sources reproduced two successful uses of one code. Account-bound counter CAS, login/rotation competition, reopen/incarnations, write/commit/cancellation rollback, real collisions, genuine schema-1 refusal, schema-2 shape checks and fresh registration/bootstrap. Private clocks and disposable local SQL only; adjacent tests and gates are dated in project status. No public issuer, legacy switch, existing-data migration or commit-ack recovery proof."
     }
   ],
   "cells": [
@@ -1483,11 +1585,17 @@
         "O": 1
       },
       "evidence": [
-        "c1-auth"
+        "c1-auth",
+        "session-boundary",
+        "password-work",
+        "password-profile",
+        "otp-freshness",
+        "otp-consumption-policy",
+        "otp-consumption"
       ],
       "gap": {
-        "en": "Public login still uses the legacy source; new public CSRF/auth adapter absent.",
-        "zh-CN": "公共登录仍走旧源；新的公共认证与 CSRF 适配未接入。"
+        "en": "Schema-2 OTP consumption, source pins, worker counts, PHC costs and pre-commit freshness are guarded. Timing policy, ingress/auth composition, recovery/migration and live cutover remain pending.",
+        "zh-CN": "Schema 2 OTP 消费、来源身份、工作数量、PHC 成本及提交前时效已有防护；时序策略、入口认证组合、恢复/迁移及在线切换待补。"
       }
     },
     {
@@ -1523,7 +1631,12 @@
         "O": 1
       },
       "evidence": [
-        "c1-password"
+        "c1-password",
+        "password-work",
+        "password-profile",
+        "otp-freshness",
+        "otp-consumption-policy",
+        "otp-consumption"
       ],
       "gap": {
         "en": "No live account migration or recovery; cancelled waiting does not prove rollback.",
@@ -1543,7 +1656,10 @@
         "O": 2
       },
       "evidence": [
-        "c1-provision"
+        "c1-provision",
+        "password-work",
+        "password-profile",
+        "otp-consumption"
       ],
       "gap": {
         "en": "Local explicit empty-namespace tool, not startup bootstrap or old-data import.",

@@ -42,6 +42,28 @@ fixtures or build-cache cleanup targets. The script catalogue below retains indi
   cases: ordered text, private ownership, metadata edits/removal, old/new post-write byte checks,
   namespace pins, lifecycle expiry/revocation, commit/cancellation and competing edits. Requires only
   an explicit disposable database; does not expose public commands or connect the browser editor.
+- `test-durable-session-boundary.sh`: runs fourteen exact source-only Session PostgreSQL cases.
+  Covers namespace/table identity, filtered or incompatible storage, post-write metadata/redirect
+  faults, two-transaction login pins and logout/expiry ordering. Requires an explicit disposable
+  database, not a registry or live deployment. `tests/durableSessionBoundaryCi.test.mjs` guards exact
+  selection and CI wiring; this does not add a public Session issuer.
+- `test-durable-password-profile.sh`: runs six exact prepared-password PostgreSQL cases: invalid
+  stored profiles, unchanged existing Sessions, failed rotation, explicit writer compatibility and
+  post-write trigger rollback. Requires an explicit disposable database; no live auth switch or
+  automatic credential migration. `tests/durablePasswordProfileCi.test.mjs` guards CI selection.
+- `test-durable-otp-freshness.sh`: runs seven exact PostgreSQL cases in the library test binary with
+  private per-source test clocks: login/rotation writer and trigger waits, rollback, snapshot release
+  while the password executor is held, unchanged-clock success and freshness versus composed consumption. Requires an explicit
+  disposable database; changes no machine clock or live authentication. Source and CI guards
+  live in `tests/durableOtpFreshness*.test.mjs`.
+- `test-durable-otp-consumption.sh`: eleven exact library PostgreSQL cases for schema-2 atomic OTP
+  consumption: independent sources, reopen/logout, rotation competition, exact account incarnations,
+  version/shape rejection, write faults, deferred failure, cancellation and real counter collisions.
+  Uses private test clocks and synthetic accounts; no public clock override or legacy-auth switch.
+- `test-durable-otp-schema.sh`: four exact PostgreSQL cases for genuine schema-1 refusal, incompatible
+  schema-2 counter shapes, fresh registration/bootstrap watermarks and injected initialization faults.
+  Requires a disposable database with fixture DDL privileges; it does not migrate existing data.
+  Both runners have exact-selection guards in `tests/durableOtp*Ci.test.mjs`.
 - `test-platform-task-content-http.sh`: runs eleven exact standalone HTTP-to-C2-M PostgreSQL cases.
   Covers private snapshots, transport admission without writes, current authorization after lock waits,
   exact text, transaction faults and concurrent edits. Requires an explicit disposable database and

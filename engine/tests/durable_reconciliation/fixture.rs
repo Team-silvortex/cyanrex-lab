@@ -21,6 +21,7 @@ pub async fn guard() -> Transaction<'static, sqlx_postgres::Postgres> {
 pub struct CheckFixture {
     pub db: Fixture,
     pub owner: AuthorityBootstrap,
+    owner_session: tokio::sync::Mutex<Option<String>>,
     _guard: Transaction<'static, sqlx_postgres::Postgres>,
 }
 impl CheckFixture {
@@ -35,11 +36,19 @@ impl CheckFixture {
         Self {
             db,
             owner,
+            owner_session: tokio::sync::Mutex::new(None),
             _guard: guard,
         }
     }
     pub async fn owner_login(&self) -> String {
-        self.db
+        // Reuse the exact real Session for graph setup; do not repeatedly consume the same OTP.
+        // A later revoked token is intentionally not silently refreshed by this fixture.
+        let mut cached = self.owner_session.lock().await;
+        if let Some(token) = cached.as_ref() {
+            return token.clone();
+        }
+        let token = self
+            .db
             .source
             .login(
                 &username(),
@@ -48,7 +57,9 @@ impl CheckFixture {
             )
             .await
             .unwrap()
-            .token
+            .token;
+        *cached = Some(token.clone());
+        token
     }
     pub async fn bound(&self, name: &str) -> (DurableRegistration, StoredLegacyIdentity) {
         let created = self

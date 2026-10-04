@@ -1,6 +1,6 @@
 # cyanrex-lab
 
-Version: `0.5.0`
+Version: `0.5.1`
 
 Cyanrex is evolving into a self-hosted collaboration platform for people, AI Agents and compute
 resources. Tasks, content versions, execution and reviews have separate responsibilities; eBPF teaching
@@ -24,10 +24,11 @@ private process in [SECURITY.md](SECURITY.md).
 
 ## Current development snapshot
 
-As of **2026-10-03**, the source version is **0.5.0**. This release adds task-content contracts,
-atomic metadata storage, current-Session text commands and an explicitly constructed HTTP adapter.
-The adapter remains unmounted, and the task editor remains local-only; neither a source release nor
-passing tests switch an existing deployment.
+As of **2026-10-04**, the source version is **0.5.1**. This patch hardens prepared authentication:
+source identity pins, bounded password work, fixed hash profiles, OTP freshness and atomic counter
+consumption. Fresh auth installation uses schema 2; existing schema 1 is rejected without migration.
+The task-content HTTP adapter remains unmounted and the editor local-only. Neither this release nor
+passing tests switch legacy authentication or an existing deployment.
 
 | Area | Implemented boundary | Still separate |
 |---|---|---|
@@ -233,12 +234,12 @@ Starting the application does not initialize or migrate the separate collaborati
 For classroom deployment or offline distribution, create a packaged artifact with prebuilt Docker images:
 
 ```bash
-./scripts/package-distribution.sh --version 0.5.0
+./scripts/package-distribution.sh --version 0.5.1
 ```
 
 This produces:
-- `dist/cyanrex-lab-0.5.0-<timestamp>.tar.gz`
-- `dist/cyanrex-lab-0.5.0-<timestamp>.tar.gz.sha256`
+- `dist/cyanrex-lab-0.5.1-<timestamp>.tar.gz`
+- `dist/cyanrex-lab-0.5.1-<timestamp>.tar.gz.sha256`
 
 The archive contains the PostgreSQL, Engine, and frontend images. On a disposable Docker host,
 verify the freshly extracted package end to end with `./install-smoke.sh`. It checks the package
@@ -273,10 +274,10 @@ For an artifact downloaded from the Tag workflow, place its four files in a dedi
 verify the complete candidate from a trusted checkout of the matching source Tag before extracting it:
 
 ```bash
-release_revision="$(git rev-list -n 1 v0.5.0)"
+release_revision="$(git rev-list -n 1 v0.5.1)"
 cargo run --quiet --manifest-path engine/Cargo.toml --locked --bin cyanrex-release -- \
   candidate verify /path/to/downloaded-candidate \
-  --expect-version 0.5.0 --expect-revision "$release_revision" --expect-tag v0.5.0 \
+  --expect-version 0.5.1 --expect-revision "$release_revision" --expect-tag v0.5.1 \
   --extract-to /path/to/new-output-directory
 ```
 

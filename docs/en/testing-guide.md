@@ -42,7 +42,13 @@ compilation; consult its explicit lists rather than assuming `cargo test` covers
 | Teaching pack and generic catalogue | `task_catalog_tdd`, `teaching_task_adapter_tdd`, `collaboration_contract_tdd` | Typed evidence and exact definition/policy identity; catalogue admission does not execute rules or accept Tasks |
 | Events and settings | `module_boundaries_tdd`, EventBus tests, explicit event SQL cases; event/settings unit and browser suites | Publication ordering → durable history → resync, export/delete filter safety, confirmed settings and read failures |
 | Generic identity and authority | `collaboration_*_tdd`, `legacy_workspace_projection_tdd` | Audited binding/member/grant revisions, absent-key races, last manager, role versus deployment authority |
-| Durable source and lifecycle | `durable_auth_source_tdd`, `durable_collaboration_tdd`, deletion/password/bootstrap/reconciliation targets | Account incarnation → exact current Session → identity/policy on one transaction, namespace replacement, post-write facts |
+| Durable source and lifecycle | `durable_auth_source_tdd`, `durable_session_boundary_tdd`, `durable_collaboration_tdd`, deletion/password/bootstrap/reconciliation targets | Source-only namespace/table pins → account incarnation → exact current Session → identity/policy on one transaction, namespace replacement, post-write facts |
+| Prepared password work | Default `auth_service::durable_source::password_work` unit tests and source-wiring guard | Dispatched/queued capacity, cancellation/timeout lifetime, panic recovery and real hashing; rerun source, password-change and bootstrap SQL for all entry points |
+| Prepared password profile | `test-durable-password-profile.sh`, default `password_profile`/`password_work` units and source/CI guards | Six exact SQL cases for unsupported records, writer compatibility, existing Sessions and rollback; hostile numeric costs are pure-preflight tests, never expensive test computations |
+| Prepared OTP freshness | `test-durable-otp-freshness.sh` selects seven `--lib` SQL cases; default `otp::tests` and source/CI guards | Private clocks advance after observed SQL waits or snapshot release with the password executor held, not a proven queue-dispatch instant; rollback, success and freshness versus composed consumption. No machine clock changes or public clock override |
+| OTP consumption policy | Default `otp_consumption::tests` and `durableOtpConsumption` source guards | Pure counter selection, real collisions, credential binding, exact final counter and input/time limits; pure units alone do not prove persistence/atomicity. The policy is now used by prepared login/rotation |
+| Atomic OTP consumption | `test-durable-otp-consumption.sh`: 11 exact library SQL cases | Independent sources, reopen/logout, login/rotation competition, account incarnations, version/shape rejection, suppression/tampering/deferred failure/cancellation and real collisions |
+| OTP source format | `test-durable-otp-schema.sh`: four exact SQL cases | Genuine schema 1 rejected unchanged, malformed schema-2 column/default/constraints refused, fresh registration/bootstrap at -1 and hit-proven initialization faults; no migration test or claim |
 | Operator provisioning | `provision_cli_tdd`, `provision_postgres_tdd` | Read-only plan, target-bound apply, private enrollment delivery, lost acknowledgement and cancellation; no live configuration adoption |
 | Generic Task, Artifact and Review | Explicit storage runners below; their default Rust tests | Exact revisions/digests, Task/outbox atomicity, immutable file boundaries, private ownership, Review history, current Session checks |
 | Local task payload and editor | `test:editor-languages`, `test:task-payload-browser`, `test:multi-language-editor-browser` | Optional payloads, accepted content/revisions, import/export, stale edits, model disposal and forbidden network writes |
@@ -111,6 +117,13 @@ not all PostgreSQL coverage in the repository.
 Legacy auth/events/scripts/learning and generic identity/source/lifecycle/provisioning cases have
 separate explicit lists in CI. The runner inventory is guarded by
 [`postgresCi.test.mjs`](../../scripts/tests/postgresCi.test.mjs).
+
+The additional `scripts/test-durable-session-boundary.sh` selects **14 source-only Session cases**:
+ambiguous/temporary namespaces, filtered or incompatible relations, post-write redirects/replacements,
+metadata changes, login's two-transaction identity, and logout/expiry lock ordering. It needs no
+collaboration registry and is guarded by `durableSessionBoundaryCi.test.mjs`. It is separate from the
+212 resource cases and the original 14 `durable_auth_source_tdd` SQL cases. These inventory counts are
+not claims that every suite was rerun; see dated project status.
 
 For example, with the disposable URL already set:
 

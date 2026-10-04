@@ -1,3 +1,4 @@
+use super::session_source::SessionSourcePin;
 use super::*;
 
 impl DurableAuthSource {
@@ -13,17 +14,28 @@ impl DurableAuthSource {
         self.admit_login(username)?;
         let result = bounded(async {
             let mut tx = self.transaction().await?;
-            self.lock_source(&mut tx, false).await?;
+            let pin = SessionSourcePin::capture(self, &mut tx, false).await?;
             let verified = self.account_record(&mut tx, username).await?.ok_or(DurableAuthError::InvalidCredentials)?;
+            pin.verify(self, &mut tx, false).await?;
             tx.commit().await?;
             // Do not keep a database lock/connection across expensive password verification.
-            if !verify_password_async(password, &verified.user.password_salt, &verified.user.password_hash).await
-                || !verify_totp(&verified.user.totp_secret, otp) { return Err(DurableAuthError::InvalidCredentials); }
+            if !verify_password(password, &verified.user.password_salt, &verified.user.password_hash).await?
+                || !self.verify_current_totp(&verified.user.totp_secret, otp) { return Err(DurableAuthError::InvalidCredentials); }
             let mut tx = self.transaction().await?;
-            self.lock_source(&mut tx, true).await?;
+            // The password worker gap must not silently admit an equal-valued replacement source.
+            pin.verify(self, &mut tx, true).await?;
             let current = self.account_record(&mut tx, username).await?.ok_or(DurableAuthError::InvalidCredentials)?;
             if current.account != verified.account || !same_credentials(&current.user, &verified.user) {
                 return Err(DurableAuthError::InvalidCredentials);
+            }
+            let pending_otp = self.prepare_otp_consumption(&current, otp)?;
+            Self::consume_login_otp(&mut tx, &current, &pending_otp).await?;
+            // Consumption triggers may suppress/alter the watermark, credentials or source path.
+            pin.verify(self, &mut tx, true).await?;
+            let consumed = self.account_record(&mut tx, username).await?.ok_or(DurableAuthError::StorageUnavailable)?;
+            if consumed.account != verified.account || !same_credentials(&consumed.user, &verified.user)
+                || consumed.otp_watermark != pending_otp.next() {
+                return Err(DurableAuthError::StorageUnavailable);
             }
             let token = Uuid::new_v4().to_string();
             let digest = hash_session_token(&token);
@@ -33,12 +45,17 @@ impl DurableAuthSource {
                 .execute(&mut *tx).await?.rows_affected())?;
             // INSERT triggers can change credentials/identity in our own transaction. Verify both
             // the exact source generation and complete session row again before COMMIT/publication.
+            pin.verify(self, &mut tx, true).await?;
             let current = self.account_record(&mut tx, username).await?.ok_or(DurableAuthError::InvalidCredentials)?;
             if current.account != verified.account || !same_credentials(&current.user, &verified.user) {
                 return Err(DurableAuthError::InvalidCredentials);
             }
+            if current.otp_watermark != pending_otp.next() { return Err(DurableAuthError::StorageUnavailable); }
             let expected = DurableSession { account: verified.account, expires_at };
             if self.session_record(&mut tx, &digest).await?.as_ref() != Some(&expected) { return Err(DurableAuthError::StorageUnavailable); }
+            // The writer/INSERT and final readback may wait across a TOTP boundary. No SQL
+            // remains between this fresh OTP check and the attempt to confirm commit.
+            self.recheck_otp_consumption(&pending_otp, &current.user.totp_secret, otp)?;
             tx.commit().await?;
             Ok(DurableLogin { token, session: expected })
         }).await;
@@ -83,7 +100,12 @@ impl DurableAuthSource {
         }
         bounded(async {
             let mut tx = self.transaction().await?;
-            self.lock_source(&mut tx, false).await?;
+            let pin = SessionSourcePin::capture(self, &mut tx, false).await?;
+            // Lock the observed Session/account, then recheck the source before the final fresh
+            // expiry read. Guard waits must never make an earlier validity result reusable.
+            self.session_record(&mut tx, &hash_session_token(token))
+                .await?;
+            pin.verify(self, &mut tx, false).await?;
             let session = self
                 .session_record(&mut tx, &hash_session_token(token))
                 .await?;
@@ -100,7 +122,7 @@ impl DurableAuthSource {
         }
         bounded(async {
             let mut tx = self.transaction().await?;
-            self.lock_source(&mut tx, true).await?;
+            let pin = SessionSourcePin::capture(self, &mut tx, true).await?;
             let digest = hash_session_token(token);
             let deleted = sqlx::query("DELETE FROM sessions WHERE token = $1")
                 .bind(&digest)
@@ -109,6 +131,9 @@ impl DurableAuthSource {
             if deleted.rows_affected() > 1 {
                 return Err(DurableAuthError::StorageUnavailable);
             }
+            // A DELETE trigger may suppress deletion and redirect unqualified reads to an empty
+            // shadow. Prove we still read the original source before checking absence.
+            pin.verify(self, &mut tx, true).await?;
             let remaining = sqlx::query("SELECT token FROM sessions WHERE token = $1 FOR SHARE")
                 .bind(&digest)
                 .fetch_optional(&mut *tx)

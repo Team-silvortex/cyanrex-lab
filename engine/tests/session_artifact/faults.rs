@@ -170,7 +170,7 @@ async fn postgres_session_artifacts_invalid_sources_scopes_and_namespaces_write_
     assert_eq!(f.files(), 0);
     assert_empty_metadata(&f).await;
     f.auth
-        .sql("UPDATE collaboration_auth_source_schema SET version = 1")
+        .sql("UPDATE collaboration_auth_source_schema SET version = 2")
         .await;
     f.assert_pool_restored().await;
     f.cleanup().await;

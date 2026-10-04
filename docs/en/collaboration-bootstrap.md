@@ -6,6 +6,9 @@ Status: **C1-I internal staging, included in 0.4.7**. Builds on
 One explicit trusted-operator call now creates the initial source account, legacy Workspace, Human
 identity, owner/teacher membership, deployment grant and audit baselines in the same transaction.
 This is not public enrollment, a live deployment change or migration of existing accounts.
+The original 0.4.7 implementation used source schema 1. The OTP-consumption follow-up included in 0.5.1 now
+initializes prepared source schema 2; the transaction description below reflects that contract.
+The original verification record is retained separately.
 
 ## Scope and trust
 
@@ -31,24 +34,46 @@ Subsequent registrations remain unbound and unprivileged until current audited c
 
 ## Transaction and publication
 
+Included in 0.5.1: password derivation uses the
+[shared prepared password-work gate](collaboration-auth-source.md) before acquiring database locks.
+Admission waits consume the existing operation deadline; cancellation after dispatch does not free
+the worker slot early. Derivation explicitly pins the existing Argon2id profile and account readback
+validates it. This neither issues a Session nor changes installation or secret delivery.
+
+The separate OTP-consumption follow-up adds fresh-install template 0015 without changing released
+templates 0001/0010. New accounts start with `users.otp_last_counter = -1`, meaning no counter has
+been consumed. Both ordinary registration and bootstrap verify that exact initial value; registration
+also verifies source schema before and after insertion. Later prepared login and password rotation
+atomically advance this watermark with their Session/password effects, rather than consuming a code
+during enrollment. Password rotation must not reset it.
+
+Prepared source schema 1 is rejected, even when empty, rather than upgraded or relabeled. Bootstrap
+continues to reject every preinstalled namespace. Existing data needs a separately reviewed migration
+and recovery contract. The version check fences older prepared writers that honor source metadata;
+it cannot fence the legacy live AuthService, which does not use that metadata. Do not let that writer
+share an activated prepared source.
+
 Password length remains 8–4096 bytes. Argon2 and TOTP secret preparation occur outside database locks.
 Inside the existing bounded transaction, the initializer:
 
 1. Acquires the same schema-scoped advisory fences as the auth-source, identity and access installers,
    in that order, before DDL or checking absence. Concurrent bootstrap requests cannot both see an
    empty namespace and install independent first managers.
-2. Checks namespace emptiness, creates auth tables from unchanged templates 0001/0010, pins source
-   authority/version 1, takes the source writer lock and verifies source constraints.
+2. Checks namespace emptiness, creates auth tables from unchanged templates 0001/0010 plus fresh-only
+   template 0015, pins source authority/version 2, takes the source writer lock and verifies source
+   constraints, including the watermark's type, nullability, default and range-check expression.
 3. Creates registry/access tables from unchanged templates 0006/0007; takes identity/access metadata
    writer locks before authority and child rows. Creates the pinned authority and active legacy Workspace.
-4. Uses the shared pending registration writer to create a fresh random account incarnation. Creates
-   its Human binding and canonical owner/teacher membership with deployment grant at revision 1.
+4. Uses the shared pending registration writer to create a fresh random account incarnation with
+   watermark `-1`. Creates its Human binding and canonical owner/teacher membership with deployment
+   grant at revision 1.
 5. Creates audit tables using unchanged templates 0008/0009, appends one identity baseline and one
    policy baseline, and activates identity/access schema 2. The external operator is not an authenticated
    Principal: baselines have no invented historical actor, command ID or replay receipt.
 6. Rechecks the complete Workspace/identity/policy graph against its audit heads and current management
    authority, verifies exactly one initial graph, then rechecks source authority, credentials and account
-   incarnation. Exactly one account and zero Sessions must exist. Only confirmed COMMIT publishes a result.
+   incarnation and initial watermark `-1`. Exactly one account and zero Sessions must exist. Only
+   confirmed COMMIT publishes a result.
 
 Registry helpers borrow the outer SQL transaction and return pending state; they never commit or
 acquire source locks in reverse order. The registration refactor preserves ordinary registration's
@@ -78,6 +103,9 @@ do not drop tables, remove audit history, change IDs or silently create another 
 Tests deliberately retry only after confirming rollback of their own synthetic transaction.
 
 ## Verification and next gates
+
+The following records the original C1-I verification, not a new schema-2 run. Current follow-up
+evidence and its scope are recorded in [Project Status](project-status.md).
 
 The [suite](../../engine/tests/durable_bootstrap_tdd.rs),
 [fault tests](../../engine/tests/durable_bootstrap/faults.rs) and
@@ -111,5 +139,7 @@ frontend production build, live migration, deployment or privileged kernel accep
 [C1-J](collaboration-provisioning.md) subsequently adds the controlled local interface and private
 secret delivery. Recovery, durable lifecycle reconciliation, reviewed migration/restore,
 public-route/CSRF integration and live cutover remain separate gates.
-This slice does not change frozen API/SDK contracts, current runtime configuration, old migrations or
-source version; it does not establish release-candidate, remote CI, deployment or kernel acceptance.
+The original C1-I slice did not change frozen API/SDK contracts, current runtime configuration, old
+migrations or the crate release version; its results do not establish release-candidate, remote CI,
+deployment or kernel acceptance. The source-schema-2 contract included in 0.5.1 does not authorize an
+existing-data migration or live authentication cutover.

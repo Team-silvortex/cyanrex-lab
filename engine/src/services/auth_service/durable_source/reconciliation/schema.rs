@@ -42,7 +42,7 @@ pub(super) async fn verify(
     }
     columns::verify(connection).await?;
     for (table, expected) in [
-        ("collaboration_auth_source_schema", 1),
+        ("collaboration_auth_source_schema", SOURCE_SCHEMA_VERSION),
         ("collaboration_identity_schema", 2),
         ("collaboration_access_schema", 2),
     ] {

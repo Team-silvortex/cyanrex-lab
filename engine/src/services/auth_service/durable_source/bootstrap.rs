@@ -52,7 +52,7 @@ impl DurableAuthSource {
         }
         tokio::time::timeout(Duration::from_secs(10), async {
             let salt = generate_password_salt();
-            let hash = derive_password_hash_async(password, &salt).await.ok_or(DurableAuthError::StorageUnavailable)?;
+            let hash = derive_password_hash(password, &salt).await?;
             let expected = UserRecord { username: username.to_string(), password_salt: salt, password_hash: hash, totp_secret: generate_totp_secret() };
             let mut tx = self.transaction().await?;
             let namespace: bool = sqlx::query("SELECT current_schema() IS NOT NULL
@@ -76,13 +76,14 @@ impl DurableAuthSource {
             for (template, delimiter) in [
                 (include_str!("../../../../migrations/0001_auth_users_sessions.sql"), ";"),
                 (include_str!("../../../../migrations/0010_durable_auth_source.sql"), "-- cyanrex-statement"),
+                (include_str!("../../../../migrations/0015_durable_otp_consumption.sql"), "-- cyanrex-statement"),
             ] {
                 for statement in template.split(delimiter).map(str::trim).filter(|s| !s.is_empty()) {
                     sqlx::query(statement).execute(&mut *tx).await?;
                 }
             }
-            confirmed_one(sqlx::query("INSERT INTO collaboration_auth_source_schema (singleton, version, authority_id) VALUES (TRUE, 1, $1)")
-                .bind(self.authority_id.as_uuid()).execute(&mut *tx).await?.rows_affected())?;
+            confirmed_one(sqlx::query("INSERT INTO collaboration_auth_source_schema (singleton, version, authority_id) VALUES (TRUE, $1, $2)")
+                .bind(SOURCE_SCHEMA_VERSION).bind(self.authority_id.as_uuid()).execute(&mut *tx).await?.rows_affected())?;
             self.lock_source(&mut tx, true).await?;
             Self::verify_schema(&mut tx).await?;
             let workspace = Registry::begin_empty_bootstrap(&mut tx, scope).await?;
@@ -95,6 +96,7 @@ impl DurableAuthSource {
             let counts = sqlx::query("SELECT (SELECT count(*) FROM users) AS users, (SELECT count(*) FROM sessions) AS sessions")
                 .fetch_one(&mut *tx).await?;
             if account.account != registration.account || !same_credentials(&account.user, &expected)
+                || account.otp_watermark.stored() != -1
                 || counts.try_get::<i64, _>("users")? != 1 || counts.try_get::<i64, _>("sessions")? != 0 {
                 return Err(DurableAuthError::StorageUnavailable.into());
             }

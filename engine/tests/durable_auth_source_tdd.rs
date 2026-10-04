@@ -243,7 +243,7 @@ async fn postgres_source_logout_and_expiration_never_resurrect_cached_sessions()
     f.source.logout(&login.token).await.unwrap();
     assert_eq!(other.validate_session(&login.token).await.unwrap(), None);
     let login = other
-        .login(&username(), PASSWORD, &otp(&created.bootstrap.secret))
+        .login(&username(), PASSWORD, &next_otp(&created.bootstrap.secret))
         .await
         .unwrap();
     query("UPDATE sessions SET expires_at = $1")

@@ -37,6 +37,9 @@ pub struct Fixture {
 }
 impl Fixture {
     pub async fn seeded() -> Self {
+        Self::seeded_with_session_mode(true).await
+    }
+    async fn seeded_with_session_mode(real_login: bool) -> Self {
         let base = source_fixture::Fixture::ready().await;
         let source = base.source.clone();
         let store = CollaborationIdentityStore::new(base.pool.clone());
@@ -51,7 +54,7 @@ impl Fixture {
                 .register(&name.parse().unwrap(), PASSWORD)
                 .await
                 .unwrap();
-            tokens.push(
+            let session = if real_login {
                 source
                     .login(
                         &created.account.username,
@@ -60,8 +63,11 @@ impl Fixture {
                     )
                     .await
                     .unwrap()
-                    .token,
-            );
+            } else {
+                // Rotation tests start with explicit fixture Sessions, not claimed login evidence.
+                base.seed_session(&created.account).await
+            };
+            tokens.push(session.token);
             if name != "source-target" {
                 let identity = store
                     .bind_legacy_account(
@@ -96,6 +102,13 @@ impl Fixture {
     }
     pub async fn ready() -> Self {
         let f = Self::seeded().await;
+        f.store.upgrade_policy_audit_schema().await.unwrap();
+        f.store.upgrade_identity_audit_schema().await.unwrap();
+        f
+    }
+    #[allow(dead_code)] // Shared graph fixture: only password-rotation targets use this setup.
+    pub async fn ready_for_password_change() -> Self {
+        let f = Self::seeded_with_session_mode(false).await;
         f.store.upgrade_policy_audit_schema().await.unwrap();
         f.store.upgrade_identity_audit_schema().await.unwrap();
         f

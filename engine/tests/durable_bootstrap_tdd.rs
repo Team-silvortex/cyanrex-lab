@@ -437,11 +437,8 @@ async fn postgres_bootstrap_manager_uses_audited_commands_without_granting_new_a
         .await
         .unwrap();
     let secret = created.registration.bootstrap.secret;
-    let login = f
-        .source
-        .login(&username(), PASSWORD, &otp(&secret))
-        .await
-        .unwrap();
+    // This graph/rotation test seeds its authorizing Session; first-login behavior is covered above.
+    let login = f.seed_session(&created.registration.account).await;
     let member = f
         .source
         .register(&"ordinary-member".parse().unwrap(), PASSWORD)
@@ -563,7 +560,7 @@ async fn postgres_bootstrap_manager_uses_audited_commands_without_granting_new_a
     );
     let new_login = f
         .source
-        .login(&username(), "replacement-password", &otp(&secret))
+        .login(&username(), "replacement-password", &next_otp(&secret))
         .await
         .unwrap();
     assert!(

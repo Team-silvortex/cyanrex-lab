@@ -163,7 +163,7 @@ async fn postgres_reconcile_deletion_recreation_and_password_rotation_preserve_h
             &token,
             PASSWORD,
             "synthetic-new-password",
-            &otp(&f.owner.registration.bootstrap.secret),
+            &next_otp(&f.owner.registration.bootstrap.secret),
         )
         .await
         .unwrap();
