@@ -289,21 +289,25 @@ test("Rust CI explicitly runs immutable artifact, file and publication boundarie
 test("Rust CI explicitly runs read-only lifecycle reconciliation and corruption boundaries", async () => {
   const workflow = await readFile(new URL("../../.github/workflows/ci.yml", import.meta.url), "utf8");
   const step = workflow.split("- name: Run real PostgreSQL lifecycle reconciliation integration")[1]?.split("\n      - name:")[0] ?? "";
-  let count = 0;
-  for (const [file, prefix] of [["durable_reconciliation_tdd.rs", ""], ["durable_reconciliation/faults.rs", "faults::"], ["durable_reconciliation/cli.rs", "cli::"]]) {
+  const runner = await readFile(new URL("../test-durable-reconciliation.sh", import.meta.url), "utf8");
+  const cases = [];
+  for (const [file, prefix] of [["durable_reconciliation_tdd.rs", ""], ["durable_reconciliation/faults.rs", "faults::"], ["durable_reconciliation/cli.rs", "cli::"], ["durable_reconciliation/timestamps.rs", "timestamps::"], ["durable_reconciliation/registry_timestamps.rs", "registry_timestamps::"]]) {
     const source = await readFile(new URL(`../../engine/tests/${file}`, import.meta.url), "utf8");
-    for (const [, name] of source.matchAll(/async fn (postgres_reconcile_\w+)\(/g)) {
-      count += 1;
-      assert.ok(step.includes(`${prefix}${name}`), name);
+    for (const [, name] of source.matchAll(/async fn (postgres_\w+)\(/g)) {
+      cases.push(`${prefix}${name}`);
     }
   }
-  assert.equal(count, 12, "reconciliation boundaries require deliberate CI inclusion");
+  assert.equal(cases.length, 17, "reconciliation boundaries require deliberate CI inclusion");
+  const listed = [...runner.matchAll(/^  ((?:\w+::)*postgres_\w+)\b/gm)].map((match) => match[1]);
+  assert.deepEqual(listed.sort(), cases.sort());
   assert.ok(step.includes("@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test"));
   assert.match(step, /CYANREX_TEST_DATABASE_PASSWORD: cyanrex-ci-only/);
-  assert.match(step, /--test durable_reconciliation_tdd/);
-  assert.match(step, /--ignored --list/);
-  assert.match(step, /grep -Fx/);
-  assert.match(step, /--ignored --exact --nocapture/);
+  assert.match(step, /run: bash scripts\/test-durable-reconciliation\.sh/);
+  assert.match(runner, /CYANREX_TEST_DATABASE_URL:\?/);
+  assert.match(runner, /--test durable_reconciliation_tdd/);
+  assert.match(runner, /--ignored --list/);
+  assert.match(runner, /grep -Fx/);
+  assert.match(runner, /--ignored --exact --nocapture/);
 });
 
 test("Rust CI explicitly runs local provisioning and secret delivery boundaries", async () => {
@@ -420,15 +424,16 @@ test("Rust CI explicitly runs durable account incarnation and session source bou
 test("Rust CI runs every identity lifecycle command and audit boundary against disposable PostgreSQL", async () => {
   const workflow = await readFile(new URL("../../.github/workflows/ci.yml", import.meta.url), "utf8");
   const step = workflow.split("- name: Run real PostgreSQL collaboration identity audit integration")[1]?.split("\n      - name:")[0] ?? "";
-  let count = 0;
-  for (const [file, prefix] of [["collaboration_identity_audit_tdd.rs", ""], ["collaboration_identity_audit/permissions.rs", "permissions::"], ["collaboration_identity_audit/faults.rs", "faults::"]]) {
+  const cases = [];
+  for (const [file, prefix] of [["collaboration_identity_audit_tdd.rs", ""], ["collaboration_identity_audit/permissions.rs", "permissions::"], ["collaboration_identity_audit/faults.rs", "faults::"], ["collaboration_identity_audit/timestamps.rs", "timestamps::"]]) {
     const source = await readFile(new URL(`../../engine/tests/${file}`, import.meta.url), "utf8");
     for (const [, name] of source.matchAll(/async fn (postgres_lifecycle_\w+)\(/g)) {
-      count += 1;
-      assert.ok(step.includes(`${prefix}${name}`), name);
+      cases.push(`${prefix}${name}`);
     }
   }
-  assert.equal(count, 16, "new identity lifecycle cases must be deliberately included in CI");
+  assert.equal(cases.length, 18, "new identity lifecycle cases must be deliberately included in CI");
+  const listed = [...step.matchAll(/^\s+((?:\w+::)*postgres_\w+)\b/gm)].map(match => match[1]);
+  assert.deepEqual(listed.sort(), cases.sort());
   assert.ok(step.includes("@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test"));
   assert.match(step, /--test collaboration_identity_audit_tdd/);
   assert.match(step, /--ignored --list/);
@@ -439,15 +444,16 @@ test("Rust CI runs every identity lifecycle command and audit boundary against d
 test("Rust CI runs every attributed policy command and audit fault against disposable PostgreSQL", async () => {
   const workflow = await readFile(new URL("../../.github/workflows/ci.yml", import.meta.url), "utf8");
   const step = workflow.split("- name: Run real PostgreSQL collaboration policy audit integration")[1]?.split("\n      - name:")[0] ?? "";
-  let count = 0;
-  for (const [file, prefix] of [["collaboration_policy_audit_tdd.rs", ""], ["collaboration_policy_audit/permissions.rs", "permissions::"], ["collaboration_policy_audit/faults.rs", "faults::"]]) {
+  const cases = [];
+  for (const [file, prefix] of [["collaboration_policy_audit_tdd.rs", ""], ["collaboration_policy_audit/permissions.rs", "permissions::"], ["collaboration_policy_audit/faults.rs", "faults::"], ["collaboration_policy_audit/timestamps.rs", "timestamps::"]]) {
     const source = await readFile(new URL(`../../engine/tests/${file}`, import.meta.url), "utf8");
-    for (const [, name] of source.matchAll(/async fn (postgres_audit_\w+)\(/g)) {
-      count += 1;
-      assert.ok(step.includes(`${prefix}${name}`), name);
+    for (const [, name] of source.matchAll(/async fn (postgres_\w+)\(/g)) {
+      cases.push(`${prefix}${name}`);
     }
   }
-  assert.equal(count, 16, "new policy audit cases must be deliberately included in CI");
+  assert.equal(cases.length, 19, "new policy audit cases must be deliberately included in CI");
+  const listed = [...step.matchAll(/^\s+((?:\w+::)*postgres_\w+)\b/gm)].map(match => match[1]);
+  assert.deepEqual(listed.sort(), cases.sort());
   assert.ok(step.includes("@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test"));
   assert.match(step, /--test collaboration_policy_audit_tdd/);
   assert.match(step, /--ignored --list/);
@@ -477,15 +483,16 @@ test("Rust CI runs every collaboration access policy and revocation case against
 test("Rust CI runs every collaboration identity persistence case against disposable PostgreSQL", async () => {
   const workflow = await readFile(new URL("../../.github/workflows/ci.yml", import.meta.url), "utf8");
   const step = workflow.split("- name: Run real PostgreSQL collaboration identity integration")[1]?.split("\n      - name:")[0] ?? "";
-  let count = 0;
-  for (const [file, prefix] of [["collaboration_identity_store_tdd.rs", ""], ["collaboration_identity_store/faults.rs", "faults::"]]) {
+  const cases = [];
+  for (const [file, prefix] of [["collaboration_identity_store_tdd.rs", ""], ["collaboration_identity_store/faults.rs", "faults::"], ["collaboration_identity_store/timestamps.rs", "timestamps::"]]) {
     const source = await readFile(new URL(`../../engine/tests/${file}`, import.meta.url), "utf8");
     for (const [, name] of source.matchAll(/async fn (postgres_identity_\w+)\(/g)) {
-      count += 1;
-      assert.ok(step.includes(`${prefix}${name}`), name);
+      cases.push(`${prefix}${name}`);
     }
   }
-  assert.equal(count, 15, "new durable identity cases must be deliberately included in CI");
+  assert.equal(cases.length, 17, "new durable identity cases must be deliberately included in CI");
+  const listed = [...step.matchAll(/^\s+((?:\w+::)*postgres_\w+)\b/gm)].map(match => match[1]);
+  assert.deepEqual(listed.sort(), cases.sort());
   assert.ok(step.includes("@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test"));
   assert.match(step, /--test collaboration_identity_store_tdd/);
   assert.match(step, /--ignored --list/);

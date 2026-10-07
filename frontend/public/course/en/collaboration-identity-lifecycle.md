@@ -135,6 +135,15 @@ adds restricted administrative deletion/retirement, alongside internal staging f
 and [C1-K read-only reconciliation](collaboration-reconciliation.md). Full lifecycle and real-data cutover remain pending;
 the verification below records the original C1-D slice, not those follow-ups.
 
+## Timestamp read guards included in 0.5.2
+
+The 2026-10-07 follow-up checks stored `retired_at` and identity-audit `recorded_at` in SQL before
+binary decoding. NULL retirement remains valid; a separate validity flag prevents corrupt non-null
+retirement from appearing active. Mandatory audit times fail as `InvalidRecord` when unrepresentable.
+Identity reads, audit heads/history, replay, append readback and reconciliation retain existing state,
+lock and transaction rules. This adds no age/order policy, schema change or data repair. See the
+[registry timestamp contract](collaboration-reconciliation.md); the C1-D results below are historical.
+
 ## Verification
 
 [Command tests](../../engine/tests/collaboration_identity_audit_tdd.rs),

@@ -20,7 +20,10 @@ for session_boundary_pg_case in \
   writes::postgres_session_boundary_logout_rejects_replaced_source_relation_and_restores_session \
   concurrency::postgres_session_boundary_validate_rechecks_expiry_after_source_lock_wait \
   concurrency::postgres_session_boundary_validate_waits_for_exact_logout_commit \
-  concurrency::postgres_session_boundary_login_retains_its_first_namespace_pin_across_password_work; do
+  concurrency::postgres_session_boundary_login_retains_its_first_namespace_pin_across_password_work \
+  timestamps::postgres_session_boundary_validate_rejects_unrepresentable_expiry_without_panicking_or_writing \
+  timestamps::postgres_session_boundary_login_rejects_inserted_unrepresentable_expiry_and_rolls_back_otp \
+  timestamps::postgres_session_boundary_password_change_rejects_unrepresentable_authorizing_expiry; do
   cargo test --manifest-path engine/Cargo.toml --locked --test durable_session_boundary_tdd "$session_boundary_pg_case" -- --ignored --list | grep -Fx "$session_boundary_pg_case: test"
   cargo test --manifest-path engine/Cargo.toml --locked --test durable_session_boundary_tdd "$session_boundary_pg_case" -- --ignored --exact --nocapture
 done

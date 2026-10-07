@@ -88,6 +88,14 @@ Schema 2 的策略历史读取、权限预览与新命令核对当前策略和�
 在显式升级身份 Schema 2 后也保护退役，并封锁无操作者的旧身份写入口。在线认证和特权 SQL 维护
 仍不属于该协议，不能宣称“全系统任何路径都不会失去最后管理者”。
 
+## 0.5.2 收录的时间读取防护
+
+2026-10-07 后续在二进制解码前，通过 SQL 检查必填的策略审计 `recorded_at`。审计头、历史分页、
+重放及追加读回遇到无限/超范围值返回 `InvalidRecord`，不当作缺失回执或修复时间；对账保留
+`PolicyHistoryMismatch`。全部投影调用方都绑定 chrono 上界，`LIMIT 0` 结构检查也不例外。
+原 sequence/状态规则不变，不新增墙上时钟排序策略。详见[注册表时间合同](collaboration-reconciliation.md)；
+不改 Schema/依赖或接入在线认证，下方 C1-C 结果仍为历史证据。
+
 ## 验证与下一步
 
 [命令/并发测试](../../engine/tests/collaboration_policy_audit_tdd.rs)、

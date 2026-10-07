@@ -29,6 +29,35 @@ Recheck relation/schema/authority and use fresh Session time after guard waits. 
 table cannot confirm logout. Preserve `durable_session_boundary_tdd` and its exact CI runner; these
 guards neither repair storage nor make the trusted primitives a public Session issuer.
 
+Explicit expired-Session maintenance uses the source writer fence and original namespace/relation pins,
+then one fresh database cutoff. Keep the fixed 128-candidate limit and deterministic expiry/digest order;
+bound text in SQL projection without filtering out corruption. Validate every selected full row and
+exact-account existence before any deletion; fetch no credentials or OTP state. Compare all returned
+fields including created_at, verify original pins before absence reads, and check selected digests without
+an expiry predicate so future reinsertion also fails. Empty batches still verify and confirm COMMIT.
+Preserve exact SQL fault/cancellation regressions and runner selection. Do not add implicit read/login
+cleanup, caller-selected tokens/limits, orphan repair or blind retry after an uncertain outcome. A batch
+count is not a global emptiness/storage bound or a full audit of malicious trigger effects elsewhere.
+The cleanup projection must guard expires_at and created_at in SQL before chrono decoding, on both
+SELECT and DELETE RETURNING. SQLx PostgreSQL 0.8.6 binary timestamp decoding can panic on infinity or
+finite values beyond chrono's upper range; try_get().map_err(...) cannot catch that panic. Retain CASE
+checks for isfinite and the bound chrono MAX_UTC parameter, decode Option timestamps, and reject NULL
+as InvalidRecord. Do not filter corrupt candidates away or clamp their timestamps into valid values.
+Preserve infinite and out-of-range finite timestamp regressions; this is a maintenance-path guard,
+not a driver-wide fix or dependency upgrade.
+
+Apply the same SQL-before-decode range policy to the shared Session expires_at reader, including
+validation, login readback and guards that call it. Invalid values must remain InvalidRecord, not be
+filtered into absence. Reconciliation keeps Session timestamp range/expiry checks entirely in SQL and
+fetches only Option<bool>; NULL is InvalidSource, never a raw expiry disclosure or an expired default.
+Retain finite 4713 BC/chrono-maximum boundary cases and the original snapshot expiry cutoff.
+Those source Session checks are distinct from the registry timestamp guards in
+[collaboration-store.instructions.md](collaboration-store.instructions.md): nullable retired_at needs a
+separate validity bit and mandatory audit times reject NULL projections before publication. Preserve
+reconciliation's InvalidIdentity / IdentityHistoryMismatch / PolicyHistoryMismatch mappings and the
+maximum-time bind in every shared projection path, including LIMIT 0. Neither guard establishes safe
+decoding of unrelated timestamp fields or authorizes repairing stored data.
+
 Every prepared password hash/verification uses the process-local shared `password_work` gate, including
 registration, login, rotation and bootstrap. Keep admission before secret copies and SQL locks out
 of worker waits. Both total and worker permits belong to the blocking job after dispatch, including
@@ -42,6 +71,18 @@ or automatic profile adoption. Bound text before parsing, reject duplicate/missi
 and decode salt into a fixed buffer. Do not pass unchecked PHC values to Argon2 Params: parser lookups
 and conversion disagree on duplicates, and extreme parallelism can overflow before library validation.
 Invalid records are not wrong passwords; cost policy must not implicitly revoke existing Sessions.
+
+Prepared login must retain the optional account snapshot through original-pin verification and the
+first confirmed COMMIT, releasing the database before password work. Only a genuine absent account
+selects the fixed public synthetic PHC in the supported profile; schema/authority/storage errors and
+malformed real credentials must still fail, never become dummy work. Both paths use one shared-gate
+verification, followed by an independent requirement for the original real account. A synthetic match
+or concurrent same-name registration cannot authorize a second transaction, OTP consumption or Session
+issuance. Keep input/username admission first and preserve cancellation-held permits. This removes the
+missing-account KDF shortcut, not every timing difference or the remaining public-issuer gates.
+If the supported profile changes, update the synthetic PHC together with derive/verify and preserve
+unit checks for its profile, matching public test password and rejected mismatches; never hash a dummy
+record afresh per request or use its verification result as account authority.
 
 Prepared login and password rotation recheck TOTP after password work, behind the writer fence, and
 after the last SQL read/time check immediately before requesting COMMIT. Do not move an awaited query

@@ -27,6 +27,10 @@ use fixture::*;
 mod cli;
 #[path = "durable_reconciliation/faults.rs"]
 mod faults;
+#[path = "durable_reconciliation/registry_timestamps.rs"]
+mod registry_timestamps;
+#[path = "durable_reconciliation/timestamps.rs"]
+mod timestamps;
 
 #[tokio::test]
 async fn reconciliation_never_falls_back_or_accepts_a_foreign_authority() {

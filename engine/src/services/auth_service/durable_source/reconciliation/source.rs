@@ -46,9 +46,18 @@ pub(super) async fn read(
         authority,
     )
     .await?;
-    // Token digests are validated inside SQL, never selected into the process or report.
-    let rows = sqlx::query("SELECT username, account_id, expires_at, token COLLATE \"C\" ~ '^[0-9a-f]{64}$' AS valid_token
-        FROM sessions LIMIT 10001").fetch_all(connection).await?;
+    // Token digests and timestamp validity/expiry stay inside SQL. PostgreSQL's infinity and
+    // wider finite range must never reach SQLx's panic-prone binary chrono decoder. NULL means
+    // corruption, not an absent/expired Session; the original snapshot cutoff stays unchanged.
+    let rows = sqlx::query(
+        "SELECT username, account_id,
+        CASE WHEN isfinite(expires_at) AND expires_at <= $1 THEN expires_at <= $2 END AS expired,
+        token COLLATE \"C\" ~ '^[0-9a-f]{64}$' AS valid_token FROM sessions LIMIT 10001",
+    )
+    .bind(DateTime::<Utc>::MAX_UTC)
+    .bind(observed_at)
+    .fetch_all(connection)
+    .await?;
     let mut expired_sessions = 0;
     for row in rows {
         let name = row
@@ -60,7 +69,10 @@ pub(super) async fn read(
         if !row.try_get::<bool, _>("valid_token")? || accounts.get(&account) != Some(&name) {
             return Err(ReconciliationError::InvalidSource);
         }
-        if row.try_get::<DateTime<Utc>, _>("expires_at")? <= observed_at {
+        let expired = row
+            .try_get::<Option<bool>, _>("expired")?
+            .ok_or(ReconciliationError::InvalidSource)?;
+        if expired {
             expired_sessions += 1;
         }
     }

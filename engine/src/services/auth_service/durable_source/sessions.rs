@@ -15,11 +15,20 @@ impl DurableAuthSource {
         let result = bounded(async {
             let mut tx = self.transaction().await?;
             let pin = SessionSourcePin::capture(self, &mut tx, false).await?;
-            let verified = self.account_record(&mut tx, username).await?.ok_or(DurableAuthError::InvalidCredentials)?;
+            let verified = self.account_record(&mut tx, username).await?;
             pin.verify(self, &mut tx, false).await?;
             tx.commit().await?;
             // Do not keep a database lock/connection across expensive password verification.
-            if !verify_password(password, &verified.user.password_salt, &verified.user.password_hash).await?
+            // Only a genuine absent row selects the synthetic record; storage/profile failures
+            // above keep their own errors. Both paths use the same bounded password worker.
+            let (salt, hash) = verified.as_ref()
+                .map(|record| (record.user.password_salt.as_str(), record.user.password_hash.as_str()))
+                .unwrap_or(("", password_profile::MISSING_ACCOUNT_HASH));
+            let password_matches = verify_password(password, salt, hash).await?;
+            // A matching public dummy password or a concurrently registered name cannot grant
+            // authority to the original absent snapshot, or reach OTP consumption/writes.
+            let verified = verified.ok_or(DurableAuthError::InvalidCredentials)?;
+            if !password_matches
                 || !self.verify_current_totp(&verified.user.totp_secret, otp) { return Err(DurableAuthError::InvalidCredentials); }
             let mut tx = self.transaction().await?;
             // The password worker gap must not silently admit an equal-valued replacement source.
@@ -70,15 +79,21 @@ impl DurableAuthSource {
         connection: &mut PgConnection,
         digest: &str,
     ) -> Result<Option<DurableSession>> {
-        let row = sqlx::query("SELECT s.username, s.account_id, s.expires_at FROM sessions s
+        // SQLx's binary chrono decoder can panic on PostgreSQL infinity or its wider finite
+        // upper range. Project invalid values as NULL; never hide a corrupt Session as absent.
+        let row = sqlx::query("SELECT s.username, s.account_id,
+            CASE WHEN isfinite(s.expires_at) AND s.expires_at <= $2 THEN s.expires_at END AS expires_at FROM sessions s
             JOIN users u ON u.username = s.username AND u.account_id = s.account_id WHERE s.token = $1 FOR SHARE OF s, u")
-            .bind(digest).fetch_optional(&mut *connection).await?;
+            .bind(digest).bind(DateTime::<Utc>::MAX_UTC).fetch_optional(&mut *connection).await?;
         let Some(row) = row else {
             return Ok(None);
         };
         let username = row.try_get::<String, _>("username")?.parse()?;
         let account_id = LegacyAccountId::try_from(row.try_get::<Uuid, _>("account_id")?)?;
-        let expires_at: DateTime<Utc> = row.try_get("expires_at")?;
+        let expires_at = row
+            .try_get::<Option<DateTime<Utc>>, _>("expires_at")
+            .map_err(|_| DurableAuthError::InvalidRecord)?
+            .ok_or(DurableAuthError::InvalidRecord)?;
         if expires_at <= Self::now(connection).await? {
             return Ok(None);
         }

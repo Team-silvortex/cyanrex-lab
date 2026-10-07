@@ -74,7 +74,7 @@ Rust 方法只允许已完成认证、授权的可信适配器传入 Principal �
 
 源码版本 0.4.9 核对 Task 存储 Schema 版本 2 与选定作用域，拒绝 0.4.8 中 C2-B 使用的 Schema 1。
 只支持全新空命名空间安装，不自动迁移；共享 `CoreSchemaVersion` 仍为 1。
-独立的未发布 [C2-L 内容存储](task-content-store.md)使用 Schema 3 与必填清单；本 Schema 2 句柄及其
+0.5.0 收录的独立 [C2-L 内容存储](task-content-store.md)使用 Schema 3 与必填清单；本 Schema 2 句柄及其
 Session 适配器会拒绝该命名空间，不会修改它。
 三张表必须是永久普通表，不能使用行级安全策略、分区、
 继承或被同名临时表遮蔽。关系锁固定检查对象；写入先锁元数据，再锁任务，事件写入后再次核对作用域。

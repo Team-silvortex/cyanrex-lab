@@ -58,3 +58,28 @@ test("durable PHC validation precedes worker admission and account publication",
   const legacy = await source("crypto.inc.rs");
   assert.doesNotMatch(legacy, /password_profile/);
 });
+
+test("missing-account work preserves the absent snapshot through verification and cannot authorize writes", async () => {
+  const sessions = await source("durable_source/sessions.rs");
+  const login = sessions.slice(sessions.indexOf("pub async fn login("), sessions.indexOf("pub(super) async fn session_record("));
+  assert.match(login, /let verified = self\.account_record\(&mut tx, username\)\.await\?;/);
+  const snapshot = login.indexOf("let verified = self.account_record");
+  const pin = login.indexOf("pin.verify", snapshot);
+  const commit = login.indexOf("tx.commit().await?", pin);
+  const selection = login.indexOf("password_profile::MISSING_ACCOUNT_HASH", commit);
+  const work = login.indexOf("verify_password(password, salt, hash).await?", selection);
+  const realAccount = login.indexOf("verified.ok_or(DurableAuthError::InvalidCredentials)?", work);
+  const otp = login.indexOf("self.verify_current_totp", realAccount);
+  const writer = login.indexOf("self.transaction().await?", otp);
+  assert.ok(snapshot >= 0 && snapshot < pin && pin < commit && commit < selection && selection < work
+    && work < realAccount && realAccount < otp && otp < writer,
+  "only genuine absence selects dummy work, after snapshot release and before mandatory account authority");
+  assert.doesNotMatch(login.slice(snapshot, work), /\.unwrap_or_default\(|\.ok\(\)|derive_password_hash\(/);
+  assert.match(login, /let password_matches = verify_password/);
+  assert.match(login, /if !password_matches\s*\|\| !self\.verify_current_totp/);
+  const profile = await source("durable_source/password_profile.rs");
+  assert.match(profile, /pub\(super\) const MISSING_ACCOUNT_HASH: &str/);
+  assert.equal((profile.match(/MISSING_ACCOUNT_HASH/g) ?? []).length, 1, "fixed PHC must not be derived on first use");
+  const legacy = await source("crypto.inc.rs");
+  assert.doesNotMatch(legacy, /MISSING_ACCOUNT_HASH/);
+});

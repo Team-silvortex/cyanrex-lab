@@ -20,10 +20,13 @@ pub(super) async fn identities(
         scope.authority_id,
     )
     .await?;
-    let rows = sqlx::query("SELECT i.authority_id, i.username, i.account_id, i.principal_id, i.retired_at,
+    let rows = sqlx::query("SELECT i.authority_id, i.username, i.account_id, i.principal_id,
+        i.retired_at IS NULL OR (isfinite(i.retired_at) AND i.retired_at <= $2) AS valid_retired_at,
+        CASE WHEN isfinite(i.retired_at) AND i.retired_at <= $2 THEN i.retired_at END AS retired_at,
         p.kind, p.display_name, p.status FROM collaboration_legacy_identities i
         JOIN collaboration_principals p ON p.authority_id=i.authority_id AND p.principal_id=i.principal_id
-        WHERE i.authority_id=$1 LIMIT 10001").bind(scope.authority_id.as_uuid()).fetch_all(connection).await?;
+        WHERE i.authority_id=$1 LIMIT 10001").bind(scope.authority_id.as_uuid())
+        .bind(DateTime::<Utc>::MAX_UTC).fetch_all(connection).await?;
     if rows.len() as u64 != count {
         return Err(Error::InvalidIdentity);
     }

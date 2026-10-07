@@ -119,10 +119,11 @@ impl CollaborationIdentityStore {
         Self::require_policy_manager(tx, scope, command.actor).await?;
         let row = sqlx::query(&format!(
             "{} WHERE authority_id = $1 AND command_id = $2 FOR SHARE",
-            policy_audit::AUDIT_SELECT
+            policy_audit::audit_select(3)
         ))
         .bind(scope.authority_id.as_uuid())
         .bind(command.command_id.as_uuid())
+        .bind(DateTime::<Utc>::MAX_UTC)
         .fetch_optional(&mut **tx)
         .await?;
         if let Some(row) = row {

@@ -5,6 +5,47 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.5.2] - 2026-10-07
+
+This patch hardens prepared authentication and registry reads, with explicit bounded Session
+maintenance. Auth source schema 2, registry schemas and public API compatibility baseline 0.3.0
+remain unchanged. No automatic maintenance, public issuer, live-auth cutover or data migration is added.
+
+### Added
+
+- Add explicit trusted maintenance for at most 128 expired prepared Sessions at one database cutoff.
+  Full-batch validation, exact deletion readback, original-source pins and selected-digest absence checks
+  precede confirmed commit. The returned count describes only that batch, not global emptiness or a
+  storage quota. Corrupt/orphaned candidates fail without repair; uncertain commit outcomes do not permit
+  blind retry. No automatic schedule, CLI/HTTP entry, login/read cleanup or schema change is added.
+
+### Fixed
+
+- Raise frontend security floors to sharp 0.35.5 and source-map-js 1.2.2, including the matching
+  cross-platform sharp/libvips packages. This addresses GHSA-wq5f-xc86-pv6w and GHSA-68fv-2mgg-jv7q;
+  offline lock/override guards retain those minimums alongside the live production dependency audit.
+  Unrelated dependency resolutions, public API and database schemas remain unchanged.
+
+- Guard prepared registry retirement and identity/policy audit times before SQLx chrono decoding.
+  Invalid non-null retirement stays rejected, never becoming an active binding through a projected
+  NULL. Audit heads, history, replay and INSERT readback reject unrepresentable times; failed writes
+  roll back binding/principal or membership/grant/receipt changes. Read-only reconciliation retains
+  stage-specific errors. Legitimate NULL retirement and finite boundary dates remain compatible,
+  without filtering corrupt rows, changing sequence policy, upgrading dependencies or migrating data.
+
+- Reject infinite or chrono-unrepresentable prepared Session expiry before SQLx decoding. Shared
+  Session reads return `InvalidRecord`; source reconciliation computes checked expiry in SQL and
+  returns `InvalidSource` for corruption. Preserve normal expiry, source locks and snapshot cutoffs,
+  with rollback coverage for malformed login INSERT readback. Registry retirement/audit time decoding
+  is covered separately above; no dependency, schema or live-authentication change is included.
+
+- Route genuinely missing prepared-login accounts through one synthetic password verification with
+  the existing Argon2id profile and shared bounded worker gate, after confirming the lookup transaction.
+  The original real account is still required independently; synthetic matches and concurrent same-name
+  registration cannot issue a Session or consume an OTP. Corrupt records and source/storage errors retain
+  their failures. This removes a missing-account KDF shortcut, not all timing or enumeration differences.
+  The change is included in 0.5.2 with no public issuer, live-authentication, dependency or schema change.
+
 ## [0.5.1] - 2026-10-04
 
 This patch hardens the explicit collaboration authentication preparation layer. Auth source schema 2
@@ -735,7 +776,8 @@ cross-user collaboration. The frozen public API compatibility baseline remains 0
 The canonical package metadata advanced directly from `0.2.9` to `0.3.1`. Version `0.3.0` identifies
 the frozen API compatibility snapshot only; it was not a package release and must not be tagged.
 
-[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.1...HEAD
+[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.2...HEAD
+[0.5.2]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/Team-silvortex/cyanrex-lab/compare/a9523ec052f701e447d2e59fcd38d3a8d8186740...v0.5.1
 [0.5.0]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.9...a9523ec052f701e447d2e59fcd38d3a8d8186740
 [0.4.9]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.8...v0.4.9

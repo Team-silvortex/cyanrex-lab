@@ -43,6 +43,7 @@ pub(crate) mod reconciliation;
 #[cfg(unix)]
 mod review_commands;
 mod schema;
+mod session_cleanup;
 mod session_commands;
 mod session_source;
 mod sessions;

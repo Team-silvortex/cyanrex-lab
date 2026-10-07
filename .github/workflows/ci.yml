@@ -223,7 +223,9 @@ jobs:
             faults::postgres_identity_commit_failure_is_not_success \
             faults::postgres_identity_retirement_failure_keeps_both_principal_and_binding_active \
             faults::postgres_identity_retirement_commit_failure_preserves_the_active_mapping \
-            faults::postgres_identity_cancelled_binding_rolls_back_without_publishing_an_id; do
+            faults::postgres_identity_cancelled_binding_rolls_back_without_publishing_an_id \
+            timestamps::postgres_identity_nullable_retirement_rejects_invalid_nonnull_times_without_reviving_accounts \
+            timestamps::postgres_identity_retirement_trigger_invalid_time_rolls_back_binding_and_principal; do
             cargo test --manifest-path engine/Cargo.toml --locked --test collaboration_identity_store_tdd "$task_identity_pg_case" -- --ignored --list | grep -Fx "$task_identity_pg_case: test"
             cargo test --manifest-path engine/Cargo.toml --locked --test collaboration_identity_store_tdd "$task_identity_pg_case" -- --ignored --exact --nocapture
           done
@@ -272,7 +274,10 @@ jobs:
             faults::postgres_audit_deferred_commit_failure_never_commits_policy_alone \
             faults::postgres_audit_cancellation_during_receipt_insert_rolls_back_prior_policy_writes \
             faults::postgres_audit_missing_history_or_unlogged_policy_edits_fail_closed_without_cache \
-            faults::postgres_audit_invalid_baseline_rolls_back_schema_upgrade
+            faults::postgres_audit_invalid_baseline_rolls_back_schema_upgrade \
+            timestamps::postgres_policy_audit_head_rejects_invalid_times_and_preserves_finite_boundaries \
+            timestamps::postgres_policy_audit_old_receipt_times_fail_history_and_replay_with_healthy_head \
+            timestamps::postgres_policy_audit_invalid_inserted_time_rolls_back_membership_grant_and_receipt
           do
             cargo test --manifest-path engine/Cargo.toml --locked --test collaboration_policy_audit_tdd "$task_audit_pg_case" -- --ignored --list | grep -Fx "$task_audit_pg_case: test"
             cargo test --manifest-path engine/Cargo.toml --locked --test collaboration_policy_audit_tdd "$task_audit_pg_case" -- --ignored --exact --nocapture
@@ -298,7 +303,9 @@ jobs:
             faults::postgres_lifecycle_deferred_commit_failure_keeps_identity_and_audit_together \
             faults::postgres_lifecycle_cancellation_before_audit_commit_restores_active_identity \
             faults::postgres_lifecycle_missing_audit_or_unlogged_state_changes_fail_closed \
-            faults::postgres_lifecycle_bad_baseline_or_conflicting_table_rolls_back_upgrade
+            faults::postgres_lifecycle_bad_baseline_or_conflicting_table_rolls_back_upgrade \
+            timestamps::postgres_lifecycle_timestamp_reads_cover_nullable_retirement_head_history_and_old_replay \
+            timestamps::postgres_lifecycle_audit_append_invalid_time_rolls_back_binding_and_retirement
           do
             cargo test --manifest-path engine/Cargo.toml --locked --test collaboration_identity_audit_tdd "$task_lifecycle_pg_case" -- --ignored --list | grep -Fx "$task_lifecycle_pg_case: test"
             cargo test --manifest-path engine/Cargo.toml --locked --test collaboration_identity_audit_tdd "$task_lifecycle_pg_case" -- --ignored --exact --nocapture
@@ -450,27 +457,10 @@ jobs:
         env:
           CYANREX_TEST_DATABASE_URL: postgres://cyanrex_test:cyanrex-ci-only@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test
           CYANREX_TEST_DATABASE_PASSWORD: cyanrex-ci-only
-        run: |
-          set -euo pipefail
-          for task_reconcile_pg_case in \
-            postgres_reconcile_bootstrap_is_consistent_secret_free_and_read_only \
-            postgres_reconcile_unbound_disabled_retired_and_expired_states_are_distinct \
-            postgres_reconcile_deletion_recreation_and_password_rotation_preserve_history \
-            postgres_reconcile_management_requires_source_binding_and_explicit_grant_not_roles \
-            faults::postgres_reconcile_schema_scope_and_row_security_fail_closed_without_installing \
-            faults::postgres_reconcile_missing_or_recreated_source_and_malformed_sessions_are_detected \
-            faults::postgres_reconcile_identity_and_policy_heads_must_match_current_rows \
-            faults::postgres_reconcile_checks_entire_history_not_only_the_latest_receipt \
-            faults::postgres_reconcile_audit_payload_limits_and_missing_manager_never_report_success \
-            faults::postgres_reconcile_keeps_one_mvcc_snapshot_across_interleaved_commits \
-            faults::postgres_reconcile_timeout_and_cancellation_publish_no_partial_result_or_write \
-            cli::postgres_reconcile_cli_requires_only_read_privileges_and_never_returns_enrollment; do
-            cargo test --manifest-path engine/Cargo.toml --locked --test durable_reconciliation_tdd "$task_reconcile_pg_case" -- --ignored --list | grep -Fx "$task_reconcile_pg_case: test"
-            cargo test --manifest-path engine/Cargo.toml --locked --test durable_reconciliation_tdd "$task_reconcile_pg_case" -- --ignored --exact --nocapture
-          done
+        run: bash scripts/test-durable-reconciliation.sh
       - name: Run real PostgreSQL task artifact and review storage integration
         env: { CYANREX_TEST_DATABASE_URL: "postgres://cyanrex_test:cyanrex-ci-only@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test" }
-        run: bash scripts/test-task-storage.sh && bash scripts/test-artifact-storage.sh && bash scripts/test-review-storage.sh && bash scripts/test-session-task-storage.sh && bash scripts/test-session-artifact-storage.sh && bash scripts/test-session-task-inputs.sh && bash scripts/test-session-review-storage.sh && bash scripts/test-session-catalog-tasks.sh && bash scripts/test-session-task-revisions.sh && bash scripts/test-task-content-storage.sh && bash scripts/test-session-task-content.sh && bash scripts/test-platform-task-content-http.sh && bash scripts/test-durable-session-boundary.sh && bash scripts/test-durable-password-profile.sh && bash scripts/test-durable-otp-freshness.sh && bash scripts/test-durable-otp-consumption.sh && bash scripts/test-durable-otp-schema.sh
+        run: bash scripts/test-task-storage.sh && bash scripts/test-artifact-storage.sh && bash scripts/test-review-storage.sh && bash scripts/test-session-task-storage.sh && bash scripts/test-session-artifact-storage.sh && bash scripts/test-session-task-inputs.sh && bash scripts/test-session-review-storage.sh && bash scripts/test-session-catalog-tasks.sh && bash scripts/test-session-task-revisions.sh && bash scripts/test-task-content-storage.sh && bash scripts/test-session-task-content.sh && bash scripts/test-platform-task-content-http.sh && bash scripts/test-durable-session-boundary.sh && bash scripts/test-durable-password-profile.sh && bash scripts/test-durable-otp-freshness.sh && bash scripts/test-durable-otp-consumption.sh && bash scripts/test-durable-otp-schema.sh && bash scripts/test-durable-login-password.sh && bash scripts/test-durable-session-cleanup.sh
       - name: Run real Runner Agent compile integration
         run: cargo test --manifest-path engine/Cargo.toml --locked --test runner_agent_client_tdd -- --ignored --nocapture
 

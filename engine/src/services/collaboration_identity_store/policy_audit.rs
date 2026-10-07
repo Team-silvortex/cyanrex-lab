@@ -1,10 +1,15 @@
 use super::*;
 use sqlx_postgres::PgRow;
 
-pub(super) const AUDIT_SELECT: &str = "SELECT sequence, authority_id, workspace_id, principal_id,
-    revision, kind, command_id, actor_principal_id, request_digest, recorded_at,
+// Source-owned parameter slot only; all six reader/schema paths bind MAX_UTC there. Guard in
+// SQL before SQLx's binary chrono decoding, without filtering corrupt receipt rows from history.
+pub(super) fn audit_select(max_parameter: u8) -> String {
+    format!("SELECT sequence, authority_id, workspace_id, principal_id,
+    revision, kind, command_id, actor_principal_id, request_digest,
+    CASE WHEN isfinite(recorded_at) AND recorded_at <= ${max_parameter} THEN recorded_at END AS recorded_at,
     before_state::TEXT AS before_json, after_state::TEXT AS after_json
-    FROM collaboration_policy_audit";
+    FROM collaboration_policy_audit")
+}
 
 /// Baselines describe only the state observed at activation, not fabricated historical commands.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -132,7 +137,10 @@ impl LegacyPolicyAuditEntry {
             request_digest,
             before,
             after,
-            recorded_at: row.try_get("recorded_at")?,
+            recorded_at: row
+                .try_get::<Option<DateTime<Utc>>, _>("recorded_at")
+                .map_err(|_| IdentityStoreError::InvalidRecord)?
+                .ok_or(IdentityStoreError::InvalidRecord)?,
         })
     }
 }
@@ -145,10 +153,10 @@ impl CollaborationIdentityStore {
     ) -> Result<Option<StoredLegacyAccessPolicy>> {
         let current = Self::access_record(connection, scope, principal).await?;
         if Self::access_version(connection).await? == 2 {
-            let row = sqlx::query(&format!("{AUDIT_SELECT} WHERE authority_id = $1
-                AND workspace_id = $2 AND principal_id = $3 ORDER BY sequence DESC LIMIT 1 FOR SHARE"))
+            let row = sqlx::query(&format!("{} WHERE authority_id = $1
+                AND workspace_id = $2 AND principal_id = $3 ORDER BY sequence DESC LIMIT 1 FOR SHARE", audit_select(4)))
                 .bind(scope.authority_id.as_uuid()).bind(scope.workspace_id.as_uuid())
-                .bind(principal.as_uuid()).fetch_optional(&mut *connection).await?;
+                .bind(principal.as_uuid()).bind(DateTime::<Utc>::MAX_UTC).fetch_optional(&mut *connection).await?;
             let head = row
                 .as_ref()
                 .map(LegacyPolicyAuditEntry::decode)
@@ -191,10 +199,14 @@ impl CollaborationIdentityStore {
             .bind(command.map(|value| value.actor.principal_id.as_uuid()))
             .bind(digest.as_ref().map(Sha256Digest::as_str)).bind(before_json).bind(after_json)
             .fetch_optional(&mut *connection).await?.ok_or(IdentityStoreError::StorageUnavailable)?;
-        let row = sqlx::query(&format!("{AUDIT_SELECT} WHERE sequence = $1 FOR SHARE"))
-            .bind(row.try_get::<i64, _>("sequence")?)
-            .fetch_one(&mut *connection)
-            .await?;
+        let row = sqlx::query(&format!(
+            "{} WHERE sequence = $1 FOR SHARE",
+            audit_select(2)
+        ))
+        .bind(row.try_get::<i64, _>("sequence")?)
+        .bind(DateTime::<Utc>::MAX_UTC)
+        .fetch_one(&mut *connection)
+        .await?;
         let entry = LegacyPolicyAuditEntry::decode(&row)?;
         if entry.workspace != scope
             || entry.principal_id != principal
@@ -240,14 +252,16 @@ impl CollaborationIdentityStore {
             Self::require_policy_manager(&mut tx, scope, actor).await?;
             Self::checked_access_record(&mut tx, scope, subject).await?;
             let rows = sqlx::query(&format!(
-                "{AUDIT_SELECT} WHERE authority_id = $1 AND workspace_id = $2
-                AND principal_id = $3 AND sequence > $4 ORDER BY sequence LIMIT $5 FOR SHARE"
+                "{} WHERE authority_id = $1 AND workspace_id = $2
+                AND principal_id = $3 AND sequence > $4 ORDER BY sequence LIMIT $5 FOR SHARE",
+                audit_select(6)
             ))
             .bind(scope.authority_id.as_uuid())
             .bind(scope.workspace_id.as_uuid())
             .bind(subject.as_uuid())
             .bind(after_sequence.unwrap_or(0) as i64)
             .bind(limit as i64)
+            .bind(DateTime::<Utc>::MAX_UTC)
             .fetch_all(&mut *tx)
             .await?;
             let entries = rows

@@ -1,6 +1,6 @@
 # Project Status
 
-Snapshot date: **2026-10-04**. Source version: **0.5.1**.
+Snapshot date: **2026-10-07**. Source version: **0.5.2**, including login-denial, expired-Session maintenance, Session-expiry and registry-time read follow-ups.
 
 Cyanrex is becoming a domain-neutral collaboration platform, with eBPF teaching retained as its first
 domain rather than the definition of all work. The transition has produced a durable collaboration
@@ -23,10 +23,14 @@ dated implementation and verification details are preserved in [Development Hist
 | 0.5.1 · Password profile | Pre-admission PHC checks and explicit existing Argon2id cost/profile for prepared reads and writers | No imported profile adoption, implicit Session revocation, legacy change, process RSS bound or public issuer |
 | 0.5.1 · OTP freshness | Login/rotation recheck the existing OTP window behind writer locks and after final SQL before requesting commit | Freshness alone is not consumption, complete clock-rollback defense or a commit-ack freshness guarantee |
 | 0.5.1 · OTP consumption | Schema-2 per-account monotonic consumption commits with login Session issuance or password rotation/revocation; pure collision-aware exact-counter policy | Fresh explicit installation only; old schema 1 rejected unchanged. No live-auth switch, public issuer, secret recovery or existing-data migration |
+| 0.5.2 · Missing-account password work | Genuine absent accounts run one fixed-profile verification through the same bounded gate after releasing the read transaction, then remain rejected | Removes the missing-account KDF shortcut; not equal latency, complete enumeration defense, a public issuer or a live-auth switch |
+| 0.5.2 · Expired Session cleanup | Explicit trusted source command deletes at most 128 validated expired records per confirmed transaction, with source and exact-result checks | No automatic cleanup, CLI/HTTP access, active-device eviction, full-source emptiness proof or global storage quota |
+| 0.5.2 · Session expiry reads | Shared prepared Session lookup rejects infinite/unrepresentable expiry before decoding; source reconciliation derives a checked expiry boolean in SQL | Covers source Session expiry, with existing locks and snapshot cutoffs; registry times are covered separately below |
+| 0.5.2 · Registry time reads | Guard retirement and identity/policy audit heads, history, replay and write readback; reject invalid non-null retirement without making it active | Scoped reads only; no age rule, driver-wide guarantee, repair, schema change or live-auth cutover |
 | Architecture targets | Shared collaboration, generic Run orchestration, AI delegation, reliable business-event delivery, isolated workers and ecosystem integration | A proposed type, diagram or milestone is not an implemented user workflow |
 
 Product version, API compatibility baseline and individual storage schema versions are independent.
-The source version is 0.5.1 and the public API compatibility baseline remains 0.3.0. The current Task
+The source version is 0.5.2 and the public API compatibility baseline remains 0.3.0. The current Task
 store requires schema 2 in a fresh dedicated namespace and rejects schema 1 without migration. Neither
 the normal startup path nor this source release upgrades a database.
 The content store included in 0.5.0 separately requires schema 3; the schema 2 handle and existing Session
@@ -111,6 +115,159 @@ application, issue credentials, publish Artifacts or connect the browser.
   review authority and policy execution must not be inferred from private records or frozen metadata.
 
 ## Verification recorded so far
+
+### 0.5.2 candidate checks · 2026-10-07 · dependency fixes verified
+
+The complete local gate passed **506 default Rust tests, 138 common checks, 165 frontend tests and
+16 SDK tests**, including the production frontend build/TypeScript and SDK build/type/package checks.
+The 525 ignored opt-in Rust cases are not passing-run evidence. The frontend production dependency
+audit now has no moderate/high/critical findings and retains one low DOMPurify finding; the SDK audit
+has no findings. Version metadata, release notes and current bilingual documentation are synchronized.
+
+The first full-gate attempt stopped after a valid production audit reported two high findings in
+sharp 0.35.4 and source-map-js 1.2.1; that attempt was not a passing full gate or a registry timeout.
+The authorized follow-up installs [sharp 0.35.5](https://github.com/advisories/GHSA-wq5f-xc86-pv6w) and
+[source-map-js 1.2.2](https://github.com/advisories/GHSA-68fv-2mgg-jv7q), with matching cross-platform
+sharp/libvips packages. Unrelated dependency resolutions and Node requirements remain unchanged.
+Three new offline override/lock regression checks are included in the 138 common checks, not added
+again. Six separate bounded runtime probes passed: installed sharp/native-library versions, small
+SVG-to-PNG/WebP resizing and malformed image rejection, ordinary source-map/SourceNode round-trip,
+small indexed-map offsets, invalid/out-of-range offset rejection, and mappings beyond short code.
+No amplifying payload was flattened or large generated image used; only this host's native runtime
+was exercised, not every platform in the lockfile.
+
+Earlier SQL evidence was not rerun for this version/dependency step. Commit/tag/publication checks
+remain separate from the local gate. No browser, Rust advisory, real kernel/LAN, distribution artifact,
+deployment/recovery or remote CI acceptance is established by these checks. Updating the source or
+lockfile does not patch an already running deployment, nor establish complete dependency safety.
+
+The four 2026-10-07 implementation records below retain their 0.5.1 working-tree version and
+then-unreleased status. Their changes are included in 0.5.2; the recorded counts, dates and limits
+are not new release-gate results or deployment acceptance.
+
+### Registry retirement and audit reads · 2026-10-07
+
+Before the fix, retirement/lifecycle and policy read paths reproduced the locked SQLx chrono decoder
+panic. Fourteen SQL projections now check `retired_at` and identity/policy `recorded_at` before binary
+decoding, including schema activation's `LIMIT 0` probes. An independent raw validity flag distinguishes
+genuine NULL retirement from invalid non-null retirement: corrupt data cannot look like an active binding
+that matches its original unretired audit head. Mandatory audit times fail with `InvalidRecord`.
+
+**Ten new exact PostgreSQL regression groups passed** with the fixed focused runner: identity storage 2,
+lifecycle audit 2, policy audit 3 and reconciliation/Session command composition 3. Inputs include both
+infinities and finite year 262143, with genuine NULL, PostgreSQL 4713 BC and chrono maximum-microsecond
+controls. A healthy current head plus a corrupt older receipt distinguishes history/replay rejection
+from an unrelated actor failure. Hit-counted retirement/audit INSERT faults and full SQL row snapshots
+prove binding/principal or policy/grant/receipt rollback. Fixtures are drained and cleaned before panic
+assertions; read-only reconciliation retains `InvalidIdentity`, `IdentityHistoryMismatch` and
+`PolicyHistoryMismatch`, without writes or partial success.
+
+The broader serial run passed **132 distinct isolated PostgreSQL cases**: identity storage 17,
+lifecycle audit 18, policy audit 19, access policy 15, bootstrap 14, current-Session collaboration 16,
+account deletion 16 and reconciliation 17. The focused ten and the preceding Session-expiry pair in
+reconciliation are included in this total, not added again. All used a fresh PostgreSQL 16 instance,
+private Unix socket and synthetic records, never a deployed database.
+
+The complete backend gate passed **506 default Rust tests and 135 common checks**; its 525 ignored
+opt-in cases are not passing-run evidence. The 132 SQL cases above were run separately. Formatting,
+bilingual mirrors and the updated tensor passed. Frontend/browser/SDK builds, dependency audits,
+remote CI, real kernel/LAN, deployed-data and recovery acceptance were not rerun in this slice.
+
+CI now enumerates identity storage 17, lifecycle audit 18, policy audit 19 and reconciliation 17 cases;
+the focused ten are a subset, not additional coverage counted twice. Source stays 0.5.1, schemas and
+dependencies are unchanged. Existing sequence continuity, authorization, locks, limits and snapshots
+remain intact. No new audit age/order policy, data repair, live-auth switch or safety claim for every
+database timestamp is made. See the [registry time contract](collaboration-reconciliation.md).
+
+### Session expiry reads · 2026-10-07
+
+Both ordinary Session validation and source reconciliation reproduced the locked SQLx chrono decoder
+panic before the fix. Shared Session lookup now projects finite, chrono-representable expiry or NULL,
+then returns `InvalidRecord` for NULL. Reconciliation reads a checked SQL expiry boolean and returns
+`InvalidSource` for invalid time; corrupt rows are never filtered out or counted as normally expired.
+Existing source pins, row locks, fresh Session time and the read-only snapshot cutoff remain in place.
+
+The new regression groups cover validation, login INSERT readback with a hit-counted trigger and full
+account/OTP/Session rollback, rejected password-change authorization, and read-only reconciliation.
+They include positive/negative infinity, finite year 262143, normal valid/expired Sessions, a PostgreSQL
+4713 BC date and chrono's maximum microsecond. Fixture state is observed and cleaned before
+panic assertions. The source stays 0.5.1/schema 2; there is no dependency upgrade or live-auth cutover.
+
+**105 distinct isolated PostgreSQL cases passed**: source Session boundary 17, source 14, password
+rotation 17, account deletion 16, reconciliation 14, missing-account work 7, atomic OTP consumption 11
+and expired-Session cleanup 9. An initial parallel rotation batch missed its short 1.5-second expiry
+fault barrier; all 17 passed with serial execution, matching CI's sequential selection. The local CLI
+fixture initially rejected a group-writable temporary parent; correcting only that disposable directory
+allowed the restricted-reader case to pass without weakening private-file checks. All SQL used a new
+PostgreSQL 16 instance, a private Unix socket and synthetic data.
+
+The full backend gate passed **506 default Rust tests and 134 common checks**, with 515 opt-in cases
+ignored in that gate; the 105 database cases above were run separately. Formatting, bilingual mirrors
+and the updated capability inventory passed. Frontend/browser, dependency audits, remote CI, deployed
+database and real kernel/LAN acceptance were not rerun in this source-expiry slice.
+
+At this stage, registry `retired_at` and identity/policy audit `recorded_at` decoding remained the next
+adjacent slice; the later registry-time record above covers it separately. These source-expiry checks
+do not establish safety of every timestamp in a Session command or the complete reconciliation pipeline.
+Earlier evidence below retains its original test counts.
+
+### Explicit expired Session cleanup · 2026-10-07
+
+**Nine exact new PostgreSQL cases** passed after two failing stages: a no-op maintenance seam could
+not remove the expected 128-row batch, and an infinite timestamp caused the locked SQLx chrono decoder
+to panic rather than return an error. Selection and deletion readback now guard finite, representable
+timestamps in SQL before Rust decoding. Tests include positive/negative infinity and a finite 262143-year
+creation time, oversized/non-hex digests, invalid usernames and an orphaned account reference. Invalid
+candidates reject the whole batch without repair; the panic regression now cleans up before asserting.
+
+The suite covers ordered 128/2/0 batches, a real Session remaining usable and its consumed OTP state
+unchanged, source isolation, independent-pool batches, fresh time after source-lock waits, suppressed
+deletion, future-expiry reinsertion, source/selected-row changes, deferred COMMIT failure and observed
+rollback after cancellation. Fault counters establish that the targeted writes ran. Some selected-row
+mutation faults are rejected by PostgreSQL itself; these are rollback checks, not isolated proof of
+every application readback branch or arbitrary trigger side-effect detection.
+
+Adjacent reruns passed source 14, source Session boundary 14, password rotation 17, account deletion 16,
+read-only reconciliation 12, missing-account password work 7 and atomic OTP consumption 11 SQL cases:
+**100 isolated PostgreSQL cases including the new nine**. Four default closed-pool checks also passed
+in those selected integration targets. All database work used a new PostgreSQL 16 instance with a private
+Unix socket and synthetic records, not an installed deployment.
+
+The full backend gate also passed: **506 default Rust tests and 134 common checks**, with 510
+database-dependent cases ignored in that gate; the 100 SQL cases above were run separately against
+the disposable database. Formatting, documentation mirrors and the capability tensor checks passed.
+
+This is an unreleased internal maintenance command on 0.5.1, without automatic invocation, a CLI/HTTP
+surface, active-device eviction, migration or a global Session/disk limit. Ordinary reads remain
+non-mutating. Browser/frontend/SDK builds, dependency audits, remote CI, real kernel/LAN, operator
+deployment and restore acceptance were not rerun. The earlier records below retain their own scopes.
+
+### Missing account password work · 2026-10-07
+
+The held-executor PostgreSQL regression first failed because a missing account returned without a
+password job. After the fix, **seven exact new SQL cases** passed: missing/known-wrong worker admission,
+released database connection and source lock, queued-job cancellation, matching public dummy denial,
+same-name account creation during the worker gap, unchanged state, global/username limits and distinct
+input/profile/source/storage errors. The race fixture makes both dummy and new-account passwords match,
+and confirms that only a new login request succeeds. Semaphore observations establish admission;
+elapsed-response equality is not measured or claimed.
+
+Adjacent reruns passed **87 PostgreSQL cases**: source 14, password rotation 17, bootstrap 14, password
+profile 6, source Session boundary 14, OTP schema 4, OTP freshness 7 and atomic consumption 11.
+Together with the new seven, this is **94 isolated SQL cases**, using fresh PostgreSQL 16 over a private
+Unix socket. Three default closed-pool checks also passed in the selected integration targets.
+All **14 password-profile unit tests** passed, including derivation and true/false verification of the
+fixed public synthetic PHC. The exact CI runner and its enumeration guard are included in source.
+
+The backend quality gate passed **505 default Rust tests and 131 common checks**, with no Rust
+compiler warnings; **501 opt-in cases** were ignored by that default run. Formatting, file lengths,
+version/course/tensor consistency, public API/SDK contracts and tool fixtures passed. The 94 SQL
+cases above ran separately and do not imply execution of every ignored target.
+
+The change is unreleased on 0.5.1. It neither mounts HTTP nor changes dependencies, live AuthService,
+database format or maturity scores. Complete timing/ingress/Session policy and recovery remain open.
+Browser/frontend/SDK builds, dependency audits, remote CI, live kernel/LAN and deployment acceptance
+were not rerun for this slice; the release records below retain their original scope.
 
 ### 0.5.1 source release checks
 

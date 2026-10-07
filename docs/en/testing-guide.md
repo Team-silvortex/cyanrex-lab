@@ -1,7 +1,7 @@
 # Current project testing guide
 
-Reviewed against **source release 0.5.0 on 2026-10-03**, including task payload, Session commands and
-the standalone content HTTP adapter. This guide explains what to run for each module and boundary, what each layer
+Reviewed against **0.5.2 on 2026-10-07**, including login-denial, Session-cleanup and Session/registry timestamp guards, task payload,
+Session commands and the standalone content HTTP adapter. This guide explains what to run for each module and boundary, what each layer
 proves, and how to avoid using live data. It is a test plan and source inventory, not a new test run.
 Use the [platform network](platform-network.md) to identify connected and unconnected product paths.
 The [capability tensor](capability-maturity.md) links each implementation slice to test sources and
@@ -42,8 +42,11 @@ compilation; consult its explicit lists rather than assuming `cargo test` covers
 | Teaching pack and generic catalogue | `task_catalog_tdd`, `teaching_task_adapter_tdd`, `collaboration_contract_tdd` | Typed evidence and exact definition/policy identity; catalogue admission does not execute rules or accept Tasks |
 | Events and settings | `module_boundaries_tdd`, EventBus tests, explicit event SQL cases; event/settings unit and browser suites | Publication ordering → durable history → resync, export/delete filter safety, confirmed settings and read failures |
 | Generic identity and authority | `collaboration_*_tdd`, `legacy_workspace_projection_tdd` | Audited binding/member/grant revisions, absent-key races, last manager, role versus deployment authority |
+| Registry timestamps | `test-registry-timestamps.sh` selects ten cases from four existing targets | Nullable retirement validity, mandatory identity/policy audit times, finite limits, old history/replay, append readback, reconciliation errors and Session-command rejection; no new age/order policy |
 | Durable source and lifecycle | `durable_auth_source_tdd`, `durable_session_boundary_tdd`, `durable_collaboration_tdd`, deletion/password/bootstrap/reconciliation targets | Source-only namespace/table pins → account incarnation → exact current Session → identity/policy on one transaction, namespace replacement, post-write facts |
 | Prepared password work | Default `auth_service::durable_source::password_work` unit tests and source-wiring guard | Dispatched/queued capacity, cancellation/timeout lifetime, panic recovery and real hashing; rerun source, password-change and bootstrap SQL for all entry points |
+| Missing-account password work | `test-durable-login-password.sh`, fixed-PHC unit and source/CI guards | Real shared-gate admission into a held executor, released SQL resources, cancellation, concurrent same-name registration and rejection even when the synthetic password matches; not a timing benchmark or complete enumeration defense |
+| Explicit expired Session cleanup | `test-durable-session-cleanup.sh`: nine exact library SQL cases, default closed-pool test and source/CI guards | 128-row batches, active-session preservation, independent writers, lock-fresh cutoff, bounded text/time decoding, orphan/corrupt candidates and hit-proven deletion/commit/cancellation faults; no automatic or live-data cleanup |
 | Prepared password profile | `test-durable-password-profile.sh`, default `password_profile`/`password_work` units and source/CI guards | Six exact SQL cases for unsupported records, writer compatibility, existing Sessions and rollback; hostile numeric costs are pure-preflight tests, never expensive test computations |
 | Prepared OTP freshness | `test-durable-otp-freshness.sh` selects seven `--lib` SQL cases; default `otp::tests` and source/CI guards | Private clocks advance after observed SQL waits or snapshot release with the password executor held, not a proven queue-dispatch instant; rollback, success and freshness versus composed consumption. No machine clock changes or public clock override |
 | OTP consumption policy | Default `otp_consumption::tests` and `durableOtpConsumption` source guards | Pure counter selection, real collisions, credential binding, exact final counter and input/time limits; pure units alone do not prove persistence/atomicity. The policy is now used by prepared login/rotation |
@@ -118,12 +121,26 @@ Legacy auth/events/scripts/learning and generic identity/source/lifecycle/provis
 separate explicit lists in CI. The runner inventory is guarded by
 [`postgresCi.test.mjs`](../../scripts/tests/postgresCi.test.mjs).
 
-The additional `scripts/test-durable-session-boundary.sh` selects **14 source-only Session cases**:
+As of the 2026-10-07 expiry-decoding follow-up, `scripts/test-durable-session-boundary.sh` selects
+**17 source-only Session cases**, the original 14 plus three timestamp cases:
 ambiguous/temporary namespaces, filtered or incompatible relations, post-write redirects/replacements,
-metadata changes, login's two-transaction identity, and logout/expiry lock ordering. It needs no
+metadata changes, login's two-transaction identity, logout/expiry lock ordering, and invalid/boundary
+Session expiry through validation, login writeback and the password-change guard. It needs no
 collaboration registry and is guarded by `durableSessionBoundaryCi.test.mjs`. It is separate from the
 212 resource cases and the original 14 `durable_auth_source_tdd` SQL cases. These inventory counts are
 not claims that every suite was rerun; see dated project status.
+
+`scripts/test-durable-reconciliation.sh` now selects **17 cases**: the original twelve lifecycle checks,
+two Session-expiry cases and three subsequent registry-timestamp cases from 2026-10-07. Session checks
+retrieve only an SQL expiry boolean; registry cases cover precise error stages, finite audit times and
+denied Session-authorized binding. The runner checks exact names before execution. These are inventory
+counts, not new passing-run evidence; historical C1-K results are unchanged.
+
+The 2026-10-07 registry follow-up adds **10 distinct SQL cases**: two identity-store, two identity-audit,
+three policy-audit and three reconciliation cases. The corresponding full inventories are **17, 18, 19
+and 17** cases. `scripts/test-registry-timestamps.sh` is a focused exact selector for those ten, not ten
+additional cases beyond those suites; CI includes them through the maintained full-suite selections.
+Range guards protect the three stored registry columns, not arbitrary timestamps or wall-clock ordering.
 
 For example, with the disposable URL already set:
 

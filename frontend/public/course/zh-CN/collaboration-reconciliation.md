@@ -4,7 +4,9 @@
 `cyanrex-provision reconcile` 检查准备层的持久账号、Session、身份绑定、策略及其审计历史是否
 一致。结果只代表一次有界只读快照，不是授权决定、初始化回执、密钥交付确认或重试许可。
 观察器不安装或迁移存储，不修复记录、恢复凭据或接入在线 Engine。收录于 0.5.1 的 OTP 消费后续改动
-现要求准备层来源 Schema 2；C1-K 最初收录于 0.4.7 的历史节点保持不变。
+现要求准备层来源 Schema 2；C1-K 最初收录于 0.4.7 的历史节点保持不变。下方 2026-10-07 的
+Session 到期及注册表时间校验已收录于 0.5.2，不改变 Schema；分日期条目保留当时尚未发布的
+0.5.1 实现阶段及原验证范围。
 
 ## 运维入口与范围
 
@@ -78,6 +80,37 @@ SQL 故障、取消、超时、结构不支持或不变量失败均不返回部�
 `bound_identities` 包括保留的退役绑定。过期按观察时间判断，不代表稍后使用报告时仍有效。
 其他 authority、未来多 Workspace/Agent 策略与无关业务表不在旧 authority 的本次检查范围内；
 没有绑定的 Principal 不会被当成已认证身份输出。
+
+### 未发布 Session 到期时间范围检查 · 2026-10-07
+
+来源 Session 的到期检查现在留在 SQL 内：先要求 `expires_at` 为有限值且不超过 chrono
+支持的上界，再与原快照观察时间比较。读取器只取回可空的 `expired` 布尔值，不取原始时间。
+校验产生 NULL 时返回 `InvalidSource`（`reconciliation_invalid_source`），因此 `infinity`、
+`-infinity` 和有限的 262143 年不会进入二进制时间解码器、被静默跳过或计作普通过期。
+PostgreSQL 公元前 4713 年日期、微秒精度 chrono 最大值等可表示有限边界仍正常计入过期/未过期数。
+
+所需只读列权限不变，不新增凭据、原始到期时间或 token 披露，也不修复数据、迁移 Schema 或新增
+CLI/API。快照时间和检查预算不变。该阶段仅针对来源 Session，注册表 `retired_at`、审计
+`recorded_at` 当时不在范围内；下方独立后续补充其防护，不代表全部时间字段安全。当前精确清单和分日期结果见
+[测试指南](testing-guide.md)和[项目状态](project-status.md)，下方原 C1-K 十二条用例的证据保持历史记录。
+
+### 未发布注册表时间安全解码 · 2026-10-07
+
+注册表后续在二进制时间解码前检查三个存储列：`collaboration_legacy_identities.retired_at`、
+`collaboration_identity_audit.recorded_at` 和 `collaboration_policy_audit.recorded_at`。
+SQL 要求非空时间为有限值且不超过 chrono 上界；无限或超范围值不被筛掉、截断或修复。
+真正的 NULL 退役时间仍表示未退役；独立的 `valid_retired_at` 布尔值区分这一合法状态与被投影为
+NULL 的损坏非空时间，后者必须返回 `InvalidRecord`。两类审计时间为必填，NULL 投影同样返回
+`InvalidRecord`。
+
+带锁身份读取、当前审计头、旧历史分页、命令重放、追加后读回及只读对账共用这些投影。
+每条审计查询均绑定范围参数，`LIMIT 0` 结构检查也不例外。对账保留原错误分类：坏退役时间映射
+为 `InvalidIdentity`，坏身份审计时间为 `IdentityHistoryMismatch`，坏策略审计时间为
+`PolicyHistoryMismatch`，不返回部分一致报告。
+
+这是这三个存储列的可表示性防护，不新增年代、时间先后、退役或审计排序规则；原状态/历史校验、
+锁序与事务语义继续有效，不能由此认定其他时间路径也已安全。不改依赖、存储 Schema、产品版本、
+在线切换或公共接口，也不改写数据。新增时间回归清单与下方 C1-K 历史执行证据分开记录。
 
 ## 错误解释与恢复边界
 

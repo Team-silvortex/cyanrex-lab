@@ -8,6 +8,8 @@ use sqlx_postgres::PgPoolOptions;
 #[path = "collaboration_identity_store/fixture.rs"]
 mod fixture;
 use fixture::*;
+#[path = "collaboration_identity_store/timestamps.rs"]
+mod timestamps;
 
 #[tokio::test]
 async fn closed_identity_storage_never_falls_back_or_allocates_on_read() {

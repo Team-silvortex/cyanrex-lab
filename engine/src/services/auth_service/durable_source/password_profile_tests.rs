@@ -250,3 +250,16 @@ fn existing_default_argon2id_records_remain_compatible_without_legacy_fallback()
     assert_eq!(verify(password, &encoded), Ok(true));
     assert_eq!(verify("wrong-password", &encoded), Ok(false));
 }
+
+#[test]
+fn missing_account_record_is_a_fixed_public_real_profile_hash() {
+    let password = "cyanrex-public-missing-account-v1";
+    assert_eq!(validate(MISSING_ACCOUNT_HASH), Ok(()));
+    assert_eq!(
+        derive(password, "cyanrex-public-missing-account").unwrap(),
+        MISSING_ACCOUNT_HASH
+    );
+    // The dummy is intentionally matchable: login must still require a real account snapshot.
+    assert_eq!(verify(password, MISSING_ACCOUNT_HASH), Ok(true));
+    assert_eq!(verify("wrong-password", MISSING_ACCOUNT_HASH), Ok(false));
+}

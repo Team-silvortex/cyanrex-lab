@@ -20,6 +20,8 @@ use fixture::*;
 mod faults;
 #[path = "collaboration_policy_audit/permissions.rs"]
 mod permissions;
+#[path = "collaboration_policy_audit/timestamps.rs"]
+mod timestamps;
 
 fn actor(principal_id: PrincipalId) -> PrincipalRef {
     PrincipalRef {

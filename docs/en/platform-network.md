@@ -1,10 +1,20 @@
 # Current platform feature and module network
 
-Base source review date: **2026-10-03**. Current scope: **0.5.1 source**, including prepared-authentication
+Base source review date: **2026-10-03**. Current scope: **0.5.2 source**, including prepared-authentication
 hardening, the 0.5.0 navigation/filename fixes and C2-K/L/M/N content preparation, alongside the preceding
 collaboration commands and local task payload editor. The review retains its
 0.4.9 base commit and dated evidence; source inclusion is not a new release acceptance report or a
 claim about an installed deployment.
+
+The 2026-10-07 [login-denial follow-up](collaboration-auth-source.md), included in 0.5.2, also routes missing
+accounts through bounded password work. It changes neither this topology nor the missing public
+Session-issuance connection, and does not establish constant-time login.
+The same release's explicit expired-Session cleanup is also internal-only, limited to 128 selected rows
+per transaction; no scheduler, operator endpoint or global storage quota is connected.
+Source Session lookup and reconciliation in 0.5.2 also guard stored expiry before decoding; this is internal
+read hardening. The subsequent [registry-time follow-up](collaboration-reconciliation.md) guards
+nullable retirement and both audit times in their shared readers, without changing topology, schema
+or age/order policy. Neither slice proves every database timestamp safe.
 
 For architecture × capability × implementation × maturity, use the new
 [capability tensor and score rubric](capability-maturity.md) and its

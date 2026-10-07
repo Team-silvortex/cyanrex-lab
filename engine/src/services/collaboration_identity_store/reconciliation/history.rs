@@ -10,9 +10,10 @@ pub(super) async fn identities(
         +octet_length(kind)+COALESCE(octet_length(operation),0)+COALESCE(octet_length(request_digest),0)", scope.authority_id).await?;
     let rows = sqlx::query(&format!(
         "{} WHERE authority_id=$1 ORDER BY sequence LIMIT 10001",
-        identity_audit::IDENTITY_AUDIT_SELECT
+        identity_audit::identity_audit_select(2)
     ))
     .bind(scope.authority_id.as_uuid())
+    .bind(DateTime::<Utc>::MAX_UTC)
     .fetch_all(connection)
     .await?;
     let mut heads = HashMap::new();
@@ -58,9 +59,10 @@ pub(super) async fn policies(
     .await?;
     let rows = sqlx::query(&format!(
         "{} WHERE authority_id=$1 ORDER BY sequence LIMIT 10001",
-        policy_audit::AUDIT_SELECT
+        policy_audit::audit_select(2)
     ))
     .bind(scope.authority_id.as_uuid())
+    .bind(DateTime::<Utc>::MAX_UTC)
     .fetch_all(connection)
     .await?;
     let mut heads = HashMap::new();

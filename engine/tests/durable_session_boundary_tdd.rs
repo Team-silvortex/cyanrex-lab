@@ -19,6 +19,8 @@ use support::*;
 mod concurrency;
 #[path = "durable_session_boundary/shapes.rs"]
 mod shapes;
+#[path = "durable_session_boundary/timestamps.rs"]
+mod timestamps;
 #[path = "durable_session_boundary/writes.rs"]
 mod writes;
 

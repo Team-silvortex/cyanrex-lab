@@ -11,6 +11,10 @@ const TIME_COST: u32 = 2;
 const LANES: u32 = 1;
 const OUTPUT_BYTES: usize = 32;
 
+// Public synthetic record, precomputed with this exact profile and a fixed public salt.
+// It supplies work for a missing-account denial, never an account or accepted credential.
+pub(super) const MISSING_ACCOUNT_HASH: &str = "$argon2id$v=19$m=19456,t=2,p=1$Y3lhbnJleC1wdWJsaWMtbWlzc2luZy1hY2NvdW50$UkitGPnpb64CcWjacN8Pr5ls5wcDV07brjI+FEr++hY";
+
 fn parse(encoded: &str) -> Result<PasswordHash<'_>> {
     if encoded.len() > 1024 {
         return Err(DurableAuthError::InvalidRecord);

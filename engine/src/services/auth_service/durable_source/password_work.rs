@@ -84,3 +84,7 @@ pub(super) async fn verify_password(
 #[cfg(test)]
 #[path = "password_work_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "login_password_sql_tests.rs"]
+mod login_sql_tests;

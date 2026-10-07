@@ -1,9 +1,14 @@
 use super::*;
 
-pub(super) const IDENTITY_AUDIT_SELECT: &str = "SELECT sequence, authority_id, workspace_id,
+// Only source-owned parameter numbers reach this builder. Every caller binds chrono's maximum
+// at that slot, including LIMIT 0 schema checks. Invalid times remain rows, projected as NULL.
+pub(super) fn identity_audit_select(max_parameter: u8) -> String {
+    format!("SELECT sequence, authority_id, workspace_id,
     principal_id, username, account_id, kind, operation, command_id, actor_principal_id,
-    request_digest, recorded_at, before_state::TEXT AS before_json, after_state::TEXT AS after_json
-    FROM collaboration_identity_audit";
+    request_digest, CASE WHEN isfinite(recorded_at) AND recorded_at <= ${max_parameter}
+    THEN recorded_at END AS recorded_at, before_state::TEXT AS before_json, after_state::TEXT AS after_json
+    FROM collaboration_identity_audit")
+}
 
 impl CollaborationIdentityStore {
     pub(super) async fn check_identity_audit_head(
@@ -14,13 +19,15 @@ impl CollaborationIdentityStore {
         current: Option<&StoredLegacyIdentity>,
     ) -> Result<()> {
         let row = sqlx::query(&format!(
-            "{IDENTITY_AUDIT_SELECT} WHERE authority_id = $1 AND workspace_id = $2
-            AND username = $3 AND account_id = $4 ORDER BY sequence DESC LIMIT 1 FOR SHARE"
+            "{} WHERE authority_id = $1 AND workspace_id = $2
+            AND username = $3 AND account_id = $4 ORDER BY sequence DESC LIMIT 1 FOR SHARE",
+            identity_audit_select(5)
         ))
         .bind(scope.authority_id.as_uuid())
         .bind(scope.workspace_id.as_uuid())
         .bind(username.as_str())
         .bind(account_id.as_uuid())
+        .bind(DateTime::<Utc>::MAX_UTC)
         .fetch_optional(&mut *connection)
         .await?;
         let head = row
@@ -66,9 +73,11 @@ impl CollaborationIdentityStore {
             .bind(command.map(|value| value.actor.principal_id.as_uuid())).bind(digest.as_ref().map(Sha256Digest::as_str))
             .bind(before_json).bind(after_json).fetch_optional(&mut *connection).await?.ok_or(IdentityStoreError::StorageUnavailable)?;
         let row = sqlx::query(&format!(
-            "{IDENTITY_AUDIT_SELECT} WHERE sequence = $1 FOR SHARE"
+            "{} WHERE sequence = $1 FOR SHARE",
+            identity_audit_select(2)
         ))
         .bind(row.try_get::<i64, _>("sequence")?)
+        .bind(DateTime::<Utc>::MAX_UTC)
         .fetch_one(&mut *connection)
         .await?;
         let entry = LegacyIdentityAuditEntry::decode(&row)?;
@@ -116,14 +125,16 @@ impl CollaborationIdentityStore {
             Self::require_policy_manager(&mut tx, scope, actor).await?;
             Self::bound_principal(&mut tx, scope, subject).await?;
             let rows = sqlx::query(&format!(
-                "{IDENTITY_AUDIT_SELECT} WHERE authority_id = $1 AND workspace_id = $2
-                AND principal_id = $3 AND sequence > $4 ORDER BY sequence LIMIT $5 FOR SHARE"
+                "{} WHERE authority_id = $1 AND workspace_id = $2
+                AND principal_id = $3 AND sequence > $4 ORDER BY sequence LIMIT $5 FOR SHARE",
+                identity_audit_select(6)
             ))
             .bind(scope.authority_id.as_uuid())
             .bind(scope.workspace_id.as_uuid())
             .bind(subject.as_uuid())
             .bind(after_sequence.unwrap_or(0) as i64)
             .bind(limit as i64)
+            .bind(DateTime::<Utc>::MAX_UTC)
             .fetch_all(&mut *tx)
             .await?;
             let entries = rows

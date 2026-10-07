@@ -6,7 +6,9 @@ bindings, policies and their audit histories agree. It reports one bounded, read
 an authorization decision, bootstrap receipt, secret-delivery confirmation or permission to retry.
 The observer neither installs nor migrates storage, repairs records, recovers credentials or wires
 the live Engine. The OTP-consumption follow-up included in 0.5.1 now requires prepared source schema 2;
-the original C1-K introduction remains the 0.4.7 milestone.
+the original C1-K introduction remains the 0.4.7 milestone. The 2026-10-07 Session-expiry and registry-time
+validation follow-ups below are included in 0.5.2 without a schema change. Their dated entries retain
+the then-unreleased 0.5.1 implementation stage and its original verification scope.
 
 ## Operator entry and scope
 
@@ -95,6 +97,45 @@ count and both audit-entry counts. Retired and disabled counts overlap; `bound_i
 retained retired bindings. Expiration is evaluated at the observation time, not at later use of the report.
 Other authorities, future multi-Workspace/Agent policies and unrelated application tables are outside
 this legacy authority check. Non-bound Principals are not presented as authenticated identities.
+
+### Unreleased Session expiry range checks · 2026-10-07
+
+Source Session expiry now stays inside SQL: first require finite `expires_at` no greater than chrono's
+supported maximum, then compare it with the existing snapshot observation time. The reader fetches
+only an optional `expired` boolean, not the raw timestamp. A NULL validity result becomes
+`InvalidSource` (`reconciliation_invalid_source`), so `infinity`, `-infinity` and finite year 262143
+cannot reach the binary timestamp decoder, silently disappear or count as ordinary expiry.
+Representable finite extremes, including a PostgreSQL 4713 BC date and chrono's maximum at
+microsecond precision, retain normal expired/not-expired counting.
+
+The same read-only column grants suffice; this adds no credential, raw-expiry or token disclosure,
+record repair, schema migration or new CLI/API. Snapshot timing and inspection budgets are unchanged.
+That stage covered source Sessions only; registry `retired_at` and audit `recorded_at` were outside its
+scope. The separate registry follow-up below adds their guards, not protection for every timestamp. Current exact test
+selection and dated results are in [the testing guide](testing-guide.md) and [Project Status](project-status.md);
+the original twelve-case C1-K evidence below remains historical.
+
+### Unreleased registry timestamp decoding · 2026-10-07
+
+The registry follow-up checks three stored columns before binary timestamp decoding:
+`collaboration_legacy_identities.retired_at`, `collaboration_identity_audit.recorded_at` and
+`collaboration_policy_audit.recorded_at`. SQL requires finite non-null times no greater than chrono's
+maximum; infinite or out-of-range values are not filtered away, clamped or repaired. A genuinely NULL
+retirement still means not retired. An independent `valid_retired_at` boolean distinguishes that state
+from a malformed non-null retirement projected as NULL, which must fail as `InvalidRecord`.
+Both audit timestamps are mandatory; a NULL projection likewise fails as `InvalidRecord`.
+
+These projections are shared by locked identity reads, current audit heads, older history pages,
+command replay, append readback and read-only reconciliation. Every audit query binds the range
+parameter, including `LIMIT 0` schema checks. Reconciliation preserves its existing classifications:
+bad retirement becomes `InvalidIdentity`, bad identity-audit time becomes `IdentityHistoryMismatch`,
+and bad policy-audit time becomes `PolicyHistoryMismatch`; no partial consistent report is returned.
+
+This is a representability guard for those three columns, not a new age, chronology, retirement or
+audit-order policy. Existing state/history checks, lock order and transaction semantics remain in force.
+Other timestamp paths are not thereby proven safe. It changes no dependencies, storage schema, product
+version, live cutover or public interface, and rewrites no stored data. The new timestamp regression
+inventory is separate from the historical C1-K execution evidence below.
 
 ## Failure interpretation and recovery boundary
 

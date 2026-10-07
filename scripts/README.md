@@ -42,15 +42,37 @@ fixtures or build-cache cleanup targets. The script catalogue below retains indi
   cases: ordered text, private ownership, metadata edits/removal, old/new post-write byte checks,
   namespace pins, lifecycle expiry/revocation, commit/cancellation and competing edits. Requires only
   an explicit disposable database; does not expose public commands or connect the browser editor.
-- `test-durable-session-boundary.sh`: runs fourteen exact source-only Session PostgreSQL cases.
+- `test-durable-session-boundary.sh`: runs seventeen exact source-only Session PostgreSQL cases.
   Covers namespace/table identity, filtered or incompatible storage, post-write metadata/redirect
   faults, two-transaction login pins and logout/expiry ordering. Requires an explicit disposable
   database, not a registry or live deployment. `tests/durableSessionBoundaryCi.test.mjs` guards exact
-  selection and CI wiring; this does not add a public Session issuer.
+  selection and CI wiring. Three 2026-10-07 cases add invalid/boundary Session expiry, login-writeback
+  and password-change guard coverage; the selection count is not a new passing-run claim or public issuer.
+- `test-durable-reconciliation.sh`: selects seventeen exact read-only lifecycle PostgreSQL cases,
+  checking each name before execution. The original twelve cases are joined by two Session-expiry
+  and three registry-timestamp cases from 2026-10-07, covering invalid/finite times, precise error stages
+  and rejected Session commands. Source expiry remains an SQL-only boolean, without raw timestamp
+  disclosure. Requires an explicit disposable `CYANREX_TEST_DATABASE_URL`; this is not a repair,
+  deployed-data acceptance or blanket timestamp-safety check. Results remain dated in project status.
+- `test-registry-timestamps.sh`: selects ten exact SQL cases across identity storage, identity audit,
+  policy audit and reconciliation. Covers nullable-retirement validity, mandatory audit times, finite
+  boundaries, old history/replay and append readback. Accepts no arguments and requires an explicit
+  disposable `CYANREX_TEST_DATABASE_URL`. These cases also belong to their full suites and must not be
+  counted twice; the runner neither repairs data nor claims all timestamps are safe.
+- `test-durable-session-cleanup.sh`: runs exact library PostgreSQL regressions for explicit expired
+  Session maintenance, bounded batches and selected-row/source confirmation. Requires an explicit
+  disposable `CYANREX_TEST_DATABASE_URL`; fault fixtures must never target a deployed source. This is
+  not an operational cleanup command, automatic schedule or proof of globally bounded Session storage.
+  Dated execution results belong in project status.
 - `test-durable-password-profile.sh`: runs six exact prepared-password PostgreSQL cases: invalid
   stored profiles, unchanged existing Sessions, failed rotation, explicit writer compatibility and
   post-write trigger rollback. Requires an explicit disposable database; no live auth switch or
   automatic credential migration. `tests/durablePasswordProfileCi.test.mjs` guards CI selection.
+- `test-durable-login-password.sh`: runs exact library PostgreSQL regressions for missing-account
+  prepared-login password work and its database/worker boundary. Requires an explicit disposable
+  `CYANREX_TEST_DATABASE_URL`; synthetic fixtures must not use live credentials or a deployed source.
+  This checks the shared verification path, not constant-time login, comprehensive enumeration
+  resistance or public Session issuance. Dated execution results belong in project status.
 - `test-durable-otp-freshness.sh`: runs seven exact PostgreSQL cases in the library test binary with
   private per-source test clocks: login/rotation writer and trigger waits, rollback, snapshot release
   while the password executor is held, unchanged-clock success and freshness versus composed consumption. Requires an explicit

@@ -9,8 +9,11 @@ with binding/policy commands, without exposing deletion/retirement or switching 
 The original C1-E scope and verification are retained below; dated follow-ups separately describe
 the Session-boundary, password-work, stored-hash and OTP-freshness changes after 0.5.0,
 the pure OTP-consumption policy, and its subsequent schema-2 atomic integration, all included in 0.5.1.
-Earlier dated sections retain their then-unreleased implementation stage; the latest section defines
-the current prepared format. Source inclusion does not enable live authentication or migrate existing data.
+Dated sections retain their then-unreleased implementation stage; the atomic OTP section defines
+the current prepared storage format. The 2026-10-07 missing-account password-work, explicit expired
+Session cleanup and safe Session-expiry decoding follow-ups are included in 0.5.2 without a schema change.
+Their dated records retain the 0.5.1 working-tree version used during implementation.
+Source inclusion does not enable live authentication or migrate existing data.
 
 ## Decision and scope
 
@@ -31,6 +34,7 @@ and session digests cannot be updated in place through the installed schema.
 | `login` | Password and TOTP verification, current-incarnation recheck and committed session; only its SHA-256 token digest is stored |
 | `validate_session` | Fresh read-only snapshot of the exact unexpired account/session pair; no cleanup, role lookup or allocation |
 | `logout` | Confirmed removal of this exact session, idempotent when already absent; not account retirement or device/kernel cleanup |
+| `prune_expired_sessions` (included in 0.5.2) | Trusted maintenance of at most 128 expired Sessions per call; confirmed batch count, not whole-source emptiness |
 
 These are trusted adapter primitives. In particular, registration is not public enrollment or teacher
 bootstrap. `DurableAccountRef` and `DurableSession` are forgeable data/snapshots, **not an authorization
@@ -295,6 +299,92 @@ SQL fixtures now use explicit synthetic Sessions where only rotation is under te
 for genuine repeated login. Fault counters prove targeted triggers were reached; early replay rejection
 must not masquerade as rollback coverage. Exact consumption, schema and freshness runners and dated
 results are recorded in [testing](testing-guide.md) and [project status](project-status.md).
+
+### Unreleased missing account password work · 2026-10-07
+
+Prepared login now retains an optional account snapshot instead of immediately rejecting an absent
+username. Only a successful lookup returning no account selects a fixed public synthetic PHC record,
+using the same Argon2id v19, m=19456/t=2/p=1 and 32-byte digest profile as real prepared credentials.
+Malformed stored credentials, incompatible schema, wrong authority and database errors still fail;
+none is converted into a missing account or hidden by synthetic verification.
+
+The command verifies its original source pins and confirms the first transaction's COMMIT before
+entering the existing shared password verifier. Real and missing accounts use this single verification
+path, subject to the same four-dispatched/twenty-admitted gate and ten-second operation deadline.
+Database locks and connections are not held while waiting for or running password work. Oversized
+inputs and username-attempt limits still reject before this work. Already-dispatched blocking jobs
+retain both permits until completion even if the caller times out or is cancelled.
+
+After verification, login independently requires the original snapshot to contain a real account.
+Even a password that matches the public synthetic record cannot authorize a login. A missing-account
+snapshot never enters the second transaction, consumes an OTP, creates a Session or writes account
+state; registration of the same username during verification cannot make that snapshot authentic.
+Real accounts continue through the existing incarnation, credential, OTP and source-identity checks.
+
+This removes the major branch where a missing account skipped the password KDF; it is not constant-time
+login or comprehensive account-enumeration resistance. Admission, storage, parsing and OTP paths can
+still differ. Source remains 0.5.1, without new dependencies, HTTP issuance, live AuthService changes
+or a storage migration. Public issuance still requires reviewed timing, ingress, Session and recovery
+policies. Exact regression entry points and dated results are recorded in [testing](testing-guide.md)
+and [project status](project-status.md), separately from the historical C1-E totals.
+
+### Unreleased explicit expired Session cleanup · 2026-10-07
+
+`prune_expired_sessions() -> Result<u32>` is a trusted source-maintenance primitive. It accepts no
+caller-selected limit, token or owner and is not an end-user authorization API. No CLI, HTTP route or
+automatic schedule invokes it; ordinary login and Session validation gain no cleanup side effect.
+Auth source schema 2 and product version 0.5.1 remain unchanged.
+
+One source-owned transaction captures the original namespace/table pins under the source writer lock,
+then takes a single fresh database cutoff. It selects and locks at most 128 rows whose expiry is at or
+before that cutoff, ordered by expiry and token digest. SQL projections bound token text to 64 bytes
+and username text to 64 bytes before transfer, without filtering malformed candidates out of the batch.
+Both selection and deletion readback also guard expiry and creation timestamps in SQL before decoding:
+infinite or out-of-range candidate values become `InvalidRecord`, not a decoder panic, skipped row or
+clamped valid time. This protects only the maintenance path; it is not a driver-wide fix or dependency change.
+Every selected row must decode and validate its token digest, username, exact account incarnation,
+expiry and creation time before any deletion. An `EXISTS` check returns only whether that exact account
+exists; no password, TOTP secret or OTP-consumption state is fetched. Corrupt or orphaned candidates
+fail the operation instead of being silently repaired or treated as disposable data.
+
+Deletion targets only selected digests still eligible under the same cutoff. Returned full-row snapshots
+are sorted and compared exactly with the selected snapshots, including creation time. After rechecking
+the original source pins, the command confirms every selected digest is absent without an expiry filter:
+reinsertion with a future expiry also fails confirmation. A final pin check and confirmed COMMIT precede
+the returned count. Even an empty batch requires that final source check and commit. Suppressed or
+altered deletions cannot be acknowledged as successful batch cleanup.
+
+The count confirms only this selected batch; it does not prove the source is empty, promise a full batch
+of 128, or bound total Session rows, disk use, process RSS or execution time. The existing ten-second
+operation deadline, two-second lock timeout and five-second statement timeout apply. Cancellation,
+timeout or lost commit acknowledgement does not prove rollback or authorize blind retry. Explicit
+mutations target only `sessions`, but selected-row checks are not a whole-database audit of arbitrary
+malicious trigger effects on unselected data. Active-Session quotas, scheduling, operator/HTTP admission
+and recovery policies remain separate work. Exact runners and dated results belong in [testing](testing-guide.md)
+and [project status](project-status.md), not the historical C1-E totals.
+
+### Unreleased safe Session expiry decoding · 2026-10-07
+
+The shared prepared `session_record` reader now checks `expires_at` in SQL before binary timestamp
+decoding. Infinite values and finite values beyond chrono's supported maximum become `InvalidRecord`,
+not a decoder panic, an absent Session or a clamped valid date. This includes `infinity`, `-infinity`
+and the finite year 262143. Ordinary expiry still uses fresh database time after locks. Representable
+finite extremes, including a PostgreSQL 4713 BC date and chrono's microsecond-truncated maximum,
+remain eligible for normal expiry evaluation rather than being rejected merely for their age or distance.
+
+The shared reader covers Session validation, login writeback and guards that call it. A trigger-injected
+invalid login expiry therefore cannot become a delivered Session; the existing transaction governs its
+Session/OTP effects. [Read-only reconciliation](collaboration-reconciliation.md) checks the same range
+inside SQL but retrieves only an expiry boolean, returning `InvalidSource` for invalid values.
+Neither path silently repairs stored times, and reconciliation fetches no raw expiry values for its reports.
+
+That stage covered source Session expiry and the separate cleanup projection above, not registry times.
+The subsequent [registry timestamp follow-up](collaboration-reconciliation.md) adds SQL-before-decode guards
+for nullable `retired_at` and mandatory identity/policy audit `recorded_at`, including replay, history,
+append readback and reconciliation. Invalid non-null retirement cannot become an active identity.
+Other timestamp paths are not thereby proven safe. Dependencies, product version and source schema are unchanged; no live issuer,
+new CLI or public API is added. Exact test inventory and dated outcomes remain separate in [testing](testing-guide.md)
+and [project status](project-status.md).
 
 ### Remaining composition and migration
 

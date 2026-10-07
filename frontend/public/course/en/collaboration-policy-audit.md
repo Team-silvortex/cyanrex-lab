@@ -104,6 +104,15 @@ In the original C1-C slice, the last-manager guard covers this policy command on
 writes after the explicit identity schema 2 upgrade. Live authentication and privileged SQL maintenance
 remain outside this protocol; it does not guarantee that every system path preserves a manager.
 
+## Timestamp read guards included in 0.5.2
+
+The 2026-10-07 follow-up checks mandatory policy-audit `recorded_at` in SQL before binary decoding.
+Infinite/out-of-range values become `InvalidRecord`, not absent receipts or repaired dates, across
+head checks, historical pages, replay and append readback. Reconciliation retains `PolicyHistoryMismatch`.
+All projection callers bind chrono's maximum, including `LIMIT 0` schema checks. Existing sequence/state
+rules do not become a new wall-clock ordering policy. See the [registry timestamp contract](collaboration-reconciliation.md);
+no schema/dependency change or live cutover is added, and the C1-C results below remain historical.
+
 ## Verification and next gate
 
 [Command/concurrency tests](../../engine/tests/collaboration_policy_audit_tdd.rs),

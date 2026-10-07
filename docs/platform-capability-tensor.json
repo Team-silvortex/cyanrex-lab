@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
   "snapshot": {
-    "date": "2026-10-04",
-    "source_version": "0.5.1",
-    "base_commit": "a9523ec052f701e447d2e59fcd38d3a8d8186740",
-    "scope": "Source review of 0.5.1, based on the recorded 0.5.0 commit plus Session source pins, prepared password admission/profile checks, OTP freshness and schema-2 atomic counter consumption for login/rotation. Fresh explicit auth installation only; schema 1 is rejected unchanged. Includes C2-K/L/M/N content preparation and explicit unmounted HTTP routing. Historical evidence retains its original scope; no public issuer, live cutover, migration or deployment acceptance. Capability slices, not every function, endpoint or execution path.",
-    "verification": "Source and scoped recorded-evidence inventory, with separately dated content/Session PostgreSQL runs, password-work units, hash-profile/freshness regressions, pure OTP policy and atomic-consumption/schema SQL cases. Generating or validating this inventory does not execute its referenced tests or establish deployment acceptance or security certification; scores are reviewer judgments scoped to each coordinate."
+    "date": "2026-10-07",
+    "source_version": "0.5.2",
+    "base_commit": "ecad0ecc74bff161e4a6ad2cc12b0baa60a0548b",
+    "scope": "Source review of 0.5.2, including missing-account login work, explicit 128-row expired-Session maintenance, source Session-expiry and registry retirement/audit read guards. Source pins, shared password admission/profile checks, OTP freshness and schema-2 atomic consumption remain prepared-only. Missing accounts take bounded synthetic verification; cleanup validates complete selected rows. Invalid stored times are rejected before driver decoding in these scoped paths; invalid non-null retirement cannot become an active binding. No driver-wide time guarantee, complete enumeration defense, global storage quotas or automatic maintenance is supplied. Includes C2-K/L/M/N content preparation and unmounted HTTP routing. Historical evidence retains its original scope; no public issuer, live cutover, migration or deployment acceptance. Capability slices, not every function, endpoint or execution path.",
+    "verification": "Source and scoped recorded-evidence inventory, with separately dated content/Session PostgreSQL runs, password-work units, hash-profile/freshness regressions, pure OTP policy, atomic-consumption/schema SQL, missing-account worker boundaries, explicit Session cleanup, source-expiry and registry-time read cases. Generating or validating this inventory does not execute its referenced tests or establish deployment acceptance or security certification; scores are reviewer judgments scoped to each coordinate."
   },
   "axes": {
     "architecture": [
@@ -630,23 +630,35 @@
     {
       "id": "impl-I02",
       "sources": [
+        "engine/src/services/collaboration_identity_store/accounts.rs",
         "engine/src/services/collaboration_identity_store/identity_command.rs",
-        "engine/src/services/collaboration_identity_store/identity_audit.rs"
+        "engine/src/services/collaboration_identity_store/identity_audit.rs",
+        "engine/src/services/collaboration_identity_store/identity_audit_entry.rs",
+        "engine/src/services/collaboration_identity_store/identity_audit_schema.rs"
       ],
       "tests": [
         "engine/tests/collaboration_identity_store_tdd.rs",
-        "engine/tests/collaboration_identity_audit_tdd.rs"
+        "engine/tests/collaboration_identity_store/timestamps.rs",
+        "engine/tests/collaboration_identity_audit_tdd.rs",
+        "engine/tests/collaboration_identity_audit/timestamps.rs",
+        "scripts/test-registry-timestamps.sh",
+        "scripts/tests/registryTimestampsCi.test.mjs"
       ]
     },
     {
       "id": "impl-I03",
       "sources": [
         "engine/src/services/collaboration_identity_store/access_policy.rs",
-        "engine/src/services/collaboration_identity_store/policy_command.rs"
+        "engine/src/services/collaboration_identity_store/policy_command.rs",
+        "engine/src/services/collaboration_identity_store/policy_audit.rs",
+        "engine/src/services/collaboration_identity_store/policy_audit_schema.rs"
       ],
       "tests": [
         "engine/tests/collaboration_access_store_tdd.rs",
-        "engine/tests/collaboration_policy_audit_tdd.rs"
+        "engine/tests/collaboration_policy_audit_tdd.rs",
+        "engine/tests/collaboration_policy_audit/timestamps.rs",
+        "scripts/test-registry-timestamps.sh",
+        "scripts/tests/registryTimestampsCi.test.mjs"
       ]
     },
     {
@@ -654,6 +666,7 @@
       "sources": [
         "engine/src/services/auth_service/durable_source/mod.rs",
         "engine/src/services/auth_service/durable_source/sessions.rs",
+        "engine/src/services/auth_service/durable_source/session_cleanup.rs",
         "engine/src/services/auth_service/durable_source/session_source.rs",
         "engine/src/services/auth_service/durable_source/namespace.rs",
         "engine/src/services/auth_service/durable_source/source_relations.rs",
@@ -670,11 +683,22 @@
         "engine/tests/durable_auth_source_tdd.rs",
         "engine/tests/durable_session_boundary_tdd.rs",
         "engine/tests/durable_session_boundary",
+        "engine/tests/durable_session_boundary/timestamps.rs",
         "scripts/test-durable-session-boundary.sh",
         "scripts/tests/durableSessionBoundaryCi.test.mjs",
         "engine/src/services/auth_service/durable_source/password_work_tests.rs",
         "scripts/tests/durablePasswordWork.test.mjs",
         "engine/src/services/auth_service/durable_source/password_profile_tests.rs",
+        "engine/src/services/auth_service/durable_source/login_password_sql_tests.rs",
+        "engine/src/services/auth_service/durable_source/login_password_sql_behavior.rs",
+        "scripts/test-durable-login-password.sh",
+        "scripts/tests/durableLoginPasswordCi.test.mjs",
+        "engine/src/services/auth_service/durable_source/session_cleanup_sql_tests.rs",
+        "engine/src/services/auth_service/durable_source/session_cleanup_sql_behavior.rs",
+        "engine/src/services/auth_service/durable_source/session_cleanup_sql_faults.rs",
+        "scripts/test-durable-session-cleanup.sh",
+        "scripts/tests/durableSessionCleanup.test.mjs",
+        "scripts/tests/durableSessionCleanupCi.test.mjs",
         "engine/tests/durable_password_profile_tdd.rs",
         "scripts/test-durable-password-profile.sh",
         "scripts/tests/durablePasswordProfileCi.test.mjs",
@@ -756,10 +780,19 @@
       "id": "impl-O02",
       "sources": [
         "engine/src/services/auth_service/durable_source/reconciliation/mod.rs",
-        "engine/src/services/collaboration_identity_store/reconciliation/mod.rs"
+        "engine/src/services/auth_service/durable_source/reconciliation/source.rs",
+        "engine/src/services/collaboration_identity_store/reconciliation/mod.rs",
+        "engine/src/services/collaboration_identity_store/reconciliation/records.rs",
+        "engine/src/services/collaboration_identity_store/reconciliation/history.rs"
       ],
       "tests": [
-        "engine/tests/durable_reconciliation_tdd.rs"
+        "engine/tests/durable_reconciliation_tdd.rs",
+        "engine/tests/durable_reconciliation/timestamps.rs",
+        "engine/tests/durable_reconciliation/registry_timestamps.rs",
+        "scripts/test-durable-reconciliation.sh",
+        "scripts/test-registry-timestamps.sh",
+        "scripts/tests/registryTimestampsCi.test.mjs",
+        "scripts/tests/postgresCi.test.mjs"
       ]
     },
     {
@@ -1327,6 +1360,34 @@
       "kind": "database-record",
       "reference": "docs/en/collaboration-auth-source.md",
       "note": "11 exact atomic-consumption and four schema PostgreSQL cases passed after independent sources reproduced two successful uses of one code. Account-bound counter CAS, login/rotation competition, reopen/incarnations, write/commit/cancellation rollback, real collisions, genuine schema-1 refusal, schema-2 shape checks and fresh registration/bootstrap. Private clocks and disposable local SQL only; adjacent tests and gates are dated in project status. No public issuer, legacy switch, existing-data migration or commit-ack recovery proof."
+    },
+    {
+      "id": "login-password-work",
+      "date": "2026-10-07",
+      "kind": "database-record",
+      "reference": "docs/en/project-status.md",
+      "note": "Seven exact disposable PostgreSQL cases passed after missing-account early rejection failed the held-executor regression. Shared-gate permits demonstrate queued work and cancellation retention; a single-connection pool and metadata NOWAIT prove released SQL resources. Matching public dummy credentials, same-name creation during work, unchanged state, input/attempt/global limits and distinct storage/profile/source errors are covered. The fixed synthetic PHC is separately derived and verified in a unit test. Not a timing-equivalence benchmark, comprehensive enumeration defense, public issuer or live-auth switch."
+    },
+    {
+      "id": "session-cleanup",
+      "date": "2026-10-07",
+      "kind": "database-record",
+      "reference": "docs/en/project-status.md",
+      "note": "Nine exact disposable PostgreSQL cases passed after an unimplemented maintenance seam failed the batch test and an infinite timestamp reproduced a SQLx chrono decoder panic. Explicit 128-row batches retain a real usable Session and OTP state; source isolation, independent pools, lock-fresh cutoff, corrupt/orphan refusal and hit-proven suppression/reinsertion/source-drift/commit/cancellation faults are covered. SQL projections reject unsafe text/time before decoding. Internal primitive only: no automatic cleanup, CLI/HTTP connection, full-source emptiness, global storage bound or audit of arbitrary trigger side effects."
+    },
+    {
+      "id": "session-expiry-reads",
+      "date": "2026-10-07",
+      "kind": "database-record",
+      "reference": "docs/en/project-status.md",
+      "note": "Five new disposable PostgreSQL regression groups passed after Session validation and source reconciliation each reproduced a SQLx chrono decoder panic. Shared Session expiry rejects infinity and finite year 262143 before decoding; reconciliation selects a checked expiry boolean. Normal expiry and finite PostgreSQL/chrono bounds remain accepted. Login INSERT fault counters and complete synthetic row snapshots demonstrate OTP/Session rollback; password-change authorization and reconciliation preserve state on refusal. Original locks/cutoffs remain. Registry retirement and identity/policy audit timestamp decoding was a separate remaining slice at this stage, addressed by the later registry-time-reads record; no driver-wide, live-auth or dependency change is claimed."
+    },
+    {
+      "id": "registry-time-reads",
+      "date": "2026-10-07",
+      "kind": "database-record",
+      "reference": "docs/en/project-status.md",
+      "note": "Ten new exact PostgreSQL regression groups passed on a private disposable instance after retirement, lifecycle and policy reads reproduced the locked SQLx chrono panic. Fourteen decoder-producing projections guard nullable retirement and mandatory identity/policy audit times before decoding. A raw validity flag prevents invalid non-null retirement from reviving a binding through NULL; genuine NULL and finite PostgreSQL/chrono boundaries remain accepted. Healthy-head/invalid-old-receipt cases cover history/replay, hit-counted write faults and complete SQL snapshots cover rollback, and reconciliation preserves exact-stage refusal without writes. Schema LIMIT-0 activation probes bind the same range check. Sequence continuity, existing locks, budgets and snapshots are unchanged; no new age policy, repair, schema/dependency change, driver-wide guarantee or live cutover."
     }
   ],
   "cells": [
@@ -1545,7 +1606,8 @@
         "O": 1
       },
       "evidence": [
-        "c1-identity"
+        "c1-identity",
+        "registry-time-reads"
       ],
       "gap": {
         "en": "Historical SQL evidence; production adoption, writer fencing and recovery are absent.",
@@ -1565,7 +1627,8 @@
         "O": 1
       },
       "evidence": [
-        "c1-policy"
+        "c1-policy",
+        "registry-time-reads"
       ],
       "gap": {
         "en": "Membership is not deployment permission or private-content sharing.",
@@ -1591,11 +1654,14 @@
         "password-profile",
         "otp-freshness",
         "otp-consumption-policy",
-        "otp-consumption"
+        "otp-consumption",
+        "login-password-work",
+        "session-cleanup",
+        "session-expiry-reads"
       ],
       "gap": {
-        "en": "Schema-2 OTP consumption, source pins, worker counts, PHC costs and pre-commit freshness are guarded. Timing policy, ingress/auth composition, recovery/migration and live cutover remain pending.",
-        "zh-CN": "Schema 2 OTP 消费、来源身份、工作数量、PHC 成本及提交前时效已有防护；时序策略、入口认证组合、恢复/迁移及在线切换待补。"
+        "en": "Source/OTP/password boundaries and explicit expired-row batches are guarded. Active/global Session quotas, maintenance/ingress composition, full timing policy, recovery/migration and live cutover remain pending.",
+        "zh-CN": "来源/OTP/密码边界及显式过期记录分批已有防护；有效/全局会话限额、维护/入口组合、完整时序策略、恢复/迁移及在线切换待补。"
       }
     },
     {
@@ -1679,11 +1745,13 @@
         "O": 2
       },
       "evidence": [
-        "c1-reconcile"
+        "c1-reconcile",
+        "session-expiry-reads",
+        "registry-time-reads"
       ],
       "gap": {
-        "en": "A bounded read-only snapshot, not repair, permission or secret-delivery proof.",
-        "zh-CN": "有界只读快照，不是修复、授权或秘密送达证明。"
+        "en": "Scoped source expiry and registry retirement/audit reads are guarded, not every database timestamp. A bounded read-only snapshot is not repair, permission, recovery or secret-delivery proof.",
+        "zh-CN": "来源到期及身份退休/审计读取已按范围防护，不代表所有数据库时间均安全。有界只读快照不是修复、授权、恢复或秘密送达证明。"
       }
     },
     {

@@ -66,7 +66,7 @@ new content validation, private ownership, schema compatibility, lifecycle revoc
 trigger faults, deferred commit failure, expiry/logout and cancellation. The CI runner verifies exact
 test names before executing them. Actual results are recorded in [project status](project-status.md).
 
-The unreleased [C2-K content manifest](task-content-manifest.md) adds a pure metadata/snapshot contract,
+The [C2-K content manifest](task-content-manifest.md), included in 0.5.0, adds a pure metadata/snapshot contract,
 without changing this store or command. The separate [C2-L trusted store](task-content-store.md) adds
 atomic metadata editing in schema 3, which these schema 2 Session adapters reject. Dedicated Session
 content/byte composition is now provided separately by [C2-M](session-task-content.md); public authentication/CSRF and browser saving/conflict UI,

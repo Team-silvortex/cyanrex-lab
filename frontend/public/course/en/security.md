@@ -144,7 +144,7 @@ not credentials, token digests or individual identities. A consistent snapshot c
 commit; it neither proves an uncertain command's outcome nor authorizes reinitialization, secret
 recovery or protected actions. Existing authorization still needs fresh Session checks and row locks.
 
-The unreleased [durable Session-source follow-up](collaboration-auth-source.md) pins namespace and
+The [durable Session-source follow-up](collaboration-auth-source.md), included in 0.5.1, pins namespace and
 auth-table identity for login, validation and logout, including login's password-worker gap and
 post-write path drift. Only one effective private schema and unfiltered permanent source tables are
 accepted; no registry, migration or live authentication switch is implied. This prevents an empty
@@ -159,6 +159,15 @@ rejection of duplicate/unknown parameters. Other profiles return `InvalidRecord`
 rewrites or implicit Session revocation. This does not limit old live AuthService work, other processes,
 wall-clock time or process RSS, and does not kill running computation. Timing enumeration
 and ingress/session limits remain gates before untrusted Session issuance.
+
+The 2026-10-07 login follow-up included in 0.5.2 gives a genuinely missing account the same supported password
+profile through one synthetic verification on the shared gate, after source-pin rechecks and confirmed
+commit of the lookup transaction. It never substitutes for corrupt credentials or a source/database
+error. Login still separately requires the original real account, so matching the public synthetic
+record or registering that name during verification cannot issue a Session or consume an OTP.
+Input and attempt limits remain earlier checks, and dispatched work retains its permits on cancellation.
+This removes the missing-account KDF shortcut, not every timing difference or enumeration channel;
+there is no constant-time promise, new public issuer, live-auth switch or schema change.
 
 Prepared login and rotation also recheck OTP freshness behind the writer fence and after the last
 SQL wait before requesting commit. Expiry at that point rejects issuance or rolls back rotation.
@@ -175,6 +184,33 @@ COMMIT reply may leave consumption committed without delivering a token: do not 
 reset state to retry. This is neither freshness at acknowledgement nor protection against every clock
 rollback. Version fencing applies to cooperating prepared writers, not legacy or privileged SQL
 writers; they must remain isolated. See [the full OTP contract](collaboration-auth-source.md).
+
+The explicit `prune_expired_sessions` maintenance included in 0.5.2 selects at most 128 expired rows under the
+source writer fence and one fresh database cutoff. It validates the complete batch before deletion,
+compares returned full rows and confirms all selected digests are absent in the original pinned source,
+including attempted reinsertion with future expiry. SQL rejects selected candidates' infinite or
+out-of-range timestamps before decoding on this maintenance path. Corrupt/orphaned candidates fail
+rather than being repaired. Only a confirmed commit returns the batch count; an empty or partial count
+is not proof of global emptiness or a bound on Session storage. Cancellation or lost acknowledgement is not rollback
+evidence. The primitive reads no credentials/OTP state and its explicit mutations target only Sessions;
+these checks do not audit arbitrary trigger effects throughout the database. There is no automatic
+schedule, CLI/HTTP entry or login/read cleanup side effect. Active-Session quotas and maintenance
+admission/recovery remain separate policies; see [the cleanup contract](collaboration-auth-source.md).
+
+The 2026-10-07 Session-expiry follow-up included in 0.5.2 rejects infinite and out-of-range `expires_at` values
+inside SQL before the shared prepared Session reader decodes them. Validation, login writeback and its
+calling guards receive `InvalidRecord`, not a panic or silent absence; normal finite expiry remains
+unchanged. Read-only reconciliation keeps the range/expiry comparison in SQL, fetches only an expiry
+boolean and returns `InvalidSource` for bad values, without exposing raw expiry. Registry timestamps
+were outside that stage and are covered by the separate follow-up below. It changes no
+dependency, live issuer, schema or public API; see [the Session contract](collaboration-auth-source.md).
+
+The subsequent 2026-10-07 [registry guard](collaboration-reconciliation.md), also included in 0.5.2, checks stored
+retirement and both identity/policy audit times in SQL before decoding. Legitimate NULL retirement
+remains valid, while an independent validity flag rejects corrupt non-null retirement; mandatory audit
+times cannot become missing receipts. Head/history/replay/append-readback and reconciliation paths
+retain explicit errors rather than panic, skip or repair records. This changes no age/order rule,
+dependency, schema or live authorization boundary and is not blanket timestamp-safety assurance.
 
 ### Browser diagnostic boundary
 
@@ -375,12 +411,18 @@ After class:
 
 ## Dependency Audit Policy
 
-- Frontend dependency floors are Next.js 15.5.24 and sharp 0.35.4. These address the upstream
+- Frontend dependency floors are Next.js 15.5.24, sharp 0.35.5 and source-map-js 1.2.2. These retain fixes for the upstream
   [Windows server](https://github.com/vercel/next.js/security/advisories/GHSA-p293-qw3h-jr36),
   [AVIF optimization](https://github.com/vercel/next.js/security/advisories/GHSA-2xp9-vwfh-vxw4) and
   [sharp/libheif](https://github.com/lovell/sharp/security/advisories/GHSA-rgj7-g3m4-5g8c) advisories.
+  The sharp update also addresses the [bundled librsvg issue](https://github.com/advisories/GHSA-wq5f-xc86-pv6w),
+  and source-map-js addresses [indexed-map amplification](https://github.com/advisories/GHSA-68fv-2mgg-jv7q).
+  Offline regression checks require the patched sharp/source-map-js overrides and all locked copies,
+  including cross-platform sharp 0.35.5/libvips 1.3.4 packages; live audit remains a separate check.
   Rebuild and redeploy to apply updated dependencies; editing the lockfile does not update a running
   container. A custom global libheif must also be at least 1.23.2; an npm audit is not host-library acceptance.
+  The 2026-10-07 repaired candidate's production audit has no moderate/high/critical findings, but retains
+  one low DOMPurify finding. This is not a claim that all dependencies or deployed libraries are safe.
 - We run `cargo audit` for Rust backend dependencies and track accepted exceptions in
   `scripts/security-audit-exceptions.json`.
 - The locked rustls dependency is at least 0.23.45, addressing the TLS 1.3 handshake encryption-level

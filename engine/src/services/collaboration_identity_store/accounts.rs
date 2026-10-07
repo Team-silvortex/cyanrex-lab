@@ -2,6 +2,11 @@ use super::*;
 
 impl StoredLegacyIdentity {
     pub(super) fn decode(row: &sqlx_postgres::PgRow) -> Result<Self> {
+        // A corrupt non-NULL retirement is not an active binding. The SQL projection keeps
+        // this validity bit separate from the nullable, decoder-safe timestamp.
+        if !row.try_get::<bool, _>("valid_retired_at")? {
+            return Err(IdentityStoreError::InvalidRecord);
+        }
         let authority_id = AuthorityId::try_from(row.try_get::<uuid::Uuid, _>("authority_id")?)?;
         let principal_id = PrincipalId::try_from(row.try_get::<uuid::Uuid, _>("principal_id")?)?;
         // Shared by locked runtime reads and the separate read-only reconciliation snapshot.
@@ -29,7 +34,9 @@ impl StoredLegacyIdentity {
                 display_name: row.try_get("display_name")?,
                 status,
             },
-            retired_at: row.try_get("retired_at")?,
+            retired_at: row
+                .try_get("retired_at")
+                .map_err(|_| IdentityStoreError::InvalidRecord)?,
         };
         if record.retired_at.is_some() && status != PrincipalStatus::Disabled {
             return Err(IdentityStoreError::InvalidRecord);
@@ -66,11 +73,14 @@ impl CollaborationIdentityStore {
         username: &LegacyUsername,
         account_id: LegacyAccountId,
     ) -> Result<Option<StoredLegacyIdentity>> {
-        let row = sqlx::query("SELECT i.authority_id, i.username, i.account_id, i.principal_id, i.retired_at,
+        let row = sqlx::query("SELECT i.authority_id, i.username, i.account_id, i.principal_id,
+            i.retired_at IS NULL OR (isfinite(i.retired_at) AND i.retired_at <= $4) AS valid_retired_at,
+            CASE WHEN isfinite(i.retired_at) AND i.retired_at <= $4 THEN i.retired_at END AS retired_at,
             p.kind, p.display_name, p.status FROM collaboration_legacy_identities i
             JOIN collaboration_principals p ON p.authority_id = i.authority_id AND p.principal_id = i.principal_id
             WHERE i.authority_id = $1 AND i.username = $2 AND i.account_id = $3 FOR SHARE OF i, p")
             .bind(scope.authority_id.as_uuid()).bind(username.as_str()).bind(account_id.as_uuid())
+            .bind(DateTime::<Utc>::MAX_UTC)
             .fetch_optional(connection).await?;
         row.as_ref().map(StoredLegacyIdentity::decode).transpose()
     }

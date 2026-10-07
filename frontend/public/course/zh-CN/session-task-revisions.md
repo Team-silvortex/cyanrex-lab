@@ -54,7 +54,7 @@ Task 存储 Schema 现为 **2**，仅允许在专用空命名空间显式安装�
 并发写入、触发器故障、延迟提交失败、过期/退出及取消。CI runner 先核对准确用例名称再执行，实际
 验收结果见[项目状态](project-status.md)。
 
-未发布的 [C2-K 内容清单](task-content-manifest.md)只新增元数据/快照纯契约，不改变本存储或命令。
+0.5.0 收录的 [C2-K 内容清单](task-content-manifest.md)只新增元数据/快照纯契约，不改变本存储或命令。
 独立 [C2-L 可信存储](task-content-store.md)已在 Schema 3 支持元数据原子编辑，本 Schema 2 Session
 适配器会拒绝该格式。[C2-M](session-task-content.md)另行提供专用 Session 内容/字节组合；公共认证/CSRF、
 浏览器保存及冲突界面、二进制附件、数据迁移与在线切换仍是后续工作。本轮不执行代码、不验证类型化领域证据、不签发规则 Review、不扩大跨用户

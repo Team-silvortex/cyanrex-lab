@@ -1,6 +1,6 @@
 # cyanrex-lab
 
-Version: `0.5.1`
+Version: `0.5.2`
 
 Cyanrex is evolving into a self-hosted collaboration platform for people, AI Agents and compute
 resources. Tasks, content versions, execution and reviews have separate responsibilities; eBPF teaching
@@ -24,9 +24,14 @@ private process in [SECURITY.md](SECURITY.md).
 
 ## Current development snapshot
 
-As of **2026-10-04**, the source version is **0.5.1**. This patch hardens prepared authentication:
-source identity pins, bounded password work, fixed hash profiles, OTP freshness and atomic counter
-consumption. Fresh auth installation uses schema 2; existing schema 1 is rejected without migration.
+As of **2026-10-07**, the source version is **0.5.2**. This patch adds bounded password work for
+missing-account login denial, explicit 128-row expired-Session maintenance, and guarded Session,
+identity-retirement and audit-time reads. Existing source pins, password profiles and atomic OTP
+consumption remain in place. Fresh auth installation uses schema 2; existing schema 1 is rejected
+without migration. Maintenance is internal-only, not scheduled cleanup or a global storage quota;
+timestamp guards cover named paths, not every database time or a new age/order policy.
+Frontend security floors are also raised to sharp 0.35.5 and source-map-js 1.2.2, with offline
+lock/override regression checks alongside the live production dependency audit.
 The task-content HTTP adapter remains unmounted and the editor local-only. Neither this release nor
 passing tests switch legacy authentication or an existing deployment.
 
@@ -234,12 +239,13 @@ Starting the application does not initialize or migrate the separate collaborati
 For classroom deployment or offline distribution, create a packaged artifact with prebuilt Docker images:
 
 ```bash
-./scripts/package-distribution.sh --version 0.5.1
+./scripts/package-distribution.sh --version 0.5.2
 ```
 
 This produces:
-- `dist/cyanrex-lab-0.5.1-<timestamp>.tar.gz`
-- `dist/cyanrex-lab-0.5.1-<timestamp>.tar.gz.sha256`
+
+- `dist/cyanrex-lab-0.5.2-<timestamp>.tar.gz`
+- `dist/cyanrex-lab-0.5.2-<timestamp>.tar.gz.sha256`
 
 The archive contains the PostgreSQL, Engine, and frontend images. On a disposable Docker host,
 verify the freshly extracted package end to end with `./install-smoke.sh`. It checks the package
@@ -274,10 +280,10 @@ For an artifact downloaded from the Tag workflow, place its four files in a dedi
 verify the complete candidate from a trusted checkout of the matching source Tag before extracting it:
 
 ```bash
-release_revision="$(git rev-list -n 1 v0.5.1)"
+release_revision="$(git rev-list -n 1 v0.5.2)"
 cargo run --quiet --manifest-path engine/Cargo.toml --locked --bin cyanrex-release -- \
   candidate verify /path/to/downloaded-candidate \
-  --expect-version 0.5.1 --expect-revision "$release_revision" --expect-tag v0.5.1 \
+  --expect-version 0.5.2 --expect-revision "$release_revision" --expect-tag v0.5.2 \
   --extract-to /path/to/new-output-directory
 ```
 

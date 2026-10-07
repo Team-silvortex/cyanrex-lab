@@ -110,6 +110,14 @@ SHA-256 摘要覆盖版本化 JSON 元组中的命令 ID、完整 actor、Worksp
 [C1-J 本地初始化](collaboration-provisioning.md)和 [C1-K 只读对账](collaboration-reconciliation.md)内部准备层。
 完整生命周期及真实数据切换仍待完成。下文验证保留 C1-D 原切片证据，不涵盖这些后续。
 
+## 0.5.2 收录的时间读取防护
+
+2026-10-07 后续在二进制解码前，通过 SQL 检查存储 `retired_at` 和身份审计 `recorded_at`。
+NULL 退役时间仍合法，独立有效性标志阻止坏非空退役时间被当作活动身份；必填审计时间无法表示时
+返回 `InvalidRecord`。身份读取、审计头/历史、重放、追加读回和对账保留原状态、锁序及事务规则，
+不新增年代/排序策略、不改 Schema 或修复数据。详见[注册表时间合同](collaboration-reconciliation.md)，
+下方 C1-D 结果仍是历史证据。
+
 ## 验证
 
 [命令测试](../../engine/tests/collaboration_identity_audit_tdd.rs)、

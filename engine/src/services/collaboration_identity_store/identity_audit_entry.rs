@@ -167,7 +167,10 @@ impl LegacyIdentityAuditEntry {
             request_digest,
             before,
             after,
-            recorded_at: row.try_get("recorded_at")?,
+            recorded_at: row
+                .try_get::<Option<DateTime<Utc>>, _>("recorded_at")
+                .map_err(|_| IdentityStoreError::InvalidRecord)?
+                .ok_or(IdentityStoreError::InvalidRecord)?,
         })
     }
 }

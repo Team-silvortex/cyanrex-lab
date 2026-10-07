@@ -1,6 +1,6 @@
 # 当前项目测试指南
 
-本文按 **2026-10-03 的源码版本 0.5.0** 核对，包含任务 payload、Session 命令与独立内容 HTTP 适配。
+本文按 **2026-10-07 的 0.5.2 源码** 核对，包含登录拒绝路径、会话清理和会话/注册表时间防护，以及任务 payload、Session 命令与独立内容 HTTP 适配。
 它说明各模块和边界应测什么、每层通过能证明什么，以及如何避免使用线上数据。本文是测试方案和
 源码清单，不是一次新的测试结果。先用[平台链路地图](platform-network.md) 区分已连接与未连接路径。
 [功能张量](capability-maturity.md)将实现切片关联到测试源码与分日期证据；公共脚本检查其结构、引用
@@ -39,8 +39,11 @@ Rust 公告审计，前端/SDK 检查也包含生产依赖的 npm 审计。因�
 | 教学包与通用目录 | `task_catalog_tdd`、`teaching_task_adapter_tdd`、`collaboration_contract_tdd` | 类型化证据、精确定义/策略身份；目录准入不执行规则、不验收 Task |
 | 事件和设置 | `module_boundaries_tdd`、EventBus、显式事件 SQL、事件/设置单元与浏览器套件 | 发布顺序 → 持久化历史 → 重新同步、导出/删除筛选安全、确认设置写入和读取失败 |
 | 通用身份与权威 | `collaboration_*_tdd`、`legacy_workspace_projection_tdd` | 审计绑定/成员/授权修订、缺席键竞争、最后管理者、角色与部署权限分离 |
+| 注册表时间 | `test-registry-timestamps.sh` 从四个既有目标准确选择十条用例 | 可空退役有效性、必填身份/策略审计时间、有限边界、旧历史/重放、追加读回、对账错误及 Session 命令拒绝；不新增年代/排序规则 |
 | 持久化认证源与生命周期 | `durable_auth_source_tdd`、`durable_session_boundary_tdd`、`durable_collaboration_tdd`、删除/改密/初始化/核对测试目标 | 来源命名空间/表身份 → 账户世代 → 精确当前 Session → 同事务身份/策略、命名空间替换、写后事实 |
 | 准备层密码工作 | 默认 `auth_service::durable_source::password_work` 单测及源码接线守卫 | 派发/排队容量、取消/超时生命周期、panic 回收与真实哈希；各入口另重跑来源、改密和初始化 SQL |
+| 缺失账号密码工作 | `test-durable-login-password.sh`，固定 PHC 单测及源码/CI 守卫 | 观察共享门控真实派发到被占用的执行器、SQL 资源释放、取消、同名并发注册及占位密码匹配仍拒绝；不是计时基准或完整抗枚举证明 |
+| 显式过期会话清理 | `test-durable-session-cleanup.sh`：九条准确库内 SQL、默认关闭连接池测试及源码/CI 守卫 | 128 条分批、有效会话保留、独立写者、锁后截止时间、文本/时间预检、孤儿/坏候选及命中证明的删除/提交/取消故障；不自动清理或操作线上数据 |
 | 准备层密码参数 | `test-durable-password-profile.sh`，默认 `password_profile`/`password_work` 单测与源码/CI 守卫 | 六条准确 SQL 覆盖坏记录、写入兼容、已有 Session 和回滚；极端数字仅做纯预检测试，不执行巨量计算 |
 | 准备层 OTP 时效 | `test-durable-otp-freshness.sh` 准确选择七条 `--lib` SQL；默认 `otp::tests` 及源码/CI 守卫 | 观察 SQL 等待，或执行器占用时读事务释放后，再推进私有时钟；不证明准确入队时刻。覆盖回滚、成功与时效/组合消费区别，不改机器时间或提供公开时钟覆盖 |
 | OTP 消费策略 | 默认 `otp_consumption::tests` 与 `durableOtpConsumption` 源码守卫 | 纯计数器选择、真实碰撞、凭据绑定、准确末次计数器和输入/时间边界；纯单测不证明持久化/原子性。策略现用于准备层登录/改密 |
@@ -107,11 +110,23 @@ PostgreSQL 连接变量和 dotenv 预加载设置，再只添加所选夹具需�
 身份/认证源/生命周期/初始化用例在 CI 中另有精确清单。
 [`postgresCi.test.mjs`](../../scripts/tests/postgresCi.test.mjs) 检查 runner 清单完整性。
 
-另有 `scripts/test-durable-session-boundary.sh` 精确选择 **14 条来源层 Session 用例**，覆盖
+截至 2026-10-07 到期时间解码改动，`scripts/test-durable-session-boundary.sh` 精确选择
+**17 条来源层 Session 用例**（原 14 条加三条时间用例），覆盖
 歧义/临时命名空间、过滤或不兼容关系、写后路径/关系替换、元数据变化、登录两段事务身份以及
-退出/过期锁顺序，不需要协作注册表。`durableSessionBoundaryCi.test.mjs` 检查其清单；它与上述
+退出/过期锁顺序，以及会话验证、登录写后读回和改密守卫中的坏值/有限边界到期时间，不需要
+协作注册表。`durableSessionBoundaryCi.test.mjs` 检查其清单；它与上述
 212 条资源用例、原 `durable_auth_source_tdd` 的 14 条 SQL 分开计数。入口数量不证明全部已重跑，
 实际执行见带日期的项目进度。
+
+`scripts/test-durable-reconciliation.sh` 现精确选择 **17 条用例**：原十二条生命周期检查、
+两条 Session 到期用例，以及 2026-10-07 随后增加的三条注册表时间用例。Session 检查只取 SQL
+过期布尔值；注册表用例覆盖准确错误阶段、有限审计时间和 Session 授权绑定被拒绝。runner 执行前
+核对准确名称；这些是源码选择数量，不是新的通过结果，原 C1-K 历史结果不改写。
+
+2026-10-07 注册表后续新增 **10 条独立 SQL 用例**：身份存储两条、身份审计两条、策略审计三条、
+对账三条；对应完整套件库存分别为 **17、18、19、17 条**。`scripts/test-registry-timestamps.sh`
+只是这十条的精确专题入口，不能在完整套件之上重复累计；CI 通过维护的全套选择清单收录它们。
+范围防护只针对三个存储注册表列，不代表任意时间字段安全或新增墙上时钟排序规则。
 
 例如，在一次性 URL 已配置后运行：
 

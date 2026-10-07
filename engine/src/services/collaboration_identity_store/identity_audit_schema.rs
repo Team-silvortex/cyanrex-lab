@@ -4,8 +4,9 @@ impl CollaborationIdentityStore {
     pub(super) async fn verify_identity_audit_schema(connection: &mut PgConnection) -> Result<()> {
         sqlx::query(&format!(
             "{} LIMIT 0",
-            identity_audit::IDENTITY_AUDIT_SELECT
+            identity_audit::identity_audit_select(1)
         ))
+        .bind(DateTime::<Utc>::MAX_UTC)
         .execute(&mut *connection)
         .await?;
         let row = sqlx::query("SELECT count(*) AS count FROM pg_trigger

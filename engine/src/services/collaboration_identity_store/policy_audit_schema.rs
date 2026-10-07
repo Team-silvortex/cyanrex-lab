@@ -2,7 +2,8 @@ use super::*;
 
 impl CollaborationIdentityStore {
     pub(super) async fn verify_audit_schema(connection: &mut PgConnection) -> Result<()> {
-        sqlx::query(&format!("{} LIMIT 0", policy_audit::AUDIT_SELECT))
+        sqlx::query(&format!("{} LIMIT 0", policy_audit::audit_select(1)))
+            .bind(DateTime::<Utc>::MAX_UTC)
             .execute(&mut *connection)
             .await?;
         let row = sqlx::query(

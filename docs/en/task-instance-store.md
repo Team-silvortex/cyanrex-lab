@@ -85,7 +85,7 @@ hook, migration of old teaching records, CLI entry or automatic memory/file fall
 
 Source release 0.4.9 verifies Task storage schema version 2 and the selected scope. The C2-B schema 1
 from 0.4.8 is rejected; only fresh empty installation is supported, with no automatic migration.
-Shared `CoreSchemaVersion` stays 1. The separate unreleased [C2-L content store](task-content-store.md) uses schema 3 and required
+Shared `CoreSchemaVersion` stays 1. The separate [C2-L content store](task-content-store.md), included in 0.5.0, uses schema 3 and required
 manifests; this schema 2 handle and its Session adapters reject that namespace rather than editing it.
 Runtime checks require three permanent ordinary tables without row-level security, partitioning,
 inheritance or temporary-table shadowing. Relation locks pin the checked identities; writers also lock metadata before the task row
