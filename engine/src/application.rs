@@ -58,6 +58,7 @@ pub fn build_router(state: Arc<AppState>) -> Router {
         .merge(staff_routes(state.clone()))
         .merge(admin_routes(state.clone()))
         .layer(cors_layer())
+        .layer(middleware::from_fn(routes::ai_agent_settings::no_store))
         .layer(middleware::from_fn(routes::classroom::no_store))
         .with_state(state)
 }
@@ -191,6 +192,14 @@ fn staff_routes(state: Arc<AppState>) -> Router<Arc<AppState>> {
 fn admin_routes(state: Arc<AppState>) -> Router<Arc<AppState>> {
     // The historical API tier name stays stable; teachers own deployment management.
     Router::new()
+        .route(
+            "/settings/ai-agents",
+            get(routes::ai_agent_settings::get_settings)
+                .post(routes::ai_agent_settings::update_settings)
+                .layer(DefaultBodyLimit::max(
+                    crate::services::ai_agent_settings::MAX_AI_AGENT_SETTINGS_BYTES,
+                )),
+        )
         .route(
             "/classroom/invitations",
             get(routes::classroom::invitations)

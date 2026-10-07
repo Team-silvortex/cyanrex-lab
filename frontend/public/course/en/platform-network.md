@@ -1,6 +1,6 @@
 # Current platform feature and module network
 
-Base source review date: **2026-10-03**. Current scope: **0.5.2 source**, including prepared-authentication
+Base source review date: **2026-10-03**. Current scope: **0.5.3 source**, including prepared-authentication
 hardening, the 0.5.0 navigation/filename fixes and C2-K/L/M/N content preparation, alongside the preceding
 collaboration commands and local task payload editor. The review retains its
 0.4.9 base commit and dated evidence; source inclusion is not a new release acceptance report or a
@@ -16,10 +16,32 @@ read hardening. The subsequent [registry-time follow-up](collaboration-reconcili
 nullable retirement and both audit times in their shared readers, without changing topology, schema
 or age/order policy. Neither slice proves every database timestamp safe.
 
+0.5.3 [C2-O](task-draft-publication.md) adds a separate pure draft importer/publication plan and
+supplied-content binding coordinate. Its new internal connections do not publish bytes or complete
+the browser/public save bridge.
+
+0.5.3 [C2-P](session-task-draft-publication.md) separately joins the plan to existing authorized
+Artifact publication and Task creation, one explicit step at a time. Its caller-owned outcomes are
+in-memory only; failed or dropped steps stop advancement, not undo earlier commits. No browser or
+public route is connected.
+
+0.5.3 [C2-Q](session-task-draft-observation.md) adds a read-only branch for one fixed unconfirmed
+target. Every read uses the original current Session; its body-free result leaves the attempt unchanged
+and does not establish the earlier write’s outcome or enable retry.
+
+0.5.3 [C2-R](session-task-draft-checkpoint.md) exports allocated targets and reported progress as
+bounded metadata. Its pure parse result is caller data, not an attempt, journal or authority. Export
+does not save, read storage or invoke C2-Q; the codec itself supplies no recovery connection.
+
+0.5.3 [C2-S](session-task-draft-inspection.md) separately combines a parsed checkpoint with an
+explicit trusted workspace and current Session for one existing authorized read. It compares current
+metadata without an original attempt, not original caller/body provenance or storage incarnation.
+It does not restore C2-Q, adopt confirmations or supply a journal or retry policy.
+
 For architecture × capability × implementation × maturity, use the new
 [capability tensor and score rubric](capability-maturity.md) and its
-[machine inventory](../platform-capability-tensor.json): 57 implementation coordinates, 73 directed
-edges and 16 representative paths. This page remains the route/module topology view; scores and
+[machine inventory](../platform-capability-tensor.json): 65 implementation coordinates, 95 directed
+edges and 18 representative paths. This page remains the route/module topology view; scores and
 evidence are maintained separately, with no aggregate completion percentage.
 
 Cyanrex is moving from an eBPF teaching application toward a task-oriented collaboration platform.
@@ -27,6 +49,11 @@ Three areas coexist: the connected teaching runtime, the separately prepared gen
 local-only task editor. Code is one optional kind of task payload; neither a task nor the platform
 requires code. The important unfinished work is connecting these areas without transferring the
 legacy teacher role or browser-supplied identities into generic permissions.
+
+0.5.3 [AI Agent integration](ai-agent-integration.md) connects a separate Settings panel to
+teacher-only, revision-fenced profile metadata storage. A caller-owned SDK bridge adapts explicitly
+selected existing tools; the host owns provider transport, secrets and approval. This adds neither
+an autonomous AI identity/delegation edge nor the missing generic Task browser-save connection.
 
 ## Status vocabulary
 
@@ -118,6 +145,11 @@ paths, editor IDs or client role claims. See [collaboration concepts](collaborat
 | Content storage (0.5.0 C2-L) | [separate schema 3 store](task-content-store.md), [`content.rs`](../../engine/src/services/task_store/content.rs) | Trusted owner + metadata → atomic Task/manifest/outbox and one revision; no Session/Artifact-byte adapter, public API or schema 2 migration. |
 | Authorized content (0.5.0 C2-M) | [Session content adapter](session-task-content.md), [`content.rs`](../../engine/src/services/auth_service/durable_source/task_commands/content.rs) | Current Session → old/new exact Artifact text → atomic schema 3 edit → final authorization and commit; no live/browser connection. |
 | HTTP content boundary (0.5.0 C2-N) | [explicit router](task-content-http.md), [`platform_http`](../../engine/src/platform_http/mod.rs) | Bounded HTTP → C2-M → private versioned response; standalone only, no main-app mounting, Session issuer, public publication or browser wiring. |
+| Draft publication mapping (0.5.3 C2-O) | [strict importer](task-draft-publication.md), [`task_draft_import`](../../engine/src/services/task_draft_import/mod.rs) | Strict draft JSON → bounded publication values; supplied exact content → manifest. No I/O, server-ID allocation, publication history proof, authorized dispatch or browser save. |
+| Session draft publication (0.5.3 C2-P) | [create-only steps](session-task-draft-publication.md), [`draft_publication`](../../engine/src/services/auth_service/durable_source/draft_publication/) | Fixed in-memory attempt → one Session Artifact write per step → C2-M Task create. Confirmed prefix retained; unknown steps stop. No durable recovery, atomic workflow or browser route. |
+| Draft target observation (0.5.3 C2-Q) | [read-only comparison](session-task-draft-observation.md), [`observation.rs`](../../engine/src/services/auth_service/durable_source/draft_publication/observation.rs) | Exact unconfirmed target → one authorized read → body-free current comparison; no state change, prior-commit proof, rollback inference or recovery. |
+| Draft metadata checkpoint (0.5.3 C2-R) | [bounded checkpoint data](session-task-draft-checkpoint.md), [`checkpoint.rs`](../../engine/src/services/auth_service/durable_source/draft_publication/checkpoint.rs) | Attempt → metadata export/parse. Reported progress is caller data, not save, provenance, authorization or a restored attempt. |
+| Checkpoint target inspection (0.5.3 C2-S) | [explicit authorized inspection](session-task-draft-inspection.md), [`inspection.rs`](../../engine/src/services/auth_service/durable_source/draft_publication/inspection.rs) | Parsed data + trusted workspace + current Session → one existing read. Metadata comparison only; no original-attempt restoration, provenance, journal or retry. |
 
 ## Cross-module paths and unconnected boundaries
 
@@ -130,7 +162,12 @@ paths, editor IDs or client role claims. See [collaboration concepts](collaborat
 | Durable Session → own Artifact revision → own Task exact inputs → Draft replacement | Implemented preparatory backend path; public API and browser adapter are absent. |
 | Durable Session → exact owned Artifact target/evidence → human Review history | Implemented preparatory backend path; cross-user review authority and acceptance remain absent. |
 | Legacy accounts/scripts/attempts → durable identity/Artifacts/Tasks/Reviews | Planned migration, writer fencing and cutover; no implicit dual write or adoption. |
-| Browser task save → Artifact publication → Task create/replace → conflict recovery | W10–W13 provide contracts, storage, Session/text checks and an unmounted HTTP adapter; explicit login/installation, public publication and browser mapping/conflict/outcome handling remain missing. |
+| Browser task save → Artifact publication → Task create/replace → conflict recovery | W10–W14 provide content contracts, an unmounted HTTP adapter and pure mapping; W15 composes internal create-only publication steps and W16 observes current targets without recovery. Explicit login/installation, public dispatch, durable recovery and browser save/conflict handling remain missing. |
+| Supplied Artifact content → draft plan binding → Task content manifest | W02 ⇢ W14 ⇢ W10 checks supplied bytes and metadata only; no storage call, current authorization or proof of prior publication. Local U03 → W14 remains unconnected. |
+| Draft plan → explicit Session publication steps → Task create | W14 ⇢ W15 ⇢ W12 uses I04 and W05 independently for current authorization/publication. Separate transactions, in-memory outcome tracking; no browser bridge or automatic recovery. |
+| Unconfirmed attempt → current target observation | W15 ⇢ W16 uses I04 and one W05 or W12 read. Separate observation times, no returned body or state restoration; this read branch adds no representative write chain. |
+| Surviving attempt → metadata checkpoint | W15 ⇢ W17 exports reported progress without text or credentials. Its codec invokes no reader or restored attempt; C2-S inspection is a separate operation below. |
+| Checkpoint data → explicit current-authority inspection | W17 ⇢ W18 uses I04 and one W05 or W12 read. No W17 → W16 edge, no historical caller/commit proof, no state adoption or new representative recovery chain. |
 | Generic Task → execution plan → typed evidence → rule Review → acceptance | Planned composition. Catalogue metadata and in-process assessment alone do not establish this workflow. |
 | Teacher-managed isolated student runtime, managed VM lifecycle, external LSP process | Planned; existing Linux execution and local language workers do not establish these isolation boundaries. |
 

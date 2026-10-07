@@ -57,6 +57,15 @@ Task Schema 2 只允许全新独立命名空间安装，不自动迁移 Schema 1
 近期先完成一条私人、非教学的内容保存链路，再建设共享审阅和验收；详细顺序见
 [下一阶段决策点](project-status.md#下一阶段决策点)。这一切不代表 C2 或 C-M5 已整体验收。
 
+0.5.3 收录的 2026-10-07 [C2-O 草稿发布计划](task-draft-publication.md)补上严格 Rust 导入、
+有界文本发布值和给定准确内容的清单映射；它不执行发布，不接入浏览器，也不改变上方历史版本记录。
+同版收录的 [C2-P](session-task-draft-publication.md)提供内部逐步发布与内存确认前缀，
+[C2-Q](session-task-draft-observation.md)只观察未知目标当前状态；
+[C2-R](session-task-draft-checkpoint.md)另提供有界元数据检查点，解析结果仍只是数据。
+[C2-S](session-task-draft-inspection.md)可另以显式工作区和当前 Session 检查一个检查点目标，
+不要求原尝试仍存，但也不认证原调用者、原始字节或存储代次；它不替代 C2-Q 的原会话要求。
+这些切片不构成持久意图日志、重启恢复或重试协议；Session 签发、部署接线和浏览器保存仍须单独审阅。
+
 后续 Linux 施工仍须遵守以下门槛：
 
 1. 在进入实际数据迁移前补齐部署盘点：区分 PostgreSQL、文件和易失状态，保留已有改动，不把 C0 的源码盘点当作部署盘点。

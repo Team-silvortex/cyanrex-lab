@@ -66,6 +66,11 @@ a defense against a privileged database operator or a whole-history audit.
 
 ## Verification and next boundary
 
+The separate 0.5.3 [C2-P workflow](session-task-draft-publication.md) calls this create command
+only after its explicit Artifact publication steps. It retains confirmed progress in memory, not in
+this transaction or schema. C2-M still derives the current owner and rereads actual blobs; a preceding
+publication or C2-O value check is not reusable authorization, and no cross-step atomicity is added.
+
 Default API/shape tests and explicit disposable PostgreSQL cases cover this internal boundary.
 The exact selection runner is `scripts/test-session-task-content.sh`; dated execution counts and
 limitations are recorded in [project status](project-status.md). CI selection is not proof of a remote
@@ -73,7 +78,7 @@ CI run or installed-system acceptance.
 
 [C2-N](task-content-http.md) now defines a separately constructed HTTP admission layer over these
 commands. It is not mounted in the normal application and does not issue sessions or publish content.
-The remaining browser path needs explicit secure login/installation, bounded publication and manifest
-mapping, then save/read/conflict and uncertain-outcome handling. Local editor
+The remaining browser path needs explicit secure login/installation and a public boundary around the
+internal publication/mapping steps, then save/read/conflict and uncertain-outcome handling. Local editor
 IDs and downloaded JSON are not server identities or confirmed saves. Migration, catalogue content,
 sharing, Review authority and execution remain separate work.

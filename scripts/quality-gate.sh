@@ -85,6 +85,7 @@ run_openapi_contract_checks() {
   node "$PROJECT_ROOT/scripts/api-compatibility.mjs"
   node "$PROJECT_ROOT/scripts/generate-sdk-types.mjs" --check
   node "$PROJECT_ROOT/scripts/generate-sdk-operations.mjs" --check
+  node "$PROJECT_ROOT/scripts/generate-agent-tools.mjs" --check
   node "$PROJECT_ROOT/scripts/sdk-surface-compatibility.mjs"
   node --test "$PROJECT_ROOT"/scripts/tests/*.test.mjs
 }
@@ -113,6 +114,8 @@ run_frontend_checks() {
 
   npm --prefix "$PROJECT_ROOT/frontend" run build
   (cd "$PROJECT_ROOT/frontend" && npx --yes tsc --noEmit)
+  npm --prefix "$PROJECT_ROOT/frontend" run test:private-request
+  npm --prefix "$PROJECT_ROOT/frontend" run test:ai-agents
   npm --prefix "$PROJECT_ROOT/frontend" run test:performance-hotspots
   npm --prefix "$PROJECT_ROOT/frontend" run test:performance-metrics
   npm --prefix "$PROJECT_ROOT/frontend" run test:event-stream

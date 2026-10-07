@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useI18n } from "../../i18n/context";
-import { requestSettings } from "../settings/settingsRequest";
+import { requestPrivateJson } from "../../transport/privateRequest";
 import type { RunnerAdminNotice, RunnerAgentInventory, RunnerAgentView, RunnerJobInventory, RunnerJobView } from "./models";
 import { cancelIdentity, parseAgentInventory, parseCancelAcknowledgement, parseJobInventory, parseProbeAcknowledgement, probeIdentity } from "./runnerInventory";
 
@@ -47,8 +47,8 @@ export function useRunnerAgentAdmin(engineUrl: string, navigation = "") {
       request.promise = (async () => {
         try {
           const [agents, jobs] = await Promise.all([
-            requestSettings(`${engineUrl}/runner/agents`, request.controller.signal, parseAgentInventory),
-            requestSettings(`${engineUrl}/runner/jobs`, request.controller.signal, parseJobInventory),
+            requestPrivateJson(`${engineUrl}/runner/agents`, request.controller.signal, parseAgentInventory),
+            requestPrivateJson(`${engineUrl}/runner/jobs`, request.controller.signal, parseJobInventory),
           ]);
           if (ownsRead()) {
             sampledAt = started;
@@ -90,11 +90,11 @@ export function useRunnerAgentAdmin(engineUrl: string, navigation = "") {
       let acknowledged = false;
       try {
         if (action.kind === "probe") {
-          await requestSettings(`${engineUrl}/runner/jobs/probe`, ownedAction.signal,
+          await requestPrivateJson(`${engineUrl}/runner/jobs/probe`, ownedAction.signal,
             value => parseProbeAcknowledgement(value, action.target.agent_id),
             { agent_id: action.target.agent_id, message: "teacher health probe", timeout_seconds: 30 });
         } else {
-          await requestSettings(`${engineUrl}/runner/jobs/cancel`, ownedAction.signal,
+          await requestPrivateJson(`${engineUrl}/runner/jobs/cancel`, ownedAction.signal,
             value => parseCancelAcknowledgement(value, action.target), { job_id: action.target.job_id });
         }
         if (!owns()) return;

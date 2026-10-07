@@ -42,7 +42,7 @@ try {
 The client covers authentication, modules and the teacher management command bus, events, settings, scripts,
 learning, eBPF checks/runs/attachments, Runner status/management jobs, and environment diagnostics. Every
 method accepts an optional `{ signal }` argument for cancellation. The generated `operation()` layer
-covers all 63 browser-facing operations and derives required bodies, query parameters, and response
+covers all 65 browser-facing operations and derives required bodies, query parameters, and response
 types from each OpenAPI operation. The five signed Runner Agent protocol operations remain isolated
 from the browser SDK. `client.request<T>()` remains available for forward-compatible calls.
 
@@ -120,6 +120,16 @@ type EventInput = OpenApiOperationInput<"getEvents">;
 console.log(openApiOperations.getEvents.access); // authenticated
 ```
 
+## AI Agent integration
+
+`@cyanrex/sdk-js/agents` exports `createAgentBridge`, provider tool/call/result adapters and profile
+validators. Choose tools explicitly; mutations additionally require a trusted per-call approval callback.
+Formats cover OpenAI Responses/Chat, Anthropic Messages, Gemini GenerateContent, MCP and custom hosts.
+`client.aiAgents.settings()` / `updateSettings()` manage teacher-only connection metadata; credential
+references are resolved only by the host-supplied callback, not the Engine or browser. These helpers
+do not call a model, start an autonomous Agent or change server authority. See the bilingual
+[AI Agent integration guide](../docs/en/ai-agent-integration.md) for examples, limits and uncertain outcomes.
+
 ## Compatibility Baseline
 
 The committed `0.3.0` OpenAPI baseline is checked before SDK builds. Existing inputs must remain
@@ -164,5 +174,5 @@ npm run test:package
 
 `npm run build` emits ESM JavaScript, declarations, declaration maps, and source maps under `dist/`.
 `npm run test:package` validates the dry-run npm manifest, relative declaration/runtime imports, and
-consumer-style loading of both package exports. The package remains private until a compatibility
+consumer-style loading of all package exports. The package remains private until a compatibility
 and release policy is approved.

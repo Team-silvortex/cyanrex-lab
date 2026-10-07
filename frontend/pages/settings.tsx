@@ -7,6 +7,7 @@ import { useConfirmedAction } from "../src/components/useConfirmedAction";
 import { getEngineUrl } from "../src/config/runtime";
 import { DOCS_LINK_STYLE, DOCS_QUICK_LINKS } from "../src/config/settings";
 import RunnerAgentAdminPanel from "../src/features/runner/RunnerAgentAdminPanel";
+import AiAgentSettingsPanel from "../src/features/aiAgents/AiAgentSettingsPanel";
 import PerformanceMetricsPanel from "../src/features/settings/PerformanceMetricsPanel";
 import { usePerformanceMetrics } from "../src/features/settings/usePerformanceMetrics";
 import { useSettingsForm } from "../src/features/settings/useSettingsForm";
@@ -110,6 +111,7 @@ export default function SettingsPage() {
         <PerformanceMetricsPanel metrics={performance.metrics} summary={performance.hotspotSummary}
           refreshing={performance.refreshing} stale={performance.stale} error={performance.error} message={performance.message} />
         <RunnerAgentAdminPanel engineUrl={engineUrl} />
+        <AiAgentSettingsPanel engineUrl={engineUrl} />
       </section>
     </SidebarLayout>
   );

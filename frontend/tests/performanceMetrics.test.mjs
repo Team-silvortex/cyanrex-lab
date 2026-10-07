@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import { parsePerformanceMetrics } from "../src/features/settings/performanceMetrics.ts";
-import { requestSettings } from "../src/features/settings/settingsRequest.ts";
+import { requestPrivateJson } from "../src/transport/privateRequest.ts";
 import { buildHotspotSummary } from "../src/features/settings/hotspots.ts";
 
 const operation = (changes = {}) => ({ total_requests: 10, cache_hits: 9, cache_misses: 1,
@@ -67,8 +67,8 @@ test("accepted limits keep hotspot arithmetic finite", () => {
 test("performance decoding composes with one private read and rejects malformed payloads", async t => {
   const calls = [], signal = new AbortController().signal;
   t.mock.method(globalThis, "fetch", (_url, init) => { calls.push(init); return Response.json(calls.length === 1 ? metrics() : { check: null }); });
-  assert.deepEqual(await requestSettings("https://engine.invalid/settings/performance", signal, parsePerformanceMetrics), metrics());
-  await assert.rejects(requestSettings("https://engine.invalid/settings/performance", signal, parsePerformanceMetrics), /Invalid performance metrics/);
+  assert.deepEqual(await requestPrivateJson("https://engine.invalid/settings/performance", signal, parsePerformanceMetrics), metrics());
+  await assert.rejects(requestPrivateJson("https://engine.invalid/settings/performance", signal, parsePerformanceMetrics), /Invalid performance metrics/);
   assert.equal(calls.length, 2);
   for (const call of calls) {
     assert.equal(call.method, "GET"); assert.equal(call.credentials, "include"); assert.equal(call.cache, "no-store");

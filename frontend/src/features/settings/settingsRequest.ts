@@ -1,7 +1,9 @@
+import { requestPrivateJson, PRIVATE_READ_TIMEOUT_MS, PRIVATE_WRITE_TIMEOUT_MS } from "../../transport/privateRequest";
+
 export type EventSettings = { max_records: number; overflow_policy: "drop_oldest" | "drop_new" };
 export type CompilerSettings = { resident: boolean; strategy: "resident_cache" | "on_demand" };
-export const SETTINGS_READ_TIMEOUT_MS = 10_000;
-export const SETTINGS_SAVE_TIMEOUT_MS = 20_000;
+export const SETTINGS_READ_TIMEOUT_MS = PRIVATE_READ_TIMEOUT_MS;
+export const SETTINGS_SAVE_TIMEOUT_MS = PRIVATE_WRITE_TIMEOUT_MS;
 
 const record = (value: unknown): value is Record<string, unknown> => value !== null && typeof value === "object" && !Array.isArray(value);
 const invalid = () => new Error("Invalid settings response");
@@ -38,34 +40,7 @@ export function parseCompilerSettingsSaved(value: unknown, resident: boolean): C
 }
 
 // A deadline ends browser waiting, not an Engine mutation. Never retry a settings write here.
-export async function requestSettings<T>(url: string, parent: AbortSignal, decode: (value: unknown) => T,
+export function requestSettings<T>(url: string, parent: AbortSignal, decode: (value: unknown) => T,
   body?: unknown, timeout = body === undefined ? SETTINGS_READ_TIMEOUT_MS : SETTINGS_SAVE_TIMEOUT_MS): Promise<T> {
-  parent.throwIfAborted();
-  const controller = new AbortController(), cancel = () => controller.abort(parent.reason);
-  let rejectAbort: (reason: unknown) => void = () => undefined;
-  const interrupted = new Promise<never>((_resolve, reject) => { rejectAbort = reject; });
-  const aborted = () => rejectAbort(controller.signal.reason);
-  parent.addEventListener("abort", cancel, { once: true });
-  controller.signal.addEventListener("abort", aborted, { once: true });
-  const timer = setTimeout(() => controller.abort(new DOMException("Settings request timed out", "TimeoutError")), timeout);
-  try {
-    const work = (async () => {
-      const response = await fetch(url, { method: body === undefined ? "GET" : "POST",
-        credentials: "include", cache: "no-store", redirect: "error", signal: controller.signal,
-        ...(body === undefined ? {} : { headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }) });
-      if (controller.signal.aborted || !response.ok || response.headers.get("content-type")?.split(";")[0].trim().toLowerCase() !== "application/json") {
-        void response.body?.cancel().catch(() => undefined);
-        controller.signal.throwIfAborted();
-        throw new Error("Settings request failed");
-      }
-      const value: unknown = await response.json();
-      controller.signal.throwIfAborted();
-      return decode(value);
-    })();
-    return await Promise.race([work, interrupted]);
-  } finally {
-    clearTimeout(timer);
-    parent.removeEventListener("abort", cancel);
-    controller.signal.removeEventListener("abort", aborted);
-  }
+  return requestPrivateJson(url, parent, decode, body, timeout, "Settings");
 }

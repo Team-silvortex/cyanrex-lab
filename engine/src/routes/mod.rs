@@ -1,3 +1,4 @@
+pub mod ai_agent_settings;
 pub mod auth;
 pub mod c_headers;
 pub mod classroom;

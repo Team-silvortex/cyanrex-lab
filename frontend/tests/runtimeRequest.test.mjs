@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { ATTACHMENT_READ_TIMEOUT_MS, RUNTIME_MUTATION_TIMEOUT_MS, requestRuntimeJson,
-  parseAttachmentDetails, parseDetachResult, parseRunResult, RuntimeHttpError } from "../src/features/ebpf/runtimeRequest.ts";
+import { privateTransportModule } from "./helpers/privateTransportModules.mjs";
+const { ATTACHMENT_READ_TIMEOUT_MS, RUNTIME_MUTATION_TIMEOUT_MS, requestRuntimeJson,
+  parseAttachmentDetails, parseDetachResult, parseRunResult, RuntimeHttpError } = await privateTransportModule("runtime");
 
 const run = { success: false, stage: "compile", message: "compiler rejection", compile_stdout: "out", compile_stderr: "err", load_stdout: "", load_stderr: "", pin_path: null };
 const attached = { pin_path: "/sys/fs/bpf/fixture/program", source: "int fixture;", program_name: "fixture" };
@@ -42,6 +43,26 @@ test("runtime deadline covers a hung JSON body and releases its parent listener"
   await Promise.resolve(); t.mock.timers.tick(RUNTIME_MUTATION_TIMEOUT_MS - 1); assert.equal(calls[0].signal.aborted, false);
   t.mock.timers.tick(1); await assert.rejects(pending, { name: "TimeoutError" });
   assert.equal(removed.mock.callCount(), 1); assert.equal(parent.signal.aborted, false);
+});
+
+test("runtime deadline ends waiting for abort-ignoring headers and body without their cooperation", async t => {
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  const outcomes = [];
+  for (const phase of ["headers", "body"]) {
+    let release, outcome;
+    const held = new Promise(resolve => { release = resolve; });
+    t.mock.method(globalThis, "fetch", () => phase === "headers" ? held : { ok: true, json: () => held });
+    const completed = requestRuntimeJson("https://engine.invalid/ebpf/run", new AbortController().signal, {})
+      .then(value => { outcome = { value }; }, error => { outcome = { error }; });
+    for (let turn = 0; turn < 12; turn++) await Promise.resolve();
+    t.mock.timers.tick(RUNTIME_MUTATION_TIMEOUT_MS);
+    for (let turn = 0; turn < 12; turn++) await Promise.resolve();
+    outcomes.push({ phase, bounded: outcome });
+    // Cleanup precedes assertions: the old implementation remains pending until this release.
+    release(phase === "headers" ? Response.json(run) : run);
+    await completed;
+  }
+  for (const { phase, bounded } of outcomes) assert.equal(bounded?.error?.name, "TimeoutError", phase);
 });
 
 test("navigation aborts an active request but cannot publish an abort-ignoring late body", async t => {

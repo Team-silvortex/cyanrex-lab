@@ -1,6 +1,7 @@
 //! Explicit PostgreSQL + private Unix-file staging; no live composition or volatile fallback.
 //! A trusted adapter must authenticate and authorize the supplied Principal. Owner filtering
 //! alone is not authentication; the durable-source Session adapter composes these checks separately.
+use super::prepared_resource_sql;
 use crate::{
     models::collaboration::*,
     sqlx_compat::{self as sqlx, PgPool, Postgres, Row},
@@ -11,6 +12,8 @@ use std::{future::Future, path::Path, sync::Arc, time::Duration};
 mod blob;
 mod commands;
 mod draft;
+#[cfg(test)]
+mod draft_tests;
 mod records;
 mod schema;
 pub use draft::ArtifactDraft;
@@ -90,18 +93,7 @@ impl ArtifactStore {
         Ok(())
     }
     async fn transaction(&self, readonly: bool) -> Result<Tx<'_>> {
-        let mut tx = self.pool.begin().await?;
-        if readonly {
-            sqlx::query("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY")
-                .execute(&mut *tx)
-                .await?;
-        }
-        sqlx::query("SET LOCAL statement_timeout = '5s'")
-            .execute(&mut *tx)
-            .await?;
-        sqlx::query("SET LOCAL lock_timeout = '2s'")
-            .execute(&mut *tx)
-            .await?;
+        let mut tx = prepared_resource_sql::begin(&self.pool, readonly).await?;
         Self::namespace(&mut tx).await?;
         Ok(tx)
     }

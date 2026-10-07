@@ -41,6 +41,7 @@ const requestSchemas = new Map(Object.entries({
   "POST /scripts/delete": "DeleteScriptRequest",
   "POST /scripts/save": "SaveScriptRequest",
   "POST /settings/compiler": "UpdateCompilerSettingsRequest",
+  "POST /settings/ai-agents": "UpdateAiAgentSettingsRequest",
   "POST /settings/events": "EventSettings",
 }));
 
@@ -75,6 +76,7 @@ const responseSchemas = new Map([
   ["GET /runner/status", ref("RunnerStatus")],
   ["GET /scripts", array(ref("UserScript"))],
   ["GET /settings/compiler", ref("CompilerSettings")],
+  ["GET /settings/ai-agents", ref("AiAgentSettings")],
   ["GET /settings/events", ref("EventSettings")],
   ["GET /settings/performance", ref("PerformanceMetrics")],
   ["POST /auth/delete", ref("ApiMessage")],
@@ -109,6 +111,7 @@ const responseSchemas = new Map([
   ["POST /scripts/delete", ref("ApiMessage")],
   ["POST /scripts/save", ref("SaveScriptResponse")],
   ["POST /settings/compiler", ref("UpdateCompilerSettingsResponse")],
+  ["POST /settings/ai-agents", ref("UpdateAiAgentSettingsResponse")],
   ["POST /settings/events", ref("UpdateEventSettingsResponse")],
 ]);
 
@@ -246,6 +249,9 @@ function buildOperation(operation, method, routePath, access) {
   if (operation === "POST /settings/events") {
     result.description = "Update only the authenticated session owner's event retention settings; preserve max_records clamping to 50..50000 and drop_oldest/drop_new policies. Configured storage must confirm the policy update and retention trim in one transaction before success and runtime cache publication. Failed barriers, prior fallback and unconfirmed storage writes return generic no-store 503, not memory-only success. A 10-second service waiting deadline includes owner admission and cache publication; it is not rollback. Admitted SQL work retains owner ordering after caller cancellation or deadline, so verify state before an explicit retry and never retry automatically. Definite SQL errors preserve memory and remain retryable; storage/barrier deadlines may latch fallback until restart. Explicit memory-only instances remain volatile. Malformed JSON (400), excessive bodies (413), unsupported content type (415) and invalid JSON fields/types (422) return private generic JSON. Authentication/Origin CSRF rules and success schema are unchanged; unknown body fields remain ignored, never identity overrides. No distributed coordination or durable replay is added.";
   }
+  if (routePath === "/settings/ai-agents") {
+    result.description = "Teacher-only AI Agent connection metadata, not Runner configuration, a secret store or a model proxy. At most sixteen profiles; credential_ref is a symbolic host-side reference and is never resolved here. The Engine makes no provider requests. POST is limited to 32 KiB, rejects unknown fields, requires the current expected_revision and returns the next revision after confirmed private-file persistence. Stale revision returns 409; storage failure returns private 503 without overwriting corrupt snapshots or switching to volatile success. Cancellation or an unconfirmed response may follow a committed write: explicitly reload before retrying. Profiles do not grant AI identity, tool permissions, delegation, scheduling or automatic execution. All responses are no-store.";
+  }
   if (routePath.startsWith("/classroom/") || routePath === "/.well-known/cyanrex-classroom") {
     result.description = `${result.description ?? ""} Opt-in classroom onboarding; all responses are no-store. Discovery metadata is not proof of teacher identity. Use independently confirmed HTTPS origins (or trusted loopback SSH access). Invitations are student-name-bound, single-use, valid for 10 minutes and lost on restart. Join requires an invitation plus explicit classroom ID, compatible protocol and required capabilities, not a matching product patch. No automatic login, role promotion, Agent registration or eBPF execution occurs. Revoking an invitation does not revoke existing accounts or sessions.`.trim();
   }
@@ -298,8 +304,16 @@ function responsesFor(operation) {
       ...(eventReadOperations.has(operation) ? { headers: eventReadHeaders } : {}),
       ...(eventMutationOperations.has(operation) ? { headers: eventMutationHeaders } : {}),
       ...(eventSettingsOperations.has(operation) ? { headers: eventSettingsHeaders } : {}),
+      ...(operation.endsWith(" /settings/ai-agents") ? { headers: eventSettingsHeaders } : {}),
     },
     default: errorResponse(),
+    ...(operation.endsWith(" /settings/ai-agents") ? Object.fromEntries(
+      (operation.startsWith("GET") ? [503] : [400, 409, 413, 415, 422, 503]).map(status => [status, {
+        ...errorResponse(), headers: eventSettingsHeaders,
+        description: status === 409 ? "Stale expected revision; explicitly reload and review, never automatically overwrite."
+          : status === 503 ? "Configuration storage unavailable or completion unconfirmed; not rollback proof. No paths or stored values are returned."
+            : "Invalid or excessive metadata configuration; no update dispatched.",
+      }])) : {}),
     ...(eventSettingsOperations.has(operation) ? {
       503: {
         description: operation.startsWith("GET") ? "Event settings unavailable; not cached/default success." : "Event settings update completion unconfirmed; verify state before retrying, not proof of rollback.",

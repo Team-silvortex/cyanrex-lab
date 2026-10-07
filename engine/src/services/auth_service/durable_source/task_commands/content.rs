@@ -21,6 +21,14 @@ pub struct SessionTaskContentWorkspace {
 }
 
 impl SessionTaskContentWorkspace {
+    pub(crate) fn publication_scope(&self) -> WorkspaceRef {
+        self.scope
+    }
+
+    pub(crate) fn publication_artifacts(&self) -> &SessionArtifactWorkspace {
+        &self.artifacts
+    }
+
     pub fn new(
         namespace: &str,
         scope: WorkspaceRef,

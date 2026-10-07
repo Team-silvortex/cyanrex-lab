@@ -30,6 +30,14 @@ Docker 配置需要访问宿主机或虚拟机的 eBPF、tracefs、BTF 和 bpffs
 与[私人人工审阅](session-review-commands.md)。这些路径尚未成为公共浏览器 API，服务级测试不能
 证明在线 HTTP/CSRF 或部署验收。应用角色和源码抽象仍不能隔离共享 Linux 内核。
 
+## 0.5.3 的 AI Agent 宿主边界
+
+[连接配置](ai-agent-integration.md)只存非密钥元数据及凭据符号名，受教师权限与 CSRF 保护。
+Engine 不连接所填 URL、不解析引用，浏览器不输入/保存密钥；HTTPS 或字面回环 HTTP 校验不等于
+模型服务身份认证。可信宿主管理密钥、传输及私人结果披露。SDK 工具目录排除认证/设置/内核写入，
+仍受服务端权限约束，每个选中写操作另需可信批准，模型不能自我批准。调用 ID 只是内存防重复，
+不是持久恰好一次；取消或通用未知错误不允许换 ID 盲重试。
+
 ## 默认防护
 
 本节默认描述现有运行时；准备层契约会单独注明。不能把两者的认证或存储策略混用。
@@ -327,18 +335,20 @@ ssh -L 3000:127.0.0.1:3000 \
 
 ## 依赖扫描治理
 
-- 前端依赖下限为 Next.js 15.5.24、sharp 0.35.5 和 source-map-js 1.2.2，保留上游的
+- 前端依赖下限为 Next.js 15.5.24、DOMPurify 3.4.16、sharp 0.35.5 和 source-map-js 1.2.2。
+  Next.js/sharp 下限保留上游的
   [Windows 服务端](https://github.com/vercel/next.js/security/advisories/GHSA-p293-qw3h-jr36)、
   [AVIF 图像优化](https://github.com/vercel/next.js/security/advisories/GHSA-2xp9-vwfh-vxw4) 和
   [sharp/libheif](https://github.com/lovell/sharp/security/advisories/GHSA-rgj7-g3m4-5g8c) 安全公告。
   sharp 更新还修复[捆绑 librsvg 问题](https://github.com/advisories/GHSA-wq5f-xc86-pv6w)，
   source-map-js 修复[索引映射放大问题](https://github.com/advisories/GHSA-68fv-2mgg-jv7q)。离线回归
-  要求 sharp/source-map-js 的安全覆盖下限和每个锁定副本，包括跨平台 sharp 0.35.5/libvips 1.3.4；
+  要求 DOMPurify/sharp/source-map-js 的安全覆盖下限和每个锁定副本，包括跨平台 sharp 0.35.5/libvips 1.3.4；
   联网审计仍是独立检查。
   需要重新构建并部署才能应用补丁，修改锁文件不会更新运行中的容器；自定义全局 libheif 也需至少
   1.23.2，npm 审计不代表宿主机动态库验收。
-  2026-10-07 修复后候选的生产依赖审计没有中危/高危/严重提示，仍保留一项低危 DOMPurify；
-  不能据此宣称所有依赖或部署中的动态库均安全。
+  2026-10-07 已发布 0.5.2 的检查保留一项 DOMPurify 低危，没有中危/高危/严重提示；该历史结果
+  不变。之后收录于 0.5.3 的 DOMPurify 改动重新执行生产依赖审计，各严重级别均为零告警。两次结果都
+  不证明所有依赖或部署中的动态库安全，依赖审计也不会盘点生成资源中内嵌的第三方代码。
 - 我们会对 Rust 后端执行 `cargo audit`，并将已接受的告警记录在
   `scripts/security-audit-exceptions.json`。
 - 锁定的 rustls 依赖至少为 0.23.45，修复 TLS 1.3 握手加密层级校验问题
@@ -347,6 +357,33 @@ ssh -L 3000:127.0.0.1:3000 \
   离线预检覆盖该已知安全版本下限，联网审计继续检查其他安全公告。
 - 当前没有已接受的安全公告例外；原先的 `rsa`/`sqlx-mysql` 依赖链已不在锁文件中。
 - 每个例外都包含复核截止日期，需要在到期前重新评估依赖版本。
+
+### 0.5.3 的 DOMPurify 与 Monaco 资源加固
+
+2026-10-07 的后续改动将 DOMPurify 提升到 3.4.16，采用上游针对 `IN_PLACE` 模式中
+[钩子移除子树](https://github.com/cure53/DOMPurify/security/advisories/GHSA-p98j-92pf-mc4p)和
+[强制移除 rawtext 根节点](https://github.com/cure53/DOMPurify/security/advisories/GHSA-6688-9rhm-gjv2)
+的修复。此改动收录于源码版本 0.5.3，不属于此前的 0.5.2 版本；生产审计阈值不变，不新增安全公告例外。
+
+Monaco 0.55.1 的 AMD 资源另内嵌 DOMPurify 3.2.7，仅修改 npm override 不会替换该副本。
+资源同步先核对受支持的 Monaco 精确版本、原始 chunk SHA-256 及 JavaScript 语法树结构，再仅将
+第三方代码块替换为隔离 IIFE 内的官方 DOMPurify 3.4.16 ESM 实现。新内容摘要生成新的 chunk
+文件名并同步改写 AMD 引用，避免复用旧 chunk URL。版本、摘要或结构不符合预期时直接失败，
+不回退到旧清理器。仅改变生成资源，不修改 `node_modules` 或 Monaco 包版本。
+
+校验、复制及补丁写入先在 `public` 之外的私有临时目录完成，随后才替换生成资源目录。准备阶段
+失败保留原公开资源；最后的删除再重命名发布步骤不是原子事务。
+
+前端 Docker 配方在复制工作区之后，从依赖阶段复制经 postinstall 校验生成的 `public/monaco`。
+构建上下文排除宿主机的 `public/monaco`：Docker 复制目录会合并，仅覆盖新资源不能清除宿主机
+残留的旧 chunk。公共源码守卫核对这条输入边界，不代表已经构建或部署镜像。
+
+默认工具单测覆盖替换契约；显式[浏览器夹具](testing-guide.md)中的九项用例对实际生成的 AMD
+chunk 做测试插桩，取得 Monaco 使用的同一清理器实例，检查 HTML 清理、钩子移除子树、rawtext
+根节点拒绝、健康根节点身份及真实 hover 消费路径。第十项通过未修改的 AMD loader 与编辑器入口，
+从请求拦截提供的本机文件加载新 chunk 和语言注册图。夹具不启动 Next 或 Engine、不产生外网访问；
+不证明应用已存在可利用漏洞，也不是已部署前端验收。应用修复需要重新生成、构建并部署资源，
+依赖审计零告警不能代替这些步骤。
 
 ## 安全事件处理
 

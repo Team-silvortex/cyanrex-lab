@@ -35,6 +35,7 @@ window.fetch = (url, init = {}) => {
     case "/auth/me": return Promise.resolve(response({ authenticated: true, username: "teacher", role: "teacher" }));
     case "/events/unread-count": return Promise.resolve(response({ unread: 0 }));
     case "/settings/performance": return Promise.resolve(response({}, 503));
+    case "/settings/ai-agents": return Promise.resolve(response({ revision: 0, default_profile_id: null, profiles: [] }));
     case "/settings/events": return Promise.resolve(response(body ? { ok: true, settings: body } : { max_records: 500, overflow_policy: "drop_oldest" }));
     case "/settings/compiler": return Promise.resolve(response(body
       ? { ok: true, settings: { ...body, strategy: body.resident ? "resident_cache" : "on_demand" } }

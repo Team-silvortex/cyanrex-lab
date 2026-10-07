@@ -1,6 +1,6 @@
 {
   "name": "@cyanrex/frontend",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "private": true,
   "scripts": {
     "postinstall": "node scripts/sync-monaco-assets.mjs",
@@ -11,12 +11,15 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "test:private-request": "node --experimental-strip-types --test tests/privateRequest.test.mjs",
     "test:performance-hotspots": "node --experimental-strip-types --test tests/performanceHotspots.test.mjs",
     "test:performance-metrics": "node --experimental-strip-types --test tests/performanceMetrics.test.mjs",
     "test:performance-metrics-browser": "node --test tests/performanceMetrics.browser.mjs",
     "test:event-stream": "node --experimental-strip-types --test tests/eventStream.test.mjs",
     "test:event-page": "node --experimental-strip-types --test tests/eventPage.test.mjs",
     "test:settings": "node --experimental-strip-types --test tests/settingsRequest.test.mjs",
+    "test:ai-agents": "node --experimental-strip-types --test tests/aiAgentSettings.test.mjs",
+    "test:ai-agents-browser": "node --test tests/aiAgentSettings.browser.mjs",
     "test:settings-browser": "node --test tests/settingsPage.browser.mjs",
     "test:runner-inventory": "node --experimental-strip-types --test tests/runnerInventory.test.mjs",
     "test:runner-admin-browser": "node --test tests/runnerAdmin.browser.mjs",
@@ -36,7 +39,8 @@
     "test:compiler-diagnostics-browser": "node --test tests/compilerDiagnostics.browser.mjs",
     "test:event-stream-browser": "node --test tests/eventStream.browser.mjs",
     "test:security-headers": "node --test tests/securityHeaders.test.mjs",
-    "test:tooling": "node --test tests/cleanMacosMetadata.test.mjs",
+    "test:tooling": "node --test tests/cleanMacosMetadata.test.mjs tests/syncMonacoAssets.test.mjs",
+    "test:dompurify-browser": "node --test tests/dompurify.browser.mjs",
     "test:ui-permissions": "node --experimental-strip-types --test tests/sidebarPermissions.test.mjs tests/teachingReview.test.mjs tests/terminalCommand.test.mjs tests/learningResume.test.mjs tests/actionSafety.test.mjs tests/classroomConnection.test.mjs tests/authSession.test.mjs",
     "test:auth-session-browser": "node --test tests/authSession.browser.mjs",
     "test:classroom-browser": "node --test tests/classroomConnection.browser.mjs",
@@ -62,7 +66,7 @@
     "typescript": "5.8.3"
   },
   "overrides": {
-    "dompurify": "^3.4.13",
+    "dompurify": "^3.4.16",
     "nanoid": "^3.3.18",
     "postcss": "^8.5.20",
     "sharp": "^0.35.5",

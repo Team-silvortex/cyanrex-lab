@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { buildEventFilterParams, matchesEventFilters } from "../src/features/events/eventFilters.ts";
-import { decodeEventExport, EVENT_REQUEST_TIMEOUT_MS, EVENT_UNREAD_TIMEOUT_MS, EventHttpError,
-  parseEventDeletion, parseReadAcknowledgement, parseUnread, requestEvent } from "../src/features/events/eventRequest.ts";
+import { privateTransportModule } from "./helpers/privateTransportModules.mjs";
+const { decodeEventExport, EVENT_REQUEST_TIMEOUT_MS, EVENT_UNREAD_TIMEOUT_MS, EventHttpError,
+  parseEventDeletion, parseReadAcknowledgement, parseUnread, requestEvent } = await privateTransportModule("events");
 
 const filters = { categoryFilter: "all", severityFilter: "all", rangePreset: "all", startTime: "", endTime: "" };
 const row = { category: "kernel", severity: "error", timestamp: "2026-09-13T00:00:00Z" };
@@ -76,6 +77,26 @@ test("event request deadline includes body decoding and releases its cancellatio
   const pending = requestEvent("https://engine.invalid/events/delete", parent.signal, response => response.json(), "POST");
   await Promise.resolve(); t.mock.timers.tick(EVENT_REQUEST_TIMEOUT_MS - 1); assert.equal(request.signal.aborted, false);
   t.mock.timers.tick(1); await assert.rejects(pending, { name: "TimeoutError" }); assert.equal(remove.mock.callCount(), 1);
+});
+
+test("event deadline ends waiting for abort-ignoring headers and body without their cooperation", async t => {
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  const outcomes = [];
+  for (const phase of ["headers", "body"]) {
+    let release, outcome;
+    const held = new Promise(resolve => { release = resolve; });
+    t.mock.method(globalThis, "fetch", () => phase === "headers" ? held : { ok: true, json: () => held });
+    const completed = requestEvent("https://engine.invalid/events/delete", signal(), response => response.json(), "POST")
+      .then(value => { outcome = { value }; }, error => { outcome = { error }; });
+    for (let turn = 0; turn < 12; turn++) await Promise.resolve();
+    t.mock.timers.tick(EVENT_REQUEST_TIMEOUT_MS);
+    for (let turn = 0; turn < 12; turn++) await Promise.resolve();
+    outcomes.push({ phase, bounded: outcome });
+    // Release even the unfixed implementation before asserting, so Red leaves no pending work.
+    release(phase === "headers" ? Response.json({ ok: true }) : { ok: true });
+    await completed;
+  }
+  for (const { phase, bounded } of outcomes) assert.equal(bounded?.error?.name, "TimeoutError", phase);
 });
 
 test("a cancelled late event response never reaches its decoder", async t => {

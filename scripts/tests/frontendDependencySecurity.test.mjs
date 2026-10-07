@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 // Offline guards for these named advisories, not a replacement for the live npm audit.
-const floors = { sharp: "0.35.5", "source-map-js": "1.2.2" };
+const floors = { dompurify: "3.4.16", sharp: "0.35.5", "source-map-js": "1.2.2" };
 const readJson = async file => JSON.parse(await readFile(new URL(file, import.meta.url), "utf8"));
 
 function atLeast(version, floor) {
@@ -16,7 +16,7 @@ function atLeast(version, floor) {
   return true;
 }
 
-test("frontend overrides retain the sharp and source-map-js security floors", async () => {
+test("frontend overrides retain the DOMPurify, sharp and source-map-js security floors", async () => {
   const manifest = await readJson("../../frontend/package.json");
   for (const [name, floor] of Object.entries(floors)) {
     const range = manifest.overrides?.[name];
@@ -25,7 +25,7 @@ test("frontend overrides retain the sharp and source-map-js security floors", as
   }
 });
 
-test("every locked sharp and source-map-js copy includes its named advisory fix", async () => {
+test("every locked DOMPurify, sharp and source-map-js copy includes its named advisory fix", async () => {
   const lock = await readJson("../../frontend/package-lock.json");
   for (const [name, floor] of Object.entries(floors)) {
     const copies = Object.entries(lock.packages).filter(([file]) => file.endsWith(`node_modules/${name}`));

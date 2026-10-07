@@ -1,4 +1,5 @@
 import type { EbpfAttachmentDetail, EbpfDetachResponse, EbpfRunResponse } from "./models";
+import { requestPrivate } from "../../transport/privateRequest";
 
 export const RUNTIME_MUTATION_TIMEOUT_MS = 330_000;
 export const ATTACHMENT_READ_TIMEOUT_MS = 20_000;
@@ -12,26 +13,16 @@ export class RuntimeHttpError extends Error {
 }
 
 // Browser waiting limits are not a server rollback or kernel-cleanup guarantee.
-export async function requestRuntimeJson(
+export function requestRuntimeJson(
   url: string, parent: AbortSignal, body?: unknown, timeoutMs = RUNTIME_MUTATION_TIMEOUT_MS,
 ): Promise<unknown> {
-  parent.throwIfAborted();
-  const controller = new AbortController();
-  const cancel = () => controller.abort(parent.reason);
-  parent.addEventListener("abort", cancel, { once: true });
-  const timer = setTimeout(() => controller.abort(new DOMException("Runtime request timed out", "TimeoutError")), timeoutMs);
-  try {
-    const response = await fetch(url, {
-      method: body === undefined ? "GET" : "POST", credentials: "include", cache: "no-store", redirect: "error",
-      signal: controller.signal,
-      ...(body === undefined ? {} : { headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }),
-    });
+  return requestPrivate(url, parent, async (response, signal) => {
     const payload = await response.json();
-    controller.signal.throwIfAborted();
+    signal.throwIfAborted();
     if (!response.ok) throw new RuntimeHttpError(response.status, payload,
       record(payload) && typeof payload.message === "string" ? payload.message : `HTTP ${response.status}`);
     return payload;
-  } finally { clearTimeout(timer); parent.removeEventListener("abort", cancel); }
+  }, { body, timeoutMs, timeoutMessage: "Runtime request timed out" });
 }
 
 const record = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);

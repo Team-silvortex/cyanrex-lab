@@ -1,6 +1,6 @@
 # cyanrex-lab
 
-Version: `0.5.2`
+Version: `0.5.3`
 
 Cyanrex is evolving into a self-hosted collaboration platform for people, AI Agents and compute
 resources. Tasks, content versions, execution and reviews have separate responsibilities; eBPF teaching
@@ -24,14 +24,13 @@ private process in [SECURITY.md](SECURITY.md).
 
 ## Current development snapshot
 
-As of **2026-10-07**, the source version is **0.5.2**. This patch adds bounded password work for
-missing-account login denial, explicit 128-row expired-Session maintenance, and guarded Session,
-identity-retirement and audit-time reads. Existing source pins, password profiles and atomic OTP
-consumption remain in place. Fresh auth installation uses schema 2; existing schema 1 is rejected
-without migration. Maintenance is internal-only, not scheduled cleanup or a global storage quota;
-timestamp guards cover named paths, not every database time or a new age/order policy.
-Frontend security floors are also raised to sharp 0.35.5 and source-map-js 1.2.2, with offline
-lock/override regression checks alongside the live production dependency audit.
+As of **2026-10-07**, the source version is **0.5.3**. This patch adds teacher-managed AI connection
+metadata and explicitly selected SDK tool adapters for Agent hosts, without provider calls, API-key
+storage or autonomous orchestration. It also includes internal draft publication, observation,
+metadata checkpoints and explicit current-authority inspection (C2-O–S), shared private transport
+and prepared SQL checks, and DOMPurify 3.4.16 hardening of the actual generated Monaco assets.
+Existing source pins, password profiles, atomic OTP consumption and schema boundaries remain unchanged.
+See [AI Agent integration](docs/en/ai-agent-integration.md) and [release notes](CHANGELOG.md#053---2026-10-07).
 The task-content HTTP adapter remains unmounted and the editor local-only. Neither this release nor
 passing tests switch legacy authentication or an existing deployment.
 
@@ -160,12 +159,14 @@ not implied by the teaching HTTP endpoints below.
     see the [editor guide](docs/en/editor.md) for persistence and navigation limits.
 - JavaScript SDK:
   - typed ESM package covering the browser-facing Engine API
-  - public request/response models generated from 85 OpenAPI component schemas
-  - generated `client.operation(operationId, input)` layer and runtime metadata for all 63
-    non-Agent operations, alongside the stable hand-designed namespaces
+  - public request/response models generated from 90 OpenAPI component schemas
+  - generated `client.operation(operationId, input)` layer and runtime metadata for all 65
+    non-Runner-Agent operations, alongside the stable hand-designed namespaces
+  - AI host configuration helpers and explicit tool-format adapters in `@cyanrex/sdk-js/agents`;
+    no provider transport or autonomous delegation, and writes require trusted per-call approval
   - additive-only compatibility baseline for 77 public client namespace and method paths
   - browser credentials, Node session-cookie capture, Origin-based CSRF support, cancellation, and typed errors
-  - coverage checked against every non-Agent Engine operation in the generated API contract
+  - coverage checked against every non-Runner-Agent Engine operation in the generated API contract
   - dry-run package manifest, declaration-closure, and ESM consumer-import acceptance checks
 - Frontend i18n:
   - supported languages: Simplified Chinese (`zh-CN`), English (`en`), Spanish (`es`), Japanese (`ja`)
@@ -239,13 +240,13 @@ Starting the application does not initialize or migrate the separate collaborati
 For classroom deployment or offline distribution, create a packaged artifact with prebuilt Docker images:
 
 ```bash
-./scripts/package-distribution.sh --version 0.5.2
+./scripts/package-distribution.sh --version 0.5.3
 ```
 
 This produces:
 
-- `dist/cyanrex-lab-0.5.2-<timestamp>.tar.gz`
-- `dist/cyanrex-lab-0.5.2-<timestamp>.tar.gz.sha256`
+- `dist/cyanrex-lab-0.5.3-<timestamp>.tar.gz`
+- `dist/cyanrex-lab-0.5.3-<timestamp>.tar.gz.sha256`
 
 The archive contains the PostgreSQL, Engine, and frontend images. On a disposable Docker host,
 verify the freshly extracted package end to end with `./install-smoke.sh`. It checks the package
@@ -280,10 +281,10 @@ For an artifact downloaded from the Tag workflow, place its four files in a dedi
 verify the complete candidate from a trusted checkout of the matching source Tag before extracting it:
 
 ```bash
-release_revision="$(git rev-list -n 1 v0.5.2)"
+release_revision="$(git rev-list -n 1 v0.5.3)"
 cargo run --quiet --manifest-path engine/Cargo.toml --locked --bin cyanrex-release -- \
   candidate verify /path/to/downloaded-candidate \
-  --expect-version 0.5.2 --expect-revision "$release_revision" --expect-tag v0.5.2 \
+  --expect-version 0.5.3 --expect-revision "$release_revision" --expect-tag v0.5.3 \
   --extract-to /path/to/new-output-directory
 ```
 

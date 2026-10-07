@@ -26,6 +26,12 @@ C2-A 至 C2-F 首次收录于 0.4.8。源码发布不等于部署，各决策文
 收录于 0.5.1 的准备层认证现要求全新来源 Schema 2，OTP 消费与登录/改密共同提交；已有 Schema 1 原样拒绝，
 不迁移或替换在线 AuthService。
 
+### 0.5.3 的 AI Agent 宿主接入
+
+[AI 接入层](ai-agent-integration.md)新增教师管理的设置元数据和明确选出已有操作的 SDK 工具桥。
+模型传输及密钥留在宿主，写工具需逐次可信批准，仍使用现有 Engine 会话权限。这不是 Runner 签名
+协议、自主参与者或通用 Task 编排；此前尚未实现的 AI 身份/委托边界保持不变。
+
 ## 1. 系统全景
 
 下图是当前运行的教学应用，不是目标平台已经部署的拓扑。
@@ -67,6 +73,30 @@ Session 授权的 Artifact 发布，再显式更换 Task 输入；执行适配�
 [C2-N](task-content-http.md)新增这些命令之上的独立 HTTP 路由，采用专用 Session Cookie、固定
 可信 Origin 与有界请求准入。它没有挂载到 `build_router`，现用 OpenAPI/SDK 也不声明它；登录
 签发、部署组合、内容发布及浏览器保存仍独立推进，不把旧 Session 变成平台权限。
+
+0.5.3 收录的 [C2-O 草稿导入器](task-draft-publication.md)增加纯整份草稿校验、有界发布值，以及
+将给定精确 `ArtifactContent` 绑定为 C2-K 清单的能力。空白标题拒绝，经过校验的本地 ID/修订丢弃，
+扩展语言提示仍只是标签。不派发发布、Session 命令、HTTP 请求或浏览器保存；给定字节相符不能
+证明来源、发布已确认或当前权限。
+
+0.5.3 收录的 [C2-P](session-task-draft-publication.md)将计划与已有会话授权 Artifact 发布、C2-M 仅创建
+Task 命令显式组合。调用者持有的内存尝试固定 ID、来源、工作区和 Session 指纹，每次至多派发
+一个写入。等待前记录未知步骤，后续失败或 future 被丢弃仍保留已确认进度。没有整份草稿事务、
+重试、清理、持久恢复、HTTP 或浏览器连接；各底层命令保留原授权与提交边界。
+
+0.5.3 收录的 [C2-Q](session-task-draft-observation.md)只经一次已有当前会话 Artifact 或 Task 内容读取，
+观察 C2-P 尝试的未知步骤目标，返回不含正文的比较结果，不追加确认、不改状态，也不允许重试。
+Task 读取校验其当前引用字节；Task 不存在时不会触发 Artifact 命名空间检查。各次观察时点独立，
+不可见不证明回滚或整个工作区健康。
+
+0.5.3 收录的 [C2-R](session-task-draft-checkpoint.md)另加有界元数据检查点 codec。C2-P 可导出已分配
+目标及报告进度，不含正文或认证材料；解析仅得到调用者提供的数据，不是尝试、当前权限或
+历史提交证据。没有保存、持久意图日志、导入后读取，也不接 C2-Q 恢复或重试。
+
+0.5.3 收录的 [C2-S](session-task-draft-inspection.md)另接收已解析检查点、显式受信任工作区和当前
+Session，只执行一次已有 Artifact 或 Task 内容读取。它比较当前元数据，不证明原始字节或调用者
+来源，也不要求尝试仍存。解析仍不读取，C2-Q 保留原尝试/指纹要求。结果不会被收编为确认、恢复
+或重试权限，也不新增日志或原存储代次证明。
 
 ### 教师权威与单人使用
 
@@ -121,8 +151,12 @@ Engine 启动时会发现直接子目录中的合法 v1 `module.json`。`ModuleM
 | `engine/src/services/collaboration_identity_store/` | 显式身份绑定、工作区成员、部署策略及审计存储 |
 | `engine/src/services/auth_service/durable_source/` | 独立持久账号/会话来源，以及由同一事务持有的命令授权 |
 | `engine/src/services/{task_store,artifact_store,review_store}/` | 显式私人工作存储；直接接口要求可信调用方，Session 适配器提供授权 |
+| `engine/src/services/prepared_resource_sql.rs` | 上述存储私有共用的命名空间、事务初始化及普通表检查；不是通用仓储或授权服务 |
+| `engine/src/services/task_draft_import/` | 严格原始草稿解析、发布值及给定内容绑定；无 I/O、权限或保存编排 |
+| `engine/src/services/auth_service/durable_source/draft_publication/` | 仅创建步骤、原尝试观察、纯检查点 codec 及独立当前授权检查；授权/事务保留在已有 Artifact 与 C2-M 命令 |
 | `frontend/src/features/tasks/` | 本地草稿归属、payload 修订及导入导出；不是持久 Task 存储 |
 | `frontend/src/features/editor/` | 受控文本模型及本地语言服务；不负责任务策略或执行授权 |
+| `frontend/src/transport/privateRequest.ts` | 共享携带会话的请求策略与浏览器等待期限；响应解码和业务确认仍由 feature 持有 |
 
 声明式 `modules/` 目录、内置 TaskProvider、Runner Agent 是三类不同扩展边界。发现模块不等于
 安装提供器，注册它们也不会获得代码执行权限或创建 AI 参与者。
@@ -137,6 +171,7 @@ src/features/tasks/       本地任务草稿与可选文本 payload
 src/features/editor/      受控文本内容编辑及本地语言服务
 src/features/runner/      Runner Agent 清单与教师部署运维
 src/features/settings/    经核实的设置表单、请求、指标轮询与面板
+src/transport/            共享私有请求策略与浏览器取消/期限
 src/config/               运行端点和产品级设置
 src/i18n/                 翻译目录与语言上下文
 src/utils/                分析器、安全与页面状态工具
@@ -169,8 +204,17 @@ src/utils/                分析器、安全与页面状态工具
 内置工作线程使用本地资源，不连接外部 Schema、包下载或 LSP 传输。自定义提供器核对模型身份和
 语言，销毁时释放注册。JS/TS 默认配置及工作线程仍共享；强制模块解析不等于安全沙箱或多工作区隔离。
 
+`src/transport/privateRequest.ts` 统一请求生命周期：携带会话、禁止缓存和重定向、上游取消、
+等待期限及监听器清理。Runner 运维和性能指标直接依赖这一中立传输，不再借用 `settingsRequest`。
+DTO 校验、精确回执与响应策略仍归各 feature：严格 JSON 是可选策略，事件导出保留 blob/格式解码，
+Runtime 错误保留类型化的响应内容。共享等待让完整的 fetch/解码操作与取消或超时竞争完成，
+即使 fetch 或响应体读取忽略 abort，也不会让调用方一直等待；迟到结果不能把已结束的等待改成成功。
+这不停止服务端工作、不保证回滚，也不会重试请求。原有限时不变：Settings、Metrics、Runner
+读取为 10 秒，Settings/Runner 写入为 20 秒；事件请求为 20 秒，未读数/已读确认请求为 10 秒；
+Runtime 变更为 330 秒，挂载读取为 20 秒。这些都是浏览器等待期限，不是服务端执行期限。
+
 `useSettingsForm` 负责读取代次、确认后的草稿以及顺序执行的事件/编译器保存；`settingsRequest`
-校验响应结构和精确回执，以携带会话且不缓存、不跟随重定向的请求限定等待：每次读取 10 秒、
+校验响应结构和精确回执，并把携带会话的请求及头部/响应体等待交给共享传输：每次读取 10 秒、
 每次写入 20 秒，含响应体。缓存草稿不代表服务端状态。导航中止浏览器等待并排除迟到结果，
 不撤销 Engine 已接受的操作。未确认或部分成功后，须显式重新读取才能编辑保存；编译器不可用时，
 明确标注仅保存事件设置。重新读取不重试写入，丢弃已编辑草稿需确认。两步仍非事务，
@@ -300,6 +344,14 @@ CollaborationIdentityStore、TaskStore、ArtifactStore 或 ReviewStore。Rust �
 | `CommandDispatcher` | 把管理命令分发到对应服务 |
 
 大型服务可以拆成私有子模块或 `include!` 片段，但调用者只依赖公开服务类型，不得跨层引用内部文件。
+
+私有 `prepared_resource_sql` 只收敛 Task、Artifact、Review 存储重复的机械步骤：启动直接存储事务，
+按原请求设置只读可重复读，并保留事务局部的 5 秒语句/2 秒锁超时；检查专用命名空间，以及选中关系
+是否为没有 RLS、分区、继承和解析遮蔽的持久普通表。各存储继续持有具体表锁与查询、预期表清单、
+Schema 版本、工作区范围、错误映射和提交职责；schema 2 Task 与 schema 3 Task 内容仍然分离。
+辅助模块不修改 `search_path`，也不接管或提交 Session 命令的事务。原命名空间固定、所有者解析及
+最终 Session/记录复核仍留在现有命令边界内。这次内部共用不把准备层组合进 `AppState`、挂载 HTTP
+路由或改变在线认证路径。
 
 ## 5. 核心数据流
 

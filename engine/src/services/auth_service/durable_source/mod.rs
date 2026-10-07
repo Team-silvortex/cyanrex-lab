@@ -32,6 +32,8 @@ mod artifact_commands;
 mod bootstrap;
 mod credentials;
 mod deletion;
+#[cfg(unix)]
+mod draft_publication;
 mod namespace;
 mod otp;
 mod otp_consumption;
@@ -54,6 +56,15 @@ mod task_commands;
 pub use artifact_commands::{SessionArtifactError, SessionArtifactWorkspace};
 pub use bootstrap::{AuthorityBootstrap, BootstrapError};
 pub use deletion::SessionDeleteAccountCommand;
+#[cfg(unix)]
+pub use draft_publication::{
+    SessionDraftCheckpointInspectionError, SessionDraftCheckpointObservation,
+    SessionDraftCheckpointObservedOutcome, SessionDraftCheckpointState,
+    SessionDraftObservedOutcome, SessionDraftPublicationCheckpoint, SessionDraftPublicationError,
+    SessionDraftPublicationObservation, SessionDraftPublicationProgress,
+    SessionDraftPublicationState, SessionDraftPublicationStep, SessionTaskDraftPublication,
+    MAX_SESSION_DRAFT_CHECKPOINT_BYTES,
+};
 pub use reconciliation::{AuthorityReconciliation, ReconciliationError};
 #[cfg(unix)]
 pub use review_commands::{SessionReviewError, SessionReviewWorkspace};

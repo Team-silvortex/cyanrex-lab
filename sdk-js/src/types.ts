@@ -25,6 +25,12 @@ export type RunnerJobState = Schema<"RunnerJobView">["state"];
 
 export type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
 
+export type AiAgentProtocol = Schema<"AiAgentProtocol">;
+export type AiAgentProfile = Schema<"AiAgentProfile">;
+export type AiAgentSettings = Schema<"AiAgentSettings">;
+export type UpdateAiAgentSettingsRequest = Schema<"UpdateAiAgentSettingsRequest">;
+export type UpdateAiAgentSettingsResponse = Schema<"UpdateAiAgentSettingsResponse">;
+
 export interface CyanrexClientOptions {
   fetch?: FetchLike;
   credentials?: RequestCredentials;

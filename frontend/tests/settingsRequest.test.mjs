@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { readFileSync } from "node:fs";
-import { SETTINGS_READ_TIMEOUT_MS, SETTINGS_SAVE_TIMEOUT_MS, normalizeEventDraft,
+import { privateTransportModule } from "./helpers/privateTransportModules.mjs";
+const { SETTINGS_READ_TIMEOUT_MS, SETTINGS_SAVE_TIMEOUT_MS, normalizeEventDraft,
   parseEventSettings, parseCompilerSettings, parseEventSettingsSaved, parseCompilerSettingsSaved,
-  requestSettings } from "../src/features/settings/settingsRequest.ts";
+  requestSettings } = await privateTransportModule("settings");
 
 const events = { max_records: 500, overflow_policy: "drop_oldest" };
 const compiler = { resident: false, strategy: "on_demand" };

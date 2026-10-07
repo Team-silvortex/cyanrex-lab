@@ -13,7 +13,10 @@ test("the legacy admin API tier truthfully includes teacher deployment authority
       checked++;
     }
   }
-  assert.equal(checked, 18);
+  assert.equal(checked, 20);
+  for (const method of ["get", "post"]) {
+    assert.equal(document.paths["/settings/ai-agents"][method]["x-cyanrex-access"], "admin");
+  }
 });
 
 test("supported launchers pass explicit teacher and legacy administrator allowlists", async () => {

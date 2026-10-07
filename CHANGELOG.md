@@ -5,6 +5,73 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.5.3] - 2026-10-07
+
+This patch adds AI Agent host configuration and SDK tool adapters, internal draft publication and
+inspection preparation, shared boundary mechanisms and sanitizer hardening. Provider calls, autonomous
+AI delegation, generic Task browser saving, live-auth cutover and database migration remain separate.
+
+### Added
+
+- Add teacher-managed, revision-fenced AI Agent connection profiles and a four-language Settings
+  panel, storing metadata and symbolic host credential references only. Add SDK helpers for OpenAI
+  Responses/Chat, Anthropic, Gemini, MCP and custom tool formats over an explicit reviewed catalogue;
+  writes require per-call trusted approval. No provider calls, secret vault, AI identity/delegation,
+  autonomous orchestration, generic Task browser saving or signed Runner protocol change is added.
+
+- Add C2-S explicit current-Session inspection of one reported unconfirmed checkpoint target through
+  a trusted workspace and existing authorized readers. Return a body-free metadata comparison while
+  preserving typed failures; parsing still performs no read and C2-Q still needs its original attempt.
+  No original-caller/byte provenance, storage-incarnation proof, confirmation, journal, restored attempt,
+  retry, cleanup or public/browser connection is added.
+
+- Add C2-R bounded metadata checkpoints for caller-owned draft publication attempts: strict 64 KiB
+  export/parse of allocated references and reported progress, without text or authentication material.
+  Imported progress remains forgeable/replayable caller data, not confirmed provenance or authority.
+  No save, durable journal, attempt restoration, read-on-import, retry or public/browser route is added.
+
+- Add C2-Q explicit read-only observation of a surviving draft attempt's unconfirmed target through
+  the original Session and existing authorized read commands. Report current match, difference or
+  invisibility without body data or state changes; preserve typed read failures. A match is not prior
+  commit provenance, and invisibility is not rollback or permission to retry. No durable journal,
+  new-login recovery, cleanup, public route or browser connection is added.
+
+- Add C2-P internal create-only draft publication steps over existing Session-authorized Artifact and
+  Task-content commands. Caller-owned state fixes identities and Session context, marks each write
+  unconfirmed before waiting, and retains confirmed progress when later work fails or is cancelled.
+  Each advance dispatches at most one write; there is no whole-draft transaction, automatic retry,
+  content deletion, durable receipt/recovery, public route, browser saving or live-authentication change.
+
+- Add C2-O pure Rust task-draft import, bounded text-publication planning and exact supplied-content
+  binding to the existing Task manifest. Reject blank save titles, malformed/ambiguous JSON and local
+  identity misuse; preserve text, labels and ordering without granting editor or execution capability.
+  Shared canonical-export fixtures check browser/Rust compatibility. This preparation performs no
+  publication, Task write, Session issuance, HTTP mounting or browser save; supplied snapshots do not
+  establish persistence or authority, and later publication/Task writes remain separate operations.
+
+### Changed
+
+- Consolidate private frontend fetch/cancellation/deadline mechanics in a neutral transport module.
+  Runner administration and performance metrics no longer borrow the Settings transport; feature
+  decoders retain their JSON, HTTP error, export and acknowledgement policies and existing timeouts.
+- Share Task, Artifact and Review transaction setup, namespace and ordinary-table checks internally.
+  Keep each store's table locks, schema/scope checks, error mapping and commit ownership, including
+  the separate Task storage formats and Session adapters; add exact opt-in SQL fixtures to CI.
+
+### Fixed
+
+- Event and Runtime browser waits now end at their cancellation/deadline even when fetch or body
+  decoding ignores abort. Late results cannot acknowledge the completed wait; no automatic retry,
+  server rollback, execution cancellation or authorization change is implied.
+
+- Raise DOMPurify's security floor to 3.4.16 for GHSA-p98j-92pf-mc4p and GHSA-6688-9rhm-gjv2.
+  Monaco 0.55.1 embeds an older sanitizer outside npm's resolved dependency graph, so asset synchronization
+  also replaces that verified vendor block with the official patched ESM implementation. Exact version,
+  checksum and syntax checks reject unknown inputs; a new content-addressed chunk and rewritten AMD
+  references avoid retaining the old sanitizer URL. Add offline dependency floors, asset-tool regressions
+  and opt-in browser checks of the actual Monaco instance and hover consumer. No CDN fallback, editor
+  version upgrade, public API or database change is added; running deployments still need a rebuild.
+
 ## [0.5.2] - 2026-10-07
 
 This patch hardens prepared authentication and registry reads, with explicit bounded Session
@@ -776,7 +843,8 @@ cross-user collaboration. The frozen public API compatibility baseline remains 0
 The canonical package metadata advanced directly from `0.2.9` to `0.3.1`. Version `0.3.0` identifies
 the frozen API compatibility snapshot only; it was not a package release and must not be tagged.
 
-[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.2...HEAD
+[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.3...HEAD
+[0.5.3]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.2...v0.5.3
 [0.5.2]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/Team-silvortex/cyanrex-lab/compare/a9523ec052f701e447d2e59fcd38d3a8d8186740...v0.5.1
 [0.5.0]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.4.9...a9523ec052f701e447d2e59fcd38d3a8d8186740

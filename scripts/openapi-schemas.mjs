@@ -1,3 +1,5 @@
+import { aiAgentSchemas } from "./openapi-ai-agent-schemas.mjs";
+
 const string = (extra = {}) => ({ type: "string", ...extra });
 const integer = (extra = {}) => ({ type: "integer", ...extra });
 const number = (extra = {}) => ({ type: "number", ...extra });
@@ -84,6 +86,7 @@ const runnerJobProperties = {
 };
 
 export const schemas = {
+  ...aiAgentSchemas,
   ClassroomDiscovery: object({
     service: enumString("cyanrex-classroom"), classroom_id: string({ format: "uuid" }),
     display_name: string({ minLength: 1, maxLength: 64 }), product_version: string(),

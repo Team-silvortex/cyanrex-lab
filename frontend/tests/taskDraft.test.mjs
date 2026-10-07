@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { registerHooks } from "node:module";
+import { readFile } from "node:fs/promises";
 import { BUILTIN_LANGUAGES } from "../src/features/editor/languages.ts";
 
 // Match the bundler's one extensionless TypeScript dependency without rewriting production code.
@@ -199,4 +200,42 @@ test("payload arrays cannot hide extra properties, holes, accessors or custom it
   const iterator = [item()]; iterator[Symbol.iterator] = function* () { throw new Error("must not execute iterator"); };
   const custom = [item()]; Object.setPrototypeOf(custom, { hidden: true });
   for (const payload of [extra, sparse, getter, iterator, custom]) fails(() => serializeTaskDraft(draft(payload)));
+});
+
+test("shared native-import fixtures are ordinary byte-exact local exports with no server authority", async () => {
+  const folder = new URL("../../engine/tests/fixtures/task-draft-publication/", import.meta.url);
+  const cases = [];
+  for (const filename of ["named-empty.json", "multilingual.json"]) {
+    const bytes = await readFile(new URL(filename, folder));
+    const value = parseTaskDraft(bytes), serialized = serializeTaskDraft(value);
+    // The sole trailing newline belongs to the checked-in fixture, not the download format.
+    assert.equal(serialized, bytes.toString("utf8").replace(/\n$/, ""), filename);
+    assert.deepEqual(parseTaskDraft(encoder.encode(serialized)), value); frozen(value); cases.push(value);
+  }
+  assert.equal(cases[0].title, "A named task without code"); assert.deepEqual(cases[0].payload, []);
+  const items = cases[1].payload;
+  assert.deepEqual(items.map(item => item.language), BUILTIN_LANGUAGES.map(language => language.id));
+  assert.equal(items.at(-1).revision, Number.MAX_SAFE_INTEGER); assert.equal(items.at(-1).text, "");
+  assert.equal(items[0].filename, items[1].filename, "labels need not be unique");
+  assert.ok(items.some(item => item.text.includes("\r\n")));
+  assert.ok(items.some(item => item.text.includes("\t中文 👩‍💻 e\u0301")), "composition, tabs and supplementary Unicode stay exact");
+});
+
+test("backend-only future language fixtures do not grant a local editor capability", async () => {
+  const bytes = await readFile(new URL("../../engine/tests/fixtures/task-draft-publication/future-language.json", import.meta.url));
+  assert.equal(JSON.parse(bytes.toString("utf8")).payload[0].language, "future-lang+v2");
+  fails(() => parseTaskDraft(bytes));
+});
+
+test("local raw JSON compatibility is broader than the native strict publication importer", () => {
+  const canonical = serializeTaskDraft(draft([], { title: "Named draft" }));
+  const duplicate = canonical.replace('"title":"Named draft"', '"title":"discarded","title":"Named draft"');
+  const exponent = canonical.replace('"version":1', '"version":1e0');
+  // TextDecoder strips a leading BOM and JSON.parse keeps the last duplicate / numeric value.
+  // Normal local exports contain none of these forms; native strict rejection is intentional.
+  for (const raw of [`\uFEFF${canonical}`, duplicate, exponent]) {
+    assert.equal(serializeTaskDraft(parseTaskDraft(encoder.encode(raw))), canonical);
+  }
+  assert.equal(parseTaskDraft(encoder.encode(serializeTaskDraft(draft([])))).title, "");
+  assert.equal(parseTaskDraft(encoder.encode(serializeTaskDraft(draft([], { title: "   " })))).title, "   ");
 });

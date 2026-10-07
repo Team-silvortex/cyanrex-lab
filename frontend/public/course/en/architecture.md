@@ -31,6 +31,13 @@ statement that every described path is live.
 Prepared authentication included in 0.5.1 now requires fresh source schema 2 and commits OTP consumption
 with login/rotation. Schema 1 is rejected unchanged; this does not migrate or replace live AuthService.
 
+### AI Agent host integration in 0.5.3
+
+The [AI integration layer](ai-agent-integration.md) adds teacher-managed connection metadata in Settings
+and an explicit SDK tool bridge over reviewed existing operations. Provider transport and secrets stay
+with the host; write tools require per-call trusted approval and still use the current Engine session.
+This is not the signed Runner protocol, autonomous participants or general Task orchestration.
+
 ## 1. System Context
 
 The following topology is the running teaching application, not the target platform deployment.
@@ -78,6 +85,36 @@ Artifact-text verification in one transaction; the live/browser connection remai
 dedicated Session cookie, fixed trusted Origin and bounded request admission. It is not mounted in
 `build_router` or advertised by the live OpenAPI/SDK. Login issuance, deployment composition, content
 publication and browser saving remain separate; no legacy Session becomes platform authority.
+
+The 0.5.3 [C2-O draft importer](task-draft-publication.md) adds pure whole-draft validation,
+bounded publication values and binding of supplied exact `ArtifactContent` into the C2-K manifest.
+Blank titles are rejected, checked local IDs/revisions are discarded, and extension language hints
+remain inert. No publication, Session command, HTTP request or browser save is dispatched; matching
+supplied bytes do not establish provenance, confirmed publication or current authority.
+
+0.5.3 [C2-P](session-task-draft-publication.md) explicitly composes that plan with existing
+Session-authorized Artifact publication and C2-M create-only Task commands. A caller-owned in-memory
+attempt fixes IDs, source, workspace and Session fingerprint; each advance dispatches at most one
+write. It records an unconfirmed step before waiting and retains confirmed progress if a later step
+fails or is dropped. There is no whole-draft transaction, retry, cleanup, durable recovery, HTTP or
+browser connection. Each underlying command retains its own authorization and commit boundary.
+
+0.5.3 [C2-Q](session-task-draft-observation.md) observes only a C2-P attempt's unconfirmed target
+through one existing current-Session Artifact or Task-content read. It returns a body-free comparison,
+not a new confirmation, state transition or permission to retry. Task reads validate current referenced
+bytes; an absent Task does not trigger an Artifact-namespace check. Separate observations have separate
+read times, so invisibility does not prove rollback or whole-workspace health.
+
+0.5.3 [C2-R](session-task-draft-checkpoint.md) adds a separate bounded metadata checkpoint codec.
+C2-P can export its allocated targets and reported progress without text or authentication material;
+parsing returns caller-supplied data, not an attempt, current authority or historical commit evidence.
+There is no save, durable intent journal, read-on-import, resumption or retry connection to C2-Q.
+
+0.5.3 [C2-S](session-task-draft-inspection.md) separately accepts a parsed checkpoint, explicit
+trusted workspace and current Session for one existing Artifact or Task-content read. It compares
+current metadata, not original bytes or caller provenance, and needs no surviving attempt. Parsing
+still performs no read; C2-Q retains its original-attempt/fingerprint requirement. No result is adopted
+as confirmation, recovery or retry permission, and no journal or storage-incarnation proof is added.
 
 ### Teacher authority and personal use
 
@@ -141,8 +178,12 @@ The platform-specific source boundaries are more precise than the top-level dire
 | `engine/src/services/collaboration_identity_store/` | Explicit identity binding, workspace membership, deployment policy and audit storage |
 | `engine/src/services/auth_service/durable_source/` | Separate durable account/session source and transaction-owned command authorization |
 | `engine/src/services/{task_store,artifact_store,review_store}/` | Explicit private work storage; direct APIs require a trusted caller, Session adapters provide authorization |
+| `engine/src/services/prepared_resource_sql.rs` | Private shared namespace, transaction setup and ordinary-table checks for those stores; not a repository or authorization service |
+| `engine/src/services/task_draft_import/` | Strict raw-draft parsing, publication values and supplied-content binding; no I/O, authority or save orchestration |
+| `engine/src/services/auth_service/durable_source/draft_publication/` | Create-only steps, original-attempt observation, a pure checkpoint codec and separate current-authority inspection; authorization/transactions stay in existing Artifact and C2-M commands |
 | `frontend/src/features/tasks/` | Local draft ownership, payload revisions and import/export; not a durable Task store |
 | `frontend/src/features/editor/` | Controlled text models and local language services; no task policy or execution authority |
+| `frontend/src/transport/privateRequest.ts` | Shared credentialed fetch policy and browser waiting limits; feature modules retain response decoding and business confirmation |
 
 The declarative `modules/` catalogue, a built-in TaskProvider, and a Runner Agent are three different
 extension boundaries. Discovering a module does not install a provider; registering either does not
@@ -150,7 +191,7 @@ authorize code execution or create an AI participant.
 
 ## 3. Frontend Architecture
 
-The frontend follows four practical layers:
+The frontend separates page composition, feature behavior and shared infrastructure:
 
 ```text
 pages/                    Route-level screens and orchestration
@@ -160,6 +201,7 @@ src/features/tasks/       Local task drafts and their optional text payloads
 src/features/editor/      Controlled text-content editing and local language services
 src/features/runner/      Runner Agent inventory and teacher deployment operations
 src/features/settings/    Verified settings forms, requests, metrics polling and panels
+src/transport/            Shared private request policy and browser cancellation/deadlines
 src/config/               Runtime endpoints and product-level settings
 src/i18n/                 Locale catalogs and language context
 src/utils/                Pure analyzers, security helpers, and page-state helpers
@@ -200,9 +242,21 @@ recovery. Bundled workers use local assets without external schemas, packages or
 Custom providers check model identity/language and release registrations on disposal. JS/TS defaults
 and workers remain shared: forced module detection is not a security sandbox or multi-workspace isolation.
 
+`src/transport/privateRequest.ts` owns the shared request lifecycle: session credentials, no caching,
+redirect refusal, parent cancellation, deadlines and listener cleanup. Runner administration and
+performance metrics call this neutral transport directly rather than borrowing `settingsRequest`.
+Feature modules still own DTO validation, exact acknowledgements and response policy: strict JSON is
+optional, Event exports keep their blob/format decoder, and Runtime errors retain their typed payload.
+The shared wait races the complete fetch/decode operation against cancellation or deadline, so a fetch
+or response-body read that ignores abort cannot keep its caller waiting. Late results cannot turn that
+completed wait into success; this does not stop server work, guarantee rollback or retry a request.
+Existing limits remain: Settings, Metrics and Runner reads use 10 seconds, Settings/Runner writes use
+20 seconds; Event requests use 20 seconds, unread/read-acknowledgement requests use 10; Runtime
+mutations use 330 seconds and attachment reads use 20. These are browser waits, not server deadlines.
+
 `useSettingsForm` owns settings read generations, reviewed drafts and ordered event/compiler writes.
-`settingsRequest` validates exact response shapes and acknowledgements, uses private credentialed
-requests and bounds header/body waiting (10 seconds per read, 20 per write). Cached drafts never establish
+`settingsRequest` validates exact response shapes and acknowledgements and delegates private credentialed
+requests and header/body waiting to the shared transport (10 seconds per read, 20 per write). Cached drafts never establish
 server state. Navigation aborts browser waiting and invalidates late responses, not admitted Engine work.
 An unconfirmed or partial save locks editing until explicit reload; compiler-unavailable reads permit
 clearly labeled event-only saves. Reload never retries a write, and discarding an edited draft requires
@@ -356,6 +410,17 @@ authority. OpenAPI's `x-cyanrex-roles` lists `admin` (legacy compatibility) and 
 
 Large service implementations may use private submodules or `include!` fragments, but callers must
 continue to depend on the public service type rather than internal files.
+
+The private `prepared_resource_sql` helper removes repeated mechanics from Task, Artifact and Review
+storage. It starts direct-store transactions with the existing read-only repeatable-read setting where
+requested and transaction-local 5-second statement / 2-second lock timeouts. It also checks a dedicated
+namespace and validates the selected relations as persistent ordinary tables without RLS, partitioning,
+inheritance or resolution shadows. Each store retains its exact table locks and queries, expected table
+inventory, schema version, workspace scope, error mapping and commit ownership; schema-2 Tasks and
+schema-3 Task content remain distinct. The helper neither changes `search_path` nor adopts or commits a
+Session command's transaction. Original namespace pins, owner resolution and final Session/record checks
+remain in the existing command boundaries. This internal sharing does not compose prepared stores into
+`AppState`, mount HTTP routes or change the live authentication path.
 
 ## 5. Main Data Flows
 

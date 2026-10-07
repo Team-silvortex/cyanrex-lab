@@ -4,7 +4,7 @@ import { useI18n } from "../../i18n/context";
 import { buildHotspotSummary } from "./hotspots";
 import type { PerformanceMetrics } from "./models";
 import { parsePerformanceMetrics } from "./performanceMetrics";
-import { requestSettings } from "./settingsRequest";
+import { requestPrivateJson } from "../../transport/privateRequest";
 
 const POLL_DELAY_MS = 10_000;
 type State = { scope: string; metrics: PerformanceMetrics | null; refreshing: boolean; errorKey: string; messageKey: string };
@@ -33,7 +33,7 @@ export function usePerformanceMetrics(engineUrl: string, navigation = "") {
       setState(previous => ({ ...previous, refreshing: true, messageKey: "" }));
       const work = (async () => {
         try {
-          const metrics = await requestSettings(`${engineUrl}/settings/performance`, controller.signal, parsePerformanceMetrics);
+          const metrics = await requestPrivateJson(`${engineUrl}/settings/performance`, controller.signal, parsePerformanceMetrics);
           if (owns()) setState({ scope, metrics, refreshing: true, errorKey: "",
             messageKey: silent ? "" : "settings.metricsUpdated" });
         } catch {

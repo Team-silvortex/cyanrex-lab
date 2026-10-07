@@ -107,32 +107,7 @@ impl TextPayloadBinding {
     ) -> Result<Self, ContractError> {
         let filename = filename.into();
         let language = language.into();
-        if filename.is_empty()
-            // Match the local editor's UTF-16 bound without normalizing a display label.
-            || filename.encode_utf16().count() > 128
-            || matches!(filename.as_str(), "." | "..")
-            || filename.contains(['/', '\\'])
-            || filename.chars().any(char::is_control)
-        {
-            return Err(ContractError(
-                "text payload filename must be a bounded display basename",
-            ));
-        }
-        if language.len() > 64
-            || !language
-                .as_bytes()
-                .first()
-                .is_some_and(u8::is_ascii_lowercase)
-            || !language.bytes().all(|byte| {
-                byte.is_ascii_lowercase()
-                    || byte.is_ascii_digit()
-                    || matches!(byte, b'_' | b'+' | b'.' | b'-')
-            })
-        {
-            return Err(ContractError(
-                "text payload language must be a bounded lowercase hint",
-            ));
-        }
+        validate_text_payload_metadata(&filename, &language)?;
         Ok(Self {
             kind: TextPayloadKind::Text,
             filename,
@@ -153,6 +128,49 @@ impl TextPayloadBinding {
     pub fn language(&self) -> &str {
         &self.language
     }
+}
+
+/// Shared inert-label rules for server manifests and pure portable-draft planning.
+pub(crate) fn validate_text_payload_metadata(
+    filename: &str,
+    language: &str,
+) -> Result<(), ContractError> {
+    if filename.is_empty()
+        // Match the local editor's UTF-16 bound without normalizing a display label.
+        || filename.encode_utf16().count() > 128
+        || matches!(filename, "." | "..")
+        || filename.contains(['/', '\\'])
+        || filename.chars().any(char::is_control)
+    {
+        return Err(ContractError(
+            "text payload filename must be a bounded display basename",
+        ));
+    }
+    if language.len() > 64
+        || !language
+            .as_bytes()
+            .first()
+            .is_some_and(u8::is_ascii_lowercase)
+        || !language.bytes().all(|byte| {
+            byte.is_ascii_lowercase()
+                || byte.is_ascii_digit()
+                || matches!(byte, b'_' | b'+' | b'.' | b'-')
+        })
+    {
+        return Err(ContractError(
+            "text payload language must be a bounded lowercase hint",
+        ));
+    }
+    Ok(())
+}
+
+pub(crate) fn validate_task_content_title(title: &str) -> Result<(), ContractError> {
+    if title.trim().is_empty() || title.len() > 256 || title.chars().any(char::is_control) {
+        return Err(ContractError(
+            "task content title must be nonblank bounded text",
+        ));
+    }
+    Ok(())
 }
 
 /// Validated metadata that can describe a Task snapshot, but does not save or authorize it.
@@ -189,11 +207,7 @@ impl TaskContentManifest {
         payload: Vec<TextPayloadBinding>,
     ) -> Result<Self, ContractError> {
         let title = title.into();
-        if title.trim().is_empty() || title.len() > 256 || title.chars().any(char::is_control) {
-            return Err(ContractError(
-                "task content title must be nonblank bounded text",
-            ));
-        }
+        validate_task_content_title(&title)?;
         if payload.len() > MAX_TASK_CONTENT_ITEMS {
             return Err(ContractError("task content has too many payload items"));
         }

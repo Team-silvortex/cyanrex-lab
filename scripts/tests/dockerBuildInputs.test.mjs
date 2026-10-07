@@ -31,6 +31,19 @@ test("Engine Docker builder copies compile-time assets before compiling", async 
   }
 });
 
+test("frontend Docker builds carry verified postinstall Monaco assets past checkout copies", async () => {
+  const dockerfile = await readFile(path.join(root, "frontend/Dockerfile"), "utf8");
+  const builder = dockerfile.split(/^FROM .* AS builder$/m)[1]?.split(/^FROM .* AS runner$/m)[0] ?? "";
+  const checkout = builder.indexOf("COPY . .");
+  const assets = builder.indexOf("COPY --from=deps /app/public/monaco ./public/monaco");
+  const build = builder.indexOf("RUN npm run build");
+  assert.ok(checkout >= 0 && assets > checkout && build > assets,
+    "fresh verified assets must replace stale or absent checkout assets before the production build");
+  const ignored = (await readFile(path.join(root, "frontend/.dockerignore"), "utf8"))
+    .split(/\r?\n/).map(line => line.trim());
+  assert.ok(ignored.includes("public/monaco"), "COPY merges directories; exclude all stale host Monaco chunks first");
+});
+
 test("frontend prebuild works with only its Docker context and committed course copy", async () => {
   const fixture = await mkdtemp(path.join(os.tmpdir(), "cyanrex-frontend-context-"));
   const frontend = path.join(fixture, "frontend");

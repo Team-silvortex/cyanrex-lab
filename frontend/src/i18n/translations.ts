@@ -3,6 +3,7 @@ import { es } from "./locales/es";
 import { ja } from "./locales/ja";
 import { zhCN } from "./locales/zh_cn";
 import { taskDraftMessages } from "./locales/taskDraft";
+import { aiAgentMessages } from "./locales/aiAgents";
 
 export type Locale = "zh-CN" | "en" | "es" | "ja";
 
@@ -20,8 +21,8 @@ export const SUPPORTED_LOCALES: Array<{ code: Locale; label: string }> = [
 export const DEFAULT_LOCALE: Locale = "en";
 
 export const translations: Record<Locale, TranslationDict> = {
-  "zh-CN": { ...zhCN, taskDraft: taskDraftMessages["zh-CN"] },
-  en: { ...en, taskDraft: taskDraftMessages.en },
-  es: { ...es, taskDraft: taskDraftMessages.es },
-  ja: { ...ja, taskDraft: taskDraftMessages.ja },
+  "zh-CN": { ...zhCN, taskDraft: taskDraftMessages["zh-CN"], aiAgents: aiAgentMessages["zh-CN"] },
+  en: { ...en, taskDraft: taskDraftMessages.en, aiAgents: aiAgentMessages.en },
+  es: { ...es, taskDraft: taskDraftMessages.es, aiAgents: aiAgentMessages.es },
+  ja: { ...ja, taskDraft: taskDraftMessages.ja, aiAgents: aiAgentMessages.ja },
 };

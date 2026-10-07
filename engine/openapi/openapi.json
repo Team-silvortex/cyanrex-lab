@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Cyanrex Lab Engine API",
-    "version": "0.5.2",
+    "version": "0.5.3",
     "description": "Machine-readable contract for the Cyanrex teaching control and execution plane."
   },
   "servers": [
@@ -1784,6 +1784,250 @@
           "teacher",
           "student"
         ]
+      }
+    },
+    "/settings/ai-agents": {
+      "get": {
+        "operationId": "getSettingsAiAgents",
+        "summary": "GET /settings/ai-agents",
+        "tags": [
+          "Settings"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiAgentSettings"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "Do not cache event settings, acknowledgements or handler errors.",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Configuration storage unavailable or completion unconfirmed; not rollback proof. No paths or stored values are returned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "Do not cache event settings, acknowledgements or handler errors.",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            }
+          }
+        },
+        "x-cyanrex-access": "admin",
+        "description": "Teacher-only AI Agent connection metadata, not Runner configuration, a secret store or a model proxy. At most sixteen profiles; credential_ref is a symbolic host-side reference and is never resolved here. The Engine makes no provider requests. POST is limited to 32 KiB, rejects unknown fields, requires the current expected_revision and returns the next revision after confirmed private-file persistence. Stale revision returns 409; storage failure returns private 503 without overwriting corrupt snapshots or switching to volatile success. Cancellation or an unconfirmed response may follow a committed write: explicitly reload before retrying. Profiles do not grant AI identity, tool permissions, delegation, scheduling or automatic execution. All responses are no-store.",
+        "x-cyanrex-roles": [
+          "admin",
+          "teacher"
+        ]
+      },
+      "post": {
+        "operationId": "postSettingsAiAgents",
+        "summary": "POST /settings/ai-agents",
+        "tags": [
+          "Settings"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateAiAgentSettingsResponse"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "Do not cache event settings, acknowledgements or handler errors.",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid or excessive metadata configuration; no update dispatched.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "Do not cache event settings, acknowledgements or handler errors.",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Stale expected revision; explicitly reload and review, never automatically overwrite.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "Do not cache event settings, acknowledgements or handler errors.",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Invalid or excessive metadata configuration; no update dispatched.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "Do not cache event settings, acknowledgements or handler errors.",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Invalid or excessive metadata configuration; no update dispatched.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "Do not cache event settings, acknowledgements or handler errors.",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid or excessive metadata configuration; no update dispatched.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "Do not cache event settings, acknowledgements or handler errors.",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Configuration storage unavailable or completion unconfirmed; not rollback proof. No paths or stored values are returned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "Do not cache event settings, acknowledgements or handler errors.",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiMessage"
+                }
+              }
+            }
+          }
+        },
+        "x-cyanrex-access": "admin",
+        "description": "Teacher-only AI Agent connection metadata, not Runner configuration, a secret store or a model proxy. At most sixteen profiles; credential_ref is a symbolic host-side reference and is never resolved here. The Engine makes no provider requests. POST is limited to 32 KiB, rejects unknown fields, requires the current expected_revision and returns the next revision after confirmed private-file persistence. Stale revision returns 409; storage failure returns private 503 without overwriting corrupt snapshots or switching to volatile success. Cancellation or an unconfirmed response may follow a committed write: explicitly reload before retrying. Profiles do not grant AI identity, tool permissions, delegation, scheduling or automatic execution. All responses are no-store.",
+        "x-cyanrex-roles": [
+          "admin",
+          "teacher"
+        ],
+        "x-cyanrex-csrf": "Origin or Referer must match the configured frontend origin",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAiAgentSettingsRequest"
+              }
+            }
+          }
+        }
       }
     },
     "/settings/compiler": {
@@ -4038,6 +4282,163 @@
       }
     },
     "schemas": {
+      "AiAgentProtocol": {
+        "type": "string",
+        "enum": [
+          "openai_responses",
+          "openai_chat_completions",
+          "anthropic_messages",
+          "gemini_generate_content",
+          "custom"
+        ]
+      },
+      "AiAgentProfile": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[a-z][a-z0-9_-]{0,63}$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "protocol": {
+            "$ref": "#/components/schemas/AiAgentProtocol"
+          },
+          "base_url": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048,
+            "format": "uri",
+            "description": "Metadata only: absolute HTTPS, or HTTP on literal loopback/localhost; no URL credentials, query or fragment. The Engine never contacts this URL."
+          },
+          "model": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "credential_ref": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Z][A-Z0-9_]{0,63}$",
+                "description": "Symbolic host-side secret reference, never an API key. This service does not resolve it or inspect environment secrets."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "protocol",
+          "base_url",
+          "model",
+          "credential_ref",
+          "enabled"
+        ],
+        "additionalProperties": false
+      },
+      "AiAgentSettings": {
+        "type": "object",
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "default_profile_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[a-z][a-z0-9_-]{0,63}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "profiles": {
+            "type": "array",
+            "maxItems": 16,
+            "items": {
+              "$ref": "#/components/schemas/AiAgentProfile"
+            }
+          }
+        },
+        "required": [
+          "revision",
+          "default_profile_id",
+          "profiles"
+        ],
+        "additionalProperties": false
+      },
+      "UpdateAiAgentSettingsRequest": {
+        "type": "object",
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "default_profile_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[a-z][a-z0-9_-]{0,63}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "profiles": {
+            "type": "array",
+            "maxItems": 16,
+            "items": {
+              "$ref": "#/components/schemas/AiAgentProfile"
+            }
+          }
+        },
+        "required": [
+          "expected_revision",
+          "default_profile_id",
+          "profiles"
+        ],
+        "additionalProperties": false
+      },
+      "UpdateAiAgentSettingsResponse": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          },
+          "settings": {
+            "$ref": "#/components/schemas/AiAgentSettings"
+          }
+        },
+        "required": [
+          "ok",
+          "settings"
+        ],
+        "additionalProperties": false
+      },
       "ClassroomDiscovery": {
         "type": "object",
         "properties": {

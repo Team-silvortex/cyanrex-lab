@@ -13,6 +13,7 @@ ENV NEXT_PUBLIC_ENGINE_URL=${NEXT_PUBLIC_ENGINE_URL}
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+COPY --from=deps /app/public/monaco ./public/monaco
 RUN npm run build
 
 ARG NODE_IMAGE=node:20

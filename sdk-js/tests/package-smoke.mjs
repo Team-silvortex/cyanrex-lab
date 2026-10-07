@@ -23,6 +23,10 @@ test("package manifest contains the runtime and generated declaration closure", 
     "dist/generated/operations.js",
     "dist/index.d.ts",
     "dist/index.js",
+    "dist/agents/index.js",
+    "dist/agents/index.d.ts",
+    "dist/generated/agent-tools.js",
+    "dist/generated/agent-tools.d.ts",
     "dist/types.d.ts",
     "dist/types.js",
     "package.json",
@@ -39,6 +43,7 @@ test("package manifest contains the runtime and generated declaration closure", 
   }
   assert.ok(packageJson.exports["./openapi"], "generated OpenAPI types need an explicit subpath export");
   assert.ok(packageJson.exports["./operations"], "generated operations need an explicit subpath export");
+  assert.ok(packageJson.exports["./agents"], "agent adapter needs an explicit subpath export");
 });
 
 test("packed JavaScript and declarations have no dangling relative imports", async () => {
@@ -59,12 +64,16 @@ test("built ESM entry point works from a consumer-style import", async () => {
   const { CyanrexClient } = await import(packageJson.name);
   await import(`${packageJson.name}/openapi`);
   const { openApiOperations } = await import(`${packageJson.name}/operations`);
+  const { createAgentBridge } = await import(`${packageJson.name}/agents`);
   const client = new CyanrexClient("http://localhost:8080", {
     fetch: async () => Response.json({ status: "ok" }),
   });
 
   assert.deepEqual(await client.system.health(), { status: "ok" });
-  assert.equal(Object.keys(openApiOperations).length, 63);
+  assert.equal(Object.keys(openApiOperations).length, 65);
+  assert.equal(typeof client.aiAgents.settings, "function");
+  assert.equal(typeof client.aiAgents.updateSettings, "function");
+  assert.equal(createAgentBridge(client, { operations: ["getHealth"] }).tools("mcp")[0].name, "getHealth");
   assert.equal(typeof client.classroom.join, "function");
   assert.equal(typeof client.learning.attempt, "function");
   assert.deepEqual(openApiOperations.getLearningAttempt, {

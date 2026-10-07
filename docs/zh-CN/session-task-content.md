@@ -55,6 +55,10 @@ Schema 3 与既有 Schema 2 手动任务、输入及目录适配层仍然隔离�
 
 ## 验证及下一边界
 
+独立的0.5.3 收录的 [C2-P 流程](session-task-draft-publication.md)完成显式 Artifact 发布步骤后才调用
+本创建命令。确认进度只保存在内存，不写入本事务或 Schema。C2-M 仍派生当前 owner 并重读
+真实 blob；先前发布或 C2-O 值检查都不是可复用授权，也不形成跨步骤原子性。
+
 默认 API/形状测试和显式临时 PostgreSQL 用例覆盖此内部边界。精确选择脚本为
 `scripts/test-session-task-content.sh`，实际执行数量及限制见[项目进度](project-status.md)。
 接入 CI 选择不等于已运行远端 CI，更不是已部署系统验收。

@@ -6,6 +6,9 @@ import type {
   OpenApiOperationResponse,
 } from "./generated/operations.js";
 import type {
+  AiAgentSettings,
+  UpdateAiAgentSettingsRequest,
+  UpdateAiAgentSettingsResponse,
   ApiDownload,
   ApiMessage,
   ChangePasswordRequest,
@@ -146,6 +149,12 @@ export class CyanrexClient {
       this.get<HealthResponse>("/health", undefined, options),
     openapi: (options?: RequestOptions) =>
       this.get<OpenApiDocument>("/openapi.json", undefined, options),
+  };
+
+  readonly aiAgents = {
+    settings: (options?: RequestOptions) => this.get<AiAgentSettings>("/settings/ai-agents", undefined, options),
+    updateSettings: (request: UpdateAiAgentSettingsRequest, options?: RequestOptions) =>
+      this.post<UpdateAiAgentSettingsResponse>("/settings/ai-agents", request, options),
   };
 
   readonly auth = {
@@ -378,6 +387,7 @@ export class CyanrexClient {
     const url = this.url(path, input.query);
     const route = path.startsWith("/") ? path : `/${path}`;
     const classroom = route.startsWith("/classroom/") || route === "/.well-known/cyanrex-classroom";
+    const privateAiSettings = route === "/settings/ai-agents";
     if (classroom) {
       const target = new URL(this.baseUrl);
       const loopback = ["localhost", "[::1]"].includes(target.hostname) || /^127(?:\.\d{1,3}){3}$/.test(target.hostname);
@@ -406,7 +416,7 @@ export class CyanrexClient {
       headers,
       body: input.body === undefined ? undefined : JSON.stringify(input.body),
       signal: input.signal,
-      ...(classroom ? { redirect: "error" as const, cache: "no-store" as const, referrerPolicy: "no-referrer" as const } : {}),
+      ...(classroom || privateAiSettings ? { redirect: "error" as const, cache: "no-store" as const, referrerPolicy: "no-referrer" as const } : {}),
     });
     this.captureSessionCookie(response);
     const details = await parseBody(response);

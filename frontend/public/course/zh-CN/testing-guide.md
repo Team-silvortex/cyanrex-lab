@@ -1,6 +1,7 @@
 # 当前项目测试指南
 
-本文按 **2026-10-07 的 0.5.2 源码** 核对，包含登录拒绝路径、会话清理和会话/注册表时间防护，以及任务 payload、Session 命令与独立内容 HTTP 适配。
+本文按 **2026-10-07 的 0.5.3 源码** 核对，包含 AI 配置/SDK 适配、C2-O–S 草稿准备层、清理器加固
+与架构精简，以及此前登录拒绝路径、会话清理、会话/注册表时间防护与独立内容 HTTP 适配。
 它说明各模块和边界应测什么、每层通过能证明什么，以及如何避免使用线上数据。本文是测试方案和
 源码清单，不是一次新的测试结果。先用[平台链路地图](platform-network.md) 区分已连接与未连接路径。
 [功能张量](capability-maturity.md)将实现切片关联到测试源码与分日期证据；公共脚本检查其结构、引用
@@ -13,8 +14,8 @@
 | 公共源码和工具检查 | [`quality-gate.sh`](../../scripts/quality-gate.sh)、[`scripts/tests`](../../scripts/tests) | 长度、版本、课程同步、公共 API/SDK 契约及脚本/合成工具夹具回归 | 实际部署流程、真实 SSH/Docker/内核验收 |
 | 默认 Rust 测试 | `cargo test --manifest-path engine/Cargo.toml --locked` | 模型、服务、进程内路由、默认集成夹具与编译期契约 | 显式忽略的 PostgreSQL、真实 Agent 传输和性能用例 |
 | 显式 PostgreSQL 测试 | CI 的精确用例与下方存储 runner | 一次性数据中的真实 SQL 事务、命名空间/schema、锁、竞争、取消和故障注入 | 浏览器集成、部署数据迁移或线上授权切换 |
-| 前端构建与单元测试 | 前端质量门禁和 [`frontend/package.json`](../../frontend/package.json) | 生产构建、TypeScript、状态/请求/权限/编辑器回归 | 真实浏览器渲染或真实 Engine 连接 |
-| 浏览器回归 | 显式 `test:*-browser` 脚本 | 真实 Next 页面、交互、Monaco 模型/worker 与夹具定义的请求行为 | Engine 被模拟时的真实服务授权、数据库/内核端到端链路 |
+| 前端构建与单元测试 | 前端质量门禁和 [`frontend/package.json`](../../frontend/package.json) | 生产构建、TypeScript、状态/请求/权限/编辑器回归，以及生成资源异常时的拒绝检查 | 真实浏览器渲染或真实 Engine 连接 |
+| 浏览器回归 | 显式 `test:*-browser` 脚本 | 真实 Next 页面或本地生成资源夹具、交互、Monaco 模型/worker 与夹具定义的请求行为 | Engine 被模拟时的真实服务授权、数据库/内核端到端链路 |
 | SDK 与契约 | `quality-gate.sh --sdk-only`、[`sdk-js/package.json`](../../sdk-js/package.json) | 生成模型/操作、兼容性、运行请求、类型检查和打包消费者导入 | 公共契约之外的能力，包括通用准备层命令 |
 | 工具与发布夹具 | `test-runner-agent-tools.sh`、`test-distribution-tools.sh`、`test-live-kernel-smoke.sh`、`test-release-candidate.sh` | 模拟环境中的密钥处理、目标/元数据/归档校验、清理和失败报告 | 真实安装、远程 SSH 改动、Agent 部署或内核执行 |
 | 显式真实验收 | `runner-agent-smoke.sh`、`live-kernel-smoke.sh`、`distribution-install-smoke.sh`、原生 `cyanrex-release` | 该轮记录的实际环境、候选包和操作 | 其它内核、机器、版本或隔离保证 |
@@ -52,7 +53,13 @@ Rust 公告审计，前端/SDK 检查也包含生产依赖的 npm 审计。因�
 | 运维初始化 | `provision_cli_tdd`、`provision_postgres_tdd` | 只读计划、目标绑定 apply、私密配置交付、确认丢失与取消；不收编现有配置 |
 | 通用 Task、Artifact 与 Review | 下方显式存储 runner 及对应默认 Rust 测试 | 精确修订/摘要、Task/outbox 原子性、不可变文件边界、私人所有权、Review 历史、当前 Session 检查 |
 | 本地任务 payload 与编辑器 | `test:editor-languages`、`test:task-payload-browser`、`test:multi-language-editor-browser` | 可选 payload、已接受内容/修订、导入导出、过期编辑、模型释放与禁止网络写入 |
+| DOMPurify 与生成的 Monaco 资源 | `frontendDependencySecurity` 公共守卫、默认 `test:tooling`、显式 `test:dompurify-browser` | 锁定副本和 override → 精确替换第三方代码 → 新 chunk 引用 → Monaco 实际使用的清理器；依赖审计与部署行为另行验证 |
 | 内部任务内容元数据 | Rust `task_content_contract_tdd`、`task_content_binding_tdd` | 严格对象结构、字段/数量上限、有序准确引用、给定所有者/字节/摘要一致性；默认纯测试，不验证存储或 Session 授权 |
+| 草稿导入与发布计划 | Rust `task_draft_publication_tdd`、`taskDraftPublication` 公共守卫、前端 `taskDraft` 共享夹具 | 严格有界 JSON、空白标题拒绝、本地身份剥离、给定准确内容映射及标准导出兼容；不发布内容、不检查当前 Session、不保存浏览器草稿 |
+| 会话草稿发布步骤 | Rust `session_task_draft_publication_tdd`、`scripts/test-session-task-draft-publication.sh`、`sessionTaskDraftPublication` 公共守卫 | 固定分配与 Session 绑定、每次推进一个写入、空/多项成功、确认前缀与未知步骤、取消、撤权及最终真实字节检查；无持久恢复或浏览器保存 |
+| 未知草稿目标观察 | Rust `session_task_draft_observation_tdd`、`scripts/test-session-task-draft-observation.sh` | 原 Session/状态准入、精确只读比较、类型化错误、尝试不变、当前 Task 字节与历史前缀区别及 Task 缺席范围；无回滚证明或恢复推进 |
+| 草稿元数据检查点 | 默认 Rust `draft_publication::tests::checkpoint`、`session_task_draft_checkpoint_tdd`、`sessionTaskDraftCheckpoint` 公共守卫 | 严格有界元数据 codec、有序分配/长度、状态/计数关系及往返；导入进度是数据，不是授权、来源证明、持久化或尝试恢复 |
+| 检查点目标显式检查 | 默认 `draft_publication::tests::inspection`、`session_task_draft_inspection_tdd`、`scripts/test-session-task-draft-inspection.sh`、`sessionTaskDraftInspection` 公共守卫 | 显式范围/当前 Session、一个已有读取器、精确元数据/文本检查、类型化故障、缺席/空 Task 边界及数据不变；不证明原身份/正文来源，不提供日志或恢复 |
 | 独立内容存储 | Rust `task_content_store_tdd`、`scripts/test-task-content-storage.sh` | Schema 2/3 隔离、完整元数据/outbox 原子性、修订冲突与存储故障；不是 Session 内容或浏览器适配 |
 | 会话任务内容 | Rust `session_task_content_tdd`、`scripts/test-session-task-content.sh` | 同一事务内当前授权、旧新精确文本、元数据编辑、移除、命名空间身份及写后复验；不是公共/浏览器验收 |
 | UI 导航与安全 | `test:ui-permissions`、布局/动作/账户/运行浏览器套件 | 绑定目标的确认、防重复操作、路由切换、键盘操作、未保存草稿保护 |
@@ -60,6 +67,10 @@ Rust 公告审计，前端/SDK 检查也包含生产依赖的 npm 审计。因�
 
 `authSession` 等简写指 `frontend/tests` 中的对应文件；精确 npm 脚本名以 `frontend/package.json`
 为准。Rust 精确筛选前先执行 `--list`，避免名称拼错后“零条测试通过”。存储 runner 自带这一步检查。
+
+AI Agent 配置另选 `ai_agent_settings_tdd`、私有存储取消单元、`test:ai-agents`、显式
+`test:ai-agents-browser` 及 SDK Agent 运行/类型/包测试。边界为教师/CSRF → 修订配置 → 准确 UI 确认，
+以及有限工具、逐次批准、恶意调用与禁止自动重试；合成协议格式不证明真实模型服务验收。
 
 ## 安全的默认流程
 
@@ -79,6 +90,10 @@ PostgreSQL 连接变量和 dotenv 预加载设置，再只添加所选夹具需�
 只有依赖已匹配锁文件时才用 `--no-npm-install`。常规前端构建会从 `docs/` 同步课程副本；不要把
 `frontend/public/course` 当成文档源。仅改文档时检查长度、版本同步、课程同步和链接，不把这些检查
 描述成新一轮运行时回归。
+
+前端门禁还运行 `test:private-request`，检查共享传输生命周期。各功能测试保留自身的响应/回执
+策略；显式组件浏览器夹具分别检查 Settings、Metrics、Runner、Events 与 Runtime 状态。
+浏览器等待被取消不代表服务端回滚。
 
 ## 显式数据库套件
 
@@ -110,6 +125,28 @@ PostgreSQL 连接变量和 dotenv 预加载设置，再只添加所选夹具需�
 身份/认证源/生命周期/初始化用例在 CI 中另有精确清单。
 [`postgresCi.test.mjs`](../../scripts/tests/postgresCi.test.mjs) 检查 runner 清单完整性。
 
+0.5.3 C2-P 另加 `scripts/test-session-task-draft-publication.sh`，精确选择 12 条用例，不计入上述十二个 runner 总数。
+它在一次性存储上准确选择 `session_task_draft_publication_tdd` 的仅创建流程用例；默认准备/状态
+测试不能替代这些 SQL 运行。分日期执行结果仍记录于[项目状态](project-status.md)。
+
+0.5.3 C2-Q 使用独立精确 runner `scripts/test-session-task-draft-observation.sh` 与
+`session_task_draft_observation_tdd` 目标。12 条只读用例与 C2-P 的 12 条创建用例分开：观察须保持
+尝试状态，区分当前可见与过去提交确认。Task 缺席不要求检查 Artifact 命名空间，读取错误不能
+转成缺席；这些用例也不计入上方十二个 runner 总数。
+
+0.5.3 C2-R 检查点测试是默认纯契约/库内检查，不新增 PostgreSQL runner。须拒绝畸形/超限数据及
+不一致的目标或进度，并使解析数据与活跃尝试保持分离。往返通过不证明崩溃耐久性，也不允许
+重启后调用 C2-Q；存储与恢复须由后续独立测试验证。
+
+0.5.3 C2-S 使用 `scripts/test-session-task-draft-inspection.sh` 验证独立检查入口，提供当前
+Session 权限而非重建 C2-Q 原尝试。其精确数据库用例与 C2-R codec、C2-Q 观察套件分别选择；
+元数据相符不能计作历史确认、原正文比较或安全重试依据。
+
+独立的 `scripts/test-prepared-resource-sql.sh` 另选择两条库内用例，检查 Task/Artifact/Review 共用
+机制的普通表拒绝及解码顺序，以及单一池连接上的读写事务设置和回滚/drop 后局部超时恢复。
+`architectureBoundaries.test.mjs` 检查精确清单与 CI 接线；这两条不包含在上述十二个 runner 总数内，
+也不替代各存储及 Session 回归。
+
 截至 2026-10-07 到期时间解码改动，`scripts/test-durable-session-boundary.sh` 精确选择
 **17 条来源层 Session 用例**（原 14 条加三条时间用例），覆盖
 歧义/临时命名空间、过滤或不兼容关系、写后路径/关系替换、元数据变化、登录两段事务身份以及
@@ -140,7 +177,7 @@ bash scripts/test-session-task-revisions.sh
 
 ## 浏览器与传输套件
 
-使用**生产前端构建**，构建时令 `NEXT_PUBLIC_ENGINE_URL` 指向纯夹具地址；测试时设置匹配的
+依赖 Next 页面的套件使用**生产前端构建**，构建时令 `NEXT_PUBLIC_ENGINE_URL` 指向纯夹具地址；测试时设置匹配的
 `CYANREX_UI_ENGINE_URL` 和临时前端的 `CYANREX_UI_BASE_URL`。默认无法找到运行时或浏览器时，
 再指定 `CYANREX_PLAYWRIGHT_MODULE`、`CYANREX_CHROMIUM_PATH`。执行前阅读该套件 helper：这些
 变量和夹具不意味着连接真实后端。部分 WebSocket 夹具会干扰开发 HMR，因此应使用生产模式。
@@ -157,6 +194,39 @@ payload helper 使用真实页面和 Monaco，仅允许模拟的身份/未读读
 WebSocket。这证明本地行为边界，不是服务端保存测试。其它浏览器套件会模拟认证、课堂、学习、事件、
 设置、Runner 管理和安全交互的 Engine 路由。当前不存在能证明尚未实现的通用 Task HTTP 保存闭环的
 浏览器套件。
+
+### 0.5.3 的生成 Monaco 清理器夹具
+
+DOMPurify 后续改动为默认 `test:tooling` 增加资源生成边界单测，并将公共离线依赖守卫扩展到
+DOMPurify 3.4.16 下限，与 sharp、source-map-js 一并检查。单测核对受支持版本、原始 chunk 摘要
+和语法结构、官方 ESM 的隔离包装、第三方代码块以外字节不变、确定性新 chunk URL 及引用改写。
+不支持的输入必须直接失败，测试不授权修改 `node_modules` 或悄悄升级 Monaco；联网生产 npm
+审计仍独立执行，沿用原阈值。
+工具单测另注入准备及补丁写入失败，检查 `public` 之外的私有暂存和发布前原资源保留；不声称
+最终发布具备原子性。
+公共 Docker 输入守卫另要求从依赖阶段取得生成资源，并从构建上下文排除宿主机 Monaco 资源目录；
+此源码检查不是实际 Docker 镜像构建。
+
+安装依赖与锁文件一致且 Playwright/Chromium 可用时，从仓库根目录先生成本地资源，再显式选择
+浏览器夹具：
+
+```bash
+node frontend/scripts/sync-monaco-assets.mjs
+npm --prefix frontend run test:dompurify-browser
+```
+
+该显式套件包含十项用例，其中九项通过测试插桩取得实际生成 AMD chunk 中 Monaco 使用的同一
+DOMPurify 实例，不只检查根 npm 包。覆盖修复版本、安全格式保留及可执行标记移除、元素处理前后和属性处理后
+的移除钩子（含保留的自定义元素）、rawtext 根节点拒绝、健康根节点身份，以及真实 Monaco hover
+渲染。测试插桩不写入生成的生产资源。
+
+第十项加载未修改的 AMD loader 与编辑器入口、新摘要 chunk 和语言注册图。发往合成来源
+`monaco-fixture.invalid` 的请求全部被拦截，只由本地生成文件提供响应；拒绝意外的来源或路径。
+前九项拒绝所有网络请求；全部用例均不产生外网访问、不启动 Next 或 Engine。可使用上方相同的
+Playwright/Chromium 路径配置，但不要求生产前端构建或 Engine URL。这是组件/浏览器回归，
+不是应用可利用性、已部署清理器版本或端到端验收的证明。浏览器执行为 opt-in；默认前端门禁运行
+纯工具单测，不包含这十项浏览器用例。用例库存不等于通过结果，分日期执行结果仍见
+[项目进度](project-status.md)。
 
 真实传输另行验证。ignored 的 `runner_agent_client_tdd` 用例启动回环 HTTP 服务并使用支持 BPF
 目标的 Linux Clang，只编译、不挂载程序。事件流压力夹具检查真实节奏发送、过载和阻塞连接。

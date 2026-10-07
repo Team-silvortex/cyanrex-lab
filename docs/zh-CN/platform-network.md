@@ -1,6 +1,6 @@
 # 当前平台功能与模块网络
 
-基础源码核对日期：**2026-10-03**。当前范围：**0.5.2 源码**，包括准备层认证加固、0.5.0 的
+基础源码核对日期：**2026-10-03**。当前范围：**0.5.3 源码**，包括准备层认证加固、0.5.0 的
 导航/文件名修复和 C2-K/L/M/N 内容准备层，以及此前的协作命令与本地任务 payload 编辑器。
 评审保留 0.4.9 基线提交及原日期证据；源码收录
 不是新的发布验收报告，也不代表正在运行的部署已更新。
@@ -12,14 +12,34 @@
 另在共用读取中保护可空退休时间与两类审计时间，不改变拓扑、Schema 或年龄/排序规则。
 这两块均不代表所有数据库时间已安全。
 
+0.5.3 收录的 [C2-O](task-draft-publication.md)新增独立的纯草稿导入/发布计划及给定内容绑定坐标。
+新增内部连接不发布字节，也不接通浏览器或公共保存链路。
+
+0.5.3 收录的 [C2-P](session-task-draft-publication.md)另将计划逐步接到已有授权 Artifact 发布及 Task
+创建。调用者持有的结果只在内存；步骤失败或被丢弃会停止推进，不撤销此前提交，也不接浏览器或公共路由。
+
+0.5.3 收录的 [C2-Q](session-task-draft-observation.md)另增固定未知目标的只读分支，每次用原当前
+Session 读取。不含正文的结果保持尝试状态不变，不确认先前写入结果，也不允许重试。
+
+0.5.3 收录的 [C2-R](session-task-draft-checkpoint.md)将已分配目标及报告进度导出为有界元数据。
+纯解析结果只是调用者数据，不是尝试、日志或授权；codec 自身不保存、不读取存储、不调用 C2-Q，也不提供恢复连接。
+
+0.5.3 收录的 [C2-S](session-task-draft-inspection.md)另将解析数据与显式受信任工作区、当前 Session
+组合为一次已有授权读取。无需原尝试，只比较当前元数据，不证明原调用者/正文来源或存储代次，
+不恢复 C2-Q、不收编确认，也不提供日志或重试策略。
+
 按“架构 × 功能 × 实现 × 成熟度”查看请使用新增的[功能张量与评分规则](capability-maturity.md)和
-[机器清单](../platform-capability-tensor.json)：57 个实现坐标、73 条定向边、16 条代表链路。
+[机器清单](../platform-capability-tensor.json)：65 个实现坐标、95 条定向边、18 条代表链路。
 本文保留路由与模块拓扑；评分和证据独立维护，不计算整体完成百分比。
 
 Cyanrex 正从 eBPF 教学应用转向以任务为中心的协作平台。目前并存三部分：已连接的教学运行链路、
 独立准备中的通用后端，以及仅在本地工作的任务编辑器。代码只是任务 payload 的一种可选内容，
 任务和平台都不以代码为前提。后续重点是连接这些部分，同时不把旧教师角色或浏览器自报身份直接
 变成通用平台权限。
+
+0.5.3 收录的 [AI Agent 接入](ai-agent-integration.md)将独立设置面板接到教师专用、修订约束的配置元数据
+存储；调用者 SDK 工具桥只适配明确选出的已有操作。宿主负责模型传输、密钥和批准，不新增自主
+AI 身份/委托连接，也不接通缺失的通用 Task 浏览器保存。
 
 ## 状态说明
 
@@ -109,6 +129,11 @@ Review。它们使用带范围的引用，不是用户名、路径、编辑器 I
 | 内容存储（0.5.0 C2-L） | [独立 Schema 3 存储](task-content-store.md)、[`content.rs`](../../engine/src/services/task_store/content.rs) | 可信所有者 + 元数据 → Task/清单/outbox 原子保存并增一版；无 Session/Artifact 字节适配、公共 API 或 Schema 2 迁移。 |
 | 授权内容（0.5.0 C2-M） | [会话内容适配器](session-task-content.md)、[`content.rs`](../../engine/src/services/auth_service/durable_source/task_commands/content.rs) | 当前 Session → 旧新精确 Artifact 文本 → Schema 3 原子编辑 → 最终授权与提交；无现用应用/浏览器接线。 |
 | HTTP 内容边界（0.5.0 C2-N） | [显式路由](task-content-http.md)、[`platform_http`](../../engine/src/platform_http/mod.rs) | 有界 HTTP → C2-M → 私有版本化响应；仅独立构造，没有主应用挂载、Session 签发、公共发布或浏览器接线。 |
+| 草稿发布映射（0.5.3 C2-O） | [严格导入器](task-draft-publication.md)、[`task_draft_import`](../../engine/src/services/task_draft_import/mod.rs) | 严格草稿 JSON → 有界发布值；给定精确内容 → 清单。无 I/O、服务端 ID 分配、发布历史证明、授权派发或浏览器保存。 |
+| 会话草稿发布（0.5.3 C2-P） | [仅创建步骤](session-task-draft-publication.md)、[`draft_publication`](../../engine/src/services/auth_service/durable_source/draft_publication/) | 固定内存尝试 → 每步一个会话 Artifact 写入 → C2-M Task 创建；保留确认前缀，未知步骤停止，无持久恢复、整条原子性或浏览器路由。 |
+| 草稿目标观察（0.5.3 C2-Q） | [只读比较](session-task-draft-observation.md)、[`observation.rs`](../../engine/src/services/auth_service/durable_source/draft_publication/observation.rs) | 精确未知目标 → 一个授权读取 → 不含正文的当前比较；不改状态、不证明先前提交、不推导回滚或提供恢复。 |
+| 草稿元数据检查点（0.5.3 C2-R） | [有界检查点数据](session-task-draft-checkpoint.md)、[`checkpoint.rs`](../../engine/src/services/auth_service/durable_source/draft_publication/checkpoint.rs) | 尝试 → 元数据导出/解析；报告进度只是调用者数据，不是保存、来源证明、授权或复活尝试。 |
+| 检查点目标检查（0.5.3 C2-S） | [显式授权检查](session-task-draft-inspection.md)、[`inspection.rs`](../../engine/src/services/auth_service/durable_source/draft_publication/inspection.rs) | 解析数据 + 受信任工作区 + 当前 Session → 一次已有读取；仅元数据比较，不恢复原尝试，不提供来源证明、日志或重试。 |
 
 ## 跨模块链路与尚未连接的边界
 
@@ -121,7 +146,12 @@ Review。它们使用带范围的引用，不是用户名、路径、编辑器 I
 | 持久化 Session → 本人 Artifact 修订 → 本人 Task 精确输入 → Draft 换版 | 后端准备链已实现；尚无公共 API 或浏览器适配器。 |
 | 持久化 Session → 精确的本人 Artifact 目标/证据 → 人工 Review 历史 | 后端准备链已实现；尚无跨用户审阅权限与验收。 |
 | 旧账户/脚本/尝试 → 持久化身份/Artifact/Task/Review | 迁移、旧写入方隔离与切换待实现；没有隐式双写或数据收编。 |
-| 浏览器保存任务 → 发布 Artifact → 创建/换版 Task → 冲突恢复 | W10–W13 提供契约、存储、Session/文本检查及未挂载 HTTP 适配；仍缺显式登录/安装、公共内容发布和浏览器映射、冲突与结果处理。 |
+| 浏览器保存任务 → 发布 Artifact → 创建/换版 Task → 冲突恢复 | W10–W14 提供内容契约、未挂载 HTTP 及纯映射，W15 组合内部仅创建发布步骤，W16 观察当前目标而不提供恢复；仍缺显式登录/安装、公共派发、持久恢复与浏览器保存/冲突处理。 |
+| 给定 Artifact 内容 → 草稿计划绑定 → 任务内容清单 | W02 ⇢ W14 ⇢ W10 只核对给定字节和元数据，不调用存储、不授权当前会话或证明过去发布；本地 U03 → W14 仍未连接。 |
+| 草稿计划 → 显式会话发布步骤 → Task 创建 | W14 ⇢ W15 ⇢ W12 分别使用 I04 与 W05 进行当前授权/发布；独立事务、内存结果记录，不接浏览器或自动恢复。 |
+| 未知尝试 → 当前目标观察 | W15 ⇢ W16 使用 I04 及一次 W05 或 W12 读取；观察时点独立，不返回正文或恢复状态。这条读分支不新增代表写入链。 |
+| 仍存尝试 → 元数据检查点 | W15 ⇢ W17 导出报告进度，不含正文或凭据；codec 不调用读取器或复活尝试，下方 C2-S 检查是独立操作。 |
+| 检查点数据 → 显式当前授权检查 | W17 ⇢ W18 使用 I04 及一个 W05 或 W12 读取；无 W17 → W16 边，不证明历史调用者/提交，不收编状态或新增代表恢复链。 |
 | 通用 Task → 执行计划 → 类型化证据 → 规则 Review → 验收 | 组合流程待实现；目录元数据与进程内规则评估不能单独建立此链路。 |
 | 教师管理的隔离学生运行环境、托管 VM 生命周期、外部 LSP 进程 | 待实现；现有 Linux 执行和本地语言 worker 不构成这些隔离边界。 |
 

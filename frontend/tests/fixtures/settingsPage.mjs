@@ -33,6 +33,7 @@ window.fetch = (url, init = {}) => {
   if (path === "/auth/me") return Promise.resolve(Response.json({ authenticated: true, username: "teacher", role: "teacher" }));
   if (path === "/events/unread-count") return Promise.resolve(Response.json({ unread: 0 }));
   if (path === "/settings/performance") return Promise.resolve(Response.json({}, { status: 503 }));
+  if (path === "/settings/ai-agents") return Promise.resolve(Response.json({ revision: 0, default_profile_id: null, profiles: [] }));
   if (path === "/runner/agents") return Promise.resolve(Response.json(agentInventory([], { enabled: false })));
   if (path === "/runner/jobs") return Promise.resolve(Response.json(jobInventory([])));
   if (!["/settings/events", "/settings/compiler"].includes(path)) throw new Error("Unexpected fixture API " + path);

@@ -4,7 +4,8 @@ use crate::{
     metrics::PerformanceMetrics,
     models::settings::PerformanceMetricsResponse,
     services::{
-        auth_service::AuthService, c_header_module::CHeaderModule, classroom::ClassroomService,
+        ai_agent_settings::AiAgentSettingsStore, auth_service::AuthService,
+        c_header_module::CHeaderModule, classroom::ClassroomService,
         command_dispatcher::CommandDispatcher, ebpf_loader::EbpfLoader,
         environment_checker::EnvironmentChecker, event_bus::EventBus,
         learning_store::LearningStore, module_manager::ModuleManager,
@@ -16,6 +17,7 @@ use crate::{
 
 #[derive(Clone)]
 pub struct AppState {
+    pub ai_agent_settings: AiAgentSettingsStore,
     pub auth_service: AuthService,
     pub classroom: ClassroomService,
     pub module_manager: ModuleManager,
@@ -44,6 +46,7 @@ pub fn build_state() -> Arc<AppState> {
     let runner_agent_authenticator = RunnerAgentAuthenticator::from_env();
 
     Arc::new(AppState {
+        ai_agent_settings: AiAgentSettingsStore::from_env(),
         auth_service: AuthService::new_with_default_teacher(),
         classroom: ClassroomService::from_env()
             .unwrap_or_else(|error| panic!("invalid classroom configuration: {error}")),

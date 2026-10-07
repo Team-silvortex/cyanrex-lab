@@ -62,6 +62,10 @@ Artifact kind/media-type 标签不替代字节校验，也不选择编译器。�
 校验版本化 JSON。BOM、重复对象字段和无效 Unicode 会被拒绝。不默默补标题，不把本地 ID 转成 Task ID，
 也不把本地修订转换为服务端预期修订。
 
+0.5.3 收录的 [C2-O 发布映射](task-draft-publication.md)新增独立的严格整份草稿导入器：拒绝空白标题、
+丢弃经过校验的本地 ID/修订，接受服务端可扩展语言提示，并将给定精确内容绑定为本清单。
+它不发布或授权保存，也不改变浏览器现有 JSON 解析器及语言白名单。
+
 本 C2-K 切片不改变既有 `TaskSnapshot`、`ArtifactRevision`、Task schema 2、core schema 1、outbox、公共 API 和 SDK。
 同样收录于 0.5.0 的独立 [C2-L 存储](task-content-store.md)在 Schema 3 命名空间和专用列中持久化清单，
 不塞进 32 KiB Task 快照。Artifact 标题不充当文件名，两者的长度和语义

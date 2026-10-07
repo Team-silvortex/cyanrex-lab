@@ -1,3 +1,4 @@
+pub mod ai_agent_settings;
 #[cfg(unix)]
 pub mod artifact_store;
 pub mod auth_service;
@@ -18,6 +19,7 @@ pub mod learning_catalog;
 pub mod learning_store;
 pub mod legacy_workspace;
 pub mod module_manager;
+mod prepared_resource_sql;
 pub mod review_store;
 pub mod runner_agent_authenticator;
 pub mod runner_agent_client;
@@ -29,4 +31,5 @@ pub mod runner_manager;
 pub mod script_store;
 pub mod task_catalog;
 pub mod task_content;
+pub mod task_draft_import;
 pub mod task_store;

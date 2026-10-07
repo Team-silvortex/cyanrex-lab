@@ -33,6 +33,17 @@ and [private Reviews](session-review-commands.md). These paths are not yet publi
 their service tests do not establish live HTTP/CSRF or deployment acceptance. Application roles and
 source-level abstractions still do not isolate the shared Linux kernel.
 
+## AI Agent host boundary in 0.5.3
+
+[Connection profiles](ai-agent-integration.md) store nonsecret metadata and symbolic credential names
+only, behind teacher authority/CSRF. The Engine never contacts the configured URL or resolves its
+reference; the browser has no secret input/storage. HTTPS or literal-loopback HTTP URL validation is
+not provider identity verification. The trusted host owns secrets, transport and disclosure of private
+tool outputs. The explicit SDK catalogue excludes authentication/settings/kernel writes, retains
+server authorization and requires a separate trusted approval for every selected mutation. Model text
+cannot approve itself. Call IDs are an in-memory guard, not durable exactly-once execution; cancellation
+or a generic unconfirmed error must not become permission to repeat a write with a fresh ID.
+
 ## Default Protections
 
 The protections in this section apply to the existing runtime unless a preparation-layer contract is
@@ -411,18 +422,21 @@ After class:
 
 ## Dependency Audit Policy
 
-- Frontend dependency floors are Next.js 15.5.24, sharp 0.35.5 and source-map-js 1.2.2. These retain fixes for the upstream
+- Frontend dependency floors are Next.js 15.5.24, DOMPurify 3.4.16, sharp 0.35.5 and source-map-js 1.2.2.
+  The Next.js/sharp floors retain fixes for the upstream
   [Windows server](https://github.com/vercel/next.js/security/advisories/GHSA-p293-qw3h-jr36),
   [AVIF optimization](https://github.com/vercel/next.js/security/advisories/GHSA-2xp9-vwfh-vxw4) and
   [sharp/libheif](https://github.com/lovell/sharp/security/advisories/GHSA-rgj7-g3m4-5g8c) advisories.
   The sharp update also addresses the [bundled librsvg issue](https://github.com/advisories/GHSA-wq5f-xc86-pv6w),
   and source-map-js addresses [indexed-map amplification](https://github.com/advisories/GHSA-68fv-2mgg-jv7q).
-  Offline regression checks require the patched sharp/source-map-js overrides and all locked copies,
+  Offline regression checks require the patched DOMPurify/sharp/source-map-js overrides and all locked copies,
   including cross-platform sharp 0.35.5/libvips 1.3.4 packages; live audit remains a separate check.
   Rebuild and redeploy to apply updated dependencies; editing the lockfile does not update a running
   container. A custom global libheif must also be at least 1.23.2; an npm audit is not host-library acceptance.
-  The 2026-10-07 repaired candidate's production audit has no moderate/high/critical findings, but retains
-  one low DOMPurify finding. This is not a claim that all dependencies or deployed libraries are safe.
+  The published 0.5.2 check on 2026-10-07 retained one low DOMPurify finding and no moderate/high/critical
+  findings; that historical result is unchanged. The later 0.5.3 DOMPurify follow-up's fresh production
+  audit reports zero findings in every severity category. Neither result proves all dependencies or deployed
+  libraries safe, and the audit does not inventory vendor code embedded inside generated assets.
 - We run `cargo audit` for Rust backend dependencies and track accepted exceptions in
   `scripts/security-audit-exceptions.json`.
 - The locked rustls dependency is at least 0.23.45, addressing the TLS 1.3 handshake encryption-level
@@ -433,6 +447,40 @@ After class:
 - There are currently no accepted advisory exceptions. The former `rsa`/`sqlx-mysql` dependency
   chain is no longer in the lockfile.
 - Each accepted advisory has a review deadline and must be re-evaluated before it expires.
+
+### DOMPurify and Monaco asset hardening in 0.5.3
+
+The 2026-10-07 follow-up raises DOMPurify to 3.4.16, the upstream fix for
+[detached hook subtrees](https://github.com/cure53/DOMPurify/security/advisories/GHSA-p98j-92pf-mc4p) and
+[force-removed rawtext roots](https://github.com/cure53/DOMPurify/security/advisories/GHSA-6688-9rhm-gjv2)
+in `IN_PLACE` mode. This follow-up is included in source release 0.5.3, not the earlier 0.5.2 release.
+The production audit threshold is unchanged, and no advisory exception is added.
+
+Monaco 0.55.1 embeds a separate DOMPurify 3.2.7 copy in its AMD assets; changing the npm override alone
+does not replace that copy. Asset synchronization checks the exact supported Monaco version, original
+chunk SHA-256 and JavaScript syntax-tree shape before replacing only the vendor block with the official
+DOMPurify 3.4.16 ESM implementation inside an isolated IIFE. A new content-derived chunk filename and
+rewritten AMD references avoid reusing the old chunk URL. Unknown versions, digests or shapes fail the
+operation instead of falling back to the old sanitizer. Only generated assets change: `node_modules`
+and the Monaco package version are not modified.
+
+Validation, copying and patch writes finish in a private temporary directory outside `public` before
+replacing the generated asset directory. Preparation failures preserve existing public assets; the
+final removal-and-rename publication is not an atomic transaction.
+
+The frontend Docker recipe copies verified postinstall `public/monaco` assets from the dependency stage
+after copying the checkout. Its build context excludes the host's `public/monaco`: Docker directory
+copies merge, so copying fresh assets alone would not remove stale host chunks. A common source guard
+checks this input boundary; it does not establish that an image was built or deployed.
+
+Default tooling tests cover the replacement contract. Nine cases in the explicit
+[browser fixture](testing-guide.md) instrument the actual generated AMD chunk to capture the sanitizer
+instance used by Monaco. They check sanitization, hook-detached subtrees, rawtext-root refusal,
+healthy-root identity and the real hover consumer. A tenth case uses the unmodified AMD loader and
+editor entry to resolve the new chunk and language-registration graph from intercepted local files.
+The fixture starts no Next or Engine service and makes no external network contact; it does not prove
+an application exploit or validate a deployed frontend. Rebuild and redeploy generated assets to apply
+the change; a clean dependency audit alone does not replace those steps.
 
 ## Security Incident Response
 

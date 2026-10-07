@@ -1,3 +1,5 @@
+import { requestPrivate } from "../../transport/privateRequest";
+
 export const EVENT_REQUEST_TIMEOUT_MS = 20_000;
 export const EVENT_UNREAD_TIMEOUT_MS = 10_000;
 export const UNREAD_CHANGED = "cyanrex-events-unread-changed";
@@ -8,20 +10,12 @@ export class EventHttpError extends Error {
 }
 
 // A browser deadline/cancellation ends waiting, not a server mutation or persistence transaction.
-export async function requestEvent<T>(url: string, parent: AbortSignal, decode: (response: Response) => Promise<T>,
+export function requestEvent<T>(url: string, parent: AbortSignal, decode: (response: Response) => Promise<T>,
   method = "GET", timeout = EVENT_REQUEST_TIMEOUT_MS): Promise<T> {
-  parent.throwIfAborted();
-  const controller = new AbortController(), cancel = () => controller.abort(parent.reason);
-  parent.addEventListener("abort", cancel, { once: true });
-  const timer = setTimeout(() => controller.abort(new DOMException("Event request timed out", "TimeoutError")), timeout);
-  try {
-    const response = await fetch(url, { method, signal: controller.signal, credentials: "include", cache: "no-store", redirect: "error" });
-    controller.signal.throwIfAborted();
+  return requestPrivate(url, parent, async response => {
     if (!response.ok) { void response.body?.cancel().catch(() => undefined); throw new EventHttpError(response.status); }
-    const result = await decode(response);
-    controller.signal.throwIfAborted();
-    return result;
-  } finally { clearTimeout(timer); parent.removeEventListener("abort", cancel); }
+    return decode(response);
+  }, { method, timeoutMs: timeout, timeoutMessage: "Event request timed out" });
 }
 
 const record = (value: unknown): value is Record<string, unknown> => value !== null && typeof value === "object" && !Array.isArray(value);

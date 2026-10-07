@@ -1,7 +1,8 @@
 # Current project testing guide
 
-Reviewed against **0.5.2 on 2026-10-07**, including login-denial, Session-cleanup and Session/registry timestamp guards, task payload,
-Session commands and the standalone content HTTP adapter. This guide explains what to run for each module and boundary, what each layer
+Reviewed against **0.5.3 on 2026-10-07**, including AI profile/SDK adapters, C2-O–S draft preparation,
+sanitizer hardening and architecture simplification, alongside earlier login-denial, Session-cleanup,
+Session/registry timestamp guards and the standalone content HTTP adapter. This guide explains what to run for each module and boundary, what each layer
 proves, and how to avoid using live data. It is a test plan and source inventory, not a new test run.
 Use the [platform network](platform-network.md) to identify connected and unconnected product paths.
 The [capability tensor](capability-maturity.md) links each implementation slice to test sources and
@@ -15,8 +16,8 @@ consistency; they do not execute the referenced product tests or establish deplo
 | Common source and tooling checks | [`quality-gate.sh`](../../scripts/quality-gate.sh), [`scripts/tests`](../../scripts/tests) | File/version/course consistency, public API/SDK contract consistency, script regressions and synthetic tool fixtures | Deployed workflows, real SSH/Docker/kernel acceptance |
 | Default Rust tests | `cargo test --manifest-path engine/Cargo.toml --locked` | Models, services, in-process routes, default integration fixtures and compile-time contracts | Explicitly ignored PostgreSQL, live Agent transport and performance cases |
 | Explicit PostgreSQL tests | Named CI cases and storage runners below | Real SQL transactions, namespace/schema rules, locks, races, cancellation and injected failures in disposable data | Browser integration, deployed data migration or live authorization cutover |
-| Frontend build and unit tests | Frontend quality gate and [`frontend/package.json`](../../frontend/package.json) | Production compilation, TypeScript and state/request/permission/editor regressions | Real browser rendering or real Engine connectivity |
-| Browser regressions | Explicit `test:*-browser` scripts | Real Next pages, interaction, Monaco models/workers and fixture-defined request behavior | Real service authorization or end-to-end database/kernel flow when Engine responses are mocked |
+| Frontend build and unit tests | Frontend quality gate and [`frontend/package.json`](../../frontend/package.json) | Production compilation, TypeScript, state/request/permission/editor regressions and fail-closed asset-generation checks | Real browser rendering or real Engine connectivity |
+| Browser regressions | Explicit `test:*-browser` scripts | Real Next pages or local generated-asset fixtures, interaction, Monaco models/workers and fixture-defined request behavior | Real service authorization or end-to-end database/kernel flow when Engine responses are mocked |
 | SDK and contract tests | `quality-gate.sh --sdk-only`, [`sdk-js/package.json`](../../sdk-js/package.json) | Generated models/operations, compatibility, runtime requests, type checks and packed consumer imports | APIs absent from the public contract, including prepared generic commands |
 | Tool and release fixtures | `test-runner-agent-tools.sh`, `test-distribution-tools.sh`, `test-live-kernel-smoke.sh`, `test-release-candidate.sh` | Secret handling, target/metadata/archive validation, cleanup and error reporting under mocks | Actual installation, remote SSH changes, Agent deployment or kernel execution |
 | Explicit live acceptance | `runner-agent-smoke.sh`, `live-kernel-smoke.sh`, `distribution-install-smoke.sh`, native `cyanrex-release` | Only the real environment, candidate and operations recorded by that run | Other kernels, machines, versions or isolation guarantees |
@@ -39,6 +40,7 @@ compilation; consult its explicit lists rather than assuming `cargo test` covers
 | Modules, headers and terminal | `routes_tdd` module/command cases; header/dispatcher service tests; `terminalCommand` frontend tests | Teacher-only mutation, checksum-invalid downloads, selected metadata → compiler, no arbitrary shell dispatch |
 | eBPF editor and execution | Compiler/loader/Runner tests; `compilerCheck`, `semanticCompletion`, runtime/breakpoint browser suites | Check versus run, compiler source freshness, cancellation/lease ownership, exact detach; live kernel acceptance remains separate |
 | Runner Agent | Authenticator, registry, job queue/executor/client tests; `runner_agent_client_tdd`; inventory/admin browser tests | Signature/replay → lease/result, timeout/cancel, owner-bound remote check, no execution fallback |
+| AI Agent profiles and SDK helpers | `ai_agent_settings_tdd`, private-store cancellation units, `test:ai-agents`, explicit `test:ai-agents-browser`, SDK Agent runtime/type/package tests | Teacher/CSRF → revision-fenced private metadata → exact reviewed UI acknowledgement; explicit tool selection, per-call approval, hostile calls and no automatic retry. Synthetic formats are not real provider acceptance |
 | Teaching pack and generic catalogue | `task_catalog_tdd`, `teaching_task_adapter_tdd`, `collaboration_contract_tdd` | Typed evidence and exact definition/policy identity; catalogue admission does not execute rules or accept Tasks |
 | Events and settings | `module_boundaries_tdd`, EventBus tests, explicit event SQL cases; event/settings unit and browser suites | Publication ordering → durable history → resync, export/delete filter safety, confirmed settings and read failures |
 | Generic identity and authority | `collaboration_*_tdd`, `legacy_workspace_projection_tdd` | Audited binding/member/grant revisions, absent-key races, last manager, role versus deployment authority |
@@ -55,7 +57,13 @@ compilation; consult its explicit lists rather than assuming `cargo test` covers
 | Operator provisioning | `provision_cli_tdd`, `provision_postgres_tdd` | Read-only plan, target-bound apply, private enrollment delivery, lost acknowledgement and cancellation; no live configuration adoption |
 | Generic Task, Artifact and Review | Explicit storage runners below; their default Rust tests | Exact revisions/digests, Task/outbox atomicity, immutable file boundaries, private ownership, Review history, current Session checks |
 | Local task payload and editor | `test:editor-languages`, `test:task-payload-browser`, `test:multi-language-editor-browser` | Optional payloads, accepted content/revisions, import/export, stale edits, model disposal and forbidden network writes |
+| DOMPurify and generated Monaco assets | `frontendDependencySecurity` common guards, default `test:tooling`, explicit `test:dompurify-browser` | Locked copies and overrides → exact vendor replacement → new chunk references → the sanitizer actually used by Monaco; dependency audit and deployed behavior remain separate |
 | Internal Task content metadata | Rust `task_content_contract_tdd`, `task_content_binding_tdd` | Strict object shape, scalar/item limits, exact ordered pins, supplied owner/bytes/digest consistency; pure default tests, not storage or Session authorization |
+| Draft import and publication plan | Rust `task_draft_publication_tdd`, `taskDraftPublication` common guards, frontend `taskDraft` shared fixtures | Strict bounded JSON, blank-title rejection, local identity removal, exact supplied-content mapping and canonical-export compatibility; no publication, current-Session check or browser saving |
+| Session draft publication steps | Rust `session_task_draft_publication_tdd`, `scripts/test-session-task-draft-publication.sh`, `sessionTaskDraftPublication` common guards | Fixed allocation and Session binding, one write per advance, empty/multi-item success, confirmed prefix versus unconfirmed step, cancellation, revoked authority and final real-byte checks; no durable recovery or browser saving |
+| Unconfirmed draft target observation | Rust `session_task_draft_observation_tdd`, `scripts/test-session-task-draft-observation.sh` | Original Session/state admission, exact read-only comparisons, typed errors, unchanged attempt, current Task bytes versus historical prefix and missing-Task scope; no rollback proof or resumption |
+| Draft metadata checkpoints | Default Rust `draft_publication::tests::checkpoint`, `session_task_draft_checkpoint_tdd`, `sessionTaskDraftCheckpoint` common guards | Strict bounded metadata codec, ordered allocations/lengths, state/count relations and round trips; imported progress is data, not authorization, provenance, persistence or a restored attempt |
+| Explicit checkpoint target inspection | Default `draft_publication::tests::inspection`, `session_task_draft_inspection_tdd`, `scripts/test-session-task-draft-inspection.sh`, `sessionTaskDraftInspection` common guards | Explicit scope/current Session, one existing reader, exact metadata/text checks, typed faults, missing/empty Task boundaries and unchanged data; no original identity/body provenance, journal or restoration |
 | Separate content storage | Rust `task_content_store_tdd`, `scripts/test-task-content-storage.sh` | Schema 2/3 isolation, complete metadata/outbox atomicity, revision conflicts and storage faults; not a Session content or browser adapter |
 | Session task content | Rust `session_task_content_tdd`, `scripts/test-session-task-content.sh` | Current authorization, old/new exact text, metadata-only edits, removal, namespace pins and post-write checks on one transaction; no public/browser acceptance |
 | UI navigation and safety | `test:ui-permissions`, layout/action/account/runtime/browser suites | Target-bound confirmations, duplicate actions, route changes, keyboard access, keeping unsaved drafts |
@@ -85,6 +93,10 @@ After preparing that isolated environment, select the smallest relevant gate and
 builds synchronize course copies from `docs/`; do not edit `frontend/public/course` as the source.
 For documentation-only changes, check lengths, version synchronization, course synchronization and
 links; do not describe those checks as a fresh runtime regression run.
+
+The frontend gate also runs `test:private-request` for the shared transport lifecycle. Feature tests
+retain their response/acknowledgement policies; explicit component-browser fixtures check Settings,
+Metrics, Runner, Events and Runtime state separately. A cancelled browser wait is not server rollback.
 
 ## Explicit database suites
 
@@ -117,9 +129,37 @@ authorization to accept fallback as successful persistence. Provisioning SQL fix
 
 These twelve runners total **212 selected cases** (155 preceding resource cases, 21 content-store, 25 Session-content and 11 standalone HTTP cases),
 not all PostgreSQL coverage in the repository.
+
+0.5.3 C2-P adds a separate `scripts/test-session-task-draft-publication.sh` runner for explicit
+12 create-only workflow cases, not included in the twelve-runner total. It selects exact cases from
+`session_task_draft_publication_tdd` against disposable storage; default preparation/state tests do
+not substitute for those SQL runs. Dated execution results remain in [project status](project-status.md).
+
+0.5.3 C2-Q has a separate `scripts/test-session-task-draft-observation.sh` exact runner and
+`session_task_draft_observation_tdd` target. Its 12 read-only cases are separate from C2-P’s 12 creation
+cases: observations must preserve attempt state and distinguish current visibility from past commit
+confirmation. A missing Task does not require inspecting the Artifact namespace; read errors must not
+be converted into absence. These cases are outside the twelve-runner total above.
+
+0.5.3 C2-R checkpoint tests are default pure-contract/library checks, not another PostgreSQL runner.
+They must reject malformed/oversized documents and inconsistent targets or progress while keeping
+parsed data separate from live attempts. Round trips do not establish crash durability or permit
+calling C2-Q after restart; storage and recovery require separate future tests.
+
+0.5.3 C2-S uses `scripts/test-session-task-draft-inspection.sh` for the independent inspection
+entry point. It supplies current Session authority rather than recreating C2-Q's original attempt.
+Select its exact database cases separately from the C2-R codec and C2-Q observation suites; metadata
+agreement must never be counted as historical confirmation, original-body comparison or safe retry.
+
 Legacy auth/events/scripts/learning and generic identity/source/lifecycle/provisioning cases have
 separate explicit lists in CI. The runner inventory is guarded by
 [`postgresCi.test.mjs`](../../scripts/tests/postgresCi.test.mjs).
+
+The separate `scripts/test-prepared-resource-sql.sh` runner selects two additional library cases for
+the shared Task/Artifact/Review mechanics. It checks ordinary-table rejection and decode order, plus
+read/write transaction settings and LOCAL timeout cleanup after rollback/drop on one pooled connection.
+Its exact inventory and CI inclusion are checked by `architectureBoundaries.test.mjs`; these two cases
+are not included in the twelve-runner total above and do not replace store or Session coverage.
 
 As of the 2026-10-07 expiry-decoding follow-up, `scripts/test-durable-session-boundary.sh` selects
 **17 source-only Session cases**, the original 14 plus three timestamp cases:
@@ -155,7 +195,7 @@ Artifact publication or Task replacement is not permission to delete retained co
 
 ## Browser and transport suites
 
-Use a **production frontend build** with a fixture-only `NEXT_PUBLIC_ENGINE_URL`. At browser-test time,
+For Next-backed page suites, use a **production frontend build** with a fixture-only `NEXT_PUBLIC_ENGINE_URL`. At browser-test time,
 set matching `CYANREX_UI_ENGINE_URL` and the temporary frontend's `CYANREX_UI_BASE_URL`; configure
 `CYANREX_PLAYWRIGHT_MODULE` and `CYANREX_CHROMIUM_PATH` if not available at their defaults. Inspect each
 suite's helper before running: environment values and fixtures are not a connection to a real backend.
@@ -174,6 +214,43 @@ payload network writes and WebSockets. This is useful proof of local-only behavi
 test. Other browser suites mock Engine routes for auth, classroom, learning, events, settings, Runner
 administration and safety scenarios. No currently implemented browser suite can prove the absent
 generic Task HTTP save workflow.
+
+### Generated Monaco sanitizer fixture in 0.5.3
+
+The DOMPurify follow-up adds default `test:tooling` units for the asset-generation boundary and
+extends the common offline dependency guards to the DOMPurify 3.4.16 floor, alongside sharp and
+source-map-js. Units check supported versions, original chunk hash and syntax shape, isolated official
+ESM wrapping, unchanged bytes outside the vendor block, deterministic new chunk URLs and rewritten
+references. Unknown input fails closed; the tests do not authorize patching `node_modules` or upgrading
+Monaco silently. Live production npm audit remains separate, with its existing threshold.
+Tooling units also inject preparation and patch-write failures to check private staging outside
+`public` and preservation of existing assets before publication; they do not claim atomic publication.
+The common Docker-input guard also requires dependency-stage generated assets and excludes the host's
+Monaco asset directory from the build context; this source check is not a Docker image build.
+
+With matching installed dependencies and Playwright/Chromium available, regenerate the local assets
+before selecting the browser fixture from the repository root:
+
+```bash
+node frontend/scripts/sync-monaco-assets.mjs
+npm --prefix frontend run test:dompurify-browser
+```
+
+This explicit suite contains ten cases. Nine instrument the actual generated AMD chunk to inspect the
+same DOMPurify instance used by Monaco, not merely the root npm package. They cover the patched
+version, safe formatting and executable-markup removal, before/after-element and after-attribute
+removal hooks including kept custom elements, rejected rawtext roots, healthy root identity, and
+real Monaco hover rendering. Test instrumentation is not shipped in generated production assets.
+
+The tenth case loads the unmodified AMD loader and editor entry, new hashed chunk and language-registration
+graph. Requests to the synthetic `monaco-fixture.invalid` origin are intercepted and fulfilled only from
+local generated files; unexpected origins and paths are rejected. The first nine cases reject every
+network request. No case makes external network contact or starts a Next or Engine service.
+The suite accepts the same optional Playwright/Chromium path settings above but needs
+no production frontend build or Engine URL. These are component/browser regressions, not proof of
+application exploitability, a deployed sanitizer version or end-to-end acceptance. Browser execution
+is opt-in; the default frontend gate runs the pure tooling units, not these ten browser cases.
+The suite inventory is not a passing result; dated outcomes remain in [project status](project-status.md).
 
 Real transport checks are separate. The ignored `runner_agent_client_tdd` case starts a loopback HTTP
 server and uses Linux Clang with the BPF target; it compiles without attaching a program. The event

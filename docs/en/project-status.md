@@ -1,11 +1,11 @@
 # Project Status
 
-Snapshot date: **2026-10-07**. Source version: **0.5.2**, including login-denial, expired-Session maintenance, Session-expiry and registry-time read follow-ups.
+Snapshot date: **2026-10-07**. Source version: **0.5.3**, including C2-O–S draft preparation, teacher-managed AI profiles and SDK tool adapters, internal architecture simplification and DOMPurify/Monaco hardening. Earlier prepared-authentication protections remain in place.
 
 Cyanrex is becoming a domain-neutral collaboration platform, with eBPF teaching retained as its first
 domain rather than the definition of all work. The transition has produced a durable collaboration
 preparation layer and a local task-payload editor. It has **not** yet produced a server-backed generic
-task workflow or replaced the existing teaching runtime. This page describes the whole project now;
+task workflow for users or replaced the existing teaching runtime. This page describes the whole project now;
 dated implementation and verification details are preserved in [Development History](development-history.md).
 
 ## Release and implementation boundaries
@@ -18,6 +18,11 @@ dated implementation and verification details are preserved in [Development Hist
 | 0.5.0 · C2-L preparation | Separate schema 3 content storage with atomic Task/manifest/outbox edits | Trusted owner interface only; no Session content adapter, Artifact byte verification, browser connection or schema 2 migration in this storage layer |
 | 0.5.0 · C2-M preparation | Dedicated Session content adapter with old/new text-byte verification and atomic edits | Internal composition only; does not itself mount HTTP, save browser drafts, switch live authentication or migrate storage |
 | 0.5.0 · C2-N preparation | Explicit standalone Task-content HTTP router over C2-M, strict Origin/cookie/JSON admission and private errors | Not mounted in the normal app; no Session issuer, Artifact publication, browser connection, live OpenAPI/SDK exposure or migration |
+| 0.5.3 · C2-O preparation | Strict whole-draft importer, bounded publication plan and pure exact-content-to-manifest binding | No actual publication, authorization receipt, save orchestration, HTTP/body-limit expansion or browser connection |
+| 0.5.3 · C2-P preparation | Caller-owned, Session-authorized create-only Artifact/Task steps with fixed identities and in-memory confirmed progress | No whole-draft transaction, durable receipt/recovery, retry, cleanup, HTTP mounting or browser connection |
+| 0.5.3 · C2-Q preparation | Explicit current-Session read of an existing attempt's unconfirmed target, with body-free comparison | Observation only: no historical confirmation, rollback proof, state recovery, retry, public route or browser connection |
+| 0.5.3 · C2-R preparation | Strict bounded export/parse of allocated targets and reported progress as metadata | Data only: no save, authenticated provenance, durable journal, restored attempt, read-on-import or retry |
+| 0.5.3 · C2-S preparation | Explicit one-target checkpoint inspection through a supplied trusted workspace and current Session | Current metadata only: no original-caller/byte provenance, storage-incarnation proof, journal, restored attempt, retry or public/browser connection |
 | 0.5.1 · Session source | Login, validation and logout pin source namespace/table identity, including the password-worker gap and post-write checks | Source-only hardening, not a public issuer, uniform redesign of all auth primitives, installation or live cutover |
 | 0.5.1 · Password work | Shared prepared registration/login/rotation/bootstrap gate, four dispatched jobs and twenty total admissions retained for the job lifetime | Job-count limits only; not single-job PHC cost, legacy runtime or distributed limits, public Session issuance or live cutover |
 | 0.5.1 · Password profile | Pre-admission PHC checks and explicit existing Argon2id cost/profile for prepared reads and writers | No imported profile adoption, implicit Session revocation, legacy change, process RSS bound or public issuer |
@@ -30,7 +35,7 @@ dated implementation and verification details are preserved in [Development Hist
 | Architecture targets | Shared collaboration, generic Run orchestration, AI delegation, reliable business-event delivery, isolated workers and ecosystem integration | A proposed type, diagram or milestone is not an implemented user workflow |
 
 Product version, API compatibility baseline and individual storage schema versions are independent.
-The source version is 0.5.2 and the public API compatibility baseline remains 0.3.0. The current Task
+The source version is 0.5.3 and the public API compatibility baseline remains 0.3.0. The current Task
 store requires schema 2 in a fresh dedicated namespace and rejects schema 1 without migration. Neither
 the normal startup path nor this source release upgrades a database.
 The content store included in 0.5.0 separately requires schema 3; the schema 2 handle and existing Session
@@ -57,11 +62,12 @@ contracts/services that are not connected to the live application's authenticati
 | Task instances | Private manual/catalogue tasks, fixed definitions, revision-fenced states, atomic task/outbox records; Draft input replacement included in 0.4.9 | No mounted public task API, cross-user assignment, dependencies or acceptance policy |
 | Artifact content | Private immutable revision files, exact digest-bound references, transactional metadata/events and Session-authorized publication/reads | No UI metadata mapping, public content workflow, retention/garbage collection or cross-user sharing |
 | Task content metadata | C2-K contracts, C2-L storage, C2-M Session/text composition and C2-N explicitly constructed HTTP adapter | HTTP adapter remains unmounted; no secure login/installation workflow, public publication, browser saving or migration |
+| Whole-draft publication mapping | 0.5.3 C2-O strictly parses portable draft JSON, prepares text publication values and binds supplied exact content | Pure values only; no dispatch, confirmed publication history, current authorization or persisted draft |
 | Review | Immutable revision history; Session-authorized private human opinions on exact Artifact targets/evidence included in 0.4.9 | No cross-user reviewer grants, generic Task approval, automatic rule execution or AI review |
 | Teaching and eBPF workbench | Five labs, attempts/progress, teacher feedback, historical resume, Clang assistance, bpftool and supported Aya tracepoint execution | Remains a separate compatible workflow; old attempts have not been migrated into generic Tasks/Runs/Reviews |
 | Execution and resources | Local leases/quotas/timeouts; signed remote Agent registration, jobs, probes and optional compile-only diagnostics | Local kernel remains shared; no durable generic Run service, remote eBPF loading or VM lifecycle |
 | Events and persistence | Owner-scoped telemetry, bounded history/reconnect recovery and service-specific persistence; preparation stores commit their own outbox records | No generic durable business-event dispatcher, cursor replay or multi-Engine coordination |
-| Extensions and integrations | State-only module manifests, structured teacher commands, generated OpenAPI and internal JavaScript SDK | No executable plugin runtime, AI Agent planning/delegation or implemented Viento/Lese/Nuis integration |
+| Extensions and integrations | State-only module manifests, structured teacher commands, generated OpenAPI/internal SDK; 0.5.3 AI connection metadata and explicit SDK tool adapters | No provider transport, executable plugin runtime, AI Agent planning/delegation or implemented Viento/Lese/Nuis integration |
 | Operations and distribution | Linux/WSL2/Docker paths, explicit SSH management of preinstalled packages, offline tooling and artifact verification | No automatic bare-host bootstrap, deployment cutover or current-candidate LAN/kernel/artifact acceptance claim |
 
 The [system architecture](architecture.md) explains ownership and trust boundaries. The
@@ -96,6 +102,31 @@ current Session and exact Artifact-text checks internally. The authorized browse
 [C2-N](task-content-http.md) adds a standalone HTTP boundary but does not mount it in the existing
 application, issue credentials, publish Artifacts or connect the browser.
 
+0.5.3 [C2-O](task-draft-publication.md) supplies the pure import and publication-plan mapping:
+blank titles are rejected without inventing text; checked local identities are discarded. Exact
+supplied content may be bound to a manifest, but matching bytes do not prove publication or authorize
+a later command. The server accepts valid extension language hints without changing the browser's
+allowlist. The pure importer itself dispatches no publication; C2-P supplies separate internal
+composition, while browser saving remains absent.
+
+0.5.3 [C2-P](session-task-draft-publication.md) separately composes current-Session publication
+and C2-M Task creation one write at a time. A fixed caller-owned attempt retains confirmed progress
+and stops at an unconfirmed step after dispatch failure or cancellation. It supplies no persistent
+receipt, automatic recovery or browser/public connection; each command still reauthorizes independently.
+
+0.5.3 [C2-Q](session-task-draft-observation.md) separately observes a fixed unconfirmed target
+with the original Session. Matching data does not confirm the earlier write; invisibility does not
+prove rollback. Observation leaves the attempt stopped and provides no new-login or restart recovery.
+
+0.5.3 [C2-R](session-task-draft-checkpoint.md) exports a 64 KiB-bounded metadata checkpoint without
+text or authentication material. Parsing validates structure and consistency, not the reported history.
+It performs no save or read and cannot restore C2-P or invoke C2-Q; durable outcomes remain separate.
+
+0.5.3 [C2-S](session-task-draft-inspection.md) adds a separate explicit read of one checkpoint
+target under supplied current authority, without needing the original attempt. Matching metadata is
+not original-byte or historical-caller proof; parsing still does no I/O, and C2-Q's original Session
+requirement remains unchanged. No confirmation, journal, state restoration or retry follows.
+
 ## Security and compatibility retained during transition
 
 - Existing self-hosted teaching remains teacher-authoritative, including deployment management for
@@ -116,13 +147,302 @@ application, issue credentials, publish Artifacts or connect the browser.
 
 ## Verification recorded so far
 
+### 0.5.3 source candidate checks · 2026-10-07
+
+The fresh local full gate at version 0.5.3 passed **589 default Rust, 162 common, 206 frontend and
+42 SDK tests**. Rust covered 54 test targets with no failures or compiler warnings;
+**563 ignored tests are not counted as passes**. Next production build/TypeScript, SDK build/type/package
+checks, generated contracts, the frozen 0.3.0 compatibility baseline, version metadata, course mirrors
+and tooling checks passed. Frontend and SDK production dependency audits each reported zero findings.
+Deployment/database variables were cleared and fixtures used private temporary storage.
+This release check did not rerun opt-in PostgreSQL or browser suites, Rust advisory audit, remote CI,
+container builds/deployment, or real kernel/SSH/LAN acceptance. Historical evidence below remains unchanged.
+
+The AI, C2-O–S, architecture and DOMPurify implementation records below retain their original
+0.5.2 workspace versions, Unreleased status, dates and counts. Those changes are now included in
+0.5.3; the records are not a new release gate or deployment acceptance.
+
+### Unreleased AI Agent host adapters and configuration · 2026-10-07
+
+[AI Agent integration](ai-agent-integration.md) adds teacher-only profile metadata, a separately
+reviewed Settings panel and explicitly selected SDK tool adapters. It does not call providers, store
+API keys, create AI identities/delegation, execute general Tasks or alter the signed Runner protocol.
+The 28-tool catalogue excludes auth/settings/kernel mutations; its five write/diagnostic operations
+require per-call trusted host approval and retain the current server authorization.
+
+Actual Red → Green covered persistence, missing nullable fields, Unicode/FEFF blank boundaries,
+raw URL and empty-port normalization, private-parent permissions, total size and cancelled caller
+ordering. Defaults ran **13 new file/router cases and 2 cancellation units**. Frontend **12 new units**
+and **15 new actual component-browser fixtures** passed; adjacent Settings 17 and Runner 24 cases
+also passed, **56 browser cases** in the final rerun. These fixtures mock Engine responses and reject
+external networking; they are not real provider or deployed-service acceptance.
+
+The full isolated gate passed **589 Rust, 162 common, 206 frontend and 41 SDK tests**, including
+production Next/TypeScript, SDK runtime/type/package and compatibility checks. Rust covered 54 targets;
+**563 ignored cases are not passing-run evidence**. No opt-in PostgreSQL or live kernel/SSH/deployment
+acceptance ran here. Inherited deployment/database variables were removed and temporary data was used.
+Frontend and SDK production audits each returned zero findings in every severity and in total.
+
+After that gate, an additional SDK late-success-after-abort regression first failed, then passed with
+the fix: the final SDK check passed **39 runtime + 3 package cases (42)**, plus generated/type/compatibility
+checks. This final SDK-only delta does not claim a second full Rust/frontend build. Tool cancellation
+remains cooperative, not a new total deadline, HTTP stream bound or server rollback guarantee.
+The tensor adds U08/O07/E04 and e90–e95, but P10 autonomous delegation and P01 generic browser saving
+remain planned. Metadata backup requires the Unix service user, private permissions and stable instance
+name; host transport, secret allowlists and private-output disclosure remain explicit caller duties.
+
+### Unreleased C2-S current-authority checkpoint inspection · 2026-10-07
+
+The [explicit checkpoint inspector](session-task-draft-inspection.md) separately reads one reported
+unconfirmed target using a supplied trusted workspace and current Session. The original attempt need
+not survive. It returns body-free metadata agreement, difference or invisibility; reader failures retain
+their types. Neither a parsed claim nor a matching read confirms historical publication, restores an
+attempt or permits retry. C2-R parsing remains pure and C2-Q's original-attempt/token rules are unchanged.
+
+**Six new default Rust units, twelve exact PostgreSQL cases and three common guards passed**:
+21 new checks, with an actual behavior Red before Green. The SQL cases cover parsed records after
+attempt drop/source-handle reopening, a fresh same-owner Session without replacing the original C2-Q
+fingerprint, foreign-owner filtering, observable metadata versus manifest labels, exact historical
+Artifact revisions, binary/control-text rejection, typed digest/blob/namespace faults, missing versus
+existing empty Tasks, logout/revocation/expiry including lock waits, cancellation and pending creators
+that abort, commit or fail deferred commit. Checkpoint bytes, business records and content files remain
+unchanged by inspection. Reopening handles is not a process-crash or durable-recovery test.
+
+The adjacent C2-Q, C2-P, Session Artifact and Session content suites separately passed **67 exact SQL
+cases** (12 + 12 + 18 + 25): **79 distinct PostgreSQL cases** including the twelve new ones. A fresh
+PostgreSQL 16 fixture used only a private Unix socket, with no TCP listener or deployed database.
+No custom fixture namespaces remained after the suites. The server was stopped and its disposable
+132 MiB data directory removed; diagnostic logs were retained. This cleanup did not remove project data.
+
+The complete local gate passed **574 default Rust tests, 156 common checks, 194 frontend tests and
+16 SDK tests**. Rust covered 53 test targets with no failures or warnings; **563 ignored cases are
+not passing-run evidence**. The six new units and three guards are included in those totals; the
+opt-in SQL cases above ran separately. Production Next build/TypeScript, SDK build/type/package,
+API compatibility against baseline 0.3.0, version, documentation and tooling checks passed. Fresh
+frontend and SDK production dependency audits each reported zero findings at every severity and in
+total. Frontend direct TypeScript imports still emitted non-failing `MODULE_TYPELESS_PACKAGE_JSON`
+diagnostics; no package-module-mode change is included. Browser suites, Rust advisory audit, remote
+CI, container deployment and real kernel/LAN acceptance were not rerun.
+
+The current capability inventory has **62 implementation coordinates, 61 capabilities, 89 directed
+edges and 18 representative paths**. W18 is **3 / 1 / 3 / 1** with separately recorded database evidence;
+W15, W16, W17 and browser-save P01 scores are unchanged. The four added edges connect checkpoint data
+to explicit inspection and inspection to existing current-authority readers, not restoration or retry.
+Source version remains 0.5.2; this slice is Unreleased and has not been committed, pushed or deployed.
+
+### Unreleased C2-R draft metadata checkpoint · 2026-10-07
+
+The [checkpoint codec](session-task-draft-checkpoint.md) exports all allocated targets, ordered
+labels, expected byte lengths and reported progress from a surviving C2-P attempt. The separate
+opaque value can encode or parse at most 64 KiB without text, Session credentials, owner or storage
+routing. Parsed progress is only caller data: forged `complete` and stale `ready` records can be
+structurally valid. No save, storage read, restored attempt or permission to retry follows from parsing.
+
+**Six new internal Rust units, fourteen default contract cases and three common guards passed**:
+23 new checks. Coverage includes exact object shapes at every record level, preserved duplicate-field
+rejection, integer-token rules, UTF-8/framing/size bounds, RFC UUIDv4 target identities, canonical scope,
+independently unique Artifact/revision IDs, state/count/length agreement, empty plans and maximum
+metadata. Live-attempt exports cover ready prefixes, unknown Artifact/Task targets and completion
+without changing state or exporting receipts. The array-rejection matrix uses actual declared field
+order, avoiding a false pass from unrelated field-type errors. An actual behavior Red preceded Green.
+
+The 21 existing C2-P/Q default units also passed the focused run. Fixtures use pure metadata and an
+explicitly closed synthetic pool; no database server or opt-in PostgreSQL suite ran in this slice.
+This does not inherit the earlier C2-P/Q SQL evidence or test crash durability, authorization after
+restart, original write provenance or recovery.
+
+The complete local gate passed **568 default Rust tests, 153 common checks, 194 frontend tests and
+16 SDK tests**. Rust covered 52 test targets with no failures or warnings; **551 ignored cases are not
+passing-run evidence**. The 20 new Rust cases and three guards are included in those totals. Production
+Next build/TypeScript, SDK build/type/package, API compatibility against baseline 0.3.0, version,
+documentation and tooling checks passed. Fresh frontend and SDK production dependency audits each
+reported zero findings at every severity and in total. Direct TypeScript imports in frontend tests
+emitted Node `MODULE_TYPELESS_PACKAGE_JSON` diagnostics without failures; no package-module-mode
+change is included. Browser suites, Rust advisory audit, remote CI, container deployment and real
+kernel/LAN acceptance were not rerun.
+
+The capability inventory has 61 implementation coordinates, 60 capabilities, 85 directed edges and
+18 representative paths. W17 is reviewed as **3 / 1 / 2 / 1**, with unit-record evidence only; W15,
+W16 and browser-save P01 scores are unchanged. The only new edge is W15 → W17 metadata export,
+not checkpoint → observation/storage/recovery. A durable-before-dispatch intent journal and authorized
+read-only restart inspection remain separately scoped work. Source version remains 0.5.2; these
+changes are Unreleased, not committed, tagged or pushed.
+
+### Unreleased C2-Q draft target observation · 2026-10-07
+
+The [read-only observation](session-task-draft-observation.md) inspects only a surviving C2-P
+attempt's exact unconfirmed target with the original Session. One existing authorized reader validates
+current storage and authority before a body-free match/difference/visibility report. Observing any
+result, read error or cancellation leaves the attempt stopped, with its confirmation prefix unchanged.
+Matching is not historical commit provenance; invisibility does not establish rollback or safe retry.
+
+**Seven new default Rust units, twelve exact PostgreSQL cases and three common guards passed**:
+22 new checks across distinct layers. SQL covers existing matching targets without adoption, legitimate
+later Task edits, current-target-only reads, deferred failure with a remaining blob, missing-Task versus
+present-empty-Task namespace checks, damaged/missing bytes, original Session loss/expiry/revocation,
+exact read lock waits, competing creators and cancelled reads. Complete business-table/file snapshots
+and source-pool recovery checks accompany the relevant read-only scenarios. No warning was emitted.
+
+The broader SQL run passed **67 unique PostgreSQL cases**: the 12 new observation cases plus 12 C2-P,
+18 Session-Artifact and 25 Session-content regressions. The 55 adjacent cases are not new observation
+tests. All ran on a fresh PostgreSQL 16 fixture with disposable test accounts, source schema 2 and a
+private Unix socket, with no TCP listener or ambient/deployed database. Custom namespaces remaining
+after verification were zero. The server was stopped and its owned 132 MiB data directory removed;
+verification logs were retained separately.
+
+The complete local gate passed **548 default Rust tests, 150 common checks, 194 frontend tests and
+16 SDK tests**. Rust covered 51 test targets with no failures or warnings; its **551 ignored cases
+are not passing-run evidence**. Production Next build/TypeScript, SDK build/type/package, API
+compatibility against baseline 0.3.0, version, documentation and tooling checks passed. Fresh frontend
+and SDK production dependency audits each reported zero findings at every severity and in total.
+The seven new default units and three common guards are included in these gate totals; the 67 exact
+PostgreSQL cases ran separately. This slice did not rerun the unmounted HTTP or browser suites, run a
+Rust advisory audit or remote CI, build/deploy containers, or establish real kernel/LAN acceptance.
+
+The capability inventory now has 60 implementation coordinates, 59 capabilities, 84 directed edges
+and 18 representative paths. W16 is reviewed as **3 / 1 / 3 / 1** with this scoped SQL evidence;
+W15 and browser-save P01 scores are unchanged. No journal, restart/new-login recovery, automatic
+retry, deletion, public route, browser connection, schema migration or live-auth switch is added.
+Source version remains 0.5.2; these changes are Unreleased, not committed, tagged or pushed.
+
+### Unreleased C2-P Session draft publication · 2026-10-07
+
+The [create-only stepper](session-task-draft-publication.md) now consumes C2-O plans and dispatches
+one existing Session-authorized Artifact write per advance, followed by a separate C2-M Task create.
+Preparation fixes all random server IDs, the source/workspace and a private Session fingerprint
+without I/O. Wrong-token admission leaves Ready unchanged; a dispatched error or dropped future
+preserves confirmed progress and the exact unconfirmed step, then refuses continuation.
+
+**14 new default Rust units, 12 exact isolated PostgreSQL cases and three common guards passed**:
+29 new checks across distinct layers. The SQL run used a fresh PostgreSQL 16 database and private Unix
+socket, not a deployed or ambient database. It covers empty/multiple items, Unicode and identical
+bytes with distinct IDs, unpolled work, token substitution, partial Artifact failure, final commit
+failure, damaged confirmed blobs, conflicting allocated targets, cancellation, revocation and fresh
+Session expiry after lock waiting. The focused Rust and SQL runs emitted no warnings. SQL cases are
+selected explicitly by `scripts/test-session-task-draft-publication.sh`, not by default Cargo execution.
+
+The broader run passed **66 unique PostgreSQL cases**: the 12 new workflow cases plus 18 existing
+Session-Artifact, 25 Session-content and 11 unmounted HTTP cases. The 54 adjacent cases rerun their
+own authorization, persistence and routing boundaries; they are not additional new workflow tests.
+All used disposable test accounts and fresh source schema 2 on the private PostgreSQL 16 fixture, with no
+TCP listener. After verification, no custom fixture namespaces remained; the server was stopped and
+its owned 101 MiB data directory removed. Verification logs were retained separately.
+
+The complete local gate passed **541 default Rust tests, 147 common checks, 194 frontend tests and
+16 SDK tests**. The Rust run covered 50 test targets with no failures or warnings; its **539 ignored
+cases are not passing-run evidence**. Production Next build/TypeScript, SDK build/type/package, API
+compatibility against baseline 0.3.0, version, course-documentation and tooling checks all passed.
+Fresh frontend and SDK production dependency audits each reported zero findings in every severity
+category and in total. The default Rust/common additions above are included in these gate totals;
+the 66 explicit PostgreSQL cases were run separately.
+
+This slice did not run a Rust advisory audit, remote CI, browser suites, container build/deployment
+or real kernel/LAN acceptance. The private fixture is not a deployed-source migration or a public
+listener, and in-process HTTP tests do not establish a connected browser workflow.
+
+The workflow remains Unix-only internal preparation. Its in-memory progress is neither a durable
+receipt nor whole-draft atomicity, outcome recovery, retry or cleanup. Existing commands retain their
+current authorization, transaction and deadline boundaries. No public route, browser connection,
+Session issuer, schema migration, live-auth switch or deployment authority is added. Source version
+remains 0.5.2; source changes are Unreleased, not committed, tagged, pushed or deployed.
+
+### Unreleased C2-O draft publication mapping · 2026-10-07
+
+The [strict draft importer and publication plan](task-draft-publication.md) now validate a complete
+bounded text draft before constructing publication values. Blank titles, duplicate/unknown JSON
+fields, invalid Unicode and non-integer version/revision tokens are rejected; valid text and labels
+are preserved. Local IDs/revisions are checked then discarded. Binding compares supplied exact
+Artifact content with the plan and produces the existing manifest; matching values do not prove a
+publication history, confirmed commit or authorization. Existing matching revisions can be reused
+without republishing bytes for metadata-only edits.
+
+Focused checks passed **45 Rust cases**: 18 new importer/binding cases, one new internal publication-value
+unit and 26 existing manifest/supplied-content regressions. The unit checks kind/media, exact bytes
+and selection of the Task title without exposing new public getters. The local draft parser suite passed
+22 cases, including three new shared-fixture/format-difference cases; three new common source guards
+also passed. The 19 Rust, three frontend and three common additions are **25 new checks**, not counts
+to add again to the complete gate below.
+
+The complete local gate passed **527 default Rust tests, 144 common checks, 194 frontend tests and
+16 SDK tests**. The 527 ignored Rust cases are not passing-run evidence. Production Next build and
+TypeScript, SDK build/type/package, API compatibility against baseline 0.3.0, version, documentation
+and tooling checks all passed. The Rust run emitted no warnings; both frontend and SDK production
+dependency audits reported zero findings in every severity category and in total.
+
+This slice did not rerun opt-in PostgreSQL or browser suites, build or deploy container images, run
+remote CI or a Rust advisory audit, or establish kernel/LAN acceptance. No listening service was
+enabled. It adds no schema, live-authentication, public API or SDK change, actual publication, save
+orchestration or browser connection. Source version remains 0.5.2; the changes are not committed,
+tagged or pushed. The earlier dated records below retain their original scope and counts.
+
+### Unreleased architecture simplification · 2026-10-07
+
+The first simplification round shares mechanisms, not domain or authorization boundaries. Settings,
+Events and Runtime now use one private request lifecycle; Runner administration and Metrics depend
+directly on neutral transport rather than the Settings feature. Feature decoders and acknowledgements
+remain separate. The new Event/Runtime regressions first failed because abort-ignoring fetch/body work
+kept its caller waiting; cancellation/deadline races now end that wait without retries or server rollback.
+
+Task, Artifact and Review share private transaction setup, namespace and ordinary-table checks.
+Their table locks/queries, schema/scope and error checks, commit ownership and Session adapters remain
+unchanged. Teaching runtime, backend preparation and local editing are still separate; no public API,
+storage migration, AppState composition or Task-content save connection was added. See [architecture](architecture.md).
+
+The complete local gate passed **508 default Rust tests, 141 common checks, 191 frontend tests and
+16 SDK tests**, including production builds/type/package checks. The 527 ignored Rust cases are not
+passing-run evidence. The two new default Rust guards, two common guards and eighteen frontend cases
+are included in those totals. Frontend and SDK production audits both reported zero findings.
+
+Separately, **80 unique PostgreSQL cases passed** on a fresh PostgreSQL 16/private-socket fixture:
+70 direct-store cases, eight selected Session boundaries and two new SQL-helper cases. These cover
+schema 2/3, table-shape rejection/decoding order, local transaction settings, namespace switches,
+post-write authorization checks, expiry and cancellation/pool restoration. The two new helper cases
+are selected by an exact runner and wired into CI; remote CI itself was not run.
+All **118 browser cases passed**: 110 isolated component cases plus eight production Next-page cases
+with mocked Engine responses. This is not deployed Engine authorization or real kernel/LAN acceptance.
+The temporary services were stopped. Source version remains 0.5.2; these changes are not committed,
+tagged, pushed or deployed, and the earlier dated results below remain unchanged.
+
+### Unreleased DOMPurify follow-up · 2026-10-07
+
+Source version remains 0.5.2; this working-tree fix is separate from the published 0.5.2 tag. DOMPurify
+is now locked to 3.4.16 with an explicit offline security floor. It is the only changed dependency
+resolution; fresh frontend production audit reports zero findings in every severity category. No audit
+threshold or exception was relaxed, and no API, database schema, Engine or Monaco package version changed.
+
+Monaco's prebuilt AMD editor contained its own DOMPurify 3.2.7, unaffected by the npm override. Tests
+against that actual generated instance reproduced retained event handlers on removed fixture subtrees
+and a returned unsafe rawtext root. The fix checks the original Monaco chunk version/hash and syntax,
+replaces the vendor block with the official patched ESM implementation in an isolated expression,
+and rewrites all 27 AMD references to a new chunk URL, removing the old file. Docker excludes host
+Monaco caches and takes verified generated assets from the dependency-install stage; its source guard
+does not constitute a built-image acceptance result.
+
+All **10 explicit local browser cases passed** after regeneration: nine inspect the actual Monaco
+sanitizer instance, hook/HTML/root behavior and real hover rendering; the tenth loads the unmodified
+AMD loader, editor entry and language registration graph through intercepted local file responses.
+The original nine had six failing cases before the asset fix. Fixture handlers only increment a benign
+test counter; no Engine, external service or real user content is used. This is a library/consumer
+regression result, not proof of an exploitable application path or a deployed sanitizer version.
+
+The complete local gate passed **506 default Rust tests, 139 common checks, 173 frontend tests and
+16 SDK tests**, including production frontend/SDK build, type and package checks. The 525 ignored
+Rust cases are not passing-run evidence. Eight asset-tool units are included in the frontend count;
+the new Docker-input guard is included in the common count. Frontend and SDK production audits both
+reported zero findings. A subsequent clean install reproduced the patched resources through private
+staging, and all ten browser cases passed again. No Docker image, opt-in SQL, remote CI or live
+deployment acceptance was run in this follow-up.
+
+The preceding published release's dependency results and counts below remain historical. This fix
+is not committed, tagged, pushed or deployed; running frontends still require rebuilding and redeploying.
+
 ### 0.5.2 candidate checks · 2026-10-07 · dependency fixes verified
 
 The complete local gate passed **506 default Rust tests, 138 common checks, 165 frontend tests and
 16 SDK tests**, including the production frontend build/TypeScript and SDK build/type/package checks.
 The 525 ignored opt-in Rust cases are not passing-run evidence. The frontend production dependency
-audit now has no moderate/high/critical findings and retains one low DOMPurify finding; the SDK audit
-has no findings. Version metadata, release notes and current bilingual documentation are synchronized.
+audit at that stage had no moderate/high/critical findings and retained one low DOMPurify finding;
+the SDK audit had no findings. Version metadata, release notes and current bilingual documentation were synchronized.
 
 The first full-gate attempt stopped after a valid production audit reported two high findings in
 sharp 0.35.4 and source-map-js 1.2.1; that attempt was not a passing full gate or a registry timeout.
@@ -725,8 +1045,10 @@ platform capacity or classroom isolation.
 The immediate mainline is to complete one private, non-teaching task-content workflow before adding
 generic execution or AI. The following order is proposed work, not an enabled feature:
 
-1. Define whole-draft import and bounded publication/manifest mapping onto the internal C2-M commands.
-   Decide empty-title behavior explicitly; local IDs and revisions stay non-authoritative.
+1. Define a durable-before-dispatch intent journal, retained-record trust and recovery identity before
+   exposing C2-P or allowing retry. C2-R remains data; C2-S adds explicit current-authority inspection,
+   not original-Session continuity, historical commit proof or a restored attempt. C2-Q's surviving
+   original-attempt contract is unchanged. Unknown steps stay stopped; absence permits neither retry nor deletion.
 2. Build reviewed Session issuance and an explicit authenticated installation/mounting path for the
    C2-N router, then public content publication. Preserve its Origin/request limits and conflict/outcome
    semantics; do not silently switch live authentication or migrate existing storage.

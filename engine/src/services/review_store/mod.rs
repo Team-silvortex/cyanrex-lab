@@ -1,6 +1,7 @@
 //! Explicit PostgreSQL staging of attributed judgments, with no live composition or fallback.
 //! Caller-supplied reviewer/source is trusted adapter input, NOT authentication. Future public
 //! commands must compose Session, grants, resource/evidence checks and mutation atomically.
+use super::prepared_resource_sql;
 use crate::{
     models::collaboration::*,
     sqlx_compat::{self as sqlx, PgPool, Postgres, Row},
@@ -84,18 +85,7 @@ impl ReviewStore {
         Ok(())
     }
     async fn transaction(&self, readonly: bool) -> Result<Tx<'_>> {
-        let mut tx = self.pool.begin().await?;
-        if readonly {
-            sqlx::query("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY")
-                .execute(&mut *tx)
-                .await?;
-        }
-        sqlx::query("SET LOCAL statement_timeout = '5s'")
-            .execute(&mut *tx)
-            .await?;
-        sqlx::query("SET LOCAL lock_timeout = '2s'")
-            .execute(&mut *tx)
-            .await?;
+        let mut tx = prepared_resource_sql::begin(&self.pool, readonly).await?;
         Self::namespace(&mut tx).await?;
         Ok(tx)
     }

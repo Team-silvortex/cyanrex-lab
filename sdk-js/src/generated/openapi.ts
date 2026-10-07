@@ -2,6 +2,21 @@
 // Do not edit it directly; update the OpenAPI schemas and regenerate.
 
 export interface OpenApiSchemas {
+  "AiAgentProfile": {
+    "id": string;
+    "name": string;
+    "protocol": OpenApiSchemas["AiAgentProtocol"];
+    "base_url": string;
+    "model": string;
+    "credential_ref": string | null;
+    "enabled": boolean;
+  };
+  "AiAgentProtocol": "openai_responses" | "openai_chat_completions" | "anthropic_messages" | "gemini_generate_content" | "custom";
+  "AiAgentSettings": {
+    "revision": number;
+    "default_profile_id": string | null;
+    "profiles": Array<OpenApiSchemas["AiAgentProfile"]>;
+  };
   "ApiMessage": {
     "ok": boolean;
     "message": string;
@@ -525,6 +540,15 @@ export interface OpenApiSchemas {
     "account_name": string | null;
     "secret": string | null;
     "otpauth_uri": string | null;
+  };
+  "UpdateAiAgentSettingsRequest": {
+    "expected_revision": number;
+    "default_profile_id": string | null;
+    "profiles": Array<OpenApiSchemas["AiAgentProfile"]>;
+  };
+  "UpdateAiAgentSettingsResponse": {
+    "ok": true;
+    "settings": OpenApiSchemas["AiAgentSettings"];
   };
   "UpdateCompilerSettingsRequest": {
     "resident": boolean;

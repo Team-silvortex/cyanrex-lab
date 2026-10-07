@@ -154,6 +154,10 @@ export interface OpenApiOperations {
     input: Record<string, never>;
     response: Array<OpenApiSchemas["UserScript"]>;
   };
+  "getSettingsAiAgents": {
+    input: Record<string, never>;
+    response: OpenApiSchemas["AiAgentSettings"];
+  };
   "getSettingsCompiler": {
     input: Record<string, never>;
     response: OpenApiSchemas["CompilerSettings"];
@@ -355,6 +359,12 @@ export interface OpenApiOperations {
     };
     response: OpenApiSchemas["SaveScriptResponse"];
   };
+  "postSettingsAiAgents": {
+    input: {
+      "body": OpenApiSchemas["UpdateAiAgentSettingsRequest"];
+    };
+    response: OpenApiSchemas["UpdateAiAgentSettingsResponse"];
+  };
   "postSettingsCompiler": {
     input: {
       "body": OpenApiSchemas["UpdateCompilerSettingsRequest"];
@@ -411,6 +421,7 @@ export const openApiOperations = {
   "getRunnerOverview": {"method":"GET","path":"/runner/overview","access":"admin","transport":"json"},
   "getRunnerStatus": {"method":"GET","path":"/runner/status","access":"authenticated","transport":"json"},
   "getScripts": {"method":"GET","path":"/scripts","access":"authenticated","transport":"json"},
+  "getSettingsAiAgents": {"method":"GET","path":"/settings/ai-agents","access":"admin","transport":"json"},
   "getSettingsCompiler": {"method":"GET","path":"/settings/compiler","access":"admin","transport":"json"},
   "getSettingsEvents": {"method":"GET","path":"/settings/events","access":"authenticated","transport":"json"},
   "getSettingsPerformance": {"method":"GET","path":"/settings/performance","access":"admin","transport":"json"},
@@ -445,6 +456,7 @@ export const openApiOperations = {
   "postRunnerJobsProbe": {"method":"POST","path":"/runner/jobs/probe","access":"admin","transport":"json"},
   "postScriptsDelete": {"method":"POST","path":"/scripts/delete","access":"authenticated","transport":"json"},
   "postScriptsSave": {"method":"POST","path":"/scripts/save","access":"authenticated","transport":"json"},
+  "postSettingsAiAgents": {"method":"POST","path":"/settings/ai-agents","access":"admin","transport":"json"},
   "postSettingsCompiler": {"method":"POST","path":"/settings/compiler","access":"admin","transport":"json"},
   "postSettingsEvents": {"method":"POST","path":"/settings/events","access":"authenticated","transport":"json"},
 } as const satisfies Record<OpenApiOperationName, OpenApiOperationDescriptor>;

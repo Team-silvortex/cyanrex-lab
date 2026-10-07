@@ -2,17 +2,7 @@ use super::*;
 
 impl ArtifactStore {
     pub(super) async fn namespace(tx: &mut Tx<'_>) -> Result<()> {
-        let row = sqlx::query(
-            "SELECT current_schema() AS name, cardinality(current_schemas(false)) AS count",
-        )
-        .fetch_one(&mut **tx)
-        .await?;
-        let name: Option<String> = row.try_get("name")?;
-        if row.try_get::<i32, _>("count")? != 1
-            || name.as_deref().map_or(true, |name| {
-                name == "public" || name == "information_schema" || name.starts_with("pg_")
-            })
-        {
+        if !prepared_resource_sql::namespace(tx).await? {
             return Err(ArtifactStoreError::UnsupportedSchema);
         }
         Ok(())
@@ -53,19 +43,8 @@ impl ArtifactStore {
             WHERE n.nspname = current_schema() AND c.relname IN
             ('collaboration_artifact_schema', 'collaboration_artifacts', 'collaboration_artifact_revisions', 'collaboration_artifact_outbox')")
             .fetch_all(&mut **tx).await?;
-        if rows.len() != 4 {
+        if !prepared_resource_sql::ordinary_tables(&rows, 4)? {
             return Err(ArtifactStoreError::UnsupportedSchema);
-        }
-        for row in rows {
-            if row.try_get::<String, _>("kind")? != "r"
-                || row.try_get::<String, _>("persistence")? != "p"
-                || row.try_get::<bool, _>("rls")?
-                || row.try_get::<bool, _>("partition")?
-                || row.try_get::<bool, _>("inheritance")?
-                || !row.try_get::<bool, _>("resolved")?
-            {
-                return Err(ArtifactStoreError::UnsupportedSchema);
-            }
         }
         let statement = if lock {
             "SELECT version, authority_id, workspace_id FROM collaboration_artifact_schema WHERE singleton FOR SHARE"

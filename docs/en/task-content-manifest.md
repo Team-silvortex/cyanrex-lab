@@ -72,6 +72,11 @@ requires a nonblank server-compatible title, exact server pins, no raw text and 
 It rejects a BOM, duplicate object fields and invalid Unicode. No title is silently invented, no local
 ID becomes a Task ID, and no local revision becomes an expected server revision.
 
+The 0.5.3 [C2-O publication mapping](task-draft-publication.md) adds a separate strict whole-draft
+importer. It rejects blank titles, discards checked local IDs/revisions, accepts the server's extensible
+language hints, and binds supplied exact content into this manifest. It performs no publication or
+authorized save and does not change the browser's existing JSON parser or language allowlist.
+
 This C2-K slice leaves `TaskSnapshot`, `ArtifactRevision`, Task schema 2, core schema 1, outbox formats,
 public API and SDK unchanged. The separate [C2-L store](task-content-store.md), also included in 0.5.0, persists this
 manifest in a separate schema 3 namespace and column, not inside the 32 KiB Task snapshot.

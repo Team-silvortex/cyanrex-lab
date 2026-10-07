@@ -71,7 +71,15 @@ The adapter does not expose Artifact publication/revision, whole-draft import, a
 admission, sharing, Review, execution or file deletion. Clients cannot save new text by putting it
 inside a manifest; publication remains a separate missing public boundary.
 
+The 0.5.3 [C2-O importer](task-draft-publication.md) prepares publication values and binds supplied
+content to this manifest shape without I/O. It is not called by this router and does not expand its
+64 KiB request limit or accept raw draft text over HTTP.
+
 ## Errors and uncertain outcomes
+
+The separate 0.5.3 [C2-P workflow](session-task-draft-publication.md) composes internal publication
+steps and Task creation, but this router does not invoke it, accept attempt state or expose its progress.
+Its private in-memory state does not change the HTTP outcomes below or provide a durable operation receipt.
 
 Errors have a versioned JSON envelope with `error.code` and `error.outcome`, not raw storage errors,
 owner details or credentials. All router responses, including unknown paths, rejected methods,
@@ -96,6 +104,6 @@ requests through this router into real C2-M transactions, exercising success and
 failures. Dated counts and omissions are recorded in [project status](project-status.md).
 
 These checks do not establish a live listener, browser-to-server flow, proxy/TLS behavior or deployed
-acceptance. Next work must define secure Session issuance and explicit installation, content publication
-and draft mapping, then connect browser save/read/conflict handling. The live OpenAPI and SDK must only
+acceptance. Next work must define secure Session issuance and explicit installation, actual content
+publication and authorized use of the pure draft mapping, then connect browser save/read/conflict handling. The live OpenAPI and SDK must only
 advertise the interface when its intended deployment composition is deliberately added.

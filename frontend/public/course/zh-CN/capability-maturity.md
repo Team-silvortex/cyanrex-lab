@@ -1,13 +1,20 @@
 # 平台功能张量与成熟度
 
-评审日期：**2026-10-07**。源码版本：**0.5.2**，基于提交 `ecad0ecc74bff161e4a6ad2cc12b0baa60a0548b`
+评审日期：**2026-10-07**。源码版本：**0.5.3**，基于提交 `ecad0ecc74bff161e4a6ad2cc12b0baa60a0548b`
 及现已收录于 0.5.2 的后续改动。缺失账号也经过一次受限合成密码校验后拒绝，不代表等时登录或完整抗枚举。
 同日新增每批至多 128 条的显式过期会话维护，未接自动调度/CLI/HTTP，也不构成全局存量限额。
 共用会话到期读取和来源对账现也在解码前拒绝异常存储时间；后续登记时间改动另保护可空退休时间
 与必填审计时间。按范围检查不代表所有数据库时间均安全，也不改变年龄/排序策略。
 准备层 Session 来源身份、密码限额和 Schema 2 OTP 原子消费保持不变，旧 Schema 1 仍拒绝而不迁移。
-C2-K 至 C2-N 仍分别为内容契约、独立存储、
-会话内容及未挂载 HTTP 准备层。历史证据日期与范围不变，会话/登记后续改动单列新证据，不构成公开
+C2-K 至 C2-N 仍分别为内容契约、独立存储、会话内容及未挂载 HTTP 准备层。
+0.5.3 C2-O 新增严格整份草稿纯导入、发布值和给定内容绑定；不实际发布内容、不证明发布历史，
+也不接通浏览器保存。0.5.3 C2-P 另组合会话授权发布及 Task 创建，在调用者内存保留确认进度，
+不增加公共/浏览器连接或持久恢复。0.5.3 C2-Q 经已有当前会话读取观察一个固定未知目标，
+不确认先前写入、不恢复尝试状态，也不授权重试。0.5.3 C2-R 导出并解析有界元数据检查点，
+报告进度仍只是调用者数据，不是持久存储、历史来源证明或复活尝试。
+0.5.3 C2-S 另以显式当前权限检查一个检查点目标，不认证原调用者身份；C2-R 解析仍为纯操作，
+C2-Q 原尝试要求不变。
+历史证据日期与范围不变，会话/登记后续改动单列新证据，不构成公开
 签发或当前部署验收；本清单也不是发布门禁。
 
 当前结论：**本地任务编辑、现用教学运行、协作后端准备层分别成立，三者还没有汇合成通用任务保存与协作闭环。**
@@ -24,12 +31,12 @@ JSON 的每个 cell 保存一个 `[A, F, I]` 坐标及 D/C/V/O 四项分值，�
 实现切片可以引用多个协作文件；它不是文件数量、微服务数量或部署单元。同一功能可以有多个实现坐标，
 例如 D01 的内部领域目录与 D02 的现用教学门面，接线程度不同，不能合成一个“已完成”。
 
-本轮登记 **8 个架构面、56 项功能、57 个实现坐标、73 条定向边、16 条代表链路**。
-57 个坐标分为：**17 已接入、5 仅本地、23 准备层、12 规划**。这些是本轮切片数，不是覆盖率分母；
+本轮登记 **8 个架构面、64 项功能、65 个实现坐标、95 条定向边、18 条代表链路**。
+65 个坐标分为：**19 已接入、5 仅本地、29 准备层、12 规划**。这些是本轮切片数，不是覆盖率分母；
 并未枚举所有端点、内部函数、失败排列或潜在功能，也不以稀疏密度估算产品完成度。
 
 - **缺席的坐标**：未建模或不适用，不能填成 0。
-- **`null`**：已建模但未评估，不等于未实现；当前 57 项已评分。
+- **`null`**：已建模但未评估，不等于未实现；当前 65 项已评分。
 - **显式 0**：在该指标定义的范围内未达到一级，具体原因见缺口。
 - **规划项**：可以已有类型契约 D=1，但连接和能力执行证据仍为 C=0、V=0。
 - **边独立评分**：节点有代码和测试，不证明它们相连；`missing` 边不能借用两端分数变成已接通。
@@ -65,8 +72,13 @@ JSON 的每个 cell 保存一个 `[A, F, I]` 坐标及 D/C/V/O 四项分值，�
 
 每行只对列出的能力范围打分。源码链接定位实现，证据链接定位已有记录；完整测试路径保存在 JSON 的
 `implementations.tests`，测试文件存在不意味着本轮执行了测试。U01/U06 包含 0.5.0 收录的修复；W10–W13
-是同一版本的纯内容契约、独立存储、当前 Session 内容组合及未挂载 HTTP 准备层。源码收录不改变接线评分，
-也不提供浏览器保存。
+是同一版本的纯内容契约、独立存储、当前 Session 内容组合及未挂载 HTTP 准备层。W14 单独记录 0.5.3
+C2-O 纯导入与绑定检查，W15 另记 C2-P 内部仅创建步骤，W16 记录 C2-Q 独立目标观察，
+W17 记录 C2-R 元数据 codec，W18 记录 C2-S 显式当前授权检查；源码收录或内部组合不会补上
+浏览器保存或持久恢复。
+
+0.5.3 还收录 AI 配置界面/存储与显式 SDK 适配。源码收录不提升评分；下方分日期证据保留
+原先未发布实现阶段的表述。
 
 <!-- capability-tensor:start -->
 | 坐标 | 功能 | 接入状态 | D / C / V / O | 实现源码 | 证据 | 下一缺口 |
@@ -101,6 +113,11 @@ JSON 的每个 cell 保存一个 `[A, F, I]` 坐标及 D/C/V/O 四项分值，�
 | W11 · work | 任务内容原子存储 | 准备层 | 3 / 1 / 3 / 1 | [content.rs](../../engine/src/services/task_store/content.rs)<br>[content_commands.rs](../../engine/src/services/task_store/content_commands.rs)<br>[content_records.rs](../../engine/src/services/task_store/content_records.rs)<br>[schema.rs](../../engine/src/services/task_store/schema.rs)<br>[0014_collaboration_task_content.sql](../../engine/migrations/0014_collaboration_task_content.sql) | [content-storage](../../docs/en/task-content-store.md) | 仅可信 Schema 3 基础设施；W12 另行提供授权/文本组合。无目录准入、公共保存或迁移。 |
 | W12 · work | 会话授权任务内容 | 准备层 | 3 / 1 / 3 / 1 | [content.rs](../../engine/src/services/auth_service/durable_source/task_commands/content.rs)<br>[mod.rs](../../engine/src/services/auth_service/durable_source/private_work/mod.rs)<br>[task_content.rs](../../engine/src/services/task_content.rs) | [session-content](../../docs/en/session-task-content.md) | 内部认证源同事务授权/文本检查；W13 为独立未挂载 HTTP 适配。无浏览器保存、目录准入、迁移或在线认证切换。 |
 | W13 · work | 显式任务内容 HTTP 适配 | 准备层 | 3 / 1 / 3 / 1 | [mod.rs](../../engine/src/platform_http/mod.rs)<br>[security.rs](../../engine/src/platform_http/security.rs)<br>[handlers.rs](../../engine/src/platform_http/handlers.rs)<br>[contract.rs](../../engine/src/platform_http/contract.rs)<br>[errors.rs](../../engine/src/platform_http/errors.rs) | [content-http](../../docs/en/task-content-http.md) | 仅显式独立路由，未挂载到现用应用。无 Session 签发、公共 Artifact 发布、浏览器映射/保存、现用 OpenAPI/SDK 或迁移。 |
+| W14 · work | 严格草稿导入与发布映射 | 准备层 | 3 / 1 / 2 / 1 | [mod.rs](../../engine/src/services/task_draft_import/mod.rs)<br>[parser.rs](../../engine/src/services/task_draft_import/parser.rs)<br>[content.rs](../../engine/src/models/collaboration/content.rs)<br>[task_content.rs](../../engine/src/services/task_content.rs) | [draft-publication](../../docs/en/task-draft-publication.md) | 仅纯导入、发布值和给定内容一致性；无实际发布、确认历史、当前权限、授权保存或浏览器接线。 |
+| W15 · work | 会话授权草稿发布步骤 | 准备层 | 3 / 1 / 3 / 1 | [mod.rs](../../engine/src/services/auth_service/durable_source/draft_publication/mod.rs)<br>[confirmation.rs](../../engine/src/services/auth_service/durable_source/draft_publication/confirmation.rs)<br>[artifact_commands.rs](../../engine/src/services/auth_service/durable_source/artifact_commands.rs)<br>[content.rs](../../engine/src/services/auth_service/durable_source/task_commands/content.rs) | [session-draft-publication](../../docs/en/session-task-draft-publication.md) | 仅内部创建步骤及内存确认进度；无整条原子性、持久回执/恢复、重试、清理、公共派发或浏览器连接。 |
+| W16 · work | 草稿目标只读观察 | 准备层 | 3 / 1 / 3 / 1 | [observation.rs](../../engine/src/services/auth_service/durable_source/draft_publication/observation.rs)<br>[confirmation.rs](../../engine/src/services/auth_service/durable_source/draft_publication/confirmation.rs)<br>[artifact_commands.rs](../../engine/src/services/auth_service/durable_source/artifact_commands.rs)<br>[content.rs](../../engine/src/services/auth_service/durable_source/task_commands/content.rs) | [draft-target-observation](../../docs/en/session-task-draft-observation.md) | 仅观察当前目标；无历史提交确认、整个工作区审计、状态恢复、重新登录接管、持久回执、重试或浏览器/公共连接。 |
+| W17 · work | 草稿发布元数据检查点 | 准备层 | 3 / 1 / 2 / 1 | [checkpoint.rs](../../engine/src/services/auth_service/durable_source/draft_publication/checkpoint.rs)<br>[mod.rs](../../engine/src/services/auth_service/durable_source/draft_publication/mod.rs) | [draft-checkpoint](../../docs/en/session-task-draft-checkpoint.md) | 仅元数据 codec；无保存/刷盘、可信历史、日志、当前权限、尝试复活、导入后读取、重试或公共/浏览器连接。 |
+| W18 · work | 检查点目标显式检查 | 准备层 | 3 / 1 / 3 / 1 | [inspection.rs](../../engine/src/services/auth_service/durable_source/draft_publication/inspection.rs)<br>[checkpoint.rs](../../engine/src/services/auth_service/durable_source/draft_publication/checkpoint.rs)<br>[artifact_commands.rs](../../engine/src/services/auth_service/durable_source/artifact_commands.rs)<br>[content.rs](../../engine/src/services/auth_service/durable_source/task_commands/content.rs)<br>[task_content.rs](../../engine/src/services/task_content.rs) | [checkpoint-inspection](../../docs/en/session-task-draft-inspection.md) | 仅显式当前授权的元数据检查；不证明原调用者/正文来源或存储代次，无日志、历史确认、尝试恢复、重试或公共/浏览器连接。 |
 | D01 · domain | 版本化领域目录 | 准备层 | 3 / 1 / 2 / 1 | [task_catalog.rs](../../engine/src/services/task_catalog.rs) | [release-049](../../docs/en/project-status.md) | 受信任静态 provider；非教学 provider 仍为夹具，非产品流程。 |
 | D02 · domain | 版本化领域目录 | 已接入 | 3 / 2 / 2 / 1 | [learning_catalog.rs](../../engine/src/services/learning_catalog.rs)<br>[mod.rs](../../engine/src/domain_packs/ebpf_teaching/mod.rs) | [release-049](../../docs/en/project-status.md) | 仅教学门面已接入；评估不等于通用持久 Review。 |
 | D03 · domain | 实验尝试反馈与恢复 | 已接入 | 3 / 2 / 2 / 1 | [learning_store.rs](../../engine/src/services/learning_store.rs)<br>[learning.rs](../../engine/src/routes/learning.rs)<br>[teaching.tsx](../../frontend/pages/teaching.tsx) | [release-049](../../docs/en/project-status.md) | 仍是旧尝试与反馈；恢复源码不自动运行或迁移为 Task/Review。 |
@@ -116,7 +133,10 @@ JSON 的每个 cell 保存一个 `[A, F, I]` 坐标及 D/C/V/O 四项分值，�
 | O04 · operations | 包校验与 SSH 部署 | 已接入 | 3 / 2 / 2 / 2 | [package.rs](../../engine/src/bin/cyanrex-release/package.rs)<br>[ssh_cli.rs](../../engine/src/bin/cyanrex-release/ssh_cli.rs) | [release-049](../../docs/en/project-status.md) | 面向已装包目标；无新候选制品、局域网 SSH 验收或裸机初始化。 |
 | O05 · operations | 设置指标与 Agent 管理 | 已接入 | 3 / 2 / 2 / 2 | [useSettingsForm.ts](../../frontend/src/features/settings/useSettingsForm.ts)<br>[usePerformanceMetrics.ts](../../frontend/src/features/settings/usePerformanceMetrics.ts)<br>[useRunnerAgentAdmin.ts](../../frontend/src/features/runner/useRunnerAgentAdmin.ts) | [release-049](../../docs/en/project-status.md) | 沿用教师权威；写入不确定需显式核对，不盲目重试。 |
 | O06 · operations | 模块头文件与结构化命令 | 已接入 | 3 / 2 / 2 / 1 | [module_manager.rs](../../engine/src/services/module_manager.rs)<br>[c_header_module.rs](../../engine/src/services/c_header_module.rs)<br>[command_dispatcher.rs](../../engine/src/services/command_dispatcher.rs) | [release-049](../../docs/en/project-status.md) | 模块状态不等于执行插件；终端不是任意 shell。 |
-| P01 · work | 浏览器到服务端任务保存 | 规划 | 0 / 0 / 0 / 0 | — | [design](../../docs/en/project-status.md)<br>[target](../../docs/zh-CN/next-architecture.md) | W10-W13 提供契约、存储、Session/文本检查和未挂载 HTTP 边界；仍缺安全登录/安装、内容发布、草稿映射及浏览器保存/读取/冲突/结果处理。 |
+| U08 · ui | AI配置确认界面 | 已接入 | 3 / 2 / 2 / 1 | [aiAgents](../../frontend/src/features/aiAgents)<br>[settings.tsx](../../frontend/pages/settings.tsx)<br>[aiAgents.ts](../../frontend/src/i18n/locales/aiAgents.ts) | [ai-agent-adapters](../../docs/en/project-status.md) | 浏览器夹具验证草稿确认与未知结果，不验证真实模型服务或部署Engine。 |
+| O07 · operations | 私有AI连接元数据 | 已接入 | 3 / 2 / 2 / 1 | [ai_agent.rs](../../engine/src/models/ai_agent.rs)<br>[ai_agent_settings.rs](../../engine/src/routes/ai_agent_settings.rs)<br>[ai_agent_settings](../../engine/src/services/ai_agent_settings)<br>[application.rs](../../engine/src/application.rs) | [ai-agent-adapters](../../docs/en/project-status.md) | 仅实例私有配置与凭据引用；无模型请求、密钥库、跨进程顺序或迁移。 |
+| E04 · delivery | 显式AI工具格式桥 | 准备层 | 3 / 1 / 2 / 1 | [agents](../../sdk-js/src/agents)<br>[agent-tools.ts](../../sdk-js/src/generated/agent-tools.ts)<br>[generate-agent-tools.mjs](../../scripts/generate-agent-tools.mjs) | [ai-agent-adapters](../../docs/en/project-status.md) | 显式宿主组合保留现有API权限；无自主AI身份、模型传输或持久恰好一次回执。 |
+| P01 · work | 浏览器到服务端任务保存 | 规划 | 0 / 0 / 0 / 0 | — | [design](../../docs/en/project-status.md)<br>[target](../../docs/zh-CN/next-architecture.md) | W10-W18 提供内部契约、发布、原尝试观察、检查点数据及显式当前授权检查；仍缺安全签发/安装、公共派发、持久日志/恢复身份及浏览器保存/读取/冲突处理。 |
 | P02 · identity | 在线权威切换与迁移 | 规划 | 0 / 0 / 0 / 0 | — | [design](../../docs/en/project-status.md)<br>[target](../../docs/zh-CN/next-architecture.md) | 先盘点数据、验证备份恢复、隔离旧写入方并审阅安装迁移回滚，再切换路由。 |
 | P03 · work | 分享与跨用户审阅 | 规划 | 0 / 0 / 0 / 0 | — | [design](../../docs/en/project-status.md)<br>[target](../../docs/zh-CN/next-architecture.md) | 先建立内容分享权与审阅者委派，不放宽本人范围冒充协作。 |
 | P04 · domain | Artifact 证据到授权规则审阅 | 规划 | 0 / 0 / 0 / 0 | — | [design](../../docs/en/project-status.md)<br>[target](../../docs/zh-CN/next-architecture.md) | 需将精确内容、策略与 provider 版本绑定到授权证据和持久判断。 |
@@ -136,7 +156,13 @@ JSON 的每个 cell 保存一个 `[A, F, I]` 坐标及 D/C/V/O 四项分值，�
 **不是权限传递**。每个私人资源命令都独立复查当前 Session、账号、成员与 owner：e52–e56 将这些授权边单列；
 e57–e59 明确三类存储均写 outbox。e64 增加独立内容存储的 outbox 记录；e66 现接入 W12 专用会话适配，
 e67–e69 单列其存储与文本检查；e71/e72 增加 W13 显式 HTTP 组合，浏览器 e70 改指 W13 并保持缺失，
-安装/权威 e73 也仍缺失。JSON 保存全部 73 条边的失败/信任边界。
+安装/权威 e73 也仍缺失。新增 e74/e75 记录 W14 的给定内容检查与清单输出，浏览器导入 e76 仍缺失。
+新增 e77–e80 经 W15 连接计划、当前授权、逐项发布和最终 Task 创建，不合并各事务。
+新增 e81–e84 记录 W16 只读分支、原 Session 检查及一次精确 Artifact 或当前 Task 读取，
+不新增代表写入链。新增 e85 仅为 W15 → W17 元数据导出；另行新增 e86–e89 为 W18 提供检查点
+输入、当前授权及一个 Artifact/Task 读取器。codec 自身仍不调用读取器，也没有 W16 边。
+另增 e90–e95 连接 AI 配置确认、已有教师权限和显式宿主 SDK 工具，不实现 P10 委托。
+JSON 保存全部 95 条边的失败/信任边界，代表链路保持不变。
 
 | 代表链路 | 坐标顺序 | 判定与边界 |
 |---|---|---|
@@ -156,6 +182,8 @@ e67–e69 单列其存储与文本检查；e71/e72 增加 W13 显式 HTTP 组合
 | 可信内容持久化 | W10 ⇢ W11 ⇢ E02 | 完整元数据在独立命名空间原子保存；没有 Session/Artifact 字节适配或浏览器保存。 |
 | 授权内容编辑 | I04 ⇢ W12 ⇢ W11 ⇢ E02 | 同一事务核验当前 Session 及旧新文本；e68/e69 提供内容检查，公共/浏览器 e70 仍缺失。 |
 | 显式 HTTP 到授权内容 | W13 ⇢ W12 ⇢ W11 ⇢ E02 | 独立路由经进程内 HTTP 与真实 SQL 测试；未挂载到应用，也未连接浏览器或登录签发。 |
+| 纯草稿发布映射 | W02 ⇢ W14 ⇢ W10 | 核对给定内容与计划文本后生成清单；不调用存储、不证明发布历史、不授予权限。U03 ×→ W14 仍缺失。 |
+| 显式仅创建草稿发布 | W14 ⇢ W15 ⇢ W12 | W15 每项发布另经 W05 与当前 I04 检查；最终 Task 步骤重读真实内容。独立提交与内存进度，不接浏览器或持久恢复。 |
 
 “已接线”不等于本轮做过真实端到端验收。尤其应避免以下合并：
 
@@ -172,7 +200,7 @@ e67–e69 单列其存储与文本检查；e71/e72 增加 W13 显式 HTTP 组合
 
 | 顺序 | 目标坐标或边 | 需要补齐的合同与验证 |
 |---|---|---|
-| 1 | P01、e36/e37/e70 | W10–W13 已提供契约至未挂载 HTTP 适配。继续定义安全 Session 签发、显式安装、公共发布、整份草稿映射及浏览器冲突处理；不默认切换旧实例。 |
+| 1 | P01、e36/e37/e70/e76 | W10–W18 提供内部契约、发布、观察、检查点数据及另行授权检查。持久意图、恢复身份、安全签发/安装与公共/浏览器保存和冲突处理仍须另补；不默认切换旧实例。 |
 | 2 | P02、e38/e39 | 准备层的显式接入方案；如涉及旧数据，先验证备份恢复、迁移与旧写入隔离。没有恢复证据不把部署成熟度升为 3。 |
 | 3 | U02 → P01 → W05/W06/W09 | 显式保存、重读、重启恢复、权限撤销、并发编辑与结果不确定；发布内容失败或换版失败都不盲删或盲重试。 |
 | 4 | P03、P04、P05 | 分享和审阅授权；精确内容到类型化证据，再到版本绑定规则 Review；验收策略单独定义。 |
@@ -185,6 +213,11 @@ W*→E02 看提交/回执失败；P* 缺边先写合同与拒绝用例，不能�
 
 | 证据 ID | 日期 | 记录及限界 |
 |---|---|---|
+| [checkpoint-inspection](session-task-draft-inspection.md) | 2026-10-07 | 未发布 C2-S：六项默认单测、十二组精确私有 socket PostgreSQL 用例及三项公共守卫通过。丢弃尝试/重开句柄后的当前授权检查、所有者过滤、元数据/文本校验、类型化故障、到期、取消和待决写者；无进程崩溃耐久性、原来源证明、日志、确认或恢复。 |
+| [draft-checkpoint](session-task-draft-checkpoint.md) | 2026-10-07 | 未发布 C2-R：六项内部单测、十四项默认契约用例及三项公共守卫通过。严格元数据解析、往返、状态/计数/引用关系及导出不变；无数据库、保存、日志、来源证明、重启检查或尝试恢复。 |
+| [draft-target-observation](session-task-draft-observation.md) | 2026-10-07 | 未发布 C2-Q：七项默认单测、十二组精确私有 socket PostgreSQL 用例和三项公共守卫通过。当前比较、类型化错误及取消保持状态和业务数据不变；无历史提交证明、持久恢复、重试或公共/浏览器连接。 |
+| [session-draft-publication](session-task-draft-publication.md) | 2026-10-07 | 未发布 C2-P：14 项默认单测、12 条准确枚举的隔离 PostgreSQL 用例与三项公共守卫通过。覆盖逐步单写、部分确认、取消、冲突、撤权/过期及最终 blob 检查；无浏览器、持久恢复或部署验收。 |
+| [draft-publication](task-draft-publication.md) | 2026-10-07 | 未发布 C2-O：18 项纯导入/绑定及独立一项发布值单测通过；另重跑 12 项清单与 14 项给定内容回归。共享浏览器草稿夹具随 22 项本地解析套件通过。没有执行发布、数据库、授权或接通浏览器保存。 |
 | [registry-time-reads](project-status.md) | 2026-10-07 | 十组准确 SQL 覆盖可空退休时间、必填审计头/历史/重放、写入回滚与对账错误。十四处投影防护，不新增年龄规则，不是驱动级保证、修复或在线切换。 |
 | [session-expiry-reads](project-status.md) | 2026-10-07 | 解码 panic 后新增五组 SQL，覆盖共用会话到期及来源对账、异常/有限边界与写入回滚。身份审计时间不在该早期切片内，由上方独立记录覆盖。 |
 | [session-cleanup](project-status.md) | 2026-10-07 | 九条准确 SQL 验证显式 128 条过期会话批次、来源检查与可观察回滚。没有自动清理、运维入口、全局存量限额或任意触发器副作用审计。 |
@@ -215,7 +248,12 @@ W*→E02 看提交/回执失败；P* 缺边先写合同与拒绝用例，不能�
 | [kernel-history](../../reports/acceptance/2026-09-09-kernel-vm/README.md) | 2026-09-09 | 旧手工 VM、dirty native build、candidate=null；仅参考，不提高当前内核 V 分，不证明产品 VM 管理。 |
 
 这里的日期归属于相应记录；design/target 的日期是本次复核日期，非新测试日期。
-首次张量盘点新增清单和一致性校验；C2-K 纯契约及 C2-L 至 C2-N 隔离数据库执行单独记录。历史前端、浏览器、发行与数据库数量不合并成新验收。
+首次张量盘点新增清单和一致性校验；C2-K 纯契约及 C2-L 至 C2-N 隔离数据库执行单独记录。
+C2-O 另有纯执行记录，不是发布或 SQL 证据。历史前端、浏览器、发行与数据库数量不合并成新验收。
+C2-P 的步骤/SQL 检查单独记录，不扩张 C2-O 纯层范围，也不提供浏览器证据。
+C2-Q 的观察范围再次单列；当前可见性不能证明先前提交或回滚。
+C2-R 元数据 codec 不将观察扩展为重启恢复或持久结果证据。
+C2-S 独立当前授权检查不证明与原 Session 连续，也不升级 C2-R 声明。
 V3 允许范围明确的历史真实数据库/服务证据；R04 的旧 loopback 服务证据只支持其命名协议范围，
 内核历史则仅保留为参考，不能代表当前完整运行、挂载和部署路径。
 

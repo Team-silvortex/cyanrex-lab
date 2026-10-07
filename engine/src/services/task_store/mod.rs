@@ -1,6 +1,7 @@
 //! Explicit PostgreSQL-only work staging, never composed into the live application.
 //! Caller-supplied Principal/scope must already be authenticated and authorized by a trusted
 //! adapter. Owner filtering is not authentication. No automatic schema installation or fallback.
+use super::prepared_resource_sql;
 use crate::{
     models::collaboration::*,
     sqlx_compat::{self as sqlx, PgPool, Postgres, Row},
@@ -99,18 +100,7 @@ impl TaskStore {
     }
 
     async fn transaction(&self, readonly: bool) -> Result<Tx<'_>> {
-        let mut tx = self.pool.begin().await?;
-        if readonly {
-            sqlx::query("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY")
-                .execute(&mut *tx)
-                .await?;
-        }
-        sqlx::query("SET LOCAL statement_timeout = '5s'")
-            .execute(&mut *tx)
-            .await?;
-        sqlx::query("SET LOCAL lock_timeout = '2s'")
-            .execute(&mut *tx)
-            .await?;
+        let mut tx = prepared_resource_sql::begin(&self.pool, readonly).await?;
         Self::namespace(&mut tx).await?;
         Ok(tx)
     }

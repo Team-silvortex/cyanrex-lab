@@ -34,6 +34,10 @@ fixtures or build-cache cleanup targets. The script catalogue below retains indi
   - `--security`: add the security audit to the default backend/frontend/SDK checks
   - `--security-only`: run common preflight + security audit check
   - `--no-npm-install`: skip `npm ci` during frontend and SDK checks
+- `test-prepared-resource-sql.sh`: runs two exact shared-resource SQL helper cases against an explicit
+  disposable `CYANREX_TEST_DATABASE_URL`. Checks ordinary-table predicate/decoding order and
+  transaction-local isolation/timeouts with single-connection rollback/drop recovery. It does not
+  install schemas, connect prepared stores to the live app or replace the per-store/Session suites.
 - `test-task-storage.sh`: explicitly runs all fifteen task-instance PostgreSQL cases, requiring
   `CYANREX_TEST_DATABASE_URL` for a disposable database. Each exact test name must exist before it runs.
   CI uses the same script; tests create their own schemas and inject faults. Never point it at a
@@ -42,6 +46,21 @@ fixtures or build-cache cleanup targets. The script catalogue below retains indi
   cases: ordered text, private ownership, metadata edits/removal, old/new post-write byte checks,
   namespace pins, lifecycle expiry/revocation, commit/cancellation and competing edits. Requires only
   an explicit disposable database; does not expose public commands or connect the browser editor.
+- `test-session-task-draft-publication.sh`: explicitly selects the create-only draft stepper's
+  PostgreSQL cases against a disposable `CYANREX_TEST_DATABASE_URL`. Checks confirmed partial
+  publications, stopped uncertain steps, cancellation, current authority and final stored-byte
+  verification. Progress is caller-owned memory, not a durable receipt or browser-save API.
+  `tests/sessionTaskDraftPublication.test.mjs` guards the complete selection and internal-only wiring.
+- `test-session-task-draft-observation.sh`: runs twelve exact current unconfirmed-target observation
+  cases against an explicit disposable database. Checks matching or changed records, owner-filtered
+  visibility, original-Session authorization, pending writers, expiry, cancellation and damaged bytes.
+  Observation is business-read-only and never confirms, retries or resumes the stopped publication.
+  `tests/sessionTaskDraftObservation.test.mjs` guards the readers, internal-only wiring and CI list.
+- `test-session-task-draft-inspection.sh`: selects twelve exact parsed-checkpoint inspection cases
+  against an explicit disposable database. A current Session and trusted workspace authorize one
+  read; reported metadata neither restores an attempt nor proves the original writer or commit.
+  Checks metadata/text profiles, owner isolation, typed faults, expiry, pending writers and cancellation.
+  `tests/sessionTaskDraftInspection.test.mjs` guards this separate internal reader and the full CI list.
 - `test-durable-session-boundary.sh`: runs seventeen exact source-only Session PostgreSQL cases.
   Covers namespace/table identity, filtered or incompatible storage, post-write metadata/redirect
   faults, two-transaction login pins and logout/expiry ordering. Requires an explicit disposable
@@ -177,10 +196,15 @@ fixtures or build-cache cleanup targets. The script catalogue below retains indi
 - `generate-sdk-types.mjs`: converts OpenAPI component schemas into the committed
   `sdk-js/src/generated/openapi.ts` type map; use `--check` to reject stale SDK models.
 - `tests/sdkTypeGenerator.test.mjs`: JSON Schema-to-TypeScript rendering regressions.
-- `generate-sdk-operations.mjs`: generates the 63 browser-facing SDK operation inputs, responses,
+- `generate-sdk-operations.mjs`: generates the 65 browser-facing SDK operation inputs, responses,
   access/transport metadata, and operationId registry while excluding the signed Runner Agent protocol.
 - `tests/sdkOperationGenerator.test.mjs`: operation transport, parameter, response, and Agent-boundary
   generation regressions.
+- `generate-agent-tools.mjs`: generates 28 explicitly reviewed JSON tool definitions from OpenAPI,
+  expanding local schemas and refusing path/method/access drift; `--check` rejects stale output.
+  It never grants model authority or automatically exports every SDK operation.
+- `tests/agentToolGenerator.test.mjs` and `tests/aiAgentSettingsContract.test.mjs`: catalogue isolation,
+  schema/reference guards and teacher-only nonsecret configuration contract regressions.
 - `sdk-surface-compatibility.mjs`: checks the frozen additive-only `CyanrexClient` namespace/method
   baseline and rejects removed or renamed public member paths; `--write-baseline` is review-only.
 - `tests/sdkSurfaceCompatibility.test.mjs`: nested surface extraction, removal, additive growth, and
