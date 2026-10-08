@@ -466,7 +466,7 @@ jobs:
         run: bash scripts/test-prepared-resource-sql.sh
       - name: Run Session draft publication regressions
         env: { CYANREX_TEST_DATABASE_URL: "postgres://cyanrex_test:cyanrex-ci-only@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test" }
-        run: bash scripts/test-session-task-draft-publication.sh && bash scripts/test-session-task-draft-observation.sh && bash scripts/test-session-task-draft-inspection.sh
+        run: bash scripts/test-session-task-draft-publication.sh && bash scripts/test-session-task-draft-observation.sh && bash scripts/test-session-task-draft-inspection.sh && bash scripts/test-session-task-draft-intent.sh && bash scripts/test-session-task-draft-dispatch.sh && bash scripts/test-session-task-draft-journal-inspection.sh && bash scripts/test-session-task-draft-journal-observation.sh
       - name: Run real Runner Agent compile integration
         run: cargo test --manifest-path engine/Cargo.toml --locked --test runner_agent_client_tdd -- --ignored --nocapture
 

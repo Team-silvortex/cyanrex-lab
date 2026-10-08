@@ -91,12 +91,35 @@ Task 读取校验其当前引用字节；Task 不存在时不会触发 Artifact 
 
 0.5.3 收录的 [C2-R](session-task-draft-checkpoint.md)另加有界元数据检查点 codec。C2-P 可导出已分配
 目标及报告进度，不含正文或认证材料；解析仅得到调用者提供的数据，不是尝试、当前权限或
-历史提交证据。没有保存、持久意图日志、导入后读取，也不接 C2-Q 恢复或重试。
+历史提交证据。codec 自身没有保存、持久意图日志、导入后读取，也不接 C2-Q 恢复或重试。
 
 0.5.3 收录的 [C2-S](session-task-draft-inspection.md)另接收已解析检查点、显式受信任工作区和当前
 Session，只执行一次已有 Artifact 或 Task 内容读取。它比较当前元数据，不证明原始字节或调用者
 来源，也不要求尝试仍存。解析仍不读取，C2-Q 保留原尝试/指纹要求。结果不会被收编为确认、恢复
 或重试权限，也不新增日志或原存储代次证明。
+
+0.5.4 收录的 [C2-T](session-task-draft-intent.md)另从真实 Ready/零确认尝试登记不可变意图元数据。
+当前 Session 事务在仅全新安装的 Schema 1 日志中绑定精确所有者和账号代次，日志具有配置的
+安装 UUID。读取可使用新 Session，但所有者和账号代次必须相同，返回值不会复活尝试。
+认证源/登记/日志的身份固定不证明原 Task/Artifact 存储代次，两个操作也不查询这些目标。
+现有 C2-P 写入不要求此记录；下方独立 C2-U 包装器另提供写前步骤与绑定身份守卫。
+
+0.5.4 收录的 [C2-U](session-task-draft-dispatch.md)消耗初始尝试，构造调用者持有的日志化包装器，
+使用显式安装的 Schema 2 日志，不升级 Schema 1。每次推进先在事务 A 确认 Unknown 步骤，再由
+事务 B 重新核验精确所有者/账号及 nonce，在业务校验前更新未提交的标记，并创建一个 Artifact
+或 Task。最终只读意图/完整前缀/身份复验及新鲜授权先于资源与标记的共同 COMMIT。不确定结果
+使包装器停止；丢弃后不能重启恢复或重试。原未日志化 C2-P API 及公共/浏览器边界仍独立保留。
+
+0.5.4 收录的 [C2-V](session-task-draft-journal-inspection.md)另以精确所有者/账号代次匹配的当前
+Session 读取 Schema 2 意图与完整步骤前缀。来源层事务复验路由标签、已固定关系身份和新鲜
+权限后，返回已记录提交数及可选 Unknown 目标；不读取资源或文件、不暴露 nonce，也不修改
+Ready/零进度检查点。缺失或全步骤已记录都不提供回滚证明、包装器复活、重试、清理或公共/浏览器连接。
+
+0.5.4 收录的 [C2-W](session-task-draft-journal-observation.md)另经共享私有机制捕获同一 Schema 2
+日志，再在来源层持有的同一事务中读取一个已记录目标。借用事务的 Artifact/C2-M 读取器校验
+实际内容，末尾复核原完整意图、步骤/nonce 及首次日志身份，再做新鲜授权和 COMMIT。
+返回记录状态及不含正文的元数据比较，不是回执或恢复的权限；C2-V 仍只读日志。
+不增加业务 DML、新 Schema、重试或公共/浏览器连接。
 
 ### 教师权威与单人使用
 
@@ -153,7 +176,8 @@ Engine 启动时会发现直接子目录中的合法 v1 `module.json`。`ModuleM
 | `engine/src/services/{task_store,artifact_store,review_store}/` | 显式私人工作存储；直接接口要求可信调用方，Session 适配器提供授权 |
 | `engine/src/services/prepared_resource_sql.rs` | 上述存储私有共用的命名空间、事务初始化及普通表检查；不是通用仓储或授权服务 |
 | `engine/src/services/task_draft_import/` | 严格原始草稿解析、发布值及给定内容绑定；无 I/O、权限或保存编排 |
-| `engine/src/services/auth_service/durable_source/draft_publication/` | 仅创建步骤、原尝试观察、纯检查点 codec 及独立当前授权检查；授权/事务保留在已有 Artifact 与 C2-M 命令 |
+| `engine/src/services/auth_service/durable_source/draft_publication/` | 仅创建步骤、观察、检查点 codec、检查、意图登记/读取及显式日志化包装器；资源/标记连接保持在认证源拥有的 Artifact/C2-M 事务内 |
+| `engine/src/services/draft_intent_journal/` | 不可变意图及独立安装的 Schema 2 步骤标记；绑定身份的发布经显式包装器，不是恢复或对旧 API 的强制约束 |
 | `frontend/src/features/tasks/` | 本地草稿归属、payload 修订及导入导出；不是持久 Task 存储 |
 | `frontend/src/features/editor/` | 受控文本模型及本地语言服务；不负责任务策略或执行授权 |
 | `frontend/src/transport/privateRequest.ts` | 共享携带会话的请求策略与浏览器等待期限；响应解码和业务确认仍由 feature 持有 |

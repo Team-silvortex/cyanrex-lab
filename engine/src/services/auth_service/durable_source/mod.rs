@@ -59,10 +59,14 @@ pub use deletion::SessionDeleteAccountCommand;
 #[cfg(unix)]
 pub use draft_publication::{
     SessionDraftCheckpointInspectionError, SessionDraftCheckpointObservation,
-    SessionDraftCheckpointObservedOutcome, SessionDraftCheckpointState,
-    SessionDraftObservedOutcome, SessionDraftPublicationCheckpoint, SessionDraftPublicationError,
+    SessionDraftCheckpointObservedOutcome, SessionDraftCheckpointState, SessionDraftDispatchError,
+    SessionDraftIntentError, SessionDraftIntentWorkspace, SessionDraftJournalInspection,
+    SessionDraftJournalObservationError, SessionDraftJournalObservedOutcome,
+    SessionDraftJournalStepObservation, SessionDraftObservedOutcome,
+    SessionDraftPublicationCheckpoint, SessionDraftPublicationError, SessionDraftPublicationIntent,
     SessionDraftPublicationObservation, SessionDraftPublicationProgress,
-    SessionDraftPublicationState, SessionDraftPublicationStep, SessionTaskDraftPublication,
+    SessionDraftPublicationState, SessionDraftPublicationStep, SessionDraftRecordedStepStatus,
+    SessionJournaledTaskDraftPublication, SessionTaskDraftPublication,
     MAX_SESSION_DRAFT_CHECKPOINT_BYTES,
 };
 pub use reconciliation::{AuthorityReconciliation, ReconciliationError};

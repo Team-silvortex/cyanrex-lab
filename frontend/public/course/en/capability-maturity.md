@@ -1,6 +1,6 @@
 # Platform capability tensor and maturity
 
-Review date: **2026-10-07**. Source version: **0.5.3**, based on commit
+Review date: **2026-10-08**. Source version: **0.5.4**, based on commit
 `ecad0ecc74bff161e4a6ad2cc12b0baa60a0548b` plus the follow-ups now included in 0.5.2:
 missing-account login password work and explicit 128-row expired-Session maintenance.
 Cleanup has no automatic/CLI/HTTP connection or global quota.
@@ -21,6 +21,18 @@ it does not confirm the past write, restore attempt state or authorize retry.
 not durable storage, historical provenance or a restored attempt.
 0.5.3 C2-S separately inspects one checkpoint target with explicit current authority, not the
 original caller's identity. C2-R parsing remains pure and C2-Q's original-attempt requirement remains intact.
+0.5.4 [C2-T](session-task-draft-intent.md) separately binds immutable intent records to the
+current owner/account generation. This does not connect write-ahead execution, restore an attempt or
+upgrade the earlier publication, observation, checkpoint or browser-save evidence.
+0.5.4 [C2-U](session-task-draft-dispatch.md) separately joins a prior Unknown reservation to
+an exact-identity resource/marker commit through a consumed live wrapper. It does not force C2-P
+through that wrapper or supply restart recovery, retry, public/browser access or deployment evidence.
+0.5.4 [C2-V](session-task-draft-journal-inspection.md) separately reads the schema-2 recorded
+prefix under current exact owner/account authority. Its metadata counts do not reread resources,
+restore execution or upgrade C2-T/U, browser-save or AI evidence.
+0.5.4 [C2-W](session-task-draft-journal-observation.md) separately reads one recorded resource
+inside the journal's authorized transaction, retaining the original full prefix and first pins.
+Its body-free comparison is not a receipt or recovery, and C2-V remains journal-only.
 Historical evidence dates/scopes remain unchanged; the Session/registry follow-ups add their own records, not
 a public issuer or current deployment acceptance. This inventory is not a release gate.
 
@@ -43,14 +55,14 @@ cooperating files; it is not a file count, microservice or deployment unit. One 
 multiple coordinates: D01's internal domain catalogue and D02's connected teaching facade have
 different connection scores and must not be collapsed into one completed capability.
 
-This review records **8 architecture areas, 64 capabilities, 65 implementation coordinates, 95 directed
-edges and 18 representative paths**. The 65 coordinates comprise **19 live, 5 local, 29 prepared and
+This review records **8 architecture areas, 68 capabilities, 69 implementation coordinates, 111 directed
+edges and 18 representative paths**. The 69 coordinates comprise **19 live, 5 local, 33 prepared and
 12 planned** slices. These are inventory counts, not coverage denominators. This is not an enumeration
 of every endpoint, internal function, failure permutation or potential capability; sparse density is
 not product completion.
 
 - **Absent coordinate:** unmodeled or inapplicable, not an implicit zero.
-- **`null`:** modeled but unassessed, not unimplemented; all current 65 coordinates are assessed.
+- **`null`:** modeled but unassessed, not unimplemented; all current 69 coordinates are assessed.
 - **Explicit zero:** below level one for that criterion; the gap explains why.
 - **Planned slice:** may have a type contract D=1 while capability connection/evidence remain C=0, V=0.
 - **Independent edges:** code and tests at both ends do not establish a connection. A `missing` edge
@@ -95,11 +107,19 @@ is not a claim that this review ran it. U01/U06 include fixes collected in 0.5.0
 release's pure contract, separate storage, current-Session content composition and unmounted HTTP
 preparation. W14 records the 0.5.3 C2-O pure importer and binding checks; W15 separately records
 C2-P's internal create-only steps, W16 C2-Q's separate target observation, W17 C2-R's metadata codec
-and W18 C2-S's explicit current-authority inspection.
+and W18 C2-S's explicit current-authority inspection. W19 separately records 0.5.4 C2-T immutable
+intent registration and reading, not a write-ahead gate on W15.
+W20 records C2-U's separate consumed wrapper and per-resource journal coupling; loss of that wrapper
+does not become record-based recovery.
+W21 separately records current-Session journal inspection with its own dated SQL evidence; it does not
+inherit preceding dispatch tests or imply resource verification and recovery.
+W22 adds separate journal-bound resource observation with its own dated SQL evidence, not inherited
+W21 execution. Neither metadata agreement nor a recorded marker confirms past publication.
 Neither release inclusion nor internal composition closes browser saving or durable recovery.
 
 Source release 0.5.3 also includes the AI profile UI/store and explicit SDK adapters. Release inclusion
-does not raise scores; dated evidence below retains the original Unreleased implementation stage.
+does not raise scores. C2-T–W and the Next.js update are included in 0.5.4; dated evidence below retains
+its original Unreleased implementation stage, dates and scope.
 
 <!-- capability-tensor:start -->
 | Coordinate | Capability | Connection | D / C / V / O | Implementation sources | Evidence | Next gap |
@@ -139,6 +159,10 @@ does not raise scores; dated evidence below retains the original Unreleased impl
 | W16 · work | Read-only draft target observation | Prepared | 3 / 1 / 3 / 1 | [observation.rs](../../engine/src/services/auth_service/durable_source/draft_publication/observation.rs)<br>[confirmation.rs](../../engine/src/services/auth_service/durable_source/draft_publication/confirmation.rs)<br>[artifact_commands.rs](../../engine/src/services/auth_service/durable_source/artifact_commands.rs)<br>[content.rs](../../engine/src/services/auth_service/durable_source/task_commands/content.rs) | [draft-target-observation](../../docs/en/session-task-draft-observation.md) | Current target observation only; no historical commit confirmation, whole-workspace audit, state recovery, new-login takeover, durable receipt, retry or browser/public connection. |
 | W17 · work | Draft publication metadata checkpoint | Prepared | 3 / 1 / 2 / 1 | [checkpoint.rs](../../engine/src/services/auth_service/durable_source/draft_publication/checkpoint.rs)<br>[mod.rs](../../engine/src/services/auth_service/durable_source/draft_publication/mod.rs) | [draft-checkpoint](../../docs/en/session-task-draft-checkpoint.md) | Metadata codec only; no save/flush, authenticated history, journal, current authority, restored attempt, read-on-import, retry or public/browser connection. |
 | W18 · work | Explicit checkpoint target inspection | Prepared | 3 / 1 / 3 / 1 | [inspection.rs](../../engine/src/services/auth_service/durable_source/draft_publication/inspection.rs)<br>[checkpoint.rs](../../engine/src/services/auth_service/durable_source/draft_publication/checkpoint.rs)<br>[artifact_commands.rs](../../engine/src/services/auth_service/durable_source/artifact_commands.rs)<br>[content.rs](../../engine/src/services/auth_service/durable_source/task_commands/content.rs)<br>[task_content.rs](../../engine/src/services/task_content.rs) | [checkpoint-inspection](../../docs/en/session-task-draft-inspection.md) | Explicit current-authority metadata inspection only; no original caller/body provenance, storage-incarnation proof, journal, historical confirmation, restored attempt, retry or public/browser connection. |
+| W19 · work | Immutable Session draft intent records | Prepared | 3 / 1 / 3 / 1 | [intent.rs](../../engine/src/services/auth_service/durable_source/draft_publication/intent.rs)<br>[mod.rs](../../engine/src/services/draft_intent_journal/mod.rs)<br>[schema.rs](../../engine/src/services/draft_intent_journal/schema.rs)<br>[records.rs](../../engine/src/services/draft_intent_journal/records.rs)<br>[0016_collaboration_draft_intents.sql](../../engine/migrations/0016_collaboration_draft_intents.sql) | [draft-intent](../../docs/en/session-task-draft-intent.md) | Independent intent registration/read does not dispatch resources or gate old advance; W20 separately supplies a live journaled wrapper. No original storage-incarnation or dispatch/commit proof, restored attempt, retry, automatic installation or public/browser connection in this record layer. |
+| W20 · work | Journaled Session draft publication | Prepared | 3 / 1 / 3 / 1 | [dispatch.rs](../../engine/src/services/auth_service/durable_source/draft_publication/dispatch.rs)<br>[dispatch_transaction.rs](../../engine/src/services/auth_service/durable_source/draft_publication/dispatch_transaction.rs)<br>[dispatch.rs](../../engine/src/services/draft_intent_journal/dispatch.rs)<br>[schema.rs](../../engine/src/services/draft_intent_journal/schema.rs)<br>[0017_collaboration_draft_dispatch.sql](../../engine/migrations/0017_collaboration_draft_dispatch.sql) | [draft-dispatch](../../docs/en/session-task-draft-dispatch.md) | Opt-in surviving wrapper only; original C2-P remains unjournaled. No schema 1 migration, whole-draft transaction, restored attempt, automatic retry/cleanup, original storage-incarnation or backup-replay proof, public/browser connection or deployment acceptance. |
+| W21 · work | Session draft journal inspection | Prepared | 3 / 1 / 3 / 1 | [journal_inspection.rs](../../engine/src/services/auth_service/durable_source/draft_publication/journal_inspection.rs)<br>[inspection.rs](../../engine/src/services/draft_intent_journal/inspection.rs) | [draft-journal-inspection](../../docs/en/session-task-draft-journal-inspection.md) | Internal current-Session metadata read only; no resource/file verification or nonce output. Neither recorded progress nor absence restores an attempt, proves original publication or rollback, or permits retry/adoption/cleanup. No new schema, public/browser path or deployment recovery. |
+| W22 · work | Journal-bound resource observation | Prepared | 3 / 1 / 3 / 1 | [journal_observation.rs](../../engine/src/services/auth_service/durable_source/draft_publication/journal_observation.rs)<br>[inspection.rs](../../engine/src/services/draft_intent_journal/inspection.rs)<br>[content.rs](../../engine/src/services/auth_service/durable_source/task_commands/content.rs)<br>[inspection.rs](../../engine/src/services/auth_service/durable_source/draft_publication/inspection.rs) | [draft-journal-observation](../../docs/en/session-task-draft-journal-observation.md) | Internal recorded-target observation with real resource/file reads but body-free output. Recorded status and current metadata agreement are not receipts, original publication/body/storage-incarnation proof or recovery authority. No business writes, nonce exposure, restored attempt, retry/cleanup, public/browser path or deployment acceptance. |
 | D01 · domain | Versioned domain catalogue | Prepared | 3 / 1 / 2 / 1 | [task_catalog.rs](../../engine/src/services/task_catalog.rs) | [release-049](../../docs/en/project-status.md) | Trusted static providers; non-teaching provider remains a fixture, not a product workflow. |
 | D02 · domain | Versioned domain catalogue | Live | 3 / 2 / 2 / 1 | [learning_catalog.rs](../../engine/src/services/learning_catalog.rs)<br>[mod.rs](../../engine/src/domain_packs/ebpf_teaching/mod.rs) | [release-049](../../docs/en/project-status.md) | Only the teaching facade is wired; its assessment is not a generic persisted Review. |
 | D03 · domain | Lab attempts feedback and resume | Live | 3 / 2 / 2 / 1 | [learning_store.rs](../../engine/src/services/learning_store.rs)<br>[learning.rs](../../engine/src/routes/learning.rs)<br>[teaching.tsx](../../frontend/pages/teaching.tsx) | [release-049](../../docs/en/project-status.md) | Legacy attempts and feedback; source resume does not rerun or migrate to Task/Review. |
@@ -157,7 +181,7 @@ does not raise scores; dated evidence below retains the original Unreleased impl
 | U08 · ui | Reviewed AI profile settings | Live | 3 / 2 / 2 / 1 | [aiAgents](../../frontend/src/features/aiAgents)<br>[settings.tsx](../../frontend/pages/settings.tsx)<br>[aiAgents.ts](../../frontend/src/i18n/locales/aiAgents.ts) | [ai-agent-adapters](../../docs/en/project-status.md) | Browser fixtures verify reviewed drafts and uncertain acknowledgements, not a real provider or deployed Engine. |
 | O07 · operations | Private AI connection metadata | Live | 3 / 2 / 2 / 1 | [ai_agent.rs](../../engine/src/models/ai_agent.rs)<br>[ai_agent_settings.rs](../../engine/src/routes/ai_agent_settings.rs)<br>[ai_agent_settings](../../engine/src/services/ai_agent_settings)<br>[application.rs](../../engine/src/application.rs) | [ai-agent-adapters](../../docs/en/project-status.md) | Private, credential-reference-only instance metadata; no provider calls, secret vault, cross-process ordering or migration. |
 | E04 · delivery | Explicit AI tool format bridge | Prepared | 3 / 1 / 2 / 1 | [agents](../../sdk-js/src/agents)<br>[agent-tools.ts](../../sdk-js/src/generated/agent-tools.ts)<br>[generate-agent-tools.mjs](../../scripts/generate-agent-tools.mjs) | [ai-agent-adapters](../../docs/en/project-status.md) | Explicit host composition preserves current API authority; no autonomous AI identity, provider transport or durable exactly-once receipt. |
-| P01 · work | Browser to server Task save | Planned | 0 / 0 / 0 / 0 | — | [design](../../docs/en/project-status.md)<br>[target](../../docs/zh-CN/next-architecture.md) | W10-W18 provide internal contracts, publication, original-attempt observation, checkpoint data and explicit current-authority inspection. Secure issuance/installation, public dispatch, durable journal/recovery identity and browser save/read/conflict handling remain absent. |
+| P01 · work | Browser to server Task save | Planned | 0 / 0 / 0 / 0 | — | [design](../../docs/en/project-status.md)<br>[target](../../docs/zh-CN/next-architecture.md) | W10-W20 provide internal content, inspection, intents and an explicit live journaled wrapper with per-resource write-ahead/bound-identity gates. Restart/recovery rules, secure issuance/installation, public dispatch and browser save/read/conflict handling remain absent. |
 | P02 · identity | Live authority cutover and migration | Planned | 0 / 0 / 0 / 0 | — | [design](../../docs/en/project-status.md)<br>[target](../../docs/zh-CN/next-architecture.md) | Inventory data, restore backups, fence old writers and review install/migration/rollback before routing. |
 | P03 · work | Sharing and cross-user Review | Planned | 0 / 0 / 0 / 0 | — | [design](../../docs/en/project-status.md)<br>[target](../../docs/zh-CN/next-architecture.md) | Explicit content grants and reviewer delegation before any private-owner relaxation. |
 | P04 · domain | Artifact evidence to authorized rule Review | Planned | 0 / 0 / 0 / 0 | — | [design](../../docs/en/project-status.md)<br>[target](../../docs/zh-CN/next-architecture.md) | Bind exact bytes and policy/provider version to authorized typed evidence and stored judgment. |
@@ -187,8 +211,14 @@ checks and one exact Artifact or current Task read without creating a new repres
 New e85 is only W15 → W17 metadata export. Separate e86–e89 give W18 checkpoint input, current
 authorization and one Artifact/Task reader; the codec itself still calls no reader and has no W16 edge.
 Separate e90–e95 connect reviewed AI settings, existing teacher authority and explicit host SDK tools;
-no edge implements P10 delegation. The JSON retains all 95 edges and their failure/trust boundaries;
-representative paths remain unchanged.
+no edge implements P10 delegation. New e96–e98 connect a real W15 attempt to W19 registration, W19's
+current I04 authority and its use of W17's strict codec. Separate e99–e103 join the consumed W15
+attempt, W19 intent, current I04 authority and W05/W12 resource transactions through W20's new step journal.
+These are opt-in live dispatch edges, not recovery or a gate on the original W15 API. Separate e104–e106
+connect W20's stored step data to W21 inspection and its W19/I04 record/authority dependencies; no
+resource-read or recovery edge is added by C2-V. New e107–e111 give W22 shared private capture and
+intent/authority dependencies plus one borrowed Artifact/Task reader; W21's public method is not called.
+The JSON retains all 111 edges and their failure/trust boundaries; representative paths remain unchanged.
 
 | Representative path | Coordinates in order | Status and boundary |
 |---|---|---|
@@ -227,7 +257,7 @@ non-teaching saved-content workflow before expanding sharing or execution.
 
 | Order | Coordinates or edges | Contract and verification needed |
 |---|---|---|
-| 1 | P01, e36/e37/e70/e76 | W10–W18 provide internal contracts, publication, observation, checkpoint data and separately authorized inspection. Durable intent, recovery identity, secure issuance/installation and public/browser save/conflict handling remain separate; do not silently switch legacy instances. |
+| 1 | P01, e36/e37/e70/e76 | Internal content, inspection and intent records now have a separate live journaled wrapper with per-resource write-ahead/identity gates. Restart/recovery rules, secure issuance/installation and public/browser save/conflict handling remain absent; do not silently switch legacy instances. |
 | 2 | P02, e38/e39 | An explicit preparation-layer connection plan; if adopting old data, verify backup/restore, migration and writer fencing first. No operations level 3 without recovery evidence. |
 | 3 | U02 → P01 → W05/W06/W09 | Explicit save/read, restart recovery, revoked access, concurrent editing and uncertain outcomes. Publication/replacement failure does not permit blind deletion or retry. |
 | 4 | P03, P04, P05 | Sharing/reviewer grants; exact content to typed evidence to version-bound rule Review. Define acceptance policy separately. |
@@ -241,7 +271,11 @@ gaps, first define contracts and rejection tests rather than obtaining zero-test
 
 | Evidence ID | Date | Record and limit |
 |---|---|---|
+| [draft-journal-observation](session-task-draft-journal-observation.md) | 2026-10-08 | Unreleased C2-W: twelve exact isolated SQL cases and three new common guards passed. One recorded resource read, typed outcomes, authority/expiry, cancellation and external journal-writer blocking; original snapshot reuse is source-guarded, not in-transaction mutation/OID fault evidence. No receipt, recovery or inherited C2-V execution. |
+| [draft-journal-inspection](session-task-draft-journal-inspection.md) | 2026-10-08 | Unreleased C2-V: ten exact isolated PostgreSQL cases and three common guards passed. Schema-2 recorded prefix, exact current owner/account, final Task count, bounded rows, typed faults, waiting and cancellation. No resource/file probe, nonce output, restored authority or retry; synthetic row limits and changed account bindings are not real resource writes or account recreation. |
 | [checkpoint-inspection](session-task-draft-inspection.md) | 2026-10-07 | Unreleased C2-S: six default units, twelve exact private-socket PostgreSQL cases and three common guards passed. Current-authority inspection after attempt drop/handle reopen, owner filtering, metadata/text checks, typed faults, expiry, cancellation and pending writers; no process-crash durability, original provenance, journal, confirmation or recovery. |
+| [draft-intent](session-task-draft-intent.md) | 2026-10-07 | Unreleased C2-T: twelve exact disposable PostgreSQL cases and three common guards passed. Immutable Ready/zero-progress registration/read, fresh Sessions, duplicate refusal and storage/transaction faults; account-generation evidence changes journal binding fields, not real account deletion/recreation. No write-ahead resource dispatch, original storage-incarnation proof, crash recovery or retry. |
+| [draft-dispatch](session-task-draft-dispatch.md) | 2026-10-08 | Unreleased C2-U: fourteen exact disposable PostgreSQL cases and three common guards passed. Fresh schema 2, prior Unknown reservation, exact identity/nonces/prefix, resource/marker commit coupling, equivalent-table/overflow refusal and cancellation/commit faults. No physical source continuity across A/B, imported recovery, automatic retry or public/browser acceptance. |
 | [draft-checkpoint](session-task-draft-checkpoint.md) | 2026-10-07 | Unreleased C2-R: six internal units, fourteen default contract cases and three common guards passed. Strict metadata parsing, round trips, state/count/reference relations and unchanged export; no database, save, journal, provenance, restart inspection or restored attempt. |
 | [draft-target-observation](session-task-draft-observation.md) | 2026-10-07 | Unreleased C2-Q: seven default units, twelve exact private-socket PostgreSQL cases and three common guards passed. Current comparisons, typed errors and cancellation preserve state and business data; no historical commit proof, durable recovery, retry or public/browser connection. |
 | [session-draft-publication](session-task-draft-publication.md) | 2026-10-07 | Unreleased C2-P: 14 default units, 12 exact disposable PostgreSQL cases and three common guards passed. One-write stepping, partial confirmation, cancellation, conflicts, revoked/expired authority and final blob checks; no browser, durable recovery or deployed acceptance. |

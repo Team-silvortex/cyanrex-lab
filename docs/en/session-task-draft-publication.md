@@ -79,6 +79,10 @@ does not cover that later read operation.
 authentication material. It does not save data or deserialize this attempt. Parsed progress is a
 caller claim, not a confirmed receipt; stale snapshots do not permit continuation or retry.
 
+0.5.4 [C2-T](session-task-draft-intent.md) can separately register immutable intent metadata
+from a real Ready/zero-confirmed attempt under the original Session. `advance` remains unchanged and
+does not require or write that journal; registration alone does not enforce durable-before-dispatch.
+
 ## Remaining boundaries and verification
 
 The [C2-N router](task-content-http.md) remains unmounted and does not invoke this workflow or gain

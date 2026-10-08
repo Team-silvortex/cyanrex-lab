@@ -1,6 +1,6 @@
 # 当前平台功能与模块网络
 
-基础源码核对日期：**2026-10-03**。当前范围：**0.5.3 源码**，包括准备层认证加固、0.5.0 的
+基础源码核对日期：**2026-10-03**。当前范围：**0.5.4 源码**，包括准备层认证加固、0.5.0 的
 导航/文件名修复和 C2-K/L/M/N 内容准备层，以及此前的协作命令与本地任务 payload 编辑器。
 评审保留 0.4.9 基线提交及原日期证据；源码收录
 不是新的发布验收报告，也不代表正在运行的部署已更新。
@@ -28,8 +28,24 @@ Session 读取。不含正文的结果保持尝试状态不变，不确认先前
 组合为一次已有授权读取。无需原尝试，只比较当前元数据，不证明原调用者/正文来源或存储代次，
 不恢复 C2-Q、不收编确认，也不提供日志或重试策略。
 
+0.5.4 收录的 [C2-T](session-task-draft-intent.md)另将真实 Ready/零确认尝试接到不可变意图登记及
+当前 Session 记录读取。日志绑定精确所有者/账号代次及配置的命名空间名称，不记录资源派发或
+结果历史。原 C2-P `advance` 仍不要求该记录，浏览器保存仍然缺失。
+
+0.5.4 收录的 [C2-U](session-task-draft-dispatch.md)另增消耗原尝试的包装器及 Schema 2 步骤记录。
+每个资源事务前先确认 Unknown 预留，再通过精确当前身份、意图及 nonce 检查，共同提交完成标记
+和 Artifact 或 Task SQL。这只是存活的内部路径，不从记录恢复，不自动重试，也不接公共/浏览器。
+
+0.5.4 收录的 [C2-V](session-task-draft-journal-inspection.md)另在当前精确所有者/账号权限下读取
+Schema 2 意图与已记录步骤前缀。计数包含最终 Task，可选 Unknown 目标不暴露 nonce。
+它不读取资源、不复活包装器；记录或缺失都不授权重试、清理或收编。
+
+0.5.4 收录的 [C2-W](session-task-draft-journal-observation.md)另在同一授权事务捕获日志后读取
+一个已记录资源，再复验原完整前缀与首次身份。不含正文的结果区分记录状态与当前元数据比较；
+此操作不同于 C2-V，会实际读取文件，但不提供回执、恢复、重试或公共/浏览器连接。
+
 按“架构 × 功能 × 实现 × 成熟度”查看请使用新增的[功能张量与评分规则](capability-maturity.md)和
-[机器清单](../platform-capability-tensor.json)：65 个实现坐标、95 条定向边、18 条代表链路。
+[机器清单](../platform-capability-tensor.json)：69 个实现坐标、111 条定向边、18 条代表链路。
 本文保留路由与模块拓扑；评分和证据独立维护，不计算整体完成百分比。
 
 Cyanrex 正从 eBPF 教学应用转向以任务为中心的协作平台。目前并存三部分：已连接的教学运行链路、
@@ -134,6 +150,10 @@ Review。它们使用带范围的引用，不是用户名、路径、编辑器 I
 | 草稿目标观察（0.5.3 C2-Q） | [只读比较](session-task-draft-observation.md)、[`observation.rs`](../../engine/src/services/auth_service/durable_source/draft_publication/observation.rs) | 精确未知目标 → 一个授权读取 → 不含正文的当前比较；不改状态、不证明先前提交、不推导回滚或提供恢复。 |
 | 草稿元数据检查点（0.5.3 C2-R） | [有界检查点数据](session-task-draft-checkpoint.md)、[`checkpoint.rs`](../../engine/src/services/auth_service/durable_source/draft_publication/checkpoint.rs) | 尝试 → 元数据导出/解析；报告进度只是调用者数据，不是保存、来源证明、授权或复活尝试。 |
 | 检查点目标检查（0.5.3 C2-S） | [显式授权检查](session-task-draft-inspection.md)、[`inspection.rs`](../../engine/src/services/auth_service/durable_source/draft_publication/inspection.rs) | 解析数据 + 受信任工作区 + 当前 Session → 一次已有读取；仅元数据比较，不恢复原尝试，不提供来源证明、日志或重试。 |
+| 不可变草稿意图（0.5.4 C2-T） | [意图登记与读取](session-task-draft-intent.md)、[`draft_intent_journal`](../../engine/src/services/draft_intent_journal/)、[`intent.rs`](../../engine/src/services/auth_service/durable_source/draft_publication/intent.rs) | 真实 Ready/零确认尝试 → 会话绑定的不可变记录；新 Session 读取要求相同所有者/账号代次，不查询目标、不复活尝试、不接资源写前派发。 |
+| 日志化草稿派发（0.5.4 C2-U） | [存活日志化包装器](session-task-draft-dispatch.md)、[`draft_publication/dispatch.rs`](../../engine/src/services/auth_service/durable_source/draft_publication/dispatch.rs)、[`draft_intent_journal/dispatch.rs`](../../engine/src/services/draft_intent_journal/dispatch.rs) | 确认 Unknown 步骤 → 重新授权的资源事务共同提交标记/业务 → 内存确认。仅全新 Schema 2；原 C2-P 独立，无重启/重试或浏览器连接。 |
+| 草稿日志检查（0.5.4 C2-V） | [已记录前缀检查](session-task-draft-journal-inspection.md)、[`journal_inspection.rs`](../../engine/src/services/auth_service/durable_source/draft_publication/journal_inspection.rs)、[`inspection.rs`](../../engine/src/services/draft_intent_journal/inspection.rs) | 当前精确所有者/账号 → Schema 2 意图/完整前缀 → 元数据计数及可选 Unknown。不读资源/文件、不泄露 nonce、不恢复尝试或重试。 |
+| 日志步骤观察（0.5.4 C2-W） | [一个已记录目标](session-task-draft-journal-observation.md)、[`journal_observation.rs`](../../engine/src/services/auth_service/durable_source/draft_publication/journal_observation.rs) | 捕获完整意图/前缀/首次身份 → 真实 Artifact 或当前 Task 内容读取 → 精确复验及新鲜授权/提交。不写业务、不提供回执、恢复或重试，也不调用 C2-V 公共 API。 |
 
 ## 跨模块链路与尚未连接的边界
 
@@ -151,6 +171,10 @@ Review。它们使用带范围的引用，不是用户名、路径、编辑器 I
 | 草稿计划 → 显式会话发布步骤 → Task 创建 | W14 ⇢ W15 ⇢ W12 分别使用 I04 与 W05 进行当前授权/发布；独立事务、内存结果记录，不接浏览器或自动恢复。 |
 | 未知尝试 → 当前目标观察 | W15 ⇢ W16 使用 I04 及一次 W05 或 W12 读取；观察时点独立，不返回正文或恢复状态。这条读分支不新增代表写入链。 |
 | 仍存尝试 → 元数据检查点 | W15 ⇢ W17 导出报告进度，不含正文或凭据；codec 不调用读取器或复活尝试，下方 C2-S 检查是独立操作。 |
+| Ready 尝试 → 不可变意图记录 → 授权记录读取 | 独立内部 C2-T 路径绑定当前所有者/账号代次。登记不要求或触发 C2-P 派发，读取既不观察目标，也不重建尝试。 |
+| 消耗后的存活尝试 → Unknown 日志步骤 → 资源与标记共同提交 | C2-U 在当前绑定身份下显式连接一个资源与其步骤；每步成功后可继续，不确定结果或包装器丢失都不提供重试/恢复路径。 |
+| 已记录日志步骤 → 显式当前授权检查 | W20 ⇢ W21 经 W19 与 I04 读取独立意图/步骤元数据；这是数据/读取边，不自动调用检查、不查询资源，也不新增恢复链。 |
+| 已记录序号 → 同事务资源观察 | W22 与 W21 共用私有日志捕获，依赖 W19/I04 及一次 W05/W12 借用事务读取；不调用 W21 公共方法、不传递权限，也不增加代表恢复链。 |
 | 检查点数据 → 显式当前授权检查 | W17 ⇢ W18 使用 I04 及一个 W05 或 W12 读取；无 W17 → W16 边，不证明历史调用者/提交，不收编状态或新增代表恢复链。 |
 | 通用 Task → 执行计划 → 类型化证据 → 规则 Review → 验收 | 组合流程待实现；目录元数据与进程内规则评估不能单独建立此链路。 |
 | 教师管理的隔离学生运行环境、托管 VM 生命周期、外部 LSP 进程 | 待实现；现有 Linux 执行和本地语言 worker 不构成这些隔离边界。 |

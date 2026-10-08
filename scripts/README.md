@@ -61,6 +61,27 @@ fixtures or build-cache cleanup targets. The script catalogue below retains indi
   read; reported metadata neither restores an attempt nor proves the original writer or commit.
   Checks metadata/text profiles, owner isolation, typed faults, expiry, pending writers and cancellation.
   `tests/sessionTaskDraftInspection.test.mjs` guards this separate internal reader and the full CI list.
+- `test-session-task-draft-intent.sh`: selects twelve exact immutable intent registration and
+  current-Session read cases against an explicit disposable database. Checks original-attempt admission,
+  private ownership, journal installation identity, conflicts, corruption, expiry and cancellation.
+  Registration neither publishes resources nor gates, resumes or retries the existing draft stepper;
+  `tests/sessionTaskDraftIntent.test.mjs` guards that boundary and the exact CI selection.
+- `test-session-task-draft-dispatch.sh`: selects fourteen exact two-phase journaled dispatch cases
+  against an explicit disposable database. Covers fresh schema-2 admission, write-before-dispatch,
+  current ownership/Session checks in both transactions, atomic markers and resource SQL, full-prefix
+  and table pins, faults and cancellation. No recovery/retry or public/browser API is enabled.
+  `tests/sessionTaskDraftDispatch.test.mjs` guards the sealed boundary and complete CI selection.
+- `test-session-task-draft-journal-inspection.sh`: selects ten exact schema-2 journal inspection cases
+  against an explicit disposable database. Checks current owner/account visibility, complete recorded
+  prefixes including the final Task, schema/pin corruption, expiry and cancellation. It does not read
+  resources/files, restore a wrapper or grant retry. `tests/sessionTaskDraftJournalInspection.test.mjs`
+  guards this internal-only reader and exact CI selection; inventory is not a passing-run claim.
+- `test-session-task-draft-journal-observation.sh`: selects twelve exact recorded-step resource
+  observation cases against an explicit disposable database. Checks ordinal/visibility distinctions,
+  borrowed same-transaction Artifact/Task reads, full original journal/nonces/first pins, current
+  authorization, faults and cancellation. Body-free output still reads files, but never returns a
+  receipt or retry/recovery permit. `tests/sessionTaskDraftJournalObservation.test.mjs` guards the
+  private composition and exact CI inventory; selection alone is not passing-run evidence.
 - `test-durable-session-boundary.sh`: runs seventeen exact source-only Session PostgreSQL cases.
   Covers namespace/table identity, filtered or incompatible storage, post-write metadata/redirect
   faults, two-transaction login pins and logout/expiry ordering. Requires an explicit disposable

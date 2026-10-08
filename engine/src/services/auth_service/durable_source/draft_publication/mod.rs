@@ -20,6 +20,20 @@ pub use checkpoint::{
     MAX_SESSION_DRAFT_CHECKPOINT_BYTES,
 };
 mod confirmation;
+mod dispatch;
+pub use dispatch::{SessionDraftDispatchError, SessionJournaledTaskDraftPublication};
+mod dispatch_transaction;
+mod intent;
+pub use intent::{
+    SessionDraftIntentError, SessionDraftIntentWorkspace, SessionDraftPublicationIntent,
+};
+mod journal_inspection;
+pub use journal_inspection::SessionDraftJournalInspection;
+mod journal_observation;
+pub use journal_observation::{
+    SessionDraftJournalObservationError, SessionDraftJournalObservedOutcome,
+    SessionDraftJournalStepObservation, SessionDraftRecordedStepStatus,
+};
 mod inspection;
 pub use inspection::{
     SessionDraftCheckpointInspectionError, SessionDraftCheckpointObservation,

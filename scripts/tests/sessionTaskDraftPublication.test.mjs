@@ -29,7 +29,8 @@ test("create-only draft publication remains internal and is not a public save or
 
 test("draft publication composes existing Session creates without detached writers or a restore surface", async () => {
   const directory = "engine/src/services/auth_service/durable_source/draft_publication";
-  const files = (await sources(directory, /\.rs$/)).filter(([path]) => !/\/(?:tests|test_support)(?:\/|\.rs$)|_tests\.rs$/.test(path));
+  // C2-T/U/V/W own separate source transactions; the original C2-P path stays SQL-free.
+  const files = (await sources(directory, /\.rs$/)).filter(([path]) => !/\/(?:tests|test_support)(?:\/|\.rs$)|_tests\.rs$|\/(?:intent|dispatch_transaction|journal_inspection|journal_observation)\.rs$/.test(path));
   assert.ok(files.length > 0);
   const code = files.map(([, source]) => codeOnly(source)).join("\n");
   for (const command of ["create_session_artifact", "create_session_content_task"]) {

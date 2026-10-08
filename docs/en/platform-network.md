@@ -1,6 +1,6 @@
 # Current platform feature and module network
 
-Base source review date: **2026-10-03**. Current scope: **0.5.3 source**, including prepared-authentication
+Base source review date: **2026-10-03**. Current scope: **0.5.4 source**, including prepared-authentication
 hardening, the 0.5.0 navigation/filename fixes and C2-K/L/M/N content preparation, alongside the preceding
 collaboration commands and local task payload editor. The review retains its
 0.4.9 base commit and dated evidence; source inclusion is not a new release acceptance report or a
@@ -38,9 +38,29 @@ explicit trusted workspace and current Session for one existing authorized read.
 metadata without an original attempt, not original caller/body provenance or storage incarnation.
 It does not restore C2-Q, adopt confirmations or supply a journal or retry policy.
 
+0.5.4 [C2-T](session-task-draft-intent.md) separately connects a real Ready/zero-confirmed
+attempt to immutable intent registration and a current-Session record read. The journal binds exact
+owner/account generation and configured namespace names, not resource dispatch or outcome history.
+Original C2-P `advance` still does not require the record; browser saving remains absent.
+
+0.5.4 [C2-U](session-task-draft-dispatch.md) adds a separate consumed wrapper with schema 2
+step records. An acknowledged Unknown reservation precedes each resource transaction; exact current
+identity, intent and nonce checks couple its completion marker with Artifact or Task SQL. This is a
+live internal path only, not restoration from records, automatic retry or a public/browser connection.
+
+0.5.4 [C2-V](session-task-draft-journal-inspection.md) separately reads the schema-2 intent and
+recorded step prefix under exact current owner/account authority. Counts include the final Task;
+the optional Unknown target exposes no nonce. It neither reads resources nor restores the wrapper,
+and no record or absence permits retry, cleanup or adoption.
+
+0.5.4 [C2-W](session-task-draft-journal-observation.md) separately reads one recorded resource
+after capturing the journal in the same authorized transaction, then rechecks the full original prefix
+and first pins. Body-free output separates recorded status from current metadata agreement; this read
+does access files, unlike C2-V, but grants no receipt, recovery, retry or public/browser connection.
+
 For architecture × capability × implementation × maturity, use the new
 [capability tensor and score rubric](capability-maturity.md) and its
-[machine inventory](../platform-capability-tensor.json): 65 implementation coordinates, 95 directed
+[machine inventory](../platform-capability-tensor.json): 69 implementation coordinates, 111 directed
 edges and 18 representative paths. This page remains the route/module topology view; scores and
 evidence are maintained separately, with no aggregate completion percentage.
 
@@ -150,6 +170,10 @@ paths, editor IDs or client role claims. See [collaboration concepts](collaborat
 | Draft target observation (0.5.3 C2-Q) | [read-only comparison](session-task-draft-observation.md), [`observation.rs`](../../engine/src/services/auth_service/durable_source/draft_publication/observation.rs) | Exact unconfirmed target → one authorized read → body-free current comparison; no state change, prior-commit proof, rollback inference or recovery. |
 | Draft metadata checkpoint (0.5.3 C2-R) | [bounded checkpoint data](session-task-draft-checkpoint.md), [`checkpoint.rs`](../../engine/src/services/auth_service/durable_source/draft_publication/checkpoint.rs) | Attempt → metadata export/parse. Reported progress is caller data, not save, provenance, authorization or a restored attempt. |
 | Checkpoint target inspection (0.5.3 C2-S) | [explicit authorized inspection](session-task-draft-inspection.md), [`inspection.rs`](../../engine/src/services/auth_service/durable_source/draft_publication/inspection.rs) | Parsed data + trusted workspace + current Session → one existing read. Metadata comparison only; no original-attempt restoration, provenance, journal or retry. |
+| Immutable draft intent (0.5.4 C2-T) | [intent registration and reading](session-task-draft-intent.md), [`draft_intent_journal`](../../engine/src/services/draft_intent_journal/), [`intent.rs`](../../engine/src/services/auth_service/durable_source/draft_publication/intent.rs) | Real Ready/zero-confirmed attempt → Session-bound immutable record. New-Session read requires the same owner/account generation; no target lookup, restored attempt or write-ahead resource dispatch. |
+| Journaled draft dispatch (0.5.4 C2-U) | [live journaled wrapper](session-task-draft-dispatch.md), [`draft_publication/dispatch.rs`](../../engine/src/services/auth_service/durable_source/draft_publication/dispatch.rs), [`draft_intent_journal/dispatch.rs`](../../engine/src/services/draft_intent_journal/dispatch.rs) | Confirm Unknown step → reauthorized resource transaction with marker/business commit → in-memory confirmation. Fresh schema 2 only; original C2-P stays independent, no restart/retry or browser connection. |
+| Draft journal inspection (0.5.4 C2-V) | [recorded-prefix inspection](session-task-draft-journal-inspection.md), [`journal_inspection.rs`](../../engine/src/services/auth_service/durable_source/draft_publication/journal_inspection.rs), [`inspection.rs`](../../engine/src/services/draft_intent_journal/inspection.rs) | Current exact owner/account → schema-2 intent/full prefix → metadata counts and optional Unknown. No resource/file read, nonce disclosure, restored attempt or retry. |
+| Journal step observation (0.5.4 C2-W) | [one recorded target](session-task-draft-journal-observation.md), [`journal_observation.rs`](../../engine/src/services/auth_service/durable_source/draft_publication/journal_observation.rs) | Capture complete intent/prefix/first pins → actual Artifact or current Task content read → exact recheck and fresh auth/commit. No business write, receipt, recovery or retry; C2-V public API is not called. |
 
 ## Cross-module paths and unconnected boundaries
 
@@ -167,6 +191,10 @@ paths, editor IDs or client role claims. See [collaboration concepts](collaborat
 | Draft plan → explicit Session publication steps → Task create | W14 ⇢ W15 ⇢ W12 uses I04 and W05 independently for current authorization/publication. Separate transactions, in-memory outcome tracking; no browser bridge or automatic recovery. |
 | Unconfirmed attempt → current target observation | W15 ⇢ W16 uses I04 and one W05 or W12 read. Separate observation times, no returned body or state restoration; this read branch adds no representative write chain. |
 | Surviving attempt → metadata checkpoint | W15 ⇢ W17 exports reported progress without text or credentials. Its codec invokes no reader or restored attempt; C2-S inspection is a separate operation below. |
+| Ready attempt → immutable intent record → authorized record read | Separate internal C2-T path binds current owner/account generation. Registration does not require or cause C2-P dispatch; reading neither observes targets nor reconstructs the attempt. |
+| Consumed live attempt → Unknown journal step → resource and marker commit | C2-U explicitly couples one resource to its step under current bound identity. Each successful step can continue; uncertainty or loss of the wrapper supplies no retry or recovery path. |
+| Recorded journal steps → explicit current-authority inspection | W20 ⇢ W21 reads separate intent/step metadata through W19 and I04; this data/read edge does not invoke inspection automatically, query resources or create a recovery chain. |
+| Recorded ordinal → same-transaction resource observation | W22 shares private journal capture with W21 and depends on W19/I04 plus one W05/W12 borrowed reader. It does not call the W21 public method, transfer authority or add a representative recovery chain. |
 | Checkpoint data → explicit current-authority inspection | W17 ⇢ W18 uses I04 and one W05 or W12 read. No W17 → W16 edge, no historical caller/commit proof, no state adoption or new representative recovery chain. |
 | Generic Task → execution plan → typed evidence → rule Review → acceptance | Planned composition. Catalogue metadata and in-process assessment alone do not establish this workflow. |
 | Teacher-managed isolated student runtime, managed VM lifecycle, external LSP process | Planned; existing Linux execution and local language workers do not establish these isolation boundaries. |

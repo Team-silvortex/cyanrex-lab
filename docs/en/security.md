@@ -422,14 +422,22 @@ After class:
 
 ## Dependency Audit Policy
 
-- Frontend dependency floors are Next.js 15.5.24, DOMPurify 3.4.16, sharp 0.35.5 and source-map-js 1.2.2.
+- Frontend dependency floors are Next.js 15.5.27, DOMPurify 3.4.16, sharp 0.35.5 and source-map-js 1.2.2.
+  The 2026-10-08 Unreleased gate found one moderate dependency finding in Next.js 15.5.24, covering
+  the upstream [SSG/ISR page cache poisoning](https://github.com/vercel/next.js/security/advisories/GHSA-4jqv-mc3x-m676)
+  and [catch-all route cache poisoning](https://github.com/vercel/next.js/security/advisories/GHSA-mcj8-r9mp-w47p)
+  advisories; the Next.js floor is raised to the patched 15.5.27 release, included in source version 0.5.4.
+  This dependency finding and patch do not establish that a deployment was exploitable, that deployed
+  instances have been updated,
+  or that deployment-specific exploit regression testing has passed.
   The Next.js/sharp floors retain fixes for the upstream
   [Windows server](https://github.com/vercel/next.js/security/advisories/GHSA-p293-qw3h-jr36),
   [AVIF optimization](https://github.com/vercel/next.js/security/advisories/GHSA-2xp9-vwfh-vxw4) and
   [sharp/libheif](https://github.com/lovell/sharp/security/advisories/GHSA-rgj7-g3m4-5g8c) advisories.
   The sharp update also addresses the [bundled librsvg issue](https://github.com/advisories/GHSA-wq5f-xc86-pv6w),
   and source-map-js addresses [indexed-map amplification](https://github.com/advisories/GHSA-68fv-2mgg-jv7q).
-  Offline regression checks require the patched DOMPurify/sharp/source-map-js overrides and all locked copies,
+  Offline checks require the supported Next.js 15.x minimum and patched DOMPurify/sharp/source-map-js
+  overrides and all locked copies,
   including cross-platform sharp 0.35.5/libvips 1.3.4 packages; live audit remains a separate check.
   Rebuild and redeploy to apply updated dependencies; editing the lockfile does not update a running
   container. A custom global libheif must also be at least 1.23.2; an npm audit is not host-library acceptance.

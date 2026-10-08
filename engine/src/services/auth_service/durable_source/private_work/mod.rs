@@ -110,6 +110,14 @@ impl DurableAuthSource {
     }
 }
 impl PrivateWorkContext {
+    pub(super) fn account_id(&self) -> LegacyAccountId {
+        self.session.account.account_id
+    }
+
+    pub(super) fn source_namespace(&self) -> &str {
+        &self.source.name
+    }
+
     /// Keep every first-observed namespace identity; revisiting cannot silently replace its pin.
     pub async fn select_target(
         &mut self,

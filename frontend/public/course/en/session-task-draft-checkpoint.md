@@ -12,7 +12,7 @@ or evidence that any reported write committed.
 Its `to_json` and `parse_json` operations use the version-1 `cyanrex.task-draft-checkpoint` format.
 All three operations return `Result<_, ContractError>`; the checkpoint exposes read-only metadata
 accessors, not a mutable state or public `Clone`, `Debug`, `Serialize` or `Deserialize` implementation.
-The format version is independent of product version 0.5.3 and storage schema versions.
+The format version is independent of product version 0.5.4 and storage schema versions.
 The attempt remains non-deserializable; no checkpoint operation changes its progress or performs I/O.
 
 The envelope contains exactly `format`, `version`, `task`, `manifest`, `byte_lengths`,
@@ -54,7 +54,7 @@ or credentials. Format validation is not secret detection or permission to publi
 
 ## Persistence and recovery remain separate
 
-There is no save API, filesystem write, flush guarantee, database transaction or retention policy.
+This codec has no save API, filesystem write, flush guarantee, database transaction or retention policy.
 An external caller's storage is not synchronized with C2-P dispatch or commit, so a saved checkpoint
 may be stale or absent after a crash. Canonical encoding does not supply integrity authentication,
 anti-replay protection, a write-ahead intent record or proof of durable outcomes.
@@ -68,9 +68,14 @@ remain absent.
 workspace and the caller's current Session. It does not run during parsing, recreate C2-Q or verify
 the checkpoint's original caller; the checkpoint remains unauthenticated data.
 
-A future intent journal must separately define durable-before-dispatch ordering, outcome recording,
-writer coordination and unknown-commit handling. Restart inspection and any retry policy require
-their own authorization and failure contracts; neither follows from this metadata format.
+0.5.4 [C2-T](session-task-draft-intent.md) separately registers this canonical format only from
+a real Ready/zero-confirmed attempt, binding owner and exact account generation under current Session
+authorization. Parsing arbitrary metadata still grants no registration or recovery authority. The
+immutable intent record itself is not an execution journal. [C2-U](session-task-draft-dispatch.md)
+independently supplies an opaque wrapper that consumes the original live attempt, confirms an Unknown
+step first and couples the exact account/owner-bound resource transaction with its completion marker.
+This codec neither constructs that wrapper nor executes or restores it; parsed records still grant
+no retry or recovery authority.
 
 ## Verification boundary
 

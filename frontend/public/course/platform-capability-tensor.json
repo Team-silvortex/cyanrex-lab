@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
   "snapshot": {
-    "date": "2026-10-07",
-    "source_version": "0.5.3",
+    "date": "2026-10-08",
+    "source_version": "0.5.4",
     "base_commit": "ecad0ecc74bff161e4a6ad2cc12b0baa60a0548b",
-    "scope": "Source review of 0.5.3, including missing-account login work, explicit 128-row expired-Session maintenance, source Session-expiry and registry retirement/audit read guards. Source pins, shared password admission/profile checks, OTP freshness and schema-2 atomic consumption remain prepared-only. Missing accounts take bounded synthetic verification; cleanup validates complete selected rows. Invalid stored times are rejected before driver decoding in these scoped paths; invalid non-null retirement cannot become an active binding. No driver-wide time guarantee, complete enumeration defense, global storage quotas or automatic maintenance is supplied. Includes C2-K/L/M/N content preparation and unmounted HTTP routing, plus C2-O strict whole-draft parsing, pure publication planning and supplied-content binding; C2-O itself performs no actual publication or browser connection. Historical evidence retains its original scope; no public issuer, live cutover, migration or deployment acceptance. Capability slices, not every function, endpoint or execution path. C2-P separately composes create-only Session publication and Task creation with caller-owned in-memory outcomes, not public/browser wiring or durable recovery. C2-Q separately observes one unconfirmed target through the original current Session without changing attempt state or proving the earlier write outcome. C2-R exports bounded metadata checkpoints and strictly parses caller-supplied reported progress; no save, journal, provenance, authorization, restored attempt or read-on-import. C2-S separately inspects one reported unconfirmed checkpoint target through explicit trusted workspace/current Session and an existing reader, without a surviving attempt. This does not make parsing perform I/O, restore C2-Q, prove original caller/body/storage incarnation or add confirmation, journal or retry. AI host integration adds teacher-only connection metadata and explicitly selected SDK tool-format helpers, without provider calls, secret storage, autonomous participants/delegation or generic Task browser saving. C2-O–S, AI host integration, boundary simplification and Monaco sanitizer fixes are included in 0.5.3; Unreleased wording in dated evidence records retains the original implementation stage, not the current release status.",
-    "verification": "Source and scoped recorded-evidence inventory, with separately dated content/Session PostgreSQL runs, password-work units, hash-profile/freshness regressions, pure OTP policy, atomic-consumption/schema SQL, missing-account worker boundaries, explicit Session cleanup, source-expiry and registry-time read cases. C2-O adds separately scoped pure import/binding, publication-value and shared-fixture execution, not database or publication evidence. Generating or validating this inventory does not execute its referenced tests or establish deployment acceptance or security certification; scores are reviewer judgments scoped to each coordinate. C2-P has separate default state/confirmation units and exact disposable PostgreSQL execution, not browser or deployment acceptance. C2-Q has separately dated seven default units, twelve exact disposable PostgreSQL observations and three common guards; none establish historical commit outcome, durable recovery or public/browser connection. C2-R has separately dated six internal units, fourteen default contract cases and three common guards for the strict metadata codec; this is unit-record evidence, not inherited C2-P/C2-Q database execution, persistence or restart recovery. C2-S has separately dated six default units, twelve exact disposable PostgreSQL inspection cases and three common guards for current-authority metadata comparison. Prior publication, observation and codec runs are not its execution evidence; source-handle reopening is not process-crash durability, authenticated checkpoint history or restored publication. AI profiles and SDK adapters have separately dated file/route, cancellation, unit, browser-fixture and synthetic-format execution; these are unit-record evidence, not real-provider or deployment acceptance."
+    "scope": "Source review of 0.5.4, including missing-account login work, explicit 128-row expired-Session maintenance, source Session-expiry and registry retirement/audit read guards. Source pins, shared password admission/profile checks, OTP freshness and schema-2 atomic consumption remain prepared-only. Missing accounts take bounded synthetic verification; cleanup validates complete selected rows. Invalid stored times are rejected before driver decoding in these scoped paths; invalid non-null retirement cannot become an active binding. No driver-wide time guarantee, complete enumeration defense, global storage quotas or automatic maintenance is supplied. Includes C2-K/L/M/N content preparation and unmounted HTTP routing, plus C2-O strict whole-draft parsing, pure publication planning and supplied-content binding; C2-O itself performs no actual publication or browser connection. Historical evidence retains its original scope; no public issuer, live cutover, migration or deployment acceptance. Capability slices, not every function, endpoint or execution path. C2-P separately composes create-only Session publication and Task creation with caller-owned in-memory outcomes, not public/browser wiring or durable recovery. C2-Q separately observes one unconfirmed target through the original current Session without changing attempt state or proving the earlier write outcome. C2-R exports bounded metadata checkpoints and strictly parses caller-supplied reported progress; no save, journal, provenance, authorization, restored attempt or read-on-import. C2-S separately inspects one reported unconfirmed checkpoint target through explicit trusted workspace/current Session and an existing reader, without a surviving attempt. This does not make parsing perform I/O, restore C2-Q, prove original caller/body/storage incarnation or add confirmation, journal or retry. AI host integration adds teacher-only connection metadata and explicitly selected SDK tool-format helpers, without provider calls, secret storage, autonomous participants/delegation or generic Task browser saving. C2-O–S, AI host integration, boundary simplification and Monaco sanitizer fixes are included in 0.5.3; Unreleased wording in dated evidence records retains the original implementation stage, not the current release status. 0.5.4 C2-T separately registers immutable Ready/zero-confirmed intent metadata under current Session authorization, binding exact owner/account generation in a separately installed journal (schemas 1 and 2) with a configured installation UUID. Reads may use a new Session with the same binding. Namespace names and current transaction pins do not prove original source/Task/Artifact incarnations; the old C2-P advance path does not require the journal. C2-T registration/read alone supplies no resource dispatch/commit proof, restored attempt or retry. 0.5.4 C2-U separately consumes a pristine surviving attempt into an explicit journaled wrapper. Fresh-only schema 2 confirms an Unknown ordinal/nonce before resource work; a reauthorized exact owner/account transaction couples the completion marker and Artifact or Task SQL, with complete prefix/pin verification before commit. This does not upgrade schema 1, require the old C2-P path to use a journal, restore attempts, permit retry or connect public/browser saving. 0.5.4 C2-V separately inspects schema-2 intent and recorded step metadata under current exact owner/account authorization. It exposes committed counts including the final Task and an optional Unknown target without nonces, resource/file reads, checkpoint mutation, restored attempts, retry, cleanup or public/browser access. 0.5.4 C2-W separately observes one recorded step's actual resource within the same source-owned authorized transaction as schema-2 journal capture. It retains first relation pins and rechecks the whole original intent/steps/nonces after the borrowed Artifact or current Task-content read, then fresh authorization and commit. Its body-free output separates recorded status from metadata agreement; C2-V remains journal-only. No new schema, business writes, receipt, restored attempt, retry, cleanup or public/browser connection. C2-T–W and the Next.js 15.5.27 dependency update are included in 0.5.4; dated evidence retains its original implementation-stage wording and scores.",
+    "verification": "Source and scoped recorded-evidence inventory, with separately dated content/Session PostgreSQL runs, password-work units, hash-profile/freshness regressions, pure OTP policy, atomic-consumption/schema SQL, missing-account worker boundaries, explicit Session cleanup, source-expiry and registry-time read cases. C2-O adds separately scoped pure import/binding, publication-value and shared-fixture execution, not database or publication evidence. Generating or validating this inventory does not execute its referenced tests or establish deployment acceptance or security certification; scores are reviewer judgments scoped to each coordinate. C2-P has separate default state/confirmation units and exact disposable PostgreSQL execution, not browser or deployment acceptance. C2-Q has separately dated seven default units, twelve exact disposable PostgreSQL observations and three common guards; none establish historical commit outcome, durable recovery or public/browser connection. C2-R has separately dated six internal units, fourteen default contract cases and three common guards for the strict metadata codec; this is unit-record evidence, not inherited C2-P/C2-Q database execution, persistence or restart recovery. C2-S has separately dated six default units, twelve exact disposable PostgreSQL inspection cases and three common guards for current-authority metadata comparison. Prior publication, observation and codec runs are not its execution evidence; source-handle reopening is not process-crash durability, authenticated checkpoint history or restored publication. AI profiles and SDK adapters have separately dated file/route, cancellation, unit, browser-fixture and synthetic-format execution; these are unit-record evidence, not real-provider or deployment acceptance. C2-T adds separately dated twelve exact disposable PostgreSQL registration/read cases and three common guards. Fresh-Session/account-generation coverage uses changed journal binding fields, not real account deletion/recreation. Those C2-T cases establish neither per-resource write-ahead ordering nor host crash durability, backup replay resistance, original storage incarnation or recovery. C2-U has separately dated fourteen exact disposable PostgreSQL dispatch cases and three common guards for explicit schema 2, prior Unknown reservation, bound identity and atomic resource/marker completion. These cases do not inherit C2-T execution or establish physical source continuity across A/B, original storage incarnations, imported recovery, safe retry or public/browser acceptance. C2-V has separately dated ten exact isolated PostgreSQL cases and three common guards. This verifies current-authority journal metadata reads, not resource probing or restored execution; earlier C2-T/U evidence is not inherited. Journal state is not a resource reread, recovered dispatch authority, original storage-incarnation proof or deployed-recovery acceptance. C2-W has separately dated twelve exact isolated PostgreSQL cases and three common guards, not inherited C2-V or dispatch execution. SQL concurrency verifies external journal-writer blocking across resource waits, not in-transaction mutation/OID fault injection; original snapshot reuse is source-guarded. Recorded status plus current metadata agreement is not original-body/commit provenance, rollback proof, recovered authority or deployment acceptance."
   },
   "axes": {
     "architecture": [
@@ -550,6 +550,34 @@
       "label": {
         "en": "Explicit checkpoint target inspection",
         "zh-CN": "检查点目标显式检查"
+      }
+    },
+    {
+      "id": "session-draft-intent",
+      "label": {
+        "en": "Immutable Session draft intent records",
+        "zh-CN": "不可变会话草稿意图记录"
+      }
+    },
+    {
+      "id": "session-draft-dispatch",
+      "label": {
+        "en": "Journaled Session draft publication",
+        "zh-CN": "日志化会话草稿发布"
+      }
+    },
+    {
+      "id": "session-draft-journal-inspection",
+      "label": {
+        "en": "Session draft journal inspection",
+        "zh-CN": "会话草稿日志检查"
+      }
+    },
+    {
+      "id": "session-draft-journal-observation",
+      "label": {
+        "en": "Journal-bound resource observation",
+        "zh-CN": "日志绑定资源观察"
       }
     }
   ],
@@ -1322,6 +1350,66 @@
         "scripts/test-session-task-draft-inspection.sh",
         "scripts/tests/sessionTaskDraftInspection.test.mjs"
       ]
+    },
+    {
+      "id": "impl-W19",
+      "sources": [
+        "engine/src/services/auth_service/durable_source/draft_publication/intent.rs",
+        "engine/src/services/draft_intent_journal/mod.rs",
+        "engine/src/services/draft_intent_journal/schema.rs",
+        "engine/src/services/draft_intent_journal/records.rs",
+        "engine/migrations/0016_collaboration_draft_intents.sql"
+      ],
+      "tests": [
+        "engine/tests/session_task_draft_intent_tdd.rs",
+        "engine/tests/session_task_draft_intent",
+        "scripts/test-session-task-draft-intent.sh",
+        "scripts/tests/sessionTaskDraftIntent.test.mjs"
+      ]
+    },
+    {
+      "id": "impl-W20",
+      "sources": [
+        "engine/src/services/auth_service/durable_source/draft_publication/dispatch.rs",
+        "engine/src/services/auth_service/durable_source/draft_publication/dispatch_transaction.rs",
+        "engine/src/services/draft_intent_journal/dispatch.rs",
+        "engine/src/services/draft_intent_journal/schema.rs",
+        "engine/migrations/0017_collaboration_draft_dispatch.sql"
+      ],
+      "tests": [
+        "engine/tests/session_task_draft_dispatch_tdd.rs",
+        "engine/tests/session_task_draft_dispatch",
+        "scripts/test-session-task-draft-dispatch.sh",
+        "scripts/tests/sessionTaskDraftDispatch.test.mjs"
+      ]
+    },
+    {
+      "id": "impl-W21",
+      "sources": [
+        "engine/src/services/auth_service/durable_source/draft_publication/journal_inspection.rs",
+        "engine/src/services/draft_intent_journal/inspection.rs"
+      ],
+      "tests": [
+        "engine/tests/session_task_draft_journal_inspection_tdd.rs",
+        "engine/tests/session_task_draft_journal_inspection",
+        "scripts/test-session-task-draft-journal-inspection.sh",
+        "scripts/tests/sessionTaskDraftJournalInspection.test.mjs"
+      ]
+    },
+    {
+      "id": "impl-W22",
+      "sources": [
+        "engine/src/services/auth_service/durable_source/draft_publication/journal_observation.rs",
+        "engine/src/services/draft_intent_journal/inspection.rs",
+        "engine/src/services/auth_service/durable_source/task_commands/content.rs",
+        "engine/src/services/auth_service/durable_source/draft_publication/inspection.rs"
+      ],
+      "tests": [
+        "engine/tests/session_task_draft_journal_observation_tdd.rs",
+        "engine/tests/session_task_draft_journal_observation",
+        "scripts/test-session-task-draft-journal-observation.sh",
+        "scripts/tests/sessionTaskDraftJournalObservation.test.mjs"
+      ]
     }
   ],
   "evidence": [
@@ -1560,6 +1648,34 @@
       "kind": "database-record",
       "reference": "docs/en/session-task-draft-inspection.md",
       "note": "Unreleased C2-S: six default units, twelve exact PostgreSQL 16/private-socket inspection cases and three common guards passed on 2026-10-07. Covers parsed records after attempt drop/source-handle reopening, fresh current Session versus unchanged C2-Q fingerprint rules, owner filtering, observable metadata/text shape, typed failures, missing/empty Task scope, exact lock expiry, cancellation and pending creators with unchanged checkpoint/business data. Reopening handles is not a process-crash durability test. No original Session identity, original-byte provenance, storage-incarnation proof, historical confirmation, save/load, journal, restored attempt, retry, public/browser or deployment acceptance. C2-R parsing remains pure and C2-Q still requires its surviving original attempt."
+    },
+    {
+      "id": "draft-intent",
+      "date": "2026-10-07",
+      "kind": "database-record",
+      "reference": "docs/en/session-task-draft-intent.md",
+      "note": "Unreleased C2-T: twelve exact disposable PostgreSQL cases and three common guards passed on 2026-10-07. Covers pristine original-attempt admission, immutable canonical Ready/zero-progress metadata, fresh-Session reads with the same exact owner/account generation, duplicate refusal, configured resource names without target tables, schema/installation and record faults, lock expiry, commit failure and cancellation. Account-generation evidence uses journal binding-field tampering plus fresh Sessions, not genuine account deletion/recreation. Namespace names and transaction pins do not establish original resource incarnation, privileged-admin tamper resistance, backup replay protection, write-ahead resource dispatch, historical commit proof, restored attempts, retry or browser/deployment acceptance."
+    },
+    {
+      "id": "draft-dispatch",
+      "date": "2026-10-08",
+      "kind": "database-record",
+      "reference": "docs/en/session-task-draft-dispatch.md",
+      "note": "Unreleased C2-U: fourteen exact disposable PostgreSQL cases and three common guards passed on 2026-10-08. Covers explicit fresh schema 2 and unchanged schema 1 admission, surviving consumed attempts, confirmed Unknown reservations before resource work, exact intent/owner/account/nonce/prefix checks, resource/marker commit coupling, lock expiry, cancellation and trigger/commit faults. Equivalent step-table replacement and a 34-row overflow are rejected within existing cases. Bound labels and transaction pins do not prove physical source continuity between A and B or original storage incarnations across restart. No imported restoration, automatic retry/cleanup, whole-draft transaction, backup/admin tamper resistance, public/browser or deployed-recovery acceptance. Default/full-gate and adjacent-suite evidence remains separate."
+    },
+    {
+      "id": "draft-journal-inspection",
+      "date": "2026-10-08",
+      "kind": "database-record",
+      "reference": "docs/en/session-task-draft-journal-inspection.md",
+      "note": "Unreleased C2-V: ten exact isolated PostgreSQL cases and three common guards passed on 2026-10-08. Covers schema-2-only inspection, exact current owner/account and trusted routes, complete committed prefixes with optional final Unknown, final Task counting including empty payloads, source-owned borrowed transactions, schema/pin faults, bounded rows, wait expiry and cancellation. Account-generation checks tamper stored bindings, not actual account deletion/recreation. Synthetic 33-step acceptance and 34-row refusal are not 33 real resource writes; duplicate rows behind invalid uniqueness fail schema admission, not a claimed decoder-branch test. No resource/file probe, nonce output, checkpoint mutation, restored wrapper, receipt, retry, cleanup, backup/admin or original storage-incarnation proof, public/browser connection. Full-gate and adjacent evidence remains separate."
+    },
+    {
+      "id": "draft-journal-observation",
+      "date": "2026-10-08",
+      "kind": "database-record",
+      "reference": "docs/en/session-task-draft-journal-observation.md",
+      "note": "Unreleased C2-W: twelve exact isolated PostgreSQL cases and three new common guards passed on 2026-10-08. Covers recorded-ordinal admission, exact historical Artifact versus current Task reads, metadata outcomes, typed blob failures, missing versus existing-empty Task, fresh authority, resource-wait expiry/cancellation and external journal metadata/nonce/DDL writers blocked by the original locks. This concurrency evidence is not mutation or OID replacement inside the read transaction; first-snapshot/full-prefix reuse is source-guarded alongside normal read execution. Fresh Sessions are seeded fixtures, not public issuance/OTP login; account-generation refusal changes a stored binding, not real account recreation. The initial old-revision setup failure was fixture-only kind correction, not a production rule change. Body-free output reads files but grants no receipt, original-body/provenance proof, restored attempt, retry/cleanup or public/browser recovery. Full-gate and adjacent execution remain separate."
     }
   ],
   "cells": [
@@ -2287,6 +2403,86 @@
       }
     },
     {
+      "id": "W19",
+      "architecture": "work",
+      "function": "session-draft-intent",
+      "implementation": "impl-W19",
+      "state": "prepared",
+      "scores": {
+        "D": 3,
+        "C": 1,
+        "V": 3,
+        "O": 1
+      },
+      "evidence": [
+        "draft-intent"
+      ],
+      "gap": {
+        "en": "Independent intent registration/read does not dispatch resources or gate old advance; W20 separately supplies a live journaled wrapper. No original storage-incarnation or dispatch/commit proof, restored attempt, retry, automatic installation or public/browser connection in this record layer.",
+        "zh-CN": "独立意图登记/读取不派发资源或约束旧 advance，W20 另提供存活日志化包装器。本记录层不证明原存储代次或派发/提交，无尝试复活、重试、自动安装或公共/浏览器连接。"
+      }
+    },
+    {
+      "id": "W20",
+      "architecture": "work",
+      "function": "session-draft-dispatch",
+      "implementation": "impl-W20",
+      "state": "prepared",
+      "scores": {
+        "D": 3,
+        "C": 1,
+        "V": 3,
+        "O": 1
+      },
+      "evidence": [
+        "draft-dispatch"
+      ],
+      "gap": {
+        "en": "Opt-in surviving wrapper only; original C2-P remains unjournaled. No schema 1 migration, whole-draft transaction, restored attempt, automatic retry/cleanup, original storage-incarnation or backup-replay proof, public/browser connection or deployment acceptance.",
+        "zh-CN": "仅显式存活包装器；原 C2-P 仍未日志化。无 Schema 1 迁移、整份草稿事务、尝试复活、自动重试/清理、原存储代次或备份防回放证明、公共/浏览器连接或部署验收。"
+      }
+    },
+    {
+      "id": "W21",
+      "architecture": "work",
+      "function": "session-draft-journal-inspection",
+      "implementation": "impl-W21",
+      "state": "prepared",
+      "scores": {
+        "D": 3,
+        "C": 1,
+        "V": 3,
+        "O": 1
+      },
+      "evidence": [
+        "draft-journal-inspection"
+      ],
+      "gap": {
+        "en": "Internal current-Session metadata read only; no resource/file verification or nonce output. Neither recorded progress nor absence restores an attempt, proves original publication or rollback, or permits retry/adoption/cleanup. No new schema, public/browser path or deployment recovery.",
+        "zh-CN": "仅内部当前会话元数据读取，不验证资源/文件、不输出 nonce。记录进度或缺失都不恢复尝试、不证明原发布或回滚，也不授权重试/收编/清理。无新 Schema、公共/浏览器路径或部署恢复。"
+      }
+    },
+    {
+      "id": "W22",
+      "architecture": "work",
+      "function": "session-draft-journal-observation",
+      "implementation": "impl-W22",
+      "state": "prepared",
+      "scores": {
+        "D": 3,
+        "C": 1,
+        "V": 3,
+        "O": 1
+      },
+      "evidence": [
+        "draft-journal-observation"
+      ],
+      "gap": {
+        "en": "Internal recorded-target observation with real resource/file reads but body-free output. Recorded status and current metadata agreement are not receipts, original publication/body/storage-incarnation proof or recovery authority. No business writes, nonce exposure, restored attempt, retry/cleanup, public/browser path or deployment acceptance.",
+        "zh-CN": "仅内部已记录目标观察，实际读取资源/文件但不返回正文。记录状态与当前元数据相符不是回执、原发布/正文/存储代次证明或恢复权限。无业务写入、nonce 输出、尝试复活、重试/清理、公共/浏览器路径或部署验收。"
+      }
+    },
+    {
       "id": "D01",
       "architecture": "domain",
       "function": "domain-catalog",
@@ -2622,8 +2818,8 @@
         "target"
       ],
       "gap": {
-        "en": "W10-W18 provide internal contracts, publication, original-attempt observation, checkpoint data and explicit current-authority inspection. Secure issuance/installation, public dispatch, durable journal/recovery identity and browser save/read/conflict handling remain absent.",
-        "zh-CN": "W10-W18 提供内部契约、发布、原尝试观察、检查点数据及显式当前授权检查；仍缺安全签发/安装、公共派发、持久日志/恢复身份及浏览器保存/读取/冲突处理。"
+        "en": "W10-W20 provide internal content, inspection, intents and an explicit live journaled wrapper with per-resource write-ahead/bound-identity gates. Restart/recovery rules, secure issuance/installation, public dispatch and browser save/read/conflict handling remain absent.",
+        "zh-CN": "W10-W20 提供内部内容、检查、意图及具有逐资源写前/绑定身份守卫的显式存活包装器。仍缺重启/恢复规则、安全签发/安装、公共派发及浏览器保存/读取/冲突处理。"
       }
     },
     {
@@ -3753,6 +3949,166 @@
       "boundary": {
         "en": "One current Task-content transaction validates current references and compares the full manifest/profile/lengths, not a separate historical-prefix audit. Missing Task skips Artifact namespace; existing empty Task does not. Current agreement never proves rollback, original storage incarnation or retry safety.",
         "zh-CN": "一次当前 Task 内容事务校验当前引用并比较完整清单/创建形式/长度，不另审历史前缀；缺席 Task 跳过 Artifact 命名空间，已存在空 Task 不跳过。当前一致不证明回滚、原存储代次或重试安全。"
+      }
+    },
+    {
+      "id": "e96",
+      "from": "W15",
+      "to": "W19",
+      "state": "internal",
+      "boundary": {
+        "en": "Only a real Ready/zero-confirmed attempt and its original token can explicitly register intent. The immutable record does not gate old advance, adopt a duplicate, restore the attempt or confirm resource dispatch.",
+        "zh-CN": "仅真实 Ready/零确认尝试及原 token 可显式登记意图；不可变记录不约束旧 advance，不收编重复记录、不复活尝试，也不确认资源派发。"
+      }
+    },
+    {
+      "id": "e97",
+      "from": "W19",
+      "to": "I04",
+      "state": "internal",
+      "boundary": {
+        "en": "The same transaction checks current Session/account/audited membership and derives owner plus exact account generation. Record reads may use a fresh Session with the same binding; current source/registry/journal pins and configured namespace names do not prove original Task/Artifact incarnations.",
+        "zh-CN": "同一事务校验当前 Session/账号/经审计成员，并推导所有者及精确账号代次；相同绑定的新 Session 可读。当前认证源/登记/日志身份固定及配置名称不证明原 Task/Artifact 代次。"
+      }
+    },
+    {
+      "id": "e98",
+      "from": "W19",
+      "to": "W17",
+      "state": "internal",
+      "boundary": {
+        "en": "Reuse the strict codec for canonical Ready/zero-progress metadata within 64 KiB, without text or authentication material. A parsed checkpoint remains caller data and cannot by itself register intent, select storage, restore progress or authorize retry.",
+        "zh-CN": "复用严格 codec 保存 64 KiB 内的规范 Ready/零进度元数据，不含正文或认证材料。解析检查点仍是调用者数据，不能单独登记意图、选择存储、恢复进度或授权重试。"
+      }
+    },
+    {
+      "id": "e99",
+      "from": "W15",
+      "to": "W20",
+      "state": "internal",
+      "boundary": {
+        "en": "Purely consume a pristine Ready/zero-confirmed original attempt and owned trusted workspace; no Clone, unwrap or imported reconstruction. Conversion does not prove registration, and the original API is not automatically gated.",
+        "zh-CN": "纯操作消耗初始 Ready/零确认原尝试及拥有的受信任工作区；无 Clone、unwrap 或导入重建。转换不证明登记，原 API 不被自动约束。"
+      }
+    },
+    {
+      "id": "e100",
+      "from": "W20",
+      "to": "W19",
+      "state": "internal",
+      "boundary": {
+        "en": "Require the exact immutable intent in fresh schema 2; separately confirm an Unknown ordinal/nonce before resource work. Inside B, set the pending completion marker before business validation and finally read-check the full intent/prefix/pins; no duplicate adoption or stored-record recovery.",
+        "zh-CN": "在全新 Schema 2 要求精确不可变意图；资源操作前先单独确认 Unknown 序号/nonce。B 内在业务校验前更新未提交完成标记，末尾只读复验完整意图/前缀/身份；不收编重复记录或从记录恢复。"
+      }
+    },
+    {
+      "id": "e101",
+      "from": "W20",
+      "to": "I04",
+      "state": "internal",
+      "boundary": {
+        "en": "A and B independently check the original current Session and exact intent-bound owner/account generation; a private permit exists only after A COMMIT and transfers no detached authority. Fresh authorization precedes each commit.",
+        "zh-CN": "A/B 独立检查原当前 Session 及意图绑定的精确所有者/账号代次；私有许可仅在 A COMMIT 后产生，不转移脱离事务的权限。每次提交前复查新鲜授权。"
+      }
+    },
+    {
+      "id": "e102",
+      "from": "W20",
+      "to": "W05",
+      "state": "internal",
+      "boundary": {
+        "en": "One borrowed Artifact create transaction shares its SQL commit with the exact step marker, after bound-identity admission and before final read-only journal checks. Files remain nontransactional; errors or unknown acknowledgement permit neither cleanup nor retry.",
+        "zh-CN": "一次借用事务的 Artifact 创建在绑定身份准入后、最终只读日志检查前，与准确步骤标记共同提交 SQL。文件仍不具事务性；错误或未知回执都不授权清理或重试。"
+      }
+    },
+    {
+      "id": "e103",
+      "from": "W20",
+      "to": "W12",
+      "state": "internal",
+      "boundary": {
+        "en": "Reuse C2-M create-in-transaction text/reference validation, then commit the Task/manifest/outbox and step marker together. Earlier Artifacts remain separate commits; loss of the live wrapper is not restart recovery or whole-draft rollback.",
+        "zh-CN": "复用 C2-M 同事务创建的文本/引用校验，再共同提交 Task/清单/outbox 与步骤标记；先前 Artifact 仍为独立提交。丢失存活包装器不产生重启恢复或整份草稿回滚。"
+      }
+    },
+    {
+      "id": "e104",
+      "from": "W20",
+      "to": "W21",
+      "state": "internal",
+      "boundary": {
+        "en": "Schema-2 step records produced by the opt-in wrapper can be separately inspected. This is a data/read edge, not an automatic call, resource reread, returned receipt or way to resume, adopt or retry the wrapper.",
+        "zh-CN": "显式包装器产生的 Schema 2 步骤记录可被单独检查。这是数据/读取边，不是自动调用、资源复读、回执或继续、收编、重试包装器的入口。"
+      }
+    },
+    {
+      "id": "e105",
+      "from": "W21",
+      "to": "W19",
+      "state": "internal",
+      "boundary": {
+        "en": "Read the bound immutable intent and complete schema-2 step prefix, then recheck exact records and pinned relations. Keep its checkpoint Ready/zero-progress and hide nonces; no Task/Artifact/file lookup or journal repair.",
+        "zh-CN": "读取绑定的不可变意图和完整 Schema 2 步骤前缀，再复验精确记录及固定关系身份；检查点保持 Ready/零进度，不暴露 nonce，不查询 Task/Artifact/文件或修复日志。"
+      }
+    },
+    {
+      "id": "e106",
+      "from": "W21",
+      "to": "I04",
+      "state": "internal",
+      "boundary": {
+        "en": "Current Session authorization derives the exact owner/account generation and is refreshed before commit; a newly issued Session may read only the same binding. Filtered absence grants no rollback, dispatch or recovery authority.",
+        "zh-CN": "当前 Session 授权推导精确所有者/账号代次，并在提交前重新检查；新 Session 只能读取相同绑定。过滤后的缺失不授予回滚、派发或恢复权限。"
+      }
+    },
+    {
+      "id": "e107",
+      "from": "W22",
+      "to": "W21",
+      "state": "internal",
+      "boundary": {
+        "en": "Share private schema-2 journal capture/validation mechanics, not the public C2-V method or its returned inspection. Preserve the first relation pins across resource reading; C2-V remains journal-only and does not invoke W22.",
+        "zh-CN": "共用私有 Schema 2 日志捕获/校验机制，不调用 C2-V 公共方法或使用其返回检查结果；资源读取前后保留首次关系身份。C2-V 仍只读日志，不调用 W22。"
+      }
+    },
+    {
+      "id": "e108",
+      "from": "W22",
+      "to": "W19",
+      "state": "internal",
+      "boundary": {
+        "en": "Use the bound canonical Ready/zero-progress intent and whole legal step prefix to select a recorded ordinal. Recheck the original record, all steps/nonces and first pins after the resource read; no intent/step repair, adoption or nonce output.",
+        "zh-CN": "用绑定的规范 Ready/零进度意图和完整合法步骤前缀选择已记录序号；资源读取后复核原记录、全部步骤/nonce 和首次身份。不修复/收编意图或步骤，也不输出 nonce。"
+      }
+    },
+    {
+      "id": "e109",
+      "from": "W22",
+      "to": "I04",
+      "state": "internal",
+      "boundary": {
+        "en": "One source-owned transaction derives the exact current owner/account generation, checks trusted routing and refreshes authority before commit. None and NoRecordedStep also wait for final authorization/commit; no detached permission transfer or recovered dispatch authority.",
+        "zh-CN": "同一来源层事务推导当前精确所有者/账号代次，检查可信路由并在提交前复验权限；None 和 NoRecordedStep 也须末尾授权/提交。不转移脱离事务的权限，不恢复派发权。"
+      }
+    },
+    {
+      "id": "e110",
+      "from": "W22",
+      "to": "W05",
+      "state": "internal",
+      "boundary": {
+        "en": "Borrow the same transaction to read the allocated exact Artifact revision, not a later head. Validate real bytes and reuse metadata comparison; typed storage/blob errors are not NotVisible. Body-free output still has file I/O and supplies no receipt or retry permission.",
+        "zh-CN": "借用同一事务读取已分配的精确 Artifact 修订，不替换为新 head；验证实际字节并复用元数据比较，类型化存储/blob 错误不变为 NotVisible。不返回正文仍有文件 I/O，不提供回执或重试权限。"
+      }
+    },
+    {
+      "id": "e111",
+      "from": "W22",
+      "to": "W12",
+      "state": "internal",
+      "boundary": {
+        "en": "Reuse C2-M reading within the journal transaction to validate the current Task and all referenced text. A missing Task still skips the Artifact namespace; a valid later edit may differ. Recheck the original journal after reading; no business write, whole-workspace audit or recovery.",
+        "zh-CN": "在日志事务内复用 C2-M 读取，验证当前 Task 及全部引用文本；Task 缺失仍跳过 Artifact 命名空间，后续合法编辑可产生差异。读取后复验原日志，不写业务、不审计全工作区或恢复尝试。"
       }
     }
   ],

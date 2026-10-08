@@ -1,8 +1,8 @@
 # Current project testing guide
 
-Reviewed against **0.5.3 on 2026-10-07**, including AI profile/SDK adapters, C2-O–S draft preparation,
-sanitizer hardening and architecture simplification, alongside earlier login-denial, Session-cleanup,
-Session/registry timestamp guards and the standalone content HTTP adapter. This guide explains what to run for each module and boundary, what each layer
+Reviewed against **0.5.4 on 2026-10-08**, including C2-T–W intent, dispatch and inspection boundaries,
+the Next.js 15.5.27 floor, and earlier AI adapters, draft preparation, sanitizer hardening,
+authentication guards and the standalone content HTTP adapter. This guide explains what to run for each module and boundary, what each layer
 proves, and how to avoid using live data. It is a test plan and source inventory, not a new test run.
 Use the [platform network](platform-network.md) to identify connected and unconnected product paths.
 The [capability tensor](capability-maturity.md) links each implementation slice to test sources and
@@ -64,6 +64,10 @@ compilation; consult its explicit lists rather than assuming `cargo test` covers
 | Unconfirmed draft target observation | Rust `session_task_draft_observation_tdd`, `scripts/test-session-task-draft-observation.sh` | Original Session/state admission, exact read-only comparisons, typed errors, unchanged attempt, current Task bytes versus historical prefix and missing-Task scope; no rollback proof or resumption |
 | Draft metadata checkpoints | Default Rust `draft_publication::tests::checkpoint`, `session_task_draft_checkpoint_tdd`, `sessionTaskDraftCheckpoint` common guards | Strict bounded metadata codec, ordered allocations/lengths, state/count relations and round trips; imported progress is data, not authorization, provenance, persistence or a restored attempt |
 | Explicit checkpoint target inspection | Default `draft_publication::tests::inspection`, `session_task_draft_inspection_tdd`, `scripts/test-session-task-draft-inspection.sh`, `sessionTaskDraftInspection` common guards | Explicit scope/current Session, one existing reader, exact metadata/text checks, typed faults, missing/empty Task boundaries and unchanged data; no original identity/body provenance, journal or restoration |
+| Immutable Session draft intent | `session_task_draft_intent_tdd`, `scripts/test-session-task-draft-intent.sh`, `sessionTaskDraftIntent` common guards | Real Ready/zero-progress admission, canonical bounded metadata, duplicate conflicts, exact owner/account generation, current source/registry/journal pins and failure outcomes; no resource dispatch, restored attempt or write-ahead execution |
+| Journaled Session draft dispatch | `session_task_draft_dispatch_tdd`, `scripts/test-session-task-draft-dispatch.sh`, `sessionTaskDraftDispatch` common guards | Explicit schema 2, consumed pristine attempt, acknowledged Unknown reservation, exact owner/account/nonce gates, resource/marker atomicity and complete prefix/pin checks; no restart/retry or public/browser acceptance |
+| Session draft journal inspection | `session_task_draft_journal_inspection_tdd`, `scripts/test-session-task-draft-journal-inspection.sh`, `sessionTaskDraftJournalInspection` common guards | Schema 2 only, current exact owner/account, complete committed prefix plus optional Unknown, final Task count, pins/fresh authority and typed failures; no resource/file read or recovery |
+| Journal step resource observation | `session_task_draft_journal_observation_tdd`, `scripts/test-session-task-draft-journal-observation.sh`, `sessionTaskDraftJournalObservation` common guards | Ordinal admission, same-transaction exact resource reads, original full journal/nonces/first pins after the read, final fresh authority and body-free result; no business writes, receipt or recovery |
 | Separate content storage | Rust `task_content_store_tdd`, `scripts/test-task-content-storage.sh` | Schema 2/3 isolation, complete metadata/outbox atomicity, revision conflicts and storage faults; not a Session content or browser adapter |
 | Session task content | Rust `session_task_content_tdd`, `scripts/test-session-task-content.sh` | Current authorization, old/new exact text, metadata-only edits, removal, namespace pins and post-write checks on one transaction; no public/browser acceptance |
 | UI navigation and safety | `test:ui-permissions`, layout/action/account/runtime/browser suites | Target-bound confirmations, duplicate actions, route changes, keyboard access, keeping unsaved drafts |
@@ -150,6 +154,37 @@ calling C2-Q after restart; storage and recovery require separate future tests.
 entry point. It supplies current Session authority rather than recreating C2-Q's original attempt.
 Select its exact database cases separately from the C2-R codec and C2-Q observation suites; metadata
 agreement must never be counted as historical confirmation, original-body comparison or safe retry.
+
+0.5.4 C2-T uses `scripts/test-session-task-draft-intent.sh` to select registration/read cases
+from `session_task_draft_intent_tdd` on an explicitly installed disposable journal. Keep its fresh
+schema/installation-ID, exact account-generation, duplicate/conflict and transaction-fault checks
+separate from C2-P writes. Source/registry/journal validation does not test original Task/Artifact
+incarnations. A confirmed record is not a dispatched resource or proof of durable-before-dispatch;
+database COMMIT settings do not substitute for host recovery or backup-replay tests. Dated execution
+results belong in [project status](project-status.md), not the earlier runner totals above.
+
+0.5.4 C2-U uses `scripts/test-session-task-draft-dispatch.sh` with
+`session_task_draft_dispatch_tdd`. Check explicit schema 2 admission without upgrading schema 1,
+confirmed A-before-B ordering, authorization changes, exact nonces/prefixes, marker triggers before
+business validation and final read-only journal checks. Resource SQL and its marker must share B's
+commit; an uncertain acknowledgement must not become rollback proof or retry permission. Existing
+C2-T registration/read cases remain separate and do not establish this dispatch behavior.
+
+0.5.4 C2-V uses `scripts/test-session-task-draft-journal-inspection.sh` with
+`session_task_draft_journal_inspection_tdd` for ten selected SQL cases; two default tests and three
+common guards are separate. Dated execution results are recorded in [project status](project-status.md). Check legal
+prefixes, final Task counting even for an empty payload, exact owner/account visibility, schema/pin
+faults, wait expiry and cancellation without resource or file access. Missing records do not prove
+rollback, and recorded progress cannot restore a wrapper or permit retry. C2-T/U evidence stays separate.
+
+0.5.4 C2-W selects twelve SQL cases through `scripts/test-session-task-draft-journal-observation.sh`
+and `session_task_draft_journal_observation_tdd`, with two default cases and three common guards.
+Dated execution is recorded in [project status](project-status.md). Check pure ordinal refusal, missing
+intent versus unrecorded step versus invisible resource, old exact Artifact revisions, edited/current
+Task contents, typed blob failures and the original complete journal/pin recheck after resource access.
+Body-free output still reads files; waiting/cancellation must not grant receipts, mutation or retry.
+External-writer blocking does not test mutation inside the read transaction; first-snapshot reuse is source-guarded.
+C2-V remains resource-free, and its prior execution does not verify this separate read path.
 
 Legacy auth/events/scripts/learning and generic identity/source/lifecycle/provisioning cases have
 separate explicit lists in CI. The runner inventory is guarded by

@@ -1,6 +1,14 @@
 # Project Status
 
-Snapshot date: **2026-10-07**. Source version: **0.5.3**, including C2-O–S draft preparation, teacher-managed AI profiles and SDK tool adapters, internal architecture simplification and DOMPurify/Monaco hardening. Earlier prepared-authentication protections remain in place.
+Snapshot date: **2026-10-08**. Source version: **0.5.4**, including C2-T–W internal intent records, journaled dispatch and separate journal/resource inspection, plus the Next.js 15.5.27 dependency update. Earlier draft preparation, AI host adapters and authentication protections remain in place.
+
+0.5.4 C2-T adds separate immutable intent registration and authorized reading. C2-U adds an
+explicit live wrapper with per-resource write-ahead steps and shared resource/marker commits;
+the original C2-P path remains independent, and no stopped-attempt recovery or browser save is connected.
+0.5.4 C2-V adds separate current-Session inspection of schema-2 journal metadata, not resource
+verification, recovered execution authority or retry permission.
+0.5.4 C2-W separately observes one recorded resource under the same journal/auth transaction;
+recorded status and body-free metadata agreement remain distinct from receipts or recovery.
 
 Cyanrex is becoming a domain-neutral collaboration platform, with eBPF teaching retained as its first
 domain rather than the definition of all work. The transition has produced a durable collaboration
@@ -23,6 +31,10 @@ dated implementation and verification details are preserved in [Development Hist
 | 0.5.3 · C2-Q preparation | Explicit current-Session read of an existing attempt's unconfirmed target, with body-free comparison | Observation only: no historical confirmation, rollback proof, state recovery, retry, public route or browser connection |
 | 0.5.3 · C2-R preparation | Strict bounded export/parse of allocated targets and reported progress as metadata | Data only: no save, authenticated provenance, durable journal, restored attempt, read-on-import or retry |
 | 0.5.3 · C2-S preparation | Explicit one-target checkpoint inspection through a supplied trusted workspace and current Session | Current metadata only: no original-caller/byte provenance, storage-incarnation proof, journal, restored attempt, retry or public/browser connection |
+| 0.5.4 · C2-T preparation | Immutable Ready/zero-progress intent registration and reading, bound to an exact owner and account generation; compatible with separate journal schemas 1 and 2 | Registration/read itself does not dispatch, restore an attempt, authorize retry, install automatically or connect a public/browser API |
+| 0.5.4 · C2-U preparation | Consumed live wrapper; confirmed Unknown reservation followed by exact-identity resource/marker commit in a fresh-only schema 2 journal | No whole-draft transaction, schema 1 migration, unjournaled-path enforcement, restart recovery, automatic retry or public/browser connection |
+| 0.5.4 · C2-V preparation | Current-Session read of the schema-2 intent and complete recorded step prefix, with exact owner/account filtering | No resource/file read, nonce exposure, checkpoint mutation, recovered wrapper, retry, cleanup or public/browser connection |
+| 0.5.4 · C2-W preparation | One recorded resource read plus original full journal/pin recheck and fresh authorization in one transaction | Body-free output still reads files; no receipt, business writes, resumed attempt, retry, cleanup or public/browser connection |
 | 0.5.1 · Session source | Login, validation and logout pin source namespace/table identity, including the password-worker gap and post-write checks | Source-only hardening, not a public issuer, uniform redesign of all auth primitives, installation or live cutover |
 | 0.5.1 · Password work | Shared prepared registration/login/rotation/bootstrap gate, four dispatched jobs and twenty total admissions retained for the job lifetime | Job-count limits only; not single-job PHC cost, legacy runtime or distributed limits, public Session issuance or live cutover |
 | 0.5.1 · Password profile | Pre-admission PHC checks and explicit existing Argon2id cost/profile for prepared reads and writers | No imported profile adoption, implicit Session revocation, legacy change, process RSS bound or public issuer |
@@ -35,7 +47,7 @@ dated implementation and verification details are preserved in [Development Hist
 | Architecture targets | Shared collaboration, generic Run orchestration, AI delegation, reliable business-event delivery, isolated workers and ecosystem integration | A proposed type, diagram or milestone is not an implemented user workflow |
 
 Product version, API compatibility baseline and individual storage schema versions are independent.
-The source version is 0.5.3 and the public API compatibility baseline remains 0.3.0. The current Task
+The source version is 0.5.4 and the public API compatibility baseline remains 0.3.0. The current Task
 store requires schema 2 in a fresh dedicated namespace and rejects schema 1 without migration. Neither
 the normal startup path nor this source release upgrades a database.
 The content store included in 0.5.0 separately requires schema 3; the schema 2 handle and existing Session
@@ -127,6 +139,30 @@ target under supplied current authority, without needing the original attempt. M
 not original-byte or historical-caller proof; parsing still does no I/O, and C2-Q's original Session
 requirement remains unchanged. No confirmation, journal, state restoration or retry follows.
 
+0.5.4 [C2-T](session-task-draft-intent.md) separately registers a real unstarted attempt's
+canonical metadata under current Session authorization. A new Session may read the record only for
+the same owner and exact account generation. The configured journal installation ID and namespace
+names do not prove original resource incarnations or publication history. C2-P `advance` still needs
+no journal: registration alone is not durable-before-dispatch execution, recovery or retry permission.
+
+0.5.4 [C2-U](session-task-draft-dispatch.md) consumes that pristine attempt into a separate
+journaled wrapper. Each advance first confirms an Unknown reservation, then reauthorizes and couples
+the exact step marker with one Artifact or Task transaction. Only confirmed success advances memory;
+uncertain outcomes stop it. The still-owned wrapper can complete a multi-item draft through repeated
+successful steps, but intent/checkpoint reads cannot reconstruct it after drop or process loss.
+
+0.5.4 [C2-V](session-task-draft-journal-inspection.md) separately reports recorded committed
+steps, including the final Task step, and an optional Unknown target. A fresh Session must match the
+intent's exact owner/account binding. The reader verifies the full prefix and current transaction
+boundaries, not resource contents or publication history; absence is not rollback or retry evidence.
+Its validation is separate from the historical C2-T/U records below.
+
+0.5.4 [C2-W](session-task-draft-journal-observation.md) separately selects a recorded ordinal,
+reads its exact Artifact revision or current Task and referenced contents, then rechecks the original
+full journal and first pins before returning. Recorded Unknown/Committed and current metadata agreement
+are separate values, neither a receipt nor a recovery permit. Its execution evidence is independent;
+C2-V continues to read no resources or files.
+
 ## Security and compatibility retained during transition
 
 - Existing self-hosted teaching remains teacher-authoritative, including deployment management for
@@ -146,6 +182,166 @@ requirement remains unchanged. No confirmation, journal, state restoration or re
   review authority and policy execution must not be inferred from private records or frozen metadata.
 
 ## Verification recorded so far
+
+The C2-T–W changes and Next.js update are included in 0.5.4. The dated implementation records below
+retain their original 0.5.3 workspace version, Unreleased status, counts and failure history; those
+records are not a new 0.5.4 release gate or evidence of publication or deployment.
+
+### 0.5.4 version validation · 2026-10-08
+
+Version metadata, current documentation and generated course copies are synchronized at **0.5.4**.
+The fresh full local gate passed **599 default Rust, 174 common, 206 frontend and 42 SDK tests**;
+**611 ignored Rust cases** are not passes. Rust produced **58 successful result blocks** without
+compilation warnings. Frontend/SDK production dependency audits each reported zero vulnerabilities;
+the existing Node `MODULE_TYPELESS_PACKAGE_JSON` warnings remain.
+
+This version-only validation does not rerun opt-in PostgreSQL, actual browser, kernel, SSH/LAN,
+remote CI, Rust advisory or deployed restart/recovery acceptance. The separately dated C2-T–W
+implementation evidence below keeps its original version, counts and scope. Version publication
+does not mount prepared APIs, migrate a database or update a running deployment.
+
+### Unreleased C2-W journal step observation · 2026-10-08
+
+Source version remains **0.5.3**. **Two default Rust tests, twelve exact PostgreSQL cases and three new
+common guards passed** for the separate journal-bound resource observer. The twelve ignored SQL cases
+in the default target are not default passes; the final Rust runs emitted no compilation warnings.
+A real behavior test failed against the stub before the implementation passed.
+
+The first SQL runner reached six passes before the seventh case failed during fixture setup: it tried
+to revise an Artifact's kind, which the existing command correctly rejects as `InvalidInput`.
+The fixture now retains `cyanrex.task-text` while changing title/bytes to create a later head.
+That exact case passed, followed by a fresh complete **12/12** runner. This fixes test preparation,
+not production behavior, and neither relaxes the kind rule nor adds a distinct case.
+
+Coverage distinguishes missing/filtered intents, unrecorded ordinals and invisible resources; it
+checks exact historical Artifact revisions, current Task edits and all referenced contents, typed
+blob faults, missing versus existing-empty Tasks, final authorization, waiting and cancellation.
+Fresh Sessions are seeded fixtures, not a public issuer or real OTP-login test. Account-generation
+rejection changes a stored binding field, not an actual account deletion/recreation cycle.
+
+Concurrency checks show external journal metadata/nonce/DDL writers blocked during resource waiting;
+after reader cancellation the writer can proceed and a later read rejects the damaged record.
+This is not in-transaction DML-trigger or OID-replacement fault injection. First-snapshot/full-prefix
+reuse is constrained by source guards alongside normal read execution. The observer still performs
+no business write and returns no body, nonce, receipt, restored attempt or retry permission.
+
+All **61 adjacent exact PostgreSQL cases passed**: 25 C2-M content, 12 C2-S checkpoint inspection,
+10 C2-V journal inspection and 14 C2-U dispatch cases. Together with C2-W, this round covers
+**73 distinct SQL cases**; targeted reruns do not add distinct cases. The isolated PostgreSQL 16
+used a private Unix socket without TCP. Cleanup confirmed zero custom fixture schemas and zero other
+connections before stopping the server and removing approximately **185 MiB** of owned database data.
+
+The full quality gate exited successfully: **599 default Rust tests passed**, with **611 ignored**
+tests excluded from that count, across **58 successful result blocks**. **174 common, 206 frontend
+and 42 SDK tests passed**. Next.js **15.5.27** production build, frontend type checking, SDK build/type/package
+checks, generated contracts, API compatibility against **0.3.0**, course/version checks and tools passed.
+Fresh frontend and SDK production dependency audits each reported zero findings at every severity.
+Rust emitted no compilation warnings; the existing non-failing Node `MODULE_TYPELESS_PACKAGE_JSON`
+warnings remain.
+
+This round did not rerun actual browser, kernel, SSH/LAN, remote CI, Rust advisory audit or deployed
+restart/recovery acceptance. Source version remains **0.5.3**, with this work unreleased and not committed or pushed.
+
+### Unreleased C2-V journal inspection · 2026-10-08
+
+Source version remains **0.5.3**. **Two default Rust tests, ten exact PostgreSQL cases and three new
+common guards passed** for the independent current-Session journal reader. The ten ignored cases in
+the default target are not counted as default passes. Final Rust runs emitted no compilation warnings.
+A real behavior test first failed against the `UnsupportedSchema` stub, then passed with implementation.
+
+The first ten-case SQL run passed nine cases; its concurrency fixture failed while trying to corrupt
+an owned synthetic file installed with mode `0400`. Only that fault-injection fixture changed its file
+to `0600`; production permissions were unchanged. The exact case then passed, followed by a fresh
+complete **10/10** runner. The reruns are not extra distinct cases or a production permission fix.
+
+Coverage includes an empty plan's zero records versus its one final Task, a closed journal pool with
+the source-owned transaction, primary-key/nullability/scope metadata checks, invalid prefixes and
+plan-specific row bounds. Duplicate rows behind invalid uniqueness are rejected as `UnsupportedSchema`,
+not evidence of reaching a duplicate-row decoder branch. Synthetic rows test the 32-item/33-step limit
+and rejection of a 34th row; they are not 33 real resource writes. Account-generation tests alter the
+stored binding, not an actual account deletion/recreation cycle.
+
+Present and absent intent reads recheck expiry after waiting. Readers wait for B to commit or roll back;
+cancellation preserves business state, and damaged current resources do not trigger a resource/file
+probe. Results remain journal metadata, without nonces, restored authority or permission to retry.
+All **26 adjacent exact PostgreSQL cases passed**: fourteen C2-U dispatch and twelve C2-T intent
+cases, for **36 distinct SQL cases** in this round. Tests used an independent PostgreSQL 16 server
+on a private Unix socket with no TCP listener or deployment URL. No custom fixture schemas or other
+connections remained; the server was stopped and its roughly 133 MiB temporary data and remaining
+synthetic files removed. Diagnostic logs were retained; project data was not deleted.
+
+The fresh full local gate passed **597 default Rust, 171 common, 206 frontend and 42 SDK tests**.
+Rust produced 57 successful result blocks without compilation warnings; **599 ignored cases are not
+counted as default passes**. Next.js 15.5.27 production build/TypeScript, SDK build/type/package,
+generated contracts, compatibility against baseline 0.3.0, version metadata, course mirrors and tool
+fixtures passed. Fresh frontend and SDK production audits each reported zero findings. Existing Node
+module-type warnings remain. These results do not establish actual browser/kernel acceptance,
+remote CI, Rust advisory audit, host crash, backup replay or deployed recovery; those were not rerun.
+Source remains based on `fa15fe35c492eb1b61114c8430d67eb7936f11c4` plus uncommitted C2-T/U/V work.
+
+### Unreleased C2-U journaled dispatch · 2026-10-08
+
+The final fresh full local gate passed **595 default Rust, 168 common, 206 frontend and 42 SDK tests**.
+Rust produced 56 successful result blocks with no compiler warnings; **589 ignored cases are not
+counted as default-suite passes**. Next.js 15.5.27 production build/TypeScript, SDK build/type/package,
+generated contracts, compatibility against baseline 0.3.0, version metadata, course mirrors and tool
+fixtures passed. Fresh frontend and SDK production audits each reported zero findings.
+
+Source version remains **0.5.3**, based on `fa15fe35c492eb1b61114c8430d67eb7936f11c4` plus the
+uncommitted C2-T/U work. **Three new default Rust tests, fourteen exact PostgreSQL cases and three
+new common guards passed**. Real fresh-install and dispatch behavior Reds preceded the implementation.
+The consumed original attempt first confirms a unique Unknown reservation; a separately authorized
+transaction then verifies its exact binding and commits one resource's SQL with its marker. Existing
+C2-M policy is shared rather than bypassed. The original C2-P path remains independently callable.
+
+The new cases cover fresh schema 2 and unchanged schema 1 rejection, empty and Unicode drafts,
+exact owner/account/nonce/prefix checks, actual Session removal between A and B, wait expiry,
+trigger faults, deferred commit failure and cancellation in each phase. Post-resource intent/marker
+changes and equivalent step-table replacement roll back the business SQL; a 34-row overflow is
+rejected without truncation. A final targeted rerun also proved rejection when a resource trigger
+changes only a previous confirmed nonce. Account-generation tests mutate stored binding fields,
+not genuine account deletion/recreation. Definite B rollback retains A's Unknown and may retain files;
+an uncertain B COMMIT can already have committed its marker and is not rollback or retry evidence.
+
+All **84 adjacent exact PostgreSQL cases passed**: 25 C2-M, 11 standalone content HTTP, and 12 each
+from C2-P/Q/S/T, for **98 distinct SQL cases** including C2-U. These ran on a private PostgreSQL 16
+Unix socket with no TCP listener or deployment URL. No custom fixture schemas or other database
+connections remained; the server was stopped and its roughly 168 MiB temporary data removed.
+Diagnostic logs were retained; project data was not deleted. Reopened handles and controlled faults
+do not test host crash, backup replay, physical source continuity across A/B, or restart recovery.
+
+The first full gate stopped at a fresh Next.js 15.5.24 production audit: one moderate dependency
+finding covered GHSA-4jqv-mc3x-m676 and GHSA-mcj8-r9mp-w47p. The manifest and lock now select 15.5.27;
+three offline security checks passed after a real Red, including refusal to adopt the unsafe 16.0.0
+branch merely because its major version is higher. Historical 0.5.3 audit results remain unchanged;
+dependency patching does not update or prove exploitability of a running deployment.
+
+Separately, **four task-navigation browser cases passed** on real production Next.js 15.5.27 pages
+and Monaco using a fixture-only Engine URL: same-page draft preservation, expired-Session recheck,
+pending logout and fragment-preserving login redirects. Engine replies were mocked and unapproved
+network requests blocked; these are neither real server saving nor cache-poisoning exploit acceptance.
+The temporary loopback frontend was stopped. Remote CI, Rust advisory audit, deployed restart,
+backup replay, kernel, SSH and LAN acceptance were not rerun.
+
+### Unreleased C2-T intent registration/read boundaries · 2026-10-07
+
+Source version remains **0.5.3**, based on `fa15fe35c492eb1b61114c8430d67eb7936f11c4` plus this
+uncommitted slice. The fresh full local gate passed **592 default Rust, 165 common, 206 frontend and
+42 SDK tests**. **575 ignored Rust cases are not counted as passes**; no Rust compilation warnings
+were emitted. Next production build/TypeScript, SDK build/type/package checks, generated contracts,
+the 0.3.0 compatibility baseline, version metadata, course mirrors and tool fixtures passed. Frontend
+and SDK production audits each reported zero vulnerabilities.
+
+Separately, **48 exact PostgreSQL cases passed**: 12 new C2-T cases and the 12 cases in each existing
+C2-P, C2-Q and C2-S runner. The private disposable server had no TCP listener; deployment/database
+variables were cleared before selecting the explicit test URL. A real schema-damage Red preceded the
+fix. Checks cover registration/reopening, conflicts, current authorization and wait expiry, bounded
+canonical metadata, structural primary keys/columns, completed metadata-table replacement, synchronous
+commit settings, injected rollback and controlled cancellation. Account-generation rejection uses
+a changed journal binding plus a fresh Session, not actual account deletion/recreation. Reopening
+handles is not server restart or host crash recovery. These tests neither connect browser saving nor
+enforce write-ahead resource dispatch; unknown commit still does not authorize retry. No real browser,
+backup-replay, remote CI, Rust advisory audit, deployment, kernel, SSH or LAN acceptance was rerun.
 
 ### 0.5.3 source candidate checks · 2026-10-07
 
@@ -1045,10 +1241,11 @@ platform capacity or classroom isolation.
 The immediate mainline is to complete one private, non-teaching task-content workflow before adding
 generic execution or AI. The following order is proposed work, not an enabled feature:
 
-1. Define a durable-before-dispatch intent journal, retained-record trust and recovery identity before
-   exposing C2-P or allowing retry. C2-R remains data; C2-S adds explicit current-authority inspection,
-   not original-Session continuity, historical commit proof or a restored attempt. C2-Q's surviving
-   original-attempt contract is unchanged. Unknown steps stay stopped; absence permits neither retry nor deletion.
+1. Define uncertain-outcome handling and any authorized restart/recovery contract before public
+   dispatch or retry. C2-U provides per-resource write-ahead and bound-identity gates only through a
+   surviving wrapper; C2-P remains independently callable. Intent/checkpoint reads do not restore the
+   wrapper, prove original storage incarnations or authorize adoption. C2-Q/S observations still permit
+   neither retry nor deletion based on absence.
 2. Build reviewed Session issuance and an explicit authenticated installation/mounting path for the
    C2-N router, then public content publication. Preserve its Origin/request limits and conflict/outcome
    semantics; do not silently switch live authentication or migrate existing storage.

@@ -335,14 +335,21 @@ ssh -L 3000:127.0.0.1:3000 \
 
 ## 依赖扫描治理
 
-- 前端依赖下限为 Next.js 15.5.24、DOMPurify 3.4.16、sharp 0.35.5 和 source-map-js 1.2.2。
+- 前端依赖下限为 Next.js 15.5.27、DOMPurify 3.4.16、sharp 0.35.5 和 source-map-js 1.2.2。
+  2026-10-08 的 Unreleased 门禁在 Next.js 15.5.24 中发现一项中危依赖告警，涉及上游
+  [SSG/ISR 页面缓存投毒](https://github.com/vercel/next.js/security/advisories/GHSA-4jqv-mc3x-m676)和
+  [catch-all 路由缓存投毒](https://github.com/vercel/next.js/security/advisories/GHSA-mcj8-r9mp-w47p)
+  两份公告，因此将 Next.js 下限提升至已修复的 15.5.27，此修复收录于源码版本 0.5.4。
+  依赖告警和补丁不证明具体部署可被利用、
+  运行中的实例已更新，也不等于针对具体部署的漏洞利用回归验收通过。
   Next.js/sharp 下限保留上游的
   [Windows 服务端](https://github.com/vercel/next.js/security/advisories/GHSA-p293-qw3h-jr36)、
   [AVIF 图像优化](https://github.com/vercel/next.js/security/advisories/GHSA-2xp9-vwfh-vxw4) 和
   [sharp/libheif](https://github.com/lovell/sharp/security/advisories/GHSA-rgj7-g3m4-5g8c) 安全公告。
   sharp 更新还修复[捆绑 librsvg 问题](https://github.com/advisories/GHSA-wq5f-xc86-pv6w)，
   source-map-js 修复[索引映射放大问题](https://github.com/advisories/GHSA-68fv-2mgg-jv7q)。离线回归
-  要求 DOMPurify/sharp/source-map-js 的安全覆盖下限和每个锁定副本，包括跨平台 sharp 0.35.5/libvips 1.3.4；
+  要求受支持 Next.js 15.x 的安全下限、DOMPurify/sharp/source-map-js 的安全覆盖下限和每个锁定副本，
+  包括跨平台 sharp 0.35.5/libvips 1.3.4；
   联网审计仍是独立检查。
   需要重新构建并部署才能应用补丁，修改锁文件不会更新运行中的容器；自定义全局 libheif 也需至少
   1.23.2，npm 审计不代表宿主机动态库验收。

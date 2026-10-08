@@ -108,13 +108,43 @@ read times, so invisibility does not prove rollback or whole-workspace health.
 0.5.3 [C2-R](session-task-draft-checkpoint.md) adds a separate bounded metadata checkpoint codec.
 C2-P can export its allocated targets and reported progress without text or authentication material;
 parsing returns caller-supplied data, not an attempt, current authority or historical commit evidence.
-There is no save, durable intent journal, read-on-import, resumption or retry connection to C2-Q.
+The codec itself has no save, durable intent journal, read-on-import, resumption or retry connection to C2-Q.
 
 0.5.3 [C2-S](session-task-draft-inspection.md) separately accepts a parsed checkpoint, explicit
 trusted workspace and current Session for one existing Artifact or Task-content read. It compares
 current metadata, not original bytes or caller provenance, and needs no surviving attempt. Parsing
 still performs no read; C2-Q retains its original-attempt/fingerprint requirement. No result is adopted
 as confirmation, recovery or retry permission, and no journal or storage-incarnation proof is added.
+
+0.5.4 [C2-T](session-task-draft-intent.md) separately registers immutable intent metadata from
+a real Ready/zero-confirmed attempt. A current-Session transaction binds the exact owner and account
+generation in a fresh-only schema 1 journal with a configured installation UUID. Reading requires
+the same owner and account generation but may use a new Session; it returns no restored attempt.
+Source/registry/journal pins do not prove the original Task/Artifact storage incarnation, and neither
+operation queries those targets. Existing C2-P writes do not require this record; the explicit C2-U
+wrapper below separately supplies write-ahead steps and bound-identity gates.
+
+0.5.4 [C2-U](session-task-draft-dispatch.md) consumes a pristine attempt into a caller-owned
+journaled wrapper using an explicitly installed schema 2 journal; schema 1 is not upgraded. Each
+advance first confirms an Unknown step in transaction A, then transaction B reauthorizes the exact
+owner/account and nonce, updates the uncommitted marker before business validation, and creates one
+Artifact or Task. Final read-only intent/prefix/pin checks and fresh authorization precede the shared
+resource/marker COMMIT. Uncertainty stops the wrapper; dropping it does not create a restart or retry
+path. The existing unjournaled C2-P API and all public/browser boundaries remain separate.
+
+0.5.4 [C2-V](session-task-draft-journal-inspection.md) separately reads the schema-2 intent and
+complete step prefix through a current Session with the same exact owner/account generation. The
+source-owned transaction rechecks routing labels, pinned relations and fresh authority before returning
+recorded committed counts and an optional Unknown target. It reads no resource or file, exposes no
+nonce and does not mutate the Ready/zero-progress checkpoint. Missing or fully recorded results grant
+no rollback proof, restored wrapper, retry, cleanup or public/browser connection.
+
+0.5.4 [C2-W](session-task-draft-journal-observation.md) separately captures the same schema-2
+journal through shared private mechanics, then reads one recorded target in that source-owned
+transaction. The borrowed Artifact/C2-M reader checks actual content; final verification compares the
+whole original intent, steps/nonces and first journal pins before fresh authorization and COMMIT.
+It returns recorded status plus body-free metadata agreement, not a receipt or recovered authority.
+C2-V remains journal-only; no business DML, new schema, retry or public/browser connection is added.
 
 ### Teacher authority and personal use
 
@@ -180,7 +210,8 @@ The platform-specific source boundaries are more precise than the top-level dire
 | `engine/src/services/{task_store,artifact_store,review_store}/` | Explicit private work storage; direct APIs require a trusted caller, Session adapters provide authorization |
 | `engine/src/services/prepared_resource_sql.rs` | Private shared namespace, transaction setup and ordinary-table checks for those stores; not a repository or authorization service |
 | `engine/src/services/task_draft_import/` | Strict raw-draft parsing, publication values and supplied-content binding; no I/O, authority or save orchestration |
-| `engine/src/services/auth_service/durable_source/draft_publication/` | Create-only steps, original-attempt observation, a pure checkpoint codec and separate current-authority inspection; authorization/transactions stay in existing Artifact and C2-M commands |
+| `engine/src/services/auth_service/durable_source/draft_publication/` | Create-only steps, observation, checkpoint codec, inspection, intent registration/read and an opt-in journaled wrapper; resource/marker coupling stays inside source-owned Artifact/C2-M transactions |
+| `engine/src/services/draft_intent_journal/` | Immutable intents plus separately installed schema 2 step markers; bound-identity publication is an explicit wrapper, not recovery or a gate on the old API |
 | `frontend/src/features/tasks/` | Local draft ownership, payload revisions and import/export; not a durable Task store |
 | `frontend/src/features/editor/` | Controlled text models and local language services; no task policy or execution authority |
 | `frontend/src/transport/privateRequest.ts` | Shared credentialed fetch policy and browser waiting limits; feature modules retain response decoding and business confirmation |

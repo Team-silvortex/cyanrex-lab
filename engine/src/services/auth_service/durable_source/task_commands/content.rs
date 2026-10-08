@@ -1,4 +1,5 @@
 //! Current-Session schema-3 content commands, not a public route, upload or sharing authority.
+use super::super::private_work::PrivateWorkContext;
 use super::*;
 use crate::{
     models::collaboration::{
@@ -21,6 +22,10 @@ pub struct SessionTaskContentWorkspace {
 }
 
 impl SessionTaskContentWorkspace {
+    pub(crate) fn publication_namespace(&self) -> &str {
+        &self.namespace
+    }
+
     pub(crate) fn publication_scope(&self) -> WorkspaceRef {
         self.scope
     }
@@ -261,77 +266,125 @@ impl DurableAuthSource {
             let mut context = self
                 .begin_private_work(&mut tx, token, &workspace.namespace, workspace.scope)
                 .await?;
-            let owner = context.owner;
-            let reference = TaskRef {
-                workspace: workspace.scope,
-                task_id: id,
-            };
-            let store = TaskContentStore::new(self.pool.clone(), workspace.scope);
-            // Lock schema-3 metadata and the owned Task BEFORE inspecting any Artifact. This
-            // handle's helpers borrow the source transaction, never its own pool or a v2 handle.
-            let old = store.get_in_transaction(&mut tx, reference, owner).await?;
-            if matches!(&operation, ContentOperation::Read) && old.is_none() {
-                context.finish(self, &mut tx).await?;
-                tx.commit().await?;
-                return Ok(ContentPending::Read(None));
-            }
-            let checks = content_checks(old.as_ref(), &operation)?;
-            // Pin the Artifact namespace even for a named empty task or deleting the last item.
-            context
-                .select_target(&mut tx, &workspace.artifacts.namespace)
+            let pending = self
+                .execute_content_task(&mut tx, &mut context, workspace, id, operation)
                 .await?;
-            let read = matches!(&operation, ContentOperation::Read);
-            let contents = workspace
-                .verify_contents(&mut tx, owner, &checks, read)
-                .await?;
-            context.select_target(&mut tx, &workspace.namespace).await?;
-            let snapshot = match operation {
-                ContentOperation::Create(manifest) => {
-                    store
-                        .create_in_transaction(&mut tx, id, owner, manifest)
-                        .await?
-                }
-                ContentOperation::Read => old.ok_or(TaskStoreError::NotFound)?,
-                ContentOperation::Replace(revision, manifest) => {
-                    store
-                        .replace_in_transaction(&mut tx, reference, owner, revision, manifest)
-                        .await?
-                }
-                ContentOperation::Transition(revision, status) => {
-                    store
-                        .transition_in_transaction(&mut tx, reference, owner, revision, status)
-                        .await?
-                }
-            };
-            if !read {
-                // Recheck ALL old/new bytes after Task/outbox triggers, not just the new pins.
-                context
-                    .select_target(&mut tx, &workspace.artifacts.namespace)
-                    .await?;
-                workspace
-                    .verify_contents(&mut tx, owner, &checks, false)
-                    .await?;
-                context.select_target(&mut tx, &workspace.namespace).await?;
-            }
-            if store
-                .get_in_transaction(&mut tx, reference, owner)
-                .await?
-                .as_ref()
-                != Some(&snapshot)
-            {
-                return Err(TaskStoreError::InvalidRecord.into());
-            }
             // No retained bytes or metadata leave before fresh Session/membership and a confirmed
             // source-owned commit. Timeout/cancellation does not prove rollback or allow cleanup.
             context.finish(self, &mut tx).await?;
             tx.commit().await?;
-            Ok(if read {
-                ContentPending::Read(Some(SessionTaskContent { snapshot, contents }))
-            } else {
-                ContentPending::Snapshot(snapshot)
-            })
+            Ok(pending)
         })
         .await
         .map_err(|_| SessionTaskError::from(DurableAuthError::StorageUnavailable))?
+    }
+
+    /// Only the journaled dispatcher may borrow this policy; its guard and commit stay with it.
+    pub(in crate::services::auth_service::durable_source) async fn create_content_task_in_transaction(
+        &self,
+        tx: &mut Transaction<'_, Postgres>,
+        context: &mut PrivateWorkContext,
+        workspace: &SessionTaskContentWorkspace,
+        id: TaskId,
+        manifest: TaskContentManifest,
+    ) -> TaskResult<TaskContentSnapshot> {
+        workspace.check_manifest_scope(&manifest)?;
+        match self
+            .execute_content_task(
+                tx,
+                context,
+                workspace,
+                id,
+                ContentOperation::Create(manifest),
+            )
+            .await?
+        {
+            ContentPending::Snapshot(snapshot) => Ok(snapshot),
+            _ => Err(TaskStoreError::InvalidRecord.into()),
+        }
+    }
+
+    /// Internal borrowed read; the caller retains the original guard and final commit boundary.
+    pub(in crate::services::auth_service::durable_source) async fn read_content_task_in_transaction(
+        &self,
+        tx: &mut Transaction<'_, Postgres>,
+        context: &mut PrivateWorkContext,
+        workspace: &SessionTaskContentWorkspace,
+        id: TaskId,
+    ) -> TaskResult<Option<SessionTaskContent>> {
+        match self
+            .execute_content_task(tx, context, workspace, id, ContentOperation::Read)
+            .await?
+        {
+            ContentPending::Read(content) => Ok(content),
+            _ => Err(TaskStoreError::InvalidRecord.into()),
+        }
+    }
+
+    async fn execute_content_task(
+        &self,
+        tx: &mut Transaction<'_, Postgres>,
+        context: &mut PrivateWorkContext,
+        workspace: &SessionTaskContentWorkspace,
+        id: TaskId,
+        operation: ContentOperation,
+    ) -> TaskResult<ContentPending> {
+        let owner = context.owner;
+        let reference = TaskRef {
+            workspace: workspace.scope,
+            task_id: id,
+        };
+        let store = TaskContentStore::new(self.pool.clone(), workspace.scope);
+        // Lock schema-3 metadata and the owned Task BEFORE inspecting any Artifact. This
+        // handle's helpers borrow the source transaction, never its own pool or a v2 handle.
+        let old = store.get_in_transaction(tx, reference, owner).await?;
+        if matches!(&operation, ContentOperation::Read) && old.is_none() {
+            return Ok(ContentPending::Read(None));
+        }
+        let checks = content_checks(old.as_ref(), &operation)?;
+        // Pin the Artifact namespace even for a named empty task or deleting the last item.
+        context
+            .select_target(tx, &workspace.artifacts.namespace)
+            .await?;
+        let read = matches!(&operation, ContentOperation::Read);
+        let contents = workspace.verify_contents(tx, owner, &checks, read).await?;
+        context.select_target(tx, &workspace.namespace).await?;
+        let snapshot = match operation {
+            ContentOperation::Create(manifest) => {
+                store.create_in_transaction(tx, id, owner, manifest).await?
+            }
+            ContentOperation::Read => old.ok_or(TaskStoreError::NotFound)?,
+            ContentOperation::Replace(revision, manifest) => {
+                store
+                    .replace_in_transaction(tx, reference, owner, revision, manifest)
+                    .await?
+            }
+            ContentOperation::Transition(revision, status) => {
+                store
+                    .transition_in_transaction(tx, reference, owner, revision, status)
+                    .await?
+            }
+        };
+        if !read {
+            // Recheck ALL old/new bytes after Task/outbox triggers, not just the new pins.
+            context
+                .select_target(tx, &workspace.artifacts.namespace)
+                .await?;
+            workspace.verify_contents(tx, owner, &checks, false).await?;
+            context.select_target(tx, &workspace.namespace).await?;
+        }
+        if store
+            .get_in_transaction(tx, reference, owner)
+            .await?
+            .as_ref()
+            != Some(&snapshot)
+        {
+            return Err(TaskStoreError::InvalidRecord.into());
+        }
+        Ok(if read {
+            ContentPending::Read(Some(SessionTaskContent { snapshot, contents }))
+        } else {
+            ContentPending::Snapshot(snapshot)
+        })
     }
 }

@@ -4,11 +4,19 @@ Cyanrex 正从 eBPF 教学应用转向面向人类、AI Agent 与计算资源的
 继续可用；通用身份、内容、任务和审阅服务属于显式配置的准备层，任务 payload 编辑器目前只保存
 本地草稿。自主 AI 与通用 Run 编排尚未实现。
 
-本索引覆盖整个项目，不只覆盖首个教学领域。源码版本为 0.5.3，收录 C2-O–S 草稿准备层、教师管理的
-AI 连接配置与显式 SDK 工具适配、内部架构精简及 DOMPurify/Monaco 加固。此前内容与准备层认证边界
-保持不变；源码收录不接通通用浏览器保存。
+本索引覆盖整个项目，不只覆盖首个教学领域。源码版本为 0.5.4，新增内部草稿意图记录、日志化派发
+及独立日志/资源检查（C2-T–W），并更新 Next.js 至 15.5.27。此前 C2-O–S 准备层、AI 宿主适配与
+安全边界保持不变；源码收录不接通通用浏览器保存或恢复。
 以下文档区分源码发布内容、现用运行能力和目标架构，
 模块存在或测试通过不表示已有在线部署。
+
+0.5.4 收录的 [C2-T 意图记录](session-task-draft-intent.md)另加会话授权的登记与读取；
+[C2-U 日志化发布](session-task-draft-dispatch.md)新增具有逐资源写前步骤的显式存活包装器，
+不恢复尝试，也不接通浏览器保存。
+[C2-V 日志检查](session-task-draft-journal-inspection.md)另以当前权限读取已记录步骤，
+不检查资源内容、不复活包装器，也不授权重试。
+[C2-W 日志步骤观察](session-task-draft-journal-observation.md)另在同一授权事务中读取一个
+已记录目标的实际内容；不含正文的比较结果不是回执或恢复协议。
 
 ## 按问题选择入口
 
@@ -29,6 +37,10 @@ AI 连接配置与显式 SDK 工具适配、内部架构精简及 DOMPurify/Mona
 | 观察未知步骤的目标而不恢复尝试 | [草稿目标只读观察](session-task-draft-observation.md) |
 | 导出报告进度为数据而不复活尝试 | [草稿元数据检查点](session-task-draft-checkpoint.md) |
 | 另行提供当前权限检查一个检查点目标 | [检查点目标显式检查](session-task-draft-inspection.md) |
+| 登记和读取不可变意图而不执行发布 | [会话草稿意图记录](session-task-draft-intent.md) |
+| 先登记步骤，再在资源事务内共同提交完成标记 | [日志化会话草稿发布](session-task-draft-dispatch.md) |
+| 检查日志记录进度而不恢复尝试 | [会话草稿日志检查](session-task-draft-journal-inspection.md) |
+| 保留原日志身份并观察一个已记录步骤的资源 | [日志步骤观察](session-task-draft-journal-observation.md) |
 | 使用或讲授现有 eBPF 流程 | [学生指南](student-guide.md)、[教师指南](teacher-guide.md)及下方实验 |
 | 部署或运维可信实例 | [安全](security.md)、[课堂接入与 SSH](classroom-connection.md)、[Runner Agent](runner-agent.md)、[故障排查](troubleshooting.md) |
 | 开发或验证改动 | [贡献指南](../../CONTRIBUTING.md)、[当前测试指南](testing-guide.md)、[SDK](../../sdk-js/README.md)、[工具](../../scripts/README.md) |

@@ -5,6 +5,49 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.5.4] - 2026-10-08
+
+This patch adds internal immutable draft intents, opt-in journaled dispatch, journal inspection and
+journal-bound resource observation (C2-T–W), and raises Next.js to 15.5.27. These remain explicit
+preparation APIs: no public/browser saving, live-authentication cutover, schema migration, restored
+attempt or automatic retry is introduced. Source publication does not update running deployments.
+
+### Added
+
+- Add C2-W internal observation of one recorded journal step through the exact current owner/account
+  in one source-owned transaction. Capture the canonical intent, full prefix and first relation pins;
+  read the exact Artifact revision or current Task contents, then recheck the original records/pins
+  and fresh authorization before returning body-free recorded status and metadata agreement.
+  This reads resources/files without business writes; C2-V remains journal-only. No receipt, resume,
+  retry, cleanup, schema change, public/browser API or live-authentication cutover is added.
+
+- Add C2-V internal, current-Session inspection of schema-2 intent and step records, filtered by exact
+  owner/account generation and trusted workspace configuration. Validate the full committed prefix
+  and optional final Unknown step, recheck relation pins and fresh authorization, and expose counts
+  including the final Task step without nonces. No resource/file read, checkpoint mutation, recovery,
+  retry, adoption, cleanup, public/browser API or schema change is added.
+
+- Add C2-U opt-in journaled dispatch by consuming the real, pristine draft attempt. A fresh schema-2
+  journal commits a unique step reservation before resource work; a separately authorized transaction
+  rebinds owner/account/source, verifies the full prefix and table pins, and commits the step marker
+  with resource SQL. Shared C2-M verification remains authoritative. Failures/cancellation stop the
+  live wrapper; uncertain COMMIT acknowledgements do not prove rollback or authorize retry. No
+  schema-1 migration, restored attempt, retry, public/browser API or live-authentication change is added.
+
+- Add C2-T internal immutable intent registration from a real, pristine draft attempt and separately
+  current-Session-authorized reading, bound to the exact owner and account generation. An explicitly
+  installed, separate schema-1 journal stores bounded canonical metadata, not text or credentials;
+  duplicates conflict and results require final authorization checks and confirmed database commit.
+  This does not gate C2-P dispatch, attest resource incarnations, restore attempts, retry writes,
+  mount public/browser APIs, change live authentication or migrate existing data.
+
+### Fixed
+
+- Raise the Next.js dependency floor and lock to 15.5.27 for GHSA-4jqv-mc3x-m676 and
+  GHSA-mcj8-r9mp-w47p, with offline manifest/all-copy checks. The fresh production audit found these
+  after the earlier 0.5.3 checks; historical audit results remain unchanged. This source update does
+  not redeploy or establish deployment-specific exploit acceptance.
+
 ## [0.5.3] - 2026-10-07
 
 This patch adds AI Agent host configuration and SDK tool adapters, internal draft publication and
@@ -843,7 +886,8 @@ cross-user collaboration. The frozen public API compatibility baseline remains 0
 The canonical package metadata advanced directly from `0.2.9` to `0.3.1`. Version `0.3.0` identifies
 the frozen API compatibility snapshot only; it was not a package release and must not be tagged.
 
-[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.3...HEAD
+[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.4...HEAD
+[0.5.4]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.3...v0.5.4
 [0.5.3]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.2...v0.5.3
 [0.5.2]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/Team-silvortex/cyanrex-lab/compare/a9523ec052f701e447d2e59fcd38d3a8d8186740...v0.5.1

@@ -6,11 +6,19 @@ identity, content, task and review services are explicitly configured preparatio
 payload editor is local-only, and autonomous AI and general Run orchestration are not implemented.
 
 This index describes the whole project, not only its first teaching domain. The source version is
-0.5.3, including C2-O–S draft preparation, teacher-managed AI connection profiles and explicit SDK tool
-adapters, internal architecture simplification and DOMPurify/Monaco hardening. Earlier content and
-prepared-authentication boundaries remain in place; source inclusion does not connect generic browser saving.
+0.5.4, adding internal draft intent records, journaled dispatch and separate journal/resource inspection
+(C2-T–W), plus the Next.js 15.5.27 dependency update. Earlier C2-O–S preparation, AI host adapters and
+security boundaries remain in place; source inclusion does not connect generic browser saving or recovery.
 The documents distinguish source-release contents, live runtime capabilities
 and target architecture; a built module or passing test does not imply an online deployment.
+
+0.5.4 [C2-T intent records](session-task-draft-intent.md) add separate Session-authorized
+registration and reading. [C2-U journaled publication](session-task-draft-dispatch.md) adds an explicit
+live wrapper with per-resource write-ahead steps; it does not recover attempts or connect browser saving.
+[C2-V journal inspection](session-task-draft-journal-inspection.md) separately reads recorded steps under
+current authority, without checking resource contents, restoring the wrapper or authorizing retry.
+[C2-W journal step observation](session-task-draft-journal-observation.md) separately reads one recorded
+target's actual content in the same authorized transaction; its body-free comparison is not a receipt or recovery.
 
 ## Start with your question
 
@@ -31,6 +39,10 @@ and target architecture; a built module or passing test does not imply an online
 | Observe an unconfirmed attempt target without resuming it | [Draft target observation](session-task-draft-observation.md) |
 | Export reported progress as data without restoring an attempt | [Draft metadata checkpoints](session-task-draft-checkpoint.md) |
 | Inspect one checkpoint target with separately supplied current authority | [Explicit checkpoint target inspection](session-task-draft-inspection.md) |
+| Register and read an immutable intent without executing publication | [Session draft intent records](session-task-draft-intent.md) |
+| Publish one resource with a prior journal step and a shared completion transaction | [Journaled Session draft publication](session-task-draft-dispatch.md) |
+| Inspect recorded journal progress without recovering an attempt | [Session draft journal inspection](session-task-draft-journal-inspection.md) |
+| Observe one recorded step's resource while retaining the original journal pins | [Journal step observation](session-task-draft-journal-observation.md) |
 | Run or teach the existing eBPF workflow | [Student guide](student-guide.md), [teacher guide](teacher-guide.md), labs below |
 | Deploy or operate a trusted instance | [Security](security.md), [classroom connection and SSH](classroom-connection.md), [Runner Agent](runner-agent.md), [troubleshooting](troubleshooting.md) |
 | Develop or verify a change | [Contributor guide](../../CONTRIBUTING.md), [current testing guide](testing-guide.md), [SDK](../../sdk-js/README.md), [tools](../../scripts/README.md) |

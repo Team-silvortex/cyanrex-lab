@@ -1,7 +1,7 @@
 # 当前项目测试指南
 
-本文按 **2026-10-07 的 0.5.3 源码** 核对，包含 AI 配置/SDK 适配、C2-O–S 草稿准备层、清理器加固
-与架构精简，以及此前登录拒绝路径、会话清理、会话/注册表时间防护与独立内容 HTTP 适配。
+本文按 **2026-10-08 的 0.5.4 源码** 核对，包含 C2-T–W 意图、派发与检查边界、Next.js 15.5.27
+下限，以及此前 AI 适配、草稿准备层、清理器加固、认证防护与独立内容 HTTP 适配。
 它说明各模块和边界应测什么、每层通过能证明什么，以及如何避免使用线上数据。本文是测试方案和
 源码清单，不是一次新的测试结果。先用[平台链路地图](platform-network.md) 区分已连接与未连接路径。
 [功能张量](capability-maturity.md)将实现切片关联到测试源码与分日期证据；公共脚本检查其结构、引用
@@ -60,6 +60,10 @@ Rust 公告审计，前端/SDK 检查也包含生产依赖的 npm 审计。因�
 | 未知草稿目标观察 | Rust `session_task_draft_observation_tdd`、`scripts/test-session-task-draft-observation.sh` | 原 Session/状态准入、精确只读比较、类型化错误、尝试不变、当前 Task 字节与历史前缀区别及 Task 缺席范围；无回滚证明或恢复推进 |
 | 草稿元数据检查点 | 默认 Rust `draft_publication::tests::checkpoint`、`session_task_draft_checkpoint_tdd`、`sessionTaskDraftCheckpoint` 公共守卫 | 严格有界元数据 codec、有序分配/长度、状态/计数关系及往返；导入进度是数据，不是授权、来源证明、持久化或尝试恢复 |
 | 检查点目标显式检查 | 默认 `draft_publication::tests::inspection`、`session_task_draft_inspection_tdd`、`scripts/test-session-task-draft-inspection.sh`、`sessionTaskDraftInspection` 公共守卫 | 显式范围/当前 Session、一个已有读取器、精确元数据/文本检查、类型化故障、缺席/空 Task 边界及数据不变；不证明原身份/正文来源，不提供日志或恢复 |
+| 不可变会话草稿意图 | `session_task_draft_intent_tdd`、`scripts/test-session-task-draft-intent.sh`、`sessionTaskDraftIntent` 公共守卫 | 真实 Ready/零进度准入、有界规范元数据、重复冲突、精确所有者/账号代次、当前认证源/登记/日志身份及失败结果；不派发资源、不复活尝试、不实现写前执行 |
+| 日志化会话草稿派发 | `session_task_draft_dispatch_tdd`、`scripts/test-session-task-draft-dispatch.sh`、`sessionTaskDraftDispatch` 公共守卫 | 显式 Schema 2、消耗初始尝试、确认 Unknown 预留、准确所有者/账号/nonce 守卫、资源/标记原子性及完整前缀/身份复验；无重启/重试或公共/浏览器验收 |
+| 会话草稿日志检查 | `session_task_draft_journal_inspection_tdd`、`scripts/test-session-task-draft-journal-inspection.sh`、`sessionTaskDraftJournalInspection` 公共守卫 | 仅 Schema 2、当前精确所有者/账号、完整已提交前缀加可选 Unknown、最终 Task 计数、身份/新鲜权限复验及类型化错误；不读取资源/文件，不恢复尝试 |
+| 日志步骤资源观察 | `session_task_draft_journal_observation_tdd`、`scripts/test-session-task-draft-journal-observation.sh`、`sessionTaskDraftJournalObservation` 公共守卫 | 序号准入、同事务精确资源读取、读取后原完整日志/nonce/首次身份复验、新鲜权限及不含正文结果；不写业务、不提供回执或恢复 |
 | 独立内容存储 | Rust `task_content_store_tdd`、`scripts/test-task-content-storage.sh` | Schema 2/3 隔离、完整元数据/outbox 原子性、修订冲突与存储故障；不是 Session 内容或浏览器适配 |
 | 会话任务内容 | Rust `session_task_content_tdd`、`scripts/test-session-task-content.sh` | 同一事务内当前授权、旧新精确文本、元数据编辑、移除、命名空间身份及写后复验；不是公共/浏览器验收 |
 | UI 导航与安全 | `test:ui-permissions`、布局/动作/账户/运行浏览器套件 | 绑定目标的确认、防重复操作、路由切换、键盘操作、未保存草稿保护 |
@@ -141,6 +145,31 @@ PostgreSQL 连接变量和 dotenv 预加载设置，再只添加所选夹具需�
 0.5.3 C2-S 使用 `scripts/test-session-task-draft-inspection.sh` 验证独立检查入口，提供当前
 Session 权限而非重建 C2-Q 原尝试。其精确数据库用例与 C2-R codec、C2-Q 观察套件分别选择；
 元数据相符不能计作历史确认、原正文比较或安全重试依据。
+
+0.5.4 C2-T 使用 `scripts/test-session-task-draft-intent.sh` 从 `session_task_draft_intent_tdd`
+选择登记/读取用例，面向显式安装的一次性日志。全新 Schema/安装 ID、精确账号代次、重复冲突
+和事务故障检查须与 C2-P 写入分开；认证源/登记/日志核验不验证原 Task/Artifact 代次。
+记录确认不等于资源已派发，也不证明派发前持久化；数据库 COMMIT 设置不能代替宿主恢复或备份
+回放测试。分日期执行结果记于[项目状态](project-status.md)，不合入上方原有 runner 总数。
+
+0.5.4 C2-U 使用 `scripts/test-session-task-draft-dispatch.sh` 与 `session_task_draft_dispatch_tdd`。
+检查不升级 Schema 1 的显式 Schema 2 准入、先确认 A 再派发 B 的顺序、授权变化、精确 nonce/
+前缀、业务校验前的标记触发器及末尾只读日志复验。资源 SQL 与标记必须共享 B 的提交；回执未知
+不能成为回滚证明或重试权限。原 C2-T 登记/读取用例独立保留，不能证明这些派发行为。
+
+0.5.4 C2-V 使用 `scripts/test-session-task-draft-journal-inspection.sh` 从
+`session_task_draft_journal_inspection_tdd` 精确选择十条 SQL 用例，另有两项默认测试和三项
+公共守卫；分日期执行结果见[项目状态](project-status.md)。检查合法前缀、空 payload 仍需末尾 Task 计数、精确
+所有者/账号可见性、Schema/身份故障、等待过期及取消，并保持资源和文件不读。记录缺失不证明
+回滚，已记录进度不能恢复包装器或授权重试；C2-T/U 证据保持独立。
+
+0.5.4 C2-W 通过 `scripts/test-session-task-draft-journal-observation.sh` 与
+`session_task_draft_journal_observation_tdd` 精确选择十二条 SQL，另有两项默认用例及三项公共
+守卫；分日期执行见[项目状态](project-status.md)。检查序号纯拒绝，区分缺失意图、未记录步骤和不可见
+资源，覆盖原精确 Artifact 修订、编辑后的当前 Task 内容、类型化 blob 错误及资源读取后原完整
+日志/身份复验。不返回正文仍会读取文件；等待/取消不能授予回执、写入或重试。C2-V 保持不读
+资源，其既有执行不证明此独立路径。
+外部写者阻塞不验证同一读取事务内篡改；首次快照复用由源码守卫约束。
 
 独立的 `scripts/test-prepared-resource-sql.sh` 另选择两条库内用例，检查 Task/Artifact/Review 共用
 机制的普通表拒绝及解码顺序，以及单一池连接上的读写事务设置和回滚/drop 后局部超时恢复。

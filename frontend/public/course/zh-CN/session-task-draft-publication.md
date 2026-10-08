@@ -66,6 +66,9 @@ Task 创建失败不撤销已确认 Artifact 发布。原 Artifact/C2-M 命令�
 不保存数据，也不反序列化原尝试。解析后的进度只是调用者声明，不是确认回执；旧快照不允许
 继续推进或重试。
 
+0.5.4 收录的 [C2-T](session-task-draft-intent.md)可在原 Session 下，从真实 Ready/零确认尝试另行
+登记不可变意图元数据。`advance` 保持不变，不要求或写入该日志；仅登记不强制派发前持久化。
+
 ## 剩余边界与验证
 
 [C2-N 路由](task-content-http.md)仍未挂载，不调用本流程，也不会获得 8 MiB 上传额度。
