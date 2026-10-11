@@ -1,6 +1,6 @@
 # 系统架构
 
-源码版本 **0.5.5**（**2026-10-11**）已收录这些跟进；分日期的 `Unreleased`/未发布标记保留
+源码版本 **0.5.6**（**2026-10-11**）已收录这些跟进；分日期的 `Unreleased`/未发布标记保留
 当时实施阶段、源码版本和验证范围。源码收录不代表准备层 API 已挂载、浏览器保存已接通、
 在线认证已切换、存储已迁移或运行实例已经验收。
 
@@ -99,6 +99,18 @@ Session 授权的 Artifact 发布，再显式更换 Task 输入；执行适配�
 共同保存：创建准入配置元数据，读取/编辑/状态转移拒绝完整定义漂移。复用原内容执行器检查
 旧新字节、当前所有权和最终授权。手动与目录句柄互相拒绝对方记录，Schema 3 不变。
 HTTP 和 C2-P–W 发布路径仍使用手动句柄，不隐式提升任务、不执行规则，也不连接浏览器。
+
+源码 0.5.5 上独立的 **2026-10-11 未发布[元数据索引](task-content-index.md)**新增 Schema 3
+之上的只读 `TaskContentIndexStore` 与 `SessionTaskContentIndexWorkspace` 路径。
+显式 `from_definitions` 同时索引手动及完整配置目录记录，不改变原写入/get 模式策略。
+有限任务头与前瞻仍严格校验记录；会话路径派生所有者，提交前复核当前权限。不增加 Artifact
+命名空间、文件读取、安装、HTTP/SDK/UI、写入、迁移或恢复路径。
+
+源码 0.5.5 上同日独立的 **2026-10-11 未发布[索引 HTTP 跟进](task-content-index-http.md)**
+新增另行构造的 `TaskContentIndexHttpState`，在只允许 GET 的精确 `/platform/v1/task-index`
+投影该已有 Session 命令。严格原始查询只选择位置与页大小，作用域和准入模式仍来自可信工作区。
+复用私有响应头及覆盖响应正文生命周期的名额，不改变旧集合/查询行为、不增加 SQL，也不挂载
+应用、浏览器、OpenAPI 或 SDK。
 
 [C2-N](task-content-http.md)新增手动命令之上的独立 HTTP 路由，采用专用 Session Cookie、固定
 可信 Origin 与有界请求准入。它没有挂载到 `build_router`，现用 OpenAPI/SDK 也不声明它；登录
@@ -445,6 +457,28 @@ Schema 版本、工作区范围、错误映射和提交职责；schema 2 Task �
 辅助模块不修改 `search_path`，也不接管或提交 Session 命令的事务。原命名空间固定、所有者解析及
 最终 Session/记录复核仍留在现有命令边界内。这次内部共用不把准备层组合进 `AppState`、挂载 HTTP
 路由或改变在线认证路径。
+
+独立[大文件核心](large-file-core.md)依据
+[提案 #2](https://github.com/Team-silvortex/cyanrex-lab/issues/2)增加共享不可变清单及同步有界
+流式校验，接收调用方 IO 而非磁盘路径，不授予发布或读取权限。可选预开 Unix 描述符观察
+只检测元数据变化，不证明路径/根身份或持久存储。单独的 Unix [私有暂存 API](large-file-staging.md)
+持有描述符相对独占分块和按真实任务存活期计的独立工作额度，确认本地块同步/读回，
+不证明整文件发布或历史上传进度。独立[上传账本](large-file-upload-intent.md)预留不可变受信任元数据
+和逻辑配额。另行的[上传绑定适配](large-file-upload-staging.md)确认本地原文件暂存，
+不是持久进度或当前 Session 权限。独立[分块日志](large-file-chunk-journal.md)在派发前记录
+Unknown，之后准确记录确认，不恢复尝试，也不以元数据证明当前字节。
+另行的[整上传核验](large-file-whole-verification.md)有序读取当前绑定块，检查整文件摘要并
+复核原来源/文件快照；元数据观察不确认发布、不恢复回执，也不读取日志状态。
+另行[发布元数据](large-file-publication.md)要求准确完整已确认日志与新鲜真实字节，只插入一条
+不可变记录，之后继续复核原来源、日志、发布身份及同一个文件观察。存储行不是当前文件健康或
+授权；提交确认之后的失败可能保留记录，而原调用方仍 Unknown。
+另行[Session 私有元数据](large-file-session-metadata.md)从当前审计过的 Human 绑定推导 owner／
+账号代次，在一笔 READ COMMITTED 认证源事务内预留本人上传、读取本人上传／Published 元数据。
+借用存储助手保留原身份及选中行锁；共享私有工作守卫在最终检查复核最初认证源／注册表关系身份。
+它不调用发布器或读取文件。另行[纯文件授权契约](large-file-access-contract.md)按准确工作区／
+账号或版本／发布者／接收者快照匹配，带明确活跃／撤销状态及有界有效期，不认证所提供授权，
+也不进入这些命令。发布及接收撤权独立。物理磁盘分配、持久审计文件权限及无特权集中数据服务
+仍需分别审阅，桌面配对在集中分发之后。此模块不进入 `AppState` 或路由。
 
 ## 5. 核心数据流
 

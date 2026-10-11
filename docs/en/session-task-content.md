@@ -10,6 +10,13 @@ This adapter joins current Session authorization, [schema 3 content storage](tas
 and exact Artifact bytes in one source-owned transaction. It does **not** expose an HTTP command,
 connect the browser editor, or replace the live authentication source.
 
+The independent **2026-10-11 Unreleased [Session metadata index](task-content-index.md)**, on
+source 0.5.5, uses `SessionTaskContentIndexWorkspace` and `list_session_content_tasks` rather than
+these content commands. It returns a committed bounded page after current owner/namespace/authority
+checks, without an Artifact workspace or file read. Explicit neutral catalogue indexing may include
+manual and configured catalogue Tasks; the original write/get mode and byte checks below remain unchanged.
+No HTTP/SDK/UI, installation, write, migration or recovery is added.
+
 ## Command contract
 
 `SessionTaskContentWorkspace` selects a trusted, dedicated Task namespace and an Artifact workspace

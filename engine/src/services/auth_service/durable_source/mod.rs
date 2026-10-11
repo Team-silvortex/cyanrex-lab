@@ -38,6 +38,8 @@ mod deletion;
 mod draft_publication;
 #[cfg(unix)]
 mod draft_publication_checks;
+#[cfg(unix)]
+mod file_commands;
 mod namespace;
 mod otp;
 mod otp_consumption;
@@ -75,6 +77,10 @@ pub use draft_publication::{
     SessionJournaledTaskDraftPublication, SessionTaskDraftPublication,
     MAX_SESSION_DRAFT_CHECKPOINT_BYTES,
 };
+#[cfg(unix)]
+pub use file_commands::{
+    SessionFileMetadataError, SessionFilePublicationWorkspace, SessionFileUploadWorkspace,
+};
 pub use reconciliation::{AuthorityReconciliation, ReconciliationError};
 #[cfg(unix)]
 pub use review_commands::{SessionReviewError, SessionReviewWorkspace};
@@ -84,7 +90,7 @@ pub use task_commands::{
     SessionCatalogTaskContentWorkspace, SessionCatalogTaskWorkspace, SessionTaskContent,
     SessionTaskContentWorkspace, SessionTaskInputs, SessionTaskInputsWorkspace,
 };
-pub use task_commands::{SessionTaskError, SessionTaskWorkspace};
+pub use task_commands::{SessionTaskContentIndexWorkspace, SessionTaskError, SessionTaskWorkspace};
 
 #[derive(Clone)]
 pub struct DurableAuthSource {

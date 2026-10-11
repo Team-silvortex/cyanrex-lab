@@ -1,32 +1,34 @@
 # Project Status
 
-Snapshot date: **2026-10-11**. Source version: **0.5.5**, including provider-free catalogue metadata, bounded multi-package composition, explicit catalogue/text content, portable language hints, shared HTTP admission and independent C2-X–AA preparation. Earlier draft preparation, AI host adapters and authentication protections remain in place.
+Snapshot date: **2026-10-11**. Source version: **0.5.6**, including private task indexing and its unmounted HTTP adapter, plus large-file preparation through trusted publication, Session private metadata and pure grant contracts. Earlier task decoupling, draft preparation, AI host adapters and authentication protections remain in place.
 
-0.5.4 C2-T adds separate immutable intent registration and authorized reading. C2-U adds an
-explicit live wrapper with per-resource write-ahead steps and shared resource/marker commits;
-the original C2-P path remains independent, and no stopped-attempt recovery or browser save is connected.
-0.5.4 C2-V adds separate current-Session inspection of schema-2 journal metadata, not resource
-verification, recovered execution authority or retry permission.
-0.5.4 C2-W separately observes one recorded resource under the same journal/auth transaction;
-recorded status and body-free metadata agreement remain distinct from receipts or recovery.
-The October 8 follow-up, included in 0.5.5, adds C2-N shared HTTP admission and a separate C2-X text
-Artifact create/exact-read router. Both remain unmounted; source inclusion is not browser saving.
-The same-date task-decoupling follow-up separates frozen definition metadata from executable
-assessment and portable payload language hints from the editor's installed capability profiles.
-An explicit catalogue-content follow-up now combines frozen definitions with schema-3 text content;
-definition admission and content metadata are independent choices, without requiring assessment or a Run.
-The October 11 follow-up, included in 0.5.5, explicitly composes frozen catalogues from multiple domains and
-package versions within the same 256-definition budget; typed assessment still belongs to its own provider.
-An independent same-date follow-up lets metadata definitions explicitly bind neither automatic
-assessment contract; typed providers and actual assessment results still require both exact pins.
-A further same-date C2-Y preparation adds an independent catalogue Task-content HTTP adapter with
-required exact definition references and a frozen trusted workspace. It remains unmounted, separate
-from manual HTTP and draft publication, without automatic assessment or browser saving.
-The same-date C2-Z follow-up adds an independent catalogue draft publication attempt, freezing the
-complete trusted definition before allocating targets and issuing one current-Session command per step.
-It does not enter the existing manual checkpoint/journal workflow or connect the browser.
-The separate same-date C2-AA follow-up adds read-only observation of a surviving catalogue
-attempt's fixed unconfirmed target. Current agreement never changes receipts or grants a retry.
+0.5.4 C2-T–W retains immutable intents, explicit journaled dispatch, private journal inspection and
+one-resource observation. The original C2-P path stays independent; metadata agreement is not a receipt,
+restart recovery or retry permission. 0.5.5 adds shared HTTP admission and separate C2-X/Y text/catalogue
+routers, both unmounted; C2-Z/AA independently publishes and observes a frozen catalogue draft without
+entering the manual checkpoint/journal workflow. Neither connects browser saving or automatic assessment.
+0.5.5 also separates frozen definitions from providers and portable language hints from editor profiles,
+composes multi-domain/package catalogues within 256 definitions, and allows explicitly absent assessment
+bindings. Catalogue/text content needs neither assessment nor a Run; typed assessment still requires both pins.
+
+The independent October 11 [private metadata index](task-content-index.md), **included in 0.5.6**,
+lists bounded owner-private schema 3 pages
+through trusted storage and current Session authorization. Explicit neutral catalogue configuration
+admits manual and complete configured definitions without changing the old content-read/write modes.
+Its separate [HTTP follow-up](task-content-index-http.md) adds an explicit private GET adapter,
+still unmounted. No live HTTP/SDK/UI task list or server-backed browser reopening is connected;
+metadata is not content availability.
+
+The same-day **[large-file core](large-file-core.md), included in 0.5.6**, following
+[proposal #2](https://github.com/Team-silvortex/cyanrex-lab/issues/2), adds transport-neutral manifests
+and bounded synchronous IO, with centralized distribution prioritized over later desktop transfers.
+It verifies supplied real bytes, not storage, publication, recipients, durable progress or delivery.
+The separate [Unix chunk-staging follow-up](large-file-staging.md) adds exclusive private files,
+sync/readback and an independent job-lifetime worker budget. Neither layer enables network transfer,
+durable upload progress, disk reservations, publication or live authentication/client connections.
+The separate [upload-intent ledger](large-file-upload-intent.md) adds immutable trusted metadata and
+atomic logical quotas, not confirmed chunks, physical disk allocation, Session authority or transfer.
+The [local upload adapter](large-file-upload-staging.md) adds original-file receipts; the independent [write-ahead journal](large-file-chunk-journal.md) records chunks, while [whole-byte verification](large-file-whole-verification.md) remains a current observation. Separate [persistent publication metadata](large-file-publication.md) combines complete confirmed chunks and fresh bytes. Separate [Session private metadata](large-file-session-metadata.md) derives owner/account for own reservations and upload/Published reads. Separate [pure publisher/recipient contracts](large-file-access-contract.md) match supplied exact accounts/versions, state and validity; they do not establish current audited permission. Recovery, durable grants and transport remain separate.
 
 Cyanrex is becoming a domain-neutral collaboration platform, with eBPF teaching retained as its first
 domain rather than the definition of all work. The transition has produced a durable collaboration
@@ -68,9 +70,19 @@ dated implementation and verification details are preserved in [Development Hist
 | 0.5.2 · Session expiry reads | Shared prepared Session lookup rejects infinite/unrepresentable expiry before decoding; source reconciliation derives a checked expiry boolean in SQL | Covers source Session expiry, with existing locks and snapshot cutoffs; registry times are covered separately below |
 | 0.5.2 · Registry time reads | Guard retirement and identity/policy audit heads, history, replay and write readback; reject invalid non-null retirement without making it active | Scoped reads only; no age rule, driver-wide guarantee, repair, schema change or live-auth cutover |
 | Architecture targets | Shared collaboration, generic Run orchestration, AI delegation, reliable business-event delivery, isolated workers and ecosystem integration | A proposed type, diagram or milestone is not an implemented user workflow |
+| 0.5.6 · private metadata index preparation | Independent bounded schema 3 metadata listing with strict lookahead and current Session owner filtering | No public task-list edge, content-byte proof, browser reopening, installer, migration or recovery; original content modes remain unchanged |
+| 0.5.6 · private metadata HTTP preparation | Explicit standalone GET adapter over the existing index, with strict positional query parsing and response-lifetime admission | Not mounted; no issuer, live OpenAPI/SDK/browser list, content-byte proof, migration or recovery |
+| 0.5.6 · large-file core preparation | Independent strict manifest, ordered chunk/whole-file checks, bounded stream copy and preopened Unix descriptor checks | No durable staging, quota/work admission, publication/grants, resume, network/client or desktop pairing |
+| 0.5.6 · Unix chunk staging preparation | Full manifest/index-bound exclusive private chunks, sync/readback and clone-shared worker admission retained through queued/running jobs | Trusted-only; no upload journal, reserved quota, resume, publication/grants, cleanup, transport/client or desktop pairing |
+| 0.5.6 · upload intent preparation | Separate trusted PostgreSQL immutable reservations, persisted logical limits and bounded full-ledger validation | No chunk confirmation, physical allocation, release/cleanup, current Session, resume, publication, network/client or desktop pairing |
+| 0.5.6 · upload-bound staging preparation | Original source/reservation pins, one-shot in-memory attempts and original-file local receipts | No durable chunk journal, Session authority, recovery/retry, publication, transport or live/client connection |
+| 0.5.6 · chunk journal preparation | Independent fresh namespace, acknowledged Unknown before file dispatch and exact recorded confirmations | No recovered attempt, current-byte proof from status, Session authority, retry, publication, transport or live/client connection |
+| 0.5.6 · whole-upload verification preparation | Ordered current bound chunk/whole digests and original source/file snapshot rechecks | Read-only metadata observation; no historical receipt, journal-state adoption, durable publication, recovery, authority or transport |
+| 0.5.6 · file publication and private metadata preparation | Separate trusted publication after confirmed journal/fresh bytes; independent current-Session own reservations and upload/Published metadata reads with original pins and final policy/expiry checks | No actual Session publication, publisher/recipient grants, physical sealing, recovery or transport; a trusted publisher may remain Unknown with a stored row |
+| 0.5.6 · file grant contract preparation | Pure exact workspace, account-generation, file-version, state and validity matching | No authenticated issuer, persisted grant, fresh policy/revocation lookup, Session integration or byte-access authority |
 
 Product version, API compatibility baseline and individual storage schema versions are independent.
-The source version is 0.5.5 and the public API compatibility baseline remains 0.3.0. The current Task
+The source version is 0.5.6 and the public API compatibility baseline remains 0.3.0. The current Task
 store requires schema 2 in a fresh dedicated namespace and rejects schema 1 without migration. Neither
 the normal startup path nor this source release upgrades a database.
 The content store included in 0.5.0 separately requires schema 3; the schema 2 handle and existing Session
@@ -96,6 +108,7 @@ contracts/services that are not connected to the live application's authenticati
 | Domain definitions | 0.5.5 provider-free TaskDefinitionCatalog with explicit bounded multi-domain/package-version composition and an explicit choice of assessment binding; typed TaskCatalog keeps fully bound single-provider assessment; the five teaching labs use the eBPF pack | Catalogue metadata admission is not typed input validation, policy execution or dynamic provider discovery |
 | Task instances | Private manual/catalogue tasks, fixed definitions, revision-fenced states, atomic task/outbox records; Draft input replacement included in 0.4.9 | No mounted public task API, cross-user assignment, dependencies or acceptance policy |
 | Artifact content | Private immutable revision files, exact digest-bound references, transactional metadata/events, Session-authorized publication/reads and 0.5.5 C2-X text HTTP preparation | Text router remains unmounted; no UI metadata mapping, public content workflow, retention/garbage collection or cross-user sharing |
+| Large-file transfer | Independent [stream core](large-file-core.md), [private staging](large-file-staging.md), [logical quotas](large-file-upload-intent.md), [local receipts](large-file-upload-staging.md), [chunk journal](large-file-chunk-journal.md), [whole-byte verification](large-file-whole-verification.md), [publication metadata](large-file-publication.md), [Session private metadata](large-file-session-metadata.md) and [pure grant selectors](large-file-access-contract.md) | Central distribution and later desktop transfers still need reviewed receipt-loss/restart reconciliation, physical disk policy, current audited publisher/recipient grants, transport and safe client saves |
 | Task content metadata | C2-K contracts, C2-L storage and C2-M Session/text composition; 0.5.5 explicit manual/catalogue modes; separate C2-N manual and C2-Y catalogue HTTP adapters, C2-Z catalogue publication and C2-AA target observation | HTTP adapters remain unmounted; catalogue publication/observation has no manual checkpoint/journal composition; no secure login/installation workflow, browser saving or migration |
 | Whole-draft publication mapping | 0.5.3 C2-O strictly parses portable draft JSON, prepares text publication values and binds supplied exact content | Pure values only; no dispatch, confirmed publication history, current authorization or persisted draft |
 | Review | Immutable revision history; Session-authorized private human opinions on exact Artifact targets/evidence included in 0.4.9 | No cross-user reviewer grants, generic Task approval, automatic rule execution or AI review |
@@ -229,6 +242,154 @@ records are not a new 0.5.4 release gate or evidence of publication or deploymen
 
 The catalogue/editor/shared-admission follow-ups are now included in 0.5.5. Their dated 0.5.4
 workspace records retain their original Unreleased labels, counts and SQL scope.
+
+### 0.5.6 version validation · 2026-10-11
+
+`bash scripts/quality-gate.sh --no-npm-install` passed for source **0.5.6**.
+Default Rust: **832 passed, 0 failed; 742 ignored**, **75 result blocks**, no compiler warnings.
+Common scripts: **248 passed**. Frontend: production build, full typecheck and **208 tests** passed.
+SDK: generated/API/surface checks, build, **39 tests**, type tests and **3 consumer package tests** passed.
+Fresh frontend and SDK production npm audits both reported **zero vulnerabilities**.
+Version, course, OpenAPI, formatting and tooling checks passed; public API baseline remains **0.3.0**.
+Frontend Node module-type warnings remain; this gate does not claim warning-free JavaScript execution.
+Index/file preparation is included in 0.5.6; earlier 0.5.5/Unreleased execution records retain their scope.
+Not rerun: opt-in SQL/file cases, real-kernel/distribution artifact acceptance, browser/LAN or deployment.
+No preparation API mounting, network transfer, durable grant issuance, recovery or live-auth cutover.
+Evidence: `/tmp/cyanrex-release-056-vh5118WO/quality-gate.log` (local log, not a release artifact).
+
+### Unreleased upload-bound local receipts · 2026-10-11
+
+Source **0.5.5**, outside the tag; [original upload/file pins and one-shot attempts](large-file-upload-staging.md).
+Compiled Red: **0 passes / 1 expected failure**, seven temporary fixture warnings; Green **3 default / 9 SQL/file cases**.
+Adjacent intent regression: **12 exact SQL cases**; full gate **798 default Rust / 229 common**, **700 ignored**, **70 result blocks**, no warnings.
+Real lock-wait drift, same-byte inode replacement and running-worker cancellation are covered, not durable progress, Session, resume or transport.
+All **102 prior dated blocks** and tensor evidence remain unchanged; detailed scope and the initial CI length-guard failure are in the linked record.
+Private PostgreSQL stopped; **47 MiB** cluster and **3 MiB** regenerable cache removed, logs retained under `/tmp/cyanrex-upload-bound-wQ9u2Poq`.
+No version, commit, push, release or deployment change; no disk-fault, power-loss, benchmark, browser, TLS/LAN or desktop acceptance.
+
+### Unreleased durable upload intent and logical quotas · 2026-10-11
+
+Source **0.5.5**, outside the tag. The separate [upload ledger](large-file-upload-intent.md) adds
+trusted immutable owner/account-generation reservations, persisted logical limits, serialized
+admission and bounded full-ledger post-write checks. It does not connect chunks or current Session.
+Compiled Red: **0 passes / 1 expected behavior failure**, with six temporary unused-fixture warnings.
+Green: **5 default cases / 12 exact real PostgreSQL cases** pass; the 64 GiB fixture is metadata only.
+Full backend gate passes **795 default Rust / 225 common checks**, **691 opt-in cases ignored**,
+**69 Rust result blocks**, no compiler warnings; tool fixtures are not live acceptance.
+No lost-commit-ack, filesystem quota/fault/power-loss, benchmark, browser/SDK, Session, TLS/LAN,
+deployment or desktop acceptance; earlier index SQL was not rerun. Details and early guard failures
+are recorded in the upload document. All prior dated blocks and capability-tensor evidence remain unchanged.
+The private PostgreSQL 16 instance had no TCP listener; every upload schema was dropped. Its stopped
+47 MiB cluster was removed; regenerable cache/empty fixtures were cleaned, with logs retained under
+`/tmp/cyanrex-upload-intent-7iIyc9OE`. No release/version, commit, push or deployment change.
+
+### Unreleased private Unix chunk staging · 2026-10-11
+
+Source **0.5.5**, outside the published tag. The separate [staging API](large-file-staging.md)
+binds exclusive entries to the entire typed manifest/index, pins an existing private root, verifies
+exact bytes, synchronizes file/directory and reads back the originally created inode. Clone-shared
+worker permits belong to actual queued/running jobs; independent handles have additive budgets.
+Existing entries conflict; uncertain output remains without overwrite, adoption, retry or cleanup.
+
+The compiled baseline first ran **0 passes / 2 expected behavior failures**. Green passed **22
+default integration cases** (two baseline plus twenty extensions) and **one private queued-worker
+case**. Fixtures include a real 4 MiB + 17-byte file, complete-manifest aliases, retained corrupt/
+short/long output, private-root/entry drift, FIFO with no writer, actual same-byte/different-inode
+substitution retaining the original single-link inode, and running cancellation/timeout barriers.
+Manual future polling with one blocking thread proves queued cancellation without a timing guess.
+
+The backend-only gate passed **790 default Rust cases and 221 common script checks**, with **679
+opt-in cases ignored**, 68 Rust result blocks and no compiler warnings. Formatting, file lengths,
+version/API/SDK drift, generated course copies and synthetic tooling passed. All **98 preexisting
+bilingual verification blocks** and the capability tensor were preserved without changing evidence.
+
+Inherited deployment/database settings were removed. No real SQL, frontend/browser, SDK runtime,
+advisory scan, disk-full/fsync fault, power-loss recovery, RSS/throughput, TLS/LAN, desktop or deployment
+acceptance was rerun. Synthetic fixtures/cache were removed and logs retained. No upload journal,
+reserved quota, durable progress/resume, publication/grants, transport/client or live composition
+was added; current byte verification is not a historical receipt. No commit, push or version bump.
+
+### Unreleased large-file manifest and streaming core · 2026-10-11
+
+Source version **0.5.5**, outside the published tag. Following
+[proposal #2](https://github.com/Team-silvortex/cyanrex-lab/issues/2), the independent
+[core](large-file-core.md) implements typed file/version metadata, strict bounded decoding,
+fixed-buffer inspection, exact chunk copying and ordered chunk/whole-file verification. Unix
+preopened-file observations check source metadata, not paths, private roots or immutable storage.
+
+Two behavior tests first compiled and ran with **0 passes / 2 expected failures** against the
+replacement stubs. The completed target passed **37 default cases**, plus **two private Unix
+snapshot-boundary cases** in the library. Fixtures include a real **4 MiB + 17-byte** file, independent
+byte/hash oracles, short reads/writes, partial unverified output, EOF faults, hostile IO counts,
+strict/duplicate metadata and a sparse over-limit descriptor rejected before reading. The real
+same-length mutation test exercises the snapshot helper, not a concurrent in-read race.
+
+The completed backend-only quality gate passed **767 default Rust cases and 220 common script
+checks**, with **679 opt-in cases ignored**, 67 Rust result blocks and no compile warnings.
+Formatting, file lengths, version/API/SDK drift, course copies and synthetic tooling passed.
+Two earlier four-case inventory runs each had 3 passes/1 failure: an unfinished test-file inventory
+and a wrong CI-command assumption in the new guard. Its corrected checks passed before the gate.
+All **96 preexisting bilingual verification blocks** and the capability tensor remained unchanged.
+
+Inherited deployment/database settings were removed. No PostgreSQL, frontend/browser, SDK runtime,
+advisory scan, actual 64 GiB read, RSS/throughput benchmark, TLS/LAN, desktop or deployment acceptance
+was rerun. Fixtures were removed; logs were retained. Copy success is not flush/fsync, publication
+or delivery. Durable staging, worker/quota admission, resume, publisher/recipient authorization,
+transport/client wiring and desktop pairing remain absent. No commit, push or version bump occurred.
+
+### Unreleased private task metadata HTTP · 2026-10-11
+
+Source version **0.5.5**, outside the published tag. The separate
+[HTTP contract](task-content-index-http.md) projects one existing current-Session index command at
+exact `GET /platform/v1/task-index`. Strict raw `after`/`limit` parsing grants no owner or namespace
+selection. Dedicated credentials, empty-body checks and shared response-lifetime admission remain
+independent of the old manual/catalogue collection contracts and live application.
+
+The closed-source dispatch test first compiled and failed with **400 versus expected 503**,
+then passed after the real command was connected. A temporary unused fixture import was corrected
+without suppressing warnings. Review also strengthened browser-entry scanning and exact response
+envelope/null assertions; all eight new SQL cases passed again after that assertion change.
+
+Fresh backend verification passed **728 default Rust tests** and **216 common tests**, with
+**66 successful Rust result blocks and zero compilation warnings**; **679 ignored Rust cases
+are not passes**. The isolated PostgreSQL runners passed **51 distinct cases**: new index HTTP 8,
+existing trusted/Session index 12, manual content HTTP 13, catalogue content HTTP 8 and text Artifact
+HTTP 10. Real blockers and database expiry verify cancellation/reauthorization; snapshots protect
+source/resource rows and file bytes/modes. The response is metadata, not content availability or a receipt.
+
+The disposable database had no remaining fixture namespaces or clients before shutdown. Its temporary
+cluster and synthetic files were removed; logs remain. Bilingual contracts and course copies are
+synchronized. All **94 prior status sections** and the tensor snapshot/topology/scores/evidence remain
+unchanged. No HTTP mounting, issuer, live OpenAPI/SDK/UI list, installation, migration or recovery was
+added. Frontend/SDK runtime, cross-target builds, large-list benchmarks, remote CI, kernel, SSH/LAN
+and deployment acceptance were not rerun. No version bump, commit or push is part of this slice.
+
+### Unreleased owner-private task metadata index · 2026-10-11
+
+Source version **0.5.5**, outside the published tag. The independent
+[index contract](task-content-index.md) adds metadata-only trusted and current-Session pages:
+default 20, limits 1–32, UUID keyset order, exact-owner filtering and validated lookahead.
+Explicit neutral catalogue configuration admits manual and complete configured bound/unbound
+definitions; the original content read/write modes and storage schemas remain unchanged.
+
+Two closed-source tests first compiled and failed on placeholder results, then passed after real
+dispatch. A later exact SQL test exposed missing content columns returning an empty success for
+an absent owner. It failed with `Ok(empty)` versus `StorageUnavailable`, then passed after fixed
+zero-row Task/outbox column checks. No other owner's rows are decoded for those probes.
+
+Fresh verification passed **714 default Rust tests**, **212 common tests** and the backend gate;
+**671 ignored Rust cases are not passes**, with **65 successful Rust result blocks and no warnings**.
+The explicit isolated PostgreSQL runners passed **86 distinct cases**: new trusted index 4, new
+Session index 8, existing content store 21, Session content 33 and catalogue tasks 20. After the
+empty-page fix and bounded test-loop hardening, all **12 new index cases** passed again through
+the exact runner. Real blockers and database time verify expiry/cancellation, not timing guesses.
+
+The disposable database had no remaining fixture namespaces/clients before shutdown; the failed
+test's synthetic schema and temporary cluster were removed, with logs retained. Current bilingual
+contracts and course copies are synchronized. All **92 prior status sections** and the tensor's
+snapshot, topology, scores and evidence remain unchanged. This slice adds no public HTTP/SDK/UI,
+content-byte proof, installation, migration or recovery. Frontend/SDK runtime, cross-target builds,
+large-inventory benchmarks, remote CI, kernel, SSH/LAN and deployment acceptance were not rerun.
 
 ### 0.5.5 version validation · 2026-10-11
 
@@ -1807,7 +1968,10 @@ generic execution or AI. The following order is proposed work, not an enabled fe
 2. Build reviewed Session issuance and an explicit authenticated installation/mounting path for the
    C2-N router, then public content publication. Preserve its Origin/request limits and conflict/outcome
    semantics; do not silently switch live authentication or migrate existing storage.
-3. Connect explicit browser save, reload and conflict handling. Preserve unsaved work and distinguish
+3. Connect explicit browser save, private task listing, reload and conflict handling. The internal
+   [metadata index](task-content-index.md) and its [unmounted HTTP adapter](task-content-index-http.md)
+   supply bounded owner-private pages only; mounting and content reopening still need current authorization.
+   Preserve unsaved work and distinguish
    content publication from Task reference replacement; verify uncertain results before retrying.
 4. Verify browser-to-server persistence across restart, authorization rejection and concurrent edits.
    Only then call the private task workflow connected; it still does not establish cross-user collaboration.

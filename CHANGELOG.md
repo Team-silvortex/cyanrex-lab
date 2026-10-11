@@ -5,6 +5,88 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.5.6] - 2026-10-11
+
+This patch includes owner-private task metadata indexing and its separate unmounted HTTP adapter,
+plus the centralized large-file distribution preparation from [proposal #2](https://github.com/Team-silvortex/cyanrex-lab/issues/2).
+The file slices cover bounded streaming, private staging, immutable upload quotas, chunk journaling,
+whole-byte checks, trusted publication, current-Session private metadata and pure grant contracts.
+They do not enable network transfers, downloads, durable grant issuance, restart recovery or browser
+saving. The original source-relation pin is retained across private Session work. Dated implementation
+records keep their original versions and test scope; this source release does not update a deployment.
+
+### Added
+
+- Add pure shared publisher/recipient grant contracts with exact workspace, file/version/digest/size
+  and account-generation bindings, independent active/revoked state, bounded half-open validity and
+  strict 4096-byte JSON admission. Matching supplied snapshots is not current audited authority;
+  no grant issuance/storage, Session/HTTP integration, byte access or transport is added.
+
+- Add current-Session owner-private upload reservations and upload/Published metadata reads in one
+  authentication-source transaction. Derive owner and account generation from the audited binding,
+  retain original source/target identities and exact records, and recheck fresh policy/expiry before
+  commit. Selected reads retain row/marker locks; old trusted stores stay independent. Preserve the
+  initial source/registry relation pin in the shared private-work guard instead of recapturing it.
+  No actual Session publication, publisher/recipient grants, byte access, recovery or transport.
+
+- Add separate trusted create-only whole-file publication metadata and an opaque one-shot publisher.
+  Require exact complete Confirmed chunk metadata and fresh real ordered bytes; retain original
+  source/journal/publication/file checks across the insert acknowledgement. Bound all publications,
+  including empty files, and reject reused upload/version coordinates without adoption or overwrite.
+  An acknowledged row can survive a later Unknown caller outcome; metadata grants no current file
+  health, retry, recovery or download authority. No live Session, transport, client or startup wiring.
+
+- Add read-only whole-upload byte verification over existing upload-bound chunks, with exact ordered
+  chunk and whole-file digests, original source/root snapshots and final file rechecks. Reuse existing
+  caller/worker admission without assembling a second file or retaining every chunk descriptor.
+  The metadata observation does not adopt historical receipts, consult journal status, publish bytes,
+  restore attempts or connect Session authority, transport, clients or deployment.
+
+- Add a separate fresh-only trusted chunk journal and explicit journaled staging wrapper. Commit
+  Unknown before file dispatch, bind each unique upload/index to original source/root metadata,
+  and confirm only after local byte checks; recheck original source/file after the final journal
+  acknowledgement. Compact bounded records never become restored attempts or original-file receipts.
+  No old-schema migration, retry, cleanup, Session authority, publication or transport connection.
+
+- Add a standalone Unix upload-bound local staging adapter, binding exact trusted reservations,
+  original database/root incarnations and complete manifests to fixed exclusive chunk destinations.
+  Caller-owned attempts are consumed before asynchronous validation; opaque local receipts retain
+  the original read-only file descriptor and reject substituted entries. Fresh source rechecks use
+  READ COMMITTED after lock waits. No durable chunk journal, recovery/retry, Session authority,
+  publication, quota release, network transfer or live application/client connection.
+
+- Add a standalone trusted PostgreSQL upload-intent ledger with immutable owner/account-generation
+  reservations and persisted logical byte/count limits. Serialize quota admission, validate the whole
+  bounded ledger, pin namespace/table identity and verify exact post-write facts; retain reservations
+  on uncertain outcomes. No physical disk allocation, confirmed chunks, release/cleanup, resume,
+  Session authentication, publication/grants, transport or live application/client connection.
+
+- Add a separate Unix private large-file chunk staging API with full manifest/index fingerprint
+  binding, descriptor-relative exclusive creation, 0700 roots, 0400 single-link files, sync and
+  fixed-inode readback. Independent clone-shared worker admission belongs to actual queued/running
+  jobs even after caller cancellation. Retain uncertain output without overwrite, adoption or cleanup.
+  Trusted preparation only: no upload journal, reserved quota, resume, publication/grants, HTTP/client
+  connection, live composition, desktop pairing or legacy Artifact/text-limit change.
+
+- Add a transport-neutral large-file manifest and synchronous bounded streaming core following
+  [proposal #2](https://github.com/Team-silvortex/cyanrex-lab/issues/2), centralized distribution first.
+  Typed file/version pins, strict bounded metadata, fixed 4 MiB chunks and 64 KiB IO verify actual
+  ordered bytes and whole-file integrity; preopened Unix descriptors reject observable changes.
+  Copying may leave unverified output and supplies no durable receipt. No staging, publication,
+  sharing grants, resume/restart state, live transport/UI/SDK, desktop pairing or legacy limit change.
+
+- Add an explicit unmounted private metadata HTTP index at `/platform/v1/task-index`, invoking
+  the existing current-Session index command once after strict raw cursor/limit, cookie, Origin
+  and empty-body admission. Serialize only seven metadata fields, with explicit nulls and
+  shared response-lifetime capacity; preserve existing manual/catalogue collection contracts.
+  No live application, OpenAPI/SDK/browser connection, issuer, content-byte proof or migration.
+
+- Add an independent owner-private schema 3 task-content metadata index and current-Session adapter.
+  Bound UUID keyset pages to 1–32 entries plus one strictly checked lookahead; explicit neutral
+  catalogue configuration admits manual and complete configured definitions without relaxing existing
+  content read/write modes. Return metadata only after current authorization and confirmed commit,
+  without Artifact/file access, HTTP/SDK/UI mounting, installation, migration, recovery or retry.
+
 ## [0.5.5] - 2026-10-11
 
 This patch separates definition metadata from assessment providers, composes bounded multi-package
@@ -970,7 +1052,8 @@ cross-user collaboration. The frozen public API compatibility baseline remains 0
 The canonical package metadata advanced directly from `0.2.9` to `0.3.1`. Version `0.3.0` identifies
 the frozen API compatibility snapshot only; it was not a package release and must not be tagged.
 
-[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.5...HEAD
+[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.6...HEAD
+[0.5.6]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.5...v0.5.6
 [0.5.5]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.4...v0.5.5
 [0.5.4]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.3...v0.5.4
 [0.5.3]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.2...v0.5.3

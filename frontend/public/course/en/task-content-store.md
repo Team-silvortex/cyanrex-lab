@@ -14,6 +14,12 @@ The **2026-10-08 Unreleased follow-up**, on source version 0.5.4, adds explicit 
 admission to the same schema 3 content store. The original constructor remains manual-only; no schema
 change, migration, evaluator or public save endpoint is introduced.
 
+The independent **2026-10-11 Unreleased [TaskContentIndexStore](task-content-index.md)**, on source
+0.5.5, is a separate read-only schema 3 metadata handle. `new` remains manual-only; its explicit
+`from_definitions` is a neutral index admitting manual and full configured catalogue records.
+Pagination validates selected heads and lookahead through the existing strict reader, without
+Artifact bytes, writable access, installation or migration. The write/get mode policies below do not change.
+
 ## Separate storage admission
 
 `TaskContentStore` is exported from `services::task_store`, but is a separate public handle from

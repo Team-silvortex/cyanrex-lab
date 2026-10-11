@@ -8,6 +8,12 @@
 此适配层把当前 Session 授权、[Schema 3 内容存储](task-content-store.md)和精确 Artifact 字节
 接入认证源拥有的同一事务，**不开放 HTTP 命令，不连接浏览器编辑器，也不替换运行中的认证源**。
 
+源码 0.5.5 上独立的 **2026-10-11 未发布[会话元数据索引](task-content-index.md)**使用
+`SessionTaskContentIndexWorkspace` 与 `list_session_content_tasks`，不是下文内容命令。
+它检查当前所有者、命名空间与权限，提交后返回有界页面，不配置 Artifact 工作区、不读取文件。
+显式中立目录索引可包含手动及配置目录 Task；下文原写入/get 模式及字节校验保持不变。
+不增加 HTTP/SDK/UI、安装、写入、迁移或恢复。
+
 ## 命令契约
 
 `SessionTaskContentWorkspace`选择可信配置中的专用任务命名空间及同一权限域、工作区的

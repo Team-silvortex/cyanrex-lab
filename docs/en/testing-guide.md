@@ -1,8 +1,8 @@
 # Current project testing guide
 
-Source release **0.5.5** (**2026-10-11**) includes the dated follow-ups and their test selections.
+Source release **0.5.6** (**2026-10-11**) includes the dated follow-ups and their test selections.
 `Unreleased` labels retain the original implementation stage; inventories and earlier 0.5.4 execution
-records are not fresh 0.5.5 SQL runs or deployment acceptance. Actual release-gate results and omissions
+records are not fresh 0.5.6 SQL runs or deployment acceptance. Actual release-gate results and omissions
 belong in [project status](project-status.md).
 
 Reviewed against **0.5.4 on 2026-10-08**, including C2-T–W intent, dispatch and inspection boundaries,
@@ -34,6 +34,21 @@ exact SQL selections below are source inventory, not inherited manual-publicatio
 The independent **2026-10-11 Unreleased C2-AA follow-up** adds read-only observation of one unknown
 catalogue attempt target. Its current-read comparisons and typed failures are separate from C2-Z
 publication and old manual C2-Q observation; neither earlier result set establishes this execution.
+
+The independent **2026-10-11 Unreleased [task-content index](task-content-index.md)**, on source
+0.5.5, adds `task_content_index_tdd` and `session_task_content_index_tdd`. The separate exact runner
+`scripts/test-task-content-index.sh` selects **four trusted-store + eight Session SQL cases**, **12**
+in total. This is source inventory, not execution or inherited release/content-reader acceptance.
+Select pagination/cursor limits, manual/neutral catalogue admission, full record/lookahead validation,
+private ownership, Artifact independence, current lifecycle and observed lock-wait cancellation/expiry.
+
+The separate same-day **Unreleased [index HTTP adapter](task-content-index-http.md)** on source
+0.5.5 adds `task_content_index_http_tdd` and **eight SQL source selections**, separate from the
+12 service-index cases. Check strict raw queries, private projection, unchanged old routers, current
+Session faults/waits and response-body capacity. This inventory does not establish execution,
+public mounting, browser integration or cross-platform compilation. Its exact runner is
+`scripts/test-task-content-index-http.sh`; source inventory/wiring guards are
+`scripts/tests/taskContentIndexHttp.test.mjs`, not substitutes for database execution.
 
 ## Test layers
 
@@ -87,6 +102,15 @@ compilation; consult its explicit lists rather than assuming `cargo test` covers
 | Local task payload and editor | `test:editor-languages`, `test:task-payload-browser`, `test:multi-language-editor-browser` | Optional payloads, accepted content/revisions, import/export, stale edits, model disposal and forbidden network writes |
 | DOMPurify and generated Monaco assets | `frontendDependencySecurity` common guards, default `test:tooling`, explicit `test:dompurify-browser` | Locked copies and overrides → exact vendor replacement → new chunk references → the sanitizer actually used by Monaco; dependency audit and deployed behavior remain separate |
 | Internal Task content metadata | Rust `task_content_contract_tdd`, `task_content_binding_tdd` | Strict object shape, scalar/item limits, exact ordered pins, supplied owner/bytes/digest consistency; pure default tests, not storage or Session authorization |
+| Large-file manifest and streaming core | Default `file_transfer_tdd`, private Unix source-check units and `fileTransfer` common inventory guards; [boundary](large-file-core.md) | Strict bounded metadata, real chunk/whole digests, exact EOF, fixed IO buffers, partial-output/IO faults and preopened regular-file checks; not private staging, durable progress, quota, authenticated transfer, benchmark or desktop interoperability |
+| Private Unix chunk staging | Default `file_chunk_staging_tdd` and private queued-worker units; [boundary](large-file-staging.md) | Exact manifest binding, exclusive private files, retained failures, observable root/entry drift and actual cancellation/queue lifetime; not an upload receipt, reserved quota, real fsync/disk-full fault acceptance, recovery, transport or benchmark |
+| Trusted upload intent and logical quotas | Default `file_upload_intent_tdd` admission cases, explicit `scripts/test-file-upload-intent.sh`, `fileUploadIntent` source guards; [boundary](large-file-upload-intent.md) | Fresh-only schema, exact owner/account generation, cross-generation byte/count competition, bounded corrupt-ledger rejection and real trigger/cancellation controls; metadata only, not chunk receipts, physical allocation, current Session, resume or transfer |
+| Upload-bound local staging | Default `file_upload_staging_tdd` admission cases, explicit `scripts/test-file-upload-staging.sh`, `fileUploadStaging` source guards; [boundary](large-file-upload-staging.md) | Real cross-chunk bytes, original source/record checks after lock waits, original inode receipts, shared admission/cancellation and retained failures; no durable chunk journal, Session authority, resume, network, real disk-full/fsync fault or benchmark acceptance |
+| Write-ahead chunk journal | Default `file_upload_chunk_journal_tdd`, explicit `scripts/test-file-upload-chunk-journal.sh`, `fileUploadChunkJournal` source guards; [boundary](large-file-chunk-journal.md) | Committed Unknown before any file dispatch, exact journal coordinates, genuine SQL waits/cancellation, retained files and metadata-only inspection; not recovered execution, current integrity from status, whole-file finalization, Session authority or transport |
+| Whole-upload current-byte verification | Default `file_upload_whole_tdd`, explicit `scripts/test-file-upload-whole.sh`, private worker units and `fileUploadWhole` common guards; [boundary](large-file-whole-verification.md) | Ordered bound chunk/whole digests, original source/file snapshot drift, read-only results and shared worker admission; not historical receipts, journal adoption, durable publication, recovery, Session authority or transport |
+| Persistent file publication metadata | Default `file_upload_publication_tdd`, explicit `scripts/test-file-upload-publication.sh`, `fileUploadPublication` common guards; [boundary](large-file-publication.md) | Exact complete confirmed journal and real whole bytes, immutable upload/version uniqueness, bounded global capacity, original pin and post-acknowledgement failures; not recovered receipts, permanent physical sealing, current Session, grants or transport |
+| Session private file metadata | Default `session_file_metadata_tdd`, explicit `scripts/test-session-file-metadata.sh`, `sessionFileMetadata` common guards; [boundary](large-file-session-metadata.md) | Derived owner/account in one source transaction, exact private upload/Published reads, fresh policy/expiry, quotas, real waits/faults and original source/target pins; not actual Session publication, byte health, grants, recovery or transport |
+| Pure file publisher/recipient grants | Default `file_access_tdd` and `fileAccess` common composition/document guards; [boundary](large-file-access-contract.md) | Exact account/version selectors, independent revocation, half-open time intervals and strict bounded JSON; not issuer provenance, audited current grants, Session/SQL authorization, byte access or transfer |
 | Draft import and publication plan | Rust `task_draft_publication_tdd`, `taskDraftPublication` common guards, frontend `taskDraft` shared fixtures | Strict bounded JSON, blank-title rejection, local identity removal, exact supplied-content mapping and canonical-export compatibility; no publication, current-Session check or browser saving |
 | Session draft publication steps | Rust `session_task_draft_publication_tdd`, `scripts/test-session-task-draft-publication.sh`, `sessionTaskDraftPublication` common guards | Fixed allocation and Session binding, one write per advance, empty/multi-item success, confirmed prefix versus unconfirmed step, cancellation, revoked authority and final real-byte checks; no durable recovery or browser saving |
 | Independent catalogue draft publication | `session_catalog_draft_publication_tdd`, internal `catalog_draft_publication::tests`, `scripts/test-session-catalog-draft-publication.sh`, `sessionCatalogDraftPublication` guards | No-I/O exact-definition freeze, independent token domain, one existing Session write per advance, full `Some` confirmation, retained prefix/uncertain target and manual/journal type separation; C2-AA comparison is separate, with no restoration, retry or HTTP/browser saving |
@@ -100,6 +124,8 @@ compilation; consult its explicit lists rather than assuming `cargo test` covers
 | Journal step resource observation | `session_task_draft_journal_observation_tdd`, `scripts/test-session-task-draft-journal-observation.sh`, `sessionTaskDraftJournalObservation` common guards | Ordinal admission, same-transaction exact resource reads, original full journal/nonces/first pins after the read, final fresh authority and body-free result; no business writes, receipt or recovery |
 | Separate content storage | Rust `task_content_store_tdd`, `scripts/test-task-content-storage.sh` | Schema 2/3 isolation, complete metadata/outbox atomicity, revision conflicts and storage faults; not a Session content or browser adapter |
 | Session task content | Rust `session_task_content_tdd`, `scripts/test-session-task-content.sh` | Current authorization, old/new exact text, metadata-only edits, removal, namespace pins and post-write checks on one transaction; no public/browser acceptance |
+| Private task-content metadata index | `task_content_index_tdd`, `session_task_content_index_tdd`, `scripts/test-task-content-index.sh` | Bounded UUID pages, position-only cursor, strict heads/lookahead, explicit neutral catalogue admission and current Session without Artifact access; no complete inventory, content availability, HTTP/SDK/UI or recovery acceptance |
+| Independent metadata index HTTP | `task_content_index_http_tdd`, `scripts/test-task-content-index-http.sh`, `taskContentIndexHttp` guards; [contract](task-content-index-http.md) | Exact GET transport, strict raw cursor/limit, private seven-field projection, current Session delegation, corruption/empty-column refusal, Artifact independence and response-lifetime capacity; no public/browser/SDK connection or cross-platform/deployment acceptance |
 | Independent catalogue Task-content HTTP | `catalog_task_content_http_tdd`, `scripts/test-platform-catalog-task-content-http.sh`, `catalogTaskContentHttp` common guards | Strict exact-reference objects → trusted full definition, bound/unbound catalogue identity, manual/owner separation, current Session/full metadata/text checks and shared transport/admission outcomes; no evaluator or public/browser mounting |
 | UI navigation and safety | `test:ui-permissions`, layout/action/account/runtime/browser suites | Target-bound confirmations, duplicate actions, route changes, keyboard access, keeping unsaved drafts |
 | API, SDK, packaging and deployment | Common contract tests, SDK gate, release/SSH Rust targets and tool fixture runners | Engine route → OpenAPI → generated SDK; archive provenance → exact reviewed SSH target; fixtures versus real installation |

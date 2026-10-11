@@ -6,12 +6,12 @@ identity, content, task and review services are explicitly configured preparatio
 payload editor is local-only, and autonomous AI and general Run orchestration are not implemented.
 
 This index describes the whole project, not only its first teaching domain. The source version is
-**0.5.5** (**2026-10-11**), including provider-free/composed catalogue metadata, explicit assessment-binding
-choices, portable language hints, catalogue content and the separate C2-X/Y/Z/AA adapters and workflows.
-Earlier C2-T–W, Next.js 15.5.27, C2-O–S, AI host adapters and security boundaries remain in place.
+**0.5.6** (**2026-10-11**), including private task metadata indexing, its unmounted HTTP adapter and
+large-file preparation through trusted publication, Session metadata and pure grant contracts.
+Earlier task decoupling, C2-O–AA, Next.js 15.5.27, AI host adapters and security boundaries remain in place.
 Source inclusion does not connect generic browser saving, switch live authentication, migrate storage or
 validate a deployment. Dated `Unreleased` descriptions retain their original implementation stage,
-source versions and verification scope; they are not fresh 0.5.5 execution records.
+source versions and verification scope; they are not fresh 0.5.6 execution records.
 The documents distinguish source-release contents, live runtime capabilities
 and target architecture; a built module or passing test does not imply an online deployment.
 
@@ -42,6 +42,21 @@ reads one unknown C2-Z target through current Session
 authority. It compares complete definition/text metadata without returning bodies or adopting
 progress. Matching and invisibility neither prove an earlier commit/rollback nor enable retry.
 
+The independent **[task-content metadata index](task-content-index.md), included in 0.5.6,**
+lists private schema 3 metadata under trusted ownership or current Session authority.
+It returns bounded pages without Artifact reads, HTTP/SDK/UI, writes, migration or recovery; this
+follow-up is separate from the preceding release and verification records.
+
+A separate **[index HTTP adapter](task-content-index-http.md), included in 0.5.6,**
+projects that current-Session page at exact `GET /platform/v1/task-index`. It remains unmounted,
+with strict raw pagination queries and private response-lifetime admission; existing content routers,
+Session issuance, SDK/OpenAPI and browser behavior do not change.
+
+The **0.5.6 [large-file preparation](large-file-distribution.md)** provides independently composed
+streaming, staging, upload quotas, journaling, verification, publication and private metadata services.
+Publisher/recipient contracts compare supplied snapshots; durable grant issuance, recovery and both
+network transfer modes remain unconnected. Source inclusion is not a deployed distribution service.
+
 ## Start with your question
 
 | What you need | Read first |
@@ -50,10 +65,13 @@ progress. Matching and invisibility neither prove an earlier commit/rollback nor
 | See all current modules and connections | [Current platform feature map](platform-network.md) |
 | Compare architecture, capabilities, implementations and maturity | [Capability tensor and evidence-backed scores](capability-maturity.md) |
 | Know what is implemented and what comes next | [Project status](project-status.md), [target architecture](../zh-CN/next-architecture.md) |
+| Review centralized large-file distribution and later desktop transfers | [Distribution proposal](large-file-distribution.md), [streaming core](large-file-core.md), [private chunk staging](large-file-staging.md), [upload intent and logical quotas](large-file-upload-intent.md), [local receipts](large-file-upload-staging.md), [write-ahead chunk journal](large-file-chunk-journal.md), [whole-byte observation](large-file-whole-verification.md), [persistent publication metadata](large-file-publication.md), [Session private metadata](large-file-session-metadata.md), [pure publisher/recipient contracts](large-file-access-contract.md); network transfers not connected |
 | Edit task contents such as notes, code or configuration | [Task payload editor](editor.md) |
 | Configure an AI Agent host and adapt explicitly selected tools | [AI Agent SDK integration](ai-agent-integration.md) |
 | Inspect the internal server content shape and exact snapshot checks | [Task content manifest](task-content-manifest.md) |
 | Inspect separate content persistence and atomic editing | [Task content storage](task-content-store.md) |
+| List private task metadata without reading its contents | [Task content metadata index](task-content-index.md) |
+| Inspect the separate unmounted HTTP metadata list | [Task content index HTTP adapter](task-content-index-http.md) |
 | Inspect current Session and content-byte checks in one transaction | [Session task content](session-task-content.md) |
 | Inspect the explicitly constructed, unmounted manual HTTP boundary | [Task content HTTP adapter](task-content-http.md) |
 | Select an exact configured definition through a separate unmounted HTTP adapter | [Catalogue task content HTTP adapter](catalog-task-content-http.md) |

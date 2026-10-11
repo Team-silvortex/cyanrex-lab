@@ -39,7 +39,7 @@ impl TaskContentStore {
         Ok(snapshot)
     }
 
-    pub(super) async fn read(
+    pub(in crate::services::task_store) async fn read(
         &self,
         tx: &mut Tx<'_>,
         reference: TaskRef,

@@ -1,7 +1,7 @@
 # 当前项目测试指南
 
-源码版本 **0.5.5**（**2026-10-11**）已收录分日期的跟进及其测试选择。未发布标记保留当时
-实施阶段，库存和此前 0.5.4 执行记录不是新鲜的 0.5.5 SQL 运行或部署验收；实际发布门禁结果
+源码版本 **0.5.6**（**2026-10-11**）已收录分日期的跟进及其测试选择。未发布标记保留当时
+实施阶段，库存和此前 0.5.4 执行记录不是新鲜的 0.5.6 SQL 运行或部署验收；实际发布门禁结果
 及未覆盖范围记录于[项目状态](project-status.md)。
 
 本文按 **2026-10-08 的 0.5.4 源码** 核对，包含 C2-T–W 意图、派发与检查边界、Next.js 15.5.27
@@ -26,6 +26,20 @@
 
 独立的 **2026-10-11 未发布 C2-AA 跟进**只读观察一个未知目录尝试目标。其当前读取比较及
 类型化失败与 C2-Z 发布、旧手动 C2-Q 观察分开，早期两组结果都不证明本轮执行。
+
+源码 0.5.5 上独立的 **2026-10-11 未发布[任务内容索引](task-content-index.md)**新增
+`task_content_index_tdd` 与 `session_task_content_index_tdd`。独立精确 runner
+`scripts/test-task-content-index.sh` 选择**四条可信存储 + 八条会话 SQL 用例**，共 **12** 条。
+这是源码库存，不是执行结果，也不继承旧发布或内容读取验收。选择范围为分页/游标上限、
+手动/中立目录准入、完整记录及前瞻校验、私人所有权、Artifact 独立性、当前生命周期和
+观察到锁等待后的取消/到期。
+
+源码 0.5.5 上同日独立的**未发布[索引 HTTP 适配](task-content-index-http.md)**新增
+`task_content_index_http_tdd` 和**八条 SQL 源码选择**，与十二条服务层索引用例分开。
+检查严格原始查询、私有投影、旧路由不变、当前 Session 故障/等待及响应正文容量；
+该库存不证明执行、公共挂载、浏览器接线或交叉平台编译。精确 runner 为
+`scripts/test-task-content-index-http.sh`，源码库存/接线守卫为
+`scripts/tests/taskContentIndexHttp.test.mjs`，不替代数据库执行。
 
 ## 测试分层
 
@@ -77,6 +91,15 @@ Rust 公告审计，前端/SDK 检查也包含生产依赖的 npm 审计。因�
 | 本地任务 payload 与编辑器 | `test:editor-languages`、`test:task-payload-browser`、`test:multi-language-editor-browser` | 可选 payload、已接受内容/修订、导入导出、过期编辑、模型释放与禁止网络写入 |
 | DOMPurify 与生成的 Monaco 资源 | `frontendDependencySecurity` 公共守卫、默认 `test:tooling`、显式 `test:dompurify-browser` | 锁定副本和 override → 精确替换第三方代码 → 新 chunk 引用 → Monaco 实际使用的清理器；依赖审计与部署行为另行验证 |
 | 内部任务内容元数据 | Rust `task_content_contract_tdd`、`task_content_binding_tdd` | 严格对象结构、字段/数量上限、有序准确引用、给定所有者/字节/摘要一致性；默认纯测试，不验证存储或 Session 授权 |
+| 大文件清单及流式核心 | 默认 `file_transfer_tdd`、私有 Unix 来源检查单元及 `fileTransfer` 公共库存守卫；[边界](large-file-core.md) | 严格有界元数据、真实分块/整文件摘要、精确流结束、固定缓冲、部分输出/IO 故障及预开普通文件检查；不验收私有暂存、持久进度、配额、认证传输、基准或桌面互通 |
+| Unix 私有分块暂存 | 默认 `file_chunk_staging_tdd` 及私有排队工作单元；[边界](large-file-staging.md) | 准确清单绑定、独占私有文件、失败保留、可观察根/文件项漂移及实际取消/排队生命周期；不是上传回执、预留配额、真实 fsync/磁盘满故障验收、恢复、网络或基准 |
+| 受信任上传意图与逻辑额度 | 默认 `file_upload_intent_tdd` 准入用例、显式 `scripts/test-file-upload-intent.sh`、`fileUploadIntent` 源码守卫；[边界](large-file-upload-intent.md) | 全新 Schema、准确所有者/账号代次、跨代次字节/条数竞争、有界损坏账本拒绝与真实触发器/取消正控；仅元数据，不证明分块回执、物理分配、当前 Session、续传或传输 |
+| 上传绑定本地暂存 | 默认 `file_upload_staging_tdd` 准入用例、显式 `scripts/test-file-upload-staging.sh`、`fileUploadStaging` 源码守卫；[边界](large-file-upload-staging.md) | 真实跨块字节、锁等待后的原来源/记录复核、原 inode 回执、共享准入/取消及失败保留；不验收持久分块日志、Session 权限、续传、网络、真实磁盘满/fsync 故障或基准 |
+| 分块写前日志 | 默认 `file_upload_chunk_journal_tdd`、显式 `scripts/test-file-upload-chunk-journal.sh`、`fileUploadChunkJournal` 源码守卫；[边界](large-file-chunk-journal.md) | 任何文件派发前提交 Unknown、准确日志坐标、真实 SQL 等待/取消、文件保留及仅元数据观察；不是恢复执行、状态证明的当前完整性、整文件最终核验、Session 权限或传输 |
+| 整上传当前字节核验 | 默认 `file_upload_whole_tdd`、显式 `scripts/test-file-upload-whole.sh`、私有工作单元及 `fileUploadWhole` 公共守卫；[边界](large-file-whole-verification.md) | 有序绑定块/整文件摘要、原来源/文件快照漂移、只读结果及共享工作准入；不是历史回执、日志收编、持久发布、恢复、Session 权限或传输 |
+| 持久文件发布元数据 | 默认 `file_upload_publication_tdd`、显式 `scripts/test-file-upload-publication.sh`、`fileUploadPublication` 公共守卫；[边界](large-file-publication.md) | 准确完整已确认日志与真实整字节、不可变上传/版本唯一、有界全局容量、原身份与提交确认后失败；不是恢复回执、永久物理封存、当前 Session、授权或传输 |
+| Session 私有文件元数据 | 默认 `session_file_metadata_tdd`、显式 `scripts/test-session-file-metadata.sh`、`sessionFileMetadata` 公共守卫；[边界](large-file-session-metadata.md) | 单一认证源事务推导 owner／账号代次，精确读取本人上传／Published、新鲜策略及到期检查、配额、真实等待／故障及原认证源／目标身份；不是真正 Session 发布、字节健康、授权、恢复或传输 |
+| 纯文件发布／接收授权 | 默认 `file_access_tdd` 及 `fileAccess` 公共组合／文档守卫；[边界](large-file-access-contract.md) | 准确账号／版本选择器、独立撤权、半开时间区间及严格有界 JSON；不是签发来源、审计当前授权、Session／SQL 授权、字节访问或传输 |
 | 草稿导入与发布计划 | Rust `task_draft_publication_tdd`、`taskDraftPublication` 公共守卫、前端 `taskDraft` 共享夹具 | 严格有界 JSON、空白标题拒绝、本地身份剥离、给定准确内容映射及标准导出兼容；不发布内容、不检查当前 Session、不保存浏览器草稿 |
 | 会话草稿发布步骤 | Rust `session_task_draft_publication_tdd`、`scripts/test-session-task-draft-publication.sh`、`sessionTaskDraftPublication` 公共守卫 | 固定分配与 Session 绑定、每次推进一个写入、空/多项成功、确认前缀与未知步骤、取消、撤权及最终真实字节检查；无持久恢复或浏览器保存 |
 | 独立目录草稿发布 | `session_catalog_draft_publication_tdd`、内部 `catalog_draft_publication::tests`、`scripts/test-session-catalog-draft-publication.sh`、`sessionCatalogDraftPublication` 守卫 | 无 I/O 的准确完整定义冻结、独立 token 域、每次推进一个已有 Session 写入、完整 `Some` 确认、保留前缀与未知目标及手动/日志类型隔离；C2-AA 比较另列，不提供恢复、重试或 HTTP/浏览器保存 |
@@ -90,6 +113,8 @@ Rust 公告审计，前端/SDK 检查也包含生产依赖的 npm 审计。因�
 | 日志步骤资源观察 | `session_task_draft_journal_observation_tdd`、`scripts/test-session-task-draft-journal-observation.sh`、`sessionTaskDraftJournalObservation` 公共守卫 | 序号准入、同事务精确资源读取、读取后原完整日志/nonce/首次身份复验、新鲜权限及不含正文结果；不写业务、不提供回执或恢复 |
 | 独立内容存储 | Rust `task_content_store_tdd`、`scripts/test-task-content-storage.sh` | Schema 2/3 隔离、完整元数据/outbox 原子性、修订冲突与存储故障；不是 Session 内容或浏览器适配 |
 | 会话任务内容 | Rust `session_task_content_tdd`、`scripts/test-session-task-content.sh` | 同一事务内当前授权、旧新精确文本、元数据编辑、移除、命名空间身份及写后复验；不是公共/浏览器验收 |
+| 私人任务内容元数据索引 | `task_content_index_tdd`、`session_task_content_index_tdd`、`scripts/test-task-content-index.sh` | 有界 UUID 页面、仅位置游标、严格任务头/前瞻、显式中立目录准入及无 Artifact 访问的当前会话；不验收完整清单、内容可用性、HTTP/SDK/UI 或恢复 |
+| 独立元数据索引 HTTP | `task_content_index_http_tdd`、`scripts/test-task-content-index-http.sh`、`taskContentIndexHttp` 守卫；[契约](task-content-index-http.md) | 精确 GET 传输、严格原始游标/上限、私有七字段投影、当前会话委托、损坏/空页缺列拒绝、Artifact 独立性与响应存活期容量；不验收公共/浏览器/SDK 接线、交叉平台或部署 |
 | 独立目录任务内容 HTTP | `catalog_task_content_http_tdd`、`scripts/test-platform-catalog-task-content-http.sh`、`catalogTaskContentHttp` 公共守卫 | 严格精确引用对象 → 可信完整定义、有绑定/无绑定目录身份、手动/所有者隔离、当前 Session/完整元数据/文本检查及共用传输/准入结果；不评估，也未接公共/浏览器路径 |
 | UI 导航与安全 | `test:ui-permissions`、布局/动作/账户/运行浏览器套件 | 绑定目标的确认、防重复操作、路由切换、键盘操作、未保存草稿保护 |
 | API、SDK、打包与部署 | 公共契约测试、SDK 门禁、发布/SSH Rust 目标与工具夹具 | Engine 路由 → OpenAPI → 生成 SDK；归档来源 → 精确已审阅 SSH 目标；夹具与实际安装分离 |

@@ -1,11 +1,11 @@
 # Current platform feature and module network
 
-Source release **0.5.5** (**2026-10-11**) includes these follow-ups. Dated `Unreleased` labels retain
+Source release **0.5.6** (**2026-10-11**) includes these follow-ups. Dated `Unreleased` labels retain
 their original implementation stage, source versions and verification scope. Source inclusion does not
 mount preparation APIs, connect browser saving, switch live authentication, migrate storage or validate
 a running deployment.
 
-Base source review date: **2026-10-03**. Current scope: **0.5.5 source**, including prepared-authentication
+Base source review date: **2026-10-03**. Current scope: **0.5.6 source**, including prepared-authentication
 hardening, the 0.5.0 navigation/filename fixes and C2-K/L/M/N content preparation, alongside the preceding
 collaboration commands and local task payload editor. The review retains its
 0.4.9 base commit and dated evidence; source inclusion is not a new release acceptance report or a
@@ -79,6 +79,45 @@ legacy teacher role or browser-supplied identities into generic permissions.
 teacher-only, revision-fenced profile metadata storage. A caller-owned SDK bridge adapts explicitly
 selected existing tools; the host owns provider transport, secrets and approval. This adds neither
 an autonomous AI identity/delegation edge nor the missing generic Task browser-save connection.
+
+The independent **2026-10-11 Unreleased [task-content index](task-content-index.md)**, on source
+0.5.5, connects trusted schema 3 metadata reads and current-Session owner-private listing. A default
+20-entry page is bounded to 1–32 plus one strictly checked lookahead; neutral catalogue configuration
+admits manual and complete configured definitions. Cursor position is not authority, content availability
+or whole-store health. No Artifact/file read, public edge, UI, write, installer, migration or recovery is added.
+
+The separate same-day **Unreleased [index HTTP adapter](task-content-index-http.md)** on source
+0.5.5 adds only explicit GET transport → existing current-Session index → bounded metadata projection.
+Its exact `/platform/v1/task-index` route has strict raw pagination, private headers and shared
+response-lifetime admission. The route remains unmounted; old content routers and all browser,
+SDK/OpenAPI, storage, execution and recovery connections remain unchanged.
+
+The separate **2026-10-11 Unreleased [large-file core](large-file-core.md)** introduces
+strict shared manifest → bounded supplied-stream inspection/chunk copy/whole-file verification.
+Preopened Unix descriptor checks observe source metadata changes without opening paths. This
+transport-neutral branch neither enters Artifact/Task storage nor mounts HTTP. Its separate Unix
+[staging branch](large-file-staging.md) adds exact manifest/index binding → independent worker
+admission → exclusive private chunk → sync/readback. A separate [upload-intent ledger](large-file-upload-intent.md)
+adds trusted owner/account generation → immutable manifest → atomic logical quota reservation.
+The separate [upload-bound local receipt](large-file-upload-staging.md) connects exact intent/source pins
+→ exclusive staged bytes → original-file confirmation. The independent [chunk journal](large-file-chunk-journal.md)
+adds acknowledged Unknown → exclusive file work → recorded confirmation → fresh original-source/file checks.
+Separate [whole-byte observation](large-file-whole-verification.md) connects the original upload binding
+→ ordered current chunk/whole digest → fresh original-source check → original file snapshot recheck,
+without a journal-state, recovered-receipt or publication edge.
+Separate [persistent publication metadata](large-file-publication.md) connects original source and
+complete confirmed journal → fresh whole bytes → immutable insert acknowledgement → original
+source/journal/publication/same-file checks. Metadata reads do not recreate its one-shot receipt,
+prove current health, authorize downloads or settle an Unknown caller result.
+Separate [Session private metadata](large-file-session-metadata.md) connects current audited Human
+binding → derived owner/account → own reservation or selected upload/Published metadata → original
+pin/record checks → fresh Session/policy checks → source commit acknowledgement. It has no byte IO
+or publisher edge. Separate [pure file-grant contracts](large-file-access-contract.md) connect supplied
+account/version metadata to exact active/time matching only, not authenticated or persisted authority;
+publisher and recipient revocation are independent. Reviewed recovery, physical allocation, audited grants,
+central transfer and later desktop pairing remain
+missing edges in [proposal #2](https://github.com/Team-silvortex/cyanrex-lab/issues/2).
+The existing capability tensor's dated inventory and maturity evidence are unchanged.
 
 ## Status vocabulary
 

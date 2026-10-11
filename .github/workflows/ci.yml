@@ -1,16 +1,12 @@
 name: CI
-
 on:
   push:
   pull_request:
-
 permissions:
   contents: read
-
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-
 jobs:
   permissions:
     name: Permission regressions
@@ -25,7 +21,6 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - name: Run permission regression checks
         run: ./scripts/quality-gate.sh --permissions-only
-
   security-audit:
     name: Security audit
     runs-on: ubuntu-latest
@@ -36,7 +31,6 @@ jobs:
         run: cargo install cargo-audit --locked
       - name: Check security exceptions
         run: ./scripts/check-security-audit.sh
-
   file-lengths:
     name: File length limits
     runs-on: ubuntu-latest
@@ -58,7 +52,6 @@ jobs:
         run: |
           docker compose -f docker/docker-compose.yml --profile runner-agent config >/dev/null
           docker compose -f docker/docker-compose.distribution.yml --profile runner-agent config >/dev/null
-
   engine:
     name: Rust engine
     runs-on: ubuntu-latest
@@ -454,22 +447,34 @@ jobs:
             cargo test --manifest-path engine/Cargo.toml --locked --test provision_postgres_tdd "$task_provision_pg_case" -- --ignored --exact --nocapture
           done
       - name: Run real PostgreSQL lifecycle reconciliation integration
-        env:
-          CYANREX_TEST_DATABASE_URL: postgres://cyanrex_test:cyanrex-ci-only@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test
-          CYANREX_TEST_DATABASE_PASSWORD: cyanrex-ci-only
+        env: { CYANREX_TEST_DATABASE_URL: "postgres://cyanrex_test:cyanrex-ci-only@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test", CYANREX_TEST_DATABASE_PASSWORD: cyanrex-ci-only }
         run: bash scripts/test-durable-reconciliation.sh
       - name: Run real PostgreSQL task artifact and review storage integration
         env: { CYANREX_TEST_DATABASE_URL: "postgres://cyanrex_test:cyanrex-ci-only@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test" }
-        run: bash scripts/test-task-storage.sh && bash scripts/test-artifact-storage.sh && bash scripts/test-review-storage.sh && bash scripts/test-session-task-storage.sh && bash scripts/test-session-artifact-storage.sh && bash scripts/test-session-task-inputs.sh && bash scripts/test-session-review-storage.sh && bash scripts/test-session-catalog-tasks.sh && bash scripts/test-session-task-revisions.sh && bash scripts/test-task-content-storage.sh && bash scripts/test-session-task-content.sh && bash scripts/test-platform-task-content-http.sh && bash scripts/test-platform-catalog-task-content-http.sh && bash scripts/test-platform-text-artifact-http.sh && bash scripts/test-durable-session-boundary.sh && bash scripts/test-durable-password-profile.sh && bash scripts/test-durable-otp-freshness.sh && bash scripts/test-durable-otp-consumption.sh && bash scripts/test-durable-otp-schema.sh && bash scripts/test-durable-login-password.sh && bash scripts/test-durable-session-cleanup.sh
+        run: bash scripts/test-task-storage.sh && bash scripts/test-artifact-storage.sh && bash scripts/test-review-storage.sh && bash scripts/test-session-task-storage.sh && bash scripts/test-session-artifact-storage.sh && bash scripts/test-session-task-inputs.sh && bash scripts/test-session-review-storage.sh && bash scripts/test-session-catalog-tasks.sh && bash scripts/test-session-task-revisions.sh && bash scripts/test-task-content-storage.sh && bash scripts/test-session-task-content.sh && bash scripts/test-task-content-index.sh && bash scripts/test-platform-task-content-http.sh && bash scripts/test-task-content-index-http.sh && bash scripts/test-platform-catalog-task-content-http.sh && bash scripts/test-platform-text-artifact-http.sh && bash scripts/test-durable-session-boundary.sh && bash scripts/test-durable-password-profile.sh && bash scripts/test-durable-otp-freshness.sh && bash scripts/test-durable-otp-consumption.sh && bash scripts/test-durable-otp-schema.sh && bash scripts/test-durable-login-password.sh && bash scripts/test-durable-session-cleanup.sh
       - name: Run shared prepared resource SQL regressions
         env: { CYANREX_TEST_DATABASE_URL: "postgres://cyanrex_test:cyanrex-ci-only@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test" }
         run: bash scripts/test-prepared-resource-sql.sh
+      - name: Run real PostgreSQL upload intent and quota integration
+        env: { CYANREX_TEST_DATABASE_URL: "postgres://cyanrex_test:cyanrex-ci-only@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test" }
+        run: bash scripts/test-file-upload-intent.sh
+      - name: Run real PostgreSQL upload-bound local staging integration
+        env: { CYANREX_TEST_DATABASE_URL: "postgres://cyanrex_test:cyanrex-ci-only@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test" }
+        run: bash scripts/test-file-upload-staging.sh
+      - name: Run real PostgreSQL write-ahead chunk journal integration
+        env: { CYANREX_TEST_DATABASE_URL: "postgres://cyanrex_test:cyanrex-ci-only@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test" }
+        run: bash scripts/test-file-upload-chunk-journal.sh
+      - name: Run real PostgreSQL whole upload byte observation integration
+        env: { CYANREX_TEST_DATABASE_URL: "postgres://cyanrex_test:cyanrex-ci-only@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test" }
+        run: bash scripts/test-file-upload-whole.sh
+      - name: Run real PostgreSQL whole file publication and Session metadata integration
+        env: { CYANREX_TEST_DATABASE_URL: "postgres://cyanrex_test:cyanrex-ci-only@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test" }
+        run: bash scripts/test-file-upload-publication.sh && bash scripts/test-session-file-metadata.sh
       - name: Run Session draft publication regressions
         env: { CYANREX_TEST_DATABASE_URL: "postgres://cyanrex_test:cyanrex-ci-only@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test" }
         run: bash scripts/test-session-task-draft-publication.sh && bash scripts/test-session-task-draft-observation.sh && bash scripts/test-session-task-draft-inspection.sh && bash scripts/test-session-task-draft-intent.sh && bash scripts/test-session-task-draft-dispatch.sh && bash scripts/test-session-task-draft-journal-inspection.sh && bash scripts/test-session-task-draft-journal-observation.sh && bash scripts/test-session-catalog-draft-publication.sh && bash scripts/test-session-catalog-draft-observation.sh
       - name: Run real Runner Agent compile integration
         run: cargo test --manifest-path engine/Cargo.toml --locked --test runner_agent_client_tdd -- --ignored --nocapture
-
   frontend:
     name: Next.js frontend
     runs-on: ubuntu-latest
@@ -504,7 +509,6 @@ jobs:
       - name: Audit frontend production dependencies
         working-directory: frontend
         run: node ../scripts/check-npm-audit.mjs .
-
   sdk:
     name: JavaScript SDK
     runs-on: ubuntu-latest
@@ -524,7 +528,6 @@ jobs:
       - name: Audit production dependencies
         working-directory: sdk-js
         run: node ../scripts/check-npm-audit.mjs .
-
   distribution:
     name: Distribution install smoke
     runs-on: ubuntu-latest

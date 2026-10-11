@@ -1,6 +1,6 @@
 # Security and deployment boundaries
 
-Source release **0.5.5** (**2026-10-11**) includes these follow-ups. Dated `Unreleased` labels retain
+Source release **0.5.6** (**2026-10-11**) includes these follow-ups. Dated `Unreleased` labels retain
 their original implementation stage, source versions and verification scope. Source inclusion does not
 mount preparation APIs, connect browser saving, switch live authentication, migrate storage or validate
 a running deployment.
@@ -37,6 +37,79 @@ For source-owned private work, see [Task inputs](session-task-inputs.md), [Draft
 and [private Reviews](session-review-commands.md). These paths are not yet public browser APIs, so
 their service tests do not establish live HTTP/CSRF or deployment acceptance. Application roles and
 source-level abstractions still do not isolate the shared Linux kernel.
+
+### Private metadata index boundary
+
+The independent **2026-10-11 Unreleased [task-content index](task-content-index.md)**, on source
+0.5.5, returns only owner-private metadata. Trusted listing does not authenticate a supplied owner;
+Session listing derives that owner, locks bounded heads and rechecks namespace/current authority with
+fresh database time before commit. Selected records and lookahead fail closed on corruption or
+unconfigured definitions. A same-scope foreign/nonexistent cursor is only a position, never a grant.
+No Artifact namespace or blob is accessed, so listing does not prove readable content, unscanned-row
+integrity or whole-store health. No HTTP/SDK/UI, write, installation, migration or recovery is added.
+
+The separate same-day **Unreleased [index HTTP adapter](task-content-index-http.md)** on source
+0.5.5 delegates only to that current-Session command. Raw query fields cannot select an owner,
+scope or namespace; the dedicated Cookie/marker and optional exact GET Origin precede shared
+response-lifetime admission. Metadata stays private with `no-store`; the route remains unmounted,
+without a Session issuer, browser/SDK connection, content-availability proof or global capacity quota.
+
+### Private chunk staging boundary
+
+The **2026-10-11 Unreleased [Unix staging API](large-file-staging.md)** on source 0.5.5 is trusted-only.
+It pins an existing owned 0700 root, binds each exclusive entry to the entire typed manifest/index,
+checks exact bytes, synchronizes file/directory and reads back the originally created inode.
+All existing targets conflict. Creation/post-creation uncertainty retains files without adoption,
+overwrite or cleanup. Current verification is not an earlier write receipt or upload progress.
+
+Clone-shared worker slots belong to actual queued/running jobs after caller cancellation; separate
+handles have additive budgets. Neither 0400 permissions nor metadata observations isolate the same
+UID/root, and file work has no kill/deadline or reserved-disk quota. No upload journal, current-Session
+authorization, publication/grant, public route or live composition is added.
+
+### Trusted upload-intent boundary
+
+The separate [upload ledger](large-file-upload-intent.md) binds supplied owner/account generation,
+fixed namespace/table incarnations and persisted logical limits; it is not a current-Session guard.
+Writers serialize quota admission and validate all bounded records, including foreign owners and
+all account generations. Errors never release reservations or adopt staged bytes. Metadata reads
+do not prove uploaded bytes, old commit provenance or retry authority. No transport is connected.
+
+The separate [upload-bound staging adapter](large-file-upload-staging.md) captures the original source
+and exact reservation, then rechecks them before and after file work using fresh READ COMMITTED reads.
+Its one-shot in-memory attempt becomes Unknown before its first admitted await; only original-object
+readback can produce a local receipt, which retains the original read-only descriptor. No SQL lock
+spans IO and no cross-storage atomicity, persistent progress, retry or current Session grant is claimed.
+
+The independent [chunk journal](large-file-chunk-journal.md) requires an acknowledged Unknown row
+before file dispatch. Unique upload/index coordinates remain occupied in either status, regardless
+of changed source/root bindings. The journaled wrapper rechecks original source/file observations
+after final confirmation acknowledgement. A later error can leave recorded Confirmed with a caller
+still Unknown; metadata inspection neither recreates a receipt nor permits retry or cleanup.
+
+Separate [whole-upload verification](large-file-whole-verification.md) reads current `u1` bytes,
+checks ordered chunk/whole digests and rechecks original source/root/entry observations. It neither
+uses recorded status as byte proof nor changes it. Metadata results do not retain chunk descriptors
+or establish original write provenance, permanent integrity, current Session authority or publication.
+
+Separate [persistent publication metadata](large-file-publication.md) requires both original complete
+confirmed journal metadata and fresh real whole-file bytes. Its immutable insert is create-only;
+upload/version conflicts are never adopted. Original source, journal, publication and file checks
+continue after acknowledgement. A later rejection can leave a published row and an Unknown caller.
+Neither the row nor a matching read restores a receipt, grants download authority or proves current
+file health, permanent physical sealing, rollback or permission to retry or clean up.
+
+Separate [Session private metadata](large-file-session-metadata.md) requires a current audited active
+Human/member, derives owner/account generation on the server and uses one source transaction with
+original source/target pins, selected row/marker locks and a final fresh policy/expiry check.
+Recreated accounts and teacher status cannot inherit another owner's records. Private reservations
+and metadata reads grant no publishing, file-byte access or recipient permission.
+
+Separate [pure file-grant contracts](large-file-access-contract.md) compare exact account generations
+and versions with active state and a bounded expiry interval. Neither JSON nor a true `matches`
+result establishes issuer provenance, current audited policy or download authority. A stale active
+copy can still match after revocation; future commands must read and recheck current grants, not
+reuse that boolean. Publisher revocation does not implicitly revoke independent recipient records.
 
 ### Prepared HTTP admission follow-up
 

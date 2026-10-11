@@ -10,6 +10,9 @@ use crate::{
 
 use super::private_work::{valid_namespace, PrivateWorkError};
 
+mod content_index;
+pub use content_index::SessionTaskContentIndexWorkspace;
+
 #[cfg(unix)]
 mod content;
 #[cfg(unix)]

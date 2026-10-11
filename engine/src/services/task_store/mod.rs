@@ -11,11 +11,14 @@ use std::{future::Future, time::Duration};
 
 mod commands;
 mod content;
+mod content_index;
 mod draft;
 mod records;
 mod replace;
 mod schema;
 pub use content::{TaskContentSnapshot, TaskContentStore};
+pub(crate) use content_index::validate_index_page_request;
+pub use content_index::{TaskContentIndexEntry, TaskContentIndexPage, TaskContentIndexStore};
 pub(crate) use draft::validate_input_refs;
 pub use draft::TaskDraft;
 

@@ -1,6 +1,6 @@
 # cyanrex-lab
 
-Version: `0.5.5`
+Version: `0.5.6`
 
 Cyanrex is evolving into a self-hosted collaboration platform for people, AI Agents and compute
 resources. Tasks, content versions, execution and reviews have separate responsibilities; eBPF teaching
@@ -24,15 +24,16 @@ private process in [SECURITY.md](SECURITY.md).
 
 ## Current development snapshot
 
-As of **2026-10-11**, the source version is **0.5.5**. This patch separates definition metadata from
-assessment providers, composes bounded multi-package catalogues with text content, and preserves
-portable payload language hints independently of editor profiles. It includes shared HTTP admission,
-independent C2-X/Y adapters, C2-Z catalogue draft publication and separate C2-AA target observation.
-The earlier AI host profiles/SDK adapters, C2-O–W draft preparation and security hardening remain
-included. Existing source pins, password profiles, atomic OTP consumption and schema boundaries remain unchanged.
-See [AI Agent integration](docs/en/ai-agent-integration.md) and [release notes](CHANGELOG.md#055---2026-10-11).
-The task-content HTTP adapter remains unmounted and the editor local-only. Neither this release nor
-passing tests switch legacy authentication or an existing deployment.
+As of **2026-10-11**, the source version is **0.5.6**. This patch adds an owner-private
+[task metadata index](docs/en/task-content-index.md) and a separate unmounted HTTP adapter.
+[Large-file distribution preparation](docs/en/large-file-distribution.md) now includes bounded streaming,
+private chunk staging, immutable upload quotas, a chunk journal, whole-byte verification, trusted
+publication, current-Session private metadata and pure publisher/recipient grant contracts.
+It also retains the original source-relation pin across private Session work. Earlier task decoupling,
+AI host profiles/SDK adapters, C2-O–AA draft preparation and authentication protections remain included.
+See [release notes](CHANGELOG.md#056---2026-10-11). Network file transfer, durable grant issuance and
+restart recovery are not connected. Preparation HTTP adapters remain unmounted and the editor local-only;
+neither this release nor passing tests switch legacy authentication or an existing deployment.
 
 0.5.4 C2-T adds separate, immutable intent registration and current-Session-authorized reading
 from a real unstarted draft attempt. It stores bounded private metadata, not text or credentials.

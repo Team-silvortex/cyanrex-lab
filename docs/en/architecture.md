@@ -1,6 +1,6 @@
 # System Architecture
 
-Source release **0.5.5** (**2026-10-11**) includes these follow-ups. Dated `Unreleased` labels retain
+Source release **0.5.6** (**2026-10-11**) includes these follow-ups. Dated `Unreleased` labels retain
 their original implementation stage, source versions and verification scope. Source inclusion does not
 mount preparation APIs, connect browser saving, switch live authentication, migrate storage or validate
 a running deployment.
@@ -117,6 +117,20 @@ reads/edits/transitions reject full-definition drift. The same content executor 
 current ownership and final authorization. Manual and catalogue handles reject each other's records;
 schema 3 is unchanged. The HTTP and C2-P–W publication paths still use manual handles, with no implicit
 promotion, rule execution or browser connection.
+
+The independent **2026-10-11 Unreleased [metadata index](task-content-index.md)**, on source 0.5.5,
+adds read-only `TaskContentIndexStore` and `SessionTaskContentIndexWorkspace` paths over schema 3.
+Explicit `from_definitions` indexes manual and complete configured catalogue records without changing
+the existing write/get mode policies. Bounded heads and lookahead retain strict record validation;
+the Session path derives the owner and rechecks current authority before commit. No Artifact namespace,
+file read, installation, HTTP/SDK/UI, write, migration or recovery path is added.
+
+A separate **2026-10-11 Unreleased [index HTTP follow-up](task-content-index-http.md)** on source
+0.5.5 adds an independently constructed `TaskContentIndexHttpState` and exact GET-only
+`/platform/v1/task-index` projection over that existing Session command. Strict raw queries select
+only position and size; trusted workspace configuration still selects scope and admission mode.
+It reuses private headers and response-body-lifetime slots, without changing old collection/query
+behavior, adding SQL or mounting the application, browser, OpenAPI or SDK.
 
 [C2-N](task-content-http.md) adds a separately constructed HTTP router over the manual commands, with a
 dedicated Session cookie, fixed trusted Origin and bounded request admission. It is not mounted in
@@ -537,6 +551,35 @@ schema-3 Task content remain distinct. The helper neither changes `search_path` 
 Session command's transaction. Original namespace pins, owner resolution and final Session/record checks
 remain in the existing command boundaries. This internal sharing does not compose prepared stores into
 `AppState`, mount HTTP routes or change the live authentication path.
+
+The independent [large-file core](large-file-core.md), following
+[proposal #2](https://github.com/Team-silvortex/cyanrex-lab/issues/2), adds a shared immutable manifest
+and synchronous bounded stream checks. It accepts caller-owned IO, not filesystem paths, and grants
+no publication or read authority. Optional preopened Unix descriptor observations detect metadata
+changes, not path/root identity or durable storage. The separate Unix [private staging API](large-file-staging.md)
+owns descriptor-relative exclusive chunks and an independent job-lifetime worker budget. It confirms
+local chunk sync/readback, not whole-file publication or historical upload progress. The standalone
+[upload ledger](large-file-upload-intent.md) reserves immutable trusted metadata and logical quotas.
+A separate [upload-bound adapter](large-file-upload-staging.md) confirms local original-object staging,
+not durable progress or current Session authority. A separate [chunk journal](large-file-chunk-journal.md)
+records Unknown before dispatch and exact confirmation afterwards; it neither restores attempts
+nor proves current bytes from metadata. Separate [whole-upload verification](large-file-whole-verification.md)
+reads current bound chunks in order, checks the whole digest and rechecks original source/file snapshots;
+its metadata observation does not confirm publication, recover receipts or consult journal status.
+Separate [publication metadata](large-file-publication.md) requires the exact complete confirmed
+journal and fresh real bytes, inserts one immutable record, then rechecks the original source,
+journal, publication and same file observation. A stored row is not current file health or a grant;
+post-acknowledgement failure may retain the row while the original caller remains Unknown.
+Separate [Session private metadata](large-file-session-metadata.md) derives owner/account from the
+current audited Human binding, reserves own intent and reads own upload/Published metadata in one
+READ COMMITTED source transaction. Borrowed store helpers retain original pins and selected-row locks;
+the shared private-work guard now verifies its initial source/registry relation pin at finalization.
+It does not call the publisher or read files. Separate [pure file-grant contracts](large-file-access-contract.md)
+match exact workspace/account or version/publisher/recipient snapshots, with explicit active/revoked
+state and bounded validity. They neither authenticate supplied grants nor connect to those commands;
+publisher and recipient revocation are independent. Physical disk allocation, durable audited file
+permissions and an unprivileged central data plane remain separate;
+desktop pairing follows central distribution. This module is not composed into `AppState` or routes.
 
 ## 5. Main Data Flows
 

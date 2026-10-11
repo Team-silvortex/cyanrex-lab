@@ -54,6 +54,7 @@ pub(super) struct PrivateWorkContext {
     session: DurableSession,
     digest: String,
     source: NamespacePin,
+    relations: RelationPin,
     targets: Vec<NamespacePin>,
     selected: usize,
 }
@@ -74,7 +75,7 @@ impl DurableAuthSource {
         if source.name == target {
             return Err(PrivateWorkError::InvalidNamespace);
         }
-        RelationPin::capture(tx, true).await?;
+        let relations = RelationPin::capture(tx, true).await?;
         if scope.authority_id != self.authority_id {
             return Err(DurableAuthError::SourceMismatch.into());
         }
@@ -104,6 +105,7 @@ impl DurableAuthSource {
             session,
             digest,
             source,
+            relations,
             targets: vec![selected],
             selected: 0,
         })
@@ -156,7 +158,7 @@ impl PrivateWorkContext {
         }
         NamespacePin::select(tx, &self.source.name).await?;
         self.source.verify(tx).await?;
-        RelationPin::capture(tx, true).await?;
+        self.relations.verify(tx).await?;
         source.lock_source(tx, false).await?;
         Registry::lock_session_command_scope(tx, self.scope).await?;
         let current = Registry::session_private_work_actor(

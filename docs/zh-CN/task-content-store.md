@@ -11,6 +11,11 @@
 源码版本 0.5.4 上的 **2026-10-08 未发布跟进**为同一 Schema 3 内容存储增加显式目录定义准入。
 原构造器仍只接受手工任务；不增加 Schema、迁移、评估器或公共保存端点。
 
+源码 0.5.5 上独立的 **2026-10-11 未发布 [TaskContentIndexStore](task-content-index.md)**
+是另行构造的只读 Schema 3 元数据句柄。`new` 仍仅接纳手动记录；其显式 `from_definitions`
+为中立索引，同时接纳手动与完整配置目录记录。分页通过原严格读取器校验选中任务头及前瞻，
+不读取 Artifact 字节，不提供写句柄、安装或迁移；下文原写入/get 模式策略不变。
+
 ## 独立的存储准入
 
 `TaskContentStore` 从 `services::task_store` 导出，但与 `TaskStore` 是不同公开句柄。旧句柄固定

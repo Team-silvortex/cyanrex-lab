@@ -13,6 +13,8 @@
 mod artifact;
 mod content;
 mod event;
+mod file_access;
+mod file_transfer;
 mod identity;
 mod references;
 mod review;
@@ -23,6 +25,9 @@ mod work;
 pub use artifact::*;
 pub use content::*;
 pub use event::*;
+pub use file_access::*;
+pub(crate) use file_transfer::validate_file_display_name;
+pub use file_transfer::*;
 pub use identity::*;
 pub use references::*;
 pub use review::*;

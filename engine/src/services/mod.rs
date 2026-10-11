@@ -17,6 +17,14 @@ mod event_bus_db_config;
 mod event_bus_db_parser;
 mod event_bus_filter;
 mod event_bus_policy;
+pub mod file_transfer;
+#[cfg(unix)]
+pub mod file_upload_chunk_journal;
+#[cfg(unix)]
+pub mod file_upload_publication;
+#[cfg(unix)]
+pub mod file_upload_staging;
+pub mod file_upload_store;
 pub mod learning_catalog;
 pub mod learning_store;
 pub mod legacy_workspace;

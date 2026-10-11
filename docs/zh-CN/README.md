@@ -4,11 +4,11 @@ Cyanrex 正从 eBPF 教学应用转向面向人类、AI Agent 与计算资源的
 继续可用；通用身份、内容、任务和审阅服务属于显式配置的准备层，任务 payload 编辑器目前只保存
 本地草稿。自主 AI 与通用 Run 编排尚未实现。
 
-本索引覆盖整个项目，不只覆盖首个教学领域。源码版本为 **0.5.5**（**2026-10-11**），收录无
-提供器/组合目录元数据、显式评估绑定选择、便携语言标记、目录内容及独立 C2-X/Y/Z/AA 适配和流程。
-此前 C2-T–W、Next.js 15.5.27、C2-O–S、AI 宿主适配与安全边界保持不变。源码收录不接通通用
+本索引覆盖整个项目，不只覆盖首个教学领域。源码版本为 **0.5.6**（**2026-10-11**），收录私人
+任务元数据索引、未挂载 HTTP 适配和大文件准备层，推进至受信任发布、Session 元数据及纯授权契约。
+此前任务解耦、C2-O–AA、Next.js 15.5.27、AI 宿主适配与安全边界保持不变。源码收录不接通通用
 浏览器保存、不切换在线认证、不迁移存储，也不验收部署。分日期的未发布说明保留原实施阶段、
-源码版本与验证范围，不是新鲜的 0.5.5 执行记录。
+源码版本与验证范围，不是新鲜的 0.5.6 执行记录。
 以下文档区分源码发布内容、现用运行能力和目标架构，
 模块存在或测试通过不表示已有在线部署。
 
@@ -35,6 +35,18 @@ Cyanrex 正从 eBPF 教学应用转向面向人类、AI Agent 与计算资源的
 经当前 Session 授权读取一个未知 C2-Z 目标。它比较完整定义/文本元数据，
 不返回正文也不收编进度；匹配和不可见不证明先前提交/回滚，也不允许重试。
 
+0.5.6 收录的独立 **[任务内容元数据索引](task-content-index.md)**，
+在可信所有者或当前 Session 授权下列出私人 Schema 3 元数据。只返回有界页面，不读取 Artifact，
+不接 HTTP/SDK/UI，不写入、不迁移或恢复；本跟进与此前发布及验证记录分开。
+
+0.5.6 另收录 **[索引 HTTP 适配](task-content-index-http.md)**，
+在精确 `GET /platform/v1/task-index` 投影该当前会话页面。它仍未挂载，严格解析原始分页查询，
+私有名额持续至响应正文结束；原内容路由、Session 签发、SDK/OpenAPI 及浏览器行为不变。
+
+**0.5.6 [大文件准备层](large-file-distribution.md)**提供独立组合的流式、暂存、上传配额、日志、
+核验、发布与私人元数据服务。发布者／接收者契约只比较给定快照；持久授权签发、恢复和两种
+网络传输仍未接通。源码收录不表示已经部署了分发服务。
+
 ## 按问题选择入口
 
 | 你想了解什么 | 先读这里 |
@@ -43,10 +55,13 @@ Cyanrex 正从 eBPF 教学应用转向面向人类、AI Agent 与计算资源的
 | 当前全部模块及连接关系 | [当前平台功能地图](platform-network.md) |
 | 按架构、功能、实现和成熟度切片 | [功能张量与证据评分](capability-maturity.md) |
 | 哪些已完成以及下一步 | [项目状态](project-status.md)、[目标架构](next-architecture.md) |
+| 审阅集中大文件分发和后续桌面互传 | [分发提案](large-file-distribution.md)、[流式核心](large-file-core.md)、[私有分块暂存](large-file-staging.md)、[上传意图与逻辑配额](large-file-upload-intent.md)、[本地回执](large-file-upload-staging.md)、[分块写前日志](large-file-chunk-journal.md)、[整文件字节观察](large-file-whole-verification.md)、[持久发布元数据](large-file-publication.md)、[Session 私有元数据](large-file-session-metadata.md)、[纯发布／接收契约](large-file-access-contract.md)；网络传输未接通 |
 | 编辑笔记、代码或配置等任务内容 | [任务 payload 编辑器](editor.md) |
 | 配置 AI Agent 宿主并适配明确选出的工具 | [AI Agent SDK 接入](ai-agent-integration.md) |
 | 查看内部服务端内容结构与精确快照校验 | [任务内容清单](task-content-manifest.md) |
 | 查看独立内容持久化与原子编辑 | [任务内容存储](task-content-store.md) |
+| 不读取正文，只列出私人任务元数据 | [任务内容元数据索引](task-content-index.md) |
+| 查看独立未挂载的 HTTP 元数据列表 | [任务内容索引 HTTP 适配](task-content-index-http.md) |
 | 查看同一事务内的当前会话与内容字节检查 | [会话授权任务内容](session-task-content.md) |
 | 查看显式构造且尚未挂载的手动 HTTP 边界 | [任务内容 HTTP 适配](task-content-http.md) |
 | 经独立未挂载 HTTP 适配选择准确配置定义 | [目录任务内容 HTTP 适配](catalog-task-content-http.md) |

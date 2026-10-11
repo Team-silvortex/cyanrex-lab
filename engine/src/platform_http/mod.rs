@@ -11,8 +11,10 @@ mod contract;
 mod errors;
 mod handlers;
 mod security;
+mod task_index;
 mod text_artifact;
 pub use catalog_task::{build_catalog_task_content_router, CatalogTaskContentHttpState};
+pub use task_index::{build_task_content_index_router, TaskContentIndexHttpState};
 pub use text_artifact::{build_text_artifact_router, TextArtifactHttpState};
 
 use crate::services::auth_service::durable_source::{
