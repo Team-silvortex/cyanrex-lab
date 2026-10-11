@@ -78,7 +78,10 @@ fn all_legacy_assessments_pass_through_versioned_definitions_without_semantic_dr
                         )
                         .unwrap();
                         assert_eq!(generic.definition, reference);
-                        assert_eq!(generic.policy, definition.assessment_policy);
+                        assert_eq!(
+                            generic.policy,
+                            definition.assessment_policy.clone().unwrap()
+                        );
                         assert_eq!(
                             legacy.completed,
                             generic.outcome.verdict == AssessmentVerdict::Passed
@@ -150,8 +153,8 @@ fn direct_provider_calls_cannot_substitute_policy_or_schema_metadata() {
     for field in 0..4 {
         let mut definition = pack.definitions().remove(0);
         match field {
-            0 => definition.assessment_policy.version = 2.try_into().unwrap(),
-            1 => definition.evidence_schema.version = 2.try_into().unwrap(),
+            0 => definition.assessment_policy.as_mut().unwrap().version = 2.try_into().unwrap(),
+            1 => definition.evidence_schema.as_mut().unwrap().version = 2.try_into().unwrap(),
             2 => definition.reference.package.version = 2.try_into().unwrap(),
             _ => definition.reference.name = "example.documents.summary".parse().unwrap(),
         }

@@ -1,5 +1,10 @@
 # Security and deployment boundaries
 
+Source release **0.5.5** (**2026-10-11**) includes these follow-ups. Dated `Unreleased` labels retain
+their original implementation stage, source versions and verification scope. Source inclusion does not
+mount preparation APIs, connect browser saving, switch live authentication, migrate storage or validate
+a running deployment.
+
 This guide covers the current runtime, local editing and general collaboration preparation. The
 platform direction does not make the deployed Engine unprivileged or migrate its authentication.
 For relationships between modules, see [architecture](architecture.md) and the [feature map](platform-network.md).
@@ -32,6 +37,46 @@ For source-owned private work, see [Task inputs](session-task-inputs.md), [Draft
 and [private Reviews](session-review-commands.md). These paths are not yet public browser APIs, so
 their service tests do not establish live HTTP/CSRF or deployment acceptance. Application roles and
 source-level abstractions still do not isolate the shared Linux kernel.
+
+### Prepared HTTP admission follow-up
+
+The **2026-10-08 Unreleased C2-N follow-up** is not part of the published 0.5.4 tag.
+Its [explicit content router](task-content-http.md) shares four request/response slots by default
+(trusted range 1–16) across state clones, including independently built routers using those clones.
+Cheap endpoint and credential-header checks precede admission; a full budget returns private 503
+`capacity_exhausted` / `not_attempted` without body polling, SQL or `Retry-After`.
+
+The slot covers collection, the existing Session command, serialization and the returned response
+body until terminal frame/end, error or drop. Admitted error bodies also retain slots. Cancellation
+does not prove rollback or terminate already-dispatched blocking I/O. Separate states have separate
+budgets; this is not a global memory/worker/network/proxy-buffer quota, isolation or retry mechanism.
+It adds no listener, Session issuer, public/browser API, live-auth cutover or journal integration.
+
+### Prepared text publication boundary
+
+The **2026-10-08 Unreleased C2-X** [text Artifact router](text-artifact-http.md) is also outside the
+published 0.5.4 tag. Trusted configuration selects the source, scope and private file root; requests
+cannot choose them or an owner. The dedicated Cookie/Origin/marker boundary delegates current
+authorization to existing Artifact commands, fixes text kind/media type and rejects invalid text.
+The 2 MiB wire budget is distinct from the 256 KiB decoded limit. Exact reads can materialize up to
+1 MiB in the generic reader before stricter text projection; this is not a 256 KiB peak-memory guarantee.
+
+Cloned text-router states share response-body-lifetime slots, but separate states and Task-router
+budgets add together. Post-dispatch errors are unconfirmed; missing/foreign targets share 404, corrupt
+content remains an error, and duplicate publication conflicts even when bytes match. Neither a lost
+response nor a later Task failure permits retry, adoption or cleanup. No public mounting, automatic
+router composition, journal dispatch, Session issuance or browser save is added.
+
+### Prepared catalogue observation boundary
+
+The independent **2026-10-11 Unreleased [C2-AA observation](session-catalog-task-draft-observation.md)**,
+outside the published 0.5.4 tag, admits only the exact unknown target of its surviving catalogue
+attempt. Its original token fingerprint is not authorization: one existing reader rechecks current
+Session/account/membership and namespace pins. Full definition and actual-byte corruption remains a
+typed error rather than a valid difference or absence. Body-free metadata is still private; a match
+does not prove earlier commit provenance, and `NotVisible` does not authorize cleanup or retry.
+Observation cannot change the attempt, adopt progress, restore it, cross into manual/journal types or
+grant HTTP/browser access, provider execution or Task acceptance.
 
 ## AI Agent host boundary in 0.5.3
 

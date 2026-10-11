@@ -1,5 +1,9 @@
 # Task content metadata and exact bindings
 
+Source release **0.5.5** (**2026-10-11**) includes the portable-language editor follow-up. Its dated
+`Unreleased` label retains the original implementation stage and verification scope. Manifest binding
+remains a pure supplied-value check, not publication, Session authorization or browser saving.
+
 Status: **C2-K internal preparation included in 0.5.0**. Decision date: **2026-10-03**.
 This slice implements a typed content manifest and pure snapshot validation. **It does not save
 metadata, expose HTTP commands, switch authentication or connect the browser to the backend.**
@@ -35,9 +39,10 @@ Windows names, surrounding whitespace and bidi formatting characters. They must 
 or trusted terminal/HTML output. Exporters must apply their own safe filename handling; metadata
 validation deliberately does not call the browser's download sanitizer.
 
-The backend hint vocabulary is not the frontend's 14-profile allowlist. A new hint can be retained by
-this contract without installing or selecting a language server. The current frontend still rejects
-unknown language IDs in local draft JSON; no fallback or import behavior changes in this slice.
+The backend hint vocabulary is independent of the frontend's 14 editor profiles. C2-K itself did not
+change the then-closed browser import vocabulary. The **2026-10-08 Unreleased editor follow-up** now
+accepts valid bounded hints in local drafts as well, preserving unknown hints and showing a plain-text,
+no-tools mode. Neither contract installs or authorizes a language server; see [the editor guide](editor.md).
 
 ## Exact snapshot validation
 
@@ -75,7 +80,8 @@ ID becomes a Task ID, and no local revision becomes an expected server revision.
 The 0.5.3 [C2-O publication mapping](task-draft-publication.md) adds a separate strict whole-draft
 importer. It rejects blank titles, discards checked local IDs/revisions, accepts the server's extensible
 language hints, and binds supplied exact content into this manifest. It performs no publication or
-authorized save and does not change the browser's existing JSON parser or language allowlist.
+authorized save; C2-O itself changed neither the browser JSON parser nor its then-current language
+allowlist. The separate editor follow-up above broadens only the local language-hint vocabulary.
 
 This C2-K slice leaves `TaskSnapshot`, `ArtifactRevision`, Task schema 2, core schema 1, outbox formats,
 public API and SDK unchanged. The separate [C2-L store](task-content-store.md), also included in 0.5.0, persists this

@@ -1,5 +1,6 @@
+use super::super::draft_publication_checks;
 use super::*;
-use crate::models::collaboration::{ArtifactContent, TaskContentManifest, TaskStatus};
+use crate::models::collaboration::{TaskContentManifest, TaskStatus};
 use std::future::Future;
 
 impl SessionTaskDraftPublication {
@@ -30,46 +31,18 @@ impl SessionTaskDraftPublication {
         index: usize,
         revision: &ArtifactRevision,
     ) -> bool {
-        let item = &self.plan.items()[index];
-        revision.reference == self.allocated[index]
-            && revision.owner.authority_id == self.task.workspace.authority_id
-            && self
-                .confirmed
-                .first()
-                .is_none_or(|first| first.owner == revision.owner)
-            && u64::from(revision.sequence) == 1
-            && revision.parent.is_none()
-            && revision.kind.as_str() == "cyanrex.task-text"
-            && revision.title == self.plan.title()
-            && revision.media_type == "text/plain"
-            && revision.byte_length == item.text().len() as u64
+        draft_publication_checks::artifact_matches_planned_create(
+            &self.plan,
+            self.task,
+            &self.allocated,
+            &self.confirmed,
+            index,
+            revision,
+        )
     }
 
     pub(super) fn publication_manifest(&self) -> PublicationResult<TaskContentManifest> {
-        if self.confirmed.is_empty() && self.plan.items().is_empty() {
-            // No placeholder owner: the Task command derives the actual owner in its transaction.
-            return TaskContentManifest::new(self.plan.title(), vec![])
-                .map_err(|_| SessionDraftPublicationError::InvalidPreparation);
-        }
-        let owner = self
-            .confirmed
-            .first()
-            .ok_or(SessionDraftPublicationError::InvalidConfirmation)?
-            .owner;
-        let contents: Vec<_> = self
-            .confirmed
-            .iter()
-            .zip(self.plan.items())
-            .map(|(revision, item)| ArtifactContent {
-                revision: revision.clone(),
-                bytes: item.text().as_bytes().to_vec(),
-            })
-            .collect();
-        // Original bytes plus confirmed metadata, not a fresh Artifact read. C2-M must still
-        // verify actual stored bytes and the current Session inside the Task write transaction.
-        self.plan
-            .bind_published(self.task.workspace, owner, &contents)
-            .map_err(|_| SessionDraftPublicationError::InvalidConfirmation)
+        draft_publication_checks::publication_manifest(&self.plan, self.task, &self.confirmed)
     }
 
     pub(super) async fn await_task(

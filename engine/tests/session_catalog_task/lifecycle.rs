@@ -18,13 +18,19 @@ async fn postgres_session_catalog_tasks_same_pin_metadata_changes_never_reinterp
             "title" => changed.title = "Different task title".into(),
             "summary" => changed.summary = "Different contract summary".into(),
             "policy_name" => {
-                changed.assessment_policy.name = "sample.document.other".parse().unwrap()
+                changed.assessment_policy.as_mut().unwrap().name =
+                    "sample.document.other".parse().unwrap()
             }
-            "policy_version" => changed.assessment_policy.version = 2.try_into().unwrap(),
+            "policy_version" => {
+                changed.assessment_policy.as_mut().unwrap().version = 2.try_into().unwrap()
+            }
             "schema_name" => {
-                changed.evidence_schema.name = "sample.document.other".parse().unwrap()
+                changed.evidence_schema.as_mut().unwrap().name =
+                    "sample.document.other".parse().unwrap()
             }
-            "schema_version" => changed.evidence_schema.version = 2.try_into().unwrap(),
+            "schema_version" => {
+                changed.evidence_schema.as_mut().unwrap().version = 2.try_into().unwrap()
+            }
             _ => unreachable!(),
         }
         let altered_catalog = catalog(vec![changed.clone()]);

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type RefObject } from "react";
 import type * as Monaco from "monaco-editor";
 import { loader } from "../../utils/monacoLoader";
-import { getEditorLanguage } from "./languages";
+import { resolveEditorLanguage } from "./languages";
 import { configureBuiltinLanguageServices, registerBasicLanguageIntelligence } from "./languageServices";
 
 export type EditorSession = {
@@ -33,8 +33,7 @@ export function useEditorSession(
         part => part.toString(16).padStart(8, "0")).join("");
       let sequence = 0;
       const create = (source: string, language: string) => {
-        const profile = getEditorLanguage(language);
-        if (!profile) throw new Error("Unknown editor language");
+        const profile = resolveEditorLanguage(language);
         return monaco.editor.createModel(source, profile.id,
           monaco.Uri.parse(`inmemory://cyanrex-editor/${workspace}/${sequence++}/document${profile.extension}`));
       };
@@ -68,11 +67,12 @@ export function useEditorSession(
       };
       setSession({ editor, monaco, synchronize(language, source) {
         if (!active || editor.getModel() !== model) return;
-        if (model.getLanguageId() === language && model.getValue() === source) return;
+        const profile = resolveEditorLanguage(language);
+        if (model.getLanguageId() === profile.id && model.getValue() === source) return;
         // The parent owns content. Reconciliation is not another user edit or save acknowledgement.
         synchronizing = true;
         try {
-          if (model.getLanguageId() === language) model.setValue(source);
+          if (model.getLanguageId() === profile.id) model.setValue(source);
           else {
             const previous = model;
             model = create(source, language);

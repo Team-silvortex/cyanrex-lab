@@ -7,14 +7,15 @@ use cyanrex_engine::{
         artifact_store::{ArtifactDraft, ArtifactStore, ArtifactStoreError},
         auth_service::durable_source::{
             DurableAccountRef, DurableAuthError, DurableAuthSource, SessionArtifactWorkspace,
-            SessionBindCommand, SessionCommandError, SessionPolicyCommand, SessionTaskContent,
-            SessionTaskContentWorkspace, SessionTaskError, SessionTaskInputs,
-            SessionTaskInputsWorkspace, SessionTaskWorkspace,
+            SessionBindCommand, SessionCatalogTaskContentWorkspace, SessionCommandError,
+            SessionPolicyCommand, SessionTaskContent, SessionTaskContentWorkspace,
+            SessionTaskError, SessionTaskInputs, SessionTaskInputsWorkspace, SessionTaskWorkspace,
         },
         collaboration_identity_store::{
             CollaborationIdentityStore, LegacyAccessPolicy, LegacyIdentityAction,
             LegacyIdentityCommand, StoredLegacyAccessPolicy, StoredLegacyIdentity,
         },
+        task_catalog::TaskDefinitionCatalog,
         task_store::{TaskContentSnapshot, TaskContentStore, TaskStore, TaskStoreError},
     },
 };
@@ -39,6 +40,20 @@ mod input_fixture;
 use fixture::*;
 #[path = "session_task_content/behavior.rs"]
 mod behavior;
+#[path = "session_task_content/catalog.rs"]
+mod catalog;
+#[path = "session_task_content/catalog_assessment_binding.rs"]
+mod catalog_assessment_binding;
+#[path = "session_task_content/catalog_behavior.rs"]
+mod catalog_behavior;
+#[path = "session_task_content/catalog_composition.rs"]
+mod catalog_composition;
+#[path = "session_task_content/catalog_faults.rs"]
+mod catalog_faults;
+#[path = "session_task_content/catalog_lifecycle.rs"]
+mod catalog_lifecycle;
+#[path = "session_task_content/catalog_validation.rs"]
+mod catalog_validation;
 #[path = "session_task_content/concurrency.rs"]
 mod concurrency;
 #[path = "session_task_content/faults.rs"]

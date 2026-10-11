@@ -13,6 +13,8 @@ mod fixture;
 use fixture::*;
 #[path = "task_content_store/behavior.rs"]
 mod behavior;
+#[path = "task_content_store/catalog_contract.rs"]
+mod catalog_contract;
 #[path = "task_content_store/concurrency.rs"]
 mod concurrency;
 #[path = "task_content_store/faults.rs"]

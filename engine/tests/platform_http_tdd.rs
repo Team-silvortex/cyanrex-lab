@@ -49,10 +49,14 @@ use content_fixture::{manifest, Fixture};
 #[path = "platform_http/fixture.rs"]
 mod fixture;
 use fixture::*;
+#[path = "platform_http/admission.rs"]
+mod admission;
 #[path = "platform_http/behavior.rs"]
 mod behavior;
 #[path = "platform_http/bodies.rs"]
 mod bodies;
+#[path = "platform_http/capacity_sql.rs"]
+mod capacity_sql;
 #[path = "platform_http/faults.rs"]
 mod faults;
 #[path = "platform_http/transport.rs"]

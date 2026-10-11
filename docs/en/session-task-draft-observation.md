@@ -5,6 +5,11 @@ This Unix-only operation observes the exact target of a surviving [C2-P attempt]
 whose state is `Unconfirmed`. It compares currently readable data with the planned create operation.
 It does not confirm the earlier write, change attempt state, resume publication or establish rollback.
 
+The independent **2026-10-11 Unreleased [C2-AA catalogue observation](session-catalog-task-draft-observation.md)**,
+on source 0.5.4 outside the published tag, uses a separate C2-Z attempt and catalogue Task reader.
+It shares this body-free report DTO, not the manual attempt or `None` comparison. The C2-Q contract
+and dated results below retain their original manual scope.
+
 ## Operation and current authority
 
 `attempt.observe_unconfirmed(&self, token)` returns

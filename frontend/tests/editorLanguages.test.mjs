@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { BUILTIN_LANGUAGES, detectEditorLanguage, getEditorLanguage } from "../src/features/editor/languages.ts";
+import { BUILTIN_LANGUAGES, detectEditorLanguage, getEditorLanguage, resolveEditorLanguage } from "../src/features/editor/languages.ts";
 import { configureBuiltinLanguageServices, registerBasicLanguageIntelligence } from "../src/features/editor/languageServices.ts";
 
 function defaults() {
@@ -69,6 +69,19 @@ test("unknown language IDs never silently select a different service", () => {
   for (const id of ["", "TypeScript", "js", "__proto__", "constructor", "rust-analyzer"]) {
     assert.equal(getEditorLanguage(id), undefined);
   }
+});
+
+test("unknown hints resolve only plain-text capabilities without registering or guessing a service", () => {
+  const before = [...BUILTIN_LANGUAGES];
+  for (const item of BUILTIN_LANGUAGES) assert.equal(resolveEditorLanguage(item.id), item);
+  for (const hint of ["future-lang+v2", "tsx", "js", "constructor", "rust-analyzer", "typescript-extra"]) {
+    assert.equal(getEditorLanguage(hint), undefined);
+    assert.equal(resolveEditorLanguage(hint), getEditorLanguage("plaintext"));
+    assert.deepEqual(resolveEditorLanguage(hint).capabilities, []);
+    assert.equal(resolveEditorLanguage(hint).tier, "text");
+    assert.equal(resolveEditorLanguage(hint).extension, ".txt");
+  }
+  assert.deepEqual(BUILTIN_LANGUAGES, before);
 });
 
 test("filename detection uses the basename and explicit aliases with plaintext fallback", () => {

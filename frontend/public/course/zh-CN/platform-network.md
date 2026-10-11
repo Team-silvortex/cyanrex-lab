@@ -1,6 +1,10 @@
 # 当前平台功能与模块网络
 
-基础源码核对日期：**2026-10-03**。当前范围：**0.5.4 源码**，包括准备层认证加固、0.5.0 的
+源码版本 **0.5.5**（**2026-10-11**）已收录这些跟进；分日期的 `Unreleased`/未发布标记保留
+当时实施阶段、源码版本和验证范围。源码收录不代表准备层 API 已挂载、浏览器保存已接通、
+在线认证已切换、存储已迁移或运行实例已经验收。
+
+基础源码核对日期：**2026-10-03**。当前范围：**0.5.5 源码**，包括准备层认证加固、0.5.0 的
 导航/文件名修复和 C2-K/L/M/N 内容准备层，以及此前的协作命令与本地任务 payload 编辑器。
 评审保留 0.4.9 基线提交及原日期证据；源码收录
 不是新的发布验收报告，也不代表正在运行的部署已更新。
@@ -45,7 +49,7 @@ Schema 2 意图与已记录步骤前缀。计数包含最终 Task，可选 Unkno
 此操作不同于 C2-V，会实际读取文件，但不提供回执、恢复、重试或公共/浏览器连接。
 
 按“架构 × 功能 × 实现 × 成熟度”查看请使用新增的[功能张量与评分规则](capability-maturity.md)和
-[机器清单](../platform-capability-tensor.json)：69 个实现坐标、111 条定向边、18 条代表链路。
+[机器清单](../platform-capability-tensor.json)：70 个实现坐标、114 条定向边、19 条代表链路。
 本文保留路由与模块拓扑；评分和证据独立维护，不计算整体完成百分比。
 
 Cyanrex 正从 eBPF 教学应用转向以任务为中心的协作平台。目前并存三部分：已连接的教学运行链路、
@@ -103,6 +107,9 @@ AI 身份/委托连接，也不接通缺失的通用 Task 浏览器保存。
 基础语言支持与纯文本；这不等于通用外部 LSP 服务、文件系统工程、Rust Analyzer、Pyright 或 clangd。
 详见[编辑器说明](editor.md)。
 
+2026-10-08 未发布跟进在任务层校验可移植语言提示，不再以这些编辑配置作为白名单。合法未知提示
+在导入/编辑/导出中原样保留；实际能力采用纯文本并显示无工具提示，解析本身不修改元数据、修订或撤销历史。
+
 ## 已连接的运行模块
 
 | 模块 | 主要源码 | 功能链与限制 |
@@ -124,14 +131,66 @@ AI 身份/委托连接，也不接通缺失的通用 Task 浏览器保存。
 证据，但未改变旧教学 HTTP/存储链路。Domain Pack 是受信任的内置代码，不是下载式插件、执行调度器
 或授权提供者。
 
+0.5.5 收录的元数据拆分新增 [`TaskDefinitionCatalog`](../../engine/src/services/task_catalog/definitions.rs)：
+显式配置的冻结元数据不依赖评估代码；原 `new` 注册一个包。Task 草稿和会话目录工作区可直接使用元数据，
+`TaskCatalog<P>` 保留类型化评估。旧构造器、精确版本检查与授权事务保持兼容，不增加路由、
+Schema、权限或执行连接。
+
+仍基于源码 0.5.4 的 **2026-10-11 未发布多包跟进**新增可信显式元数据组合：1–256 个配置目录
+→ 最多 256 个展平定义 → 已有 Task 草稿、Schema 2 会话目录或 Schema 3 存储/会话内容构造器。
+嵌套组合遵守同一定义总上限；同包互不重叠注册及不同准确版本保留顺序，完整引用重复直接拒绝，
+不去重或覆盖。它扩展内部配置，不组合提供器，不发现或认证包，也不增加执行、公共 HTTP 或
+手工草稿发布流程的连接。
+
+源码 0.5.4 上独立的 **2026-10-11 未发布评估绑定跟进**允许同一元数据路径同时准入有绑定及
+明确无绑定的定义。Schema/策略两个 JSON 字段必须存在，同时有引用或同时为 null；无绑定目录
+Task 不是手工 Task。已有完整定义检查拒绝同一引用下增加或移除绑定；类型化提供器注册/派发
+和评估结果仍要求完整绑定。内部 Rust 字段改为成对 `Option`，旧已绑定 JSON 不变，旧二进制
+拒绝新双 null 记录。不增加拓扑、授权、Schema 编号、迁移或公共 HTTP/编辑器/Review/执行连接。
+详见[定义契约](task-domain-boundary.md)。
+
 ## 协作后端准备层
+
+**2026-10-08 未发布的 C2-N 跟进**在已有准备层 HTTP 路径新增状态共享的请求/响应容量：
+低成本检查 → 满额即拒的名额 → 正文/C2-M/序列化 → 响应正文完成或丢弃。默认四个名额，
+可信配置允许 1–16；状态克隆共享，新建状态则独立。它不增加公共连接、全局内存/工作线程配额
+或恢复链，不属于原 0.5.0 HTTP 证据或已发布的 0.5.4 版本。
+
+独立的 **0.5.5 C2-X** [文本 Artifact 路由](text-artifact-http.md)经当前会话命令发布固定类型
+文本并读取精确修订。其 2 MiB 传输 / 256 KiB 文本限制和状态族共享准入不改变 C2-N 的
+64 KiB 预算；独立状态的容量相加。它仍未挂载，不自动合并或调用 Task 路由。
 
 共享模型区分 Authority、Principal、Workspace、成员关系、部署权限、Task、不可变 Artifact 修订及
 Review。它们使用带范围的引用，不是用户名、路径、编辑器 ID 或客户端角色声明。
 概念起点见[协作基础](collaboration-foundation.md)。
 
+**2026-10-08 目录内容跟进，源码 0.5.4，Unreleased** 将冻结定义目录与已有 Schema 3 内容存储、
+Session 内容执行器组合。显式目录句柄准入完整的准确定义；手动句柄仍不带定义，两者互相
+拒绝对方模式的记录。标题/标签/文本引用仍是实例内容，不是提供器的 Evidence。沿用旧新字节
+及最终授权检查，不改 Schema、不执行规则，也不新增公共连接。原 HTTP 和 C2-P–W 发布
+配置仍仅支持手动任务。
+
+源码 0.5.4 上独立的 **2026-10-11 未发布 [C2-Y 目录内容适配](catalog-task-content-http.md)**
+只通过另行构造的强类型状态提供 `/platform/v1/catalog-tasks`。创建选择服务端准入的准确定义，
+读、编辑、状态变更保留既有目录命令的完整元数据、旧新文本及当前 Session 检查。有绑定和
+无绑定定义仍是目录工作，不执行评估；原手动 JSON/工作区不变。安全、64 KiB/两秒请求限制和
+响应正文准入共用，但独立状态族预算相加。不挂载正常应用、不发现目录、不切换客户端模式，
+不自动合并、不签发 Session、不调用 C2-P–W、不接 OpenAPI/SDK/浏览器，也不迁移。
+
+源码 0.5.4 上独立的 **2026-10-11 未发布 [C2-Z 目录草稿发布](session-catalog-task-draft-publication.md)**
+把原 C2-O 计划接入独立强类型目录尝试，不属于已发布标签。不做 I/O 的准备先冻结准确完整定义，
+再分配目标；每次推进发布一个 Artifact，或最后创建目录 Draft，在内存保留确认前缀及终止的
+未知步骤。完整 `Some` 定义确认与手动 `None` matcher 分开。共享两项纯回执/清单检查不把
+新尝试接到旧 C2-Q–W 观察/检查点/日志类型，也不接 HTTP、提供器、恢复、签发或浏览器保存。
+
+源码 0.5.4 上独立的 **2026-10-11 未发布 [C2-AA 目录观察](session-catalog-task-draft-observation.md)**
+对仍存活 C2-Z 尝试的准确未知目标增加一次当前授权读取，不属于已发布标签。它比较冻结完整
+定义与有序文本，保留类型化损坏错误，不改变尝试状态。W16 只新增实现引用，不新增评分、
+证据或拓扑；匹配/不可见不证明先前提交/回滚，也不允许重试。
+
 | 模块 | 主要源码 | 已实现连接与剩余限制 |
 |---|---|---|
+| 文本 Artifact HTTP（0.5.5 C2-X） | [独立路由](text-artifact-http.md)、[`text_artifact`](../../engine/src/platform_http/text_artifact/mod.rs) | 当前 Session → 固定文本发布/精确修订 → 私有 JSON；无公共挂载、签发、浏览器/SDK 连接、日志流程、收编或恢复。 |
 | 契约与旧系统投影 | [`models/collaboration`](../../engine/src/models/collaboration)、[`legacy_workspace.rs`](../../engine/src/services/legacy_workspace.rs) | 领域中立值类型与部分旧权限的纯预览；不是迁移或运行时授权。 |
 | 持久化身份与策略 | [`collaboration_identity_store`](../../engine/src/services/collaboration_identity_store) | 显式命名空间 → 绑定、有效成员关系、部署授权与审计修订；不会隐式提升教师权限或收编环境中的数据库。 |
 | 持久化认证与命令 | [`durable_source`](../../engine/src/services/auth_service/durable_source) | 账户世代/会话 → 同一事务内的审计身份、策略与生命周期命令。收录于 0.5.1 的来源 Schema 2 随登录/改密原子消费 OTP，仅全新安装，拒绝 Schema 1 不迁移；公共登录与账户端点仍使用旧 `AuthService`。 |
@@ -142,9 +201,12 @@ Review。它们使用带范围的引用，不是用户名、路径、编辑器 I
 | 会话授权的私人工作 | [`task_commands`](../../engine/src/services/auth_service/durable_source/task_commands)、[`private_work`](../../engine/src/services/auth_service/durable_source/private_work) | 新鲜 Session + 当前账户/成员关系 → 本人 Task、Artifact 与人工 Review，验证命名空间及写后状态；教师也不能借此读取他人私人工作。 |
 | 目录准入与 Draft 换版 | [目录命令](session-catalog-tasks.md)、[换版命令](session-task-revisions.md) | 精确的服务端准入定义元数据；Draft 换版验证旧、新输入并只增加一个任务修订；不运行领域 provider，不生成证据或验收工作。 |
 | 内容元数据（0.5.0 C2-K） | [清单契约](task-content-manifest.md)、[`task_content.rs`](../../engine/src/services/task_content.rs) | 给定 Task/Artifact 快照 → 元数据、所有者与字节一致性；不读写存储，不授权当前 Session。 |
-| 内容存储（0.5.0 C2-L） | [独立 Schema 3 存储](task-content-store.md)、[`content.rs`](../../engine/src/services/task_store/content.rs) | 可信所有者 + 元数据 → Task/清单/outbox 原子保存并增一版；无 Session/Artifact 字节适配、公共 API 或 Schema 2 迁移。 |
-| 授权内容（0.5.0 C2-M） | [会话内容适配器](session-task-content.md)、[`content.rs`](../../engine/src/services/auth_service/durable_source/task_commands/content.rs) | 当前 Session → 旧新精确 Artifact 文本 → Schema 3 原子编辑 → 最终授权与提交；无现用应用/浏览器接线。 |
+| 内容存储（0.5.0 C2-L；0.5.5 目录模式） | [独立 Schema 3 存储](task-content-store.md)、[`content.rs`](../../engine/src/services/task_store/content.rs) | 显式手动/目录元数据 → Task/清单/outbox 原子保存并增一版；仍是可信存储，无 Session/Artifact 字节适配、公共 API 或 Schema 2 迁移。 |
+| 授权内容（0.5.0 C2-M；0.5.5 目录模式） | [会话内容适配器](session-task-content.md)、[`content.rs`](../../engine/src/services/auth_service/durable_source/task_commands/content.rs) | 显式手动/目录工作区 + 当前 Session → 旧新精确 Artifact 文本 → Schema 3 原子编辑 → 最终授权与提交；无现用应用/浏览器接线。 |
 | HTTP 内容边界（0.5.0 C2-N） | [显式路由](task-content-http.md)、[`platform_http`](../../engine/src/platform_http/mod.rs) | 有界 HTTP → C2-M → 私有版本化响应；仅独立构造，没有主应用挂载、Session 签发、公共发布或浏览器接线。 |
+| 目录内容 HTTP（0.5.5 C2-Y） | [强类型独立适配](catalog-task-content-http.md)、[`catalog_task`](../../engine/src/platform_http/catalog_task/mod.rs) | 准确配置定义 + 有界 HTTP → 会话目录内容命令 → 私有 Task/清单/文本投影。手动模式独立；无评估、C2-P–W、自动合并、应用/浏览器/SDK 挂载或迁移。 |
+| 目录草稿发布（0.5.5 C2-Z） | [不透明仅创建尝试](session-catalog-task-draft-publication.md)、[`catalog_draft_publication`](../../engine/src/services/auth_service/durable_source/catalog_draft_publication/mod.rs) | 准确冻结定义 + C2-O 计划 → 显式 Session Artifact 步骤 → 完整定义确认的目录 Draft。仅内存部分结果；无手动转换、日志/检查点、重试/恢复、HTTP/浏览器或评估；独立 C2-AA 观察不收编进度。 |
+| 目录目标观察（0.5.5 C2-AA） | [只读比较](session-catalog-task-draft-observation.md)、[`observation.rs`](../../engine/src/services/auth_service/durable_source/catalog_draft_publication/observation.rs) | 准确未知目标 → 一个已有当前 Session Artifact/目录 Task 读取器 → 不含正文的当前比较。完整定义与有序字节，损坏仍报错；无状态改变、历史确认、回滚推导或重试。 |
 | 草稿发布映射（0.5.3 C2-O） | [严格导入器](task-draft-publication.md)、[`task_draft_import`](../../engine/src/services/task_draft_import/mod.rs) | 严格草稿 JSON → 有界发布值；给定精确内容 → 清单。无 I/O、服务端 ID 分配、发布历史证明、授权派发或浏览器保存。 |
 | 会话草稿发布（0.5.3 C2-P） | [仅创建步骤](session-task-draft-publication.md)、[`draft_publication`](../../engine/src/services/auth_service/durable_source/draft_publication/) | 固定内存尝试 → 每步一个会话 Artifact 写入 → C2-M Task 创建；保留确认前缀，未知步骤停止，无持久恢复、整条原子性或浏览器路由。 |
 | 草稿目标观察（0.5.3 C2-Q） | [只读比较](session-task-draft-observation.md)、[`observation.rs`](../../engine/src/services/auth_service/durable_source/draft_publication/observation.rs) | 精确未知目标 → 一个授权读取 → 不含正文的当前比较；不改状态、不证明先前提交、不推导回滚或提供恢复。 |
@@ -159,6 +221,10 @@ Review。它们使用带范围的引用，不是用户名、路径、编辑器 I
 
 | 链路 | 当前状态 |
 |---|---|
+| 文本发布 → 精确引用 → 独立 Task 内容 HTTP 请求 | W23 ⇢ W13 ⇢ W12 ⇢ W11 ⇢ E02 是调用者控制的独立进程内夹具序列。不从 TextRouter 调 TaskRouter，无自动合并、原子批次、公共挂载或浏览器保存；各命令重新授权。 |
+| 准确定义引用 → 独立目录 HTTP → 会话内容 | C2-Y 在 W13 源码切片内新增独立强类型适配，使用原目录事务检查，不改手动请求、不调用提供器，也不连接浏览器保存/公共部署。新增源码不刷新分日期张量拓扑或证据。 |
+| 冻结目录定义 + 计划 → Artifact 前缀 → 目录 Draft | C2-Z 在 W15 源码实现内增加独立强类型尝试，每步单独重新授权；无批次事务、持久回执或旧手动/日志类型转换。此源码序列不刷新张量评分、证据或拓扑。 |
+| 目录未知目标 → 当前读取器 → 比较元数据 | C2-AA 只扩展 W16 实现引用，不改张量拓扑/证据。原 token 准入先于当前读取器授权；比较不变成确认、回滚证明、收编或重试。 |
 | 浏览器 → 旧 Session → 教学/脚本/事件操作 | 已连接；权限和所有权由 Engine 执行，不依赖侧栏隐藏。 |
 | 源码 → 本地 Runner → 观测 → 教学包 → 尝试 → 教师反馈 | 已连接教学链路；规则评估结果不是通用持久化 Review。 |
 | 浏览器远程检查 → 所有者作业 → 签名 Agent → 编译报告 | 已连接可选编译链路；Agent 失败不授予自动回退到本地执行的权限。 |
@@ -166,7 +232,7 @@ Review。它们使用带范围的引用，不是用户名、路径、编辑器 I
 | 持久化 Session → 本人 Artifact 修订 → 本人 Task 精确输入 → Draft 换版 | 后端准备链已实现；尚无公共 API 或浏览器适配器。 |
 | 持久化 Session → 精确的本人 Artifact 目标/证据 → 人工 Review 历史 | 后端准备链已实现；尚无跨用户审阅权限与验收。 |
 | 旧账户/脚本/尝试 → 持久化身份/Artifact/Task/Review | 迁移、旧写入方隔离与切换待实现；没有隐式双写或数据收编。 |
-| 浏览器保存任务 → 发布 Artifact → 创建/换版 Task → 冲突恢复 | W10–W14 提供内容契约、未挂载 HTTP 及纯映射，W15 组合内部仅创建发布步骤，W16 观察当前目标而不提供恢复；仍缺显式登录/安装、公共派发、持久恢复与浏览器保存/冲突处理。 |
+| 浏览器保存任务 → 发布 Artifact → 创建/换版 Task → 冲突恢复 | W10–W14 提供内容契约、未挂载 HTTP 及纯映射，W15 组合内部仅创建步骤，W16 观察当前目标而不提供恢复；W23 另提供未挂载文本 HTTP 发布。仍缺显式登录/安装、公共派发、持久恢复与浏览器保存/冲突处理。 |
 | 给定 Artifact 内容 → 草稿计划绑定 → 任务内容清单 | W02 ⇢ W14 ⇢ W10 只核对给定字节和元数据，不调用存储、不授权当前会话或证明过去发布；本地 U03 → W14 仍未连接。 |
 | 草稿计划 → 显式会话发布步骤 → Task 创建 | W14 ⇢ W15 ⇢ W12 分别使用 I04 与 W05 进行当前授权/发布；独立事务、内存结果记录，不接浏览器或自动恢复。 |
 | 未知尝试 → 当前目标观察 | W15 ⇢ W16 使用 I04 及一次 W05 或 W12 读取；观察时点独立，不返回正文或恢复状态。这条读分支不新增代表写入链。 |

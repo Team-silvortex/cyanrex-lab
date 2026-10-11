@@ -4,6 +4,9 @@ use crate::models::collaboration::{
     AssessmentOutcome, TaskAssessment, TaskDefinition, TaskDefinitionRef, VersionedName,
 };
 
+mod definitions;
+pub use definitions::TaskDefinitionCatalog;
+
 #[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
 pub enum TaskCatalogError {
     #[error("invalid task catalog: {0}")]
@@ -34,26 +37,19 @@ pub trait TaskProvider {
 
 pub struct TaskCatalog<P: TaskProvider> {
     provider: P,
-    definitions: Vec<TaskDefinition>,
+    definitions: TaskDefinitionCatalog,
 }
 
 impl<P: TaskProvider> TaskCatalog<P> {
     pub fn new(provider: P) -> Result<Self, TaskCatalogError> {
         let package = provider.package();
-        let definitions = provider.definitions();
-        if definitions.is_empty() || definitions.len() > 256 {
+        let definitions = TaskDefinitionCatalog::new(package, provider.definitions())?;
+        if definitions.definitions().iter().any(|definition| {
+            definition.evidence_schema.is_none() || definition.assessment_policy.is_none()
+        }) {
             return Err(TaskCatalogError::InvalidCatalog(
-                "expected 1 to 256 definitions",
+                "typed providers require assessment bindings",
             ));
-        }
-        for (index, definition) in definitions.iter().enumerate() {
-            validate_definition(&package, definition)?;
-            if definitions[..index]
-                .iter()
-                .any(|other| other.reference == definition.reference)
-            {
-                return Err(TaskCatalogError::InvalidCatalog("duplicate definition"));
-            }
         }
         Ok(Self {
             provider,
@@ -62,13 +58,16 @@ impl<P: TaskProvider> TaskCatalog<P> {
     }
 
     pub fn definitions(&self) -> &[TaskDefinition] {
+        self.definitions.definitions()
+    }
+
+    /// Frozen metadata only; cloning this handle retains no provider or evidence capability.
+    pub fn definition_catalog(&self) -> &TaskDefinitionCatalog {
         &self.definitions
     }
 
     pub fn get(&self, reference: &TaskDefinitionRef) -> Option<&TaskDefinition> {
-        self.definitions
-            .iter()
-            .find(|definition| &definition.reference == reference)
+        self.definitions.get(reference)
     }
 
     pub fn assess(
@@ -79,6 +78,20 @@ impl<P: TaskProvider> TaskCatalog<P> {
         let definition = self
             .get(reference)
             .ok_or(TaskCatalogError::UnknownDefinition)?;
+        let evidence_schema =
+            definition
+                .evidence_schema
+                .as_ref()
+                .ok_or(TaskCatalogError::InvalidCatalog(
+                    "typed providers require assessment bindings",
+                ))?;
+        let assessment_policy =
+            definition
+                .assessment_policy
+                .as_ref()
+                .ok_or(TaskCatalogError::InvalidCatalog(
+                    "typed providers require assessment bindings",
+                ))?;
         let outcome = self.provider.assess(definition, evidence)?;
         if outcome.feedback.len() > 64
             || outcome.feedback.iter().any(|message| message.len() > 2048)
@@ -89,8 +102,8 @@ impl<P: TaskProvider> TaskCatalog<P> {
         // Identity is taken from the immutable registration, never supplied by an evaluator result.
         Ok(TaskAssessment {
             definition: definition.reference.clone(),
-            policy: definition.assessment_policy.clone(),
-            evidence_schema: definition.evidence_schema.clone(),
+            policy: assessment_policy.clone(),
+            evidence_schema: evidence_schema.clone(),
             outcome,
         })
     }
@@ -100,19 +113,24 @@ pub(crate) fn validate_definition(
     package: &VersionedName,
     definition: &TaskDefinition,
 ) -> Result<(), TaskCatalogError> {
+    let binding = match (&definition.evidence_schema, &definition.assessment_policy) {
+        (Some(evidence_schema), Some(assessment_policy)) => {
+            Some((evidence_schema, assessment_policy))
+        }
+        (None, None) => None,
+        _ => {
+            return Err(TaskCatalogError::InvalidCatalog(
+                "task assessment binding must be complete",
+            ))
+        }
+    };
     let namespace = format!("{}.", package.name);
     if definition.reference.package != *package
         || !definition.reference.name.as_str().starts_with(&namespace)
-        || !definition
-            .evidence_schema
-            .name
-            .as_str()
-            .starts_with(&namespace)
-        || !definition
-            .assessment_policy
-            .name
-            .as_str()
-            .starts_with(&namespace)
+        || binding.is_some_and(|(evidence_schema, assessment_policy)| {
+            !evidence_schema.name.as_str().starts_with(&namespace)
+                || !assessment_policy.name.as_str().starts_with(&namespace)
+        })
     {
         return Err(TaskCatalogError::InvalidCatalog(
             "definition belongs to another package",

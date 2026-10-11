@@ -15,7 +15,9 @@ mod content;
 #[cfg(unix)]
 mod inputs;
 #[cfg(unix)]
-pub use content::{SessionTaskContent, SessionTaskContentWorkspace};
+pub use content::{
+    SessionCatalogTaskContentWorkspace, SessionTaskContent, SessionTaskContentWorkspace,
+};
 #[cfg(unix)]
 pub use inputs::{SessionCatalogTaskWorkspace, SessionTaskInputs, SessionTaskInputsWorkspace};
 

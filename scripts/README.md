@@ -42,15 +42,39 @@ fixtures or build-cache cleanup targets. The script catalogue below retains indi
   `CYANREX_TEST_DATABASE_URL` for a disposable database. Each exact test name must exist before it runs.
   CI uses the same script; tests create their own schemas and inject faults. Never point it at a
   deployed database. `tests/postgresCi.test.mjs` checks that the explicit list includes every case.
-- `test-session-task-content.sh`: runs twenty-five exact schema-3 current-Session content PostgreSQL
-  cases: ordered text, private ownership, metadata edits/removal, old/new post-write byte checks,
-  namespace pins, lifecycle expiry/revocation, commit/cancellation and competing edits. Requires only
+- `test-session-task-content.sh`: runs thirty-three exact schema-3 current-Session content PostgreSQL
+  cases: explicit manual/catalogue modes, composed bound/unbound metadata, full-definition admission, ordered text, private ownership,
+  metadata edits/removal, old/new post-write byte checks, namespace pins, lifecycle expiry/revocation,
+  commit/cancellation and competing edits. Requires only
   an explicit disposable database; does not expose public commands or connect the browser editor.
 - `test-session-task-draft-publication.sh`: explicitly selects the create-only draft stepper's
   PostgreSQL cases against a disposable `CYANREX_TEST_DATABASE_URL`. Checks confirmed partial
   publications, stopped uncertain steps, cancellation, current authority and final stored-byte
   verification. Progress is caller-owned memory, not a durable receipt or browser-save API.
   `tests/sessionTaskDraftPublication.test.mjs` guards the complete selection and internal-only wiring.
+- `test-session-catalog-draft-publication.sh`: selects eight exact independent catalogue publication
+  SQL cases (behavior two, faults three, lifecycle one, waits two) against an explicit disposable
+  `CYANREX_TEST_DATABASE_URL` and private files. Covers composed package/version/binding metadata,
+  one-write steps, current authority, effective fault counters, full definition/manifest confirmation,
+  conflicts without adoption, observed cancellation/expiry waits and retained uncertain targets.
+  Seven Task/Artifact-table plus file snapshots distinguish unchanged rejections from the failed
+  second Artifact publication's exact orphan blob; typed errors are not rollback proof or blanket
+  auth-table preservation. The four default preparation and eight internal receipt/cancellation
+  cases are separate inventory, not execution evidence. No manual checkpoint/journal conversion,
+  retry, restore, provider assessment, public HTTP/SDK/browser or live deployment is enabled. This
+  publication runner does not convert catalogue attempts into manual observation/recovery types;
+  independent C2-AA catalogue observation is selected separately.
+- `test-session-catalog-draft-observation.sh`: selects eight exact independent catalogue observation
+  SQL cases (behavior three, faults two, lifecycle one, concurrency two) against an explicit disposable
+  `CYANREX_TEST_DATABASE_URL`. Covers original-Session/state admission, full frozen definitions and
+  ordered bytes, valid changes versus typed same-pin/manual/binding corruption, scoped invisibility,
+  current authority, observed cancellation/expiry waits and separately explicit pending creators.
+  Preservation snapshots use selected source/Artifact/Task table MD5s, file SHA-256/length/mode and
+  root identity/mode, not raw-row equality or every deployment schema. Effective fault counters and
+  independently measured rollback/orphan counts do not make `NotVisible` a rollback proof. Four
+  public default and six internal comparison/admission cases are separate inventory, not SQL
+  execution evidence. Reports never adopt progress, enable retry, convert manual/recovery types or
+  connect HTTP/browser saving, providers, issuer, migrations or deployment.
 - `test-session-task-draft-observation.sh`: runs twelve exact current unconfirmed-target observation
   cases against an explicit disposable database. Checks matching or changed records, owner-filtered
   visibility, original-Session authorization, pending writers, expiry, cancellation and damaged bytes.
@@ -126,11 +150,26 @@ fixtures or build-cache cleanup targets. The script catalogue below retains indi
   schema-2 counter shapes, fresh registration/bootstrap watermarks and injected initialization faults.
   Requires a disposable database with fixture DDL privileges; it does not migrate existing data.
   Both runners have exact-selection guards in `tests/durableOtp*Ci.test.mjs`.
-- `test-platform-task-content-http.sh`: runs eleven exact standalone HTTP-to-C2-M PostgreSQL cases.
+- `test-platform-task-content-http.sh`: runs thirteen exact standalone HTTP-to-C2-M PostgreSQL cases.
   Covers private snapshots, transport admission without writes, current authorization after lock waits,
-  exact text, transaction faults and concurrent edits. Requires an explicit disposable database and
+  exact text, transaction faults, concurrent edits and shared admission through response-body completion.
+  Requires an explicit disposable database and
   private temporary files. The router is not mounted in the live app; these tests open no HTTP listener
   and do not establish browser, TLS/proxy, public content publication or deployment acceptance.
+- `test-platform-text-artifact-http.sh`: ten exact standalone text-Artifact HTTP PostgreSQL cases.
+  Covers current-Session publication, exact historical reads, text projection, private errors, body and
+  slot limits, and a caller's independent publication-reference-to-Task fixture sequence. Requires an
+  explicit disposable `CYANREX_TEST_DATABASE_URL` and private temporary files. No listener, automatic
+  router merge, whole-draft transaction, browser, journal workflow or deployment acceptance is implied.
+- `test-platform-catalog-task-content-http.sh`: eight exact independent catalogue Task-content HTTP
+  PostgreSQL cases against an explicit disposable `CYANREX_TEST_DATABASE_URL` and private files.
+  Covers trusted exact-reference composition, full metadata and bound/unbound identity across four
+  commands, manual/owner privacy, old/new bytes, current Session/lifecycle, observed waits, write/commit
+  faults and shared response-body/cancellation capacity. Rejection snapshots cover seven Task/Artifact
+  resource tables plus all private-directory file names/bytes, not every auth/identity/audit table.
+  The 28 default cases and three `tests/catalogTaskContentHttp.test.mjs` guards are separate inventory,
+  not execution evidence. No live mount, listener, catalogue discovery, client-selected mode, provider
+  assessment, automatic router merge, journal P–W integration or browser saving is enabled.
 - `test-task-content-storage.sh`: runs twenty-one exact schema-3 content-storage PostgreSQL cases,
   including metadata-only edits, schema-2 rejection, complete outbox snapshots and injected faults.
   Requires a disposable database; this trusted-store suite does not prove Session or browser saving.
@@ -161,12 +200,36 @@ fixtures or build-cache cleanup targets. The script catalogue below retains indi
   `CYANREX_TEST_DATABASE_URL`; the runner checks every exact name before execution. These fixtures
   do not establish cross-user review authority, policy execution, historical Session authorship or
   Task acceptance. Executed results are recorded separately in project status.
-- `test-session-catalog-tasks.sh`: runs all sixteen Session-authorized catalogue Task cases, including
-  exact definition snapshots, provider independence, zero-input metadata checks, private inputs,
+- `test-session-catalog-tasks.sh`: runs all twenty Session-authorized catalogue Task cases, including
+  exact bound/unbound definition snapshots, provider-free single/composed metadata construction, provider independence, zero-input
+  metadata checks, private inputs,
   namespace/write faults and Session ordering. Requires an explicit disposable `CYANREX_TEST_DATABASE_URL`;
   the runner checks each exact name before execution. Synthetic fixtures verify metadata admission,
   not provider assessment, typed evidence validation or Task acceptance. Executed results remain in
   project status.
+- `tests/taskCatalogComposition.test.mjs`: guards explicit metadata-only composition, bounded
+  input/flattened counts before copying, exact-reference overlap rejection and unchanged typed,
+  manual and public construction boundaries. Source checks are not execution of the pure Rust or Session composition SQL cases,
+  package authentication, provider assessment or public/browser acceptance.
+- `tests/taskAssessmentBinding.test.mjs`: guards nullable definition fields versus mandatory
+  assessment-result pins and manual identity, exact Session SQL inventories, and the absence of
+  assessment dispatch or public/manual-publication promotion in metadata-only paths.
+  Source guards do not run those Rust/SQL cases or establish old-binary reading of new double-null
+  records, a migration, public commands, automatic Review issuance or Task acceptance.
+- `tests/catalogTaskContentHttp.test.mjs`: three structural guards for trusted typed catalogue
+  state, strict streaming reference objects, shared security/admission/Session command wiring,
+  unchanged manual/publication/API/SDK/browser boundaries and the exact 28-default/eight-SQL inventory.
+  They do not execute those Rust/SQL cases, assess definitions or prove a mounted/deployed workflow.
+- `tests/sessionCatalogDraftPublication.test.mjs`: six structural guards for the independent opaque
+  typed catalogue attempt, definition freeze before allocation, token domain, one existing Session
+  write per advance, complete `Some` confirmation, two shared pure helpers and unchanged manual/recovery
+  wiring. They check the four-default/eight-internal/eight-exact-SQL inventory and runner/CI selection,
+  not Rust/SQL execution, provider assessment or a deployed publication workflow.
+- `tests/sessionCatalogDraftObservation.test.mjs`: six structural guards for the immutable catalogue
+  observer, original-token/state admission, delegation to existing current-Session readers, exact
+  full-definition/ordered-text comparison, body-free DTO and unchanged manual/journal/public wiring.
+  They check the four-default/six-internal/eight-exact-SQL inventory and runner/CI selection, not
+  database/file execution, historical commit or rollback, adopted confirmation or recovery authority.
 - `test-session-task-revisions.sh`: runs all seventeen Session-authorized Draft input replacement
   cases. Covers exact old/new content, ordered 32+32 references, schema 2/1 compatibility, catalogue
   policy, private ownership, stale saves, trigger/commit faults, expiry and cancellation. Requires an

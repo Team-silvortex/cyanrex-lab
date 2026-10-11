@@ -14,7 +14,7 @@ use std::{fmt, marker::PhantomData};
 
 // Preserve map field occurrences all the way into strict DTO/model deserializers. Going through
 // serde_json::Value would erase duplicate keys; ordinary derive also admits positional arrays.
-struct MapOnly<T>(T);
+pub(super) struct MapOnly<T>(pub(super) T);
 impl<'de, T: Deserialize<'de>> Deserialize<'de> for MapOnly<T> {
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         struct RecordVisitor<T>(PhantomData<T>);

@@ -1,6 +1,8 @@
 use crate::services::{
     artifact_store::ArtifactStoreError,
-    auth_service::durable_source::{DurableAuthError, SessionCommandError, SessionTaskError},
+    auth_service::durable_source::{
+        DurableAuthError, SessionArtifactError, SessionCommandError, SessionTaskError,
+    },
     collaboration_identity_store::IdentityStoreError,
     task_store::TaskStoreError,
 };
@@ -77,13 +79,49 @@ impl From<SessionTaskError> for HttpError {
                 (S::CONFLICT, "invalid_transition")
             }
             SessionTaskError::Task(
-                TaskStoreError::InvalidInput | TaskStoreError::ScopeMismatch,
+                TaskStoreError::InvalidInput
+                | TaskStoreError::ScopeMismatch
+                | TaskStoreError::UnknownDefinition,
             )
             | SessionTaskError::Artifact(
                 ArtifactStoreError::InvalidInput | ArtifactStoreError::ScopeMismatch,
             ) => (S::BAD_REQUEST, "invalid_request"),
             _ => (S::SERVICE_UNAVAILABLE, "service_unavailable"),
         };
+        Self::dispatched(status, code)
+    }
+}
+
+impl From<SessionArtifactError> for HttpError {
+    fn from(value: SessionArtifactError) -> Self {
+        use StatusCode as S;
+        let (status, code) = match value {
+            SessionArtifactError::Session(SessionCommandError::InvalidSession)
+            | SessionArtifactError::Session(SessionCommandError::Authentication(
+                DurableAuthError::InvalidCredentials,
+            )) => (S::UNAUTHORIZED, "invalid_session"),
+            SessionArtifactError::Session(SessionCommandError::Identity(
+                IdentityStoreError::AccessDenied
+                | IdentityStoreError::ScopeInactive
+                | IdentityStoreError::IdentityInactive
+                | IdentityStoreError::IdentityRetired
+                | IdentityStoreError::StaleIdentity,
+            )) => (S::FORBIDDEN, "access_denied"),
+            SessionArtifactError::Artifact(ArtifactStoreError::NotFound) => {
+                (S::NOT_FOUND, "not_found")
+            }
+            SessionArtifactError::Artifact(ArtifactStoreError::Conflict) => {
+                (S::CONFLICT, "conflict")
+            }
+            SessionArtifactError::Artifact(ArtifactStoreError::StaleRevision) => {
+                (S::CONFLICT, "stale_revision")
+            }
+            SessionArtifactError::Artifact(
+                ArtifactStoreError::InvalidInput | ArtifactStoreError::ScopeMismatch,
+            ) => (S::BAD_REQUEST, "invalid_request"),
+            _ => (S::SERVICE_UNAVAILABLE, "service_unavailable"),
+        };
+        // Construction/validation errors use invalid_request BEFORE the Session command instead.
         Self::dispatched(status, code)
     }
 }

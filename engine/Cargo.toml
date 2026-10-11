@@ -1,6 +1,6 @@
 [package]
 name = "cyanrex-engine"
-version = "0.5.4"
+version = "0.5.5"
 edition = "2021"
 
 # Keep local builds and tests small while retaining file/line backtraces.
@@ -31,6 +31,7 @@ uuid = { version = "1", features = ["v4", "serde"] }
 argon2 = "0.5"
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
 libc = "0.2"
+http-body = "1"
 
 [dev-dependencies]
 tower = { version = "0.5", features = ["util"] }

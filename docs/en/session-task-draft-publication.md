@@ -6,6 +6,13 @@ existing current-Session Artifact commands, then creates a private manual Draft 
 [C2-M](session-task-content.md). The caller explicitly advances one step at a time. It is not a
 whole-draft transaction, public upload route, browser save adapter or live-authentication switch.
 
+The independent **2026-10-11 Unreleased [C2-Z catalogue workflow](session-catalog-task-draft-publication.md)**,
+on source 0.5.4 outside the published tag, has a separate opaque attempt and typed catalogue workspace.
+This C2-P method and final `definition == None` confirmation remain manual-only; the new attempt cannot
+enter the existing C2-Q–W observation/checkpoint/journal APIs or convert into this type. Only two pure
+Artifact receipt/manifest checks are shared. Neither workflow gains HTTP, whole-draft atomicity,
+automatic retry, restoration or browser saving from that reuse; the historical C2-P evidence stays scoped below.
+
 ## Preparation and ownership
 
 `DurableAuthSource::prepare_task_draft_publication(token, workspace, plan)` returns an opaque

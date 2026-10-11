@@ -5,6 +5,10 @@
 所固定的精确目标，将当前可读数据与计划创建值比较。不确认先前写入、不改变尝试状态、
 不恢复发布，也不证明回滚。
 
+源码 0.5.4 上独立的 **2026-10-11 未发布 [C2-AA 目录观察](session-catalog-task-draft-observation.md)**
+使用独立 C2-Z 尝试及目录 Task 读取器，不属于已发布标签。它只共享不含正文的报告 DTO，
+不共享手动尝试或 `None` 比较；下方 C2-Q 契约及分日期结果保留原手动范围。
+
 ## 操作与当前权限
 
 `attempt.observe_unconfirmed(&self, token)` 返回

@@ -2,16 +2,15 @@
 use super::*;
 use crate::{
     models::collaboration::{TaskDefinition, TaskDefinitionRef},
-    services::task_catalog::{TaskCatalog, TaskProvider},
+    services::task_catalog::{TaskCatalog, TaskDefinitionCatalog, TaskProvider},
 };
-use std::sync::Arc;
 
 /// Trusted, frozen definition allowlist plus resource routing. Not a request or dynamic registry.
 /// Clones share metadata, not provider code, runtime evidence or a detached permission grant.
 #[derive(Clone)]
 pub struct SessionCatalogTaskWorkspace {
     inputs: SessionTaskInputsWorkspace,
-    definitions: Arc<[TaskDefinition]>,
+    definitions: TaskDefinitionCatalog,
 }
 impl SessionCatalogTaskWorkspace {
     /// Copies immutable catalogue metadata only; the provider need not be Send, Sync or retained.
@@ -20,17 +19,25 @@ impl SessionCatalogTaskWorkspace {
         artifacts: SessionArtifactWorkspace,
         catalog: &TaskCatalog<P>,
     ) -> TaskResult<Self> {
+        Self::from_definitions(tasks, artifacts, catalog.definition_catalog())
+    }
+
+    /// Copies frozen validated metadata; constructing an evaluator is not required.
+    pub fn from_definitions(
+        tasks: SessionTaskWorkspace,
+        artifacts: SessionArtifactWorkspace,
+        catalog: &TaskDefinitionCatalog,
+    ) -> TaskResult<Self> {
         let inputs = SessionTaskInputsWorkspace::new(tasks, artifacts)?;
         Ok(Self {
             inputs,
-            definitions: catalog.definitions().to_vec().into(),
+            definitions: catalog.clone(),
         })
     }
 
     fn definition(&self, reference: &TaskDefinitionRef) -> TaskResult<&TaskDefinition> {
         self.definitions
-            .iter()
-            .find(|definition| &definition.reference == reference)
+            .get(reference)
             .ok_or_else(|| TaskStoreError::UnknownDefinition.into())
     }
 

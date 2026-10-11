@@ -271,8 +271,8 @@ async fn checkpoint_task_comparison_requires_current_full_manifest_and_ordered_o
                     },
                     title: "Definition".into(),
                     summary: "Metadata".into(),
-                    evidence_schema: versioned.clone(),
-                    assessment_policy: versioned,
+                    evidence_schema: Some(versioned.clone()),
+                    assessment_policy: Some(versioned),
                 });
             }
             3 => changed.snapshot.task.status = TaskStatus::Ready,

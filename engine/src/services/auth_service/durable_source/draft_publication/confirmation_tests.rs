@@ -173,8 +173,8 @@ fn definition() -> TaskDefinition {
         },
         title: "Definition".into(),
         summary: "Metadata".into(),
-        evidence_schema: versioned.clone(),
-        assessment_policy: versioned,
+        evidence_schema: Some(versioned.clone()),
+        assessment_policy: Some(versioned),
     }
 }
 

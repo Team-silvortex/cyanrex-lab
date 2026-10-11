@@ -6,9 +6,12 @@ identity, content, task and review services are explicitly configured preparatio
 payload editor is local-only, and autonomous AI and general Run orchestration are not implemented.
 
 This index describes the whole project, not only its first teaching domain. The source version is
-0.5.4, adding internal draft intent records, journaled dispatch and separate journal/resource inspection
-(C2-T–W), plus the Next.js 15.5.27 dependency update. Earlier C2-O–S preparation, AI host adapters and
-security boundaries remain in place; source inclusion does not connect generic browser saving or recovery.
+**0.5.5** (**2026-10-11**), including provider-free/composed catalogue metadata, explicit assessment-binding
+choices, portable language hints, catalogue content and the separate C2-X/Y/Z/AA adapters and workflows.
+Earlier C2-T–W, Next.js 15.5.27, C2-O–S, AI host adapters and security boundaries remain in place.
+Source inclusion does not connect generic browser saving, switch live authentication, migrate storage or
+validate a deployment. Dated `Unreleased` descriptions retain their original implementation stage,
+source versions and verification scope; they are not fresh 0.5.5 execution records.
 The documents distinguish source-release contents, live runtime capabilities
 and target architecture; a built module or passing test does not imply an online deployment.
 
@@ -19,6 +22,25 @@ live wrapper with per-resource write-ahead steps; it does not recover attempts o
 current authority, without checking resource contents, restoring the wrapper or authorizing retry.
 [C2-W journal step observation](session-task-draft-journal-observation.md) separately reads one recorded
 target's actual content in the same authorized transaction; its body-free comparison is not a receipt or recovery.
+
+The October 8 [C2-X text Artifact router](text-artifact-http.md), included in 0.5.5, separately publishes text
+and reads exact revisions. It remains unmounted; caller-controlled composition with the Task router
+does not connect browser saving or create a whole-draft transaction.
+
+The independent **[C2-Y catalogue-content router](catalog-task-content-http.md), included in 0.5.5,**
+adds exact definition selection to a separate typed HTTP adapter. The old manual router stays
+manual-only; both remain unmounted and independent of publication/journal workflows. This October 11
+follow-up adds no Session issuer, assessment or browser saving.
+
+The independent **[C2-Z catalogue publication attempt](session-catalog-task-draft-publication.md), included in 0.5.5,**
+freezes an exact full definition without I/O and
+explicitly publishes one Artifact or creates the final catalogue Draft per advance. Manual C2-P–W
+types remain separate; its in-memory prefix is not a journal, recovery, HTTP route or browser save.
+
+The independent **[C2-AA catalogue observation](session-catalog-task-draft-observation.md), included in 0.5.5,**
+reads one unknown C2-Z target through current Session
+authority. It compares complete definition/text metadata without returning bodies or adopting
+progress. Matching and invisibility neither prove an earlier commit/rollback nor enable retry.
 
 ## Start with your question
 
@@ -33,10 +55,14 @@ target's actual content in the same authorized transaction; its body-free compar
 | Inspect the internal server content shape and exact snapshot checks | [Task content manifest](task-content-manifest.md) |
 | Inspect separate content persistence and atomic editing | [Task content storage](task-content-store.md) |
 | Inspect current Session and content-byte checks in one transaction | [Session task content](session-task-content.md) |
-| Inspect the explicitly constructed, unmounted HTTP boundary | [Task content HTTP adapter](task-content-http.md) |
+| Inspect the explicitly constructed, unmounted manual HTTP boundary | [Task content HTTP adapter](task-content-http.md) |
+| Select an exact configured definition through a separate unmounted HTTP adapter | [Catalogue task content HTTP adapter](catalog-task-content-http.md) |
+| Publish text or read an exact revision through a separate unmounted router | [Text Artifact HTTP adapter](text-artifact-http.md) |
 | Inspect strict draft import and pure publication mapping | [Task draft publication plan](task-draft-publication.md) |
-| Inspect one-step Session publication and partial outcomes | [Session draft publication](session-task-draft-publication.md) |
+| Inspect manual one-step Session publication and partial outcomes | [Session draft publication](session-task-draft-publication.md) |
+| Publish a catalogue draft with a frozen definition and independent attempt | [Session catalogue draft publication](session-catalog-task-draft-publication.md) |
 | Observe an unconfirmed attempt target without resuming it | [Draft target observation](session-task-draft-observation.md) |
+| Observe a catalogue attempt target with its frozen complete definition | [Catalogue draft target observation](session-catalog-task-draft-observation.md) |
 | Export reported progress as data without restoring an attempt | [Draft metadata checkpoints](session-task-draft-checkpoint.md) |
 | Inspect one checkpoint target with separately supplied current authority | [Explicit checkpoint target inspection](session-task-draft-inspection.md) |
 | Register and read an immutable intent without executing publication | [Session draft intent records](session-task-draft-intent.md) |

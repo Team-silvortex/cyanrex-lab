@@ -1,4 +1,5 @@
 use super::{
+    admission,
     contract::{self, SnapshotResponse},
     errors::HttpError,
     security, TaskContentHttpState,
@@ -11,7 +12,7 @@ use axum::{
     Json,
 };
 
-enum Endpoint {
+pub(super) enum Endpoint {
     Create,
     Read(TaskId),
     Replace(TaskId),
@@ -19,12 +20,16 @@ enum Endpoint {
 }
 
 fn endpoint(request: &Request) -> Result<Endpoint, HttpError> {
+    endpoint_at(request, "/platform/v1/tasks")
+}
+
+pub(super) fn endpoint_at(request: &Request, collection: &str) -> Result<Endpoint, HttpError> {
     if request.uri().query().is_some() {
         return Err(HttpError::invalid_request());
     }
     let path = request.uri().path();
     let method = request.method();
-    if path == "/platform/v1/tasks" {
+    if path == collection {
         return if *method == Method::POST {
             Ok(Endpoint::Create)
         } else {
@@ -33,7 +38,8 @@ fn endpoint(request: &Request) -> Result<Endpoint, HttpError> {
     }
     let missing = || HttpError::new(StatusCode::NOT_FOUND, "not_found");
     let tail = path
-        .strip_prefix("/platform/v1/tasks/")
+        .strip_prefix(collection)
+        .and_then(|tail| tail.strip_prefix('/'))
         .ok_or_else(missing)?;
     if tail.is_empty() {
         return Err(missing());
@@ -59,15 +65,32 @@ pub(super) async fn dispatch(
     State(state): State<TaskContentHttpState>,
     request: Request,
 ) -> Response {
-    match handle(state, request).await {
+    let endpoint = match endpoint(&request) {
+        Ok(endpoint) => endpoint,
+        Err(error) => return error.into_response(),
+    };
+    let token = match security::credentials(request.headers(), request.method(), &state.origin) {
+        Ok(token) => token,
+        Err(error) => return error.into_response(),
+    };
+    // Only cheap route/header checks precede admission; full capacity never polls the body or SQL.
+    let permit = match admission::acquire(&state.admission) {
+        Ok(permit) => permit,
+        Err(error) => return error.into_response(),
+    };
+    let response = match handle(state, endpoint, token, request).await {
         Ok(response) => response,
         Err(error) => error.into_response(),
-    }
+    };
+    admission::response(response, permit)
 }
 
-async fn handle(state: TaskContentHttpState, request: Request) -> Result<Response, HttpError> {
-    let endpoint = endpoint(&request)?;
-    let token = security::credentials(request.headers(), request.method(), &state.origin)?;
+async fn handle(
+    state: TaskContentHttpState,
+    endpoint: Endpoint,
+    token: String,
+    request: Request,
+) -> Result<Response, HttpError> {
     let bytes = security::request_bytes(request, matches!(endpoint, Endpoint::Read(_))).await?;
     let (status, response) = match endpoint {
         Endpoint::Create => {

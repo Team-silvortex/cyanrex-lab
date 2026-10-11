@@ -5,6 +5,90 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.5.5] - 2026-10-11
+
+This patch separates definition metadata from assessment providers, composes bounded multi-package
+catalogues and text content, and preserves portable payload language hints independently of editor
+profiles. It adds shared HTTP admission and the independent C2-X/Y adapters, C2-Z catalogue draft
+publication and separate C2-AA target observation. These remain internal preparation: no application
+mounting, public Session issuer, browser saving, authentication cutover, migration, recovery or automatic
+retry is introduced. Source publication does not update running deployments. The dated development
+records below describe each slice independently; C2-AA observation follows the create-only C2-Z slice.
+
+### Added
+
+- Add read-only observation to a surviving independent catalogue draft attempt. Original-token and
+  unconfirmed-state admission selects one existing current-Session Artifact or catalogue Task reader;
+  complete frozen definitions and ordered text distinguish matching or valid changed data from typed
+  corruption. Return the existing body-free report without adopting confirmations, changing attempt
+  state, claiming historical commit/rollback, enabling retry, converting manual/journal types or
+  adding provider execution, HTTP/issuer, public SDK/browser saving, migration or recovery.
+
+- Add a separate opaque catalogue draft publication attempt over the unchanged C2-O plan and typed
+  catalogue content workspace. Pure preparation checks token shape/source authority and freezes an
+  exact complete definition before random target allocation. Each explicit advance publishes one
+  Session Artifact or finally creates a catalogue Draft, retaining the confirmed prefix and stopping
+  on uncertainty. Final confirmation requires the full frozen `Some` definition; the manual `None`
+  matcher and C2-P–W types/wire remain separate. Share only two pure receipt/manifest checks, without
+  checkpoint/journal/observation, restoration, retry, provider assessment, HTTP/issuer, public SDK/
+  browser connection, schema migration or whole-draft atomicity.
+
+- Add an independent catalogue Task-content HTTP adapter over the existing typed Session workspace,
+  with a separate `/platform/v1/catalog-tasks` prefix. Creation selects only an exact configured
+  definition reference through strict object decoding; full metadata, old/new text and current
+  authority remain checked without assessment. Preserve the manual state/request contract and reuse
+  private security, bounded request/response admission and confirmed-result projections. Unknown
+  definitions remain generic dispatched/unconfirmed errors. No application mounting, client mode
+  switch, discovery, automatic router merge, Session issuer, publication/journal integration,
+  live OpenAPI/SDK/browser connection or migration is added.
+
+- Allow explicit definitions without automatic assessment bindings alongside bound entries in frozen
+  metadata catalogues. `TaskDefinition` uses paired optional evidence-schema/policy fields; both JSON
+  fields remain required, with two explicit nulls for absence and rejection of missing/half-bound input.
+  Existing bound JSON encoding is unchanged, while internal Rust callers must adapt and old binaries
+  reject new unbound records. Catalogue Tasks retain their definition and full-equality drift checks;
+  typed-provider construction/dispatch and `TaskAssessment` still require both pins. No schema-number
+  change, record migration, authorization relaxation, public HTTP/editor connection or Review/execution
+  workflow is added.
+
+- Add trusted explicit multi-package `TaskDefinitionCatalog::compose`: 1–256 frozen metadata handles
+  produce at most 256 flattened definitions, with the same global bound for nested composition.
+  Preserve input/entry order, admit disjoint same-package registrations and distinct exact versions,
+  and reject every repeated complete reference even when metadata is identical. Existing metadata-only
+  Task draft and schema 2/3 workspace constructors accept the result; typed single-package evaluators,
+  exact-definition checks and authorization remain unchanged. No discovery, public HTTP/browser save,
+  publication wiring, schema migration or rule execution is added.
+
+- Compose catalogue definitions with Task text content through explicit metadata-only store and
+  Session workspace constructors. Catalogue creation admits an exact full definition; reads, edits
+  and transitions reject manual records, missing entries or metadata drift, while the old manual
+  entry points remain definition-free. Reuse schema 3 and the source-owned content transaction,
+  including old/new byte checks and final authorization. No rule execution, schema migration,
+  catalogue HTTP/browser save or draft-publication wiring is added.
+
+- Separate frozen `TaskDefinitionCatalog` metadata from provider-bound `TaskCatalog<P>` assessment.
+  Task drafts and Session catalogue workspaces can use validated definitions without an evaluator;
+  existing constructors delegate compatibly, and exact pins, current authorization and transactions
+  remain unchanged. Local task drafts also accept bounded portable language hints independently of
+  the 14 editor profiles: unknown valid hints are preserved and visibly edited as plain text; capability
+  resolution itself changes no metadata/revisions or undo history and loads no tools. No schema,
+  route, public API, payload kind, browser saving or LSP connection is added.
+
+- Add the separately constructed, unmounted C2-X text Artifact HTTP adapter over current-Session
+  publication and exact-revision reads. Fix the text kind/media type; independently bound JSON wire
+  input to 2 MiB and decoded text to 256 KiB. State clones share response-body-lifetime admission,
+  while separate text/Task states retain additive budgets. Returned references can be used in a
+  caller's separate Task request, not an atomic batch or automatic router composition. No public
+  mounting, Session issuer, SDK/browser saving, journal dispatch, adoption or recovery is added.
+
+- Add shared in-flight admission to the explicit, unmounted C2-N content HTTP adapter: four slots
+  by default, trusted configuration from 1 to 16, shared by state clones and routers built from them.
+  Excess requests receive private 503 `capacity_exhausted` / `not_attempted` before body polling or SQL.
+  Admitted slots cover body collection, the unchanged Session command, serialization and successful
+  or error response bodies through completion/drop. Cancellation is not rollback or termination of
+  dispatched blocking I/O. No global process/worker quota, retry, listener, public/browser wiring,
+  Session issuer, schema or journal change is added.
+
 ## [0.5.4] - 2026-10-08
 
 This patch adds internal immutable draft intents, opt-in journaled dispatch, journal inspection and
@@ -886,7 +970,8 @@ cross-user collaboration. The frozen public API compatibility baseline remains 0
 The canonical package metadata advanced directly from `0.2.9` to `0.3.1`. Version `0.3.0` identifies
 the frozen API compatibility snapshot only; it was not a package release and must not be tagged.
 
-[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.4...HEAD
+[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.5...HEAD
+[0.5.5]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.4...v0.5.5
 [0.5.4]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.3...v0.5.4
 [0.5.3]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.2...v0.5.3
 [0.5.2]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.1...v0.5.2

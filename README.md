@@ -1,6 +1,6 @@
 # cyanrex-lab
 
-Version: `0.5.4`
+Version: `0.5.5`
 
 Cyanrex is evolving into a self-hosted collaboration platform for people, AI Agents and compute
 resources. Tasks, content versions, execution and reviews have separate responsibilities; eBPF teaching
@@ -24,12 +24,13 @@ private process in [SECURITY.md](SECURITY.md).
 
 ## Current development snapshot
 
-As of **2026-10-08**, the source version is **0.5.4**. This patch adds internal immutable draft intents,
-opt-in journaled dispatch, journal inspection and journal-bound resource observation (C2-T–W), and
-raises Next.js to 15.5.27. The earlier 0.5.3 AI host profiles/SDK adapters, C2-O–S draft preparation,
-shared boundary mechanisms and DOMPurify/Monaco hardening remain included. Existing source pins,
-password profiles, atomic OTP consumption and schema boundaries remain unchanged.
-See [AI Agent integration](docs/en/ai-agent-integration.md) and [release notes](CHANGELOG.md#054---2026-10-08).
+As of **2026-10-11**, the source version is **0.5.5**. This patch separates definition metadata from
+assessment providers, composes bounded multi-package catalogues with text content, and preserves
+portable payload language hints independently of editor profiles. It includes shared HTTP admission,
+independent C2-X/Y adapters, C2-Z catalogue draft publication and separate C2-AA target observation.
+The earlier AI host profiles/SDK adapters, C2-O–W draft preparation and security hardening remain
+included. Existing source pins, password profiles, atomic OTP consumption and schema boundaries remain unchanged.
+See [AI Agent integration](docs/en/ai-agent-integration.md) and [release notes](CHANGELOG.md#055---2026-10-11).
 The task-content HTTP adapter remains unmounted and the editor local-only. Neither this release nor
 passing tests switch legacy authentication or an existing deployment.
 
@@ -55,6 +56,26 @@ metadata agreement and returns no body; it is not a receipt, recovery or retry p
 
 The 0.5.4 Next.js 15.5.27 dependency update addresses the newly reported cache-poisoning
 advisories; it does not update a running deployment. See [dependency audit policy](docs/en/security.md#dependency-audit-policy).
+
+The **C2-Y follow-up included in 0.5.5** adds an
+independent [catalogue task-content HTTP adapter](docs/en/catalog-task-content-http.md)
+([简体中文](docs/zh-CN/catalog-task-content-http.md)). Creation chooses an exact configured definition;
+the old manual interface stays unchanged. Both are unmounted preparation, with no Session issuer,
+automatic assessment, publication/journal integration, live OpenAPI/SDK exposure or browser saving.
+
+The independent **C2-Z follow-up included in 0.5.5** adds
+[catalogue draft publication](docs/en/session-catalog-task-draft-publication.md)
+([简体中文](docs/zh-CN/session-catalog-task-draft-publication.md)). Pure preparation freezes an exact
+full definition; each explicit advance publishes one Artifact or finally creates its catalogue Draft.
+The new opaque attempt cannot enter old manual checkpoint/journal/observation types and supplies no
+HTTP, assessment, durable recovery, automatic retry, issuer, browser saving or migration.
+
+The independent **C2-AA follow-up included in 0.5.5**
+adds [catalogue target observation](docs/en/session-catalog-task-draft-observation.md)
+([简体中文](docs/zh-CN/session-catalog-task-draft-observation.md)). One current-Session read compares an
+exact unknown target with the frozen definition and planned text; the body-free result never changes
+attempt state, confirms the earlier write or enables retry. Public saving and durable recovery remain
+separate work.
 
 | Area | Implemented boundary | Still separate |
 |---|---|---|
@@ -262,13 +283,13 @@ Starting the application does not initialize or migrate the separate collaborati
 For classroom deployment or offline distribution, create a packaged artifact with prebuilt Docker images:
 
 ```bash
-./scripts/package-distribution.sh --version 0.5.4
+./scripts/package-distribution.sh --version 0.5.5
 ```
 
 This produces:
 
-- `dist/cyanrex-lab-0.5.4-<timestamp>.tar.gz`
-- `dist/cyanrex-lab-0.5.4-<timestamp>.tar.gz.sha256`
+- `dist/cyanrex-lab-0.5.5-<timestamp>.tar.gz`
+- `dist/cyanrex-lab-0.5.5-<timestamp>.tar.gz.sha256`
 
 The archive contains the PostgreSQL, Engine, and frontend images. On a disposable Docker host,
 verify the freshly extracted package end to end with `./install-smoke.sh`. It checks the package
@@ -303,10 +324,10 @@ For an artifact downloaded from the Tag workflow, place its four files in a dedi
 verify the complete candidate from a trusted checkout of the matching source Tag before extracting it:
 
 ```bash
-release_revision="$(git rev-list -n 1 v0.5.4)"
+release_revision="$(git rev-list -n 1 v0.5.5)"
 cargo run --quiet --manifest-path engine/Cargo.toml --locked --bin cyanrex-release -- \
   candidate verify /path/to/downloaded-candidate \
-  --expect-version 0.5.4 --expect-revision "$release_revision" --expect-tag v0.5.4 \
+  --expect-version 0.5.5 --expect-revision "$release_revision" --expect-tag v0.5.5 \
   --extract-to /path/to/new-output-directory
 ```
 

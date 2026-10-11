@@ -50,8 +50,8 @@ pub fn definition(version: u64) -> TaskDefinition {
         },
         title: "Prepare a document".into(),
         summary: "Private drafting, without a Run".into(),
-        evidence_schema: pin("sample.document.text"),
-        assessment_policy: pin("sample.document.editorial"),
+        evidence_schema: Some(pin("sample.document.text")),
+        assessment_policy: Some(pin("sample.document.editorial")),
     }
 }
 pub fn reference() -> TaskDefinitionRef {

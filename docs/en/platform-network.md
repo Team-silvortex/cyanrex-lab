@@ -1,6 +1,11 @@
 # Current platform feature and module network
 
-Base source review date: **2026-10-03**. Current scope: **0.5.4 source**, including prepared-authentication
+Source release **0.5.5** (**2026-10-11**) includes these follow-ups. Dated `Unreleased` labels retain
+their original implementation stage, source versions and verification scope. Source inclusion does not
+mount preparation APIs, connect browser saving, switch live authentication, migrate storage or validate
+a running deployment.
+
+Base source review date: **2026-10-03**. Current scope: **0.5.5 source**, including prepared-authentication
 hardening, the 0.5.0 navigation/filename fixes and C2-K/L/M/N content preparation, alongside the preceding
 collaboration commands and local task payload editor. The review retains its
 0.4.9 base commit and dated evidence; source inclusion is not a new release acceptance report or a
@@ -60,8 +65,8 @@ does access files, unlike C2-V, but grants no receipt, recovery, retry or public
 
 For architecture × capability × implementation × maturity, use the new
 [capability tensor and score rubric](capability-maturity.md) and its
-[machine inventory](../platform-capability-tensor.json): 69 implementation coordinates, 111 directed
-edges and 18 representative paths. This page remains the route/module topology view; scores and
+[machine inventory](../platform-capability-tensor.json): 70 implementation coordinates, 114 directed
+edges and 19 representative paths. This page remains the route/module topology view; scores and
 evidence are maintained separately, with no aggregate completion percentage.
 
 Cyanrex is moving from an eBPF teaching application toward a task-oriented collaboration platform.
@@ -122,6 +127,10 @@ profiles include semantic JavaScript/TypeScript tools, structured JSON/CSS/HTML 
 support and plain text. This does not provide a general external LSP server, a filesystem project,
 Rust Analyzer, Pyright or clangd. See [the editor guide](editor.md).
 
+The 2026-10-08 Unreleased follow-up validates portable language hints in the task layer, not against
+that profile registry. Unknown valid hints remain intact in import/edit/export; capability resolution
+uses plain text with a visible no-tools notice, without itself editing metadata/revisions or undo.
+
 ## Connected runtime modules
 
 | Module | Main source | Functional chain and limit |
@@ -144,14 +153,79 @@ The existing teaching facade is already connected to the built-in
 typed rule evidence without changing the existing teaching HTTP/storage path. A domain pack is trusted
 built-in code, not a downloaded plugin, an execution scheduler or an authorization provider.
 
+The metadata split included in source release 0.5.5 adds [`TaskDefinitionCatalog`](../../engine/src/services/task_catalog/definitions.rs):
+explicit, frozen metadata independent of evaluator code. Its original `new` registers one package. Task drafts and
+Session catalogue workspaces consume this metadata directly; `TaskCatalog<P>` retains typed assessment.
+Existing constructors, exact-version checks and authorization transactions remain compatible, with no
+new route, schema, authority or execution connection.
+
+The **2026-10-11 Unreleased multi-package follow-up**, still on source 0.5.4, adds trusted explicit
+metadata composition: 1–256 configured catalogues → at most 256 flattened definitions → the existing
+Task draft, schema 2 Session catalogue or schema 3 store/Session-content constructor. Nested composition
+has the same global definition limit. Disjoint same-package registrations and distinct exact versions
+retain their order; complete-reference overlap is rejected rather than deduplicated or overwritten.
+This extends internal configuration, not provider composition, discovery, publisher authentication,
+execution, public HTTP or the manual draft-publication workflows.
+
+The separate **2026-10-11 Unreleased assessment-binding follow-up**, on source 0.5.4, admits an
+explicitly unbound definition alongside bound entries in that same metadata path. Both schema/policy
+JSON fields are required and must both contain references or both be null; an unbound catalogue Task is
+not a manual Task. Existing full-definition checks reject adding or removing bindings under the same
+reference. Typed-provider registration/dispatch and assessment results remain fully bound. The internal
+Rust fields become paired `Option` values, while old bound JSON stays unchanged; old binaries reject
+new double-null records. This adds no topology, authorization, schema number, migration or public
+HTTP/editor/Review/execution connection. See [the contract](task-domain-boundary.md).
+
 ## Prepared collaboration backend
 
 The shared model distinguishes Authority, Principal, Workspace, membership, deployment permission,
 Task, immutable Artifact revision and Review. Their identifiers are scoped references, not usernames,
 paths, editor IDs or client role claims. See [collaboration concepts](collaboration-foundation.md).
 
+The **2026-10-08 catalogue-content follow-up, source 0.5.4, Unreleased** composes the frozen definition
+catalogue with the existing schema 3 content store and Session content executor. Explicit catalogue
+handles admit exact full definitions; manual handles remain definition-free, and both reject records
+from the other mode. Title/labels/text pins remain instance content, not provider Evidence. The same
+old/new byte and final-authorization checks apply without schema changes, rule execution or a new
+public edge. Existing HTTP and C2-P–W publication configurations remain manual-only.
+
+The **2026-10-08 Unreleased C2-N follow-up** adds state-shared request/response capacity on the
+existing prepared HTTP path: cheap checks → fail-fast slot → body/C2-M/serialization → response-body
+completion or drop. The default is four, with a trusted range of 1–16; state clones share it, newly
+constructed states do not. This does not add a public edge, global memory/worker quota or recovery path,
+and is separate from the original 0.5.0 HTTP evidence and the published 0.5.4 release.
+
+The separate **0.5.5 C2-X** [text Artifact router](text-artifact-http.md) publishes fixed-profile
+text and reads exact revisions through current-Session commands. Its 2 MiB wire / 256 KiB text bounds
+and shared state-family admission do not change C2-N's 64 KiB budget; independent states add capacity.
+It stays unmounted and does not automatically merge with or call the Task router.
+
+The independent **2026-10-11 Unreleased [C2-Y catalogue-content adapter](catalog-task-content-http.md)**,
+on source 0.5.4, exposes `/platform/v1/catalog-tasks` only through a separately constructed typed
+state. Creation selects an exact server-admitted definition; read/edit/status keep full metadata,
+old/new text and current-Session checks in the existing catalogue commands. Bound and unbound
+definitions remain catalogue work without assessment. Manual JSON/workspaces remain unchanged.
+Security, 64 KiB/two-second request limits and response-body admission are shared, but independent
+state-family budgets add. There is no normal-app mounting, discovery, client mode switch, automatic
+merge, Session issuer, C2-P–W invocation, OpenAPI/SDK/browser connection or migration.
+
+The independent **2026-10-11 Unreleased [C2-Z catalogue draft publication](session-catalog-task-draft-publication.md)**,
+on source 0.5.4 outside the published tag, joins the existing C2-O plan to a separate typed catalogue
+attempt. No-I/O preparation freezes an exact complete definition before allocating targets. Each
+advance publishes one Artifact or finally creates one catalogue Draft, retaining confirmed prefixes
+and terminal uncertainty in memory. Full `Some` definition confirmation remains separate from the
+manual `None` matcher. Sharing two pure receipt/manifest checks does not connect the new attempt to
+old C2-Q–W observation/checkpoint/journal types, HTTP, providers, recovery, issuer or browser saving.
+
+The independent **2026-10-11 Unreleased [C2-AA catalogue observation](session-catalog-task-draft-observation.md)**,
+on source 0.5.4 outside the published tag, adds one current authorized read of a surviving C2-Z
+attempt's exact unknown target. It compares full frozen definition and ordered text, preserves typed
+corruption and leaves attempt state unchanged. W16 gains implementation references, not new scores,
+evidence or topology; matching/invisibility does not establish prior commit/rollback or allow retry.
+
 | Module | Main source | Implemented connection and remaining limit |
 |---|---|---|
+| Text Artifact HTTP (0.5.5 C2-X) | [separate router](text-artifact-http.md), [`text_artifact`](../../engine/src/platform_http/text_artifact/mod.rs) | Current Session → fixed text publication/exact revision → private JSON. No public mount, issuer, browser/SDK connection, journal workflow, adoption or recovery. |
 | Contract and legacy projection | [`models/collaboration`](../../engine/src/models/collaboration), [`legacy_workspace.rs`](../../engine/src/services/legacy_workspace.rs) | Domain-neutral values and a pure preview of selected legacy permissions; not migration or runtime authorization. |
 | Durable identity and policy | [`collaboration_identity_store`](../../engine/src/services/collaboration_identity_store) | Explicit namespaces → bindings, active membership, deployment grants and audited revisions. No implicit teacher-role upgrade or ambient database adoption. |
 | Durable authentication and commands | [`durable_source`](../../engine/src/services/auth_service/durable_source) | Account incarnation/session → audited identity/policy/lifecycle commands in one transaction. Source schema 2, included in 0.5.1, consumes OTP counters with login/rotation, fresh-install only; rejects schema 1 without migration. Public login/account endpoints still use legacy `AuthService`. |
@@ -162,9 +236,12 @@ paths, editor IDs or client role claims. See [collaboration concepts](collaborat
 | Session-authorized private work | [`task_commands`](../../engine/src/services/auth_service/durable_source/task_commands), [`private_work`](../../engine/src/services/auth_service/durable_source/private_work) | Fresh Session + current account/membership → own Tasks, Artifacts and human Reviews with namespace and post-write checks. A teacher cannot use these adapters to read another owner's private work. |
 | Catalogue admission and Draft replacement | [catalogue commands](session-catalog-tasks.md), [replacement commands](session-task-revisions.md) | Exact server-admitted definition metadata; Draft replacement verifies old and new inputs and increments one Task revision. It does not run the domain provider, create evidence or accept work. |
 | Content metadata (0.5.0 C2-K) | [manifest contract](task-content-manifest.md), [`task_content.rs`](../../engine/src/services/task_content.rs) | Supplied Task/Artifact snapshots → metadata, owner and byte consistency; no storage read/write or current-Session authorization. |
-| Content storage (0.5.0 C2-L) | [separate schema 3 store](task-content-store.md), [`content.rs`](../../engine/src/services/task_store/content.rs) | Trusted owner + metadata → atomic Task/manifest/outbox and one revision; no Session/Artifact-byte adapter, public API or schema 2 migration. |
-| Authorized content (0.5.0 C2-M) | [Session content adapter](session-task-content.md), [`content.rs`](../../engine/src/services/auth_service/durable_source/task_commands/content.rs) | Current Session → old/new exact Artifact text → atomic schema 3 edit → final authorization and commit; no live/browser connection. |
+| Content storage (0.5.0 C2-L; 0.5.5 catalogue mode) | [separate schema 3 store](task-content-store.md), [`content.rs`](../../engine/src/services/task_store/content.rs) | Explicit manual/catalogue metadata → atomic Task/manifest/outbox and one revision; trusted store only, no Session/Artifact-byte adapter, public API or schema 2 migration. |
+| Authorized content (0.5.0 C2-M; 0.5.5 catalogue mode) | [Session content adapter](session-task-content.md), [`content.rs`](../../engine/src/services/auth_service/durable_source/task_commands/content.rs) | Explicit manual/catalogue workspace + current Session → old/new exact Artifact text → atomic schema 3 edit → final authorization and commit; no live/browser connection. |
 | HTTP content boundary (0.5.0 C2-N) | [explicit router](task-content-http.md), [`platform_http`](../../engine/src/platform_http/mod.rs) | Bounded HTTP → C2-M → private versioned response; standalone only, no main-app mounting, Session issuer, public publication or browser wiring. |
+| Catalogue content HTTP (0.5.5 C2-Y) | [typed independent adapter](catalog-task-content-http.md), [`catalog_task`](../../engine/src/platform_http/catalog_task/mod.rs) | Exact configured definition + bounded HTTP → catalogue Session content commands → private Task/manifest/text projection. Manual mode stays separate; no assessment, C2-P–W, automatic merge, app/browser/SDK mounting or migration. |
+| Catalogue draft publication (0.5.5 C2-Z) | [opaque create-only attempt](session-catalog-task-draft-publication.md), [`catalog_draft_publication`](../../engine/src/services/auth_service/durable_source/catalog_draft_publication/mod.rs) | Exact frozen definition + C2-O plan → explicit Session Artifact steps → final catalogue Draft with full-definition confirmation. In-memory partial outcomes only; no manual conversion, journal/checkpoint, retry/recovery, HTTP/browser or assessment; independent C2-AA observation never adopts progress. |
+| Catalogue target observation (0.5.5 C2-AA) | [read-only comparison](session-catalog-task-draft-observation.md), [`observation.rs`](../../engine/src/services/auth_service/durable_source/catalog_draft_publication/observation.rs) | Exact unknown target → one existing current-Session Artifact/catalogue Task reader → body-free current comparison. Full definition and ordered bytes; corruption remains an error, no state change, historical confirmation, rollback inference or retry. |
 | Draft publication mapping (0.5.3 C2-O) | [strict importer](task-draft-publication.md), [`task_draft_import`](../../engine/src/services/task_draft_import/mod.rs) | Strict draft JSON → bounded publication values; supplied exact content → manifest. No I/O, server-ID allocation, publication history proof, authorized dispatch or browser save. |
 | Session draft publication (0.5.3 C2-P) | [create-only steps](session-task-draft-publication.md), [`draft_publication`](../../engine/src/services/auth_service/durable_source/draft_publication/) | Fixed in-memory attempt → one Session Artifact write per step → C2-M Task create. Confirmed prefix retained; unknown steps stop. No durable recovery, atomic workflow or browser route. |
 | Draft target observation (0.5.3 C2-Q) | [read-only comparison](session-task-draft-observation.md), [`observation.rs`](../../engine/src/services/auth_service/durable_source/draft_publication/observation.rs) | Exact unconfirmed target → one authorized read → body-free current comparison; no state change, prior-commit proof, rollback inference or recovery. |
@@ -179,6 +256,10 @@ paths, editor IDs or client role claims. See [collaboration concepts](collaborat
 
 | Path | Current state |
 |---|---|
+| Text publication → exact reference → separate Task-content HTTP request | W23 ⇢ W13 ⇢ W12 ⇢ W11 ⇢ E02 is a caller-controlled independent in-process fixture sequence. No TextRouter-to-TaskRouter call, automatic merge, atomic batch, public mount or browser save; each command reauthorizes. |
+| Exact definition reference → independent catalogue HTTP → Session content | C2-Y supplies a separate typed adapter within the W13 source slice. It uses the existing catalogue transaction checks without changing manual requests, invoking providers or connecting browser saving/public deployment. The dated tensor topology and evidence are not refreshed by this source addition. |
+| Frozen catalogue definition + plan → Artifact prefix → catalogue Draft | C2-Z extends W15's source implementation with an independent typed attempt. Each step reauthorizes separately; no batch transaction, durable receipt or old manual/journal type conversion. This source sequence does not refresh tensor scores, evidence or topology. |
+| Catalogue unknown target → current reader → comparison metadata | C2-AA extends W16 implementation references without changing tensor topology/evidence. Original-token admission precedes current reader authority; a comparison never becomes confirmation, rollback proof, adoption or retry. |
 | Browser → legacy Session → teaching/script/event operation | Connected; authorization and ownership are enforced by the Engine, not sidebar visibility. |
 | Source → local Runner → observation → teaching pack → attempt → teacher feedback | Connected teaching path; an assessment result is not a generic durable Review. |
 | Browser remote check → owner-bound job → signed Agent → compile report | Connected optional compiler path; no local-execution fallback is granted by Agent failure. |
@@ -186,7 +267,7 @@ paths, editor IDs or client role claims. See [collaboration concepts](collaborat
 | Durable Session → own Artifact revision → own Task exact inputs → Draft replacement | Implemented preparatory backend path; public API and browser adapter are absent. |
 | Durable Session → exact owned Artifact target/evidence → human Review history | Implemented preparatory backend path; cross-user review authority and acceptance remain absent. |
 | Legacy accounts/scripts/attempts → durable identity/Artifacts/Tasks/Reviews | Planned migration, writer fencing and cutover; no implicit dual write or adoption. |
-| Browser task save → Artifact publication → Task create/replace → conflict recovery | W10–W14 provide content contracts, an unmounted HTTP adapter and pure mapping; W15 composes internal create-only publication steps and W16 observes current targets without recovery. Explicit login/installation, public dispatch, durable recovery and browser save/conflict handling remain missing. |
+| Browser task save → Artifact publication → Task create/replace → conflict recovery | W10–W14 provide content contracts, an unmounted HTTP adapter and pure mapping; W15 composes internal create-only steps and W16 observes current targets without recovery. W23 separately supplies unmounted text HTTP publication. Explicit login/installation, public dispatch, durable recovery and browser save/conflict handling remain missing. |
 | Supplied Artifact content → draft plan binding → Task content manifest | W02 ⇢ W14 ⇢ W10 checks supplied bytes and metadata only; no storage call, current authorization or proof of prior publication. Local U03 → W14 remains unconnected. |
 | Draft plan → explicit Session publication steps → Task create | W14 ⇢ W15 ⇢ W12 uses I04 and W05 independently for current authorization/publication. Separate transactions, in-memory outcome tracking; no browser bridge or automatic recovery. |
 | Unconfirmed attempt → current target observation | W15 ⇢ W16 uses I04 and one W05 or W12 read. Separate observation times, no returned body or state restoration; this read branch adds no representative write chain. |

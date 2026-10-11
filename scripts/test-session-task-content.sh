@@ -31,7 +31,15 @@ for session_content_pg_case in \
   concurrency::postgres_session_content_logout_order_preserves_one_transaction_authority \
   concurrency::postgres_session_content_membership_revocation_waits_then_denies_future_bytes_and_edits \
   concurrency::postgres_session_content_cancellation_at_event_wait_rolls_back_and_restores_the_source_pool \
-  concurrency::postgres_session_content_post_write_blob_changes_are_detected_without_deleting_other_content; do
+  concurrency::postgres_session_content_post_write_blob_changes_are_detected_without_deleting_other_content \
+  catalog_behavior::postgres_session_content_catalog_provider_free_versions_empty_and_32_ordered_text_roundtrip \
+  catalog_behavior::postgres_session_content_catalog_and_manual_handles_reject_each_other_without_schema_adoption \
+  catalog_validation::postgres_session_content_catalog_full_metadata_drift_and_unknown_pins_have_no_side_effects \
+  catalog_validation::postgres_session_content_catalog_old_bytes_new_text_and_revision_guards_cannot_be_bypassed \
+  catalog_faults::postgres_session_content_catalog_post_write_definition_artifact_event_and_session_faults_roll_back \
+  catalog_lifecycle::postgres_session_content_catalog_current_owner_lifecycle_and_expiry_after_event_wait_fail_closed \
+  catalog_composition::postgres_session_content_catalog_composed_packages_keep_text_versions_and_isolated_admission \
+  catalog_assessment_binding::postgres_session_content_catalog_unbound_assessment_roundtrips_and_binding_drift_never_writes; do
   cargo test --manifest-path engine/Cargo.toml --locked --test session_task_content_tdd "$session_content_pg_case" -- --ignored --list | grep -Fx "$session_content_pg_case: test"
   cargo test --manifest-path engine/Cargo.toml --locked --test session_task_content_tdd "$session_content_pg_case" -- --ignored --exact --nocapture
 done

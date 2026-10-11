@@ -2,16 +2,33 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
+test("Rust CI explicitly enumerates the standalone catalogue HTTP preparation suite", async () => {
+  const workflow = await readFile(new URL("../../.github/workflows/ci.yml", import.meta.url), "utf8");
+  const step = workflow.split("- name: Run real PostgreSQL task artifact and review storage integration")[1]?.split("\n      - name:")[0] ?? "";
+  const runner = await readFile(new URL("../test-platform-catalog-task-content-http.sh", import.meta.url), "utf8");
+  const cases = [];
+  for (const module of ["behavior", "privacy", "metadata", "validation", "lifecycle", "faults", "waits", "capacity_sql"]) {
+    const source = await readFile(new URL(`../../engine/tests/catalog_task_content_http/${module}.rs`, import.meta.url), "utf8");
+    for (const [, name] of source.matchAll(/async fn (postgres_catalog_http_\w+)\(/g)) cases.push(`${module}::${name}`);
+  }
+  assert.equal(cases.length, 8, "catalogue HTTP transaction boundaries require deliberate CI inclusion");
+  const listed = [...runner.matchAll(/^  ((?:\w+::)*postgres_catalog_http_\w+)\b/gm)].map(match => match[1]);
+  assert.deepEqual(listed.sort(), cases.sort(), "runner selects every exact case once");
+  assert.match(step, /&& bash scripts\/test-platform-catalog-task-content-http\.sh/);
+  assert.ok(step.includes("@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test"));
+  for (const pattern of [/set -euo pipefail/, /CYANREX_TEST_DATABASE_URL:\?/, /--test catalog_task_content_http_tdd/, /--ignored --list/, /grep -Fx/, /--ignored --exact --nocapture/]) assert.match(runner, pattern);
+});
+
 test("Rust CI explicitly runs every prepared Task content HTTP transaction boundary", async () => {
   const workflow = await readFile(new URL("../../.github/workflows/ci.yml", import.meta.url), "utf8");
   const step = workflow.split("- name: Run real PostgreSQL task artifact and review storage integration")[1]?.split("\n      - name:")[0] ?? "";
   const runner = await readFile(new URL("../test-platform-task-content-http.sh", import.meta.url), "utf8");
   const cases = [];
-  for (const [file, prefix] of [["platform_http_tdd.rs", ""], ["platform_http/behavior.rs", "behavior::"], ["platform_http/faults.rs", "faults::"]]) {
+  for (const [file, prefix] of [["platform_http_tdd.rs", ""], ["platform_http/behavior.rs", "behavior::"], ["platform_http/faults.rs", "faults::"], ["platform_http/capacity_sql.rs", "capacity_sql::"]]) {
     const source = await readFile(new URL(`../../engine/tests/${file}`, import.meta.url), "utf8");
     for (const [, name] of source.matchAll(/async fn (postgres_platform_http_\w+)\(/g)) cases.push(`${prefix}${name}`);
   }
-  assert.equal(cases.length, 11, "HTTP transaction boundaries require deliberate CI inclusion");
+  assert.equal(cases.length, 13, "HTTP transaction boundaries require deliberate CI inclusion");
   const listed = [...runner.matchAll(/^  ((?:\w+::)*postgres_platform_http_\w+)\b/gm)].map((match) => match[1]);
   assert.deepEqual(listed.sort(), cases.sort(), "runner must enumerate every exact case once");
   assert.ok(step.includes("@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test"));
@@ -40,11 +57,11 @@ test("Rust CI explicitly runs every Session content and exact-byte boundary", as
   const step = workflow.split("- name: Run real PostgreSQL task artifact and review storage integration")[1]?.split("\n      - name:")[0] ?? "";
   const runner = await readFile(new URL("../test-session-task-content.sh", import.meta.url), "utf8");
   const cases = [];
-  for (const [file, prefix] of [["session_task_content_tdd.rs", ""], ["session_task_content/behavior.rs", "behavior::"], ["session_task_content/lifecycle.rs", "lifecycle::"], ["session_task_content/faults.rs", "faults::"], ["session_task_content/namespaces.rs", "namespaces::"], ["session_task_content/concurrency.rs", "concurrency::"]]) {
+  for (const [file, prefix] of [["session_task_content_tdd.rs", ""], ["session_task_content/behavior.rs", "behavior::"], ["session_task_content/lifecycle.rs", "lifecycle::"], ["session_task_content/faults.rs", "faults::"], ["session_task_content/namespaces.rs", "namespaces::"], ["session_task_content/concurrency.rs", "concurrency::"], ["session_task_content/catalog.rs", "catalog::"], ["session_task_content/catalog_behavior.rs", "catalog_behavior::"], ["session_task_content/catalog_validation.rs", "catalog_validation::"], ["session_task_content/catalog_faults.rs", "catalog_faults::"], ["session_task_content/catalog_lifecycle.rs", "catalog_lifecycle::"], ["session_task_content/catalog_composition.rs", "catalog_composition::"], ["session_task_content/catalog_assessment_binding.rs", "catalog_assessment_binding::"]]) {
     const source = await readFile(new URL(`../../engine/tests/${file}`, import.meta.url), "utf8");
     for (const [, name] of source.matchAll(/async fn (postgres_session_content_\w+)\(/g)) cases.push(`${prefix}${name}`);
   }
-  assert.equal(cases.length, 25, "Session content boundaries require deliberate CI inclusion");
+  assert.equal(cases.length, 33, "Session content boundaries require deliberate CI inclusion");
   const listed = [...runner.matchAll(/^  ((?:\w+::)*postgres_session_content_\w+)\b/gm)].map((match) => match[1]);
   assert.deepEqual(listed.sort(), cases.sort(), "runner must enumerate every exact case once");
   assert.ok(step.includes("@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test"));
@@ -106,11 +123,11 @@ test("Rust CI explicitly runs every Session catalogue Task admission boundary", 
   const step = workflow.split("- name: Run real PostgreSQL task artifact and review storage integration")[1]?.split("\n      - name:")[0] ?? "";
   const runner = await readFile(new URL("../test-session-catalog-tasks.sh", import.meta.url), "utf8");
   const cases = [];
-  for (const [file, prefix] of [["session_catalog_task_tdd.rs", ""], ["session_catalog_task/lifecycle.rs", "lifecycle::"], ["session_catalog_task/faults.rs", "faults::"], ["session_catalog_task/concurrency.rs", "concurrency::"]]) {
+  for (const [file, prefix] of [["session_catalog_task_tdd.rs", ""], ["session_catalog_task/lifecycle.rs", "lifecycle::"], ["session_catalog_task/faults.rs", "faults::"], ["session_catalog_task/concurrency.rs", "concurrency::"], ["session_catalog_task/metadata.rs", "metadata::"], ["session_catalog_task/composition.rs", "composition::"], ["session_catalog_task/assessment_binding.rs", "assessment_binding::"]]) {
     const source = await readFile(new URL(`../../engine/tests/${file}`, import.meta.url), "utf8");
     for (const [, name] of source.matchAll(/async fn (postgres_session_catalog_tasks_\w+)\(/g)) cases.push(`${prefix}${name}`);
   }
-  assert.equal(cases.length, 16, "catalogue admission boundaries require deliberate CI inclusion");
+  assert.equal(cases.length, 20, "catalogue admission boundaries require deliberate CI inclusion");
   const listed = [...runner.matchAll(/^  ((?:\w+::)*postgres_session_catalog_tasks_\w+)\b/gm)].map((match) => match[1]);
   assert.deepEqual(listed.sort(), cases.sort(), "runner must enumerate every exact case once");
   assert.ok(step.includes("@127.0.0.1:${{ job.services.postgres.ports[5432] }}/cyanrex_test"));

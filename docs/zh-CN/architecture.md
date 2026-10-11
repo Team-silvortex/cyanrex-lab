@@ -1,5 +1,9 @@
 # 系统架构
 
+源码版本 **0.5.5**（**2026-10-11**）已收录这些跟进；分日期的 `Unreleased`/未发布标记保留
+当时实施阶段、源码版本和验证范围。源码收录不代表准备层 API 已挂载、浏览器保存已接通、
+在线认证已切换、存储已迁移或运行实例已经验收。
+
 Cyanrex Lab 正从 eBPF 教学应用转向面向人、未来 AI 参与者和计算资源的自部署协作平台。
 任务及其内容是组织工作的核心；eBPF 教学是第一个已实现的领域，不是所有未来任务必须遵循的形态。
 部署范围仍是可信工作站和受保护局域网，不面向公网多租户。
@@ -14,7 +18,7 @@ Cyanrex Lab 正从 eBPF 教学应用转向面向人、未来 AI 参与者和计�
 | 层次 | 已实现行为 | 尚未打通的边界 |
 |---|---|---|
 | 在线教学应用 | 浏览器登录、eBPF 编辑与检查运行、学习记录和教师反馈、事件、部署运维 | 仍使用原 AuthService、AppState 和教学存储；没有通用 Task HTTP 工作流 |
-| 共享领域契约 | 准确版本 TaskCatalog 与类型化规则调用；教学门面已使用内置 eBPF 教学包 | 没有动态提供器加载、通用调度器或自动类型化证据适配 |
+| 共享领域契约 | 冻结定义元数据独立于绑定提供器的类型化评估；教学门面已使用内置 eBPF 教学包 | 没有动态提供器加载、通用调度器或自动类型化证据适配 |
 | 显式后端准备层 | 持久身份/Session 命令及私人 Task、Artifact、Review 操作，已有数据库回归覆盖 | 不由 AppState 构建、不暴露公共路由，不是已有数据迁移 |
 | 本地任务 payload 编辑器 | 任务草稿持有可选文本项，支持 14 种本地语言配置及 JSON 导入导出 | 没有服务端 Task/Artifact 保存、可靠浏览器恢复、LSP 进程或执行 |
 | 目标平台 | 人与 AI、计算资源协作，领域无关工作流及隔离执行 | 没有明确标为已实现的部分仍是目标设计 |
@@ -63,6 +67,26 @@ flowchart LR
 Session 授权的 Artifact 发布，再显式更换 Task 输入；执行适配器还须单独把持久 Task 连接到 Run。
 存在各自的类型或后端方法，不代表这两条连接已经实现。
 
+2026-10-08 未发布的[目录跟进](task-domain-boundary.md)将非泛型 `TaskDefinitionCatalog` 与绑定
+提供器的 `TaskCatalog<P>` 分开。冻结的 `Arc` 元数据可直接配置 `TaskDraft::from_definitions`
+和 `SessionCatalogTaskWorkspace::from_definitions`，无需评估器；旧构造器兼容委托。
+精确定义准入与 Session 事务不变，也不授予类型化证据、评估、执行或验收能力。
+
+**2026-10-11 多包跟进，源码 0.5.4，Unreleased** 新增显式 `TaskDefinitionCatalog::compose`：
+1–256 个可信元数据句柄组合为最多 256 个展平定义，嵌套组合也受同一总上限约束。准确包/任务
+版本及同包互不重叠分片按输入顺序共存；完整引用重复一律失败，即使元数据相同也不合并。
+冻结结果直接接入已有 Task 草稿、Schema 2 会话目录及 Schema 3 存储/会话内容的
+`from_definitions` 路径。类型化评估器仍独立且只配置一个包；不增加发现、权限、Schema 或
+公共/浏览器连接。
+
+独立的 **2026-10-11 评估绑定跟进，源码 0.5.4，Unreleased** 允许定义同时具有两项自动评估引用，
+或明确同时不绑定。两个 JSON 字段仍必须存在，无绑定用双 null 表示，漏字段或只绑定一项直接
+拒绝。有绑定和无绑定定义可共享冻结目录及原 Schema 2/3 工作路径；无绑定目录工作仍保存
+`Some(TaskDefinition)`，不是手工 Task。完整定义相等检查在两个方向拒绝绑定漂移；类型化
+提供器构造/派发及 `TaskAssessment` 仍要求两项引用。内部 Rust 调用方须适配成对 `Option`
+字段；旧已绑定 JSON 编码不变，但旧二进制不能读取新双 null 记录。不改变 Schema 编号、迁移、
+授权、HTTP/编辑器连接，也不增加 Review/执行流程。
+
 0.5.0 收录的 [C2-K 内容元数据](task-content-manifest.md)独立描述标题、显示标签与准确 Artifact 引用，
 不复用本地草稿身份。纯校验器只检查给定快照，不是持久化、当前 Session 授权或缺失的浏览器适配。
 
@@ -70,9 +94,35 @@ Session 授权的 Artifact 发布，再显式更换 Task 输入；执行适配�
 可信句柄不暴露旧 Schema 2 写入口，两种格式互不接管。[C2-M](session-task-content.md)另行在同一事务
 组合当前 Session 授权与 Artifact 文本验证，现用应用及浏览器链路仍未接通。
 
-[C2-N](task-content-http.md)新增这些命令之上的独立 HTTP 路由，采用专用 Session Cookie、固定
+**2026-10-08 目录内容跟进，源码 0.5.4，Unreleased** 为该存储增加显式纯元数据构造器，并提供
+独立的 `SessionCatalogTaskContentWorkspace`。准确定义与文本清单可在不需要评估器的情况下
+共同保存：创建准入配置元数据，读取/编辑/状态转移拒绝完整定义漂移。复用原内容执行器检查
+旧新字节、当前所有权和最终授权。手动与目录句柄互相拒绝对方记录，Schema 3 不变。
+HTTP 和 C2-P–W 发布路径仍使用手动句柄，不隐式提升任务、不执行规则，也不连接浏览器。
+
+[C2-N](task-content-http.md)新增手动命令之上的独立 HTTP 路由，采用专用 Session Cookie、固定
 可信 Origin 与有界请求准入。它没有挂载到 `build_router`，现用 OpenAPI/SDK 也不声明它；登录
 签发、部署组合、内容发布及浏览器保存仍独立推进，不把旧 Session 变成平台权限。
+
+2026-10-08 未发布的 C2-N 跟进为该显式状态新增共享请求/响应预算：默认四个名额，可信配置
+允许 1 至 16；状态克隆及分别用其构造的路由共享名额。超额请求在正文/SQL 处理前拒绝，
+已准入名额保留至返回响应正文完成或丢弃，而非只到处理函数返回。这不是全进程内存/工作线程
+上限；取消会释放准入名额，不证明回滚，也不终止已派发阻塞 I/O。适配器仍未挂载，
+C2-M 原授权与命令期限不变。
+
+0.5.5 收录的独立 [C2-X 文本 Artifact 路由](text-artifact-http.md)适配已有会话 Artifact 创建/精确读取。
+其 2 MiB 传输正文与 256 KiB 解码文本限制不改变 C2-N 的 64 KiB 限制。可信调用者可在独立 Task
+请求中使用返回的精确引用；两个路由不互相调用或自动合并，状态预算相互独立且相加。
+这只是准备层的独立 HTTP 调用序列，不是原子草稿保存、浏览器连接、Session 签发、日志化流程
+或 `AppState` 接线。
+
+源码 0.5.4 上独立的 **2026-10-11 未发布 [C2-Y 目录内容路由](catalog-task-content-http.md)**
+通过 `CatalogTaskContentHttpState` 接收强类型 `SessionCatalogTaskContentWorkspace`，不属于
+已发布标签。其 `/platform/v1/catalog-tasks` 前缀只在创建中增加准确定义引用，不接客户端定义
+正文或模式切换。读、编辑、状态变更保留完整配置元数据及原旧新文本/当前 Session 事务检查，
+不执行提供器或评估。原手动状态与 JSON 不变。两适配复用安全、64 KiB/两秒准入、响应投影及
+响应正文名额存活期，但独立构造的状态族预算相加。C2-Y 仍未挂载，与 C2-P–W 独立；
+不签发 Session、不自动合并、不迁移，也不接 OpenAPI/SDK 或浏览器保存。
 
 0.5.3 收录的 [C2-O 草稿导入器](task-draft-publication.md)增加纯整份草稿校验、有界发布值，以及
 将给定精确 `ArtifactContent` 绑定为 C2-K 清单的能力。空白标题拒绝，经过校验的本地 ID/修订丢弃，
@@ -83,6 +133,20 @@ Session 授权的 Artifact 发布，再显式更换 Task 输入；执行适配�
 Task 命令显式组合。调用者持有的内存尝试固定 ID、来源、工作区和 Session 指纹，每次至多派发
 一个写入。等待前记录未知步骤，后续失败或 future 被丢弃仍保留已确认进度。没有整份草稿事务、
 重试、清理、持久恢复、HTTP 或浏览器连接；各底层命令保留原授权与提交边界。
+
+源码 0.5.4 上独立的 **2026-10-11 未发布 [C2-Z 目录步骤流程](session-catalog-task-draft-publication.md)**
+从强类型目录内容工作区、准确定义引用及原 C2-O 计划准备独立不透明尝试，不属于已发布标签。
+准备不做 I/O：先核验 token 外形/来源权限域，冻结完整准入定义，再分配随机目标和摘要。
+每次推进发布一个 Artifact，或最后创建一个目录 Draft；确认要求冻结的完整 `Some` 定义，
+不能只匹配引用。未知步骤在调用者内存中保留已确认 Artifact 前缀。与 C2-P 只共享两项纯回执/
+清单检查，其 `None` matcher 及 C2-Q–W 类型/传输格式不变。新尝试不进入观察/检查点/日志/
+恢复路径，不接提供器、HTTP、签发、OpenAPI/SDK/浏览器保存、整份草稿事务、重试、迁移或部署。
+
+同一源码版本上独立的 **2026-10-11 未发布 [C2-AA 目录观察](session-catalog-task-draft-observation.md)**
+为仍存活的 C2-Z 尝试增加不可变读取分支，不属于已发布标签。一个已有 Artifact 或目录 Task
+读取器核验当前 Session 权限，比较准确未知目标、冻结的完整 `Some` 定义和有序字节。
+同编号元数据损坏仍是类型化读取错误，有效后续数据则可不匹配。不含正文的结果不确认先前
+写入、不改变尝试、不允许重试，也不接旧手动/日志/恢复类型。
 
 0.5.3 收录的 [C2-Q](session-task-draft-observation.md)只经一次已有当前会话 Artifact 或 Task 内容读取，
 观察 C2-P 尝试的未知步骤目标，返回不含正文的比较结果，不追加确认、不改状态，也不允许重试。
@@ -168,7 +232,8 @@ Engine 启动时会发现直接子目录中的合法 v1 `module.json`。`ModuleM
 | 源码位置 | 职责与依赖边界 |
 |---|---|
 | `engine/src/models/collaboration/` | 领域无关身份、准确引用、Task/Artifact/Review 契约与业务事件信封；解码不等于授权 |
-| `engine/src/services/task_catalog.rs` | 不可变定义注册、准确查找、类型化评估调用；不负责发现、调度或权限 |
+| `engine/src/services/task_catalog/definitions.rs` | 冻结定义注册、有界显式多包组合与准确查找；不保留提供器、不负责发现或权限 |
+| `engine/src/services/task_catalog.rs` | 已有单包元数据与类型化评估调用；不负责发现、调度或权限 |
 | `engine/src/domain_packs/ebpf_teaching/` | 实验定义、源码证据与 eBPF 评估规则；教学假设留在此处 |
 | `engine/src/services/learning_catalog.rs` | 从现有教学操作到共享目录的兼容门面 |
 | `engine/src/services/collaboration_identity_store/` | 显式身份绑定、工作区成员、部署策略及审计存储 |
@@ -177,6 +242,7 @@ Engine 启动时会发现直接子目录中的合法 v1 `module.json`。`ModuleM
 | `engine/src/services/prepared_resource_sql.rs` | 上述存储私有共用的命名空间、事务初始化及普通表检查；不是通用仓储或授权服务 |
 | `engine/src/services/task_draft_import/` | 严格原始草稿解析、发布值及给定内容绑定；无 I/O、权限或保存编排 |
 | `engine/src/services/auth_service/durable_source/draft_publication/` | 仅创建步骤、观察、检查点 codec、检查、意图登记/读取及显式日志化包装器；资源/标记连接保持在认证源拥有的 Artifact/C2-M 事务内 |
+| `engine/src/services/auth_service/durable_source/catalog_draft_publication/` | 独立不透明目录创建步骤与准确目标只读观察；冻结完整定义并使用已有 Session 命令，不转换手动检查点/日志，也不重试 |
 | `engine/src/services/draft_intent_journal/` | 不可变意图及独立安装的 Schema 2 步骤标记；绑定身份的发布经显式包装器，不是恢复或对旧 API 的强制约束 |
 | `frontend/src/features/tasks/` | 本地草稿归属、payload 修订及导入导出；不是持久 Task 存储 |
 | `frontend/src/features/editor/` | 受控文本模型及本地语言服务；不负责任务策略或执行授权 |
@@ -216,12 +282,15 @@ src/utils/                分析器、安全与页面状态工具
 - `/tasks/new` 持有任务草稿及可选 payload，`/editor` 是同一容器的兼容入口。受控文本编辑器提供
   14 种本地语言配置，不依赖具体任务类型或 eBPF 控制器。仍沿用侧栏登录门禁；语言工具不授予执行权，
   服务端 Task/Artifact 保存尚未接通。
+- 可移植 payload 语言提示由任务层校验，独立于这 14 种配置。合法未知提示在草稿/导出中原样保留；
+  编辑器只将实际能力解析为纯文本并提示没有工具。此解析不是草稿编辑，也不重置撤销历史。
 - 设置页指标与 Agent 运维逻辑放在各自 feature 中，`pages/settings.tsx` 只协调事件/编译器设置并组合
   教师部署管理面板。
 - `docs/` 是文档源；`frontend/public/course/` 是为 Docker 构建保留的同步副本。
 
-0.4.9 收录的[任务 payload 编辑器](editor.md)由父任务草稿持有全部已接受内容，切换内容项或语言时替换
-显示模型，保留正文但不保留撤销历史。预期内容修订、任务代次和目标确认共同拒绝过期回调，父内容同步
+0.4.9 收录的[任务 payload 编辑器](editor.md)由父任务草稿持有全部已接受内容，切换内容项或实际编辑
+配置时替换显示模型，保留正文但不保留撤销历史；仅解析纯文本能力不替换模型。
+预期内容修订、任务代次和目标确认共同拒绝过期回调，父内容同步
 不重复产生编辑。每项文本上限为 256 KiB、最多 32 项，严格 JSON 导入导出上限为 8 MiB。
 本地草稿 ID 不是服务端 Task/Artifact 身份；后台已有不可变版本发布及授权换版准备层，但编辑器尚未接通。
 发起下载不证明文件已经落盘，没有自动保存或可靠的导航恢复。
@@ -385,7 +454,7 @@ Schema 版本、工作区范围、错误映射和提交职责；schema 2 Task �
 
 | 对象 | 含义 | 不能混同为 |
 |---|---|---|
-| TaskDefinition | 准确的包/任务版本，另行固定证据 Schema 和评估策略 | 调度器、已安装插件或权限 |
+| TaskDefinition | 准确包/任务版本及明确自动评估绑定：证据 Schema/策略引用同时存在或同时不绑定 | 调度器、已安装插件或权限 |
 | TaskSnapshot | 有归属的工作项，可含冻结定义、准确输入引用、状态及预期修订 | 源码、内核作业或已验收结果 |
 | ArtifactRevision | 不可变字节及其所有者、类型、继承关系、准确版本 ID 和摘要 | 浮动最新版、执行安全证明或按相同摘要共享的权限 |
 | ReviewRecord | 绑定版本的人工/规则判断、目标与证据引用、不可变修改历史 | 自动 Task 验收、跨用户访问或仅靠解码成立的证据验证 |
@@ -411,8 +480,9 @@ Task 输入命令在任务/outbox 写入前后验证准确且属于本人的 Art
 前者、授权删除文件或证明可以安全重试。浏览器尚未调用这条流程。
 
 这些存储只使用 PostgreSQL，失败时拒绝操作，不继承在线教学服务的内存/文件降级。Schema 只能
-显式安装到空命名空间。当前 Task 存储 Schema 为 **2**，核心契约 Schema 仍为 **1**；已有 Task
-Schema 1 会被拒绝，不自动升级。不可将全新安装模板直接用于在线命名空间，也不能修改旧元数据
+显式安装到空命名空间。通用定义/输入 Task 存储使用 Schema **2**；独立标题/文本清单存储使用
+Schema **3**，包括其显式手动与目录模式。核心契约 Schema 仍为 **1**；旧格式或不兼容存储
+会被拒绝，不自动升级。不可将全新安装模板直接用于在线命名空间，也不能修改旧元数据
 绕过检查。准备层账号/身份生命周期、本地 `cyanrex-provision` 工具和只读核对器，同样不会迁移
 或替换在线认证。
 
@@ -767,4 +837,6 @@ Engine 容器需要内核能力、宿主 PID、bpffs、tracefs 和内核模块�
 | 工作存储 | [Task 存储](task-instance-store.md)、[不可变 Artifact 版本](artifact-revision-store.md)、[Review 历史](review-record-store.md) |
 | 私人 Session 操作 | [手工 Task](session-task-commands.md)、[Artifact](session-artifact-commands.md)、[Task 输入](session-task-inputs.md)、[人工 Review](session-review-commands.md) |
 | 定义与内容版本 | [目录任务](session-catalog-tasks.md)、[Draft 输入换版](session-task-revisions.md) |
+| 显式内容 HTTP 组合 | [手动适配](task-content-http.md)、[目录适配](catalog-task-content-http.md)、[文本发布](text-artifact-http.md) |
+| 显式仅创建草稿发布 | [手动尝试](session-task-draft-publication.md)、[目录尝试](session-catalog-task-draft-publication.md) |
 | 用户内容编辑 | [本地任务 payload 编辑器](editor.md) |

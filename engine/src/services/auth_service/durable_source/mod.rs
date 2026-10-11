@@ -30,10 +30,14 @@ mod accounts;
 #[cfg(unix)]
 mod artifact_commands;
 mod bootstrap;
+#[cfg(unix)]
+mod catalog_draft_publication;
 mod credentials;
 mod deletion;
 #[cfg(unix)]
 mod draft_publication;
+#[cfg(unix)]
+mod draft_publication_checks;
 mod namespace;
 mod otp;
 mod otp_consumption;
@@ -55,6 +59,8 @@ mod task_commands;
 #[cfg(unix)]
 pub use artifact_commands::{SessionArtifactError, SessionArtifactWorkspace};
 pub use bootstrap::{AuthorityBootstrap, BootstrapError};
+#[cfg(unix)]
+pub use catalog_draft_publication::SessionCatalogTaskDraftPublication;
 pub use deletion::SessionDeleteAccountCommand;
 #[cfg(unix)]
 pub use draft_publication::{
@@ -75,8 +81,8 @@ pub use review_commands::{SessionReviewError, SessionReviewWorkspace};
 pub use session_commands::{SessionBindCommand, SessionCommandError, SessionPolicyCommand};
 #[cfg(unix)]
 pub use task_commands::{
-    SessionCatalogTaskWorkspace, SessionTaskContent, SessionTaskContentWorkspace,
-    SessionTaskInputs, SessionTaskInputsWorkspace,
+    SessionCatalogTaskContentWorkspace, SessionCatalogTaskWorkspace, SessionTaskContent,
+    SessionTaskContentWorkspace, SessionTaskInputs, SessionTaskInputsWorkspace,
 };
 pub use task_commands::{SessionTaskError, SessionTaskWorkspace};
 

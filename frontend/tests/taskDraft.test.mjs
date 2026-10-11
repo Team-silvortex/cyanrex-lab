@@ -7,8 +7,8 @@ import { BUILTIN_LANGUAGES } from "../src/features/editor/languages.ts";
 // Match the bundler's one extensionless TypeScript dependency without rewriting production code.
 const draftUrl = new URL("../src/features/tasks/taskDraft.ts", import.meta.url).href;
 const resolver = registerHooks({ resolve(specifier, context, nextResolve) {
-  if (context.parentURL === draftUrl && specifier === "../editor/languages") {
-    return nextResolve(new URL("../src/features/editor/languages.ts", import.meta.url).href, context);
+  if (context.parentURL === draftUrl && specifier === "./taskPayloadLanguage") {
+    return nextResolve(new URL("../src/features/tasks/taskPayloadLanguage.ts", import.meta.url).href, context);
   }
   return nextResolve(specifier, context);
 } });
@@ -98,9 +98,27 @@ test("revisions must be positive JSON-safe integers and cannot overflow on mutat
   assert.deepEqual(removePayloadItem(max, "local_1", Number.MAX_SAFE_INTEGER).payload, []);
 });
 
-test("all registered languages are supported without guessing unknown language IDs", () => {
+test("language hints preserve valid unknown metadata without requiring an editor profile", () => {
   for (const { id } of BUILTIN_LANGUAGES) assert.equal(parse(draft([item({ language: id })])).payload[0].language, id);
-  for (const language of ["", "Python", "tsx", "js", "__proto__", "constructor", null]) fails(() => parse(draft([item({ language })])));
+  for (const language of ["a", "future-lang+v2", "tsx", "js", "constructor", "x_0+.-", "a".repeat(64)]) {
+    const value = draft([item({ language, filename: "unchanged.data" })]);
+    assert.deepEqual(parse(value), value);
+    assert.deepEqual(parseTaskDraft(encoder.encode(serializeTaskDraft(value))), value);
+    const edited = updatePayloadItem(value, "local_1", 1, { text: "Only the body changes." });
+    assert.equal(edited.payload[0].language, language);
+    assert.equal(edited.payload[0].filename, "unchanged.data");
+    assert.equal(edited.payload[0].revision, 2);
+  }
+});
+
+test("language hint syntax is bounded and full-string rather than normalized or guessed", () => {
+  for (const language of ["", "Python", "__proto__", "0js", "-rust", "a".repeat(65), "rust ", " rust",
+    "rust\n", "rust\r", "rust\r\n", "rust\t", "rust\0", "rust\u0085", "rust\u2028", "rust\u2029",
+    "ru/st", "ru\\st", "ru st", "中文", "\ud800", null, 1]) {
+    fails(() => parse(draft([item({ language })])));
+    fails(() => updatePayloadItem(draft(), "local_1", 1, { language }));
+    fails(() => serializeTaskDraft(draft([item({ language })])));
+  }
 });
 
 test("filenames are bounded display basenames, never paths or control sequences", () => {
@@ -221,10 +239,13 @@ test("shared native-import fixtures are ordinary byte-exact local exports with n
   assert.ok(items.some(item => item.text.includes("\t中文 👩‍💻 e\u0301")), "composition, tabs and supplementary Unicode stay exact");
 });
 
-test("backend-only future language fixtures do not grant a local editor capability", async () => {
+test("shared future language fixture round trips as inert metadata without gaining a capability", async () => {
   const bytes = await readFile(new URL("../../engine/tests/fixtures/task-draft-publication/future-language.json", import.meta.url));
-  assert.equal(JSON.parse(bytes.toString("utf8")).payload[0].language, "future-lang+v2");
-  fails(() => parseTaskDraft(bytes));
+  const value = parseTaskDraft(bytes);
+  assert.equal(value.payload[0].language, "future-lang+v2");
+  assert.ok(!BUILTIN_LANGUAGES.some(profile => profile.id === value.payload[0].language));
+  assert.equal(serializeTaskDraft(value), bytes.toString("utf8").replace(/\n$/, ""));
+  assert.deepEqual(parseTaskDraft(encoder.encode(serializeTaskDraft(value))), value);
 });
 
 test("local raw JSON compatibility is broader than the native strict publication importer", () => {

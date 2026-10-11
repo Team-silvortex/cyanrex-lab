@@ -35,9 +35,11 @@ An empty or whitespace-only local title is rejected before creating a publicatio
 does not invent a title, trim labels, normalize Unicode or change line endings. Local editing may
 still keep an unnamed draft. Duplicate filenames remain legal; item order and exact text are preserved.
 
-The server's language-hint contract is broader than the browser's 14-profile allowlist. Importing a
-valid extension hint here does not make that draft importable by the current browser or select an LSP,
-compiler, provider or execution policy. This is a documented format boundary, not a fallback.
+At the C2-O implementation stage, the server accepted language hints beyond the browser's 14-profile
+allowlist. The **2026-10-08 Unreleased editor follow-up** now accepts that bounded hint syntax in local
+drafts too, preserving unknown hints while resolving local editing capabilities to plain text with a
+no-tools notice. This changes neither the Rust importer nor its stricter raw-JSON rules; a valid hint
+still selects no LSP, compiler, assessment provider or execution policy. See [the editor boundary](editor.md).
 
 ## Publication plan and exact binding
 
@@ -92,6 +94,13 @@ explicitly logging content obtained through their accessors.
 The separate 0.5.3 [C2-P stepper](session-task-draft-publication.md) now consumes this plan for
 explicit current-Session publication and Task creation. It owns an in-memory confirmed prefix and
 stops after an unconfirmed step; none of those side effects or outcome rules are added to this pure API.
+
+The independent **2026-10-11 Unreleased [C2-Z catalogue stepper](session-catalog-task-draft-publication.md)**,
+on source 0.5.4 outside the published tag, consumes the same plan through a separate typed workspace
+and exact definition reference. Its no-I/O preparation freezes full definition metadata before random
+target allocation; later advances publish one Artifact or finally create a catalogue Task. The plan
+format, limits and pure binding semantics do not change. Its opaque attempt has no conversion into
+the manual C2-P–W workflow and adds no checkpoint/journal/observation/recovery or HTTP/browser connection.
 
 This slice has no publication side effects to undo. It does not implement a multi-item uploader,
 operation receipt, idempotency, outcome reconciliation, retry or cleanup policy. Real Artifact

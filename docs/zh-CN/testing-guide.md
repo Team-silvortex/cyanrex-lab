@@ -1,11 +1,31 @@
 # 当前项目测试指南
 
+源码版本 **0.5.5**（**2026-10-11**）已收录分日期的跟进及其测试选择。未发布标记保留当时
+实施阶段，库存和此前 0.5.4 执行记录不是新鲜的 0.5.5 SQL 运行或部署验收；实际发布门禁结果
+及未覆盖范围记录于[项目状态](project-status.md)。
+
 本文按 **2026-10-08 的 0.5.4 源码** 核对，包含 C2-T–W 意图、派发与检查边界、Next.js 15.5.27
 下限，以及此前 AI 适配、草稿准备层、清理器加固、认证防护与独立内容 HTTP 适配。
 它说明各模块和边界应测什么、每层通过能证明什么，以及如何避免使用线上数据。本文是测试方案和
 源码清单，不是一次新的测试结果。先用[平台链路地图](platform-network.md) 区分已连接与未连接路径。
 [功能张量](capability-maturity.md)将实现切片关联到测试源码与分日期证据；公共脚本检查其结构、引用
 及中英文评分表一致性，不执行被引用的产品测试，也不建立部署成熟度。
+
+仍基于源码 0.5.4 的 **2026-10-11 未发布多包跟进**扩展元数据组合测试及下方两个精确会话 runner。
+这只是库存更新；分日期通过结果仍记于项目进度，原评审和证据日期保持不变。
+
+独立的 **2026-10-11 未发布评估绑定跟进**另增成对可空定义契约用例，并给这两个 runner 各增加
+一条用例。两个字段必须显式存在，有绑定/无绑定混合元数据仍保留目录身份，类型化评估仍只接纳
+有绑定定义。下方当前数量只是库存，不是执行或旧二进制兼容证据。
+
+独立的 **2026-10-11 未发布 C2-Y 跟进**另增显式配置的目录任务内容 HTTP 路由。下方将其默认、
+精确 SQL 和公共守卫清单单列；该库存和旧手动路由结果都不构成本轮执行或部署验收。
+
+独立的 **2026-10-11 未发布 C2-Z 跟进**新增强类型目录草稿发布尝试，与手动 C2-P–W 流程
+分开。下方准备、受控确认及精确 SQL 选择属于源码库存，不继承旧手动发布验收。
+
+独立的 **2026-10-11 未发布 C2-AA 跟进**只读观察一个未知目录尝试目标。其当前读取比较及
+类型化失败与 C2-Z 发布、旧手动 C2-Q 观察分开，早期两组结果都不证明本轮执行。
 
 ## 测试分层
 
@@ -38,6 +58,8 @@ Rust 公告审计，前端/SDK 检查也包含生产依赖的 npm 审计。因�
 | eBPF 编辑与执行 | 编译器/加载器/Runner；`compilerCheck`、`semanticCompletion`、运行/断点浏览器套件 | 检查与运行分离、诊断源码新鲜度、取消/租约所有权、精确卸载；真实内核验收另跑 |
 | Runner Agent | 认证器、注册表、作业队列/执行器/客户端；`runner_agent_client_tdd`、清单/管理浏览器测试 | 签名/防重放 → 租约/结果、超时/取消、所有者远程检查、不得回退执行 |
 | 教学包与通用目录 | `task_catalog_tdd`、`teaching_task_adapter_tdd`、`collaboration_contract_tdd` | 类型化证据、精确定义/策略身份；目录准入不执行规则、不验收 Task |
+| 纯元数据目录组合 | `task_definition_catalog/composition.rs`、`taskCatalogComposition` 公共守卫、会话目录/内容组合 SQL 用例 | 显式包/版本、顺序、完整引用冲突及嵌套 256 定义总上限；已有 Schema 2/3 命令保留私人所有权和完整定义检查，不依赖提供器或执行规则 |
+| 明确评估绑定选择 | `task_definition_catalog/assessment_binding.rs`、`taskAssessmentBinding` 公共守卫、会话目录/内容绑定 SQL 用例 | 必需的可空 JSON 字段、成对无绑定、旧已绑定编码、混合元数据、派发前拒绝无绑定的类型化提供器及两个方向的绑定漂移；不升级手工模式、不自动创建 Review，也不保证旧二进制降级 |
 | 事件和设置 | `module_boundaries_tdd`、EventBus、显式事件 SQL、事件/设置单元与浏览器套件 | 发布顺序 → 持久化历史 → 重新同步、导出/删除筛选安全、确认设置写入和读取失败 |
 | 通用身份与权威 | `collaboration_*_tdd`、`legacy_workspace_projection_tdd` | 审计绑定/成员/授权修订、缺席键竞争、最后管理者、角色与部署权限分离 |
 | 注册表时间 | `test-registry-timestamps.sh` 从四个既有目标准确选择十条用例 | 可空退役有效性、必填身份/策略审计时间、有限边界、旧历史/重放、追加读回、对账错误及 Session 命令拒绝；不新增年代/排序规则 |
@@ -57,6 +79,8 @@ Rust 公告审计，前端/SDK 检查也包含生产依赖的 npm 审计。因�
 | 内部任务内容元数据 | Rust `task_content_contract_tdd`、`task_content_binding_tdd` | 严格对象结构、字段/数量上限、有序准确引用、给定所有者/字节/摘要一致性；默认纯测试，不验证存储或 Session 授权 |
 | 草稿导入与发布计划 | Rust `task_draft_publication_tdd`、`taskDraftPublication` 公共守卫、前端 `taskDraft` 共享夹具 | 严格有界 JSON、空白标题拒绝、本地身份剥离、给定准确内容映射及标准导出兼容；不发布内容、不检查当前 Session、不保存浏览器草稿 |
 | 会话草稿发布步骤 | Rust `session_task_draft_publication_tdd`、`scripts/test-session-task-draft-publication.sh`、`sessionTaskDraftPublication` 公共守卫 | 固定分配与 Session 绑定、每次推进一个写入、空/多项成功、确认前缀与未知步骤、取消、撤权及最终真实字节检查；无持久恢复或浏览器保存 |
+| 独立目录草稿发布 | `session_catalog_draft_publication_tdd`、内部 `catalog_draft_publication::tests`、`scripts/test-session-catalog-draft-publication.sh`、`sessionCatalogDraftPublication` 守卫 | 无 I/O 的准确完整定义冻结、独立 token 域、每次推进一个已有 Session 写入、完整 `Some` 确认、保留前缀与未知目标及手动/日志类型隔离；C2-AA 比较另列，不提供恢复、重试或 HTTP/浏览器保存 |
+| 目录未知目标观察 | `session_catalog_draft_observation_tdd`、内部 `catalog_draft_publication::observation_tests`、`scripts/test-session-catalog-draft-observation.sh`、`sessionCatalogDraftObservation` 守卫 | 一个已有当前 Session 读取、冻结完整 `Some` 与有序字节、有效差异与类型化损坏、缺失/他人目标范围、取消和尝试不变；不收编确认、不推导历史提交/回滚、不恢复或重试 |
 | 未知草稿目标观察 | Rust `session_task_draft_observation_tdd`、`scripts/test-session-task-draft-observation.sh` | 原 Session/状态准入、精确只读比较、类型化错误、尝试不变、当前 Task 字节与历史前缀区别及 Task 缺席范围；无回滚证明或恢复推进 |
 | 草稿元数据检查点 | 默认 Rust `draft_publication::tests::checkpoint`、`session_task_draft_checkpoint_tdd`、`sessionTaskDraftCheckpoint` 公共守卫 | 严格有界元数据 codec、有序分配/长度、状态/计数关系及往返；导入进度是数据，不是授权、来源证明、持久化或尝试恢复 |
 | 检查点目标显式检查 | 默认 `draft_publication::tests::inspection`、`session_task_draft_inspection_tdd`、`scripts/test-session-task-draft-inspection.sh`、`sessionTaskDraftInspection` 公共守卫 | 显式范围/当前 Session、一个已有读取器、精确元数据/文本检查、类型化故障、缺席/空 Task 边界及数据不变；不证明原身份/正文来源，不提供日志或恢复 |
@@ -66,6 +90,7 @@ Rust 公告审计，前端/SDK 检查也包含生产依赖的 npm 审计。因�
 | 日志步骤资源观察 | `session_task_draft_journal_observation_tdd`、`scripts/test-session-task-draft-journal-observation.sh`、`sessionTaskDraftJournalObservation` 公共守卫 | 序号准入、同事务精确资源读取、读取后原完整日志/nonce/首次身份复验、新鲜权限及不含正文结果；不写业务、不提供回执或恢复 |
 | 独立内容存储 | Rust `task_content_store_tdd`、`scripts/test-task-content-storage.sh` | Schema 2/3 隔离、完整元数据/outbox 原子性、修订冲突与存储故障；不是 Session 内容或浏览器适配 |
 | 会话任务内容 | Rust `session_task_content_tdd`、`scripts/test-session-task-content.sh` | 同一事务内当前授权、旧新精确文本、元数据编辑、移除、命名空间身份及写后复验；不是公共/浏览器验收 |
+| 独立目录任务内容 HTTP | `catalog_task_content_http_tdd`、`scripts/test-platform-catalog-task-content-http.sh`、`catalogTaskContentHttp` 公共守卫 | 严格精确引用对象 → 可信完整定义、有绑定/无绑定目录身份、手动/所有者隔离、当前 Session/完整元数据/文本检查及共用传输/准入结果；不评估，也未接公共/浏览器路径 |
 | UI 导航与安全 | `test:ui-permissions`、布局/动作/账户/运行浏览器套件 | 绑定目标的确认、防重复操作、路由切换、键盘操作、未保存草稿保护 |
 | API、SDK、打包与部署 | 公共契约测试、SDK 门禁、发布/SSH Rust 目标与工具夹具 | Engine 路由 → OpenAPI → 生成 SDK；归档来源 → 精确已审阅 SSH 目标；夹具与实际安装分离 |
 
@@ -120,18 +145,98 @@ PostgreSQL 连接变量和 dotenv 预加载设置，再只添加所选夹具需�
 | `scripts/test-session-artifact-storage.sh` | 18 | 当前 Session → 私有发布与精确读取 |
 | `scripts/test-session-task-inputs.sh` | 20 | Task → 精确本人 Artifact 输入与写后验证 |
 | `scripts/test-session-review-storage.sh` | 18 | Session → 带精确目标/证据的私人人工 Review |
-| `scripts/test-session-catalog-tasks.sh` | 16 | 精确准入定义元数据和 0–32 个输入 |
+| `scripts/test-session-catalog-tasks.sh` | 20 | 精确准入有绑定/无绑定定义元数据、无提供器的单包/组合目录和 0–32 个输入 |
 | `scripts/test-session-task-revisions.sh` | 17 | Draft 换版、旧/新输入并集、schema 2 兼容性与并发保存 |
-| `scripts/test-session-task-content.sh` | 25 | Schema 3 当前 Session 内容、精确文本、旧新复验、命名空间替换、生命周期与并发故障 |
-| `scripts/test-platform-task-content-http.sh` | 11 | 独立 HTTP → C2-M、私有归属、等待锁时 Session 过期、精确文本、提交/outbox 故障与并发编辑 |
+| `scripts/test-session-task-content.sh` | 33 | Schema 3 手动/目录内容、有绑定/无绑定组合元数据、精确定义/文本、旧新复验、命名空间替换、生命周期与并发故障 |
+| `scripts/test-platform-task-content-http.sh` | 13 | 独立 HTTP → C2-M、私有归属、等待锁时 Session 过期、精确文本、提交/outbox 故障、并发编辑及覆盖响应正文完成的共享准入 |
 
-十二个 runner 共选择 **212 条用例**（此前资源 155 条、内容存储 21 条、会话内容 25 条、独立 HTTP 11 条），不是仓库全部 PostgreSQL 覆盖。旧认证/事件/脚本/学习与通用
+十二个 runner 共选择 **226 条用例**（此前资源 159 条、内容存储 21 条、会话内容 33 条、独立 HTTP 13 条），
+不是仓库全部 PostgreSQL 覆盖。两条目录新增用例覆盖无评估器的元数据构造与精确准入；这是当前
+源码库存，不改写旧执行数量。六条目录内容新增用例沿用 Schema 3，覆盖显式模式隔离、完整定义
+一致性、文本/修订守卫，以及故障和等待前后的当前授权。旧认证/事件/脚本/学习与通用
 身份/认证源/生命周期/初始化用例在 CI 中另有精确清单。
 [`postgresCi.test.mjs`](../../scripts/tests/postgresCi.test.mjs) 检查 runner 清单完整性。
+多包跟进在 `session_catalog_task/composition.rs` 和 `session_task_content/catalog_composition.rs`
+各增加一条用例，通过维护的精确 runner 选择。纯组合测试或源码守卫不能代替数据库执行。
+独立评估绑定跟进另增 `session_catalog_task/assessment_binding.rs` 和
+`session_task_content/catalog_assessment_binding.rs`，检查有绑定/无绑定定义经过原 Schema 2/3
+路径、显式 null 持久化、私人内容不变，以及同编号下增减绑定的拒绝。两条用例已经计入上方
+库存，不在其精确 runner 之外额外加计。
+
+**2026-10-08 未发布的 C2-N 准入跟进**需检查状态克隆及分别构造路由共享容量、正文轮询/SQL
+之前的拒绝，以及成功和错误响应正文持续持有名额。覆盖收集/取消、最终帧/结束/丢弃时释放与
+私有错误结果不变。显式 SQL 回归应包含保留成功内容正文、等待中的变更、超额请求不产生业务
+副作用、取消及原 Session 检查。当前 HTTP 清单在原十一条基础上新增两条精确 SQL 用例，
+库存不代表已完成运行。这些是适配器边界，不是全局工作线程配额或回滚证明；
+原 0.5.0 结果不作为本次跟进的执行证据。
+
+独立的 **2026-10-08 未发布 C2-X** 目标 `text_artifact_http_tdd` 和精确 runner
+`scripts/test-platform-text-artifact-http.sh` 用十条精确 SQL 覆盖文本发布与精确修订投影，
+不计入上述十二个 runner；十二条默认用例和三项新增公共守卫另行选择。
+检查独立的 2 MiB 传输 / 256 KiB 解码文本限制、私有错误与当前授权、历史修订、响应正文名额
+保持，以及文本/Task 独立预算。通用读取器可在投影前物化 1 MiB；C2-N 的 64 KiB 请求限制不变。
+将返回引用用于另一次 Task 请求只是调用者控制的进程内夹具序列，不是原子批次、路由合并或
+浏览器测试。源码守卫与默认传输测试不能替代显式一次性数据库执行；实际分日期结果记录于
+[项目状态](project-status.md)。
+
+独立的 **2026-10-11 未发布 C2-Y** 目标 `catalog_task_content_http_tdd` 包含 **28 条默认用例**，
+`scripts/test-platform-catalog-task-content-http.sh` 精确选择 **八条 SQL 用例**，不计入上述十二个
+runner。默认用例由一条漏引用、三条精确引用、八条目录正文，以及在真实目录路由上复用的
+六条传输、十条准入用例构成。三项 `catalogTaskContentHttp` 公共守卫核对源码边界和精确清单；
+这些是选择库存，不是通过记录。
+
+SQL 覆盖组合包/版本与评估绑定元数据经过四个命令、双向手动/目录/所有者隐私、完整定义漂移和
+未知坐标、旧新字节、当前 Session/账号生命周期、写后/提交故障、已观察锁等待，以及响应正文/
+取消容量。拒绝快照比较**七张 Task/Artifact 资源表**的全部行和私有目录全部文件名/字节，
+并非认证/身份/审计所有表。路由保留 C2-N 的 64 KiB / 两秒正文边界，但使用独立的强类型状态族；
+分别配置的手动/目录/文本预算相加，不是全局配额。
+未知定义在已调用 Session 命令后返回通用 `400 invalid_request / unconfirmed`，不提供 HTTP
+回滚保证。源码/默认检查和旧手动 SQL 结果都不能替代该适配器的一次性数据库执行。它仍未挂载，
+不自动合并路由、不发现目录、不让客户端选择模式、不调用评估提供器、不接日志 P–W，也不保存
+浏览器草稿。契约见 [C2-Y 文档](catalog-task-content-http.md)，分日期结果见[项目状态](project-status.md)。
 
 0.5.3 C2-P 另加 `scripts/test-session-task-draft-publication.sh`，精确选择 12 条用例，不计入上述十二个 runner 总数。
 它在一次性存储上准确选择 `session_task_draft_publication_tdd` 的仅创建流程用例；默认准备/状态
 测试不能替代这些 SQL 运行。分日期执行结果仍记录于[项目状态](project-status.md)。
+
+独立的 **2026-10-11 未发布 C2-Z** 目标 `session_catalog_draft_publication_tdd` 选择
+**四条默认准备用例**；内部 `catalog_draft_publication/tests.rs` 选择**八条受控回执/取消用例**。
+六条 `sessionCatalogDraftPublication` 守卫检查不透明类型、两个共享纯 helper、源码接线及精确
+库存。这些选择都不是新增通过记录，也不能替代数据库/文件执行。
+
+`scripts/test-session-catalog-draft-publication.sh` 选择**八条不同的精确 SQL 用例**：behavior 两条、
+faults 三条、lifecycle 一条、waits 两条，不计入上方十二个 runner 总数。它们覆盖组合包/版本和
+有绑定/无绑定定义、有序/空计划、原 Session 替换、有效故障计数器、完整定义/manifest 确认、
+已确认字节损坏、预分配 Artifact/Task 冲突但不接管，以及每步当前退出/过期/成员状态。
+wait 夹具必须先证明 PostgreSQL 阻塞，再在 Artifact 与最终 Task 两类步骤测试取消或数据库
+时钟 Session 过期。
+
+快照比较覆盖七张 Task/Artifact 资源表全行与私有目录文件名/字节，不涵盖所有 auth/identity 表。
+需区分拒绝时不变快照与第二次 Artifact 失败夹具中准确新增的孤立 blob：之前已提交前缀保留，
+SQL 不接管失败目标，未知 blob 不删除也不重试。冻结定义和 `Some` 确认不认证准备、不评估
+provider，也不让旧手动检查点/日志/观察 API 接收此尝试。参见[C2-Z 契约](session-catalog-task-draft-publication.md)；
+实际结果和未覆盖范围仍在[项目状态](project-status.md)中分日期记录。
+
+独立的 **2026-10-11 未发布 C2-AA** 目标 `session_catalog_draft_observation_tdd` 选择
+**四条默认用例**，检查 Ready/原 token 准入、准确 Artifact 和空 Task 读取错误、尚未 poll 的
+观察及进度不变。内部 `catalog_draft_publication/observation_tests.rs` 选择**六条受控比较/准入
+用例**；其中给定值损坏检查不是实际读取器验收。六条源码守卫检查当前读取器委托、共用不含正文的
+DTO、不收编状态及精确库存，不执行数据库/文件测试。
+
+`scripts/test-session-catalog-draft-observation.sh` 选择**八条不同的精确 SQL 用例**：behavior
+三条、faults 两条、lifecycle 一条、concurrency 两条，不计入上方十二个 runner 总数。
+它们区分合法注册定义/状态/内容变化与有效注入的同编号元数据、手动 `None` 及双向绑定损坏；
+类型化 `InvalidRecord` 不得改成报告。还覆盖组合版本、有绑定/无绑定及有序/空内容、当前
+Session/成员、字节损坏或丢失、缺失/他人目标及 Task 缺席时不检查 Artifact 命名空间的路径。
+等待用例必须先证明真实 PostgreSQL 阻塞，再检查取消或数据库时钟过期。
+
+观察不变快照比较选定来源、Artifact、Task Schema 中每张表的排序行 MD5，以及私有文件名、
+长度、mode、SHA-256 和根目录 device/inode/mode。这是限定范围的摘要，不是原始行/字节逐字
+相等或全部部署 Schema 审计。故障夹具先证明计数器/存储改写确实生效，再观察；Artifact SQL
+回滚仍可能留下准确不可变 blob，资源数量另行测量，`NotVisible` 从不证明回滚。进行中写者
+用例通过观察到的 outbox 屏障运行另一条显式命令，不伪造响应丢失；之后可见也不确认尝试的
+先前写入。契约见[C2-AA 说明](session-catalog-task-draft-observation.md)，实际结果及限制见
+分日期的[项目状态](project-status.md)。
 
 0.5.3 C2-Q 使用独立精确 runner `scripts/test-session-task-draft-observation.sh` 与
 `session_task_draft_observation_tdd` 目标。12 条只读用例与 C2-P 的 12 条创建用例分开：观察须保持

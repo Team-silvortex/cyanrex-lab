@@ -110,6 +110,15 @@ pub(super) fn credentials(
 }
 
 pub(super) async fn request_bytes(request: Request, empty: bool) -> Result<Bytes, HttpError> {
+    bounded_request_bytes(request, empty, MAX_REQUEST_BYTES).await
+}
+
+/// A caller-owned fixed wire budget, not a client header or change to Task's original 64 KiB.
+pub(super) async fn bounded_request_bytes(
+    request: Request,
+    empty: bool,
+    max_request_bytes: usize,
+) -> Result<Bytes, HttpError> {
     let headers = request.headers();
     if headers.contains_key(header::CONTENT_ENCODING) {
         return Err(HttpError::invalid_request());
@@ -125,7 +134,7 @@ pub(super) async fn request_bytes(request: Request, empty: bool) -> Result<Bytes
             "unsupported_media_type",
         ));
     }
-    let limit = if empty { 0 } else { MAX_REQUEST_BYTES };
+    let limit = if empty { 0 } else { max_request_bytes };
     // Bound actual streamed bytes, not an untrusted Content-Length. This deadline ends BEFORE
     // dispatch; it never cancels admitted mutations or claims rollback of their transactions.
     tokio::time::timeout(

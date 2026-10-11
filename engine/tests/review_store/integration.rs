@@ -19,8 +19,8 @@ impl TaskProvider for TextRules {
             reference: result.definition,
             title: "Review text".into(),
             summary: "A rule without a Run".into(),
-            evidence_schema: result.evidence_schema,
-            assessment_policy: result.policy,
+            evidence_schema: Some(result.evidence_schema),
+            assessment_policy: Some(result.policy),
         }]
     }
     fn assess(

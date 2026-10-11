@@ -1,6 +1,6 @@
 # Project Status
 
-Snapshot date: **2026-10-08**. Source version: **0.5.4**, including C2-T–W internal intent records, journaled dispatch and separate journal/resource inspection, plus the Next.js 15.5.27 dependency update. Earlier draft preparation, AI host adapters and authentication protections remain in place.
+Snapshot date: **2026-10-11**. Source version: **0.5.5**, including provider-free catalogue metadata, bounded multi-package composition, explicit catalogue/text content, portable language hints, shared HTTP admission and independent C2-X–AA preparation. Earlier draft preparation, AI host adapters and authentication protections remain in place.
 
 0.5.4 C2-T adds separate immutable intent registration and authorized reading. C2-U adds an
 explicit live wrapper with per-resource write-ahead steps and shared resource/marker commits;
@@ -9,6 +9,24 @@ the original C2-P path remains independent, and no stopped-attempt recovery or b
 verification, recovered execution authority or retry permission.
 0.5.4 C2-W separately observes one recorded resource under the same journal/auth transaction;
 recorded status and body-free metadata agreement remain distinct from receipts or recovery.
+The October 8 follow-up, included in 0.5.5, adds C2-N shared HTTP admission and a separate C2-X text
+Artifact create/exact-read router. Both remain unmounted; source inclusion is not browser saving.
+The same-date task-decoupling follow-up separates frozen definition metadata from executable
+assessment and portable payload language hints from the editor's installed capability profiles.
+An explicit catalogue-content follow-up now combines frozen definitions with schema-3 text content;
+definition admission and content metadata are independent choices, without requiring assessment or a Run.
+The October 11 follow-up, included in 0.5.5, explicitly composes frozen catalogues from multiple domains and
+package versions within the same 256-definition budget; typed assessment still belongs to its own provider.
+An independent same-date follow-up lets metadata definitions explicitly bind neither automatic
+assessment contract; typed providers and actual assessment results still require both exact pins.
+A further same-date C2-Y preparation adds an independent catalogue Task-content HTTP adapter with
+required exact definition references and a frozen trusted workspace. It remains unmounted, separate
+from manual HTTP and draft publication, without automatic assessment or browser saving.
+The same-date C2-Z follow-up adds an independent catalogue draft publication attempt, freezing the
+complete trusted definition before allocating targets and issuing one current-Session command per step.
+It does not enter the existing manual checkpoint/journal workflow or connect the browser.
+The separate same-date C2-AA follow-up adds read-only observation of a surviving catalogue
+attempt's fixed unconfirmed target. Current agreement never changes receipts or grants a retry.
 
 Cyanrex is becoming a domain-neutral collaboration platform, with eBPF teaching retained as its first
 domain rather than the definition of all work. The transition has produced a durable collaboration
@@ -35,6 +53,11 @@ dated implementation and verification details are preserved in [Development Hist
 | 0.5.4 · C2-U preparation | Consumed live wrapper; confirmed Unknown reservation followed by exact-identity resource/marker commit in a fresh-only schema 2 journal | No whole-draft transaction, schema 1 migration, unjournaled-path enforcement, restart recovery, automatic retry or public/browser connection |
 | 0.5.4 · C2-V preparation | Current-Session read of the schema-2 intent and complete recorded step prefix, with exact owner/account filtering | No resource/file read, nonce exposure, checkpoint mutation, recovered wrapper, retry, cleanup or public/browser connection |
 | 0.5.4 · C2-W preparation | One recorded resource read plus original full journal/pin recheck and fresh authorization in one transaction | Body-free output still reads files; no receipt, business writes, resumed attempt, retry, cleanup or public/browser connection |
+| 0.5.5 · C2-X preparation | Independent private text Artifact HTTP create/exact-read adapter, using current-Session commands and a separate bounded admission budget | Included in 0.5.5 source; no mounted listener, issuer, automatic Task dispatch, browser saving, journal enforcement or retry |
+| 0.5.5 · C2-Y preparation | Independent private catalogue Task-content HTTP create/read/replace/status adapter with exact definition references and its own shared admission budget | Not mounted; no client-supplied full definition, provider execution, draft-publication integration, issuer, browser saving or migration |
+| 0.5.5 · C2-Z preparation | Independent create-only catalogue draft publication with a frozen complete definition, fixed targets and exact in-memory confirmations | No manual attempt conversion, checkpoint/journal support, recovery, retry, whole-draft transaction, public route or browser saving |
+| 0.5.5 · C2-AA preparation | Independent current-Session observation of one unconfirmed catalogue publication target, comparing the frozen complete definition and ordered original bytes | No recovered receipt, state adoption, prefix audit, checkpoint/journal conversion, retry, public route or browser saving |
+| 0.5.5 · Task decoupling | Provider-free definition catalogue with bounded multi-package composition, complete or explicitly absent assessment bindings, portable language hints independent of editor profiles, and explicit catalogue/text-content composition | No half-bound/default policies, evaluator discovery, new payload kind, public API, migration or browser saving |
 | 0.5.1 · Session source | Login, validation and logout pin source namespace/table identity, including the password-worker gap and post-write checks | Source-only hardening, not a public issuer, uniform redesign of all auth primitives, installation or live cutover |
 | 0.5.1 · Password work | Shared prepared registration/login/rotation/bootstrap gate, four dispatched jobs and twenty total admissions retained for the job lifetime | Job-count limits only; not single-job PHC cost, legacy runtime or distributed limits, public Session issuance or live cutover |
 | 0.5.1 · Password profile | Pre-admission PHC checks and explicit existing Argon2id cost/profile for prepared reads and writers | No imported profile adoption, implicit Session revocation, legacy change, process RSS bound or public issuer |
@@ -47,7 +70,7 @@ dated implementation and verification details are preserved in [Development Hist
 | Architecture targets | Shared collaboration, generic Run orchestration, AI delegation, reliable business-event delivery, isolated workers and ecosystem integration | A proposed type, diagram or milestone is not an implemented user workflow |
 
 Product version, API compatibility baseline and individual storage schema versions are independent.
-The source version is 0.5.4 and the public API compatibility baseline remains 0.3.0. The current Task
+The source version is 0.5.5 and the public API compatibility baseline remains 0.3.0. The current Task
 store requires schema 2 in a fresh dedicated namespace and rejects schema 1 without migration. Neither
 the normal startup path nor this source release upgrades a database.
 The content store included in 0.5.0 separately requires schema 3; the schema 2 handle and existing Session
@@ -67,13 +90,13 @@ contracts/services that are not connected to the live application's authenticati
 
 | Module | Available implementation | Remaining boundary |
 |---|---|---|
-| Application shell and task editing | Existing four-language navigation and action confirmations; local task draft with optional text payload and 14 language profiles, included in 0.4.9 | No server save, browser persistence, autosave, binary attachment or generic task list |
+| Application shell and task editing | Existing four-language navigation and action confirmations; local task draft with optional text payload and 14 editor capability profiles; 0.5.5 valid extension hints retain plain-text editing | No server save, browser persistence, autosave, binary attachment or generic task list |
 | Live identity and classroom access | Password/TOTP, cookie Sessions, CSRF checks, teacher management, student guards and link-based invitation onboarding | Still the existing instance authority; new Workspace ownership is not a deployment grant |
 | Collaboration identity and policy | Stable identities, audited membership/deployment policy, durable Sessions, lifecycle commands, explicit provisioning and read-only reconciliation | No live AuthService cutover, reviewed data migration or complete recovery flow |
-| Domain definitions | Versioned TaskCatalog; the five teaching labs use the explicit eBPF pack; a text-only fixture exercises a non-teaching provider | Catalogue metadata admission is not typed input validation or policy execution |
+| Domain definitions | 0.5.5 provider-free TaskDefinitionCatalog with explicit bounded multi-domain/package-version composition and an explicit choice of assessment binding; typed TaskCatalog keeps fully bound single-provider assessment; the five teaching labs use the eBPF pack | Catalogue metadata admission is not typed input validation, policy execution or dynamic provider discovery |
 | Task instances | Private manual/catalogue tasks, fixed definitions, revision-fenced states, atomic task/outbox records; Draft input replacement included in 0.4.9 | No mounted public task API, cross-user assignment, dependencies or acceptance policy |
-| Artifact content | Private immutable revision files, exact digest-bound references, transactional metadata/events and Session-authorized publication/reads | No UI metadata mapping, public content workflow, retention/garbage collection or cross-user sharing |
-| Task content metadata | C2-K contracts, C2-L storage, C2-M Session/text composition and C2-N explicitly constructed HTTP adapter | HTTP adapter remains unmounted; no secure login/installation workflow, public publication, browser saving or migration |
+| Artifact content | Private immutable revision files, exact digest-bound references, transactional metadata/events, Session-authorized publication/reads and 0.5.5 C2-X text HTTP preparation | Text router remains unmounted; no UI metadata mapping, public content workflow, retention/garbage collection or cross-user sharing |
+| Task content metadata | C2-K contracts, C2-L storage and C2-M Session/text composition; 0.5.5 explicit manual/catalogue modes; separate C2-N manual and C2-Y catalogue HTTP adapters, C2-Z catalogue publication and C2-AA target observation | HTTP adapters remain unmounted; catalogue publication/observation has no manual checkpoint/journal composition; no secure login/installation workflow, browser saving or migration |
 | Whole-draft publication mapping | 0.5.3 C2-O strictly parses portable draft JSON, prepares text publication values and binds supplied exact content | Pure values only; no dispatch, confirmed publication history, current authorization or persisted draft |
 | Review | Immutable revision history; Session-authorized private human opinions on exact Artifact targets/evidence included in 0.4.9 | No cross-user reviewer grants, generic Task approval, automatic rule execution or AI review |
 | Teaching and eBPF workbench | Five labs, attempts/progress, teacher feedback, historical resume, Clang assistance, bpftool and supported Aya tracepoint execution | Remains a separate compatible workflow; old attempts have not been migrated into generic Tasks/Runs/Reviews |
@@ -96,6 +119,9 @@ The local draft supports up to 32 text items, at most 256 KiB each, with bounded
 import/export. Filename, language and text belong to the parent draft. Confirmations and revision
 checks prevent obsolete imports or callbacks from replacing newer work. Drafts live only in page
 memory; a download is a local export, not a server save. See [Task payload editing](editor.md).
+The 0.5.5 draft accepts bounded ASCII language hints independently of the 14 installed profiles.
+Unknown hints remain unchanged through import/export and use plain-text editing with no language tools;
+resolving editor capabilities is not a payload edit or automatic language rewrite.
 
 JS/TS provide browser-local semantic assistance; JSON/HTML/CSS use their configured local providers.
 Rust, Python, C/C++ and the other basic profiles provide highlighting/snippets, not external language
@@ -111,14 +137,28 @@ The [C2-K manifest](task-content-manifest.md), included in 0.5.0, defines metada
 checks. [C2-L](task-content-store.md) adds independent trusted storage and atomic edits, without
 changing existing schema 2 records or Session commands. [C2-M](session-task-content.md) now composes
 current Session and exact Artifact-text checks internally. The authorized browser workflow remains absent.
+The 0.5.5 explicit catalogue mode adds exact frozen definitions to this text composition, keeping
+title/filename/language labels independent of definition metadata and preserving revision/byte checks.
+Its distinct workspace cannot enter the existing manual HTTP or draft-publication paths.
+The independent 0.5.5 [C2-Z publisher](session-catalog-task-draft-publication.md) uses that
+catalogue workspace without converting it into a manual attempt. It fixes the complete exact definition,
+publishes one Artifact per step, then creates a catalogue Task through the existing Session command.
+Confirmed prefixes remain on failure; this is not whole-draft atomicity, checkpoint recovery or browser saving.
+The separate [C2-AA observer](session-catalog-task-draft-observation.md) reads that surviving attempt's
+one unconfirmed target through existing current-Session commands. It compares the complete frozen
+definition and ordered original content without adopting a receipt or changing the stopped state.
 [C2-N](task-content-http.md) adds a standalone HTTP boundary but does not mount it in the existing
 application, issue credentials, publish Artifacts or connect the browser.
+The 0.5.5 [C2-X](text-artifact-http.md) router separately publishes one bounded text Artifact
+and reads its exact revision. Its returned pin can feed a separate C2-N request; the routers do not
+call or merge each other, and the sequence is not atomic or a connected browser save workflow.
 
 0.5.3 [C2-O](task-draft-publication.md) supplies the pure import and publication-plan mapping:
 blank titles are rejected without inventing text; checked local identities are discarded. Exact
 supplied content may be bound to a manifest, but matching bytes do not prove publication or authorize
-a later command. The server accepts valid extension language hints without changing the browser's
-allowlist. The pure importer itself dispatches no publication; C2-P supplies separate internal
+a later command. In that release, the server accepted valid extension language hints while the
+browser still restricted them to installed profiles; the 0.5.5 local editor now preserves those
+valid hints separately from its capabilities. The pure importer itself dispatches no publication; C2-P supplies separate internal
 composition, while browser saving remains absent.
 
 0.5.3 [C2-P](session-task-draft-publication.md) separately composes current-Session publication
@@ -183,9 +223,527 @@ C2-V continues to read no resources or files.
 
 ## Verification recorded so far
 
-The C2-T–W changes and Next.js update are included in 0.5.4. The dated implementation records below
+The C2-T–W changes and Next.js update are included in 0.5.4. Their dated implementation records below
 retain their original 0.5.3 workspace version, Unreleased status, counts and failure history; those
 records are not a new 0.5.4 release gate or evidence of publication or deployment.
+
+The catalogue/editor/shared-admission follow-ups are now included in 0.5.5. Their dated 0.5.4
+workspace records retain their original Unreleased labels, counts and SQL scope.
+
+### 0.5.5 version validation · 2026-10-11
+
+Version metadata, current documentation and generated course copies are synchronized at **0.5.5**.
+The fresh full local gate (`--no-npm-install`, unchanged verified dependency graphs) passed
+**706 default Rust, 208 common, 208 frontend and 42 SDK tests**; **659 ignored Rust cases** are
+not passes. Rust produced **63 successful result blocks** without compilation warnings.
+Frontend/SDK production dependency audits each reported zero vulnerabilities; the existing Node
+`MODULE_TYPELESS_PACKAGE_JSON` warnings remain.
+
+The production-build browser fixtures additionally passed **23 task-payload and 18 multi-language
+editor cases** with real pages/Monaco and mocked Engine reads. These verify local editing, not server
+saving. This release validation does not rerun opt-in PostgreSQL, kernel, SSH/LAN, remote CI, Rust
+advisory or deployed restart/recovery acceptance. Prior dated SQL records and the tensor snapshot,
+scores and evidence remain unchanged. Source publication does not mount prepared APIs, migrate a
+database or update a running deployment.
+
+### Unreleased catalogue publication target observation · 2026-10-11
+
+Source version remains **0.5.4**, outside the published tag. Independent C2-AA adds
+`observe_unconfirmed(&self, token)` to the still-owned catalogue publication attempt. Ready and
+Complete return `NoUnconfirmedStep` without I/O; an unconfirmed attempt rejects any token other
+than its original canonical Session before dispatch. A matching fingerprint is continuity, not
+authorization. One existing current-Session command reads the fixed exact Artifact revision or
+the current catalogue Task and its ordered contents, retaining existing final authority checks.
+
+The body-free report uses the existing generic step/outcome values, not a manual attempt or a
+checkpoint/journal conversion. Matching requires full frozen `Some(definition)`, original manifest,
+Draft revision 1 and all ordered original bytes. Another registered complete definition or a legal
+later edit can differ. Same-reference metadata drift, manual-mode records and damaged bytes remain
+typed reader errors; they are not converted into normal differences or invisibility.
+
+An exact historical Artifact revision may match after its head changes. The observer does not scan
+earlier confirmations. A missing Task read verifies source and Task scope without entering Artifact
+namespace validation, while an existing empty Task does validate that namespace. Read locks and
+commit boundaries remain those of the original commands, not SQL READ ONLY or a whole-workflow
+transaction. Results may become stale; NotVisible proves neither rollback nor permanent absence.
+Success, error and cancellation preserve the complete definition, target, stopped state and original
+confirmation prefix. Even a later matching resource is not adopted as a receipt and cannot resume
+`advance`.
+
+TDD first compiled and executed one meaningful Red: the stub returned `NoUnconfirmedStep` instead
+of the real closed-pool Artifact reader's typed storage error. The implemented reader then passed
+that same exact case without warnings. This was an executed behavioral failure and subsequent Green,
+not a fixture, missing-method or compilation failure.
+
+The expanded public target initially passed four cases with one unused shared-fixture reexport
+warning. A narrowly scoped allowance on that reused test-fixture module removed the warning without
+changing the old fixture. Final public execution passed **four default cases** with **eight SQL cases
+ignored**, and private comparison/admission execution passed **six cases**, without warnings. The six
+new structural guards also passed. These scoped runs are not additive to a complete backend gate.
+
+The independent disposable PostgreSQL runner passed **eight distinct exact cases**: state/original-
+Session preflight; matching, valid different and exact historical Artifacts without prefix scans;
+bound/unbound multi-package/version, empty and ordered Task contents and legitimate edits; missing/
+foreign targets and missing versus existing-empty Task scope; effective deferred commit faults,
+damaged/missing files and full-definition/manual-mode corruption; current logout/expiry/membership
+and database-clock expiry during exact reader waits; observed cancellation; and separate pending
+creators that commit or abort. Both whole-binding directions first match legitimately, then mutate
+Task and outbox copies and return typed `InvalidRecord`. Fault counters and blocking barriers prove
+the intended injection occurred; an invisible read is not used as rollback proof.
+
+Adjacent exact runners separately passed **twelve old manual-observation**, **eight catalogue-
+publication** and **thirty-three Session-content** cases: **61 distinct SQL cases** total including
+the new eight. Repeat runs and name-list checks are not additional cases. Read-preservation checks
+compare every table's sorted-row MD5 in the selected source/Artifact/Task schemas and private file
+names, lengths, modes, SHA-256 and root device/inode/mode. These are scoped fingerprints, not raw-row
+equality, an audit of every deployment schema or proof of historical publication provenance.
+
+Capability validation passed **18 Node cases** and **412 existing distinct paths**. Only W16 gains
+five source/documentation and five test references; scores, older evidence, snapshot fields and
+topology remain identical to this round's baseline. All **88 earlier dated status sections** and
+the published changelog tail remain unchanged. The ten old manual production files, shared pure
+checks and catalogue confirmation file also retain their baseline hashes.
+
+The complete backend gate passed **706 default Rust tests** and **208 common tests**, with **63
+successful Rust result blocks** and no compiler warnings. **659 ignored Rust cases** are not counted
+as default passes; the 61 exact SQL cases above ran separately. Rust formatting, generated contracts,
+version synchronization, course copies and tooling checks passed. This round did not run a frontend/
+SDK build, browser suite, real kernel/LAN acceptance, deployment, security audit or release gate.
+
+Execution used an environment stripped of inherited deployment/database settings, a synthetic
+private PostgreSQL 16 database with a Unix-only socket, and this round's owned private temporary
+files. Before stopping the database, no fixture schema or other client remained. Its process was
+confirmed stopped and its owned data/socket directories removed; project storage was not touched.
+The final format/common gate again passed 208 checks without warnings; this repeat is not additional
+test evidence. After it completed, the owned empty fixture/runtime directories and environment helper
+were removed too. Cleanup removed **137,814,141 apparent bytes (about 131.4 MiB)** in total; this
+round's logs remain in `/tmp/cyanrex-catalog-observation-xOASCU8O`. Only disposable fixtures were removed.
+
+The [contract](session-catalog-task-draft-observation.md) is an internal read-only preparation step.
+No HTTP listener, browser save, SDK, live authentication, installer or migration is connected.
+The source version is unchanged; no commit, push or release is part of this development round.
+
+### Unreleased independent catalogue draft publication · 2026-10-11
+
+Source version remains **0.5.4**, outside the published tag. Independent C2-Z preparation returns
+an opaque `SessionCatalogTaskDraftPublication` from the trusted catalogue-content workspace, an
+exact reference and a C2-O plan. Structural token/source checks and complete exact definition lookup
+precede target allocation; preparation performs no SQL, file or network I/O. Unknown coordinates
+return `InvalidPreparation`, without provider discovery, manual fallback or inferred latest versions.
+
+The frozen full definition may bind both assessment contracts or neither, but the final Task must
+retain `Some` of that exact metadata. Each advance dispatches at most one existing current-Session
+Artifact create, or the final catalogue-content Task create. It marks the exact target Unconfirmed
+before awaiting; exact acknowledgement records progress without another await. Errors, mismatches
+and dropped dispatched futures retain confirmed prefixes and stop. Wrong-token and unpolled calls
+do not dispatch. Current authorization and actual owned text are independently rechecked by the
+existing commands; no assessment, Review or acceptance is performed.
+
+Only Artifact receipt matching and manifest construction are shared pure checks. Manifest binding
+now rejects short or excess receipt prefixes before zip. The manual final matcher remains None-only;
+the catalogue matcher requires the complete frozen Some definition. No old attempt conversion,
+checkpoint/journal/observation API, durable receipt, recovery, retry, cleanup, whole-draft transaction,
+HTTP/SDK/browser wiring, installer or migration was added. The eight protected old manual
+checkpoint/dispatch/intent/inspection/observation source files remain byte-identical to this round's baseline.
+
+The meaningful Red compiled and failed **0/1** on the temporary preparation stub's
+`InvalidPreparation`, without compile warnings. The first attempt instead failed while opening its
+fixture: a newly created parent directory was group-writable and was correctly rejected. That setup
+failure is not feature Red. A premature Green build encountered not-yet-written test modules; a
+later unit build found three missing test imports. Neither executed cases or established Green.
+Both were corrected. Initial target Green passed four cases with one unused import warning; removing
+that import and rerunning yielded **four default cases** and **eight ignored SQL cases**, without
+warnings. The separate private receipt tests passed **eight cases**, including bound/unbound positive
+controls, full-definition/owner/manifest negative controls, dropped futures and prefix cardinality.
+The adjacent old manual unit filter passed **33 cases**; these default checks are not additive to the
+complete backend gate recorded below.
+
+The new disposable PostgreSQL runner passed **eight distinct exact cases**: mixed packages/versions/
+bindings and ordered Unicode/same/empty text; unknown coordinates and Session substitution; second
+Artifact failure; final definition/outbox/Session/membership/deferred-commit faults; damaged bytes and
+preallocated Artifact/Task conflicts; current-Session revocation; observed cancellation waits; and
+database-clock expiry while blocked. Counters prove injected faults were reached. Comparisons cover
+full rows in seven Task/Artifact resource tables and private-directory names/bytes, not every identity
+table. A failed Artifact step preserves the exact observed orphan as well as prior confirmed data;
+a failed final Task step does not erase its Artifact prefix. Neither error nor cancellation implies
+whole-draft rollback or permission to retry. Independent source/test review found no remaining
+ineffective injection or new production defect.
+
+All four adjacent PostgreSQL runners passed **67 distinct exact cases**: new catalogue publication
+eight, old manual publication 12, Session content 33 and journaled dispatch 14. Each checked its exact
+case name before execution; all completed without Rust compile warnings. These synthetic in-process
+transactions do not establish a mounted service or live deployment.
+
+The complete backend gate passed **696 default Rust and 202 common tests**, across **62 successful
+Rust result blocks**, without compile warnings. **651 ignored Rust cases** are not counted as passed.
+File/version/course synchronization, public API/SDK generation and compatibility, Rust formatting
+and existing tool-fixture checks passed. This round did not rerun frontend/SDK functional suites,
+browser or dependency audits, live kernel, SSH/LAN, remote CI or restart/recovery acceptance.
+Tool-fixture checks do not validate a real deployment.
+
+The tensor keeps **70 coordinates, 69 functions, 39 evidence entries, 114 edges and 19 representative
+chains**. Only W15 gains five source/document and five test/runner references, bringing distinct
+paths to **404**. All other fields, scores, evidence, snapshot date and topology remain unchanged.
+Tensor/reading-view checks passed **18 cases**; these are also included in the common gate, not
+additional unique tests. Each locale's 43 prior dated sections remains byte-identical.
+
+The disposable PostgreSQL 16 fixture used a private Unix socket only. Before stopping it, the
+observed test-schema and other-client counts were both zero. Approximately **166 MiB** of this round's
+owned database/test data, socket and launcher were removed; they are recreatable fixtures, not user
+runtime data. Logs remain. The final format/common preflight also passed; its repeated 202 common
+cases are not counted twice. Bilingual documents and built-in course copies are synchronized. This
+round did not start the application service or change the source version, commit or push anything.
+
+### Unreleased explicit catalogue Task-content HTTP · 2026-10-11
+
+Source version remains **0.5.4**, outside the published tag. The independent C2-Y adapter takes
+`CatalogTaskContentHttpState` with a frozen `SessionCatalogTaskContentWorkspace` and exposes four
+create/read/replace/status commands only on its separately constructed `/platform/v1/catalog-tasks`
+router. Creation requires an exact `definition_ref`, never a client definition, provider or mode
+selector. Reference and package records use strict object decoding over the original JSON stream;
+missing, unknown, duplicate, positional or invalid fields fail before Session dispatch.
+
+Bound and explicitly unbound entries from composed package/version catalogues retain complete
+definition metadata and private ownership. Existing Session transactions verify full metadata,
+old/new exact text, revision fences and fresh authority. No assessment, Review or acceptance runs.
+The old manual state, three-field creation JSON and prefix remain unchanged; wrong-mode records
+fail closed. Unknown configured references map to generic `400 invalid_request / unconfirmed`
+after the Session command was called, even when its internal lookup precedes SQL work.
+
+The adapter reuses the dedicated Cookie/Origin/marker rules, 64 KiB/two-second body boundary,
+private response projection and response-body-held admission. Clones share four default slots,
+configurable from one to 16; separately constructed manual/catalogue/text budgets add. Saturation
+does not poll the body or queue a Session command. Cancellation releases a slot, not a rollback
+receipt. There is no normal-app mounting, issuer, discovery, automatic router merge, C2-P–W
+publication/journal integration, live OpenAPI/SDK/browser connection or migration.
+
+The focused Red test compiled and failed **0/1** because the temporary stub returned 404 instead of the
+required missing-reference 400. Its minimal temporary harness emitted five unused-code/import
+warnings. Green passed **28 default Rust cases**, with **eight ignored SQL cases** not counted as
+passed and no compile warnings. The defaults comprise one missing-reference case, three exact
+reference/mode cases, eight corrected catalogue-body cases and six transport plus ten admission
+cases reused against the actual catalogue router. Duplicate-field injections assert their wire
+changes, and valid nested-manifest controls prove rejection is not merely a missing reference.
+
+The new disposable PostgreSQL runner passed **all eight distinct exact cases**. They cover mixed
+packages/versions/bindings through all four commands, manual/catalogue and owner separation,
+full metadata/binding drift and unknown coordinates, invalid/corrupt text, current Session and
+account lifecycle, post-write definition/old/new input/session/membership and commit faults,
+observed lock-wait expiry, post-write loss of an input removed by replacement, and response-body/
+SQL-wait/cancellation admission. Fault counters prove mutations reached injected failures;
+rejections compare full rows in **seven Task/Artifact resource tables** and all private-directory
+file names/bytes, not every authentication/identity table. These observed fixture states, not
+HTTP error outcomes, establish the tested nonchanges. Independent source/test review found no
+new production defect or remaining ineffective injection.
+
+All four relevant PostgreSQL runners passed **64 distinct exact cases**: new catalogue HTTP eight,
+manual HTTP 13, Session content 33 and text HTTP ten. Each runner checked the exact case name before
+execution; all completed without Rust compile warnings. These are in-process routers and synthetic
+transactions, not a live listener, deployment or browser workflow.
+
+The complete backend gate passed **684 default Rust and 196 common tests**; **643 ignored Rust
+tests** are not counted as passed, across **61 successful Rust result blocks**, with no compile
+warnings. File/version/course synchronization, public API/SDK generation and compatibility, Rust
+formatting and existing tool-fixture checks passed. This round did not rerun frontend/SDK functional
+suites, browser or dependency audits, live kernel, SSH/LAN, remote CI or restart/recovery acceptance.
+Tool-fixture checks do not accept a real deployment.
+
+The tensor keeps **70 coordinates, 69 functions, 39 evidence entries, 114 edges and 19 representative
+chains**. Nine new W13 source/test/document paths bring distinct paths to **394**; only W12's gap
+wording additionally reflects the separate typed adapters. Scores, evidence, snapshot date and
+topology remain unchanged. Tensor/reading-view checks passed **18 cases**. Each locale's 42 prior
+dated sections remains byte-identical; the new adapter does not inherit their execution evidence.
+
+The disposable PostgreSQL 16 fixture used only a private Unix socket; fixture schemas and other
+client connections were zero before shutdown. Approximately **153 MiB** of this round's owned
+database/test data, socket and launcher has been removed; these are regenerable fixtures, not user
+runtime data. Logs are retained. No application service was started. The final format/common
+preflight also passed; its repeated 196 common cases are not counted again. English/Chinese
+documents and their built-in course copies are synchronized. No version, commit or push was made.
+
+### Unreleased optional automatic-assessment bindings · 2026-10-11
+
+Source version remains **0.5.4**, outside the published tag. `TaskDefinition` now has paired
+`Option<VersionedName>` evidence-schema and assessment-policy fields. Definitions may supply both
+exact pins or explicitly bind neither; half bindings fail both decoding and trusted registration.
+Both JSON fields remain required: two explicit nulls mean no automatic assessment, while omission
+is rejected. Old bound JSON retains its exact field order and values; existing records need no
+migration. The Rust source fields require callers to adapt. New unbound records require the new
+reader; old binaries fail closed, so backward reading/downgrade of those records is not promised.
+Core and storage schema numbers remain unchanged.
+
+Mixed metadata still feeds the existing bounded catalogue composition, Task drafts, schema-2
+Session catalogue and schema-3 content-store/Session paths. An unbound definition remains
+`Some(TaskDefinition)`, not a manual Task. Full saved-definition equality makes adding or removing
+a binding under the same reference a metadata mismatch, not a policy upgrade. Typed provider
+registration rejects unbound entries, and assessment checks both pins before calling the provider.
+Actual `TaskAssessment` pins stay mandatory. There is no placeholder pass, rule Review, acceptance,
+provider discovery, new authorization branch, public HTTP or browser-save connection.
+
+Two focused Red tests compiled and failed separately (**0/1** each): trusted registration still
+required an assessment binding, and ordinary optional-field decoding silently accepted omission.
+This round adds **ten default Rust cases and two exact SQL cases**. Selected default regressions
+passed **54 cases**: metadata 26, original typed catalogue nine, teaching compatibility six, Session
+catalogue three, Session content four and content storage six. Pure cases cover required JSON keys,
+duplicate/unknown fields, the exact old bound encoding, explicit null pairs, six-slot sequence
+compatibility, half/truncated/extra values, namespace and byte/count limits, duplicate full references,
+typed rejection before assessment and mandatory result pins.
+
+The four adjacent PostgreSQL runners passed **86 distinct exact cases**: schema-2 Session catalogue
+20, schema-3 Session content 33, content storage 21 and manual draft publication 12. The two new
+cases are included in that total. They round-trip unbound catalogue definitions through drafts,
+input/text replacement and Ready transitions, retain exact definition and private ownership, and
+reject both adding and removing a binding under an unchanged reference. Each rejected operation
+preserves all row values in seven business tables and every existing file name/byte; unaffected
+definitions remain readable. Manual/catalogue separation and existing Session checks remain intact.
+These new cases do not separately re-accept all lifecycle/authorization boundaries; adjacent suites
+provide that coverage. Independent source review found no new production or boundary defect.
+
+The complete backend gate passed **656 default Rust and 192 common tests**; **635 ignored Rust
+tests** are not counted as passed, across **60 successful Rust result blocks**, with no Rust compile
+warnings. File/version/course synchronization, public API/SDK generation and compatibility, Rust
+formatting and existing tool-fixture checks passed. This round did not rerun frontend/SDK functional
+suites, browser or dependency audits, kernel, SSH/LAN, remote CI or restart/recovery acceptance.
+Tool-fixture checks are not evidence of a real deployment.
+
+The tensor retains **70 coordinates, 69 functions, 39 evidence entries, 114 edges and 19 representative
+chains**. Four new test references bring distinct paths to **385**; scores, evidence, connections,
+snapshot date and every non-implementation field are unchanged. Tensor/reading-view checks passed
+**18 cases**. Each locale's 41 prior dated status sections remains byte-identical, including earlier
+Unreleased rounds. English/Chinese documents and their built-in course copies are synchronized.
+
+The disposable PostgreSQL 16 fixture used only a private Unix socket. Fixture schemas and other
+client connections were both zero before shutdown. This round's approximately **138 MiB** of owned
+database/test data, socket and launchers has been removed; these fixtures are regenerable and need
+no migration, while execution logs are retained. No application service was started and user
+runtime data was not changed. The final format/common preflight also passed, without counting its
+repeated 192 common cases again.
+
+### Unreleased bounded multi-package catalogue composition · 2026-10-11
+
+Source version remains **0.5.4**, outside the published tag. Trusted
+`TaskDefinitionCatalog::compose(&[catalogues])` combines frozen metadata for multiple domains,
+package versions and task-definition versions. It accepts 1–256 input handles and checks the actual
+flattened total of 1–256 definitions before allocation/copying. Nested composition has the same
+global limit. Disjoint registrations of the same package/version are allowed; repeating a full
+definition reference is rejected even for identical metadata, with no deduplication, overwrite or
+latest-version fallback. Input and definition order remain intact in the owned immutable snapshot.
+
+The existing Task draft, schema-2 Session catalogue and schema-3 content-store/Session constructors
+accept this composed handle without new routing or authorization branches. Each saved definition
+still must match in full. Old single-package registration and provider-bound typed assessment remain
+strict and separate. Composition retains no provider, interprets no payload and adds no discovery,
+publisher trust, public HTTP, browser saving, schema migration or publication/retry policy.
+
+The first multi-package behavior test compiled and failed against the placeholder (**0/1**), then
+passed after implementation. This round adds **eight default Rust cases and two exact SQL cases**.
+Selected default regressions passed **44 tests**: 16 metadata, nine original typed catalogue, six
+teaching compatibility, three Session catalogue, four Session content and six content-store cases.
+Pure cases include all exact reference coordinates, source/entry order, frozen clone/drop behavior,
+256/257 boundaries, nested limits, duplicate equal/drifted definitions and unchanged typed dispatch.
+
+Both new database cases passed individually. In one workspace each creates four Tasks from definitions
+across two packages, two package versions and two task versions; exact reads, input/text reordering and
+state changes preserve full definitions and private ownership. Missing packages, missing exact
+package versions and real metadata drift reject read/replace/transition, while another admitted
+package remains readable. Seven business tables' complete row values and all existing file names/
+bytes remain unchanged on rejection. During source review, a policy-version fault that originally
+assigned its current value was changed to a genuinely different value; explicit inequality assertions
+now prove both metadata injections alter the fixture. This required no production change.
+
+The two new cases do not independently reaccept every authorization/lifecycle boundary; adjacent
+existing suites supply that coverage. Independent production and test reviews found no new issue
+or relaxation of manual, typed-provider or public boundaries. Execution counts and broader acceptance
+remain scoped to this dated round, rather than inherited from earlier runs.
+
+The four complete adjacent PostgreSQL runners passed **84 distinct exact cases**: 19 schema-2
+Session catalogue, 32 schema-3 Session content, 21 content-store and 12 manual draft-publication
+cases. The two new cases are included in those totals; individual reruns add no cases. The complete
+backend gate passed **646 default Rust and 189 common tests**, with **633 ignored Rust cases**
+excluded, **60 successful Rust result blocks** and no Rust compilation warnings. File/version/course,
+public API/SDK generation and compatibility, Rust formatting and existing tool-fixture checks passed.
+This round does not rerun frontend/SDK functional suites, browser or dependency audits, kernel,
+SSH/LAN, remote CI or restart/recovery acceptance. Tool fixtures are not live deployment evidence.
+
+The tensor retains **70 coordinates, 69 functions, 39 evidence entries, 114 edges and 19 chains**.
+Four new test references bring the distinct referenced paths to **381**; scores, evidence, edges,
+snapshot dates and all non-implementation fields remain unchanged. Tensor/reading-view checks passed
+**18 tests**. The 40 preceding dated status sections in each language remain unchanged, including the
+prior Unreleased rounds. English/Chinese documentation and the built-in course copies are synchronized.
+
+The disposable PostgreSQL 16 fixture used only a private Unix socket. Fixture schemas and other
+client connections were zero before shutdown. Approximately **118 MiB** of this round's owned
+database/test data, socket and launchers were removed; regenerable fixtures need no migration, and
+execution logs remain. No application service was started and user runtime data was not changed.
+
+### Unreleased catalogue and text-content composition · 2026-10-08
+
+Source version remains **0.5.4**, outside the published tag. Explicit
+`TaskContentStore::from_definitions` and `SessionCatalogTaskContentWorkspace::from_definitions`
+combine frozen exact definitions with the existing schema-3 content manifest. The four new Session
+commands create, read, replace and transition catalogue content without constructing a provider.
+Definition admission and text-content metadata are independent choices: title/filename/language
+labels do not replace definition display metadata, execute assessment or create a Run.
+
+The original manual handles remain definition-free. Unknown creation coordinates are rejected before
+database work; stored missing/unknown/drifted definitions and wrong modes fail closed. Full saved
+definition equality, sorted old/new Artifact-byte checks, Task revision fences, atomic Task/manifest/
+outbox records and final current-Session authorization plus confirmed commit remain shared. The
+catalogue workspace cannot enter the manual HTTP or C2-P–W publication/observation entry points.
+No schema change, migration, public mount, issuer, browser saving or recovery/retry policy is added.
+
+The first Store and Session behavior tests each compiled and failed against their placeholders
+(**0/1** each), then passed after implementation. Selected default regressions passed **10 tests**.
+This round adds **eight default Rust cases and six exact SQL cases**; ignored tests are not counted
+as default passes. **86 distinct exact PostgreSQL cases passed**: all 31 Session-content cases,
+21 adjacent content-store cases, 18 schema-2 Session catalogue cases, 12 manual draft-publication
+cases, two selected journaled-dispatch cases and two selected journal-observation cases. The last
+two selections are not full reruns of their respective suites; repeat selections add no cases.
+
+New database coverage includes exact-version/empty/32-item round trips, manual/catalogue/schema-2
+isolation, six full-definition drifts, unknown coordinates, corrupt old or invalid new content,
+owner/account lifecycle privacy, post-write record/event/file faults and Session expiry after an
+observed storage wait. Rejected writes preserve complete business rows and existing files; fault
+sequences prove the selected mutations reach their injection points. An independent source review
+found no new production issue or public/manual boundary relaxation.
+
+The first backend preflight passed **185/186 common tests**: one old journal-read source assertion
+still matched the old helper signature. It now explicitly requires the manual-only `None` argument;
+the production path needed no adjustment. The complete rerun passed **638 default Rust and 186
+common tests**, with **631 ignored Rust cases** excluded, **60 successful Rust result blocks** and
+no Rust compilation warnings. File/version/course, public API/SDK generation and compatibility,
+Rust formatting and existing tool-fixture checks passed. This round does not rerun frontend/SDK
+functional suites, browser or dependency audits, kernel, SSH/LAN, remote CI or restart/recovery
+acceptance; earlier dated runs are not fresh evidence for these changes.
+
+The tensor retains **70 coordinates, 69 functions, 39 evidence entries, 114 edges and 19 chains**.
+Source, test and evidence references total **377 distinct paths**, and the W11/W12 gap descriptions now reflect
+explicit catalogue mode; scores, evidence, edges and earlier dated records remain unchanged.
+English/Chinese documentation and bundled course copies are synchronized. The disposable PostgreSQL
+16 fixture used only a private Unix socket; after verifying zero fixture schemas and other
+connections it was stopped. Approximately 119 MiB of owned database/test data, socket and launchers
+were removed, with logs retained. No application server was started in this round.
+
+### Unreleased task definition and payload decoupling · 2026-10-08
+
+Source version remains **0.5.4**, outside the published tag. Frozen `TaskDefinitionCatalog` metadata
+can now admit Task drafts and Session catalogue commands without constructing or retaining a
+`TaskProvider`. The existing typed `TaskCatalog<P>` still owns evidence and assessment. Exact
+single-package/version lookup, mandatory evidence-schema/policy pins, full saved-definition equality,
+private ownership, input-byte checks and transaction-time Session checks remain unchanged.
+
+Portable payload hints now follow the existing server ASCII contract, independently of 14 installed
+editor profiles. Unknown valid hints retain their raw values and use the existing plain-text profile
+with an explicit notice and disabled language tools. Synchronization compares resolved profile IDs,
+preserving the model and undo history; only an explicit language edit changes the saved hint. This
+does not add a payload kind, format version, LSP transport or server connection.
+
+The first metadata behavior test compiled and failed against the placeholder (**0/1**), then passed.
+The frontend draft selection first passed **21/23**, with two new compatibility assertions failing,
+then passed after implementation. Final selected Rust regressions passed **26 default tests**:
+eight new metadata, nine original catalogue, three Session catalogue and six teaching compatibility.
+The first Session selection failed all three cases because this round's temporary parent directory
+was mode 0775; correcting that owned fixture to 0700 made the complete selection pass without
+weakening production file checks.
+
+**35 distinct exact PostgreSQL cases passed**: 18 Session catalogue (including two new provider-free
+round-trip/metadata-drift cases) and 17 adjacent input-replacement cases. Coverage retains binary and
+empty inputs, exact versions, old/new constructor interoperability, owner privacy and unchanged
+business rows/files on rejected full-definition drift. Repeated selections are not extra cases.
+
+The backend gate passed **630 default Rust and 183 common tests**, with **625 ignored Rust cases**
+excluded, **60 successful Rust result blocks** and no Rust compilation warnings. The frontend gate
+passed **208 functional tests**, production build/type checks and a zero-vulnerability production
+dependency audit; existing Node module-type warnings remain. **41 real-browser cases** passed across
+task payload, multilingual editor, filename-import and navigation suites, including unknown-hint
+round-trip/edit/undo, rejected edits, model disposal and four-locale 320px layout. The browser used
+mocked identity responses, not a live Engine or backend-save acceptance; the payload suite issued no
+Engine writes. Public API/SDK generation and compatibility, file/version/course and tool checks passed.
+
+The tensor keeps **70 coordinates, 69 functions, 39 evidence entries, 114 edges and 19 chains**;
+only implementation source references expand to **367 paths**, without changing scores or evidence.
+Earlier dated records remain unchanged. This round does not rerun SDK functional tests, Rust dependency
+audit, kernel, SSH/LAN, remote CI or restart/recovery acceptance. No mount, issuer, storage migration,
+automatic rule execution, save/retry policy or authorization relaxation is added.
+
+The disposable PostgreSQL 16 fixture used only a private Unix socket. After verifying zero fixture
+schemas and other connections, it and the owned loopback Next.js server were stopped; approximately
+103 MiB of database/fixture data, socket and launcher were removed, while reproducible logs remain.
+
+### Unreleased C2-X text Artifact HTTP · 2026-10-08
+
+Source version remains **0.5.4**; this follow-up is outside the published tag. The independently
+constructed text router creates one private fixed-profile Artifact and reads one exact historical
+revision through existing current-Session commands. Its **2 MiB wire limit**, **256 KiB decoded-text
+limit** and separate state-family admission budget do not expand C2-N's 64 KiB manifest limit.
+Returned references can feed a separate Task request; this is not an atomic batch or router merge.
+
+The first real behavior test failed against the placeholder: a valid 70 KiB text request returned
+`service_unavailable / not_attempted` instead of reaching the closed source with `unconfirmed`.
+After implementation, **12 default transport/contract tests, 10 exact PostgreSQL cases and three
+new common guards passed**. Test review then strengthened two existing assertions: valid JSON
+precedes trailers/stream errors, and rejected-input preflight holds an exact source-schema lock.
+The full twelve-default/ten-SQL selection passed again, with unchanged case counts and no production
+change required for those assertion improvements.
+
+Coverage includes empty/Unicode/exact-limit text, strict JSON and client-authority rejection,
+historical revision pins, foreign/missing privacy, current Session/membership and expiry behind
+observed storage waits, duplicate conflicts, outbox/deferred-commit and file/schema faults, retained
+response capacity and cancellation. Trigger counters prove selected write faults execute; retained
+orphan files are neither adopted nor deleted. The bridge is an independent in-process fixture HTTP
+sequence: text publication, then a separate C2-N Task create/read using exact returned references.
+
+**56 adjacent exact SQL cases also passed**: 13 C2-N HTTP, 18 Session Artifact and 25 C2-M content
+cases. Including C2-X, this round ran **66 distinct SQL cases**; targeted/full reruns do not increase
+that number. The final backend-only gate passed **622 default Rust and 180 common tests**, with
+**623 ignored Rust cases** excluded and **59 successful Rust result blocks**, without Rust compilation
+warnings. File/version/course, public API/SDK generation and compatibility checks and existing tool
+fixtures passed. The capability map now records **70 coordinates, 69 functions, 39 evidence entries,
+114 edges and 19 representative chains**; W23 alone adds scoped **3/1/3/1** evidence, while all older
+coordinates, scores, evidence and dated records remain unchanged.
+
+PostgreSQL 16 used a disposable private Unix socket with no TCP listener. After confirming zero
+fixture schemas and other connections, the server was stopped and approximately 120 MiB of owned
+database/fixture data, socket and launcher removed; reproducible test logs remain.
+This round does not rerun
+frontend/SDK functional suites, dependency audits, actual browser/proxy/TLS, kernel, SSH/LAN, remote
+CI or restart/recovery acceptance. Generic Artifact reads may materialize 1 MiB before the stricter
+text projection. No live mount, issuer, browser saving, installation/migration, journal enforcement,
+automatic retry/adoption/cleanup or global worker/memory quota is added. Cancellation is not rollback
+proof and does not stop dispatched blocking I/O; earlier verification records remain historical.
+
+### Unreleased HTTP shared admission 2026-10-08
+
+Source version remains **0.5.4**; this follow-up is not in the published tag. The standalone C2-N
+adapter now shares a fail-fast budget across cloned states and their routers: four slots by default,
+trusted configuration from one to sixteen. Slots cover body collection, C2-M, serialization and
+returned response bodies through their terminal frame/end, error or drop. Excess requests return
+private `503 / capacity_exhausted / not_attempted` before body polling or SQL.
+
+The first real Rust behavior test failed against the original implementation: with four body reads
+held, a fifth request still reached the closed source and returned `service_unavailable / unconfirmed`.
+It passed after implementation, followed by **24 HTTP default tests** (14 preceding, 10 new),
+**one new outgoing-body error unit** and **three new common wiring guards**. The unit separately
+keeps a failed body alive while checking that its slot is already released.
+
+**13 exact HTTP PostgreSQL cases and 25 adjacent C2-M cases passed**, totaling **38 distinct SQL
+cases**. Two new HTTP cases retain committed response bodies, reach an observed event-write blocker,
+reject overflow without business changes and verify completion or cancellation with source-pool
+restoration. The cancellation fixture observes unchanged Task/outbox/files; cancellation alone is
+not rollback proof. A test-only abort-on-drop guard also prevents an early assertion failure from
+detaching the pending request. The HTTP runner and CI inventory now enumerate all thirteen cases.
+
+The backend-only local gate passed **610 default Rust and 177 common tests**, with **613 ignored
+Rust cases** excluded and **58 successful Rust result blocks**, without compilation warnings.
+File/version/course checks, public API/SDK generation and compatibility checks, and existing tool
+fixtures passed. The current capability tensor remains 69 coordinates, 38 evidence entries, 111
+edges and 18 representative chains, with unchanged scores. The historical 0.3.8 network checker
+reports source/version drift as expected for that preserved snapshot; its hashes were not refreshed.
+
+This round does not rerun frontend/SDK functional suites or dependency audits, actual browsers,
+kernel, SSH/LAN, remote CI or restart/recovery acceptance. No listener, issuer, public save connection,
+schema/journal change, global process/worker/memory quota or retry policy is added. Cancellation does
+not terminate dispatched blocking I/O. The earlier dated evidence and published version record stay unchanged.
 
 ### 0.5.4 version validation · 2026-10-08
 
@@ -1244,8 +1802,8 @@ generic execution or AI. The following order is proposed work, not an enabled fe
 1. Define uncertain-outcome handling and any authorized restart/recovery contract before public
    dispatch or retry. C2-U provides per-resource write-ahead and bound-identity gates only through a
    surviving wrapper; C2-P remains independently callable. Intent/checkpoint reads do not restore the
-   wrapper, prove original storage incarnations or authorize adoption. C2-Q/S observations still permit
-   neither retry nor deletion based on absence.
+   wrapper, prove original storage incarnations or authorize adoption. C2-Q/S/AA observations still
+   permit neither retry nor deletion based on absence.
 2. Build reviewed Session issuance and an explicit authenticated installation/mounting path for the
    C2-N router, then public content publication. Preserve its Origin/request limits and conflict/outcome
    semantics; do not silently switch live authentication or migrate existing storage.

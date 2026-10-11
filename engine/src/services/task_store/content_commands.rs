@@ -14,6 +14,9 @@ impl TaskContentStore {
         };
         self.store.check_scope(reference, owner)?;
         self.check_manifest_scope(&manifest)?;
+        if self.definitions.is_some() {
+            return Err(TaskStoreError::InvalidInput);
+        }
         bounded(async {
             let mut tx = self.store.transaction(false).await?;
             let snapshot = self
@@ -33,6 +36,23 @@ impl TaskContentStore {
         owner: PrincipalRef,
         manifest: TaskContentManifest,
     ) -> Result<TaskContentSnapshot> {
+        if self.definitions.is_some() {
+            return Err(TaskStoreError::InvalidInput);
+        }
+        self.create_selected_in_transaction(tx, task_id, owner, manifest, None)
+            .await
+    }
+
+    /// Private to this content module: callers above either enforce manual mode or select exact
+    /// immutable catalogue metadata. This is not a crate/public raw-definition admission path.
+    pub(super) async fn create_selected_in_transaction(
+        &self,
+        tx: &mut Tx<'_>,
+        task_id: TaskId,
+        owner: PrincipalRef,
+        manifest: TaskContentManifest,
+        definition: Option<TaskDefinition>,
+    ) -> Result<TaskContentSnapshot> {
         let reference = TaskRef {
             workspace: self.store.scope,
             task_id,
@@ -47,7 +67,7 @@ impl TaskContentStore {
                 reference,
                 owner,
                 title: manifest.title().into(),
-                definition: None,
+                definition,
                 input_refs: manifest.input_refs(),
                 status: TaskStatus::Draft,
                 revision: 1.try_into().map_err(|_| TaskStoreError::InvalidInput)?,

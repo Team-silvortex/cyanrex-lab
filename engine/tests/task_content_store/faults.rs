@@ -18,8 +18,8 @@ async fn postgres_task_content_matching_catalog_definition_tampering_cannot_ente
         },
         title: "A catalogue task".into(),
         summary: "Explicit typed work".into(),
-        evidence_schema: versioned("example.documents.text"),
-        assessment_policy: versioned("example.documents.minimum_words"),
+        evidence_schema: Some(versioned("example.documents.text")),
+        assessment_policy: Some(versioned("example.documents.minimum_words")),
     };
     let mut tampered = original.task.clone();
     tampered.definition = Some(definition);

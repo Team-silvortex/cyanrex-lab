@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
+import { readFile } from "node:fs/promises";
 import { baseUrl, setupTask, taskDraft, textItem, confirmation, approve, waitForErrors } from "./helpers/taskPayloadEditorBrowser.mjs";
 
 let browser;
@@ -118,6 +119,67 @@ taskTest("whole-task JSON round-trips exact identities and local revisions witho
   assert.deepEqual(await f.export(), imported);
   const stored = await f.page.evaluate(() => [...Object.values(localStorage), ...Object.values(sessionStorage)]);
   assert.ok(stored.every(value => !value.includes("Mixed text task") && !value.includes("私人计划")));
+});
+
+taskTest("unknown language hints use plain text without changing the draft, model or undo history", async f => {
+  const imported = JSON.parse(await readFile(new URL("../../engine/tests/fixtures/task-draft-publication/future-language.json", import.meta.url), "utf8"));
+  const item = imported.payload[0];
+  await f.import(imported);
+  await f.current({ ...item, language: "plaintext" });
+  assert.equal(await f.page.getByTestId("language-select").inputValue(), item.language);
+  assert.equal(await f.page.getByTestId("language-select").locator("option:checked").textContent(), item.language);
+  assert.ok((await f.page.getByTestId("editor-unsupported-hint").textContent()).includes(item.language));
+  for (const id of ["editor-completion", "editor-format", "editor-symbols"]) {
+    assert.equal(await f.page.getByTestId(id).isDisabled(), true);
+  }
+  assert.deepEqual(await f.export(), imported, "displaying a fallback consumes no revision");
+  const originalModel = await f.page.evaluateHandle(() => window.monaco.editor.getModels()[0]);
+  try {
+    const suffix = "A plain-text edit, not a language conversion.";
+    await f.page.evaluate(text => {
+      const editor = window.monaco.editor.getEditors()[0], model = editor.getModel();
+      const end = model.getPositionAt(model.getValueLength());
+      editor.pushUndoStop();
+      editor.executeEdits("fixture", [{ range: new window.monaco.Range(end.lineNumber, end.column, end.lineNumber, end.column), text }]);
+      editor.pushUndoStop();
+    }, suffix);
+    await f.current({ ...item, language: "plaintext", text: item.text + suffix });
+    assert.deepEqual(await f.export(), taskDraft([{ ...item, text: item.text + suffix, revision: item.revision + 1 }], imported.title));
+    assert.equal(await originalModel.evaluate(model => model === window.monaco.editor.getModels()[0]), true);
+    assert.equal(await originalModel.evaluate(model => model.canUndo()), true);
+    await originalModel.evaluate(model => model.undo());
+    await f.current({ ...item, language: "plaintext" });
+    assert.deepEqual(await f.export(), taskDraft([{ ...item, revision: item.revision + 2 }], imported.title));
+    assert.equal(await originalModel.evaluate(model => model === window.monaco.editor.getModels()[0]), true);
+  } finally { await originalModel.dispose(); }
+});
+
+taskTest("unknown hints survive rejected edits and payload selection until an explicit language change", async f => {
+  const unknown = textItem("unknown_hint", { language: "future-lang+v2", filename: "notes.data", text: "Keep this accepted text." });
+  const known = textItem("known_hint", { language: "typescript", filename: "notes.ts", text: "const count: number = 1;" });
+  const imported = taskDraft([unknown, known], "Independent content hints");
+  await f.import(imported);
+  await f.current({ ...unknown, language: "plaintext" });
+  const originalModel = await f.page.evaluateHandle(() => window.monaco.editor.getModels()[0]);
+  try {
+    await f.page.evaluate(() => window.monaco.editor.getEditors()[0].setValue("rejected\0content"));
+    await f.page.locator(".editor-notice[role='alert']").waitFor();
+    await f.current({ ...unknown, language: "plaintext" });
+    assert.deepEqual(await f.export(), imported, "rejected text cannot rewrite a hint or consume its revision");
+    assert.equal(await originalModel.evaluate(model => model === window.monaco.editor.getModels()[0]), true);
+    await f.item(known.id).click(); await f.current(known);
+    assert.equal(await originalModel.evaluate(model => model.isDisposed()), true);
+    assert.equal(await f.page.getByTestId("editor-unsupported-hint").count(), 0);
+    for (const id of ["editor-completion", "editor-format", "editor-symbols"]) {
+      assert.equal(await f.page.getByTestId(id).isEnabled(), true);
+    }
+    await f.item(unknown.id).click(); await f.current({ ...unknown, language: "plaintext" });
+    assert.equal(await f.page.getByTestId("language-select").inputValue(), unknown.language);
+    assert.deepEqual(await f.export(), imported, "selection and fallback reconciliation are not edits");
+    await f.language("markdown");
+    assert.equal(await f.page.getByTestId("editor-unsupported-hint").count(), 0);
+    assert.deepEqual(await f.export(), taskDraft([{ ...unknown, language: "markdown", revision: 2 }, known], imported.title));
+  } finally { await originalModel.dispose(); }
 });
 
 taskTest("rejected live text edits restore accepted content without consuming a payload revision", async f => {
@@ -258,7 +320,8 @@ taskTest("task import enforces item, text and JSON byte bounds and rejects addit
     taskDraft(Array.from({ length: 33 }, (_, index) => textItem(`item_${index}`))),
     taskDraft([textItem("oversized", { text: "你".repeat(87382) })]),
     { ...taskDraft(), owner: "not-client-authority" },
-    taskDraft([textItem("unknown_language", { language: "not-a-language" })]),
+    taskDraft([textItem("invalid_language", { language: "not a language" })]),
+    taskDraft([textItem("invalid_language", { language: "rust\n" })]),
   ]) {
     await f.rejectImport(invalid);
     assert.deepEqual(await f.export(), before);
@@ -308,8 +371,9 @@ taskTest("switching payloads disposes old models and prevents stale diagnostics 
 });
 
 taskTest("task and payload controls fit narrow screens in all four interface languages without raw translation keys", async f => {
-  await f.page.getByTestId("task-title").fill("A writing task with independently editable content");
-  await f.add();
+  const unknown = textItem("narrow_unknown_hint", { language: "future-lang+v2" });
+  await f.import(taskDraft([unknown], "A writing task with independently editable content"));
+  await f.current({ ...unknown, language: "plaintext" });
   await f.page.getByTestId("editor-filename").fill("a-long-but-valid-payload-filename.md");
   await f.setSource("A private writing payload, not a program.");
   for (const locale of ["zh-CN", "en", "es", "ja"]) {
@@ -320,6 +384,8 @@ taskTest("task and payload controls fit narrow screens in all four interface lan
     assert.equal(await f.page.locator(".menu-toggle").getAttribute("aria-expanded"), "false");
     await f.page.waitForFunction(() => document.documentElement.scrollWidth <= innerWidth);
     assert.doesNotMatch(await f.page.locator("main").innerText(), /\b(?:tasks?|taskDraft|editor|layout)\.[A-Za-z][\w.]*/);
+    assert.ok((await f.page.getByTestId("editor-unsupported-hint").textContent()).includes(unknown.language));
+    assert.equal(await f.page.getByTestId("language-select").inputValue(), unknown.language);
     for (const id of ["task-title", "task-payload-add", "task-draft-export", "editor-filename"]) {
       const box = await f.page.getByTestId(id).boundingBox();
       assert.ok(box.x >= 0 && box.x + box.width <= 320, `${locale}: ${id} must fit the viewport`);

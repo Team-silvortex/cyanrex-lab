@@ -1,7 +1,10 @@
 //! Trusted metadata storage only, not Artifact verification, authorization or a public save API.
 use super::{records as task_records, *};
+use crate::services::task_catalog::TaskDefinitionCatalog;
 use chrono::{DateTime, Utc};
 
+#[path = "content_catalog.rs"]
+mod catalog;
 #[path = "content_commands.rs"]
 mod commands;
 #[path = "content_records.rs"]
@@ -19,6 +22,7 @@ pub struct TaskContentSnapshot {
 #[derive(Clone)]
 pub struct TaskContentStore {
     store: TaskStore,
+    definitions: Option<TaskDefinitionCatalog>,
 }
 
 impl TaskContentStore {
@@ -29,6 +33,7 @@ impl TaskContentStore {
                 scope,
                 storage_version: TASK_CONTENT_STORAGE_VERSION,
             },
+            definitions: None,
         }
     }
 
@@ -79,8 +84,11 @@ impl TaskContentStore {
 
     fn validate_record(&self, snapshot: &TaskContentSnapshot) -> Result<()> {
         self.store.validate_snapshot(&snapshot.task)?;
-        if snapshot.task.definition.is_some() {
-            return Err(TaskStoreError::InvalidRecord);
+        match (&self.definitions, &snapshot.task.definition) {
+            (None, None) => {}
+            (Some(catalog), Some(definition))
+                if catalog.get(&definition.reference) == Some(definition) => {}
+            _ => return Err(TaskStoreError::InvalidRecord),
         }
         snapshot
             .manifest
@@ -155,3 +163,7 @@ fn prepare_transition(
 #[cfg(test)]
 #[path = "content_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "content_catalog_tests.rs"]
+mod catalog_tests;

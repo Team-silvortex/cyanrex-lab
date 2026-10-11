@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type * as Monaco from "monaco-editor";
 import { useI18n } from "../../i18n/context";
 import { useConfirmedAction } from "../../components/useConfirmedAction";
-import { BUILTIN_LANGUAGES, detectEditorLanguage, getEditorLanguage } from "./languages";
+import { BUILTIN_LANGUAGES, detectEditorLanguage, getEditorLanguage, resolveEditorLanguage } from "./languages";
 import { decodeEditorBytes, MAX_EDITOR_IMPORT_BYTES, safeEditorFilename } from "./document";
 import { useEditorSession, type EditorSession } from "./useEditorSession";
 
@@ -59,7 +59,8 @@ export default function EditorWorkspace({ item, onChange, disabled = false }: Pr
   editorSession.current = session;
   const busy = disabled || safety.busy || working || !session;
   const { filename, language } = item;
-  const profile = getEditorLanguage(language)!;
+  const profile = resolveEditorLanguage(language);
+  const unsupportedHint = !getEditorLanguage(language);
   useEffect(() => {
     mounted.current = true;
     return () => { mounted.current = false; };
@@ -136,6 +137,7 @@ export default function EditorWorkspace({ item, onChange, disabled = false }: Pr
         </label>
         <label className="field-label"><span>{t("editor.language")}</span>
           <select data-testid="language-select" value={language} disabled={busy} onChange={event => changeLanguage(event.target.value)}>
+            {unsupportedHint && <option value={language}>{language}</option>}
             {BUILTIN_LANGUAGES.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}
           </select>
         </label>
@@ -161,6 +163,9 @@ export default function EditorWorkspace({ item, onChange, disabled = false }: Pr
         <strong>{t(`editor.tier.${profile.tier}`)}</strong>
         <span>{profile.capabilities.map(capability => t(`editor.capability.${capability}`)).join(" · ") || t("editor.noService")}</span>
       </div>
+      {unsupportedHint && <p data-testid="editor-unsupported-hint" className="meta" role="status">
+        {t("editor.unsupportedHint", { language })}
+      </p>}
       {!session && <p role={failed ? "alert" : "status"}>{t(failed ? "editor.loadFailed" : "editor.loading")}</p>}
       <div ref={container} className="language-editor-surface" />
       {notice && <p role={notice === "editor.downloadStarted" ? "status" : "alert"} className="editor-notice">{t(notice)}</p>}

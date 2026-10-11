@@ -1,5 +1,10 @@
 # Current project testing guide
 
+Source release **0.5.5** (**2026-10-11**) includes the dated follow-ups and their test selections.
+`Unreleased` labels retain the original implementation stage; inventories and earlier 0.5.4 execution
+records are not fresh 0.5.5 SQL runs or deployment acceptance. Actual release-gate results and omissions
+belong in [project status](project-status.md).
+
 Reviewed against **0.5.4 on 2026-10-08**, including C2-T–W intent, dispatch and inspection boundaries,
 the Next.js 15.5.27 floor, and earlier AI adapters, draft preparation, sanitizer hardening,
 authentication guards and the standalone content HTTP adapter. This guide explains what to run for each module and boundary, what each layer
@@ -8,6 +13,27 @@ Use the [platform network](platform-network.md) to identify connected and unconn
 The [capability tensor](capability-maturity.md) links each implementation slice to test sources and
 dated evidence. Its common-script checks validate structure, references and bilingual score-table
 consistency; they do not execute the referenced product tests or establish deployment maturity.
+
+The **2026-10-11 Unreleased multi-package follow-up**, still on source 0.5.4, extends metadata
+composition tests and the two exact Session runners below. This is an inventory update; dated passing
+results remain in project status, and the earlier review and evidence dates remain unchanged.
+
+The separate **2026-10-11 Unreleased assessment-binding follow-up** adds paired nullable-definition
+contract cases and one case to each of those runners. Both fields must be explicit, mixed bound/
+unbound metadata keeps catalogue identity, and typed assessment remains bound-only. Current counts
+below are inventory, not execution or old-binary compatibility evidence.
+
+The separate **2026-10-11 Unreleased C2-Y follow-up** adds an explicitly configured catalogue
+Task-content HTTP router. Its default, exact SQL and common-guard selections are listed separately
+below; neither this inventory nor earlier manual-router results establish its execution or deployment.
+
+The independent **2026-10-11 Unreleased C2-Z follow-up** adds a typed catalogue draft publication
+attempt, separate from the manual C2-P–W workflow. Its preparation, controlled confirmations and
+exact SQL selections below are source inventory, not inherited manual-publication acceptance.
+
+The independent **2026-10-11 Unreleased C2-AA follow-up** adds read-only observation of one unknown
+catalogue attempt target. Its current-read comparisons and typed failures are separate from C2-Z
+publication and old manual C2-Q observation; neither earlier result set establishes this execution.
 
 ## Test layers
 
@@ -42,6 +68,8 @@ compilation; consult its explicit lists rather than assuming `cargo test` covers
 | Runner Agent | Authenticator, registry, job queue/executor/client tests; `runner_agent_client_tdd`; inventory/admin browser tests | Signature/replay → lease/result, timeout/cancel, owner-bound remote check, no execution fallback |
 | AI Agent profiles and SDK helpers | `ai_agent_settings_tdd`, private-store cancellation units, `test:ai-agents`, explicit `test:ai-agents-browser`, SDK Agent runtime/type/package tests | Teacher/CSRF → revision-fenced private metadata → exact reviewed UI acknowledgement; explicit tool selection, per-call approval, hostile calls and no automatic retry. Synthetic formats are not real provider acceptance |
 | Teaching pack and generic catalogue | `task_catalog_tdd`, `teaching_task_adapter_tdd`, `collaboration_contract_tdd` | Typed evidence and exact definition/policy identity; catalogue admission does not execute rules or accept Tasks |
+| Metadata-only catalogue composition | `task_definition_catalog/composition.rs`, `taskCatalogComposition` common guards, Session catalogue/content composition SQL cases | Explicit packages/versions, order, full-reference overlap and nested 256-definition global limits; existing schema 2/3 commands retain private ownership and full-definition checks, without providers or rule execution |
+| Explicit assessment-binding choice | `task_definition_catalog/assessment_binding.rs`, `taskAssessmentBinding` common guards, Session catalogue/content binding SQL cases | Required nullable JSON fields, paired absence, old bound encoding, mixed metadata, typed-provider refusal before dispatch and both binding-drift directions; no manual-mode promotion, automatic Review or old-binary downgrade guarantee |
 | Events and settings | `module_boundaries_tdd`, EventBus tests, explicit event SQL cases; event/settings unit and browser suites | Publication ordering → durable history → resync, export/delete filter safety, confirmed settings and read failures |
 | Generic identity and authority | `collaboration_*_tdd`, `legacy_workspace_projection_tdd` | Audited binding/member/grant revisions, absent-key races, last manager, role versus deployment authority |
 | Registry timestamps | `test-registry-timestamps.sh` selects ten cases from four existing targets | Nullable retirement validity, mandatory identity/policy audit times, finite limits, old history/replay, append readback, reconciliation errors and Session-command rejection; no new age/order policy |
@@ -61,6 +89,8 @@ compilation; consult its explicit lists rather than assuming `cargo test` covers
 | Internal Task content metadata | Rust `task_content_contract_tdd`, `task_content_binding_tdd` | Strict object shape, scalar/item limits, exact ordered pins, supplied owner/bytes/digest consistency; pure default tests, not storage or Session authorization |
 | Draft import and publication plan | Rust `task_draft_publication_tdd`, `taskDraftPublication` common guards, frontend `taskDraft` shared fixtures | Strict bounded JSON, blank-title rejection, local identity removal, exact supplied-content mapping and canonical-export compatibility; no publication, current-Session check or browser saving |
 | Session draft publication steps | Rust `session_task_draft_publication_tdd`, `scripts/test-session-task-draft-publication.sh`, `sessionTaskDraftPublication` common guards | Fixed allocation and Session binding, one write per advance, empty/multi-item success, confirmed prefix versus unconfirmed step, cancellation, revoked authority and final real-byte checks; no durable recovery or browser saving |
+| Independent catalogue draft publication | `session_catalog_draft_publication_tdd`, internal `catalog_draft_publication::tests`, `scripts/test-session-catalog-draft-publication.sh`, `sessionCatalogDraftPublication` guards | No-I/O exact-definition freeze, independent token domain, one existing Session write per advance, full `Some` confirmation, retained prefix/uncertain target and manual/journal type separation; C2-AA comparison is separate, with no restoration, retry or HTTP/browser saving |
+| Catalogue unconfirmed-target observation | `session_catalog_draft_observation_tdd`, internal `catalog_draft_publication::observation_tests`, `scripts/test-session-catalog-draft-observation.sh`, `sessionCatalogDraftObservation` guards | One existing current-Session read, full frozen `Some` and ordered bytes, valid differences versus typed corruption, missing/foreign target scope, cancellation and unchanged attempt; no adopted confirmation, historical commit/rollback inference, recovery or retry |
 | Unconfirmed draft target observation | Rust `session_task_draft_observation_tdd`, `scripts/test-session-task-draft-observation.sh` | Original Session/state admission, exact read-only comparisons, typed errors, unchanged attempt, current Task bytes versus historical prefix and missing-Task scope; no rollback proof or resumption |
 | Draft metadata checkpoints | Default Rust `draft_publication::tests::checkpoint`, `session_task_draft_checkpoint_tdd`, `sessionTaskDraftCheckpoint` common guards | Strict bounded metadata codec, ordered allocations/lengths, state/count relations and round trips; imported progress is data, not authorization, provenance, persistence or a restored attempt |
 | Explicit checkpoint target inspection | Default `draft_publication::tests::inspection`, `session_task_draft_inspection_tdd`, `scripts/test-session-task-draft-inspection.sh`, `sessionTaskDraftInspection` common guards | Explicit scope/current Session, one existing reader, exact metadata/text checks, typed faults, missing/empty Task boundaries and unchanged data; no original identity/body provenance, journal or restoration |
@@ -70,6 +100,7 @@ compilation; consult its explicit lists rather than assuming `cargo test` covers
 | Journal step resource observation | `session_task_draft_journal_observation_tdd`, `scripts/test-session-task-draft-journal-observation.sh`, `sessionTaskDraftJournalObservation` common guards | Ordinal admission, same-transaction exact resource reads, original full journal/nonces/first pins after the read, final fresh authority and body-free result; no business writes, receipt or recovery |
 | Separate content storage | Rust `task_content_store_tdd`, `scripts/test-task-content-storage.sh` | Schema 2/3 isolation, complete metadata/outbox atomicity, revision conflicts and storage faults; not a Session content or browser adapter |
 | Session task content | Rust `session_task_content_tdd`, `scripts/test-session-task-content.sh` | Current authorization, old/new exact text, metadata-only edits, removal, namespace pins and post-write checks on one transaction; no public/browser acceptance |
+| Independent catalogue Task-content HTTP | `catalog_task_content_http_tdd`, `scripts/test-platform-catalog-task-content-http.sh`, `catalogTaskContentHttp` common guards | Strict exact-reference objects → trusted full definition, bound/unbound catalogue identity, manual/owner separation, current Session/full metadata/text checks and shared transport/admission outcomes; no evaluator or public/browser mounting |
 | UI navigation and safety | `test:ui-permissions`, layout/action/account/runtime/browser suites | Target-bound confirmations, duplicate actions, route changes, keyboard access, keeping unsaved drafts |
 | API, SDK, packaging and deployment | Common contract tests, SDK gate, release/SSH Rust targets and tool fixture runners | Engine route → OpenAPI → generated SDK; archive provenance → exact reviewed SSH target; fixtures versus real installation |
 
@@ -126,18 +157,117 @@ authorization to accept fallback as successful persistence. Provisioning SQL fix
 | `scripts/test-session-artifact-storage.sh` | 18 | Current Session → private publication and exact read |
 | `scripts/test-session-task-inputs.sh` | 20 | Task → exact owned Artifact inputs and post-write verification |
 | `scripts/test-session-review-storage.sh` | 18 | Session → private human Review with exact target/evidence |
-| `scripts/test-session-catalog-tasks.sh` | 16 | Exact admitted definition metadata and 0–32 inputs |
+| `scripts/test-session-catalog-tasks.sh` | 20 | Exact admitted bound/unbound definition metadata, provider-free single/composed catalogues and 0–32 inputs |
 | `scripts/test-session-task-revisions.sh` | 17 | Draft replacement, old/new input union, schema 2 compatibility and competing saves |
-| `scripts/test-session-task-content.sh` | 25 | Schema 3 current-Session content, exact text, old/new rechecks, namespace substitution, lifecycle and concurrent faults |
-| `scripts/test-platform-task-content-http.sh` | 11 | Standalone HTTP → C2-M, private ownership, Session expiry during lock waits, exact text, commit/outbox faults and competing edits |
+| `scripts/test-session-task-content.sh` | 33 | Schema 3 manual/catalogue content, bound/unbound composed metadata, exact definitions/text, old/new rechecks, namespace substitution, lifecycle and concurrent faults |
+| `scripts/test-platform-task-content-http.sh` | 13 | Standalone HTTP → C2-M, private ownership, Session expiry during lock waits, exact text, commit/outbox faults, competing edits and shared admission through response-body completion |
 
-These twelve runners total **212 selected cases** (155 preceding resource cases, 21 content-store, 25 Session-content and 11 standalone HTTP cases),
+These twelve runners total **226 selected cases** (159 preceding resource cases, 21 content-store, 33 Session-content and 13 standalone HTTP cases),
 not all PostgreSQL coverage in the repository.
+The two catalogue additions cover metadata-only construction and exact admission without an evaluator;
+this is current source inventory, not a revision of earlier execution counts.
+The six catalogue-content additions cover explicit mode separation, full-definition consistency,
+text/revision guards and current authorization around faults and waits, using the existing schema 3.
+The multi-package follow-up adds one case each in `session_catalog_task/composition.rs` and
+`session_task_content/catalog_composition.rs`. Select these through the maintained exact runners;
+pure composition checks or source guards do not replace their database execution.
+The separate assessment-binding follow-up adds `session_catalog_task/assessment_binding.rs` and
+`session_task_content/catalog_assessment_binding.rs`. Check bound/unbound definitions through the
+existing schema 2/3 paths, explicit null persistence, unchanged private content and rejection of
+adding/removing bindings under an existing reference. The two cases are included in the inventory
+above, not additional cases beyond their exact runners.
+
+For the **2026-10-08 Unreleased C2-N admission follow-up**, check the shared capacity across cloned
+states and separately constructed routers, refusal before body polling or SQL, and slot retention
+through successful and error response bodies. Cover collection/cancellation, terminal-frame/end/drop
+release and unchanged private error outcomes. Explicit SQL regressions should include a retained
+successful content body and a waiting mutation, overflow without business effects, cancellation and
+the original Session checks. The current HTTP inventory adds two exact SQL cases to the original eleven;
+the inventory is not a completed-run claim. These are adapter boundaries, not a global worker quota or rollback proof;
+the original 0.5.0 results are not execution evidence for this follow-up.
+
+The separate **2026-10-08 Unreleased C2-X** target `text_artifact_http_tdd` and exact runner
+`scripts/test-platform-text-artifact-http.sh` cover text publication and exact-revision projection,
+with ten exact SQL cases separate from the twelve-runner inventory above. Its twelve default cases
+and three new common guards are separate selections. Check the independent 2 MiB wire / 256 KiB decoded-text limits,
+private errors and current authorization, historical revisions, response-body slot retention and
+independent text/Task budgets. The generic reader may materialize 1 MiB before projection; C2-N's
+64 KiB request limit stays unchanged. Taking a returned reference into a separate Task request is a
+caller-controlled in-process fixture sequence, not an atomic batch, router merge or browser test.
+Source guards and default transport tests do not replace explicit disposable-database execution;
+actual dated results belong in [project status](project-status.md).
+
+The separate **2026-10-11 Unreleased C2-Y** target `catalog_task_content_http_tdd` has **28 default
+cases** and **eight exact SQL cases** selected by `scripts/test-platform-catalog-task-content-http.sh`,
+outside the twelve-runner inventory above. The defaults comprise one missing-reference case,
+three exact-reference cases, eight catalogue-body cases and reuse of six transport plus ten admission
+cases against the actual catalogue router. Three `catalogTaskContentHttp` common guards check source
+boundaries and the exact inventory; these are selections, not passing-run claims.
+
+The SQL cases cover all four commands with composed package/version and assessment-binding metadata,
+bidirectional manual/catalogue/owner privacy, complete-definition drift and unknown coordinates,
+old/new bytes, current Session and account lifecycle, post-write/commit faults, observed lock waits,
+and response-body/cancellation capacity. Rejection snapshots compare all rows in **seven Task/Artifact
+resource tables** and all private-directory file names/bytes, not every auth/identity/audit table.
+The router retains C2-N's 64 KiB / two-second body boundary and uses its own typed state family;
+separately configured manual/catalogue/text budgets add rather than forming a global quota.
+Unknown definition is generic `400 invalid_request / unconfirmed` after a Session command was called,
+not an HTTP rollback guarantee. Neither source/default checks nor older manual SQL results replace
+this adapter's disposable-database execution. It remains unmounted, without automatic router merge,
+catalogue discovery, client mode selection, provider assessment, journal P–W integration or browser saving.
+See [the C2-Y contract](catalog-task-content-http.md) and dated [project status](project-status.md).
 
 0.5.3 C2-P adds a separate `scripts/test-session-task-draft-publication.sh` runner for explicit
 12 create-only workflow cases, not included in the twelve-runner total. It selects exact cases from
 `session_task_draft_publication_tdd` against disposable storage; default preparation/state tests do
 not substitute for those SQL runs. Dated execution results remain in [project status](project-status.md).
+
+The independent **2026-10-11 Unreleased C2-Z** target `session_catalog_draft_publication_tdd` selects
+**four default preparation cases**; the internal `catalog_draft_publication/tests.rs` selects **eight
+controlled receipt/cancellation cases**. Six `sessionCatalogDraftPublication` guards check the opaque
+type, two shared pure helpers, source wiring and exact inventory. None of these selections is a new
+passing-run claim or a substitute for database/file execution.
+
+`scripts/test-session-catalog-draft-publication.sh` selects **eight distinct exact SQL cases**:
+behavior two, faults three, lifecycle one and waits two, outside the twelve-runner total above.
+They cover composed packages/versions and bound/unbound definitions, ordered/empty plans, original-Session
+substitution, effective fault counters, complete definition/manifest confirmation, damaged confirmed
+bytes, preallocated Artifact/Task conflicts without adoption and current logout/expiry/membership
+at each step. Wait fixtures must establish the PostgreSQL blocker before testing cancellation or
+database-clock Session expiry at both Artifact and final Task steps.
+
+Snapshot comparisons cover all rows in seven Task/Artifact resource tables and private-directory
+file names/bytes, not every auth/identity table. Distinguish unchanged rejection snapshots from the
+failed second-Artifact fixture's exact new orphan blob: the earlier committed prefix remains, SQL
+does not adopt the failed target, and the unknown blob is neither deleted nor retried. The frozen
+definition and `Some` confirmation checks do not authenticate preparation, assess a provider or
+make the old manual checkpoint/journal/observation APIs accept this attempt. See [the C2-Z contract](session-catalog-task-draft-publication.md);
+actual results and omissions remain separately dated in [project status](project-status.md).
+
+The independent **2026-10-11 Unreleased C2-AA** target `session_catalog_draft_observation_tdd` selects
+**four default cases** for Ready/original-token admission, exact Artifact and empty-Task reader errors,
+unpolled observations and unchanged progress. Internal `catalog_draft_publication/observation_tests.rs`
+selects **six controlled comparison/admission cases**; supplied-value corruption checks there are not
+real-reader acceptance. Six structural guards check current-reader delegation, shared body-free DTO,
+no state adoption and exact inventory, not database/file execution.
+
+`scripts/test-session-catalog-draft-observation.sh` selects **eight distinct exact SQL cases**:
+behavior three, faults two, lifecycle one and concurrency two, outside the twelve-runner total above.
+They distinguish valid registered-definition/status/content changes from effective same-pin metadata,
+manual `None` and both-direction binding corruption; typed `InvalidRecord` must not become a report.
+They cover composed versions, bound/unbound and ordered/empty content, current Session/membership,
+damaged or missing bytes, absent/foreign targets and the missing-Task Artifact-namespace early return.
+Wait cases must prove actual PostgreSQL blocking before cancellation or database-clock expiry.
+
+Observation-preservation snapshots compare every table's sorted-row MD5 in the selected source,
+Artifact and Task schemas, plus private file names, lengths, modes and SHA-256 and root device/inode/mode.
+These are scoped summaries, not raw-row/byte equality or an audit of every deployment schema. Fault
+fixtures prove injection counters/effective stored mutations before observing. An Artifact SQL rollback
+can leave its exact immutable blob, and the resource counts are measured separately; `NotVisible`
+never proves rollback. Pending-creator cases use a separately explicit command at an observed outbox
+barrier, not a fabricated lost acknowledgement, and later visibility never confirms the attempt's
+earlier write. See [the C2-AA contract](session-catalog-task-draft-observation.md) and separately dated
+[project status](project-status.md) for actual results and omissions.
 
 0.5.3 C2-Q has a separate `scripts/test-session-task-draft-observation.sh` exact runner and
 `session_task_draft_observation_tdd` target. Its 12 read-only cases are separate from C2-P’s 12 creation

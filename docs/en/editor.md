@@ -1,5 +1,9 @@
 # Task payload editing
 
+Source release **0.5.5** (**2026-10-11**) includes the portable-language follow-up. Its dated
+`Unreleased` label retains the original implementation stage and verification scope. The task editor
+remains local-only; source inclusion does not connect server saving, external language servers or execution.
+
 The `/tasks/new` page owns a local task draft and its payload: optional text contents such as notes,
 code and configuration. The multilingual editor edits one selected content item; it is not a separate
 content store. `/editor` remains a compatibility entry to the same task container. The task starts
@@ -13,11 +17,22 @@ Fixes included in 0.5.0 preserve the draft and editor during same-page fragment 
 without suppressing identity checks for pathname/query changes. Bounded import/download filenames
 also retain whole Unicode characters at the length limit; this does not relax content validation.
 
+The **2026-10-08 Unreleased follow-up** on source version 0.5.4 accepts portable language hints
+independently of installed editor profiles. This intentionally broadens local draft compatibility;
+it does not change the version-1 format, add content kinds or connect server saving.
+
 ## Language capabilities
 
 The 14 profiles below reflect the configured providers in
 [`languages.ts`](../../frontend/src/features/editor/languages.ts), not installed language servers.
 The page shows each profile's supported actions and disables unavailable toolbar actions.
+
+A payload's `language` is inert metadata matching `[a-z][a-z0-9_+.-]{0,63}`, not a requirement to
+install one of these profiles. Import/export preserves a valid unrecognized hint exactly. The editor
+uses the plain-text profile and shows a localized no-tools notice; it does not rewrite the hint,
+filename, text or revision. Resolving that profile alone does not replace the model or reset undo.
+Selecting a supported language is a separate explicit edit. No provider, formatter or LSP is loaded
+just because a hint is valid.
 
 | Languages | Built in capabilities |
 |---|---|
@@ -58,8 +73,9 @@ still exceed the export limit. Import never evaluates text. Confirmation and asy
 are bound to the reviewed draft generation and revisions; obsolete results cannot replace newer work.
 
 Switching content items preserves their filename, language and text in the parent task but disposes
-the displayed editor model. Switching language also creates a new model with a matching extension.
-Neither operation preserves undo history. Whole-task replacement releases the previous editor even
+the displayed editor model. Switching to a different effective editor profile also creates a new
+model with a matching extension; these model replacements do not preserve undo history. Resolving an
+unrecognized hint to the existing plain-text profile is not such a replacement. Whole-task replacement releases the previous editor even
 when imported item IDs and revisions match. Rejected edits restore the last accepted parent value.
 There is no browser-storage persistence, autosave or recovery history. Browser exit warnings and
 explicit in-page link confirmations help prevent accidental loss, but do not cover all programmatic
@@ -88,7 +104,7 @@ execution environment or server Task/Review workflow.
 The local format is `{ format: "cyanrex.task-draft", version: 1, title, payload }`. Each payload item
 has `kind: "text"`, a local `id` and `revision`, `filename`, `language` and `text`. Code, Markdown and
 configuration use the same text-content contract rather than a mandatory task-level `code` field.
-Unknown fields, versions, item kinds, language IDs and duplicate item IDs are rejected. Only text
+Unknown fields, versions, item kinds, malformed language hints and duplicate item IDs are rejected. Only text
 payloads are implemented; binary attachments and server Artifact references are not importable yet.
 
 Local IDs and revisions prevent accidental editor races; they are not server identity, authorization
@@ -100,8 +116,9 @@ bypass authorization, expected-revision checks or the missing server adapter.
 
 The [C2-K content manifest](task-content-manifest.md), included in 0.5.0, defines independent server metadata
 and pure supplied-snapshot checks. It is not this local import format or a save command: no metadata
-is persisted by that pure contract, empty local titles still need a save decision, and the browser's language allowlist is
-unchanged. Filename labels and language hints do not grant filesystem or execution access.
+is persisted by that pure contract, and empty local titles still need a save decision. Its extensible
+language-hint syntax now also bounds local draft metadata; the 14 editor capability profiles remain
+a separate registry. Filename labels and language hints do not grant filesystem or execution access.
 
 The separate [C2-L trusted store](task-content-store.md) persists metadata in schema 3;
 [C2-M](session-task-content.md) adds internal Session and text-byte checks. Neither connects this
@@ -112,8 +129,10 @@ browser draft or makes local export a server save. The same release includes the
 
 `frontend/src/features/tasks/` owns the immutable task draft, selected payload, reviewed mutations and
 strict JSON format. `frontend/src/features/editor/` provides a controlled text-content editor and the
-local language services. It publishes edits with an expected revision and reconciles accepted parent
-content without creating another edit. It does not depend on task type or reuse the eBPF controller.
+local language services. The pure `taskPayloadLanguage.ts` validator depends on no editor registry;
+capability resolution happens only at the editor boundary. The editor publishes edits with an expected
+revision and reconciles accepted parent content without creating another edit. It does not depend on
+task type or reuse the eBPF controller.
 Regression suites cover task round trips, rejected and obsolete edits, provider ownership/cancellation,
 language changes, disposal and real bundled-worker behavior. Acceptance results
 are tracked in [project status](project-status.md), not implied by this capability list.

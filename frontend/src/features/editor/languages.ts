@@ -41,6 +41,11 @@ export function getEditorLanguage(id: string): EditorLanguage | undefined {
   return BUILTIN_LANGUAGES.find(item => item.id === id);
 }
 
+/** Resolve local editing capabilities only; never rewrite the document's language hint. */
+export function resolveEditorLanguage(hint: string): EditorLanguage {
+  return getEditorLanguage(hint) ?? getEditorLanguage("plaintext")!;
+}
+
 const extensions = new Map<string, string>([
   ...BUILTIN_LANGUAGES.map(item => [item.extension, item.id] as [string, string]),
   // The scratch models use .ts/.js; JSX/TSX need extension-preserving models and are not claimed.

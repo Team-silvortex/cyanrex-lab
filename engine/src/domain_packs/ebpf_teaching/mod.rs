@@ -87,8 +87,11 @@ fn definition(rule: &LabRule) -> TaskDefinition {
         reference: task_ref(rule),
         title: rule.title.to_owned(),
         summary: rule.summary.to_owned(),
-        evidence_schema: versioned("cyanrex.ebpf_teaching.run_observation"),
-        assessment_policy: versioned(&format!("cyanrex.ebpf_teaching.assess-{}", rule.id)),
+        evidence_schema: Some(versioned("cyanrex.ebpf_teaching.run_observation")),
+        assessment_policy: Some(versioned(&format!(
+            "cyanrex.ebpf_teaching.assess-{}",
+            rule.id
+        ))),
     }
 }
 

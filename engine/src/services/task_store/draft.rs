@@ -1,5 +1,7 @@
 use super::*;
-use crate::services::task_catalog::{validate_definition, TaskCatalog, TaskProvider};
+use crate::services::task_catalog::{
+    validate_definition, TaskCatalog, TaskDefinitionCatalog, TaskProvider,
+};
 
 /// Only constructors admit drafts; deserialization cannot bypass catalogue lookup.
 pub struct TaskDraft {
@@ -21,6 +23,16 @@ impl TaskDraft {
 
     pub fn from_catalog<P: TaskProvider>(
         catalog: &TaskCatalog<P>,
+        reference: &TaskDefinitionRef,
+        title: impl Into<String>,
+        inputs: Vec<ArtifactRef>,
+    ) -> Result<Self> {
+        Self::from_definitions(catalog.definition_catalog(), reference, title, inputs)
+    }
+
+    /// Metadata admission does not require or execute an assessment provider.
+    pub fn from_definitions(
+        catalog: &TaskDefinitionCatalog,
         reference: &TaskDefinitionRef,
         title: impl Into<String>,
         inputs: Vec<ArtifactRef>,

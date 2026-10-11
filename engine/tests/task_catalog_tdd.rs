@@ -28,8 +28,8 @@ fn definition(version: u64) -> TaskDefinition {
         },
         title: "Write a summary".into(),
         summary: "A text-only task; no compiler, kernel, teacher or Run is required.".into(),
-        evidence_schema: versioned("example.documents.text", 1),
-        assessment_policy: versioned("example.documents.minimum_words", version),
+        evidence_schema: Some(versioned("example.documents.text", 1)),
+        assessment_policy: Some(versioned("example.documents.minimum_words", version)),
     }
 }
 
@@ -72,7 +72,7 @@ impl TaskProvider for Documents {
         if text.is_empty() {
             return Err(TaskCatalogError::InvalidEvidence("missing text"));
         }
-        let minimum = u64::from(definition.assessment_policy.version) as usize;
+        let minimum = u64::from(definition.assessment_policy.as_ref().unwrap().version) as usize;
         Ok(AssessmentOutcome {
             verdict: if text.split_whitespace().count() >= minimum {
                 AssessmentVerdict::Passed
@@ -92,8 +92,14 @@ fn non_teaching_task_uses_the_same_catalog_without_a_run() {
         .assess(&registered.reference, "A manually written summary.")
         .unwrap();
     assert_eq!(assessment.definition, registered.reference);
-    assert_eq!(assessment.policy, registered.assessment_policy);
-    assert_eq!(assessment.evidence_schema, registered.evidence_schema);
+    assert_eq!(
+        assessment.policy,
+        registered.assessment_policy.clone().unwrap()
+    );
+    assert_eq!(
+        assessment.evidence_schema,
+        registered.evidence_schema.clone().unwrap()
+    );
     assert_eq!(assessment.outcome.verdict, AssessmentVerdict::Passed);
     assert_eq!(catalog.get(&registered.reference), Some(registered));
 }
@@ -143,7 +149,7 @@ fn unknown_package_definition_and_version_never_dispatch_or_fall_back() {
 fn duplicate_definition_identity_cannot_replace_a_rule() {
     let original = definition(1);
     let mut replacement = original.clone();
-    replacement.assessment_policy.version = 2.try_into().unwrap();
+    replacement.assessment_policy.as_mut().unwrap().version = 2.try_into().unwrap();
     assert!(TaskCatalog::new(Documents::new(vec![original, replacement])).is_err());
 }
 
@@ -154,8 +160,8 @@ fn foreign_and_similar_prefix_names_cannot_claim_package_ownership() {
             let mut invalid = definition(1);
             match field {
                 0 => invalid.reference.name = name.parse().unwrap(),
-                1 => invalid.evidence_schema.name = name.parse().unwrap(),
-                _ => invalid.assessment_policy.name = name.parse().unwrap(),
+                1 => invalid.evidence_schema.as_mut().unwrap().name = name.parse().unwrap(),
+                _ => invalid.assessment_policy.as_mut().unwrap().name = name.parse().unwrap(),
             }
             assert!(TaskCatalog::new(Documents::new(vec![invalid])).is_err());
         }

@@ -3,14 +3,19 @@ use super::super::private_work::PrivateWorkContext;
 use super::*;
 use crate::{
     models::collaboration::{
-        ArtifactContent, PrincipalRef, TaskContentManifest, TextPayloadBinding,
+        ArtifactContent, PrincipalRef, TaskContentManifest, TaskDefinitionRef, TextPayloadBinding,
     },
     services::{
         artifact_store::ArtifactStoreError,
+        task_catalog::TaskDefinitionCatalog,
         task_content::validate_text_payload_content,
         task_store::{TaskContentSnapshot, TaskContentStore},
     },
 };
+
+#[path = "content_catalog.rs"]
+mod catalog;
+pub use catalog::SessionCatalogTaskContentWorkspace;
 
 /// Trusted routing for separate initialized Task/Artifact namespaces with the same workspace.
 /// No request deserializer, caller-selected owner or second transaction owner.
@@ -110,6 +115,7 @@ pub struct SessionTaskContent {
 
 enum ContentOperation {
     Create(TaskContentManifest),
+    CatalogCreate(TaskDefinitionRef, TaskContentManifest),
     Read,
     Replace(RevisionNumber, TaskContentManifest),
     Transition(RevisionNumber, TaskStatus),
@@ -125,8 +131,10 @@ fn content_checks(
 ) -> TaskResult<Vec<(TextPayloadBinding, TaskStoreError)>> {
     let mut checks = Vec::new();
     match operation {
-        ContentOperation::Create(_) if old.is_some() => return Err(TaskStoreError::Conflict.into()),
-        ContentOperation::Create(_) => {}
+        ContentOperation::Create(_) | ContentOperation::CatalogCreate(_, _) if old.is_some() => {
+            return Err(TaskStoreError::Conflict.into())
+        }
+        ContentOperation::Create(_) | ContentOperation::CatalogCreate(_, _) => {}
         _ => {
             let old = old.ok_or(TaskStoreError::NotFound)?;
             match operation {
@@ -160,7 +168,10 @@ fn content_checks(
             );
         }
     }
-    if let ContentOperation::Create(manifest) | ContentOperation::Replace(_, manifest) = operation {
+    if let ContentOperation::Create(manifest)
+    | ContentOperation::CatalogCreate(_, manifest)
+    | ContentOperation::Replace(_, manifest) = operation
+    {
         checks.extend(
             manifest
                 .payload()
@@ -182,7 +193,13 @@ impl DurableAuthSource {
     ) -> TaskResult<TaskContentSnapshot> {
         workspace.check_manifest_scope(&manifest)?;
         match self
-            .session_content_task(token, workspace, id, ContentOperation::Create(manifest))
+            .session_content_task(
+                token,
+                workspace,
+                id,
+                ContentOperation::Create(manifest),
+                None,
+            )
             .await?
         {
             ContentPending::Snapshot(snapshot) => Ok(snapshot),
@@ -197,7 +214,7 @@ impl DurableAuthSource {
         id: TaskId,
     ) -> TaskResult<Option<SessionTaskContent>> {
         match self
-            .session_content_task(token, workspace, id, ContentOperation::Read)
+            .session_content_task(token, workspace, id, ContentOperation::Read, None)
             .await?
         {
             ContentPending::Read(result) => Ok(result),
@@ -220,6 +237,7 @@ impl DurableAuthSource {
                 workspace,
                 id,
                 ContentOperation::Replace(revision, manifest),
+                None,
             )
             .await?
         {
@@ -243,6 +261,7 @@ impl DurableAuthSource {
                 workspace,
                 id,
                 ContentOperation::Transition(revision, status),
+                None,
             )
             .await?
         {
@@ -257,6 +276,7 @@ impl DurableAuthSource {
         workspace: &SessionTaskContentWorkspace,
         id: TaskId,
         operation: ContentOperation,
+        definitions: Option<&TaskDefinitionCatalog>,
     ) -> TaskResult<ContentPending> {
         if !valid_token(token) {
             return Err(SessionCommandError::InvalidSession.into());
@@ -267,7 +287,7 @@ impl DurableAuthSource {
                 .begin_private_work(&mut tx, token, &workspace.namespace, workspace.scope)
                 .await?;
             let pending = self
-                .execute_content_task(&mut tx, &mut context, workspace, id, operation)
+                .execute_content_task(&mut tx, &mut context, workspace, id, operation, definitions)
                 .await?;
             // No retained bytes or metadata leave before fresh Session/membership and a confirmed
             // source-owned commit. Timeout/cancellation does not prove rollback or allow cleanup.
@@ -296,6 +316,7 @@ impl DurableAuthSource {
                 workspace,
                 id,
                 ContentOperation::Create(manifest),
+                None,
             )
             .await?
         {
@@ -313,7 +334,7 @@ impl DurableAuthSource {
         id: TaskId,
     ) -> TaskResult<Option<SessionTaskContent>> {
         match self
-            .execute_content_task(tx, context, workspace, id, ContentOperation::Read)
+            .execute_content_task(tx, context, workspace, id, ContentOperation::Read, None)
             .await?
         {
             ContentPending::Read(content) => Ok(content),
@@ -328,13 +349,19 @@ impl DurableAuthSource {
         workspace: &SessionTaskContentWorkspace,
         id: TaskId,
         operation: ContentOperation,
+        definitions: Option<&TaskDefinitionCatalog>,
     ) -> TaskResult<ContentPending> {
         let owner = context.owner;
         let reference = TaskRef {
             workspace: workspace.scope,
             task_id: id,
         };
-        let store = TaskContentStore::new(self.pool.clone(), workspace.scope);
+        let store = match definitions {
+            Some(catalog) => {
+                TaskContentStore::from_definitions(self.pool.clone(), workspace.scope, catalog)
+            }
+            None => TaskContentStore::new(self.pool.clone(), workspace.scope),
+        };
         // Lock schema-3 metadata and the owned Task BEFORE inspecting any Artifact. This
         // handle's helpers borrow the source transaction, never its own pool or a v2 handle.
         let old = store.get_in_transaction(tx, reference, owner).await?;
@@ -352,6 +379,11 @@ impl DurableAuthSource {
         let snapshot = match operation {
             ContentOperation::Create(manifest) => {
                 store.create_in_transaction(tx, id, owner, manifest).await?
+            }
+            ContentOperation::CatalogCreate(reference, manifest) => {
+                store
+                    .create_catalog_in_transaction(tx, id, owner, &reference, manifest)
+                    .await?
             }
             ContentOperation::Read => old.ok_or(TaskStoreError::NotFound)?,
             ContentOperation::Replace(revision, manifest) => {

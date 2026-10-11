@@ -11,11 +11,11 @@ fn revision(value: u64) -> RevisionNumber {
     value.try_into().unwrap()
 }
 
-fn now() -> DateTime<Utc> {
+pub(super) fn now() -> DateTime<Utc> {
     DateTime::from_timestamp(20, 0).unwrap()
 }
 
-fn snapshot() -> TaskContentSnapshot {
+pub(super) fn snapshot() -> TaskContentSnapshot {
     let scope = WorkspaceRef {
         authority_id: id(1),
         workspace_id: id(2),

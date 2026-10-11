@@ -19,6 +19,12 @@ pub struct SessionArtifactWorkspace {
     pub(super) scope: WorkspaceRef,
     pub(super) store: ArtifactStore,
 }
+impl SessionArtifactWorkspace {
+    /// Configuration metadata only, never a permission check or a request-selected owner/path.
+    pub(crate) fn scope(&self) -> WorkspaceRef {
+        self.scope
+    }
+}
 #[derive(Debug, Clone, Copy, PartialEq, Eq, thiserror::Error)]
 pub enum SessionArtifactError {
     #[error(transparent)]

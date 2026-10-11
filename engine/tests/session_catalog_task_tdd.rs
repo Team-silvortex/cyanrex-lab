@@ -34,12 +34,18 @@ use identity_fixture::scope;
 #[path = "session_catalog_task/fixture.rs"]
 mod fixture;
 use fixture::*;
+#[path = "session_catalog_task/assessment_binding.rs"]
+mod assessment_binding;
+#[path = "session_catalog_task/composition.rs"]
+mod composition;
 #[path = "session_catalog_task/concurrency.rs"]
 mod concurrency;
 #[path = "session_catalog_task/faults.rs"]
 mod faults;
 #[path = "session_catalog_task/lifecycle.rs"]
 mod lifecycle;
+#[path = "session_catalog_task/metadata.rs"]
+mod metadata;
 
 #[tokio::test]
 async fn session_catalog_task_configuration_requires_distinct_namespaces_and_matching_scope() {

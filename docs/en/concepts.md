@@ -1,5 +1,10 @@
 # Platform and eBPF Concepts
 
+Source release **0.5.5** (**2026-10-11**) includes these follow-ups. Dated `Unreleased` labels retain
+their original implementation stage, source versions and verification scope. Source inclusion does not
+mount preparation APIs, connect browser saving, switch live authentication, migrate storage or validate
+a running deployment.
+
 Cyanrex Lab now has two vocabularies: domain-neutral collaboration concepts and the eBPF concepts
 used by its first working domain. This guide keeps them separate so that code editing, execution and
 approval are not treated as the same action. Platform contracts and explicit backend preparation exist,
@@ -43,10 +48,21 @@ when the caller is a teacher. Classroom review of teaching attempts is a separat
 
 ### Task definition and domain pack
 
-A **TaskDefinition** describes an exact package/task version, evidence schema and assessment policy.
+A **TaskDefinition** describes an exact package/task version and an explicit assessment-binding choice.
 A built-in **domain pack** supplies definitions and domain-specific rules through a typed TaskProvider.
-The shared TaskCatalog validates and looks up exact definitions; it does not assume all tasks contain
-code, require a compiler or need a Run.
+The TaskDefinitionCatalog included in source release 0.5.5 validates and looks up frozen exact metadata without
+an evaluator. Task drafts and Session catalogue admission can use it directly. The compatible typed
+TaskCatalog retains explicit provider assessment; neither layer assumes all tasks contain code,
+require a compiler or need a Run.
+
+The separate **2026-10-11 Unreleased assessment-binding follow-up**, on source 0.5.4, lets metadata
+definitions have both evidence-schema/policy pins or neither. Both JSON fields must still be present;
+explicit absence is two nulls, not missing fields or a half-bound definition. A definition without
+automatic assessment remains a catalogue definition, not a manual Task. Typed-provider catalogues
+and their `TaskAssessment` results still require both pins. Current authorization, full-definition
+equality and Task/Review/execution boundaries do not change. See [the contract and compatibility
+rules](task-domain-boundary.md); old bound JSON stays readable, but old binaries cannot read new
+double-null definitions.
 
 The eBPF teaching pack owns lab templates, source evidence and kernel-related rules. Other-domain test
 fixtures demonstrate the shared boundary, not a shipped document-review workflow. A registered
@@ -121,13 +137,16 @@ cannot be promoted into business facts just because their text describes a succe
 The controlled text editor supplies local language support to a selected payload item. Its 14 language
 profiles include richer bundled JavaScript/TypeScript, JSON, CSS and HTML workers, alongside basic
 profiles for other languages. This is not a connected rust-analyzer, Pyright or clangd server.
+The payload contract included in source release 0.5.5 accepts valid extension language hints independently of those 14
+capability profiles. An unknown hint is retained, with plain-text editing and no language tools;
+capability resolution does not change the saved language or imply another provider is installed.
 Language assistance neither runs content nor grants runtime authority. The separate eBPF editor's
 clang diagnostics and semantic services still use the authenticated teaching endpoints.
 
 ### Versions
 
 The product release number, core contract schema, storage schema, definition/policy versions and
-individual object revisions are independent. The source release is 0.4.9; the current
+individual object revisions are independent. The source version is 0.5.5; the current
 Task storage requires fresh schema 2 while its core contract schema remains 1. An old Task schema 1
 namespace is rejected, not automatically migrated. A higher product version does not upgrade a
 Task's frozen definition or move a Review to new content.

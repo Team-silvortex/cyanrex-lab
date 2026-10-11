@@ -22,7 +22,11 @@ for catalog_task_pg_case in \
   concurrency::postgres_session_catalog_tasks_reader_holds_task_lock_while_waiting_for_artifacts \
   concurrency::postgres_session_catalog_tasks_expiry_after_metadata_and_event_waits_returns_nothing \
   concurrency::postgres_session_catalog_tasks_logout_order_preserves_single_transaction_authority \
-  concurrency::postgres_session_catalog_tasks_cancelled_write_rolls_back_without_touching_inputs; do
+  concurrency::postgres_session_catalog_tasks_cancelled_write_rolls_back_without_touching_inputs \
+  metadata::postgres_session_catalog_tasks_provider_free_metadata_roundtrip_preserves_inputs_and_versions \
+  metadata::postgres_session_catalog_tasks_provider_free_metadata_drift_and_unknown_pins_never_write \
+  composition::postgres_session_catalog_tasks_composed_packages_keep_exact_versions_and_isolated_admission \
+  assessment_binding::postgres_session_catalog_tasks_unbound_assessment_metadata_roundtrips_and_binding_drift_never_writes; do
   cargo test --manifest-path engine/Cargo.toml --locked --test session_catalog_task_tdd "$catalog_task_pg_case" -- --ignored --list | grep -Fx "$catalog_task_pg_case: test"
   cargo test --manifest-path engine/Cargo.toml --locked --test session_catalog_task_tdd "$catalog_task_pg_case" -- --ignored --exact --nocapture
 done

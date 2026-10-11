@@ -5,15 +5,22 @@
 //! the live teaching application's AuthService. The integration owner must separately arrange
 //! secure same-origin transport and delivery of the dedicated durable-session cookie.
 
+mod admission;
+mod catalog_task;
 mod contract;
 mod errors;
 mod handlers;
 mod security;
+mod text_artifact;
+pub use catalog_task::{build_catalog_task_content_router, CatalogTaskContentHttpState};
+pub use text_artifact::{build_text_artifact_router, TextArtifactHttpState};
 
 use crate::services::auth_service::durable_source::{
     DurableAuthSource, SessionTaskContentWorkspace,
 };
 use axum::{middleware, routing::any, Router};
+use std::sync::Arc;
+use tokio::sync::Semaphore;
 
 /// Trusted configuration only: no request deserializer, environment reads or storage operations.
 #[derive(Clone)]
@@ -21,12 +28,15 @@ pub struct TaskContentHttpState {
     source: DurableAuthSource,
     workspace: SessionTaskContentWorkspace,
     origin: String,
+    admission: Arc<Semaphore>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, thiserror::Error)]
 pub enum TaskContentHttpConfigError {
     #[error("platform HTTP requires one canonical HTTPS or loopback HTTP origin")]
     InvalidOrigin,
+    #[error("platform HTTP capacity must be between 1 and 16")]
+    InvalidCapacity,
 }
 
 impl TaskContentHttpState {
@@ -35,11 +45,26 @@ impl TaskContentHttpState {
         workspace: SessionTaskContentWorkspace,
         origin: &str,
     ) -> Result<Self, TaskContentHttpConfigError> {
+        Self::with_capacity(source, workspace, origin, 4)
+    }
+
+    /// Trusted, bounded admission. State clones (including separately built routers) share slots.
+    /// A new state gets its own budget; this is not a global process or storage-worker quota.
+    pub fn with_capacity(
+        source: DurableAuthSource,
+        workspace: SessionTaskContentWorkspace,
+        origin: &str,
+        max_in_flight: usize,
+    ) -> Result<Self, TaskContentHttpConfigError> {
         security::validate_origin(origin)?;
+        if !(1..=16).contains(&max_in_flight) {
+            return Err(TaskContentHttpConfigError::InvalidCapacity);
+        }
         Ok(Self {
             source,
             workspace,
             origin: origin.to_owned(),
+            admission: Arc::new(Semaphore::new(max_in_flight)),
         })
     }
 }

@@ -17,7 +17,7 @@ async fn postgres_session_task_revision_replaces_exact_inputs_without_rewriting_
         &review_schema,
         scope(),
         f.artifact_workspace.clone(),
-        catalog_fixture::definition(1).assessment_policy,
+        catalog_fixture::definition(1).assessment_policy.unwrap(),
     )
     .unwrap();
     let review = f
@@ -175,8 +175,8 @@ async fn postgres_session_task_revision_catalog_zero_inputs_preserve_full_defini
         match field {
             "title" => changed.title.push_str(" changed"),
             "summary" => changed.summary.push_str(" changed"),
-            "policy" => changed.assessment_policy.version = 2.try_into().unwrap(),
-            "schema" => changed.evidence_schema.version = 2.try_into().unwrap(),
+            "policy" => changed.assessment_policy.as_mut().unwrap().version = 2.try_into().unwrap(),
+            "schema" => changed.evidence_schema.as_mut().unwrap().version = 2.try_into().unwrap(),
             _ => unreachable!(),
         }
         let mismatched = catalog_workspace(&f, vec![changed]);

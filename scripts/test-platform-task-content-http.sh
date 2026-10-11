@@ -7,6 +7,8 @@ platform_http_repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$platform_http_repo_root"
 
 for platform_http_pg_case in \
+  capacity_sql::postgres_platform_http_capacity_retains_committed_content_response_until_body_end_or_drop \
+  capacity_sql::postgres_platform_http_capacity_spans_mutation_wait_and_releases_after_cancel_or_commit \
   behavior::postgres_platform_http_create_read_preserves_exact_unicode_order_and_empty_payload \
   behavior::postgres_platform_http_replace_status_and_conflicts_return_exact_server_revisions \
   behavior::postgres_platform_http_private_ownership_and_forged_pins_never_expose_content \

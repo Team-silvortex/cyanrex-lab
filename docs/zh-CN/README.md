@@ -4,9 +4,11 @@ Cyanrex 正从 eBPF 教学应用转向面向人类、AI Agent 与计算资源的
 继续可用；通用身份、内容、任务和审阅服务属于显式配置的准备层，任务 payload 编辑器目前只保存
 本地草稿。自主 AI 与通用 Run 编排尚未实现。
 
-本索引覆盖整个项目，不只覆盖首个教学领域。源码版本为 0.5.4，新增内部草稿意图记录、日志化派发
-及独立日志/资源检查（C2-T–W），并更新 Next.js 至 15.5.27。此前 C2-O–S 准备层、AI 宿主适配与
-安全边界保持不变；源码收录不接通通用浏览器保存或恢复。
+本索引覆盖整个项目，不只覆盖首个教学领域。源码版本为 **0.5.5**（**2026-10-11**），收录无
+提供器/组合目录元数据、显式评估绑定选择、便携语言标记、目录内容及独立 C2-X/Y/Z/AA 适配和流程。
+此前 C2-T–W、Next.js 15.5.27、C2-O–S、AI 宿主适配与安全边界保持不变。源码收录不接通通用
+浏览器保存、不切换在线认证、不迁移存储，也不验收部署。分日期的未发布说明保留原实施阶段、
+源码版本与验证范围，不是新鲜的 0.5.5 执行记录。
 以下文档区分源码发布内容、现用运行能力和目标架构，
 模块存在或测试通过不表示已有在线部署。
 
@@ -17,6 +19,21 @@ Cyanrex 正从 eBPF 教学应用转向面向人类、AI Agent 与计算资源的
 不检查资源内容、不复活包装器，也不授权重试。
 [C2-W 日志步骤观察](session-task-draft-journal-observation.md)另在同一授权事务中读取一个
 已记录目标的实际内容；不含正文的比较结果不是回执或恢复协议。
+
+0.5.5 收录的 10 月 8 日 [C2-X 文本 Artifact 路由](text-artifact-http.md)另行发布文本并读取精确修订。
+它仍未挂载；调用者自行组合 Task 路由，不表示已接通浏览器保存或整份草稿事务。
+
+0.5.5 收录的独立 **[C2-Y 目录内容路由](catalog-task-content-http.md)**为另行构造的
+强类型 HTTP 适配增加准确定义选择。原手动路由仍只接纳手动任务，两者均未挂载且与发布/日志
+流程独立。本 10 月 11 日跟进不签发 Session、不执行评估，也不接浏览器保存。
+
+0.5.5 收录的独立 **[C2-Z 目录发布尝试](session-catalog-task-draft-publication.md)**
+在准备时不做 I/O，先冻结准确完整定义，每次显式推进发布一个 Artifact，或最后创建
+目录 Draft。手动 C2-P–W 类型仍独立；内存确认前缀不等于日志、恢复、HTTP 路由或浏览器保存。
+
+0.5.5 收录的独立 **[C2-AA 目录观察](session-catalog-task-draft-observation.md)**
+经当前 Session 授权读取一个未知 C2-Z 目标。它比较完整定义/文本元数据，
+不返回正文也不收编进度；匹配和不可见不证明先前提交/回滚，也不允许重试。
 
 ## 按问题选择入口
 
@@ -31,10 +48,14 @@ Cyanrex 正从 eBPF 教学应用转向面向人类、AI Agent 与计算资源的
 | 查看内部服务端内容结构与精确快照校验 | [任务内容清单](task-content-manifest.md) |
 | 查看独立内容持久化与原子编辑 | [任务内容存储](task-content-store.md) |
 | 查看同一事务内的当前会话与内容字节检查 | [会话授权任务内容](session-task-content.md) |
-| 查看显式构造且尚未挂载的 HTTP 边界 | [任务内容 HTTP 适配](task-content-http.md) |
+| 查看显式构造且尚未挂载的手动 HTTP 边界 | [任务内容 HTTP 适配](task-content-http.md) |
+| 经独立未挂载 HTTP 适配选择准确配置定义 | [目录任务内容 HTTP 适配](catalog-task-content-http.md) |
+| 经独立未挂载路由发布文本或读取精确修订 | [文本 Artifact HTTP 适配](text-artifact-http.md) |
 | 查看严格草稿导入与纯发布映射 | [任务草稿发布计划](task-draft-publication.md) |
-| 查看会话逐步发布及部分结果 | [会话授权草稿发布](session-task-draft-publication.md) |
+| 查看手动会话逐步发布及部分结果 | [会话授权草稿发布](session-task-draft-publication.md) |
+| 通过独立尝试与冻结定义发布目录草稿 | [会话授权目录草稿发布](session-catalog-task-draft-publication.md) |
 | 观察未知步骤的目标而不恢复尝试 | [草稿目标只读观察](session-task-draft-observation.md) |
+| 按冻结完整定义观察目录尝试目标 | [目录草稿目标只读观察](session-catalog-task-draft-observation.md) |
 | 导出报告进度为数据而不复活尝试 | [草稿元数据检查点](session-task-draft-checkpoint.md) |
 | 另行提供当前权限检查一个检查点目标 | [检查点目标显式检查](session-task-draft-inspection.md) |
 | 登记和读取不可变意图而不执行发布 | [会话草稿意图记录](session-task-draft-intent.md) |

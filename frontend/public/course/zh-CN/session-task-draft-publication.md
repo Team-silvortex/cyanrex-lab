@@ -5,6 +5,12 @@
 中的文本项，再经 [C2-M](session-task-content.md) 创建私人手工 Draft。调用者每次显式推进一步。
 它不是整份草稿事务、公共上传路由、浏览器保存适配器或在线认证切换。
 
+源码 0.5.4 上独立的 **2026-10-11 未发布 [C2-Z 目录流程](session-catalog-task-draft-publication.md)**
+使用另一个不透明尝试及强类型目录工作区，不属于已发布标签。本 C2-P 方法及最终
+`definition == None` 确认仍仅支持手动任务；新尝试不进入旧 C2-Q–W 观察/检查点/日志 API，
+也不能转换为本类型。只共享两项纯 Artifact 回执/清单检查，不因此获得 HTTP、整份草稿原子性、
+自动重试、恢复或浏览器保存；下方历史 C2-P 证据保持原限定范围。
+
 ## 准备与归属
 
 `DurableAuthSource::prepare_task_draft_publication(token, workspace, plan)` 返回不透明的

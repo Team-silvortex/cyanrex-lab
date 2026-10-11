@@ -1,4 +1,4 @@
-import { getEditorLanguage } from "../editor/languages";
+import { isTaskPayloadLanguage } from "./taskPayloadLanguage";
 
 export const MAX_TASK_PAYLOAD_ITEMS = 32;
 export const MAX_TASK_DRAFT_BYTES = 8 * 1024 * 1024;
@@ -64,7 +64,7 @@ function text(value: unknown, maxBytes: number, multiline = false): string {
 function validateItem(value: unknown): TextPayloadItem {
   const source = record(value, itemKeys);
   const id = localId(source.id), version = revision(source.revision);
-  if (source.kind !== "text" || typeof source.language !== "string" || !getEditorLanguage(source.language)) return fail();
+  if (source.kind !== "text" || !isTaskPayloadLanguage(source.language)) return fail();
   if (typeof source.filename !== "string" || source.filename.length < 1 || source.filename.length > 128
     || source.filename === "." || source.filename === ".." || /[/\\]/.test(source.filename)) return fail();
   const filename = text(source.filename, 128 * 4);

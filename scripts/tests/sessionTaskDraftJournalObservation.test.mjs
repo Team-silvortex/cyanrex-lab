@@ -57,7 +57,8 @@ test("journal step observation retains the first full journal snapshot across on
   assert.match(capture, /let relations = self\.check_schema\(tx\)\.await\?[\s\S]*require_dispatch[\s\S]*read_in_transaction[\s\S]*dispatch::read_steps[\s\S]*verify_records\(tx, &record, last, &relations, &steps\)[\s\S]*JournalReadSnapshot\s*\{\s*record,\s*steps,\s*relations,/);
   const content = codeOnly(await read(`${base}task_commands/content.rs`));
   const helper = content.slice(content.indexOf("async fn read_content_task_in_transaction("), content.indexOf("async fn execute_content_task("));
-  assert.match(helper, /execute_content_task\(tx, context, workspace, id, ContentOperation::Read\)/);
+  assert.match(helper, /execute_content_task\(tx, context, workspace, id, ContentOperation::Read, None\)/,
+    "borrowed journal reads must retain the explicit manual-only content mode");
   assert.doesNotMatch(helper, /\.commit\(|begin_private_work|\.transaction\(|\.finish\(/);
   for (const path of ["mod.rs", "dispatch.rs"]) {
     const original = codeOnly(await read(`${base}draft_publication/${path}`));

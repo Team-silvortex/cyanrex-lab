@@ -59,14 +59,14 @@ fn snapshot() -> TaskSnapshot {
             },
             title: "Document".into(),
             summary: "A frozen definition".into(),
-            evidence_schema: VersionedName {
+            evidence_schema: Some(VersionedName {
                 name: "local.documents.content".parse().unwrap(),
                 version: revision(1),
-            },
-            assessment_policy: VersionedName {
+            }),
+            assessment_policy: Some(VersionedName {
                 name: "local.documents.check".parse().unwrap(),
                 version: revision(1),
-            },
+            }),
         }),
         input_refs: vec![input(6)],
         status: TaskStatus::Draft,

@@ -1,5 +1,10 @@
 # ADR-021 Session authorized catalogue tasks
 
+Source release **0.5.5** (**2026-10-11**) includes these follow-ups. Dated `Unreleased` labels retain
+their original implementation stage, source versions and verification scope. Source inclusion does not
+mount preparation APIs, connect browser saving, switch live authentication, migrate storage or validate
+a running deployment.
+
 Status: **C2-I included in source release 0.4.9**. Decision date: **2026-10-03**.
 
 This slice joins the [versioned task catalogue](task-domain-boundary.md) to current-Session private
@@ -8,18 +13,40 @@ with zero to 32 owned Artifact inputs. It reuses the [Task input transaction](se
 without adding teaching-specific task kinds, a required Run, rule execution or Task acceptance.
 Source release 0.4.9 leaves existing teaching data, public APIs and live authentication unchanged.
 
+The **2026-10-08 Unreleased follow-up** on source version 0.5.4 adds provider-free metadata
+configuration. It changes no authorization transaction, storage schema, route or public API.
+
 ## Trusted definition configuration
 
-The Unix-only `SessionCatalogTaskWorkspace::new(tasks, artifacts, catalog)` takes trusted server
-configuration. Task and Artifact handles must have distinct namespaces and the same authority and
-Workspace. Commands use the source connection to access those already initialized namespaces in
+The Unix-only `SessionCatalogTaskWorkspace::from_definitions(tasks, artifacts, definitions)` takes a
+trusted `TaskDefinitionCatalog`. The compatible `new(tasks, artifacts, catalog)` delegates through
+`TaskCatalog<P>::definition_catalog()`. Task and Artifact handles must have distinct namespaces and
+the same authority and Workspace. Commands use the source connection to access those already initialized namespaces in
 the same database. No installer, migration, filesystem repair or second transaction is invoked.
 
-The handle copies the immutable `TaskCatalog` definition list into private shared storage. It does
-not retain the provider or its evidence type, call `assess`, discover packages or execute domain code
-during authorization. It can outlive the catalogue/provider used to configure it. The catalogue's
-existing 1–256 definition bound applies; clients cannot deserialize or replace the handle's fields.
-The copied entries form this handle's explicit definition allowlist, not a dynamic policy registry.
+The handle clones the non-generic metadata catalogue, sharing its frozen `Arc` snapshot. No provider
+or evidence type need be constructed or retained; authorization calls no `assess`, package discovery
+or domain code. It can outlive the original handle or an optional provider. Single-package registration
+and name/display limits remain explicit; clients cannot deserialize or replace the
+handle's fields. These entries are an explicit definition allowlist, not a dynamic policy registry.
+
+The **2026-10-11 Unreleased follow-up**, on source 0.5.4, also accepts a metadata handle produced by
+`TaskDefinitionCatalog::compose`. Trusted configuration can combine independent packages, exact
+package/task versions and disjoint same-package registrations before constructing this workspace.
+Both input handles and flattened definitions are limited to 1–256; nested composition has the same
+global definition limit. Complete-reference overlap is rejected, even for identical metadata, and
+the saved order is retained. No new workspace type, provider, registry or authorization branch is
+needed; the existing commands below keep their exact-definition checks and schema 2 transaction.
+
+The separate **2026-10-11 Unreleased assessment-binding follow-up**, on source 0.5.4, admits
+definitions with both schema/policy pins or explicit absence of both. The same frozen allowlist can
+contain both forms. An unbound entry still creates a catalogue Task with `Some(TaskDefinition)`,
+not a manual Task, and no assessment or Review is invented. The complete saved definition includes
+this paired choice: adding or removing bindings under the same exact reference returns
+`DefinitionMismatch`, while missing entries retain `UnknownDefinition`. Input checks, current
+ownership and authorization stay identical. Existing bound records need no migration; new
+double-null definitions require the new reader, not an old binary or an implicit downgrade path.
+See [assessment-binding compatibility](task-domain-boundary.md).
 
 A command chooses only an exact package name/version and definition name/version from this allowlist.
 It cannot supply arbitrary definition metadata, evidence schema or policy. Creation copies the whole
@@ -60,6 +87,24 @@ pin the Artifact namespace and verify/lock its schema metadata and scope, both b
 writes. Empty input is not permission to accept missing, replaced or wrong-scope storage. No content
 file is read for that case; construction still requires an existing private Artifact root.
 
+## Separate catalogue content composition
+
+The **2026-10-08 follow-up, source 0.5.4, Unreleased** adds
+[`SessionCatalogTaskContentWorkspace`](session-task-content.md) for catalogue Tasks with titles,
+filename/language labels and ordered text references. It takes the same metadata-only catalogue, but
+uses the existing **schema 3 content store**, not this schema 2 generic-input adapter. Its four
+`*_session_catalog_content_task` commands share the existing content authorization executor: each
+text item is at most 256 KiB and must satisfy the UTF-8/control-character contract, with old/new bytes
+checked around a mutation. It does not convert these texts into domain Evidence or execute pinned
+schema/policy rules.
+
+This page's commands and generic-input limits remain unchanged. The new content handle cannot be
+passed to manual content, HTTP or draft-publication entry points. Catalogue content creation rejects
+unknown references as `UnknownDefinition`; an owner-visible saved definition that is missing or no
+longer exactly configured is `InvalidRecord`, the content store's record-consistency error. This is
+separate from the `UnknownDefinition`/`DefinitionMismatch` contract of the schema 2 commands above.
+No format upgrade, public route, browser saving or automatic conversion is added.
+
 ## Shared authorization transaction
 
 Catalogue and manual-input tasks use the same source-owned transaction executor, selected through a
@@ -83,10 +128,20 @@ matching metadata is not proof that a stored Task was originally created through
 
 ## Verification and remaining work
 
-Three default tests and sixteen explicit PostgreSQL cases cover a non-teaching provider,
+The original C2-I inventory has three default tests and sixteen explicit PostgreSQL cases for a non-teaching provider,
 provider lifetime independence, exact versions, same-pin metadata drift, zero-input metadata checks,
 ordered private inputs, strict manual boundaries,
 lifecycle revocation, revision races, write/namespace faults, lock waits, expiry/logout and cancellation.
+The metadata-only follow-up adds two constructor cases, bringing that explicit SQL inventory to
+eighteen; these check exact definitions/private inputs and refusal of drift or unknown pins without
+an evaluator. Inventory is not a claim that an earlier run covered the new cases.
+The 2026-10-11 multi-package follow-up adds `session_catalog_task/composition.rs`, bringing the current
+exact runner inventory to nineteen. It checks composed admission, retained definitions, private inputs
+and refusal of missing or changed configuration through the existing command family.
+The separate assessment-binding case in `session_catalog_task/assessment_binding.rs` brings the
+current exact inventory to twenty, covering a mixed allowlist, explicit unbound Tasks, unchanged
+private inputs and rejected binding drift in both directions. These are source counts, not new
+execution evidence.
 The explicit `scripts/test-session-catalog-tasks.sh` CI runner checks each selected case exists
 before execution on disposable PostgreSQL.
 Actual results and checks not rerun are recorded in [project status](project-status.md), separately from

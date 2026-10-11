@@ -37,14 +37,28 @@ pub(crate) fn validate_text_payload_content(
             "Task content must match its exact revision and owner",
         ));
     }
-    if content.bytes.len() > MAX_TEXT_PAYLOAD_BYTES
-        || content.revision.byte_length != content.bytes.len() as u64
-    {
+    if content.revision.byte_length != content.bytes.len() as u64 {
         return Err(ContractError(
             "Task text content has an invalid byte length",
         ));
     }
-    let text = std::str::from_utf8(&content.bytes)
+    validate_text_bytes(&content.bytes)?;
+    if format!("{:x}", Sha256::digest(&content.bytes)) != item.artifact().sha256.as_str() {
+        return Err(ContractError(
+            "Task text content does not match its pinned digest",
+        ));
+    }
+    Ok(())
+}
+
+/// Pure text profile only: no fabricated binding, ownership, publication or authorization claim.
+pub(crate) fn validate_text_bytes(bytes: &[u8]) -> Result<(), ContractError> {
+    if bytes.len() > MAX_TEXT_PAYLOAD_BYTES {
+        return Err(ContractError(
+            "Task text content has an invalid byte length",
+        ));
+    }
+    let text = std::str::from_utf8(bytes)
         .map_err(|_| ContractError("Task text content must be valid UTF-8"))?;
     if text
         .chars()
@@ -52,11 +66,6 @@ pub(crate) fn validate_text_payload_content(
     {
         return Err(ContractError(
             "Task text content contains a forbidden control character",
-        ));
-    }
-    if format!("{:x}", Sha256::digest(&content.bytes)) != item.artifact().sha256.as_str() {
-        return Err(ContractError(
-            "Task text content does not match its pinned digest",
         ));
     }
     Ok(())
