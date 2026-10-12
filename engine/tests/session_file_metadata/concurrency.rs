@@ -81,14 +81,22 @@ async fn postgres_session_upload_concurrent_quota_reservations_use_fresh_source_
     let mut early_b = None;
     let queued = tokio::select! {r=&mut a=>{early_a=Some(r);false},r=&mut b=>{early_b=Some(r);false},value=chain(&f,pid)=>value};
     holder.rollback().await.unwrap();
-    let ra = match early_a {
-        Some(r) => r,
-        None => a.as_mut().await,
-    };
-    let rb = match early_b {
-        Some(r) => r,
-        None => b.as_mut().await,
-    };
+    // Keep both callers polled: either may hold the shared authority lock and need
+    // client-side progress to commit. Sequential await can starve the actual winner.
+    let (ra, rb) = tokio::join!(
+        async {
+            match early_a {
+                Some(r) => r,
+                None => a.as_mut().await,
+            }
+        },
+        async {
+            match early_b {
+                Some(r) => r,
+                None => b.as_mut().await,
+            }
+        },
+    );
     drop(a);
     drop(b);
     let after = snapshot(&f).await;

@@ -1,6 +1,6 @@
 # System Architecture
 
-Source release **0.5.6** (**2026-10-11**) includes these follow-ups. Dated `Unreleased` labels retain
+Source release **0.5.7** (**2026-10-12**) includes these follow-ups. Dated `Unreleased` labels retain
 their original implementation stage, source versions and verification scope. Source inclusion does not
 mount preparation APIs, connect browser saving, switch live authentication, migrate storage or validate
 a running deployment.
@@ -580,6 +580,74 @@ state and bounded validity. They neither authenticate supplied grants nor connec
 publisher and recipient revocation are independent. Physical disk allocation, durable audited file
 permissions and an unprivileged central data plane remain separate;
 desktop pairing follows central distribution. This module is not composed into `AppState` or routes.
+
+The separate [Unreleased publisher-grant ledger](large-file-publisher-grants.md), outside the 0.5.6
+tag, pins a fresh namespace, immutable trusted issuer/subject and bounded revision history. Its own
+Session metadata reader derives the current account, fences grant writes through final source
+authorization and returns only after commit. It does not authenticate grant management or consume
+permission for publication; an explicit future `ManageFileGrants` boundary remains separate from
+teacher status, workspace role labels and deployment management. Recipient grants and bytes are not wired.
+
+The later [Session management adapter](large-file-grant-management.md) supplies that separate
+host-configured `ManageFileGrants` boundary, not a new Registry policy. It binds one exact manager
+and account generation, derives issue/revoke actors from current audited membership and rechecks
+issuance targets through original source pins. Borrowed mutations, deferred flush, full ledger checks
+and final fresh Session authorization share one source transaction. Old config clones remain effective
+until drained/destroyed; durable online manager revocation remains absent from that management adapter.
+
+Separate [Session file publication](large-file-session-publication.md) consumes a current publisher grant
+for an opaque trusted attempt. Initial exact audited actor/grant admission releases all SQL before real
+bytes; original source/Registry/grant pins survive the gap. A fresh source transaction reacquires original
+grant/upload/journal fences and shares the insert with deferred/full-ledger/final actor and fresh expiry
+checks. Only its commit acknowledgement enters the existing original post-acknowledgement checks.
+The old trusted publisher remains separate; recipients, transport, recovery and live mounting are absent.
+
+The later [recipient ledger](large-file-recipient-grants.md) independently records exact file versions
+and issuer/publisher/recipient account generations. Its borrowed own-recipient reader holds original
+pins and a three-table history fence through final source authorization and commit. Revoking publisher
+permission does not cascade; authenticated recipient management and download admission remain separate.
+
+The October 12 [publisher-owned sharing](large-file-sharing.md) adapter adds the management consumer:
+current exact publisher permission plus an own trusted Published version and active recipient are
+rechecked with the new recipient write in one source transaction. Original publishers can stop old
+shares without current publishing permission, under the original write fence. It does no byte IO,
+global-manager delegation, download admission or live mounting.
+
+The separate [recipient download-manifest observation](large-file-download-manifest.md) connects an
+own current recipient grant to an exact Published version selected under the recorded publisher/account.
+SQL file/version predicates filter foreign publication bodies before decoding; original records and
+fresh recipient/Session validity share one source commit. The returned manifest is private metadata,
+not cached byte authority; no file work, publisher permission/lifecycle check or transport is added.
+
+The separate [verified chunk reader](large-file-chunk-read.md) first confirms current exact recipient
+eligibility and original Published/root bindings, then releases all SQL locks for private file work.
+After exact bounded length/EOF/chunk-digest and original file/root checks, it reenters the same original
+Session/source/Registry and metadata observations in a fresh transaction before disclosure. Worker
+and response budgets cover actual work and returned bytes; no transport or fresh whole digest is added.
+
+The independent [binary chunk HTTP adapter](large-file-chunk-http.md) connects a strict exact-version
+GET to that one source command. Dedicated cookie/marker/origin and empty-body admission precede SQL.
+Successful `Bytes::from_owner` retains both HTTP and source response permits through data clones/slices;
+a ten-second first-poll window prevents late frame disclosure without a background timer. It performs
+no later IO or authorization, and is not mounted into the normal app or connected to client saving.
+
+The separate [HTTP chunk receiver](large-file-chunk-receiver.md) validates a supplied response's
+exact head, bounded frames, real EOF and chunk digest before reusing exclusive `ChunkStaging`.
+Its private reader transfers buffer/control ownership into the actual queued/running save job,
+including waiter cancellation. Opaque success metadata acknowledges only that local call; no active
+network request, remote receipt, whole-file assembly/resumption or runtime mounting is added.
+
+The explicit [single-chunk client](large-file-chunk-client.md) now composes fixed trusted HTTPS or
+literal-loopback HTTP, per-call native Session cookie, bounded header waiting and the same receiver.
+Retry/redirect/proxy/decode are disabled; a private extra request permit enters the real save job.
+Default certificate/SAN checks remain enabled, with optional bounded trusted-host public CA roots.
+This does not mount a listener, issue Sessions, fetch manifests, assemble whole files or resume work.
+
+The separate [private assembler](large-file-chunk-assembly.md) reads only existing legacy `v1` chunks
+and creates an exclusive `f1` file in the same original private root. Preverification, checked copy,
+original-inode readback and final original input/root checks include the actual whole digest. Its
+single job shares staging admission through cancellation; move-only metadata grants no recovery,
+network scheduling, user-selected destination, publication or runtime mounting. Source `u1` stays separate.
 
 ## 5. Main Data Flows
 

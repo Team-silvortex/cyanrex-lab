@@ -57,4 +57,24 @@ impl NamespacePin {
         }
         Ok(())
     }
+
+    // Borrowed work selects canonical quoted identifiers; never accept extra search paths or
+    // substitute another namespace with matching records/configuration.
+    pub(super) fn matches_selected(&self, current: &Self) -> bool {
+        self.name == current.name
+            && self.oid == current.oid
+            && (current.search_path == current.name
+                || current.search_path == format!("\"{}\"", current.name))
+    }
+
+    pub(super) async fn verify_selected(
+        &self,
+        store: &FileUploadPublicationStore,
+        tx: &mut Tx<'_>,
+    ) -> Result<()> {
+        if !self.matches_selected(&Self::capture(store, tx).await?) {
+            return Err(FileUploadPublicationStoreError::UnsupportedSchema);
+        }
+        Ok(())
+    }
 }

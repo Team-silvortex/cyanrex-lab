@@ -31,15 +31,27 @@ test("large-file core is independently exported without widening existing Artifa
 
 test("large-file streaming preparation has no persistent publication authority or live composition", async () => {
   for (const [path, source] of await sources("engine/src/services/file_transfer")) {
-    if (["engine/src/services/file_transfer/staging/queued_tests.rs", "engine/src/services/file_transfer/staging/whole_tests.rs"].includes(path)) continue;
+    if (["engine/src/services/file_transfer/staging/queued_tests.rs", "engine/src/services/file_transfer/staging/whole_tests.rs", "engine/src/services/file_transfer/staging/read_tests.rs", "engine/src/services/file_transfer/staging/assembly_tests.rs", "engine/src/services/file_transfer/staging/assembly_test_support.rs"].includes(path)) continue;
     const production = codeOnly(source.replace(/#\[cfg\(test\)\]\s*mod queued_tests;/g, ""))
       .split("#[cfg(test)]")[0];
     assert.doesNotMatch(production, /sqlx|PgPool|AuthService|ArtifactStore|TaskStore|reqwest|std::(?:net|process|env)|install_empty|\.transaction\(/, path);
-    if (!["engine/src/services/file_transfer/staging/work.rs", "engine/src/services/file_transfer/staging/work_bound.rs", "engine/src/services/file_transfer/staging/work_whole.rs"].includes(path)) {
+    if (!["engine/src/services/file_transfer/staging/work.rs", "engine/src/services/file_transfer/staging/work_bound.rs", "engine/src/services/file_transfer/staging/work_whole.rs", "engine/src/services/file_transfer/staging/work_read.rs", "engine/src/services/file_transfer/staging/work_assemble.rs"].includes(path)) {
       assert.doesNotMatch(production, /spawn_blocking/, path);
     }
     if (path.includes("/staging/")) {
-      assert.doesNotMatch(production, /remove_file|remove_dir|read_to_end|serde_json::to_vec|Vec<u8>/, path);
+      assert.doesNotMatch(production, /remove_file|remove_dir|read_to_end|serde_json::to_vec/, path);
+      if (path === "engine/src/services/file_transfer/staging/read.rs") {
+        // Only the move-only checked reader may buffer bytes, privately and under a retained
+        // response lease. Stream/stage/receipt/whole-observation paths still cannot buffer them.
+        assert.match(production, /bytes: Vec<u8>/);
+        assert.match(production, /_lease: OwnedSemaphorePermit/);
+        assert.match(production, /fn bytes\(&self\) -> &\[u8\]/);
+        assert.ok(production.indexOf("Snapshot::private") < production.indexOf("bytes.try_reserve_exact(length)"));
+        assert.ok(production.indexOf("bytes.try_reserve_exact(length)") < production.indexOf("copy_chunk_checked"));
+        assert.doesNotMatch(production, /pub fn|into_vec|derive\([^)]*Clone|Serialize|Deserialize/);
+      } else {
+        assert.doesNotMatch(production, /Vec<u8>/, path);
+      }
     }
   }
   for (const path of ["engine/src/main.rs", "engine/src/state.rs", "engine/src/application.rs", "engine/openapi/openapi.json"]) {

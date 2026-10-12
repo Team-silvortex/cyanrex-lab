@@ -10,6 +10,7 @@ use crate::services::{
         PublicationCoordinate, PublicationSchemaPin,
     },
 };
+mod phase;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FileUploadPublicationState {
@@ -193,98 +194,8 @@ impl FileUploadPublisher {
         &self,
         attempt: &mut FileUploadPublicationAttempt,
     ) -> Result<FileUploadPublicationReceipt, FileUploadPublicationError> {
-        if !Arc::ptr_eq(&self.inner, &attempt.issuer)
-            || attempt.state != FileUploadPublicationState::Ready
-        {
-            return Err(FileUploadPublicationError::InvalidInput);
-        }
-        let _permit = self
-            .inner
-            .local
-            .admit()
-            .map_err(|_| FileUploadPublicationError::CapacityExhausted)?;
-        // Issuer/capacity rejection does not burn Ready; every admitted outcome is terminal.
-        attempt.state = FileUploadPublicationState::Unknown;
-        self.inner
-            .local
-            .inner
-            .store
-            .verify_pin(&attempt.source)
-            .await
-            .map_err(FileUploadPublicationError::Store)?;
-        self.inner
-            .journal
-            .verify_confirmed_file(&attempt.source, attempt.key, &attempt.journal)
-            .await
-            .map_err(FileUploadPublicationError::Journal)?;
-        // A public metadata-only observation is never accepted in place of this fresh byte scan.
-        let proof = self
-            .inner
-            .local
-            .inner
-            .staging
-            .observe_bound_file(attempt.key, attempt.manifest())
-            .await
-            .map_err(initial_filesystem_error)?;
-        self.inner
-            .local
-            .inner
-            .store
-            .verify_pin(&attempt.source)
-            .await
-            .map_err(|_| FileUploadPublicationError::Unconfirmed)?;
-        self.inner
-            .journal
-            .verify_confirmed_file(&attempt.source, attempt.key, &attempt.journal)
-            .await
-            .map_err(|_| FileUploadPublicationError::Unconfirmed)?;
-        // Preserve the same original snapshots across the publication transaction and its waits.
-        let proof = self
-            .inner
-            .local
-            .inner
-            .staging
-            .recheck_bound_file_retained(attempt.key, attempt.manifest(), proof)
-            .await
-            .map_err(|_| FileUploadPublicationError::Unconfirmed)?;
-        // Use the original prepared schema; do not open an extra publication capture transaction.
-        let acknowledgement = self
-            .inner
-            .publications
-            .publish(&attempt.publication, &attempt.coordinate)
-            .await
-            .map_err(publication_error)?;
-        self.inner
-            .local
-            .inner
-            .store
-            .verify_pin(&attempt.source)
-            .await
-            .map_err(|_| FileUploadPublicationError::Unconfirmed)?;
-        self.inner
-            .journal
-            .verify_confirmed_file(&attempt.source, attempt.key, &attempt.journal)
-            .await
-            .map_err(|_| FileUploadPublicationError::Unconfirmed)?;
-        self.inner
-            .publications
-            .verify_ack(&acknowledgement)
-            .await
-            .map_err(|_| FileUploadPublicationError::Unconfirmed)?;
-        self.inner
-            .local
-            .inner
-            .staging
-            .recheck_bound_file(attempt.key, attempt.manifest(), proof)
-            .await
-            .map_err(|_| FileUploadPublicationError::Unconfirmed)?;
-        // No awaited operation follows the last original-object check. Metadata lookup cannot
-        // manufacture this receipt, and later errors never downgrade an acknowledged publication.
-        let receipt = FileUploadPublicationReceipt {
-            record: acknowledgement.record().clone(),
-        };
-        attempt.state = FileUploadPublicationState::Confirmed;
-        Ok(receipt)
+        let run = self.start(attempt)?;
+        self.publish_trusted(run).await
     }
 }
 

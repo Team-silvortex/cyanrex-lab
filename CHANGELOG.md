@@ -5,6 +5,86 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.5.7] - 2026-10-12
+
+This patch extends centralized file-distribution preparation with independent publisher/recipient
+grant ledgers, current-Session management/publication/sharing and exact recipient manifest/byte reads.
+An unmounted binary HTTP adapter, supplied-response receiver, controlled native single-chunk client
+and private whole-file assembly connect explicit internal steps. Budgets survive actual queued/running
+work; uncertain outcomes retain evidence without adoption, cleanup or automatic retry.
+These source changes do not mount the normal application, issue platform Sessions, migrate live data,
+or implement multi-chunk network scheduling, user-selected final saving, resume or desktop pairing.
+Dated implementation records retain their original 0.5.6/Unreleased scope; this is a source release,
+not acceptance of a running deployment.
+
+### Added
+
+- Add trusted Unix whole-file assembly from existing legacy private chunks, with fixed manifest-bound
+  output, preverification, checked copying, actual original-inode readback and final input/root checks.
+  Existing targets conflict; uncertain output is retained without adoption, deletion or retry.
+  One staging job retains shared admission through queued/running cancellation. No user-selected
+  save path, network orchestration, resume, publication, live API/SDK/UI or migration is added.
+- Add an explicit Unix single-chunk HTTP client with canonical HTTPS or opt-in literal loopback,
+  normal certificate/SAN checks and bounded trusted CA configuration. Freeze the target and typed
+  selectors, use per-call sensitive Session cookies, disable retry/redirect/proxy/decompression,
+  and separate header waiting from receiver body deadlines. Request capacity follows verified
+  bytes into actual save work through cancellation. No runtime mounting, whole-file save or resume.
+- Add a separate Unix receiver for supplied exact binary HTTP responses. Validate singleton
+  headers, bounded data, explicit EOF and selected SHA-256 before existing exclusive private
+  staging. Shared fail-fast controls and idle/total deadlines cover collection; the real queued
+  or running save job owns the verified buffer/control through waiter cancellation. Opaque metadata
+  acknowledges only this call's stage success, not a remote receipt, whole-file save or resumption.
+  No active request, credentials, listener, live API/SDK/UI, migration or automatic cleanup is added.
+- Add an independently constructed, unmounted exact-version binary chunk GET adapter over the
+  existing current-recipient source command. Strict private cookie/origin/query/empty-body gates
+  precede SQL; fixed headers expose only server-selected version metadata. A zero-copy Bytes owner
+  retains both local budgets through data clones/slices, with a ten-second first-frame window and
+  no detached timer or poll-time authorization. No listener, live API/SDK/UI, client saving,
+  delivery receipt, resumption or whole-file rehash is added.
+- Add a current-Session verified single-chunk read with exact independent recipient authority,
+  original Published source/root binding, private bounded length/EOF/SHA-256 verification and a
+  lock-free file phase between two original-pinned source transactions. Worker and response budgets
+  survive cancellation; returned move-only bytes retain response capacity until drop. The final
+  same-clock Session/grant check precedes commit and disclosure, with no later file work. This is a
+  read-time chunk snapshot, not a fresh whole-file digest, durable receipt, transport or client save.
+- Add current-recipient exact Published download-manifest observation in one source transaction.
+  Require an independent Active recipient grant, exact publisher/account and full version match,
+  original row/history pins and a final shared Session/grant clock sample before commit.
+  Filter ungranted publication coordinates before decoding. Returned metadata is not a reusable
+  byte permit; no byte command, transport, public mounting or publisher-role delegation is added.
+- Add current publisher-owned recipient issuance for an exact trusted Published version and active
+  publisher permission, with current recipient checks and final fresh permission/source commit.
+  Original publishers may revoke old shares without an active publisher grant or recipient lifecycle.
+  All original records and bounded ledger deltas are verified after deferred work; trusted store
+  APIs stay independent. No teacher-wide delegation, downloads, bytes, transport or live mounting.
+- Add a separate trusted exact-file recipient-grant ledger with independent issuer, publisher and
+  recipient account generations, immutable bindings, CAS revocation and bounded complete history.
+  Current-Session own-recipient reads retain original pins and selected history through final source
+  authorization and commit. Publisher revocation does not cascade. No authenticated recipient
+  management, download permission consumption, bytes, transport or live mounting is added.
+- Add explicit current-Session file publication over an opaque trusted attempt: exact audited actor
+  and active publisher grant, lock-free real-byte verification, original source/Registry/grant pins
+  across the gap, and a shared source transaction for insert, deferred checks and final fresh expiry.
+  Post-acknowledgement original checks and terminal Unknown remain; no recipient, transport, live
+  mounting, retry, cleanup or recovery is added. The old trusted publisher remains separate.
+- Add separate current-Session publisher-grant issue/revoke commands with explicit trusted-host
+  manager/account-generation configuration, derived actor attribution, target lifecycle checks,
+  original source/ledger pins, deferred-flush verification and one acknowledged source transaction.
+  No implicit teacher/deployment grant, durable online manager revocation, publication permission
+  consumption, recipient access, bytes or live mounting is added.
+- Add a separate trusted publisher-grant ledger with immutable issuer/account-generation bindings,
+  revision-fenced revocation and bounded audit history. Current-Session reads derive the exact subject
+  from audited identity and retain original records through final authorization and commit. This
+  metadata preparation does not authenticate grant managers, consume publishing permission, grant
+  recipients, access bytes, mount transport or migrate existing data; teacher/deployment authority
+  does not imply file permission.
+
+### Fixed
+
+- Poll both queued Session upload-reservation test callers concurrently after releasing their
+  real database barrier; sequentially awaiting them could starve the lock-owning caller and cause
+  a fixture-induced timeout. Preserve exact winner/quota and unchanged-record checks.
+
 ## [0.5.6] - 2026-10-11
 
 This patch includes owner-private task metadata indexing and its separate unmounted HTTP adapter,
@@ -1052,7 +1132,8 @@ cross-user collaboration. The frozen public API compatibility baseline remains 0
 The canonical package metadata advanced directly from `0.2.9` to `0.3.1`. Version `0.3.0` identifies
 the frozen API compatibility snapshot only; it was not a package release and must not be tagged.
 
-[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.6...HEAD
+[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.7...HEAD
+[0.5.7]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.6...v0.5.7
 [0.5.6]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.5...v0.5.6
 [0.5.5]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.4...v0.5.5
 [0.5.4]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.3...v0.5.4

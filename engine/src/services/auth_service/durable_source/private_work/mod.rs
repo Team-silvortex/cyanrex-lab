@@ -10,6 +10,9 @@ use crate::{
         CollaborationIdentityStore as Registry, IdentityStoreError,
     },
 };
+mod subjects;
+#[cfg(unix)]
+mod timed;
 
 pub(super) enum PrivateWorkError {
     Session(SessionCommandError),
@@ -151,6 +154,28 @@ impl PrivateWorkContext {
         source: &DurableAuthSource,
         tx: &mut Transaction<'_, Postgres>,
     ) -> WorkResult<()> {
+        self.finish_retained(source, tx).await
+    }
+
+    /// Same checks as finish, but retains the opaque original pins for a separate file-work gap.
+    /// This observation grants no later command authority; resume and finalization must recheck it.
+    pub(super) async fn finish_retained(
+        &self,
+        source: &DurableAuthSource,
+        tx: &mut Transaction<'_, Postgres>,
+    ) -> WorkResult<()> {
+        self.check_authority(source, tx).await?;
+        source
+            .recheck_command_session(tx, &self.digest, &self.session)
+            .await?;
+        Ok(())
+    }
+
+    async fn check_authority(
+        &self,
+        source: &DurableAuthSource,
+        tx: &mut Transaction<'_, Postgres>,
+    ) -> WorkResult<()> {
         self.targets[self.selected].verify(tx).await?;
         for target in &self.targets {
             NamespacePin::select(tx, &target.name).await?;
@@ -171,10 +196,6 @@ impl PrivateWorkContext {
         if current != self.owner {
             return Err(SessionCommandError::InvalidSession.into());
         }
-        // Fresh database time AFTER all resource/file/registry waits; last check before commit.
-        source
-            .recheck_command_session(tx, &self.digest, &self.session)
-            .await?;
         Ok(())
     }
 }

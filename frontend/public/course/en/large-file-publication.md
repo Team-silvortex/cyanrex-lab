@@ -106,6 +106,11 @@ browser saving, deployment and desktop pairing are unchanged. Reviewed receipt-l
 reconciliation, physical disk policy, current publisher/recipient authorization, central transport
 and safe client delivery remain required before centralized distribution is usable.
 
+Later [Session publication](large-file-session-publication.md) independently joins the real publisher
+phases to current actor/grant checks and one final authorized source insert. No SQL lock spans file
+work; the trusted API remains separate and both retain the same original post-ACK checks.
+This later evidence neither rewrites the record below nor enables recipients, transport or recovery.
+
 ## Recorded execution · 2026-10-11
 
 Two compiled baselines actually ran against a private disposable PostgreSQL 16 database. The

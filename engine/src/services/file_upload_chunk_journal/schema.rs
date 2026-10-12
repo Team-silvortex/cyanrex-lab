@@ -58,6 +58,27 @@ impl JournalSchemaPin {
         }
         Ok(())
     }
+
+    /// Canonical target spelling is allowed only for borrowed work; physical identity and the
+    /// entire original schema/configuration remain pinned rather than recaptured or adopted.
+    pub(super) async fn verify_selected(
+        &self,
+        journal: &FileUploadChunkJournal,
+        tx: &mut Tx<'_>,
+        writer: bool,
+    ) -> Result<()> {
+        self.namespace.verify_selected(journal, tx).await?;
+        let current = journal.check_schema(tx, writer).await?;
+        if !self.namespace.matches_selected(&current.namespace)
+            || current.relations != self.relations
+            || current.scope != self.scope
+            || current.installation_id != self.installation_id
+            || current.max_entries != self.max_entries
+        {
+            return Err(FileUploadChunkJournalError::UnsupportedSchema);
+        }
+        Ok(())
+    }
 }
 
 impl FileUploadChunkJournal {

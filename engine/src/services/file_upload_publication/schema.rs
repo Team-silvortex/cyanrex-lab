@@ -34,6 +34,27 @@ impl PublicationSchemaPin {
         }
         Ok(())
     }
+
+    /// Canonical bare/quoted spelling aliases are only for borrowed source transactions. Keep
+    /// every original physical relation, scope, installation and budget exact.
+    pub(super) async fn verify_selected(
+        &self,
+        store: &FileUploadPublicationStore,
+        tx: &mut Tx<'_>,
+        writer: bool,
+    ) -> Result<()> {
+        self.namespace.verify_selected(store, tx).await?;
+        let current = store.check_schema(tx, writer).await?;
+        if !self.namespace.matches_selected(&current.namespace)
+            || current.relations != self.relations
+            || current.scope != self.scope
+            || current.installation_id != self.installation_id
+            || current.max_publications != self.max_publications
+        {
+            return Err(FileUploadPublicationStoreError::UnsupportedSchema);
+        }
+        Ok(())
+    }
 }
 
 impl FileUploadPublicationStore {

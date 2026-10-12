@@ -1,11 +1,11 @@
 # Current platform feature and module network
 
-Source release **0.5.6** (**2026-10-11**) includes these follow-ups. Dated `Unreleased` labels retain
+Source release **0.5.7** (**2026-10-12**) includes these follow-ups. Dated `Unreleased` labels retain
 their original implementation stage, source versions and verification scope. Source inclusion does not
 mount preparation APIs, connect browser saving, switch live authentication, migrate storage or validate
 a running deployment.
 
-Base source review date: **2026-10-03**. Current scope: **0.5.6 source**, including prepared-authentication
+Base source review date: **2026-10-03**. Current scope: **0.5.7 source**, including prepared-authentication
 hardening, the 0.5.0 navigation/filename fixes and C2-K/L/M/N content preparation, alongside the preceding
 collaboration commands and local task payload editor. The review retains its
 0.4.9 base commit and dated evidence; source inclusion is not a new release acceptance report or a
@@ -118,6 +118,66 @@ publisher and recipient revocation are independent. Reviewed recovery, physical 
 central transfer and later desktop pairing remain
 missing edges in [proposal #2](https://github.com/Team-silvortex/cyanrex-lab/issues/2).
 The existing capability tensor's dated inventory and maturity evidence are unchanged.
+
+An [Unreleased publisher-grant follow-up](large-file-publisher-grants.md), outside the 0.5.6 tag,
+adds trusted issue → immutable audit → CAS revocation, and current audited Session → exact own
+account → selected grant/history fence → final authorization → commit acknowledgement. No edge
+authenticates a grant manager or consumes publishing permission; recipient grants, byte transport and
+live mounting remain missing. The dated tensor scores are not refreshed by this implementation note.
+
+Later [Session grant management](large-file-grant-management.md) adds trusted exact manager config
+→ current audited actor → issue-target checks or historical-subject revocation → original complete
+ledger/deferred/source checks → fresh Session → source commit. It adds no Registry role permission,
+durable online config revocation, publisher consumption, recipients, bytes or public edge; dated tensor
+scores and evidence remain unchanged.
+
+Independent [Session publication](large-file-session-publication.md) adds current exact actor/grant
+admission → lock-free real bytes → original source/Registry/grant re-entry → fenced upload/journal and
+create-only insert → deferred/full-ledger/final fresh actor and expiry → source commit → original
+post-acknowledgement checks. It is an explicit internal edge, not recipients, transport or live mounting;
+the dated tensor inventory, scores and evidence remain unchanged.
+
+The later [recipient-grant edge](large-file-recipient-grants.md) is trusted exact-file issue/revoke →
+independent retained ledger/history → current own-recipient selection → original three-table SHARE
+fence and final source authorization → acknowledged metadata. It does not connect a Published lookup,
+download gate or bytes; publisher revocation does not cascade, and dated tensor scores remain unchanged.
+
+The October 12 [publisher-owned sharing edge](large-file-sharing.md) connects current publisher →
+original own grant and exact Published selection → current recipient → recipient write/deferred exact
+delta → original records and final fresh permission/Session → acknowledged source COMMIT. Independent
+owner revocation skips publishing permission and publication reads. No download or byte edge is added;
+the dated tensor snapshot is unchanged.
+
+The independent [download-manifest edge](large-file-download-manifest.md) is current recipient → own
+Active exact-file grant → recorded publisher/account and exact Published version → original records →
+final fresh grant/Session clock → acknowledged source commit → private manifest. No byte, reusable
+permission, transport or client-save edge is connected; the dated capability tensor is unchanged.
+
+The new [chunk-byte edge](large-file-chunk-read.md) is exact current recipient eligibility and
+acknowledged source commit → lock-free private bounded file verification → original Session/metadata
+reentry and final fresh grant/Session clock → acknowledged source commit → leased immutable bytes.
+This Source edge itself connects no HTTP, client-save or restart edge. The dated tensor is unchanged.
+
+The independent [binary HTTP edge](large-file-chunk-http.md) is strict exact GET and private request
+admission → one existing current-recipient chunk command → fixed binary projection → leased Bytes
+frame. Both permits survive clones/slices; a ten-second first-frame window rejects late polling.
+This router is unmounted, not a listener/client-save/delivery edge. The dated tensor stays unchanged.
+
+The separate [receiver edge](large-file-chunk-receiver.md) is supplied exact response → strict head
+and fail-fast controls → private bounded frame/EOF/digest checks → existing exclusive staging job
+owning buffer/control → this call's opaque local completion metadata. It connects no active fetch,
+whole-file/resume or runtime edge; the dated tensor remains unchanged.
+
+The explicit [client edge](large-file-chunk-client.md) is fixed trusted origin + exact per-call
+selectors/Session → whole-call admission → controlled HTTPS/opt-in literal-loopback headers →
+framed receiver → existing exclusive staging with request/buffer/worker ownership → opaque local
+acknowledgement. No normal-app, whole-file/resume or discovery edge is added; dated scores stay unchanged.
+
+The separate [private assembly edge](large-file-chunk-assembly.md) is existing original-root `v1`
+chunks → fail-fast shared actual-job admission → exact ordered/whole preverification → exclusive
+manifest-bound `f1` copy → 0400 sync and original-inode byte readback → original input/root recheck →
+this call's opaque local acknowledgement. It adds no user save-path, network scheduler, adoption,
+resume, publication or live mounting edge; the dated tensor is unchanged.
 
 ## Status vocabulary
 

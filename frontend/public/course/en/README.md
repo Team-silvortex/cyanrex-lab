@@ -6,12 +6,12 @@ identity, content, task and review services are explicitly configured preparatio
 payload editor is local-only, and autonomous AI and general Run orchestration are not implemented.
 
 This index describes the whole project, not only its first teaching domain. The source version is
-**0.5.6** (**2026-10-11**), including private task metadata indexing, its unmounted HTTP adapter and
-large-file preparation through trusted publication, Session metadata and pure grant contracts.
+**0.5.7** (**2026-10-12**), including private task metadata indexing, its unmounted HTTP adapter and
+large-file preparation through current grants/sharing, authorized chunk transport and private assembly.
 Earlier task decoupling, C2-O–AA, Next.js 15.5.27, AI host adapters and security boundaries remain in place.
 Source inclusion does not connect generic browser saving, switch live authentication, migrate storage or
 validate a deployment. Dated `Unreleased` descriptions retain their original implementation stage,
-source versions and verification scope; they are not fresh 0.5.6 execution records.
+source versions and verification scope; they are not fresh 0.5.7 execution records.
 The documents distinguish source-release contents, live runtime capabilities
 and target architecture; a built module or passing test does not imply an online deployment.
 
@@ -66,6 +66,17 @@ network transfer modes remain unconnected. Source inclusion is not a deployed di
 | Compare architecture, capabilities, implementations and maturity | [Capability tensor and evidence-backed scores](capability-maturity.md) |
 | Know what is implemented and what comes next | [Project status](project-status.md), [target architecture](../zh-CN/next-architecture.md) |
 | Review centralized large-file distribution and later desktop transfers | [Distribution proposal](large-file-distribution.md), [streaming core](large-file-core.md), [private chunk staging](large-file-staging.md), [upload intent and logical quotas](large-file-upload-intent.md), [local receipts](large-file-upload-staging.md), [write-ahead chunk journal](large-file-chunk-journal.md), [whole-byte observation](large-file-whole-verification.md), [persistent publication metadata](large-file-publication.md), [Session private metadata](large-file-session-metadata.md), [pure publisher/recipient contracts](large-file-access-contract.md); network transfers not connected |
+| Inspect the Unreleased publisher-grant ledger and own Session reads | [Persistent publisher grants](large-file-publisher-grants.md); outside the 0.5.6 tag, not grant-management authorization or publication permission consumption |
+| Issue or revoke grants through an explicitly configured manager | [Session grant management](large-file-grant-management.md); host-configured exact account, not inherited roles, durable online manager revocation or publication permission consumption |
+| Publish an already staged upload with a current publisher grant | [Session publication](large-file-session-publication.md); final authorized source commit plus original-byte checks, not downloads, network transfer or recovery |
+| Inspect exact-file recipient grants through the current recipient | [Persistent recipient grants](large-file-recipient-grants.md); independent revocation and own metadata reads, not recipient management or download permission |
+| Share an own Published version or stop its old shares | [Publisher-owned file sharing](large-file-sharing.md); current publisher permission for issuance, exact owner for revocation, not download admission |
+| Observe a granted exact Published download manifest | [Recipient manifest observation](large-file-download-manifest.md); current recipient and final grant/Session expiry, not byte health or a reusable download permit |
+| Read one currently authorized verified file chunk | [Chunk snapshots](large-file-chunk-read.md); private up-to-4-MiB verification and original-authority reentry, not HTTP or client delivery |
+| Inspect the separate unmounted binary chunk route | [Single-chunk HTTP adapter](large-file-chunk-http.md); strict exact-version GET and byte-owner budgets, not mounted LAN delivery or client saving |
+| Validate and privately stage a supplied binary response | [HTTP chunk receiver](large-file-chunk-receiver.md); explicit EOF/hash before exclusive local staging, not active fetching, whole-file saving or resumption |
+| Explicitly fetch one chunk from a fixed trusted origin | [Controlled HTTP client](large-file-chunk-client.md); HTTPS/opt-in literal loopback and job-owned request admission, not runtime mounting or whole-file save/resumption |
+| Assemble existing legacy chunks into one private file | [Private whole-file assembly](large-file-chunk-assembly.md); actual ordered/whole bytes and original-inode readback, not user-selected saving, resume or publication |
 | Edit task contents such as notes, code or configuration | [Task payload editor](editor.md) |
 | Configure an AI Agent host and adapt explicitly selected tools | [AI Agent SDK integration](ai-agent-integration.md) |
 | Inspect the internal server content shape and exact snapshot checks | [Task content manifest](task-content-manifest.md) |

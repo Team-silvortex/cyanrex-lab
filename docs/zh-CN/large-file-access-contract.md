@@ -65,6 +65,25 @@ ID 和摘要沿用规范标量编码；Schema、修订号、长度和时间要�
 
 ## 验证
 
+后续源码跟进：独立[发布权限账本](large-file-publisher-grants.md)记录可信来源／撤销并允许本人
+Session 元数据读取，不认证管理或消费发布权限，也不改变本纯契约的分日期执行范围。
+
+后续 [Session 管理](large-file-grant-management.md)独立从宿主指定的准确管理者／账号推导
+签发／撤销者。本纯匹配器仍不认证；管理和匹配都不消费发布许可，原执行范围保持不变。
+
+后续 [Session 发布](large-file-session-publication.md)在真实字节之后，独立于纯契约在最终
+认证源提交内消费原当前授权；早期元数据观察不是脱离事务的权限。纯匹配器、接收契约和分日期执行不变。
+
+后续[接收账本](large-file-recipient-grants.md)保存独立准确文件授权并提供当前本人元数据读取，
+不把本纯匹配器或声明文件元数据转成当前下载权限，下方分日期执行保持不变。
+
+后续 10 月 12 日[发布者本人分享](large-file-sharing.md)将当前发布权限和本人准确 Published
+选中连接到接收签发，并支持独立原所有者撤销。本纯契约仍不认证，分日期执行不升级。
+
+后续[下载清单观察](large-file-download-manifest.md)独立以当前本人 Active 授权检查准确可信
+Published 版本及最终新鲜 Session／授权时间窗。清单只是元数据，不是可复用字节许可；
+本纯匹配器及分日期证据保持不变。
+
 默认 `file_access_tdd` 用例测试真实构造器、严格原始 JSON 和选择器。
 `scripts/tests/fileAccess.test.mjs` 仅检查组合和双语文档。
 这些纯测试不验收数据库锁、持久撤权、当前 Session 授权、真实发布、网络送达或局域网安全。

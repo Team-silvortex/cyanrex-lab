@@ -4,11 +4,11 @@ Cyanrex 正从 eBPF 教学应用转向面向人类、AI Agent 与计算资源的
 继续可用；通用身份、内容、任务和审阅服务属于显式配置的准备层，任务 payload 编辑器目前只保存
 本地草稿。自主 AI 与通用 Run 编排尚未实现。
 
-本索引覆盖整个项目，不只覆盖首个教学领域。源码版本为 **0.5.6**（**2026-10-11**），收录私人
-任务元数据索引、未挂载 HTTP 适配和大文件准备层，推进至受信任发布、Session 元数据及纯授权契约。
+本索引覆盖整个项目，不只覆盖首个教学领域。源码版本为 **0.5.7**（**2026-10-12**），收录私人
+任务元数据索引、未挂载 HTTP 适配及推进至当前授权／分享、认证分块传输和私有拼装的大文件准备层。
 此前任务解耦、C2-O–AA、Next.js 15.5.27、AI 宿主适配与安全边界保持不变。源码收录不接通通用
 浏览器保存、不切换在线认证、不迁移存储，也不验收部署。分日期的未发布说明保留原实施阶段、
-源码版本与验证范围，不是新鲜的 0.5.6 执行记录。
+源码版本与验证范围，不是新鲜的 0.5.7 执行记录。
 以下文档区分源码发布内容、现用运行能力和目标架构，
 模块存在或测试通过不表示已有在线部署。
 
@@ -56,6 +56,17 @@ Cyanrex 正从 eBPF 教学应用转向面向人类、AI Agent 与计算资源的
 | 按架构、功能、实现和成熟度切片 | [功能张量与证据评分](capability-maturity.md) |
 | 哪些已完成以及下一步 | [项目状态](project-status.md)、[目标架构](next-architecture.md) |
 | 审阅集中大文件分发和后续桌面互传 | [分发提案](large-file-distribution.md)、[流式核心](large-file-core.md)、[私有分块暂存](large-file-staging.md)、[上传意图与逻辑配额](large-file-upload-intent.md)、[本地回执](large-file-upload-staging.md)、[分块写前日志](large-file-chunk-journal.md)、[整文件字节观察](large-file-whole-verification.md)、[持久发布元数据](large-file-publication.md)、[Session 私有元数据](large-file-session-metadata.md)、[纯发布／接收契约](large-file-access-contract.md)；网络传输未接通 |
+| 查看未发布的发布权限账本及本人 Session 读取 | [持久发布权限](large-file-publisher-grants.md)；不在 0.5.6 标签内，不是授权管理认证或发布权限消费 |
+| 通过明确配置的管理者签发／撤销授权 | [Session 授权管理](large-file-grant-management.md)；宿主指定准确账号，不继承角色，不是持久在线管理权撤销或发布权限消费 |
+| 使用当前发布授权发布已暂存上传 | [Session 发布](large-file-session-publication.md)；最终授权认证源提交及原字节复核，不是下载、网络传输或恢复 |
+| 通过当前接收者查看准确文件授权 | [持久接收授权](large-file-recipient-grants.md)；独立撤销与本人元数据读取，不是接收授权管理或下载权限 |
+| 分享本人 Published 版本或停止旧分享 | [发布者文件分享](large-file-sharing.md)；签发要当前发布权限，撤销要准确原发布者，不是下载准入 |
+| 查看所授权准确 Published 的下载清单 | [接收者清单观察](large-file-download-manifest.md)；当前接收者及最终授权／Session 有效期，不是字节健康或可复用下载许可 |
+| 读取当前授权的一个已校验文件块 | [分块快照](large-file-chunk-read.md)；私下校验至多 4 MiB 并重入原授权，不是 HTTP 或客户端送达 |
+| 查看独立未挂载的二进制分块路由 | [单块 HTTP 适配](large-file-chunk-http.md)；严格准确版本 GET 及字节所有者预算，不是已挂载局域网送达或客户端保存 |
+| 校验并私有暂存已提供二进制响应 | [HTTP 分块接收器](large-file-chunk-receiver.md)；真正 EOF／摘要之后独占本地暂存，不是主动获取、整文件保存或续传 |
+| 从可信固定 Origin 显式获取单块 | [受控 HTTP 客户端](large-file-chunk-client.md)；HTTPS／明确字面环回及保存任务持有请求准入，不是运行挂载或整文件保存／续传 |
+| 把旧式分块拼成一个私有文件 | [私有整文件拼装](large-file-chunk-assembly.md)；实际有序／整文件字节及原 inode 读回，不是用户选路径保存、续传或发布 |
 | 编辑笔记、代码或配置等任务内容 | [任务 payload 编辑器](editor.md) |
 | 配置 AI Agent 宿主并适配明确选出的工具 | [AI Agent SDK 接入](ai-agent-integration.md) |
 | 查看内部服务端内容结构与精确快照校验 | [任务内容清单](task-content-manifest.md) |

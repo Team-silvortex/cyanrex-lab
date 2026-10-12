@@ -6,20 +6,31 @@
 //! deleted. Verified existing bytes are not proof of a prior successful write or durable receipt.
 use crate::models::collaboration::{FileTransferManifest, WorkspaceRef};
 use std::{io::Read, path::Path, sync::Arc};
-use tokio::sync::Semaphore;
+use tokio::sync::{OwnedSemaphorePermit, Semaphore};
 
+mod assemble;
 mod binding;
 mod bound;
 mod directory;
 mod filesystem;
 #[cfg(test)]
 mod queued_tests;
+mod read;
 mod whole;
 mod work;
+mod work_assemble;
 mod work_bound;
+mod work_read;
 mod work_whole;
 
+#[cfg(test)]
+mod assembly_test_support;
+#[cfg(test)]
+mod assembly_tests;
+
+pub use assemble::AssembledFile;
 pub(crate) use bound::BoundChunkReceipt;
+pub(crate) use read::BufferedBoundChunkRead;
 pub(crate) use whole::BoundFileObservation;
 
 #[derive(Debug, thiserror::Error, PartialEq, Eq)]
@@ -83,9 +94,33 @@ impl ChunkStaging {
         self.inner.scope
     }
 
+    /// Creates one verified private whole-file output from the exact legacy staged chunks.
+    /// This is local acknowledgement metadata, not publication, delivery or later authority.
+    pub async fn assemble_staged_file(
+        &self,
+        manifest: &FileTransferManifest,
+    ) -> Result<AssembledFile, ChunkStagingError> {
+        if manifest.workspace() != self.inner.scope {
+            return Err(ChunkStagingError::InvalidInput);
+        }
+        work_assemble::run(&self.inner, manifest).await
+    }
+
     /// Binds trusted source metadata to the originally opened root using cached identity only.
     pub(crate) fn bind_upload(&self, source_key: [u8; 32]) -> [u8; 32] {
         self.inner.directory.bind_upload(source_key)
+    }
+
+    /// Private verified read bytes only. Caller authority must be rechecked before disclosure.
+    pub(crate) async fn read_bound_chunk(
+        &self,
+        key: [u8; 32],
+        manifest: &FileTransferManifest,
+        index: u32,
+        lease: OwnedSemaphorePermit,
+    ) -> Result<BufferedBoundChunkRead, ChunkStagingError> {
+        self.validate(manifest, index)?;
+        work_read::run(&self.inner, key, manifest, index, lease).await
     }
 
     /// Produces a local original-object proof, never durable database chunk progress.

@@ -55,6 +55,20 @@ impl FileUploadPublicationStore {
         owner: Option<(PrincipalRef, LegacyAccountId)>,
         share: bool,
     ) -> Result<Option<(PublishedRow, [u8; 32])>> {
+        self.read_record_exact_with_lock(tx, upload_id, owner, None, share)
+            .await
+    }
+
+    pub(super) async fn read_record_exact_with_lock(
+        &self,
+        tx: &mut Tx<'_>,
+        upload_id: FileUploadId,
+        owner: Option<(PrincipalRef, LegacyAccountId)>,
+        exact: Option<(FileId, FileVersionId)>,
+        share: bool,
+    ) -> Result<Option<(PublishedRow, [u8; 32])>> {
+        // Optional typed file coordinates are filtered in SQL before any body or hidden-key
+        // decoding. Legacy wrappers pass None, preserving their existing selection policy.
         // Reject oversized corrupt bodies and fixed keys before driver allocation/decoding.
         let query = if share {
             "SELECT upload_id,file_id,version_id,owner_id,account_id,nonce,
@@ -64,6 +78,7 @@ impl FileUploadPublicationStore {
             CASE WHEN octet_length(journal_key) = 32 THEN journal_key ELSE NULL END AS journal_key
             FROM collaboration_file_publications WHERE upload_id=$1
             AND ($2::uuid IS NULL OR owner_id=$2) AND ($3::uuid IS NULL OR account_id=$3)
+            AND ($5::uuid IS NULL OR file_id=$5) AND ($6::uuid IS NULL OR version_id=$6)
             FOR SHARE"
         } else {
             "SELECT upload_id,file_id,version_id,owner_id,account_id,nonce,
@@ -72,13 +87,16 @@ impl FileUploadPublicationStore {
             CASE WHEN octet_length(root_key) = 32 THEN root_key ELSE NULL END AS root_key,
             CASE WHEN octet_length(journal_key) = 32 THEN journal_key ELSE NULL END AS journal_key
             FROM collaboration_file_publications WHERE upload_id=$1
-            AND ($2::uuid IS NULL OR owner_id=$2) AND ($3::uuid IS NULL OR account_id=$3)"
+            AND ($2::uuid IS NULL OR owner_id=$2) AND ($3::uuid IS NULL OR account_id=$3)
+            AND ($5::uuid IS NULL OR file_id=$5) AND ($6::uuid IS NULL OR version_id=$6)"
         };
         let row = sqlx::query(query)
             .bind(upload_id.as_uuid())
             .bind(owner.map(|value| value.0.principal_id.as_uuid()))
             .bind(owner.map(|value| value.1.as_uuid()))
             .bind(MAX_FILE_TRANSFER_MANIFEST_BYTES as i32)
+            .bind(exact.map(|value| value.0.as_uuid()))
+            .bind(exact.map(|value| value.1.as_uuid()))
             .fetch_optional(&mut **tx)
             .await?;
         let Some(row) = row else {
@@ -116,6 +134,7 @@ impl FileUploadPublicationStore {
             .ok_or_else(invalid)?;
         let manifest = FileTransferManifest::parse_json(&raw).map_err(|_| invalid())?;
         if selected_id != upload_id
+            || exact.is_some_and(|value| value != (file_id, version_id))
             || manifest.workspace() != self.scope
             || manifest.file_id() != file_id
             || manifest.version_id() != version_id

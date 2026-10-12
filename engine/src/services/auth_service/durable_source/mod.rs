@@ -39,7 +39,18 @@ mod draft_publication;
 #[cfg(unix)]
 mod draft_publication_checks;
 #[cfg(unix)]
+mod file_chunk_read;
+#[cfg(unix)]
 mod file_commands;
+#[cfg(unix)]
+mod file_download;
+mod file_grant_management;
+mod file_publisher_commands;
+#[cfg(unix)]
+mod file_publishing;
+mod file_recipient_commands;
+#[cfg(unix)]
+mod file_sharing;
 mod namespace;
 mod otp;
 mod otp_consumption;
@@ -78,8 +89,30 @@ pub use draft_publication::{
     MAX_SESSION_DRAFT_CHECKPOINT_BYTES,
 };
 #[cfg(unix)]
+pub use file_chunk_read::{
+    SessionFileChunkRead, SessionFileChunkReadError, SessionFileChunkReadRequest,
+    SessionFileChunkReadWorkspace,
+};
+#[cfg(unix)]
 pub use file_commands::{
     SessionFileMetadataError, SessionFilePublicationWorkspace, SessionFileUploadWorkspace,
+};
+#[cfg(unix)]
+pub use file_download::{
+    SessionFileDownloadError, SessionFileDownloadRequest, SessionFileDownloadWorkspace,
+};
+pub use file_grant_management::SessionFileGrantManagementWorkspace;
+pub use file_publisher_commands::{
+    SessionFilePublisherGrantError, SessionFilePublisherGrantWorkspace,
+};
+#[cfg(unix)]
+pub use file_publishing::{SessionFilePublishingError, SessionFilePublishingWorkspace};
+pub use file_recipient_commands::{
+    SessionFileRecipientGrantError, SessionFileRecipientGrantWorkspace,
+};
+#[cfg(unix)]
+pub use file_sharing::{
+    SessionFileRecipientGrantIssue, SessionFileSharingError, SessionFileSharingWorkspace,
 };
 pub use reconciliation::{AuthorityReconciliation, ReconciliationError};
 #[cfg(unix)]

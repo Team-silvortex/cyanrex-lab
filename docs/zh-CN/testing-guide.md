@@ -1,7 +1,7 @@
 # 当前项目测试指南
 
-源码版本 **0.5.6**（**2026-10-11**）已收录分日期的跟进及其测试选择。未发布标记保留当时
-实施阶段，库存和此前 0.5.4 执行记录不是新鲜的 0.5.6 SQL 运行或部署验收；实际发布门禁结果
+源码版本 **0.5.7**（**2026-10-12**）已收录分日期的跟进及其测试选择。未发布标记保留当时
+实施阶段，库存和此前 0.5.4 执行记录不是新鲜的 0.5.7 SQL 运行或部署验收；实际发布门禁结果
 及未覆盖范围记录于[项目状态](project-status.md)。
 
 本文按 **2026-10-08 的 0.5.4 源码** 核对，包含 C2-T–W 意图、派发与检查边界、Next.js 15.5.27
@@ -100,6 +100,17 @@ Rust 公告审计，前端/SDK 检查也包含生产依赖的 npm 审计。因�
 | 持久文件发布元数据 | 默认 `file_upload_publication_tdd`、显式 `scripts/test-file-upload-publication.sh`、`fileUploadPublication` 公共守卫；[边界](large-file-publication.md) | 准确完整已确认日志与真实整字节、不可变上传/版本唯一、有界全局容量、原身份与提交确认后失败；不是恢复回执、永久物理封存、当前 Session、授权或传输 |
 | Session 私有文件元数据 | 默认 `session_file_metadata_tdd`、显式 `scripts/test-session-file-metadata.sh`、`sessionFileMetadata` 公共守卫；[边界](large-file-session-metadata.md) | 单一认证源事务推导 owner／账号代次，精确读取本人上传／Published、新鲜策略及到期检查、配额、真实等待／故障及原认证源／目标身份；不是真正 Session 发布、字节健康、授权、恢复或传输 |
 | 纯文件发布／接收授权 | 默认 `file_access_tdd` 及 `fileAccess` 公共组合／文档守卫；[边界](large-file-access-contract.md) | 准确账号／版本选择器、独立撤权、半开时间区间及严格有界 JSON；不是签发来源、审计当前授权、Session／SQL 授权、字节访问或传输 |
+| 未发布的持久发布权限元数据 | `file_publisher_grant_tdd`、`session_file_publisher_grant_tdd`、显式 `scripts/test-file-publisher-grants.sh` 和 `scripts/test-session-file-publisher-grants.sh`、`filePublisherGrant` 组合守卫；[边界](large-file-publisher-grants.md) | 可信签发／撤销归属、有界全账本写入、CAS 撤权、当前 Session 本人读取和历史写屏障；不是管理员认证、发布权限消费、接收授权、字节或在线挂载 |
+| 未发布的宿主配置 Session 授权管理 | `session_file_grant_management_tdd`、显式 `scripts/test-session-file-grant-management.sh`、`fileGrantManagement` 守卫；[边界](large-file-grant-management.md) | 准确配置管理者／账号、推导操作者、目标生命周期、延迟工作／原固定／新鲜 Session 复核；不是继承角色、持久在线配置撤权、发布消费、接收者、字节或在线挂载 |
+| 未发布的 Session 授权文件发布 | `session_file_publication_tdd`、显式 `scripts/test-session-file-publication.sh`、`fileSessionPublication` 守卫；[边界](large-file-session-publication.md) | 当前准确操作者／授权、真实字节、跨工作间隙原固定、屏障内插入／延迟／新鲜有效期及原确认后复核；不是接收者、传输、在线挂载、恢复或丢失确认回滚保证 |
+| 未发布准确文件接收账本及本人读取 | `file_recipient_grant_tdd`、`session_file_recipient_grant_tdd`、显式 `scripts/test-file-recipient-grants.sh` 和 `scripts/test-session-file-recipient-grants.sh`、`fileRecipientGrant` 守卫；[边界](large-file-recipient-grants.md) | 独立准确文件／账号绑定、CAS／历史／额度及认证源当前接收者读取；不是接收授权管理、下载权限、字节或传输 |
+| 未发布发布者本人分享 | `session_file_sharing_tdd`、显式 `scripts/test-session-file-sharing.sh`、`fileSharing` 守卫；[边界](large-file-sharing.md) | 本人准确 Published、活跃发布权限／当前接收者、延迟原固定／增量／最终新鲜时间及独立原所有者撤销；不是全局管理、下载、字节 IO 或传输 |
+| 未发布接收者下载清单 | `session_file_download_tdd`、显式 `scripts/test-session-file-download.sh`、`fileDownloadManifest` 守卫；[边界](large-file-download-manifest.md) | 本人 Active 接收授权、准确原发布者／Published 版本、原记录及最终同钟授权／Session 有效期；只有元数据，不是字节健康、可复用许可或传输 |
+| 未发布授权分块快照 | `session_file_chunk_read_tdd`、显式 `scripts/test-session-file-chunk-read.sh`、私有读取单元与 `fileChunkRead` 守卫；[边界](large-file-chunk-read.md) | 真实有界单块字节、无锁间隙前后原根／记录、最终接收授权／Session 到期及保留预算；不是整文件重哈希、HTTP／客户端送达或恢复 |
+| 未发布未挂载二进制分块 HTTP | `file_chunk_read_http_tdd`、显式 `scripts/test-file-chunk-http.sh`、私有 query／正文单元及 `fileChunkHttp` 守卫；[边界](large-file-chunk-http.md) | 严格空 GET、原当前接收者命令、固定二进制帧、Bytes 所有者跨两种预算及首帧期限；不是已挂载局域网送达、客户端保存／续传或恢复 |
+| 未发布已提供响应 Unix 接收器 | `file_chunk_receiver_tdd`、显式 `scripts/test-file-chunk-receiver.sh`、私有任务存活单元及 `fileChunkReceiver` 守卫；[边界](large-file-chunk-receiver.md) | 准确单例头、私有有界帧／真正 EOF／摘要及 idle／total 后独占暂存；不是主动获取、远端回执、整文件拼装／保存、续传或在线挂载 |
+| 未发布显式单块 HTTP 客户端 | `file_chunk_client_tdd`、显式 `scripts/test-file-chunk-client.sh`、私有请求／工作单元及 `fileChunkClient` 守卫；[边界](large-file-chunk-client.md) | 真实环回请求／文件、准确输入、独立头／正文期限及任务持有准入，另有 ignored 当前 Source SQL 和 OpenSSL CA／SAN 对照；不是正常应用挂载或整文件／续传验收 |
+| 未发布本地整文件拼装 | `file_chunk_assembly_tdd`、暂存私有任务／变动单元及 `fileChunkAssembly` 守卫；[边界](large-file-chunk-assembly.md) | 真实旧式输入、独占实际整文件输出／EOF／摘要／读回、冲突及取消所有权；不是用户选路径保存、网络调度、恢复进度或部署验收 |
 | 草稿导入与发布计划 | Rust `task_draft_publication_tdd`、`taskDraftPublication` 公共守卫、前端 `taskDraft` 共享夹具 | 严格有界 JSON、空白标题拒绝、本地身份剥离、给定准确内容映射及标准导出兼容；不发布内容、不检查当前 Session、不保存浏览器草稿 |
 | 会话草稿发布步骤 | Rust `session_task_draft_publication_tdd`、`scripts/test-session-task-draft-publication.sh`、`sessionTaskDraftPublication` 公共守卫 | 固定分配与 Session 绑定、每次推进一个写入、空/多项成功、确认前缀与未知步骤、取消、撤权及最终真实字节检查；无持久恢复或浏览器保存 |
 | 独立目录草稿发布 | `session_catalog_draft_publication_tdd`、内部 `catalog_draft_publication::tests`、`scripts/test-session-catalog-draft-publication.sh`、`sessionCatalogDraftPublication` 守卫 | 无 I/O 的准确完整定义冻结、独立 token 域、每次推进一个已有 Session 写入、完整 `Some` 确认、保留前缀与未知目标及手动/日志类型隔离；C2-AA 比较另列，不提供恢复、重试或 HTTP/浏览器保存 |

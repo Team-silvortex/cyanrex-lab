@@ -9,11 +9,15 @@ mod admission;
 mod catalog_task;
 mod contract;
 mod errors;
+#[cfg(unix)]
+mod file_chunk_read;
 mod handlers;
 mod security;
 mod task_index;
 mod text_artifact;
 pub use catalog_task::{build_catalog_task_content_router, CatalogTaskContentHttpState};
+#[cfg(unix)]
+pub use file_chunk_read::{build_file_chunk_read_router, FileChunkReadHttpState};
 pub use task_index::{build_task_content_index_router, TaskContentIndexHttpState};
 pub use text_artifact::{build_text_artifact_router, TextArtifactHttpState};
 

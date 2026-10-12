@@ -1,0 +1,21 @@
+{
+  "version": "0.5.7",
+  "date": "2026-10-12",
+  "previousTag": "v0.5.6",
+  "command": "scripts/quality-gate.sh --no-npm-install",
+  "result": "passed",
+  "rust": { "passed": 936, "ignored": 841, "resultGroups": 88 },
+  "common": { "passed": 301 },
+  "frontend": { "passed": 208, "build": "passed", "types": "passed", "nextVersion": "15.5.27" },
+  "sdk": { "runtimePassed": 39, "packagePassed": 3, "build": "passed", "types": "passed" },
+  "npmProductionVulnerabilities": { "frontend": 0, "sdk": 0 },
+  "warnings": 0,
+  "failures": 0,
+  "freshSqlCases": 0,
+  "freshBrowserCases": 0,
+  "rustSecAudit": "not_rerun",
+  "offlineArtifactAcceptance": "not_run_locally",
+  "deploymentAcceptance": "not_run",
+  "priorEvidence": { "preservedStatusBlocks": 106, "preservedExecutionTails": 36, "capabilityTensor": "unchanged" },
+  "logDirectory": "/tmp/cyanrex-release-0.5.7-LJzz0U4x"
+}

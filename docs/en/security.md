@@ -1,6 +1,6 @@
 # Security and deployment boundaries
 
-Source release **0.5.6** (**2026-10-11**) includes these follow-ups. Dated `Unreleased` labels retain
+Source release **0.5.7** (**2026-10-12**) includes these follow-ups. Dated `Unreleased` labels retain
 their original implementation stage, source versions and verification scope. Source inclusion does not
 mount preparation APIs, connect browser saving, switch live authentication, migrate storage or validate
 a running deployment.
@@ -110,6 +110,79 @@ and versions with active state and a bounded expiry interval. Neither JSON nor a
 result establishes issuer provenance, current audited policy or download authority. A stale active
 copy can still match after revocation; future commands must read and recheck current grants, not
 reuse that boolean. Publisher revocation does not implicitly revoke independent recipient records.
+
+The [Unreleased persistent publisher ledger](large-file-publisher-grants.md) records trusted issuer
+and revocation actor attribution; it does not prove either caller's Registry permission. Own Session
+reads require current audited Human membership, exact account generation, original grant/history
+pins and final fresh authorization before commit. A coarse table SHARE fence also prevents history
+append phantoms during that transaction. Expired/revoked records remain readable metadata, not
+usable permission. Future management needs explicit `ManageFileGrants`; deployment grants and
+teacher status cannot substitute. No recipient or byte-access authorization is added.
+
+Later [Session grant management](large-file-grant-management.md) authenticates the exact current
+account selected by trusted-host configuration, never a request-selected issuer or inherited role.
+Issue rechecks the target's active audited Human membership; revoke permits retired/deleted subjects.
+Replacing the host configuration does not revoke surviving clones/in-flight work; drain and destroy
+old handles or restart. Persistent online management revocation, publication consumption and recipient
+or byte-access authorization remain separate gates. Historical trusted attribution is not upgraded.
+
+The independent [Session publication](large-file-session-publication.md) now requires the current
+exact actor and an original active publisher grant before file work, then rechecks the first
+source/Registry/grant pins in a fresh final source transaction. Original grant/upload/journal fences
+cover the insert and deferred/final checks; the last clock sample covers grant and Session expiry.
+No SQL lock spans files, and dispatched work is not continuously revoked or killed by cancellation.
+Post-commit failures may leave Published with Unknown; downloads, recipient authority and recovery remain absent.
+
+The later [recipient ledger](large-file-recipient-grants.md) stores trusted exact-file/account bindings
+independently from publisher grants. Current own-recipient metadata remains selected and fenced through
+source authorization and commit. Future/expired/revoked metadata is readable, not download permission;
+neither a claimed file reference nor Active state proves an exact trusted Published version.
+
+The October 12 [publisher-owned sharing](large-file-sharing.md) adapter authenticates the current
+original publisher, matches every expected version coordinate to an own selected Published record,
+and holds permission/history/publication/write fences through deferred and final fresh source checks.
+Revocation matches original publisher/account before UPDATE and needs no live publishing grant,
+publication or recipient. It grants no bytes or global teacher delegation; unknown commit is not rollback.
+
+Independent [download-manifest observation](large-file-download-manifest.md) requires the current
+audited recipient and an original Active exact-file grant. Recorded publisher/account and file/version
+filter Published selection before decoding; full version comparison and original pins precede final
+fresh grant/Session validity and acknowledged commit. A teacher or owner without a recipient grant is
+denied. The manifest does not authorize later byte disclosure; publisher revocation does not cascade.
+
+The separate [chunk reader](large-file-chunk-read.md) privately verifies at most 4 MiB before original
+authorization reentry and commit. No caller sink sees an unverified prefix. Final same-clock Session/
+grant expiry precedes disclosure, with no later IO; the result is a verified read-time byte snapshot,
+not ACK-time pathname health or continuous authority. Returned bytes retain their capacity lease.
+
+The independent [binary HTTP adapter](large-file-chunk-http.md) adds strict seven-key raw query,
+dedicated cookie/marker/origin, empty-body admission and rejection of ranges/conditionals. Binary
+data retains BOTH local budgets through the last owner-retaining Bytes reference, not merely body EOF;
+an empty slice can detach without retaining sensitive data. The first
+frame must be polled within ten seconds of source return; there is no autonomous lease-release timer,
+poll-time authorization or remote-delivery guarantee. Source-approved bytes cannot be reclaimed by
+later revocation. The router remains unmounted and emits no user filenames, hidden keys or partial bytes.
+
+The separate [supplied-response receiver](large-file-chunk-receiver.md) rejects duplicate/mismatched
+metadata, encodings/ranges/cookies, oversize/short data and any trailing error or trailer before
+file dispatch. Explicit EOF, SHA-256, idle and fixed-total deadlines precede private exclusive
+staging; queued/running work keeps the receiver's buffer/control after waiter cancellation. No
+remote metadata selects a path. Conflict is not adoption; an ambiguous post-creation file outcome
+is not rollback. This adds no requester, credential policy, current remote authority or live mounting.
+
+The separate [explicit client](large-file-chunk-client.md) admits only a host-frozen canonical origin
+and typed selectors. HTTPS validates certificates and SANs; plaintext requires literal-loopback
+opt-in, not DNS localhost. Per-call sensitive cookies never enter query/errors/default state.
+Retry/redirect/proxy/decode are disabled; header and body deadlines differ, and whole-call admission
+travels into actual save work. It proves neither raw socket EOF, hard cancellation of remote/OS work,
+current remote identity/workspace authority nor a mounted distribution service.
+
+Separate [private whole-file assembly](large-file-chunk-assembly.md) prechecks legacy chunk bytes,
+then exclusively creates a fixed manifest-bound output in the original 0700 root. Checked copying,
+0400 sync/readback and original input/root rechecks precede acknowledgement. No user filename/path,
+Source key or retained output is adopted. Creation uncertainty keeps evidence; cancellation neither
+kills actual work nor permits cleanup/retry. Three payload passes use bounded buffers/metadata,
+not disk reservation, atomic public publication, current remote authority or permanent same-UID sealing.
 
 ### Prepared HTTP admission follow-up
 

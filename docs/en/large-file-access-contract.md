@@ -73,6 +73,30 @@ HTTP/SDK/UI connection, file access, transport, receipt recovery or deployment c
 
 ## Verification
 
+Later source follow-up: the separate [publisher-grant ledger](large-file-publisher-grants.md) records
+trusted provenance/revocation and allows own Session metadata reads, but not authenticated management
+or publication permission consumption. It does not change this pure contract's dated execution scope.
+
+Later [Session management](large-file-grant-management.md) separately derives issue/revoke actors
+from an exact host-configured manager/account. This pure matcher remains unauthenticated; neither
+management nor matching consumes publication permission, and its original execution scope is unchanged.
+
+The later [Session publication](large-file-session-publication.md) independently consumes an original
+current grant inside final source commit after real bytes; its early metadata observation is not
+detached authority. The pure matcher, recipient contract and this dated execution remain unchanged.
+
+The later [recipient ledger](large-file-recipient-grants.md) persists independent exact-file grants and
+provides current own-recipient metadata reads. It does not turn this pure matcher or claimed file
+metadata into current download permission; the dated execution below remains unchanged.
+
+The later October 12 [publisher-owned sharing](large-file-sharing.md) adapter connects current
+publisher permission and exact own Published selection to recipient issuance, with independent owner
+revocation. This pure contract remains unauthenticated and its dated execution is not upgraded.
+
+Later [download-manifest observation](large-file-download-manifest.md) independently checks a current
+own Active grant against the exact trusted Published version and a final fresh Session/grant window.
+The manifest is metadata, not a reusable byte permit; this pure matcher and its dated evidence stay unchanged.
+
 Default `file_access_tdd` cases exercise actual constructors, strict raw JSON and selectors.
 `scripts/tests/fileAccess.test.mjs` checks composition and bilingual documentation only.
 These pure tests do not establish database locking, durable revocation, current-Session authorization,

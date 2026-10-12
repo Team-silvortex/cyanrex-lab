@@ -54,4 +54,24 @@ impl NamespacePin {
         }
         Ok(())
     }
+
+    // Accept only canonical spelling aliases of the same original physical private namespace.
+    // Extra paths, even unresolved ones, are not allowed in borrowed Session work.
+    pub(super) fn matches_selected(&self, current: &Self) -> bool {
+        self.name == current.name
+            && self.oid == current.oid
+            && (current.search_path == current.name
+                || current.search_path == format!("\"{}\"", current.name))
+    }
+
+    pub(super) async fn verify_selected(
+        &self,
+        journal: &FileUploadChunkJournal,
+        tx: &mut Tx<'_>,
+    ) -> Result<()> {
+        if !self.matches_selected(&Self::capture(journal, tx).await?) {
+            return Err(FileUploadChunkJournalError::UnsupportedSchema);
+        }
+        Ok(())
+    }
 }

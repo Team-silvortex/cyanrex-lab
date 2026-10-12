@@ -164,6 +164,23 @@ pub(super) fn verify<R: Read + ?Sized>(
     manifest: &FileTransferManifest,
     reader: &mut R,
 ) -> Result<(), FileTransferError> {
+    check_stream(manifest, reader, None::<&mut std::io::Sink>)
+}
+
+/// Internal caller-owned copy; bytes remain unconfirmed until all ordered digests and EOF pass.
+pub(super) fn copy_verify<R: Read + ?Sized, W: Write + ?Sized>(
+    manifest: &FileTransferManifest,
+    reader: &mut R,
+    writer: &mut W,
+) -> Result<(), FileTransferError> {
+    check_stream(manifest, reader, Some(writer))
+}
+
+fn check_stream<R: Read + ?Sized, W: Write + ?Sized>(
+    manifest: &FileTransferManifest,
+    reader: &mut R,
+    mut writer: Option<&mut W>,
+) -> Result<(), FileTransferError> {
     let mut buffer = [0; FILE_TRANSFER_BUFFER_BYTES];
     let mut whole = Sha256::new();
     for index in 0..manifest.chunk_sha256().len() {
@@ -175,7 +192,7 @@ pub(super) fn verify<R: Read + ?Sized>(
             spec.byte_length,
             &mut buffer,
             Some(&mut whole),
-            None::<&mut std::io::Sink>,
+            writer.as_deref_mut(),
         )?;
         if found != spec.sha256 {
             return Err(FileTransferError::DigestMismatch);

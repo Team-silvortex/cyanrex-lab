@@ -50,4 +50,26 @@ impl NamespacePin {
         }
         Ok(())
     }
+
+    // Borrowed Session work selects the same restricted identifier with canonical quotes.
+    // Compare original physical identity, never reset search_path or permit extra raw entries.
+    #[cfg(unix)]
+    pub(super) fn matches_selected(&self, current: &Self) -> bool {
+        self.name == current.name
+            && self.oid == current.oid
+            && (current.search_path == current.name
+                || current.search_path == format!("\"{}\"", current.name))
+    }
+
+    #[cfg(unix)]
+    pub(super) async fn verify_selected(
+        &self,
+        store: &FileUploadStore,
+        tx: &mut Tx<'_>,
+    ) -> Result<()> {
+        if !self.matches_selected(&Self::capture(store, tx).await?) {
+            return Err(FileUploadStoreError::UnsupportedSchema);
+        }
+        Ok(())
+    }
 }

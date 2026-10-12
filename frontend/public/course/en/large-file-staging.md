@@ -69,6 +69,15 @@ admission exist. Callers own readers before admission; this budget does not limi
 
 ## Verification and integration boundary
 
+The separate [whole-file assembler](large-file-chunk-assembly.md) now adds `assemble_staged_file`
+for existing legacy chunks, with a distinct exclusive private whole output and actual whole-byte
+readback. It shares worker ownership but does not alter `stage_chunk` or adopt Source `u1` files;
+user-selected final saving and recovery remain outside this local operation.
+
+The separate [HTTP receiver](large-file-chunk-receiver.md) now reuses this legacy `stage_chunk`
+path only after supplied-response EOF/hash checks. Its reader owns validated bytes/control in the
+actual job; no Source hidden-key adoption, active fetching or whole-file saving/resumption is added.
+
 Default Rust tests cover private files and deterministic worker lifecycle barriers without a database
 or network. Real file fixtures cross the **4 MiB** boundary; failure cases retain uncertain outputs
 and include healthy controls. The dated [project status](project-status.md) records actual runs.

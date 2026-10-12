@@ -1,6 +1,6 @@
 # Project Status
 
-Snapshot date: **2026-10-11**. Source version: **0.5.6**, including private task indexing and its unmounted HTTP adapter, plus large-file preparation through trusted publication, Session private metadata and pure grant contracts. Earlier task decoupling, draft preparation, AI host adapters and authentication protections remain in place.
+Snapshot date: **2026-10-12**. Source version: **0.5.7**, retaining private task indexing and its unmounted HTTP adapter, and extending large-file preparation through current publisher/recipient grants, Session publication/sharing, authorized chunk reads/transport, an explicit client and private whole-file assembly. Normal-app distribution, final user saving and resumption remain absent; earlier task decoupling, AI host adapters and authentication protections remain in place.
 
 0.5.4 C2-T–W retains immutable intents, explicit journaled dispatch, private journal inspection and
 one-resource observation. The original C2-P path stays independent; metadata agreement is not a receipt,
@@ -11,13 +11,10 @@ entering the manual checkpoint/journal workflow. Neither connects browser saving
 composes multi-domain/package catalogues within 256 definitions, and allows explicitly absent assessment
 bindings. Catalogue/text content needs neither assessment nor a Run; typed assessment still requires both pins.
 
-The independent October 11 [private metadata index](task-content-index.md), **included in 0.5.6**,
-lists bounded owner-private schema 3 pages
-through trusted storage and current Session authorization. Explicit neutral catalogue configuration
-admits manual and complete configured definitions without changing the old content-read/write modes.
-Its separate [HTTP follow-up](task-content-index-http.md) adds an explicit private GET adapter,
-still unmounted. No live HTTP/SDK/UI task list or server-backed browser reopening is connected;
-metadata is not content availability.
+The October 11 [private metadata index](task-content-index.md), **included in 0.5.6**, lists bounded
+owner-private schema 3 pages through trusted storage/current Session authorization. Explicit neutral
+catalogue configuration preserves the old content modes. Its separate [HTTP adapter](task-content-index-http.md)
+remains unmounted; no live HTTP/SDK/UI list or server-backed browser reopening is connected.
 
 The same-day **[large-file core](large-file-core.md), included in 0.5.6**, following
 [proposal #2](https://github.com/Team-silvortex/cyanrex-lab/issues/2), adds transport-neutral manifests
@@ -29,6 +26,10 @@ durable upload progress, disk reservations, publication or live authentication/c
 The separate [upload-intent ledger](large-file-upload-intent.md) adds immutable trusted metadata and
 atomic logical quotas, not confirmed chunks, physical disk allocation, Session authority or transfer.
 The [local upload adapter](large-file-upload-staging.md) adds original-file receipts; the independent [write-ahead journal](large-file-chunk-journal.md) records chunks, while [whole-byte verification](large-file-whole-verification.md) remains a current observation. Separate [persistent publication metadata](large-file-publication.md) combines complete confirmed chunks and fresh bytes. Separate [Session private metadata](large-file-session-metadata.md) derives owner/account for own reservations and upload/Published reads. Separate [pure publisher/recipient contracts](large-file-access-contract.md) match supplied exact accounts/versions, state and validity; they do not establish current audited permission. Recovery, durable grants and transport remain separate.
+The [Unreleased publisher-grant ledger](large-file-publisher-grants.md), outside the 0.5.6 tag, adds
+trusted revocable records and own reads. Later [Session management](large-file-grant-management.md) derives actors from an exact host-configured manager/account; no inherited roles, durable online manager revocation or publication consumption. Separate evidence does not refresh historical records.
+Independent [Session publication](large-file-session-publication.md) now couples current exact publisher permission to real-byte verification and a final authorized source insert; recipients, transport, recovery and live mounting remain absent. Its new evidence stays in its own record.
+Later [recipient grants](large-file-recipient-grants.md) add an independent exact-file ledger and current own-recipient metadata reader. October 12 [publisher-owned sharing](large-file-sharing.md) adds authenticated own-Published issuance and independent owner revocation; [download-manifest observation](large-file-download-manifest.md) checks exact Published metadata, not later byte authority. Separate [verified chunk snapshots](large-file-chunk-read.md) connect up to 4 MiB of private bytes between original-pinned source transactions. The independent [binary HTTP adapter](large-file-chunk-http.md) adds unmounted exact GET, byte-owner retention of both budgets and a ten-second first-frame window. A separate [HTTP receiver](large-file-chunk-receiver.md) checks supplied responses through explicit EOF/hash before private exclusive staging, retaining buffer/control through actual save work. An explicit [single-chunk client](large-file-chunk-client.md) adds fixed trusted HTTPS/opt-in literal-loopback requests with job-owned admission. Separate [private whole-file assembly](large-file-chunk-assembly.md) now checks legacy inputs and an exclusive actual whole output with original-inode readback; user-selected final saving, network scheduling, normal-app delivery, resumption and recovery remain absent. New evidence stays outside historical records.
 
 Cyanrex is becoming a domain-neutral collaboration platform, with eBPF teaching retained as its first
 domain rather than the definition of all work. The transition has produced a durable collaboration
@@ -82,7 +83,7 @@ dated implementation and verification details are preserved in [Development Hist
 | 0.5.6 · file grant contract preparation | Pure exact workspace, account-generation, file-version, state and validity matching | No authenticated issuer, persisted grant, fresh policy/revocation lookup, Session integration or byte-access authority |
 
 Product version, API compatibility baseline and individual storage schema versions are independent.
-The source version is 0.5.6 and the public API compatibility baseline remains 0.3.0. The current Task
+The source version is 0.5.7 and the public API compatibility baseline remains 0.3.0. The current Task
 store requires schema 2 in a fresh dedicated namespace and rejects schema 1 without migration. Neither
 the normal startup path nor this source release upgrades a database.
 The content store included in 0.5.0 separately requires schema 3; the schema 2 handle and existing Session

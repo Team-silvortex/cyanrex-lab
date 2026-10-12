@@ -19,7 +19,15 @@ async function sources(directory) {
 test("upload-bound staging keeps filesystem and SQL responsibilities separate without live authority", async () => {
   assert.match(codeOnly(await read("engine/src/services/mod.rs")), /#\[cfg\(unix\)\]\s*pub mod file_upload_staging;/);
   for (const [path, source] of await sources("engine/src/services/file_upload_staging")) {
-    assert.doesNotMatch(codeOnly(source), /sqlx|PgPool|AuthService|reqwest|spawn_blocking|std::(?:fs|net|process|env)|tokio::fs|install_empty|remove_file|remove_dir|Serialize|Deserialize/, path);
+    let code = codeOnly(source);
+    if (path === "engine/src/services/file_upload_staging/publication/phase.rs") {
+      // Later publication composition borrows a transaction type, not a connection or SQL owner.
+      assert.match(code, /sqlx_compat::Postgres,/);
+      assert.match(code, /use sqlx_core::transaction::Transaction;/);
+      assert.doesNotMatch(code, /sqlx::query|\.begin\(|\.acquire\(|\.commit\(|SET LOCAL|SET TRANSACTION|SET CONSTRAINTS/, path);
+      code = code.replace("sqlx_compat::Postgres,", "").replace("use sqlx_core::transaction::Transaction;", "");
+    }
+    assert.doesNotMatch(code, /sqlx|PgPool|AuthService|reqwest|spawn_blocking|std::(?:fs|net|process|env)|tokio::fs|install_empty|remove_file|remove_dir|Serialize|Deserialize/, path);
   }
   for (const path of ["engine/src/main.rs", "engine/src/state.rs", "engine/src/application.rs", "engine/openapi/openapi.json"]) {
     assert.doesNotMatch(codeOnly(await read(path)), /FileUploadStaging|UploadChunkAttempt|UploadChunkReceipt|services::file_upload_staging/, path);

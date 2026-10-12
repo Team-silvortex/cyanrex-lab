@@ -57,24 +57,66 @@ impl FileUploadStore {
             sqlx::query("SET TRANSACTION ISOLATION LEVEL READ COMMITTED")
                 .execute(&mut *tx)
                 .await?;
-            pin.schema.verify(self, &mut tx, false).await?;
-            let stored = self
-                .read_record(
-                    &mut tx,
-                    pin.reservation.upload_id(),
-                    Some((pin.reservation.owner(), pin.reservation.account_id())),
-                )
-                .await?
-                .ok_or(FileUploadStoreError::InvalidRecord)?
-                .0;
-            if stored != pin.reservation {
-                return Err(FileUploadStoreError::InvalidRecord);
-            }
-            pin.schema.verify(self, &mut tx, false).await?;
+            self.verify_pinned_record(&mut tx, pin, false).await?;
             tx.commit().await?;
             Ok(())
         })
         .await
+    }
+
+    /// Borrow the caller's fresh source transaction while the original upload namespace is
+    /// selected. The table fence survives subsequent authorization waits until caller COMMIT.
+    /// This performs no pool acquisition, settings, deferred flush, COMMIT or filesystem work.
+    pub(crate) async fn verify_pin_in_transaction(
+        &self,
+        tx: &mut Tx<'_>,
+        pin: &UploadReservationPin,
+    ) -> Result<()> {
+        self.check_owner(pin.reservation.owner())?;
+        pin.schema.verify_selected(self, tx, false).await?;
+        sqlx::query(
+            "LOCK TABLE collaboration_file_upload_schema, collaboration_file_uploads IN SHARE MODE",
+        )
+        .execute(&mut **tx)
+        .await?;
+        // The lock may wait; compare the ORIGINAL pin again using the caller's RC snapshot.
+        self.verify_pinned_record(tx, pin, true).await
+    }
+
+    async fn verify_pinned_record(
+        &self,
+        tx: &mut Tx<'_>,
+        pin: &UploadReservationPin,
+        selected: bool,
+    ) -> Result<()> {
+        self.verify_pinned_schema(tx, pin, selected).await?;
+        let stored = self
+            .read_record(
+                tx,
+                pin.reservation.upload_id(),
+                Some((pin.reservation.owner(), pin.reservation.account_id())),
+            )
+            .await?
+            .ok_or(FileUploadStoreError::InvalidRecord)?
+            .0;
+        if stored != pin.reservation {
+            return Err(FileUploadStoreError::InvalidRecord);
+        }
+        self.verify_pinned_schema(tx, pin, selected).await?;
+        Ok(())
+    }
+
+    async fn verify_pinned_schema(
+        &self,
+        tx: &mut Tx<'_>,
+        pin: &UploadReservationPin,
+        selected: bool,
+    ) -> Result<()> {
+        if selected {
+            pin.schema.verify_selected(self, tx, false).await
+        } else {
+            pin.schema.verify(self, tx, false).await
+        }
     }
 
     fn source_key(&self, schema: &SchemaPin, record_digest: [u8; 32]) -> [u8; 32] {

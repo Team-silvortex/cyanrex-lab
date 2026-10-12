@@ -40,6 +40,30 @@ pub(super) fn open_at(parent: &File, name: &OsStr, flags: i32, mode: u32) -> io:
     Ok(unsafe { File::from_raw_fd(fd) })
 }
 
+/// Checks the entry itself, including dangling symlinks and special files, without opening it.
+pub(super) fn entry_exists(parent: &File, name: &OsStr) -> io::Result<bool> {
+    let name = CString::new(name.as_bytes()).map_err(|_| io::ErrorKind::InvalidInput)?;
+    let mut metadata = std::mem::MaybeUninit::<libc::stat>::uninit();
+    // SAFETY: parent and name remain live; fstatat initializes the supplied stat on success.
+    let status = unsafe {
+        libc::fstatat(
+            parent.as_raw_fd(),
+            name.as_ptr(),
+            metadata.as_mut_ptr(),
+            libc::AT_SYMLINK_NOFOLLOW,
+        )
+    };
+    if status == 0 {
+        return Ok(true);
+    }
+    let error = io::Error::last_os_error();
+    if error.kind() == io::ErrorKind::NotFound {
+        Ok(false)
+    } else {
+        Err(error)
+    }
+}
+
 pub(super) fn open_root(path: &Path) -> io::Result<File> {
     let denied = || io::Error::from(io::ErrorKind::PermissionDenied);
     if !path.is_absolute() || path.as_os_str().len() > 4096 {
@@ -122,12 +146,28 @@ pub(super) struct Snapshot {
 
 impl Snapshot {
     pub(super) fn private(metadata: &Metadata, byte_length: u64) -> io::Result<Self> {
+        Self::private_bounded(
+            metadata,
+            byte_length,
+            crate::models::collaboration::FILE_TRANSFER_CHUNK_BYTES,
+        )
+    }
+
+    pub(super) fn private_file(metadata: &Metadata, byte_length: u64) -> io::Result<Self> {
+        Self::private_bounded(
+            metadata,
+            byte_length,
+            crate::models::collaboration::MAX_FILE_TRANSFER_BYTES,
+        )
+    }
+
+    fn private_bounded(metadata: &Metadata, byte_length: u64, maximum: u64) -> io::Result<Self> {
         if !metadata.is_file()
             || metadata.uid() != uid()
             || metadata.nlink() != 1
             || metadata.mode() & 0o7777 != 0o400
             || metadata.len() != byte_length
-            || byte_length > crate::models::collaboration::FILE_TRANSFER_CHUNK_BYTES
+            || byte_length > maximum
         {
             return Err(invalid());
         }

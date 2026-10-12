@@ -27,6 +27,26 @@ impl SchemaPin {
         }
         Ok(())
     }
+
+    /// Only borrowed Session work may use the canonical equivalent target spelling. All
+    /// original namespace/table identities, configured limits and schema checks remain exact.
+    #[cfg(unix)]
+    pub(super) async fn verify_selected(
+        &self,
+        store: &FileUploadStore,
+        tx: &mut Tx<'_>,
+        writer: bool,
+    ) -> Result<()> {
+        self.namespace.verify_selected(store, tx).await?;
+        let current = store.check_schema(tx, writer).await?;
+        if !self.namespace.matches_selected(&current.namespace)
+            || current.relations != self.relations
+            || current.limits != self.limits
+        {
+            return Err(FileUploadStoreError::UnsupportedSchema);
+        }
+        Ok(())
+    }
 }
 
 impl FileUploadStore {

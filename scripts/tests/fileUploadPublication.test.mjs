@@ -32,11 +32,13 @@ test("publication uses a separate create-only trusted metadata store without liv
 });
 
 test("publication privately composes original confirmed journal and same byte proof after acknowledgement", async () => {
-  const publisher = codeOnly(await read("engine/src/services/file_upload_staging/publication/mod.rs"));
+  const surface = codeOnly(await read("engine/src/services/file_upload_staging/publication/mod.rs"));
+  const publisher = surface + codeOnly(await read("engine/src/services/file_upload_staging/publication/phase.rs"));
   for (const pattern of [/Arc::ptr_eq/, /capture_confirmed_file/, /capture_pin/, /FileUploadPublicationState::Unknown/, /verify_confirmed_file/, /observe_bound_file/, /recheck_bound_file_retained/, /verify_ack/, /recheck_bound_file/]) {
     assert.match(publisher, pattern);
   }
-  assert.doesNotMatch(publisher, /UploadFileObservation|Serialize|Deserialize|pub fn restore|sqlx|PgPool|install_empty/);
+  assert.doesNotMatch(publisher, /UploadFileObservation|Serialize|Deserialize|pub fn restore|PgPool|install_empty/);
+  assert.doesNotMatch(surface, /sqlx/);
   const journal = codeOnly(await read("engine/src/services/file_upload_chunk_journal/publication_pin.rs"));
   assert.match(journal, /WHERE upload_id=\$1 ORDER BY chunk_index LIMIT \$2/);
   assert.match(journal, /SET TRANSACTION ISOLATION LEVEL READ COMMITTED/);

@@ -71,6 +71,41 @@ impl FileUploadChunkJournal {
         root_key: [u8; 32],
         pin: &ConfirmedFilePin,
     ) -> Result<()> {
+        self.check_confirmed_pin(source, root_key, pin)?;
+        bounded(async {
+            let mut tx = self.begin_publication_read().await?;
+            self.verify_confirmed_rows(&mut tx, source, root_key, pin, false)
+                .await?;
+            tx.commit().await?;
+            Ok(())
+        })
+        .await
+    }
+
+    /// Borrow a fresh caller transaction with the original journal namespace selected. SHARE
+    /// fences the complete target set, including missing/extra rows, through caller COMMIT.
+    /// No settings, deferred flush, pool, COMMIT or filesystem operation occurs here.
+    pub(crate) async fn verify_confirmed_file_in_transaction(
+        &self,
+        tx: &mut Tx<'_>,
+        source: &UploadReservationPin,
+        root_key: [u8; 32],
+        pin: &ConfirmedFilePin,
+    ) -> Result<()> {
+        self.check_confirmed_pin(source, root_key, pin)?;
+        pin.schema.verify_selected(self, tx, false).await?;
+        sqlx::query("LOCK TABLE collaboration_file_upload_chunk_schema, collaboration_file_upload_chunks IN SHARE MODE")
+            .execute(&mut **tx).await?;
+        self.verify_confirmed_rows(tx, source, root_key, pin, true)
+            .await
+    }
+
+    fn check_confirmed_pin(
+        &self,
+        source: &UploadReservationPin,
+        root_key: [u8; 32],
+        pin: &ConfirmedFilePin,
+    ) -> Result<()> {
         self.check_publication_source(source)?;
         if pin.upload_id != source.reservation().upload_id()
             || pin.source_key != source.source_key()
@@ -78,21 +113,40 @@ impl FileUploadChunkJournal {
         {
             return Err(FileUploadChunkJournalError::InvalidInput);
         }
-        bounded(async {
-            let mut tx = self.begin_publication_read().await?;
-            pin.schema.verify(self, &mut tx, false).await?;
-            let current = self
-                .confirmed_fingerprints(&mut tx, source, root_key)
-                .await?
-                .ok_or(FileUploadChunkJournalError::InvalidRecord)?;
-            if current != pin.fingerprints {
-                return Err(FileUploadChunkJournalError::InvalidRecord);
-            }
-            pin.schema.verify(self, &mut tx, false).await?;
-            tx.commit().await?;
-            Ok(())
-        })
-        .await
+        Ok(())
+    }
+
+    async fn verify_confirmed_rows(
+        &self,
+        tx: &mut Tx<'_>,
+        source: &UploadReservationPin,
+        root_key: [u8; 32],
+        pin: &ConfirmedFilePin,
+        selected: bool,
+    ) -> Result<()> {
+        self.verify_confirmed_schema(tx, pin, selected).await?;
+        let current = self
+            .confirmed_fingerprints(tx, source, root_key)
+            .await?
+            .ok_or(FileUploadChunkJournalError::InvalidRecord)?;
+        if current != pin.fingerprints {
+            return Err(FileUploadChunkJournalError::InvalidRecord);
+        }
+        self.verify_confirmed_schema(tx, pin, selected).await?;
+        Ok(())
+    }
+
+    async fn verify_confirmed_schema(
+        &self,
+        tx: &mut Tx<'_>,
+        pin: &ConfirmedFilePin,
+        selected: bool,
+    ) -> Result<()> {
+        if selected {
+            pin.schema.verify_selected(self, tx, false).await
+        } else {
+            pin.schema.verify(self, tx, false).await
+        }
     }
 
     fn check_publication_source(&self, source: &UploadReservationPin) -> Result<()> {

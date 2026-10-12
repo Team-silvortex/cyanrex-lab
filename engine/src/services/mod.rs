@@ -17,6 +17,12 @@ mod event_bus_db_config;
 mod event_bus_db_parser;
 mod event_bus_filter;
 mod event_bus_policy;
+#[cfg(unix)]
+pub mod file_chunk_client;
+#[cfg(unix)]
+pub mod file_chunk_receiver;
+pub mod file_publisher_grant_store;
+pub mod file_recipient_grant_store;
 pub mod file_transfer;
 #[cfg(unix)]
 pub mod file_upload_chunk_journal;

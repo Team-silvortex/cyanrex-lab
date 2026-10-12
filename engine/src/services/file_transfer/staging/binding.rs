@@ -17,11 +17,27 @@ impl Write for HashWriter {
 }
 
 pub(super) fn chunk_name(manifest: &FileTransferManifest, index: u32) -> io::Result<String> {
+    Ok(legacy_chunk_name(manifest_digest(manifest)?, index))
+}
+
+pub(super) fn manifest_digest(manifest: &FileTransferManifest) -> io::Result<[u8; 32]> {
     let mut hash = HashWriter(Sha256::new());
     // Typed serialization fixes field order, UUID/digest spelling and numbers. This is a private
     // filename format, not canonicalization of arbitrary JSON or an authenticated capability.
     serde_json::to_writer(&mut hash, manifest).map_err(|_| io::ErrorKind::InvalidData)?;
-    Ok(format!("v1-{:x}-{index}", hash.0.finalize()))
+    Ok(hash.0.finalize().into())
+}
+
+pub(super) fn legacy_chunk_name(digest: [u8; 32], index: u32) -> String {
+    format!("v1-{}-{index}", digest_hex(digest))
+}
+
+pub(super) fn assembled_name(digest: [u8; 32]) -> String {
+    format!("f1-{}", digest_hex(digest))
+}
+
+fn digest_hex(digest: [u8; 32]) -> String {
+    digest.iter().map(|byte| format!("{byte:02x}")).collect()
 }
 
 pub(super) fn bound_chunk_name(

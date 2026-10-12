@@ -1,6 +1,6 @@
 # cyanrex-lab
 
-Version: `0.5.6`
+Version: `0.5.7`
 
 Cyanrex is evolving into a self-hosted collaboration platform for people, AI Agents and compute
 resources. Tasks, content versions, execution and reviews have separate responsibilities; eBPF teaching
@@ -24,14 +24,38 @@ private process in [SECURITY.md](SECURITY.md).
 
 ## Current development snapshot
 
-As of **2026-10-11**, the source version is **0.5.6**. This patch adds an owner-private
-[task metadata index](docs/en/task-content-index.md) and a separate unmounted HTTP adapter.
+As of **2026-10-12**, the source version is **0.5.7**. This patch extends large-file preparation
+with current grants/sharing, authorized chunk transport, an explicit client and private whole-file assembly.
+The owner-private [task metadata index](docs/en/task-content-index.md) and unmounted HTTP adapter remain included.
 [Large-file distribution preparation](docs/en/large-file-distribution.md) now includes bounded streaming,
 private chunk staging, immutable upload quotas, a chunk journal, whole-byte verification, trusted
 publication, current-Session private metadata and pure publisher/recipient grant contracts.
-It also retains the original source-relation pin across private Session work. Earlier task decoupling,
+A [publisher-grant follow-up](docs/en/large-file-publisher-grants.md), included in 0.5.7,
+adds trusted persistent revocation and current-Session own metadata reads.
+Separate [Session grant management](docs/en/large-file-grant-management.md) now requires an explicitly
+host-configured exact manager/account generation; teacher/deployment roles do not confer it.
+Separate [Session publication](docs/en/large-file-session-publication.md) now consumes current publisher
+permission for real bytes and an atomically authorized insert; recipient delivery and online manager revocation remain separate.
+Separate [recipient grants](docs/en/large-file-recipient-grants.md) now persist exact file/account
+bindings and provide current own-recipient metadata reads; download admission remains separate.
+Separate [publisher-owned sharing](docs/en/large-file-sharing.md) now issues exact Published-version
+grants under current publisher permission and lets the original publisher revoke old shares independently.
+Separate [recipient download manifests](docs/en/large-file-download-manifest.md) now check a current
+independent recipient grant against exact trusted Published metadata; this does not grant later bytes.
+The separate [verified chunk reader](docs/en/large-file-chunk-read.md) now returns up to 4 MiB after
+private file verification and original-authority reentry; returned bytes retain a bounded capacity lease.
+The separate [HTTP chunk receiver](docs/en/large-file-chunk-receiver.md) now verifies a supplied exact
+response through explicit EOF before exclusive private staging; real save work owns its buffer/control
+through cancellation. It does not start network requests or assemble/resume a whole-file download.
+The explicit [single-chunk HTTP client](docs/en/large-file-chunk-client.md) now adds a trusted fixed
+HTTPS/literal-loopback target, private per-call cookies and separate header/body deadlines; save jobs
+retain request admission after waiter cancellation. It remains outside normal application startup.
+Separate [private whole-file assembly](docs/en/large-file-chunk-assembly.md) now copies existing legacy
+chunks into one exclusive private file with actual whole-digest/readback checks; it does not select a
+user save path, recover lost progress, delete chunks or mount a complete downloader.
+The reader also retains the original source-relation pin across private Session work. Earlier task decoupling,
 AI host profiles/SDK adapters, C2-O–AA draft preparation and authentication protections remain included.
-See [release notes](CHANGELOG.md#056---2026-10-11). Network file transfer, durable grant issuance and
+See [release notes](CHANGELOG.md#057---2026-10-12) and [local validation](reports/releases/0.5.7/README.md). Normal-app file distribution, mounted client delivery and
 restart recovery are not connected. Preparation HTTP adapters remain unmounted and the editor local-only;
 neither this release nor passing tests switch legacy authentication or an existing deployment.
 

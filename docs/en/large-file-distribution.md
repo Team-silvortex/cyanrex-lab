@@ -30,6 +30,57 @@ an old active snapshot can still match after revocation. Publisher and recipient
 independent, with no automatic teacher/deployment grant or cascading recipient revocation.
 Audited management and current-Session grant reads remain separate implementation gates.
 
+The later [Unreleased publisher-grant ledger](large-file-publisher-grants.md), outside the 0.5.6 tag,
+adds trusted persistent issuance/revocation and current-Session own metadata reads. It does not
+authenticate managers or authorize publication. Recipient grants, exact Published permission
+consumption and byte delivery remain separate gates; the dated records below retain their original scope.
+
+Later [Session management](large-file-grant-management.md) supplies an explicit host-configured
+manager/account boundary for issuer-derived commands, not inherited roles or a persisted Registry
+permission. Durable online manager revocation and recipient consumption remain absent.
+
+Independent [Session publication](large-file-session-publication.md) now consumes publisher permission
+for real staged bytes and a final authorized source insert. Original pins cross a lock-free file-work
+gap; post-acknowledgement original checks and Unknown remain. Recipients, transport and recovery are not connected.
+
+The later [recipient ledger](large-file-recipient-grants.md) adds trusted exact-file/account grants,
+independent revocation and current own-recipient metadata reads. Authenticated recipient management,
+exact Published download admission, bytes and transport remain separate gates.
+
+The October 12 [publisher-owned sharing](large-file-sharing.md) follow-up now consumes current
+publisher permission for an own exact Published version and active recipient in one source write.
+Original owners can independently revoke old shares after publisher permission ends. Download
+admission and byte delivery remain separate; no teacher-wide file access or transfer is enabled.
+
+Independent [recipient download manifests](large-file-download-manifest.md) now compare an own Active
+grant with exact trusted Published metadata under the recorded publisher/account. Original records and
+final fresh recipient/Session validity share one source commit; the private manifest is not a cached
+byte permit. Single-chunk byte admission, verification and actual transport remain separate gates.
+
+The separate [verified chunk reader](large-file-chunk-read.md) now implements private bounded bytes
+and original-authority reentry; its move-only snapshot retains capacity until drop. Binary transport,
+client save/resumption and multi-client distribution remain separate gates.
+
+The independent [single-chunk HTTP adapter](large-file-chunk-http.md) adds an explicitly constructed
+binary GET, strict private admission and both permits retained by the verified Bytes owner. Its
+ten-second first-frame window is not continuous authority or remote delivery. It remains unmounted;
+the actual listener, client save/resumption and multi-client workflow still require separate review.
+
+The separate [HTTP receiver](large-file-chunk-receiver.md) now checks a supplied exact response
+through bounded frames, real EOF and selected digest before existing exclusive private staging.
+The save job retains its buffer/control through cancellation. Active fetching, final whole-file
+assembly/save, resumption and multi-client distribution remain separate, unmounted boundaries.
+
+The explicit [single-chunk client](large-file-chunk-client.md) now supplies the controlled request
+link for a trusted fixed origin, without mounting that router or issuing a Session. Certificate/SAN
+checks, no automatic retry/redirect/proxy/decode and request admission through actual save work
+remain separate from final whole-file assembly/save, resumption and multi-client orchestration.
+
+Separate [private assembly](large-file-chunk-assembly.md) now creates one exclusive whole `f1` file
+from existing legacy `v1` chunks with actual ordered/whole verification and original-inode readback.
+It retains uncertain files and original worker ownership, not recovered progress, automatic cleanup
+or user-selected final saving. Manifest fetching, multi-chunk network scheduling and resumption stay separate.
+
 The first user workflow is: an authorized publisher uploads a file, explicitly selects recipients,
 and those recipients download the exact published version with resumable progress and integrity checks.
 Teacher authority controls instance deployment; a workspace publisher still needs explicit publishing

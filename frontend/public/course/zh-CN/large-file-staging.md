@@ -59,6 +59,14 @@
 
 ## 验证与接线边界
 
+另行[整文件拼装](large-file-chunk-assembly.md)现为已有旧式分块增加 `assemble_staged_file`，
+创建不同前缀的独占私有整文件输出并实际读回整字节。它共享工作所有权，但不改变 `stage_chunk`，
+不收编 Source `u1` 文件；用户选路径最终保存与恢复仍在此本地操作之外。
+
+另行 [HTTP 接收器](large-file-chunk-receiver.md)在已提供响应 EOF／摘要核验后才复用本旧式
+`stage_chunk` 路径；其 reader 在真实任务内持有已校验字节／名额。不收编 Source 隐藏密钥，
+不主动获取，也不增加整文件保存／续传。
+
 默认 Rust 测试使用私有文件与确定性后台工作屏障，不依赖数据库或网络。
 真实文件跨 **4 MiB** 边界，故障路径保留不确定输出并带健康对照；实际运行记录见
 [项目状态](project-status.md)。这些用例不验收真实磁盘满/fsync 故障、断电恢复、RSS/吞吐、

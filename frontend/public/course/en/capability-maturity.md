@@ -1,5 +1,13 @@
 # Platform capability tensor and maturity
 
+The October 12 Unreleased [authorized chunk snapshots](large-file-chunk-read.md) connect bounded
+private bytes and original-authority reentry. A separate [binary HTTP adapter](large-file-chunk-http.md)
+adds unmounted exact GET and byte-owner admission. These notes do not rescore the dated tensor,
+refresh historical evidence or claim mounted transport/client acceptance. A separate [HTTP receiver](large-file-chunk-receiver.md)
+now validates supplied responses before exclusive private staging; it is not active fetching or whole-file/resume acceptance.
+The separate [controlled client](large-file-chunk-client.md) now adds explicit trusted-origin single-chunk requests, not normal-app distribution or a new maturity review.
+Separate [private assembly](large-file-chunk-assembly.md) now checks real whole-file output from legacy chunks, not user-selected saving, resume, live distribution or a new tensor score.
+
 Release inclusion · **2026-10-11**: the October 8/11 source follow-ups described below are now
 included in **0.5.5** as internal preparation. The dated review, tensor snapshot, scores and evidence
 retain their original versions and scope; release inclusion is not a new maturity or deployment review.
@@ -74,6 +82,19 @@ extends only W16 implementation source/test/document references. Its current aut
 comparison does not adopt progress or enable retry; full definition/byte corruption remains an error.
 The older manual-observation record does not verify this catalogue operation. All scores, evidence,
 snapshot fields, coordinates, edges and representative chains retain their existing values.
+
+The separate 0.5.6 Unreleased [Session file-publication connection](large-file-session-publication.md)
+uses current publisher permission, real bytes and an authorized final source commit. Its source and
+execution record live outside this dated tensor snapshot; no existing coordinate, score, edge,
+representative path or evidence is relabeled as file-distribution acceptance.
+
+The later [recipient-grant ledger and own reads](large-file-recipient-grants.md) remain an independent
+Unreleased metadata follow-up. Its evidence does not change this tensor's coordinates, scores or edges,
+and does not count as recipient management, download admission or centralized delivery acceptance.
+
+The October 12 [publisher-owned sharing follow-up](large-file-sharing.md) adds an independent current
+sharing transaction and original-owner revocation. Its execution record remains outside this dated
+tensor; no existing score, coordinate or edge is refreshed as download or centralized delivery acceptance.
 
 The central finding is that **local task editing, the existing teaching runtime and the prepared
 collaboration backend remain separate paths**. They do not yet form a generic saved-task or shared

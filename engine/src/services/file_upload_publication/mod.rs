@@ -13,10 +13,12 @@ use uuid::Uuid;
 
 mod commands;
 mod ledger;
+mod mutation;
 mod namespace;
 mod records;
 mod schema;
 mod transaction;
+pub(crate) use mutation::PendingFileUploadPublicationMutation;
 pub(crate) use schema::PublicationSchemaPin;
 pub(crate) use transaction::PendingFileUploadPublicationRead;
 

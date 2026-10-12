@@ -89,6 +89,10 @@ Schema、记录拒绝、Conflict、CapacityExhausted 与 StorageUnavailable；�
 集中分发可用之前仍需审阅回执丢失/重启协调、物理磁盘策略、当前发布/接收授权、集中传输及
 安全客户端送达。
 
+后续 [Session 发布](large-file-session-publication.md)独立把真实发布相位与当前操作者／授权检查
+及最终授权认证源插入连接；SQL 锁不跨文件工作，旧可信 API 保持独立，两者保留相同原确认后复核。
+新证据不改下方记录，也不提供接收者、传输或恢复。
+
 ## 实际执行记录 · 2026-10-11
 
 两个已编译基线均在私有可销毁 PostgreSQL 16 数据库实际运行。全新安装器先产生

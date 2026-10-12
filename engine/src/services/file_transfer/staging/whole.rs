@@ -1,6 +1,6 @@
 //! Current whole-file observations only, never original write receipts or recovery grants.
 use super::{
-    binding::bound_chunk_name,
+    binding::{bound_chunk_name, legacy_chunk_name},
     directory::ChunkDirectory,
     filesystem::{invalid, open_at, Identity, Snapshot},
     ChunkStagingError, FileTransferManifest,
@@ -8,7 +8,7 @@ use super::{
 use std::{
     ffi::OsStr,
     fs::File,
-    io::{self, Read},
+    io::{self, Read, Write},
 };
 
 /// Opaque and move-only. Metadata equality cannot construct a successful byte observation.
@@ -17,6 +17,26 @@ pub(crate) struct BoundFileObservation {
     binding: [u8; 32],
     root: Identity,
     chunks: Vec<ObservedChunk>,
+}
+
+pub(super) struct LegacyFileObservation {
+    binding: [u8; 32],
+    root: Identity,
+    chunks: Vec<ObservedChunk>,
+}
+
+enum Names {
+    Bound([u8; 32]),
+    Legacy([u8; 32]),
+}
+
+impl Names {
+    fn name(&self, manifest: &FileTransferManifest, index: u32) -> io::Result<String> {
+        match self {
+            Self::Bound(key) => bound_chunk_name(*key, manifest, index).map(|(name, _)| name),
+            Self::Legacy(digest) => Ok(legacy_chunk_name(*digest, index)),
+        }
+    }
 }
 
 struct ObservedChunk {
@@ -37,11 +57,12 @@ struct OpenChunk {
 // complete file in manifest order, and checks its exact EOF and original metadata at boundaries.
 struct OrderedChunks<'a, O> {
     directory: &'a ChunkDirectory,
-    key: [u8; 32],
+    names: Names,
     manifest: &'a FileTransferManifest,
     next: usize,
     current: Option<OpenChunk>,
     observed: Vec<ObservedChunk>,
+    expected: Option<&'a [ObservedChunk]>,
     observer: O,
 }
 
@@ -52,9 +73,15 @@ impl<O: FnMut(u32)> OrderedChunks<'_, O> {
         }
         let index = self.next as u32;
         let spec = self.manifest.chunk(index).map_err(|_| invalid())?;
-        let (name, _) = bound_chunk_name(self.key, self.manifest, index)?;
+        let name = self.names.name(self.manifest, index)?;
         let file = open_readonly(self.directory, &name)?;
         let original = Snapshot::private(&file.metadata()?, spec.byte_length)?;
+        if let Some(expected) = self.expected {
+            let expected = expected.get(self.next).ok_or_else(invalid)?;
+            if expected.name != name || expected.original != original {
+                return Err(invalid());
+            }
+        }
         self.current = Some(OpenChunk {
             file,
             name,
@@ -85,10 +112,12 @@ impl<O: FnMut(u32)> OrderedChunks<'_, O> {
         if current.original != after || after != visible {
             return Err(invalid());
         }
-        self.observed.push(ObservedChunk {
-            name: current.name,
-            original: current.original,
-        });
+        if self.expected.is_none() {
+            self.observed.push(ObservedChunk {
+                name: current.name,
+                original: current.original,
+            });
+        }
         (self.observer)(current.index);
         Ok(())
     }
@@ -137,13 +166,20 @@ fn recheck_metadata(
     manifest: &FileTransferManifest,
     observation: &BoundFileObservation,
 ) -> io::Result<()> {
-    if directory.identity != observation.root
-        || observation.chunks.len() != manifest.chunk_sha256().len()
-    {
+    recheck_chunks(directory, manifest, observation.root, &observation.chunks)
+}
+
+fn recheck_chunks(
+    directory: &ChunkDirectory,
+    manifest: &FileTransferManifest,
+    root: Identity,
+    chunks: &[ObservedChunk],
+) -> io::Result<()> {
+    if directory.identity != root || chunks.len() != manifest.chunk_sha256().len() {
         return Err(invalid());
     }
     directory.verify_root()?;
-    for (index, chunk) in observation.chunks.iter().enumerate() {
+    for (index, chunk) in chunks.iter().enumerate() {
         let length = manifest
             .chunk(index as u32)
             .map_err(|_| invalid())?
@@ -182,11 +218,12 @@ fn observe_inner<O: FnMut(u32)>(
         let (_, binding) = bound_chunk_name(key, manifest, 0)?;
         let mut reader = OrderedChunks {
             directory,
-            key,
+            names: Names::Bound(key),
             manifest,
             next: 0,
             current: None,
             observed: Vec::with_capacity(manifest.chunk_sha256().len()),
+            expected: None,
             observer,
         };
         super::super::verify_stream(manifest, &mut reader).map_err(|_| invalid())?;
@@ -233,6 +270,64 @@ pub(super) fn recheck_retained(
     recheck_metadata(directory, manifest, &observation)
         .map_err(|_| ChunkStagingError::Unavailable)?;
     Ok(observation)
+}
+
+/// Precreation actual legacy-byte observation, including the ordered whole digest and all snapshots.
+pub(super) fn observe_legacy(
+    directory: &ChunkDirectory,
+    manifest: &FileTransferManifest,
+    binding: [u8; 32],
+) -> io::Result<LegacyFileObservation> {
+    directory.verify_root()?;
+    let mut reader = OrderedChunks {
+        directory,
+        names: Names::Legacy(binding),
+        manifest,
+        next: 0,
+        current: None,
+        observed: Vec::with_capacity(manifest.chunk_sha256().len()),
+        expected: None,
+        observer: |_| {},
+    };
+    super::super::verify_stream(manifest, &mut reader).map_err(|_| invalid())?;
+    let observation = LegacyFileObservation {
+        binding,
+        root: directory.identity,
+        chunks: reader.observed,
+    };
+    recheck_legacy(directory, manifest, &observation)?;
+    Ok(observation)
+}
+
+/// Copies and verifies actual bytes again without adopting changed input entries or snapshots.
+pub(super) fn copy_legacy<W: Write, O: FnMut(u32)>(
+    directory: &ChunkDirectory,
+    manifest: &FileTransferManifest,
+    observation: &LegacyFileObservation,
+    writer: &mut W,
+    observer: O,
+) -> io::Result<()> {
+    recheck_legacy(directory, manifest, observation)?;
+    let mut reader = OrderedChunks {
+        directory,
+        names: Names::Legacy(observation.binding),
+        manifest,
+        next: 0,
+        current: None,
+        observed: Vec::new(),
+        expected: Some(&observation.chunks),
+        observer,
+    };
+    super::super::stream::copy_verify(manifest, &mut reader, writer).map_err(|_| invalid())?;
+    recheck_legacy(directory, manifest, observation)
+}
+
+pub(super) fn recheck_legacy(
+    directory: &ChunkDirectory,
+    manifest: &FileTransferManifest,
+    observation: &LegacyFileObservation,
+) -> io::Result<()> {
+    recheck_chunks(directory, manifest, observation.root, &observation.chunks)
 }
 
 #[cfg(test)]
