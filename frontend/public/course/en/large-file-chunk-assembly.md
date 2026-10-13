@@ -11,6 +11,11 @@ user-selected save operation, publication, resume protocol or current remote aut
 
 ## Input and output ownership
 
+Included in 0.5.8, [ordered private download](large-file-download-client.md) composes this assembler
+with HTTP/stage calls using the same original handle. Its optional crate-private flow reference enters
+the actual assembly job. This standalone method still fetches nothing, and its old execution record
+is not a new network-to-whole result.
+
 `services::file_transfer::staging::ChunkStaging::assemble_staged_file(&manifest)` accepts only an
 existing trusted staging handle and typed manifest. The workspace must match before admission.
 It takes no destination path, user filename, reader, hidden upload key, network credential or SQL
@@ -22,10 +27,14 @@ Source/upload-bound `u1` chunks. Display metadata never becomes a path. Streamin
 computes the fingerprint without materializing the manifest JSON. Equal bytes or a matching
 `FileVersionRef` do not merge different complete manifests or adopt another file.
 
-Success returns a move-only `AssembledFile` with `file() -> &FileVersionRef` metadata only. There is
-no public constructor, Clone, serialization, byte/path getter or descriptor. This acknowledges
-this local call's checks and synchronization; it is not a durable progress record, authenticated
-provenance, remote delivery receipt or authority to recover a cancelled/lost acknowledgement.
+Success returns a move-only `AssembledFile` exposing only `file() -> &FileVersionRef` metadata.
+The Unreleased [explicit private save](large-file-save.md) follow-up now privately retains the original
+read-only output/root descriptors, Snapshot and complete manifest binding after real final checks;
+the original writer stays live until that read-only inode opens, then closes before byte readback.
+There is still no public constructor, Clone, serialization, byte/path getter or descriptor. Retained
+proofs hold two descriptors, not workers or remote authority; old execution records below are unchanged.
+This local acknowledgement is not a durable progress record, authenticated provenance, remote
+delivery receipt or authority to recover a cancelled/lost acknowledgement.
 
 ## Checks and failure outcomes
 

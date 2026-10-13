@@ -1,4 +1,5 @@
 use super::{
+    assembled_proof::AssembledProof,
     binding::{assembled_name, manifest_digest},
     directory::ChunkDirectory,
     filesystem::{created_identity, entry_exists, invalid, open_at, Snapshot},
@@ -10,10 +11,13 @@ use std::{
     fs::{File, Permissions},
     io,
     os::unix::fs::PermissionsExt,
+    sync::Arc,
 };
 
-/// Move-only metadata acknowledging this local assembly call, not remote delivery or authority.
+/// Move-only acknowledgement of this local assembly call, not remote delivery or authority.
 /// No bytes, pathname or descriptor are exposed, and supplied metadata cannot construct it.
+/// Two private read-only descriptors retain the original file/root until the acknowledgement's
+/// final internal reference drops; no worker slot is retained after assembly completion.
 ///
 /// ```compile_fail
 /// use cyanrex_engine::services::file_transfer::staging::AssembledFile;
@@ -32,11 +36,16 @@ use std::{
 /// ```
 pub struct AssembledFile {
     file: FileVersionRef,
+    proof: Arc<AssembledProof>,
 }
 
 impl AssembledFile {
     pub fn file(&self) -> &FileVersionRef {
         &self.file
+    }
+
+    pub(super) fn proof(&self) -> &Arc<AssembledProof> {
+        &self.proof
     }
 }
 
@@ -90,14 +99,23 @@ fn run_inner<O: FnMut(Phase)>(
             ChunkStagingError::Unconfirmed
         }
     })?;
-    finish_created(directory, manifest, &name, &inputs, writer, &mut observer)
-        .map_err(|_| ChunkStagingError::Unconfirmed)
+    finish_created(
+        directory,
+        manifest,
+        &name,
+        binding,
+        &inputs,
+        writer,
+        &mut observer,
+    )
+    .map_err(|_| ChunkStagingError::Unconfirmed)
 }
 
 fn finish_created<O: FnMut(Phase)>(
     directory: &ChunkDirectory,
     manifest: &FileTransferManifest,
     name: &str,
+    binding: [u8; 32],
     inputs: &whole::LegacyFileObservation,
     mut writer: File,
     observer: &mut O,
@@ -116,7 +134,6 @@ fn finish_created<O: FnMut(Phase)>(
     if written.identity() != original {
         return Err(invalid());
     }
-    drop(writer);
     let mut retained = open_at(
         &directory.directory,
         OsStr::new(name),
@@ -126,14 +143,19 @@ fn finish_created<O: FnMut(Phase)>(
     if Snapshot::private_file(&retained.metadata()?, manifest.byte_length())? != written {
         return Err(invalid());
     }
+    // The original inode stays open while the read-only descriptor is pinned. Never permit a
+    // close/reopen gap to substitute a reused inode, and never keep the writer through readback.
+    drop(writer);
     // A third actual payload pass reads the output at the original inode, including exact length,
     // every chunk digest, final EOF and whole digest. No whole-file byte buffer is allocated.
     verify_file(manifest, &mut retained).map_err(|_| invalid())?;
     observer(Phase::Readback);
     whole::recheck_legacy(directory, manifest, inputs)?;
     require_output(directory, manifest, name, &written, &retained)?;
+    let proof = AssembledProof::capture(directory, retained, written, binding)?;
     Ok(AssembledFile {
         file: FileVersionRef::from_manifest(manifest),
+        proof: Arc::new(proof),
     })
 }
 

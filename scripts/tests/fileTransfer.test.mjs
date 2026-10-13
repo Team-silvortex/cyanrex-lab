@@ -31,11 +31,11 @@ test("large-file core is independently exported without widening existing Artifa
 
 test("large-file streaming preparation has no persistent publication authority or live composition", async () => {
   for (const [path, source] of await sources("engine/src/services/file_transfer")) {
-    if (["engine/src/services/file_transfer/staging/queued_tests.rs", "engine/src/services/file_transfer/staging/whole_tests.rs", "engine/src/services/file_transfer/staging/read_tests.rs", "engine/src/services/file_transfer/staging/assembly_tests.rs", "engine/src/services/file_transfer/staging/assembly_test_support.rs"].includes(path)) continue;
+    if (["engine/src/services/file_transfer/staging/queued_tests.rs", "engine/src/services/file_transfer/staging/whole_tests.rs", "engine/src/services/file_transfer/staging/read_tests.rs", "engine/src/services/file_transfer/staging/assembly_tests.rs", "engine/src/services/file_transfer/staging/assembly_test_support.rs", "engine/src/services/file_transfer/staging/assembly_flow_tests.rs", "engine/src/services/file_transfer/staging/assembled_proof_tests.rs", "engine/src/services/file_transfer/staging/save_test_support.rs", "engine/src/services/file_transfer/staging/save_work_tests.rs", "engine/src/services/file_transfer/staging/save_drift_tests.rs", "engine/src/services/file_transfer/staging/save_user_tests.rs", "engine/src/services/file_transfer/staging/save_directory_tests.rs"].includes(path)) continue;
     const production = codeOnly(source.replace(/#\[cfg\(test\)\]\s*mod queued_tests;/g, ""))
       .split("#[cfg(test)]")[0];
     assert.doesNotMatch(production, /sqlx|PgPool|AuthService|ArtifactStore|TaskStore|reqwest|std::(?:net|process|env)|install_empty|\.transaction\(/, path);
-    if (!["engine/src/services/file_transfer/staging/work.rs", "engine/src/services/file_transfer/staging/work_bound.rs", "engine/src/services/file_transfer/staging/work_whole.rs", "engine/src/services/file_transfer/staging/work_read.rs", "engine/src/services/file_transfer/staging/work_assemble.rs"].includes(path)) {
+    if (!["engine/src/services/file_transfer/staging/work.rs", "engine/src/services/file_transfer/staging/work_bound.rs", "engine/src/services/file_transfer/staging/work_whole.rs", "engine/src/services/file_transfer/staging/work_read.rs", "engine/src/services/file_transfer/staging/work_assemble.rs", "engine/src/services/file_transfer/staging/work_save.rs"].includes(path)) {
       assert.doesNotMatch(production, /spawn_blocking/, path);
     }
     if (path.includes("/staging/")) {
@@ -65,6 +65,7 @@ test("private chunk staging remains a separate default-tested Unix preparation b
   assert.match(service, /#\[cfg\(unix\)\]\s*pub mod staging;/);
   const stagingService = await read("engine/src/services/file_transfer/staging/mod.rs");
   assert.match(stagingService, /#\[cfg\(test\)\]\s*mod queued_tests;/);
+  assert.match(stagingService, /#\[cfg\(test\)\]\s*mod assembly_flow_tests;/);
   const harness = await read("engine/tests/file_chunk_staging_tdd.rs");
   assert.match(harness, /file_chunk_staging\/mod\.rs/);
   for (const [path, source] of await sources("engine/tests/file_chunk_staging")) {

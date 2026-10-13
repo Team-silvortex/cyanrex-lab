@@ -13,6 +13,9 @@ use std::{
 use tokio::{runtime::Builder, time::timeout};
 use uuid::Uuid;
 
+#[path = "flow_work_tests.rs"]
+mod flow_tests;
+
 struct Root(PathBuf, (u64, u64));
 impl Root {
     fn new() -> Self {

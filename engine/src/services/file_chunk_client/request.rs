@@ -2,6 +2,8 @@ use super::{
     FileChunkClientError, FileGrantId, FileTransferManifest, FileUploadId, Inner, ReceivedFileChunk,
 };
 use reqwest::header::{HeaderValue, ACCEPT, ACCEPT_ENCODING, COOKIE};
+use std::sync::Arc;
+use tokio::sync::OwnedSemaphorePermit;
 use tokio::time::{timeout_at, Instant};
 use uuid::Uuid;
 
@@ -12,6 +14,18 @@ pub(super) async fn fetch(
     upload_id: FileUploadId,
     manifest: &FileTransferManifest,
     index: u32,
+) -> Result<ReceivedFileChunk, FileChunkClientError> {
+    fetch_with_flow(inner, token, grant_id, upload_id, manifest, index, None).await
+}
+
+pub(super) async fn fetch_with_flow(
+    inner: &Inner,
+    token: &str,
+    grant_id: FileGrantId,
+    upload_id: FileUploadId,
+    manifest: &FileTransferManifest,
+    index: u32,
+    flow: Option<Arc<OwnedSemaphorePermit>>,
 ) -> Result<ReceivedFileChunk, FileChunkClientError> {
     if manifest.workspace() != inner.scope
         || manifest.chunk(index).is_err()
@@ -64,7 +78,7 @@ pub(super) async fn fetch(
         response.map(|body| super::work_tests::ObservedBody::new(body, inner.eof_observer.clone()));
     inner
         .receiver
-        .receive_and_stage_leased(manifest, index, response, Some(permit))
+        .receive_and_stage_with_flow(manifest, index, response, Some(permit), flow)
         .await
         .map_err(FileChunkClientError::Receive)
 }

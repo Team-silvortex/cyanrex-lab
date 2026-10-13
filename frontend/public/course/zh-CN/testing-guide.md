@@ -1,8 +1,12 @@
 # 当前项目测试指南
 
-源码版本 **0.5.7**（**2026-10-12**）已收录分日期的跟进及其测试选择。未发布标记保留当时
-实施阶段，库存和此前 0.5.4 执行记录不是新鲜的 0.5.7 SQL 运行或部署验收；实际发布门禁结果
+源码版本 **0.5.8**（**2026-10-13**）已收录分日期的跟进及其测试选择。未发布标记保留当时
+实施阶段，库存和此前 0.5.4 执行记录不是新鲜的 0.5.8 SQL 运行或部署验收；实际发布门禁结果
 及未覆盖范围记录于[项目状态](project-status.md)。
+
+[顺序下载](large-file-download-client.md)、[清单 HTTP](large-file-manifest-http.md)及
+[准确清单客户端](large-file-manifest-client.md)、所选保存、观察／取消和配对分发路由现收录于
+0.5.8；分日期的 0.5.7 证据仍保持原范围。
 
 本文按 **2026-10-08 的 0.5.4 源码** 核对，包含 C2-T–W 意图、派发与检查边界、Next.js 15.5.27
 下限，以及此前 AI 适配、草稿准备层、清理器加固、认证防护与独立内容 HTTP 适配。
@@ -111,6 +115,16 @@ Rust 公告审计，前端/SDK 检查也包含生产依赖的 npm 审计。因�
 | 未发布已提供响应 Unix 接收器 | `file_chunk_receiver_tdd`、显式 `scripts/test-file-chunk-receiver.sh`、私有任务存活单元及 `fileChunkReceiver` 守卫；[边界](large-file-chunk-receiver.md) | 准确单例头、私有有界帧／真正 EOF／摘要及 idle／total 后独占暂存；不是主动获取、远端回执、整文件拼装／保存、续传或在线挂载 |
 | 未发布显式单块 HTTP 客户端 | `file_chunk_client_tdd`、显式 `scripts/test-file-chunk-client.sh`、私有请求／工作单元及 `fileChunkClient` 守卫；[边界](large-file-chunk-client.md) | 真实环回请求／文件、准确输入、独立头／正文期限及任务持有准入，另有 ignored 当前 Source SQL 和 OpenSSL CA／SAN 对照；不是正常应用挂载或整文件／续传验收 |
 | 未发布本地整文件拼装 | `file_chunk_assembly_tdd`、暂存私有任务／变动单元及 `fileChunkAssembly` 守卫；[边界](large-file-chunk-assembly.md) | 真实旧式输入、独占实际整文件输出／EOF／摘要／读回、冲突及取消所有权；不是用户选路径保存、网络调度、恢复进度或部署验收 |
+| 0.5.8 顺序私有下载 | `file_download_client_tdd`、私有流程／工作单元、显式 `scripts/test-file-download-client.sh` 及 `fileDownloadClient` 守卫；[边界](large-file-download-client.md) | 实际有序 HTTP 到整文件字节、首失败保留及排队／运行取消所有权；独立当前 Source SQL 桥接，不是界面保存／续传或已挂载部署 |
+| 0.5.8 接收者清单 HTTP | `file_download_manifest_http_tdd`、私有契约单元、显式 `scripts/test-file-download-manifest-http.sh` 及 `fileManifestHttp` 守卫；[边界](large-file-manifest-http.md) | 严格六项选择器／当前接收者及有界私人 JSON／正文准入，不是客户端获取、字节、已挂载送达或续传 |
+| 0.5.8 准确清单客户端 | `file_manifest_client_tdd`、私有帧 Body／工作单元、显式 `scripts/test-file-manifest-client.sh` 及 `fileManifestClient` 守卫；[边界](large-file-manifest-client.md) | 真实元数据 GET／严格完整版本及顺序私有整文件字节，含空文件 GET 与实际 Source 撤权；不是界面保存／续传或已挂载部署 |
+| 0.5.8 宿主选择私有保存 | `file_save_tdd`、私有源／输出漂移和工作单元、`fileSave` 守卫及扩展的显式清单客户端 SQL 桥接；[边界](large-file-save.md) | 原描述符／完整清单连续性，独占实际复制／读回、保留不确定输出及真实 worker 生命周期；不是普通目录／界面保存、续传或在线挂载 |
+| 未发布授权下载及私有保存 | `file_delivery_tdd`、私有整流程／任务生命周期、`fileDelivery` 守卫及 `test-file-delivery.sh`；[边界](large-file-delivery-client.md) | 一次准入跨真实清单／块／拼装／保存，独立输出读回及首失败／取消留存；不是界面、续传或在线挂载 |
+| 未发布显式本人普通目录保存 | `file_user_save_tdd`、私有目录／任务／阶段单元、`fileUserSave` 守卫及扩展的既有交付 SQL；[边界](large-file-user-save.md) | 固定原父目录 UID／GID／模式、拒绝危险路径／权限、实际副本与取消；私有暂存仍 0700，不验收共享可写目录或界面 |
+| 未发布实时交付进度观察 | `file_delivery_progress_tdd`、私有实际任务生命周期、`fileDeliveryProgress` 守卫及扩展既有交付SQL；[边界](large-file-delivery-progress.md) | 单最新快照、真实ACK前缀、失败／取消／慢读取与实际输出；不是持久回执、恢复、续传、界面或部署验收 |
+| 未发布显式交付等待取消 | `file_delivery_cancel_tdd`、私有实际任务／通道选择单元、`fileDeliveryCancel` 守卫及扩展既有Source；[边界](large-file-delivery-cancellation.md) | 明确请求／句柄丢弃区别、输入／取消／容量优先级、真实Cancelled后任务资源／输出留存；不是即时kill、回滚、恢复或界面 |
+| 未发布完整HTTPS交付验证 | 三条显式原生 `file_delivery_tls_tdd`、`test-file-delivery-tls.sh` 及 `fileDeliveryTls` 库存守卫；[范围](large-file-delivery-https.md) | 实际一次性TLS、完整保存字节、凭据前身份拒绝及显式等待取消；与SQL权威和已部署局域网验收分开 |
+| 未发布配对分发路由 | `file_distribution_http_tdd`、`fileDistributionHttp` 及 `test-file-delivery.sh` 三条显式组合Source；[边界](large-file-distribution-router.md) | 一套缓存配置、两个独立HTTP门、实际binary owner／元数据／撤权，不是Session签发或隔离服务 |
 | 草稿导入与发布计划 | Rust `task_draft_publication_tdd`、`taskDraftPublication` 公共守卫、前端 `taskDraft` 共享夹具 | 严格有界 JSON、空白标题拒绝、本地身份剥离、给定准确内容映射及标准导出兼容；不发布内容、不检查当前 Session、不保存浏览器草稿 |
 | 会话草稿发布步骤 | Rust `session_task_draft_publication_tdd`、`scripts/test-session-task-draft-publication.sh`、`sessionTaskDraftPublication` 公共守卫 | 固定分配与 Session 绑定、每次推进一个写入、空/多项成功、确认前缀与未知步骤、取消、撤权及最终真实字节检查；无持久恢复或浏览器保存 |
 | 独立目录草稿发布 | `session_catalog_draft_publication_tdd`、内部 `catalog_draft_publication::tests`、`scripts/test-session-catalog-draft-publication.sh`、`sessionCatalogDraftPublication` 守卫 | 无 I/O 的准确完整定义冻结、独立 token 域、每次推进一个已有 Session 写入、完整 `Some` 确认、保留前缀与未知目标及手动/日志类型隔离；C2-AA 比较另列，不提供恢复、重试或 HTTP/浏览器保存 |

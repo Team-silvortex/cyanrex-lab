@@ -82,6 +82,12 @@ The later [verified chunk reader](large-file-chunk-read.md) separately implement
 byte verification and original-authority reentry. It does not reuse this returned manifest as permission
 or connect HTTP/client delivery. The manifest-only command and recorded execution below are unchanged.
 
+The new [exact manifest client](large-file-manifest-client.md) can fetch matching complete metadata
+and compose ordered private download; it does not replace later chunk authorization.
+The separate Unreleased [manifest HTTP adapter](large-file-manifest-http.md) now projects this
+command through an exact metadata GET. It mounts nothing and grants no later byte permission;
+the command and the historical execution below are unchanged.
+
 ## Recorded execution · 2026-10-12
 
 The compiled baseline established a real 17-byte Session publication and Session-issued share, then

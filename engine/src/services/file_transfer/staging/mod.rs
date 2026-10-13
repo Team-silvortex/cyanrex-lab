@@ -9,6 +9,7 @@ use std::{io::Read, path::Path, sync::Arc};
 use tokio::sync::{OwnedSemaphorePermit, Semaphore};
 
 mod assemble;
+mod assembled_proof;
 mod binding;
 mod bound;
 mod directory;
@@ -16,13 +17,19 @@ mod filesystem;
 #[cfg(test)]
 mod queued_tests;
 mod read;
+mod save;
+mod save_directory;
+mod save_io;
 mod whole;
 mod work;
 mod work_assemble;
 mod work_bound;
 mod work_read;
+mod work_save;
 mod work_whole;
 
+#[cfg(test)]
+mod assembly_flow_tests;
 #[cfg(test)]
 mod assembly_test_support;
 #[cfg(test)]
@@ -31,6 +38,9 @@ mod assembly_tests;
 pub use assemble::AssembledFile;
 pub(crate) use bound::BoundChunkReceipt;
 pub(crate) use read::BufferedBoundChunkRead;
+#[cfg(test)]
+pub(crate) use save::SaveTestPhase;
+pub use save::{FileSaveError, FileSaveTarget, SavedFile};
 pub(crate) use whole::BoundFileObservation;
 
 #[derive(Debug, thiserror::Error, PartialEq, Eq)]
@@ -100,10 +110,50 @@ impl ChunkStaging {
         &self,
         manifest: &FileTransferManifest,
     ) -> Result<AssembledFile, ChunkStagingError> {
+        self.assemble_staged_file_leased(manifest, None).await
+    }
+
+    /// Copies the original acknowledged assembly into an explicitly selected new private file.
+    /// The trusted host selects the target independently of any remote display name or path.
+    pub async fn save_assembled_file(
+        &self,
+        manifest: &FileTransferManifest,
+        assembled: &AssembledFile,
+        target: &FileSaveTarget,
+    ) -> Result<SavedFile, FileSaveError> {
+        self.save_assembled_file_leased(manifest, assembled, target, None)
+            .await
+    }
+
+    /// Cached identity only; does not inspect current roots or reserve a selected entry.
+    pub(crate) fn validate_save_target(
+        &self,
+        target: &FileSaveTarget,
+    ) -> Result<(), FileSaveError> {
+        save::validate_target(&self.inner, target)
+    }
+
+    /// A whole-download slot follows the actual queued/running selected save, not only its waiter.
+    pub(crate) async fn save_assembled_file_leased(
+        &self,
+        manifest: &FileTransferManifest,
+        assembled: &AssembledFile,
+        target: &FileSaveTarget,
+        flow: Option<Arc<OwnedSemaphorePermit>>,
+    ) -> Result<SavedFile, FileSaveError> {
+        save::run(&self.inner, manifest, assembled, target, flow).await
+    }
+
+    /// An internal whole-download slot remains owned by actual queued/running assembly work.
+    pub(crate) async fn assemble_staged_file_leased(
+        &self,
+        manifest: &FileTransferManifest,
+        flow: Option<Arc<OwnedSemaphorePermit>>,
+    ) -> Result<AssembledFile, ChunkStagingError> {
         if manifest.workspace() != self.inner.scope {
             return Err(ChunkStagingError::InvalidInput);
         }
-        work_assemble::run(&self.inner, manifest).await
+        work_assemble::run(&self.inner, manifest, flow).await
     }
 
     /// Binds trusted source metadata to the originally opened root using cached identity only.

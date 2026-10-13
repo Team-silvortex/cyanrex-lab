@@ -94,6 +94,10 @@ Clone／序列化、字节、路径或隐藏密钥访问器。它确认一次本
 
 ## 明确缺失
 
+0.5.8 收录的[顺序私有下载](large-file-download-client.md)增加可选 crate-private
+整流程引用，真实保存 reader 在请求名额之后释放它；已提供响应的公开入口传 `None`，
+原策略及旧执行记录不变。
+
 另行[受控客户端](large-file-chunk-client.md)现通过窄私有名额交接提供固定 Origin 显式请求；
 不把本公开“已提供响应”API 变成请求器，不改其验证／准入顺序。
 

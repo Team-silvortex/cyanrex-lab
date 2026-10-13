@@ -137,8 +137,25 @@ impl FileChunkReceiver {
     where
         B: http_body::Body<Data = Bytes> + Send + 'static,
     {
+        self.receive_and_stage_with_flow(manifest, index, response, caller, None)
+            .await
+    }
+
+    /// The optional whole-flow slot also belongs to the actual save job after waiter cancellation.
+    pub(crate) async fn receive_and_stage_with_flow<B>(
+        &self,
+        manifest: &FileTransferManifest,
+        index: u32,
+        response: Response<B>,
+        caller: Option<OwnedSemaphorePermit>,
+        flow: Option<Arc<OwnedSemaphorePermit>>,
+    ) -> Result<ReceivedFileChunk, FileChunkReceiveError>
+    where
+        B: http_body::Body<Data = Bytes> + Send + 'static,
+    {
         let mut reader = self.receive_checked(manifest, index, response).await?;
         reader.retain_caller(caller);
+        reader.retain_flow(flow);
         self.stage_checked(manifest, index, reader).await
     }
 

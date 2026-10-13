@@ -79,9 +79,48 @@ remain separate from final whole-file assembly/save, resumption and multi-client
 Separate [private assembly](large-file-chunk-assembly.md) now creates one exclusive whole `f1` file
 from existing legacy `v1` chunks with actual ordered/whole verification and original-inode readback.
 It retains uncertain files and original worker ownership, not recovered progress, automatic cleanup
-or user-selected final saving. Manifest fetching, multi-chunk network scheduling and resumption stay separate.
+or user-selected final saving. The standalone assembly API itself does not fetch manifests, schedule
+network chunks or resume work.
 
-The first user workflow is: an authorized publisher uploads a file, explicitly selects recipients,
+The [ordered downloader](large-file-download-client.md), included in 0.5.8, now composes these
+chunk and assembly calls. It stops on the first failure and retains real-job flow admission;
+this supplied-manifest entry does not fetch metadata or save a host-selected target. User-facing
+save dialogs, resume and normal application delivery remain absent.
+
+The separate [manifest HTTP adapter](large-file-manifest-http.md), included in 0.5.8,
+now offers current-recipient metadata GET. The new [exact manifest client](large-file-manifest-client.md)
+fetches the complete expected version and can compose metadata → ordered chunks → private assembly.
+Empty granted downloads require metadata GET; each later chunk remains independently authorized.
+Neither route is mounted in the normal application; UI saving and resume remain separate.
+The new [explicit private save](large-file-save.md) uses the retained original assembly proof to
+create a separately host-selected new file in an existing private directory. It never defaults a
+remote filename, adopts another inode or overwrites evidence; UI picking/resume remain absent.
+
+The new [authorized delivery call](large-file-delivery-client.md) joins these stages in one explicit operation.
+One original whole-flow lease remains owned by actual chunk/assembly/save work after cancellation;
+first failure stops with no retry/adoption, and UI saving, resume and normal mounting remain separate.
+
+The separate [owned user-directory target](large-file-user-save.md) explicitly accepts 0700/0750/0755
+without relaxing private staging. Original directory UID/GID/mode checks and checked saving remain;
+file picking, writable shared folders, resume and live mounting are separate.
+
+The optional [live delivery observer](large-file-delivery-progress.md) exposes one latest per-call phase
+and actual chunk-ACK prefix without callback/back-pressure queues. Full staging is not saved output;
+closure is not job termination or a receipt, and UI/durable progress/resume remain separate.
+
+The optional [cooperative cancellation handle](large-file-delivery-cancellation.md) stops one call's
+waiting when its request is selected. Handle drop is not cancellation; already-dispatched jobs keep
+resources and may finish, and a request is not an instantaneous dispatch fence or cleanup authority.
+
+Explicit [whole-delivery HTTPS verification](large-file-delivery-https.md) exercises the existing
+chain with disposable native TLS peers. Transport identity is not current file authorization;
+loopback acceptance does not establish deployed LAN, UI or unprivileged-service isolation.
+
+An explicit [distribution router composition](large-file-distribution-router.md) now derives both
+endpoints from one supplied Source and frozen chunk workspace. HTTP budgets remain independent;
+this cached configuration consistency is not a Session issuer, live mounting or privilege isolation.
+
+The first target user workflow is: an authorized publisher uploads a file, explicitly selects recipients,
 and those recipients download the exact published version with resumable progress and integrity checks.
 Teacher authority controls instance deployment; a workspace publisher still needs explicit publishing
 permission. Neither role grants access to another user's private Artifact.

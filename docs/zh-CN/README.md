@@ -4,11 +4,11 @@ Cyanrex 正从 eBPF 教学应用转向面向人类、AI Agent 与计算资源的
 继续可用；通用身份、内容、任务和审阅服务属于显式配置的准备层，任务 payload 编辑器目前只保存
 本地草稿。自主 AI 与通用 Run 编排尚未实现。
 
-本索引覆盖整个项目，不只覆盖首个教学领域。源码版本为 **0.5.7**（**2026-10-12**），收录私人
+本索引覆盖整个项目，不只覆盖首个教学领域。源码版本为 **0.5.8**（**2026-10-13**），收录私人
 任务元数据索引、未挂载 HTTP 适配及推进至当前授权／分享、认证分块传输和私有拼装的大文件准备层。
 此前任务解耦、C2-O–AA、Next.js 15.5.27、AI 宿主适配与安全边界保持不变。源码收录不接通通用
 浏览器保存、不切换在线认证、不迁移存储，也不验收部署。分日期的未发布说明保留原实施阶段、
-源码版本与验证范围，不是新鲜的 0.5.7 执行记录。
+源码版本与验证范围，不是新鲜的 0.5.8 执行记录。
 以下文档区分源码发布内容、现用运行能力和目标架构，
 模块存在或测试通过不表示已有在线部署。
 
@@ -43,9 +43,10 @@ Cyanrex 正从 eBPF 教学应用转向面向人类、AI Agent 与计算资源的
 在精确 `GET /platform/v1/task-index` 投影该当前会话页面。它仍未挂载，严格解析原始分页查询，
 私有名额持续至响应正文结束；原内容路由、Session 签发、SDK/OpenAPI 及浏览器行为不变。
 
-**0.5.6 [大文件准备层](large-file-distribution.md)**提供独立组合的流式、暂存、上传配额、日志、
-核验、发布与私人元数据服务。发布者／接收者契约只比较给定快照；持久授权签发、恢复和两种
-网络传输仍未接通。源码收录不表示已经部署了分发服务。
+**0.5.6 [大文件准备层](large-file-distribution.md)**提供了独立组合的流式、暂存、上传配额、日志、
+核验、发布与私人元数据服务。当时发布者／接收者契约只比较给定快照，持久授权签发、恢复和
+两种网络传输尚未接通。0.5.7 另收录授权及分块传输；[顺序下载跟进](large-file-download-client.md)
+现收录于 0.5.8。正常应用分发、界面保存对话框、续传及桌面互传仍未接通。
 
 ## 按问题选择入口
 
@@ -55,8 +56,8 @@ Cyanrex 正从 eBPF 教学应用转向面向人类、AI Agent 与计算资源的
 | 当前全部模块及连接关系 | [当前平台功能地图](platform-network.md) |
 | 按架构、功能、实现和成熟度切片 | [功能张量与证据评分](capability-maturity.md) |
 | 哪些已完成以及下一步 | [项目状态](project-status.md)、[目标架构](next-architecture.md) |
-| 审阅集中大文件分发和后续桌面互传 | [分发提案](large-file-distribution.md)、[流式核心](large-file-core.md)、[私有分块暂存](large-file-staging.md)、[上传意图与逻辑配额](large-file-upload-intent.md)、[本地回执](large-file-upload-staging.md)、[分块写前日志](large-file-chunk-journal.md)、[整文件字节观察](large-file-whole-verification.md)、[持久发布元数据](large-file-publication.md)、[Session 私有元数据](large-file-session-metadata.md)、[纯发布／接收契约](large-file-access-contract.md)；网络传输未接通 |
-| 查看未发布的发布权限账本及本人 Session 读取 | [持久发布权限](large-file-publisher-grants.md)；不在 0.5.6 标签内，不是授权管理认证或发布权限消费 |
+| 审阅集中大文件分发和后续桌面互传 | [分发提案](large-file-distribution.md)、[流式核心](large-file-core.md)、[私有分块暂存](large-file-staging.md)、[上传意图与逻辑配额](large-file-upload-intent.md)、[本地回执](large-file-upload-staging.md)、[分块写前日志](large-file-chunk-journal.md)、[整文件字节观察](large-file-whole-verification.md)、[持久发布元数据](large-file-publication.md)、[Session 私有元数据](large-file-session-metadata.md)、[纯发布／接收契约](large-file-access-contract.md)；正常应用分发及桌面互传未接通 |
+| 查看持久发布权限账本及本人 Session 读取 | [持久发布权限](large-file-publisher-grants.md)；收录于 0.5.7，不在 0.5.6 标签内，不是授权管理认证或发布权限消费 |
 | 通过明确配置的管理者签发／撤销授权 | [Session 授权管理](large-file-grant-management.md)；宿主指定准确账号，不继承角色，不是持久在线管理权撤销或发布权限消费 |
 | 使用当前发布授权发布已暂存上传 | [Session 发布](large-file-session-publication.md)；最终授权认证源提交及原字节复核，不是下载、网络传输或恢复 |
 | 通过当前接收者查看准确文件授权 | [持久接收授权](large-file-recipient-grants.md)；独立撤销与本人元数据读取，不是接收授权管理或下载权限 |
@@ -67,6 +68,16 @@ Cyanrex 正从 eBPF 教学应用转向面向人类、AI Agent 与计算资源的
 | 校验并私有暂存已提供二进制响应 | [HTTP 分块接收器](large-file-chunk-receiver.md)；真正 EOF／摘要之后独占本地暂存，不是主动获取、整文件保存或续传 |
 | 从可信固定 Origin 显式获取单块 | [受控 HTTP 客户端](large-file-chunk-client.md)；HTTPS／明确字面环回及保存任务持有请求准入，不是运行挂载或整文件保存／续传 |
 | 把旧式分块拼成一个私有文件 | [私有整文件拼装](large-file-chunk-assembly.md)；实际有序／整文件字节及原 inode 读回，不是用户选路径保存、续传或发布 |
+| 顺序下载分块并私有拼装 | [顺序下载客户端](large-file-download-client.md)；0.5.8 已收录，流程／真实任务共享名额，不是界面保存、续传或已挂载送达 |
+| 经独立 JSON GET 查看获授权的完整清单 | [接收者清单 HTTP](large-file-manifest-http.md)；0.5.8 已收录，准确当前接收者，不是字节权限 |
+| 获取准确元数据并组合获授权私有下载 | [准确清单客户端](large-file-manifest-client.md)；0.5.8 已收录，空文件仍须 GET，不是界面保存／续传或在线挂载 |
+| 将原确认输出保存至明确选择的新私有文件 | [显式私有保存](large-file-save.md)；0.5.8 已收录，原描述符证明与独占复制／读回，不是界面对话框或续传 |
+| 下载准确授权版本并保存一份明确选择的私有副本 | [授权下载及保存](large-file-delivery-client.md)；同一整流程名额跨实际文件任务，不是界面保存、续传或在线服务 |
+| 明确选择本人普通目录而不放宽私有暂存 | [本人普通目录保存](large-file-user-save.md)；0700／0750／0755 及原 UID／GID／模式核验，不是共享可写目录或界面选择 |
+| 观察当前交付阶段及已确认块，不误判保存完成 | [实时交付进度](large-file-delivery-progress.md)；单调用最新快照，不是持久进度、回执、续传或界面 |
+| 显式停止一次交付等待而不误杀文件任务 | [协作式取消](large-file-delivery-cancellation.md)；句柄drop不取消、结果决定竞争，既有任务仍持资源，不自动清理 |
+| 通过真实HTTPS验证完整带取消交付链 | [原生HTTPS交付检查](large-file-delivery-https.md)；一次性准确对端、独立输出与取消，不是已部署局域网或grant权威 |
+| 从同一受信配置组合清单与分块端点 | [分发路由](large-file-distribution-router.md)；一个Source／workspace、独立预算及私有兜底，不是正常挂载或特权隔离 |
 | 编辑笔记、代码或配置等任务内容 | [任务 payload 编辑器](editor.md) |
 | 配置 AI Agent 宿主并适配明确选出的工具 | [AI Agent SDK 接入](ai-agent-integration.md) |
 | 查看内部服务端内容结构与精确快照校验 | [任务内容清单](task-content-manifest.md) |

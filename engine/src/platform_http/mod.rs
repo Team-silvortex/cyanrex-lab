@@ -11,6 +11,10 @@ mod contract;
 mod errors;
 #[cfg(unix)]
 mod file_chunk_read;
+#[cfg(unix)]
+mod file_distribution;
+#[cfg(unix)]
+mod file_download_manifest;
 mod handlers;
 mod security;
 mod task_index;
@@ -18,6 +22,14 @@ mod text_artifact;
 pub use catalog_task::{build_catalog_task_content_router, CatalogTaskContentHttpState};
 #[cfg(unix)]
 pub use file_chunk_read::{build_file_chunk_read_router, FileChunkReadHttpState};
+#[cfg(unix)]
+pub use file_distribution::{
+    build_file_distribution_router, FileDistributionHttpConfigError, FileDistributionHttpState,
+};
+#[cfg(unix)]
+pub use file_download_manifest::{
+    build_file_download_manifest_router, FileDownloadManifestHttpState,
+};
 pub use task_index::{build_task_content_index_router, TaskContentIndexHttpState};
 pub use text_artifact::{build_text_artifact_router, TextArtifactHttpState};
 

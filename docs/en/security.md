@@ -1,9 +1,13 @@
 # Security and deployment boundaries
 
-Source release **0.5.7** (**2026-10-12**) includes these follow-ups. Dated `Unreleased` labels retain
+Source release **0.5.8** (**2026-10-13**) includes these follow-ups. Dated `Unreleased` labels retain
 their original implementation stage, source versions and verification scope. Source inclusion does not
 mount preparation APIs, connect browser saving, switch live authentication, migrate storage or validate
 a running deployment.
+
+The [ordered download](large-file-download-client.md), [manifest HTTP](large-file-manifest-http.md)
+and [exact manifest client](large-file-manifest-client.md), selected saving, observation/cancellation
+and paired distribution router are now included in 0.5.8; dated 0.5.7 evidence stays separate.
 
 This guide covers the current runtime, local editing and general collaboration preparation. The
 platform direction does not make the deployed Engine unprivileged or migrate its authentication.
@@ -185,6 +189,55 @@ kills actual work nor permits cleanup/retry. Three payload passes use bounded bu
 not disk reservation, atomic public publication, current remote authority or permanent same-UID sealing.
 
 ### Prepared HTTP admission follow-up
+
+The [ordered downloader](large-file-download-client.md), included in 0.5.8, retains one
+whole-flow slot across each actual save/assembly job. Cancellation cannot start the next request or
+release a live job's slot. Empty success is zero-HTTP local assembly, not remote authentication.
+Each nonempty server request still requires current recipient authority; no final continuous grant
+check or original receipt-identity continuity is promised. Existing files conflict, never become resume.
+
+The independent Unreleased [manifest GET](large-file-manifest-http.md) exposes only Source-selected
+private metadata after current exact recipient authorization. Six selectors choose no scope/owner;
+the existing credential/body gates and sanitized errors precede bounded JSON projection. HTTP slots
+end with the body, not retained JSON Bytes. Returned snapshots and later revocation do not authorize
+bytes; normal startup, Session issuer and live API remain unchanged.
+
+The new [exact manifest client](large-file-manifest-client.md) checks bounded singleton headers,
+actual framed EOF, strict raw JSON and the full expected version through the existing controlled
+transport. Its composed empty-file case still requires remote metadata GET. That observation is not
+continuous authorization or authenticated principal provenance; later chunks reauthorize independently.
+Manifest cancellation releases metadata/flow gates before file work; real jobs retain the old flow
+lease. No existing output is adopted, and there is no live mounting, UI save dialog or resume.
+
+The new [explicit private save](large-file-save.md) uses the original pinned assembly descriptors,
+not matching version metadata or an adopted replacement inode. The host's existing owned 0700 parent
+and independent basename select an exclusively created file, with actual copy and original-inode
+readback. No remote filename, overwrite, cleanup, remote grant or ordinary-directory/UI policy is
+inferred. Real jobs retain staging admission after cancellation; uncertain output remains evidence.
+
+The new [authorized delivery call](large-file-delivery-client.md) joins these stages in one explicit operation.
+One original whole-flow lease remains owned by actual chunk/assembly/save work after cancellation;
+first failure stops with no retry/adoption, and UI saving, resume and normal mounting remain separate.
+
+The separate [owned user-directory target](large-file-user-save.md) explicitly accepts 0700/0750/0755
+without relaxing private staging. Original directory UID/GID/mode checks and checked saving remain;
+file picking, writable shared folders, resume and live mounting are separate.
+
+The optional [live delivery observer](large-file-delivery-progress.md) exposes one latest per-call phase
+and actual chunk-ACK prefix without callback/back-pressure queues. Full staging is not saved output;
+closure is not job termination or a receipt, and UI/durable progress/resume remain separate.
+
+The optional [cooperative cancellation handle](large-file-delivery-cancellation.md) stops one call's
+waiting when its request is selected. Handle drop is not cancellation; already-dispatched jobs keep
+resources and may finish, and a request is not an instantaneous dispatch fence or cleanup authority.
+
+Explicit [whole-delivery HTTPS verification](large-file-delivery-https.md) exercises the existing
+chain with disposable native TLS peers. Transport identity is not current file authorization;
+loopback acceptance does not establish deployed LAN, UI or unprivileged-service isolation.
+
+An explicit [distribution router composition](large-file-distribution-router.md) now derives both
+endpoints from one supplied Source and frozen chunk workspace. HTTP budgets remain independent;
+this cached configuration consistency is not a Session issuer, live mounting or privilege isolation.
 
 The **2026-10-08 Unreleased C2-N follow-up** is not part of the published 0.5.4 tag.
 Its [explicit content router](task-content-http.md) shares four request/response slots by default

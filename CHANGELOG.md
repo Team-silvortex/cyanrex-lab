@@ -5,6 +5,68 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.5.8] - 2026-10-13
+
+This compatible patch connects exact authorized metadata and ordered chunk fetching to private
+whole-file assembly and explicit host-selected saving. Owned-directory targets, bounded local
+progress and cooperative cancellation retain real-job resource ownership. A single-Source router
+composition pairs the unmounted manifest/chunk endpoints, with separate HTTP budgets and native
+HTTPS regression coverage. These are explicit internal entries, not normal-app/UI/SDK mounting,
+Session issuance, privileged-process isolation, migration, resume or peer-to-peer deployment.
+Dated implementation evidence keeps its original 0.5.7/Unreleased scope; source inclusion does
+not establish a running deployment. See [local release validation](reports/releases/0.5.8/README.md).
+
+### Added
+
+- Add explicit unmounted distribution-router composition from one Source and one chunk workspace,
+  privately deriving the exact manifest configuration. Reuse original handlers with independent
+  metadata/binary budgets and one private fallback; no Session issuer, privilege isolation or live API.
+- Add explicit native HTTPS verification of the existing controlled file-delivery chain,
+  with disposable certificates, exact peer identity, independent saved-file checks and actual
+  TLS-wait cancellation boundaries. No production trust policy, API or live mounting changes.
+- Add a one-call cooperative cancellation handle for observed file delivery, with separate
+  Cancelled/Delivery results and original input priority, transport and job-held budgets.
+  Handle drop is not cancellation; requests do not instantly fence synchronous dispatch,
+  kill file work, rollback outputs, retry or clean up. No UI/live mounting or resume is added.
+- Add an optional local per-delivery phase/chunk-ACK observer using one latest snapshot slot.
+  Preserve the existing call result, authorization and actual job-held budgets; slow/dropped
+  readers add no consumption queue, closure is not job cancellation, and full staging is not
+  saved output. No persistent progress, receipt recovery, retry, UI or live mounting is added.
+- Add an explicit trusted-host user-directory save target for owned 0700/0750/0755 parents,
+  pinned original identity/UID/GID/mode and no-follow traversal. Keep private staging/default
+  targets strictly 0700, reuse actual checked saving and job-held budgets, and reject writable
+  shared parents, overwrite, adoption and repair; no UI, live mounting or resumption.
+- Compose exact authorized manifest/chunk download, original private assembly and host-selected
+  saving in one explicit client call. Retain one whole-flow lease through actual file jobs after
+  cancellation, preserve stage-specific errors and existing entry behavior, without retry,
+  overwrite, resume, UI/SDK or normal-app mounting.
+- Add trusted-host selected private file saving from the original acknowledged assembly, retaining
+  private original descriptors/full-manifest binding and using exclusive checked copy/readback.
+  Share real staging-worker ownership through cancellation; preserve uncertain output, never
+  overwrite/adopt/delete/retry. No ordinary-directory policy, UI save dialog, resume or live mounting.
+- Add exact-version manifest fetching through the existing controlled client transport and a
+  separate bounded metadata gate. Strict framed EOF/JSON/full-version checks precede optional
+  ordered private download; empty granted downloads still require metadata GET. Preserve old
+  supplied-manifest behavior and error variants. No live mounting or UI save/resume.
+- Add an independently constructed, unmounted current-recipient manifest JSON GET with strict
+  exact-version selectors, private credentials and bounded response-lifetime admission. Reuse
+  the existing Source authorization command; metadata never becomes later byte permission.
+  No normal-app mounting, Session issuance, live API/SDK/UI or migration; a separate client entry
+  connects explicit endpoint fetching without changing this adapter's authority.
+- Compose explicit ordered HTTP chunk downloads with same-root private whole-file assembly.
+  An independent clone-shared bounded flow slot follows actual save/assembly jobs through
+  cancellation; the first failure stops without adoption, cleanup, retry or next-chunk continuation.
+  Per-chunk current authorization remains separate from local whole-byte acknowledgement.
+  This supplied-manifest entry does not fetch metadata; a separate new entry does. No normal-app
+  mounting, user save path, resume or API/SDK/UI.
+
+### Fixed
+
+- Wait for the original staging worker's bounded final release in the observed-delivery cancellation
+  regression. A freed whole-flow slot does not imply its enclosing worker has dropped; execute the
+  real read-only verifier until admission is available and preserve every other error/byte assertion.
+  Production cancellation, admission and file behavior are unchanged.
+
 ## [0.5.7] - 2026-10-12
 
 This patch extends centralized file-distribution preparation with independent publisher/recipient
@@ -1132,7 +1194,8 @@ cross-user collaboration. The frozen public API compatibility baseline remains 0
 The canonical package metadata advanced directly from `0.2.9` to `0.3.1`. Version `0.3.0` identifies
 the frozen API compatibility snapshot only; it was not a package release and must not be tagged.
 
-[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.7...HEAD
+[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.8...HEAD
+[0.5.8]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.7...v0.5.8
 [0.5.7]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.6...v0.5.7
 [0.5.6]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.5...v0.5.6
 [0.5.5]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.4...v0.5.5

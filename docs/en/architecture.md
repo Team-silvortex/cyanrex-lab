@@ -1,9 +1,13 @@
 # System Architecture
 
-Source release **0.5.7** (**2026-10-12**) includes these follow-ups. Dated `Unreleased` labels retain
+Source release **0.5.8** (**2026-10-13**) includes these follow-ups. Dated `Unreleased` labels retain
 their original implementation stage, source versions and verification scope. Source inclusion does not
 mount preparation APIs, connect browser saving, switch live authentication, migrate storage or validate
 a running deployment.
+
+The [ordered download](large-file-download-client.md), [manifest HTTP](large-file-manifest-http.md)
+and [exact manifest client](large-file-manifest-client.md), selected saving, observation/cancellation
+and paired distribution router are now included in 0.5.8; dated 0.5.7 evidence stays separate.
 
 Cyanrex Lab is evolving from an eBPF teaching application into a self-hosted collaboration platform
 for people, future AI participants and computing resources. Tasks and their content are the organizing
@@ -641,7 +645,7 @@ The explicit [single-chunk client](large-file-chunk-client.md) now composes fixe
 literal-loopback HTTP, per-call native Session cookie, bounded header waiting and the same receiver.
 Retry/redirect/proxy/decode are disabled; a private extra request permit enters the real save job.
 Default certificate/SAN checks remain enabled, with optional bounded trusted-host public CA roots.
-This does not mount a listener, issue Sessions, fetch manifests, assemble whole files or resume work.
+The `fetch_and_stage` entry does not mount a listener, issue Sessions, fetch manifests or assemble/resume.
 
 The separate [private assembler](large-file-chunk-assembly.md) reads only existing legacy `v1` chunks
 and creates an exclusive `f1` file in the same original private root. Preverification, checked copy,
@@ -650,6 +654,53 @@ single job shares staging admission through cancellation; move-only metadata gra
 network scheduling, user-selected destination, publication or runtime mounting. Source `u1` stays separate.
 
 ## 5. Main Data Flows
+
+Included in 0.5.8, the [ordered download call](large-file-download-client.md) waits for each
+actual chunk ACK before requesting the next, then assembles using the same original root. A separate
+clone-shared 4-slot flow gate (1–16) travels into actual save/assembly jobs; cancellation never continues
+the loop. Other gates remain independent. First failure preserves files, not progress or final remote
+authority; this supplied-manifest call does not fetch metadata. UI saving, resume and normal startup
+remain absent.
+
+The separate Unreleased [manifest HTTP adapter](large-file-manifest-http.md) accepts six exact raw
+selectors, derives scope from trusted original configuration and calls the existing current-recipient
+metadata command once. Bounded direct JSON and error bodies retain an independent clone-shared gate
+until body completion/drop. It reads no files and mounts nothing.
+
+The new [exact manifest client](large-file-manifest-client.md) uses that fixed endpoint through the
+original private transport and a separate metadata gate. Strict framed EOF/JSON/full-version checks
+precede its optional ordered download core. Whole-flow admission comes before GET and is not acquired
+twice; even empty granted files require GET. Matching metadata is not later byte authority or resume.
+
+The new [explicit private save](large-file-save.md) borrows the original assembly acknowledgement,
+whose hidden read-only output/root descriptors and full manifest binding retain the exact object.
+The host separately selects an existing private parent and new basename. One original staging worker
+owns exclusive checked copy/sync/original-inode readback through cancellation; no UI dialog, overwrite,
+adoption, remote authorization, resume or runtime mounting is added.
+
+The new [authorized delivery call](large-file-delivery-client.md) joins these stages in one explicit operation.
+One original whole-flow lease remains owned by actual chunk/assembly/save work after cancellation;
+first failure stops with no retry/adoption, and UI saving, resume and normal mounting remain separate.
+
+The separate [owned user-directory target](large-file-user-save.md) explicitly accepts 0700/0750/0755
+without relaxing private staging. Original directory UID/GID/mode checks and checked saving remain;
+file picking, writable shared folders, resume and live mounting are separate.
+
+The optional [live delivery observer](large-file-delivery-progress.md) exposes one latest per-call phase
+and actual chunk-ACK prefix without callback/back-pressure queues. Full staging is not saved output;
+closure is not job termination or a receipt, and UI/durable progress/resume remain separate.
+
+The optional [cooperative cancellation handle](large-file-delivery-cancellation.md) stops one call's
+waiting when its request is selected. Handle drop is not cancellation; already-dispatched jobs keep
+resources and may finish, and a request is not an instantaneous dispatch fence or cleanup authority.
+
+Explicit [whole-delivery HTTPS verification](large-file-delivery-https.md) exercises the existing
+chain with disposable native TLS peers. Transport identity is not current file authorization;
+loopback acceptance does not establish deployed LAN, UI or unprivileged-service isolation.
+
+An explicit [distribution router composition](large-file-distribution-router.md) now derives both
+endpoints from one supplied Source and frozen chunk workspace. HTTP budgets remain independent;
+this cached configuration consistency is not a Session issuer, live mounting or privilege isolation.
 
 ### Platform work and authorization
 

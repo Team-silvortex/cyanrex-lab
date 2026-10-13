@@ -1,11 +1,15 @@
 # Current platform feature and module network
 
-Source release **0.5.7** (**2026-10-12**) includes these follow-ups. Dated `Unreleased` labels retain
+Source release **0.5.8** (**2026-10-13**) includes these follow-ups. Dated `Unreleased` labels retain
 their original implementation stage, source versions and verification scope. Source inclusion does not
 mount preparation APIs, connect browser saving, switch live authentication, migrate storage or validate
 a running deployment.
 
-Base source review date: **2026-10-03**. Current scope: **0.5.7 source**, including prepared-authentication
+The [ordered download](large-file-download-client.md), [manifest HTTP](large-file-manifest-http.md)
+and [exact manifest client](large-file-manifest-client.md), selected saving, observation/cancellation
+and paired distribution router are now included in 0.5.8; dated 0.5.7 evidence stays separate.
+
+Base source review date: **2026-10-03**. Current scope: **0.5.8 source**, including prepared-authentication
 hardening, the 0.5.0 navigation/filename fixes and C2-K/L/M/N content preparation, alongside the preceding
 collaboration commands and local task payload editor. The review retains its
 0.4.9 base commit and dated evidence; source inclusion is not a new release acceptance report or a
@@ -171,7 +175,7 @@ whole-file/resume or runtime edge; the dated tensor remains unchanged.
 The explicit [client edge](large-file-chunk-client.md) is fixed trusted origin + exact per-call
 selectors/Session → whole-call admission → controlled HTTPS/opt-in literal-loopback headers →
 framed receiver → existing exclusive staging with request/buffer/worker ownership → opaque local
-acknowledgement. No normal-app, whole-file/resume or discovery edge is added; dated scores stay unchanged.
+acknowledgement. This `fetch_and_stage` edge adds no whole-file/resume or discovery; dated scores stay unchanged.
 
 The separate [private assembly edge](large-file-chunk-assembly.md) is existing original-root `v1`
 chunks → fail-fast shared actual-job admission → exact ordered/whole preverification → exclusive
@@ -180,6 +184,53 @@ this call's opaque local acknowledgement. It adds no user save-path, network sch
 resume, publication or live mounting edge; the dated tensor is unchanged.
 
 ## Status vocabulary
+
+Included in 0.5.8, the [ordered download edge](large-file-download-client.md) is supplied expected
+manifest → independent whole-flow admission → per-index HTTP/receiver/stage ACK → same-root assembly.
+First error/drop stops future requests; the current real file job retains flow capacity. Empty files
+skip HTTP without remote authority. This edge adds no manifest fetch, final user save, resume or runtime
+mounting and does not update dated scores.
+
+The independent Unreleased [manifest HTTP edge](large-file-manifest-http.md) is six strict raw
+selectors/private credentials → HTTP admission/actual empty body → one current-recipient Source
+observation → bounded complete manifest JSON → body-lifetime release. The adapter itself adds no
+filesystem IO, final byte permission or live mounting; dated scores remain unchanged.
+
+The new [exact manifest client edge](large-file-manifest-client.md) is expected full version →
+original flow admission (for composition) → independent metadata admission → controlled fixed GET →
+strict framed EOF/JSON/full-version match → ordered chunk ACKs → same-root private assembly.
+Empty granted files still require GET; the original supplied-manifest entry keeps zero-HTTP empty
+assembly. Each later Source chunk reauthorizes. No UI save/resume, live mounting or tensor rescore.
+
+The new [explicit private save edge](large-file-save.md) is original assembly descriptor proof +
+independently host-selected private parent/basename → shared staging-worker admission → actual
+original-source verification → exclusive new checked copy → sync/original-inode readback → final
+source/output/root checks → local saved metadata. It makes no GET and adds no public/ordinary-folder
+UI, overwrite/adoption, resume, automatic cleanup or dated rescore.
+
+The new [authorized delivery call](large-file-delivery-client.md) joins these stages in one explicit operation.
+One original whole-flow lease remains owned by actual chunk/assembly/save work after cancellation;
+first failure stops with no retry/adoption, and UI saving, resume and normal mounting remain separate.
+
+The separate [owned user-directory target](large-file-user-save.md) explicitly accepts 0700/0750/0755
+without relaxing private staging. Original directory UID/GID/mode checks and checked saving remain;
+file picking, writable shared folders, resume and live mounting are separate.
+
+The optional [live delivery observer](large-file-delivery-progress.md) exposes one latest per-call phase
+and actual chunk-ACK prefix without callback/back-pressure queues. Full staging is not saved output;
+closure is not job termination or a receipt, and UI/durable progress/resume remain separate.
+
+The optional [cooperative cancellation handle](large-file-delivery-cancellation.md) stops one call's
+waiting when its request is selected. Handle drop is not cancellation; already-dispatched jobs keep
+resources and may finish, and a request is not an instantaneous dispatch fence or cleanup authority.
+
+Explicit [whole-delivery HTTPS verification](large-file-delivery-https.md) exercises the existing
+chain with disposable native TLS peers. Transport identity is not current file authorization;
+loopback acceptance does not establish deployed LAN, UI or unprivileged-service isolation.
+
+An explicit [distribution router composition](large-file-distribution-router.md) now derives both
+endpoints from one supplied Source and frozen chunk workspace. HTTP budgets remain independent;
+this cached configuration consistency is not a Session issuer, live mounting or privilege isolation.
 
 | Status | Meaning in this map |
 |---|---|

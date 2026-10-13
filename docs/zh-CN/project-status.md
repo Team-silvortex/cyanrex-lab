@@ -1,6 +1,6 @@
 # 项目进度状态
 
-快照日期：**2026-10-12**。源码版本：**0.5.7**，保留私人任务索引及未挂载 HTTP 适配，大文件准备层扩展至当前发布／接收授权、Session 发布／分享、认证分块读取／传输、显式客户端与私有整文件拼装。正常应用分发、用户最终保存和续传仍缺失；此前任务解耦、AI 宿主适配与认证防护保持不变。
+快照日期：**2026-10-13**。源码版本：**0.5.8**，保留私人任务索引及未挂载 HTTP 适配，大文件准备层扩展至当前发布／接收授权、Session 发布／分享、认证分块读取／传输、显式客户端、原私有整文件拼装与宿主选择保存。正常应用分发、界面保存对话框和续传仍缺失；此前任务解耦、AI 宿主适配与认证防护保持不变。
 
 0.5.4 C2-T–W 保留不可变意图、显式日志化派发、私人日志检查和单资源观察。原 C2-P 路径仍独立；
 元数据相符不是回执、重启恢复或重试许可。0.5.5 增加共享 HTTP 准入及独立 C2-X/Y 文本／目录路由，
@@ -26,7 +26,7 @@
 不在 0.5.6 标签内的[未发布发布权限账本](large-file-publisher-grants.md)增加可信可撤销记录及
 当前 Session 本人元数据读取。后续 [Session 管理](large-file-grant-management.md)从宿主指定的准确管理者／账号推导操作者，不继承角色，不提供持久在线管理权撤销或发布消费；独立证据不刷新历史记录。
 独立 [Session 发布](large-file-session-publication.md)现将当前准确发布权限、真实字节核验及最终授权认证源插入连接；接收者、传输、恢复与在线挂载仍缺失。新证据只留在自身记录。
-后续[接收授权](large-file-recipient-grants.md)增加独立准确文件账本及当前本人元数据读取。10 月 12 日[发布者分享](large-file-sharing.md)增加认证本人 Published 签发与独立原发布者撤销；[下载清单观察](large-file-download-manifest.md)校验准确 Published 元数据，不授予后续字节权限。独立[已校验分块快照](large-file-chunk-read.md)将至多 4 MiB 私有字节接在两笔原固定认证源事务之间；另行[二进制 HTTP 适配](large-file-chunk-http.md)增加未挂载准确 GET、字节所有者保留两种预算及首帧十秒窗口。独立[HTTP 接收器](large-file-chunk-receiver.md)在已提供响应真正 EOF／摘要之后独占私有暂存，缓冲／控制名额跨真实保存任务存活。显式[单块客户端](large-file-chunk-client.md)增加可信固定 HTTPS／明确字面环回请求，保存任务持有请求准入；另行[私有整文件拼装](large-file-chunk-assembly.md)现核对旧式输入并独占创建实际整文件输出／读回原 inode。用户选路径最终保存、网络调度、正常应用送达、续传和恢复仍缺失。新证据不改历史记录。
+后续[接收授权](large-file-recipient-grants.md)增加独立准确文件账本及当前本人元数据读取。10 月 12 日[发布者分享](large-file-sharing.md)增加认证本人 Published 签发与独立原发布者撤销；[下载清单观察](large-file-download-manifest.md)校验准确 Published 元数据，不授予后续字节权限。独立[已校验分块快照](large-file-chunk-read.md)将至多 4 MiB 私有字节接在两笔原固定认证源事务之间；另行[二进制 HTTP 适配](large-file-chunk-http.md)增加未挂载准确 GET、字节所有者保留两种预算及首帧十秒窗口。独立[HTTP 接收器](large-file-chunk-receiver.md)在已提供响应真正 EOF／摘要之后独占私有暂存，缓冲／控制名额跨真实保存任务存活。显式[单块客户端](large-file-chunk-client.md)增加可信固定 HTTPS／明确字面环回请求，保存任务持有请求准入；另行[私有整文件拼装](large-file-chunk-assembly.md)核对旧式输入并独占创建实际整文件输出／读回原 inode。0.5.8 收录的[顺序私有下载](large-file-download-client.md)现以真实工作流程容量连接顺序请求／暂存确认及同根拼装，首失败／丢弃不续跑。独立[清单 HTTP 适配](large-file-manifest-http.md)现投影当前获授权元数据，新增[准确清单客户端](large-file-manifest-client.md)获取完整期望版本并可组合顺序私有下载，空获授权文件也须 GET，每个后续块仍独立授权。新增[显式私有保存](large-file-save.md)保留原拼装描述符并独占复制至宿主选择的新私有文件，不采用另一匹配 inode。新增[授权交付调用](large-file-delivery-client.md)以同一实际任务保有的整流程名额连接准确清单、有序块、原拼装和所选私有保存。新增[显式本人目录目标](large-file-user-save.md)允许0700／0750／0755并核对原目录UID／GID／模式连续性，暂存仍严格0700。新增[实时交付观察](large-file-delivery-progress.md)提供单调用最新阶段与真实块ACK前缀，不把暂存百分比或关闭当作所选保存确认。新增[协作式取消入口](large-file-delivery-cancellation.md)按单调用显式请求停止等待，不因句柄丢弃误取消，也不杀真实任务或自动清理。显式[整交付HTTPS检查](large-file-delivery-https.md)以一次性原生对端测试既有链路，不改变生产信任或grant权威，也不是已部署局域网验收。显式[分发路由](large-file-distribution-router.md)现从一个所给Source／分块workspace派生双端点，独立HTTP预算，不是Session签发或隔离服务。界面保存对话框、正常应用送达、续传和恢复仍缺失。[0.5.8 发布验证](../../reports/releases/0.5.8/README.md)与分日期实施证据分开。
 
 Cyanrex 正转向与具体任务类型解耦的协作平台，eBPF 教学保留为首个领域，而不再定义所有工作的
 形态。目前已形成持久化协作准备层和本地任务内容编辑器，**尚未形成服务端保存的通用任务闭环，
@@ -78,7 +78,7 @@ Cyanrex 正转向与具体任务类型解耦的协作平台，eBPF 教学保留�
 | 0.5.6 · 文件发布及私有元数据准备层 | 已确认日志／新鲜字节之后的独立可信发布；独立当前 Session 本人预留及上传／Published 元数据读取，保留原身份及最终策略／到期检查 | 无真正 Session 发布、发布／接收授权、物理封存、恢复或传输；可信发布器可能已有记录而仍 Unknown |
 | 0.5.6 · 文件授权契约准备层 | 纯粹比较准确工作区、账号代次、文件版本、状态和有效期 | 无认证签发方、持久授权、新鲜策略／撤权查询、Session 连接或字节访问权限 |
 
-产品版本、API 兼容基线和各存储 Schema 编号独立演进。源码版本为 0.5.7，公共 API 兼容基线仍为
+产品版本、API 兼容基线和各存储 Schema 编号独立演进。源码版本为 0.5.8，公共 API 兼容基线仍为
 0.3.0；当前 Task 存储要求在全新独立命名空间安装 Schema 2，拒绝 Schema 1 而不迁移。
 正常启动路径和本次源码发布都不会升级数据库。
 0.5.0 收录的内容存储独立要求 Schema 3；Schema 2 句柄及既有 Session 适配器拒绝该格式。两种格式都需要

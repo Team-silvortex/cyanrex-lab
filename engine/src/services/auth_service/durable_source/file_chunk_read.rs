@@ -21,6 +21,15 @@ pub struct SessionFileChunkReadWorkspace {
 }
 
 impl SessionFileChunkReadWorkspace {
+    /// Cached trusted composition only. Does not verify pools, installed relations or provenance.
+    pub(crate) fn manifest_workspace_for(
+        &self,
+        source: &DurableAuthSource,
+    ) -> std::result::Result<SessionFileDownloadWorkspace, SessionFileDownloadError> {
+        source.check_file_download_scope(&self.downloads)?;
+        Ok(self.downloads.clone())
+    }
+
     /// Cached trusted configuration only, never permission to read a file or select its owner.
     pub(crate) fn file_scope(&self) -> WorkspaceRef {
         self.downloads.publication.scope()

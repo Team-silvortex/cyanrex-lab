@@ -1,4 +1,5 @@
 use std::io::{self, Cursor, Read};
+use std::sync::Arc;
 use tokio::sync::OwnedSemaphorePermit;
 
 pub(super) struct LeasedCursor {
@@ -7,8 +8,10 @@ pub(super) struct LeasedCursor {
     observer: Option<Box<dyn FnOnce() + Send + 'static>>,
     // Drop the private bytes before making receive/buffer capacity available again.
     _permit: OwnedSemaphorePermit,
-    // The optional outer request budget drops last, after the bytes and receiver lease.
+    // The optional outer request budget drops after the bytes and receiver lease.
     _caller: Option<OwnedSemaphorePermit>,
+    // A whole download shares one slot with its current real job; that final reference drops last.
+    _flow: Option<Arc<OwnedSemaphorePermit>>,
 }
 
 impl LeasedCursor {
@@ -19,11 +22,16 @@ impl LeasedCursor {
             observer: None,
             _permit: permit,
             _caller: None,
+            _flow: None,
         }
     }
 
     pub(super) fn retain_caller(&mut self, permit: Option<OwnedSemaphorePermit>) {
         self._caller = permit;
+    }
+
+    pub(super) fn retain_flow(&mut self, permit: Option<Arc<OwnedSemaphorePermit>>) {
+        self._flow = permit;
     }
 
     #[cfg(test)]

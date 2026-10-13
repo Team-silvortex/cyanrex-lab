@@ -7,6 +7,18 @@ refresh historical evidence or claim mounted transport/client acceptance. A sepa
 now validates supplied responses before exclusive private staging; it is not active fetching or whole-file/resume acceptance.
 The separate [controlled client](large-file-chunk-client.md) now adds explicit trusted-origin single-chunk requests, not normal-app distribution or a new maturity review.
 Separate [private assembly](large-file-chunk-assembly.md) now checks real whole-file output from legacy chunks, not user-selected saving, resume, live distribution or a new tensor score.
+Included in 0.5.8, [ordered download](large-file-download-client.md) now composes HTTP/stage/assembly with real-job flow leases; dated scores stay unchanged and UI saving/resume remain absent.
+The separate [manifest HTTP](large-file-manifest-http.md) projects current-recipient metadata. A new [exact manifest client](large-file-manifest-client.md) fetches it and composes private download, not continuing byte permission, UI save/resume or live delivery; no dated tensor score changes.
+The [selected private save](large-file-save.md) retains the original assembly object and exclusively copies it to a host-selected private file; no UI dialog, resume, live mounting or dated tensor rescore.
+The [authorized delivery call](large-file-delivery-client.md) joins metadata, ordered chunks, original assembly and selected private saving under one actual-job-held flow lease; source wiring does not rescore dated deployment or UI maturity.
+The [owned user-directory choice](large-file-user-save.md) adds explicit 0700/0750/0755 parents with original identity/UID/GID/mode checks, preserving strict private staging; no dated rescore, UI or shared-writable-folder acceptance.
+The [live delivery observer](large-file-delivery-progress.md) adds latest per-call phases and chunk ACK counters; snapshots are not receipts or durable resume, channel closure does not terminate real file jobs, and dated tensor scores remain unchanged.
+The [cooperative cancellation](large-file-delivery-cancellation.md) adds one-call requests/wait results while retaining real-job resources and old errors; not an instantaneous dispatch fence, job kill, rollback or resume, and no dated tensor rescore.
+The [complete HTTPS delivery checks](large-file-delivery-https.md) exercise existing controlled delivery using disposable native peers; transport identity is not file-grant authority or deployed-LAN acceptance, and dated tensor scores are unchanged.
+The [distribution router](large-file-distribution-router.md) derives paired endpoints from one supplied Source/chunk workspace with independent HTTP budgets; cached consistency is not live mounting, Session issuance or privileged-process isolation, and dated tensor scores remain unchanged.
+
+Source release **0.5.8** (**2026-10-13**) includes these download, saving and delivery follow-ups.
+Original implementation evidence remains dated; source inclusion does not rescore the tensor.
 
 Release inclusion · **2026-10-11**: the October 8/11 source follow-ups described below are now
 included in **0.5.5** as internal preparation. The dated review, tensor snapshot, scores and evidence

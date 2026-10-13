@@ -108,6 +108,10 @@ original completion acknowledgement.
 
 ## Deliberate omissions
 
+Included in 0.5.8, [ordered private download](large-file-download-client.md) adds an optional
+crate-private whole-flow reference retained after the request permit in the actual save reader.
+The supplied-response public entry passes `None`; its policy and the old execution record stay unchanged.
+
 The separate [controlled client](large-file-chunk-client.md) now supplies explicit fixed-origin
 requests through a narrow private lease handoff. It does not turn this public supplied-response API
 into a requester or change its validation/admission ordering.

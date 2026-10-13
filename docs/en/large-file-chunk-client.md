@@ -11,6 +11,11 @@ whole-file downloader, resume mechanism or desktop pairing protocol.
 
 ## Trusted configuration
 
+Included in 0.5.8, the same client also offers [ordered private download](large-file-download-client.md)
+with `fetch_and_assemble`. A separate flow gate follows actual save/assembly jobs; the original
+single-chunk API, transport policy and per-chunk deadlines stay unchanged. This dated single-chunk
+execution record is not a new whole-flow acceptance result.
+
 `services::file_chunk_client::FileChunkClient::new_https(origin, staging)` takes an existing trusted
 `ChunkStaging` and a canonical origin, not a request URL. `new_loopback` explicitly opts into plaintext
 HTTP only for a canonical **literal** IPv4 loopback or `::1`; `localhost`/DNS, numeric aliases, userinfo,

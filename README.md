@@ -1,6 +1,6 @@
 # cyanrex-lab
 
-Version: `0.5.7`
+Version: `0.5.8`
 
 Cyanrex is evolving into a self-hosted collaboration platform for people, AI Agents and compute
 resources. Tasks, content versions, execution and reviews have separate responsibilities; eBPF teaching
@@ -24,8 +24,9 @@ private process in [SECURITY.md](SECURITY.md).
 
 ## Current development snapshot
 
-As of **2026-10-12**, the source version is **0.5.7**. This patch extends large-file preparation
-with current grants/sharing, authorized chunk transport, an explicit client and private whole-file assembly.
+As of **2026-10-13**, the source version is **0.5.8**. This patch connects explicit authorized
+manifest/chunk download, private assembly and selected saving, with local progress/cancellation
+and a single-Source distribution router. These internal entries remain outside normal app startup.
 The owner-private [task metadata index](docs/en/task-content-index.md) and unmounted HTTP adapter remain included.
 [Large-file distribution preparation](docs/en/large-file-distribution.md) now includes bounded streaming,
 private chunk staging, immutable upload quotas, a chunk journal, whole-byte verification, trusted
@@ -55,9 +56,45 @@ chunks into one exclusive private file with actual whole-digest/readback checks;
 user save path, recover lost progress, delete chunks or mount a complete downloader.
 The reader also retains the original source-relation pin across private Session work. Earlier task decoupling,
 AI host profiles/SDK adapters, C2-O–AA draft preparation and authentication protections remain included.
-See [release notes](CHANGELOG.md#057---2026-10-12) and [local validation](reports/releases/0.5.7/README.md). Normal-app file distribution, mounted client delivery and
+See [release notes](CHANGELOG.md#058---2026-10-13) and [local validation](reports/releases/0.5.8/README.md). Normal-app file distribution, mounted client delivery and
 restart recovery are not connected. Preparation HTTP adapters remain unmounted and the editor local-only;
 neither this release nor passing tests switch legacy authentication or an existing deployment.
+
+Included in **0.5.8**, previously outside the 0.5.7 tag: [ordered private download](docs/en/large-file-download-client.md)
+now joins sequential HTTP chunks to same-root whole assembly. Shared flow capacity follows real
+file work through cancellation; failures preserve evidence and stop. UI saving/resume remain absent.
+
+The separate [recipient manifest HTTP](docs/en/large-file-manifest-http.md) exposes exact
+authorized metadata through an unmounted JSON GET. The new [exact manifest client](docs/en/large-file-manifest-client.md)
+can fetch that complete expected version and compose metadata → ordered chunks → private assembly;
+even empty files require metadata GET. Later chunk authorization and UI save/resume remain separate.
+The new [explicit private save](docs/en/large-file-save.md) copies the original acknowledged `f1`
+into a host-selected new file in a separate private directory, without overwrite or receipt adoption.
+The internal original descriptor proof stays private; UI file picking and resume remain absent.
+
+The new [authorized delivery call](docs/en/large-file-delivery-client.md) joins these stages in one explicit operation.
+One original whole-flow lease remains owned by actual chunk/assembly/save work after cancellation;
+first failure stops with no retry/adoption, and UI saving, resume and normal mounting remain separate.
+
+The separate [owned user-directory target](docs/en/large-file-user-save.md) explicitly accepts 0700/0750/0755
+without relaxing private staging. Original directory UID/GID/mode checks and checked saving remain;
+file picking, writable shared folders, resume and live mounting are separate.
+
+The optional [live delivery observer](docs/en/large-file-delivery-progress.md) reports a latest per-call
+phase and actual acknowledged chunk prefix. Slow/dropped readers do not add a consumption queue;
+full staging and observation closure are not saved-file success, recovery or worker termination.
+
+An optional [cooperative cancellation handle](docs/en/large-file-delivery-cancellation.md) stops this
+call's waiting when selected, not already-dispatched file work. Dropping the handle is not cancellation;
+request/completion races use the returned result, without automatic cleanup or retry.
+
+Explicit [whole-delivery HTTPS verification](docs/en/large-file-delivery-https.md) checks this existing
+chain with disposable native TLS peers. Certificate identity is separate from current file grants;
+these loopback fixtures are not deployed-LAN or live-service acceptance.
+
+An explicit [distribution router composition](docs/en/large-file-distribution-router.md) derives
+manifest and chunk endpoints from one trusted Source/workspace, with independent HTTP budgets.
+It remains unmounted and does not isolate the privileged Engine or issue Sessions.
 
 0.5.4 C2-T adds separate, immutable intent registration and current-Session-authorized reading
 from a real unstarted draft attempt. It stores bounded private metadata, not text or credentials.

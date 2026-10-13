@@ -52,9 +52,13 @@ impl FileChunkReadHttpState {
 
 /// Explicit router construction only; no application merge, listener or Session issuance.
 pub fn build_file_chunk_read_router(state: FileChunkReadHttpState) -> Router {
-    Router::new()
-        .route("/platform/v1/file-chunks", any(handlers::dispatch))
+    routes()
         .fallback(handlers::dispatch)
         .layer(middleware::from_fn(security::response_headers))
         .with_state(state)
+}
+
+/// Only the private exact route; callers cannot inject a router or replace its authoritative state.
+pub(super) fn routes() -> Router<FileChunkReadHttpState> {
+    Router::new().route("/platform/v1/file-chunks", any(handlers::dispatch))
 }

@@ -10,6 +10,10 @@
 
 ## 可信配置
 
+0.5.8 收录的同一客户端另提供[顺序私有下载](large-file-download-client.md)
+`fetch_and_assemble`，独立流程名额进入实际保存／拼装任务；原单块 API、传输策略及逐块
+期限不变。本文分日期的单块执行记录不是新整流程验收结果。
+
 `services::file_chunk_client::FileChunkClient::new_https(origin, staging)` 接收已经打开的可信
 `ChunkStaging` 和规范 Origin，不是请求 URL。`new_loopback` 显式选择明文，仅支持规范
 **字面** IPv4 环回或 `::1`；拒绝 `localhost`／DNS、数字别名、userinfo、路径、query、fragment

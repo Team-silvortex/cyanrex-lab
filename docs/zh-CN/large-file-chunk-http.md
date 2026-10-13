@@ -100,6 +100,9 @@ Source 只移动结果与 HTTP 名额进入私有零复制 `Bytes::from_owner` �
 
 ## 验证范围
 
+显式[分发路由](large-file-distribution-router.md)从一个所给workspace派生配对元数据，不改变
+byte owner或预算生命周期；旧独立builder仍兼容且未挂载。
+
 `file_chunk_read_http_tdd` 检查进程内请求与真实响应帧；
 `scripts/test-file-chunk-http.sh` 显式运行一次性 PostgreSQL／合成文件库存。
 私有解析／正文单元覆盖词法及所有者／期限行为；`fileChunkHttp` 公共守卫只检查源码组合、

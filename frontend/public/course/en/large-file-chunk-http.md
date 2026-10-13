@@ -111,6 +111,10 @@ existing source phase deadlines and actual job-lifetime worker budget remain sep
 
 ## Verification boundaries
 
+The explicit [distribution router](large-file-distribution-router.md) pairs this endpoint with metadata
+derived from one supplied workspace, without changing byte-owner or budget lifetimes. The standalone
+builder remains compatible and unmounted.
+
 `file_chunk_read_http_tdd` covers in-process requests and real response frames.
 `scripts/test-file-chunk-http.sh` explicitly executes its disposable PostgreSQL/synthetic-file inventory.
 Private parser/body units cover lexical and owner/deadline behavior; `fileChunkHttp` common guards

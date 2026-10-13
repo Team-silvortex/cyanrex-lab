@@ -21,6 +21,14 @@ pub struct SessionFileDownloadWorkspace {
     pub(super) recipients: SessionFileRecipientGrantWorkspace,
 }
 
+impl SessionFileDownloadWorkspace {
+    /// Frozen trusted scope only; this getter neither reads storage nor grants access.
+    #[cfg(unix)]
+    pub(crate) fn file_scope(&self) -> crate::models::collaboration::WorkspaceRef {
+        self.publication.scope()
+    }
+}
+
 /// Exact selectors only. Recipient and publisher attribution are never supplied by this request.
 #[derive(Debug, Clone)]
 pub struct SessionFileDownloadRequest {

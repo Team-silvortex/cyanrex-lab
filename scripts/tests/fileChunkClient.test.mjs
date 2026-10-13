@@ -18,7 +18,7 @@ test("chunk client freezes canonical policy and owns a controlled transport with
 test("chunk client validates before admission and sends only typed selectors and sensitive native credentials", async () => {
   const s = code(await read(`${dir}request.rs`));
   let previous = -1;
-  for (const phrase of ["manifest.workspace()", "manifest.chunk(index)", "token.len() != 36", "try_acquire_owned", "endpoint.set_query", "cookie.set_sensitive(true)", ".http", "timeout_at(deadline", "response.into()", ".receive_and_stage_leased"]) {
+  for (const phrase of ["manifest.workspace()", "manifest.chunk(index)", "token.len() != 36", "try_acquire_owned", "endpoint.set_query", "cookie.set_sensitive(true)", ".http", "timeout_at(deadline", "response.into()", ".receive_and_stage_with_flow"]) {
     const current = s.indexOf(phrase);
     assert.ok(current > previous, `ordered ${phrase}`);
     previous = current;
@@ -38,6 +38,8 @@ test("chunk client separates header waiting from framed receiver collection and 
   const leased = code(await read("engine/src/services/file_chunk_receiver/leased.rs"));
   assert.ok(leased.indexOf("cursor: Cursor<Vec<u8>>") < leased.indexOf("_permit: OwnedSemaphorePermit"));
   assert.ok(leased.indexOf("_permit: OwnedSemaphorePermit") < leased.indexOf("_caller: Option<OwnedSemaphorePermit>"));
+  assert.ok(receiver.includes("reader.retain_flow(flow)"));
+  assert.ok(leased.indexOf("_caller: Option<OwnedSemaphorePermit>") < leased.indexOf("_flow: Option<Arc<OwnedSemaphorePermit>>"));
 });
 
 test("chunk client remains explicitly Unix and outside normal startup API SDK and UI composition", async () => {

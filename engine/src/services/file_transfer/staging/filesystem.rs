@@ -13,7 +13,7 @@ use std::{
     path::{Component, Path},
 };
 
-fn uid() -> u32 {
+pub(super) fn uid() -> u32 {
     // SAFETY: geteuid takes no arguments and has no memory preconditions.
     unsafe { libc::geteuid() }
 }
@@ -65,6 +65,16 @@ pub(super) fn entry_exists(parent: &File, name: &OsStr) -> io::Result<bool> {
 }
 
 pub(super) fn open_root(path: &Path) -> io::Result<File> {
+    let directory = open_directory_path(path)?;
+    let meta = directory.metadata()?;
+    if !meta.is_dir() || meta.uid() != uid() || meta.mode() & 0o7777 != 0o700 {
+        return Err(io::ErrorKind::PermissionDenied.into());
+    }
+    Ok(directory)
+}
+
+/// Shared descriptor-relative protected-ancestor walk. Each caller validates its own terminal.
+pub(super) fn open_directory_path(path: &Path) -> io::Result<File> {
     let denied = || io::Error::from(io::ErrorKind::PermissionDenied);
     if !path.is_absolute() || path.as_os_str().len() > 4096 {
         return Err(denied());
@@ -90,8 +100,7 @@ pub(super) fn open_root(path: &Path) -> io::Result<File> {
         directory = open_at(&directory, name, libc::O_RDONLY | libc::O_DIRECTORY, 0)?;
         parts += 1;
     }
-    let meta = directory.metadata()?;
-    if parts == 0 || !meta.is_dir() || meta.uid() != uid() || meta.mode() & 0o7777 != 0o700 {
+    if parts == 0 {
         return Err(denied());
     }
     Ok(directory)

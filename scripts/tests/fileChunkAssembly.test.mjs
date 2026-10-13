@@ -13,7 +13,7 @@ test("private assembly accepts only the fixed staging manifest and returns opaqu
   assert.match(mod, /pub async fn assemble_staged_file\(\s*&self,\s*manifest: &FileTransferManifest,?\s*\)/);
   assert.match(mod, /pub use assemble::AssembledFile;/);
   const s = code(await read(`${dir}assemble.rs`));
-  assert.match(s, /pub struct AssembledFile\s*\{\s*file: FileVersionRef,?\s*\}/);
+  assert.match(s, /pub struct AssembledFile\s*\{\s*file: FileVersionRef,\s*proof: Arc<AssembledProof>,?\s*\}/);
   assert.match(s, /pub fn file\(&self\) -> &FileVersionRef/);
   assert.doesNotMatch(s, /pub fn (?:new|from|path|bytes|descriptor)|pub\s+file:|derive\([^)]*(?:Clone|Serialize|Deserialize)[^)]*\)\]\s*pub struct AssembledFile/);
   assert.equal((await read(`${dir}assemble.rs`)).match(/```compile_fail/g)?.length, 3);
