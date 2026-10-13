@@ -5,6 +5,7 @@ import SidebarLayout from "../src/components/SidebarLayout";
 import { useConfirmedAction } from "../src/components/useConfirmedAction";
 import { getEngineUrl } from "../src/config/runtime";
 import { useI18n } from "../src/i18n/context";
+import { localizeLegacyText } from "../src/i18n/legacyText";
 import { sanitizeForDisplay } from "../src/utils/security";
 
 export default function AccountPage() {
@@ -99,7 +100,7 @@ export default function AccountPage() {
       router.replace("/register");
     } catch (err) {
       setDeleteError((err as Error).message);
-      throw err;
+      throw new Error(localizeLegacyText((err as Error).message, t));
     } finally {
       requestInFlight.current = false;
       setBusy(false);
@@ -143,7 +144,7 @@ export default function AccountPage() {
           </div>
         </form>
         {passwordMessage && <p className="meta" style={{ marginTop: 10 }}>{passwordMessage}</p>}
-        {passwordError && <p className="error" style={{ marginTop: 10 }}>{sanitizeForDisplay(passwordError)}</p>}
+        {passwordError && <p className="error" style={{ marginTop: 10 }}>{sanitizeForDisplay(localizeLegacyText(passwordError, t))}</p>}
       </section>
 
       <section className="panel" style={{ marginTop: 16, borderColor: "#6b2b39" }}>
@@ -178,7 +179,7 @@ export default function AccountPage() {
             </button>
           </div>
         </form>
-        {deleteError && <p className="error" style={{ marginTop: 10 }}>{sanitizeForDisplay(deleteError)}</p>}
+        {deleteError && <p className="error" style={{ marginTop: 10 }}>{sanitizeForDisplay(localizeLegacyText(deleteError, t))}</p>}
       </section>
     </SidebarLayout>
   );

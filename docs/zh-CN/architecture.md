@@ -1,5 +1,9 @@
 # 系统架构
 
+先读精简的[当前架构图](architecture-map.md)：[运行接线](architecture-map.md#runtime-wiring)、
+职责与[变更边界](architecture-map.md#change-boundaries)。本文保留展开的实施决策及分日期
+跟进，不把所有切片合成一个已部署方案。
+
 源码版本 **0.5.8**（**2026-10-13**）已收录这些跟进；分日期的 `Unreleased`/未发布标记保留
 当时实施阶段、源码版本和验证范围。源码收录不代表准备层 API 已挂载、浏览器保存已接通、
 在线认证已切换、存储已迁移或运行实例已经验收。
@@ -574,6 +578,10 @@ Session；`fetch_and_stage` 入口不获取清单、不拼装整文件或续传�
 
 显式[分发路由组合](large-file-distribution-router.md)现从同一个所给Source及固定分块workspace
 派生两个端点，HTTP预算仍独立；缓存配置一致性不是Session签发、正常挂载或特权隔离。
+
+0.5.8 标签之后未发布的[真实Source／HTTPS联验](large-file-source-https.md)增加同一条原生
+授权／文件／router／TLS／保存测试链，覆盖派发前撤权及真实响应正文取消；不改生产监听、
+策略或分日期张量评分。
 
 ### 平台工作与授权
 

@@ -1,5 +1,7 @@
 # cyanrex-engine
 
+[简体中文](README.zh-CN.md)
+
 Axum backend for authentication, module orchestration, event streaming, and eBPF experiments.
 
 The composition root is split by responsibility: `application.rs` owns HTTP and access tiers,

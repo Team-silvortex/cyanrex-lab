@@ -181,7 +181,7 @@ editorTest("Rust exposes a real basic snippet without claiming semantic formatti
   assert.equal(await f.page.getByTestId("editor-format").isDisabled(), true);
   await f.setSource("fn");
   await f.page.getByTestId("editor-completion").click();
-  const suggestion = f.page.locator(".suggest-widget .monaco-list-row").filter({ hasText: "Rust function snippet" });
+  const suggestion = f.page.locator(".suggest-widget .monaco-list-row").filter({ hasText: "Rust 函数片段" });
   await suggestion.waitFor();
   await suggestion.click();
   await f.page.waitForFunction(() => /fn\s+name\([^)]*\)\s*\{/.test(window.monaco.editor.getModels()[0].getValue()));

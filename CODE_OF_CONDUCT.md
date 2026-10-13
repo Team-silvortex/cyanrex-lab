@@ -1,5 +1,7 @@
 # Community Code of Conduct
 
+[简体中文](CODE_OF_CONDUCT.zh-CN.md)
+
 cyanrex-lab welcomes learners, educators, operators, and contributors with
 different backgrounds and levels of eBPF experience.
 

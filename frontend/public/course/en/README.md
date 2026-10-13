@@ -1,17 +1,20 @@
 # Cyanrex project documentation
 
+[Translation coverage and boundaries](localization.md) describe the complete dictionaries and
+bilingual public guides included in 0.5.9, including Korean UI support and explicit course fallback.
+
 Cyanrex is moving from an eBPF teaching application to a self-hosted collaboration platform for
 people, AI Agents and compute resources. The existing teaching runtime remains usable. General
 identity, content, task and review services are explicitly configured preparation layers; the task
 payload editor is local-only, and autonomous AI and general Run orchestration are not implemented.
 
 This index describes the whole project, not only its first teaching domain. The source version is
-**0.5.8** (**2026-10-13**), including private task metadata indexing, its unmounted HTTP adapter and
+**0.5.9** (**2026-10-13**), adding local multi-file text import and architecture/error cleanup while retaining private task metadata indexing, its unmounted HTTP adapter and
 large-file preparation through current grants/sharing, authorized chunk transport and private assembly.
 Earlier task decoupling, C2-O–AA, Next.js 15.5.27, AI host adapters and security boundaries remain in place.
 Source inclusion does not connect generic browser saving, switch live authentication, migrate storage or
 validate a deployment. Dated `Unreleased` descriptions retain their original implementation stage,
-source versions and verification scope; they are not fresh 0.5.8 execution records.
+source versions and verification scope; they are not fresh 0.5.9 execution records.
 The documents distinguish source-release contents, live runtime capabilities
 and target architecture; a built module or passing test does not imply an online deployment.
 
@@ -61,12 +64,15 @@ Normal-app distribution, user-facing save dialogs, resume and desktop transfers 
 
 ## Start with your question
 
+For local authoring, [add multiple text files](local-text-file-import.md) in one reviewed batch,
+without replacing the draft or connecting server saving (Unreleased after 0.5.8).
+
 | What you need | Read first |
 |---|---|
-| Understand the project and its boundaries | [Architecture](architecture.md), [platform and teaching concepts](concepts.md) |
+| Understand the project and its boundaries | [Current architecture map](architecture-map.md), [detailed architecture](architecture.md), [platform and teaching concepts](concepts.md) |
 | See all current modules and connections | [Current platform feature map](platform-network.md) |
 | Compare architecture, capabilities, implementations and maturity | [Capability tensor and evidence-backed scores](capability-maturity.md) |
-| Know what is implemented and what comes next | [Project status](project-status.md), [target architecture](../zh-CN/next-architecture.md) |
+| Know what is implemented and what comes next | [Project status](project-status.md), [target architecture](next-architecture.md) |
 | Review centralized large-file distribution and later desktop transfers | [Distribution proposal](large-file-distribution.md), [streaming core](large-file-core.md), [private chunk staging](large-file-staging.md), [upload intent and logical quotas](large-file-upload-intent.md), [local receipts](large-file-upload-staging.md), [write-ahead chunk journal](large-file-chunk-journal.md), [whole-byte observation](large-file-whole-verification.md), [persistent publication metadata](large-file-publication.md), [Session private metadata](large-file-session-metadata.md), [pure publisher/recipient contracts](large-file-access-contract.md); normal-app distribution and desktop transfers not connected |
 | Inspect the persistent publisher-grant ledger and own Session reads | [Persistent publisher grants](large-file-publisher-grants.md); included in 0.5.7, outside the 0.5.6 tag, not grant-management authorization or publication permission consumption |
 | Issue or revoke grants through an explicitly configured manager | [Session grant management](large-file-grant-management.md); host-configured exact account, not inherited roles, durable online manager revocation or publication permission consumption |
@@ -89,6 +95,7 @@ Normal-app distribution, user-facing save dialogs, resume and desktop transfers 
 | Explicitly cancel one delivery wait without claiming a file-job abort | [Cooperative cancellation](large-file-delivery-cancellation.md); handle drop does not cancel, result decides races, existing jobs keep resources, no cleanup |
 | Verify the full controlled delivery path over actual HTTPS | [Native HTTPS delivery checks](large-file-delivery-https.md); disposable exact peers, independent outputs and cancellation, not deployed LAN or grant authority |
 | Compose manifest and chunk endpoints from one trusted configuration | [Distribution router](large-file-distribution-router.md); one Source/workspace, independent budgets and private fallback, not live mounting or privilege isolation |
+| Verify actual Source delivery through HTTPS | [Real Source HTTPS](large-file-source-https.md); explicit combined SQL/files/TLS cases, not deployed LAN, live mounting or Session issuance |
 | Edit task contents such as notes, code or configuration | [Task payload editor](editor.md) |
 | Configure an AI Agent host and adapt explicitly selected tools | [AI Agent SDK integration](ai-agent-integration.md) |
 | Inspect the internal server content shape and exact snapshot checks | [Task content manifest](task-content-manifest.md) |

@@ -43,7 +43,8 @@ async function setup() {
         reads.push(url.search);
         if (state.deferred) return state.deferred(route, headers);
         return reply(state.payload, state.status);
-      case "/learning/labs": return reply([{ lab: { id: labId, title: "第一个程序", template_id: "xdp-pass", doc_slug: "labs/01-first-program" },
+      case "/learning/labs": return reply([{ lab: { id: labId, position: 1, title: "第一个程序",
+        summary: "Compile and load XDP Pass, then inspect its lifecycle.", template_id: "xdp-pass", doc_slug: "labs/01-first-program" },
         status: "in_progress", attempts: 1, latest_feedback: ["Fix the guard"] }]);
       case "/ebpf/templates": return reply([{ id: "xdp-pass", name: "Template", code: template, capability: "xdp" }]);
       case "/ebpf/attachments/details": return reply({ attachments: [] });

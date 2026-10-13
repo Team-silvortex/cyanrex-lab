@@ -16,6 +16,7 @@ The [live delivery observer](large-file-delivery-progress.md) adds latest per-ca
 The [cooperative cancellation](large-file-delivery-cancellation.md) adds one-call requests/wait results while retaining real-job resources and old errors; not an instantaneous dispatch fence, job kill, rollback or resume, and no dated tensor rescore.
 The [complete HTTPS delivery checks](large-file-delivery-https.md) exercise existing controlled delivery using disposable native peers; transport identity is not file-grant authority or deployed-LAN acceptance, and dated tensor scores are unchanged.
 The [distribution router](large-file-distribution-router.md) derives paired endpoints from one supplied Source/chunk workspace with independent HTTP budgets; cached consistency is not live mounting, Session issuance or privileged-process isolation, and dated tensor scores remain unchanged.
+Unreleased [combined Source/HTTPS checks](large-file-source-https.md) extend explicit native integration coverage, not public wiring, privilege isolation or a dated tensor rescore.
 
 Source release **0.5.8** (**2026-10-13**) includes these download, saving and delivery follow-ups.
 Original implementation evidence remains dated; source inclusion does not rescore the tensor.

@@ -84,6 +84,8 @@ mod distribution_bridge;
 use distribution_bridge::{DistributionBridge as Bridge, DistributionServer as Server};
 #[path = "distribution_lifetime.rs"]
 mod distribution_lifetime;
+#[path = "source_https/mod.rs"]
+mod source_https;
 
 fn delivery_client(origin: &str, root: &PathBuf) -> FileChunkClient {
     FileChunkClient::with_config(

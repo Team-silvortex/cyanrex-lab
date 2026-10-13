@@ -1,5 +1,7 @@
 # Cyanrex Modules
 
+[简体中文](README.zh-CN.md)
+
 This directory is one of three distinct catalogues in the project:
 
 | Catalogue | Owner | What registration means |

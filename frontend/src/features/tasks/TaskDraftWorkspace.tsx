@@ -4,13 +4,14 @@ import { useConfirmedAction } from "../../components/useConfirmedAction";
 import TextPayloadEditor from "../editor/EditorWorkspace";
 import { safeEditorFilename } from "../editor/document";
 import { useDraftWarning } from "../editor/useDraftWarning";
+import { importTextFiles, preflightTextFiles } from "./textFileImport";
 import {
   addPayloadItem, createTaskDraft, createTextPayloadItem, MAX_TASK_DRAFT_BYTES, MAX_TASK_PAYLOAD_ITEMS,
   parseTaskDraft, removePayloadItem, serializeTaskDraft, updatePayloadItem, updateTaskTitle,
   type TaskDraft, type TextPayloadItem,
 } from "./taskDraft";
 
-const errorKeys = new Set(["taskDraft.invalid", "taskDraft.stale", "taskDraft.tooLarge", "taskDraft.tooMany"]);
+const errorKeys = new Set(["taskDraft.invalid", "taskDraft.stale", "taskDraft.tooLarge", "taskDraft.tooMany", "taskDraft.readFailed"]);
 const errorKey = (error: unknown) => error instanceof Error && errorKeys.has(error.message)
   ? error.message : "taskDraft.failed";
 const localItemId = () => `text-${Array.from(crypto.getRandomValues(new Uint32Array(4)),
@@ -30,6 +31,7 @@ export default function TaskDraftWorkspace() {
   const [notice, setNotice] = useState("");
   const mounted = useRef(true);
   const upload = useRef<HTMLInputElement>(null);
+  const textFiles = useRef<HTMLInputElement>(null);
   const safety = useConfirmedAction();
   const selected = draft.payload.find(item => item.id === selectedId);
   useDraftWarning(dirty, t("taskDraft.leaveConfirm"));
@@ -120,6 +122,35 @@ export default function TaskDraftWorkspace() {
       commit(next, true);
     });
   };
+  const importFiles = (selection: readonly File[]) => {
+    if (!selection.length || !mounted.current || safety.isBusy()) return;
+    const files = Object.freeze([...selection]);
+    const expected = revision.current, currentDraft = draftRef.current;
+    let reviewed;
+    try { reviewed = preflightTextFiles(currentDraft, files); }
+    catch (error) { setNotice(errorKey(error)); return; }
+    safety.request({ action: t("taskDraft.importFiles"), description: t("taskDraft.importFilesConfirm"),
+      targets: reviewed.map(file => file.name), dangerous: false,
+      details: [
+        { label: t("taskDraft.taskTitle"), value: currentDraft.title || t("taskDraft.untitled") },
+        { label: t("taskDraft.selectedFiles"), value: String(reviewed.length) },
+        { label: t("taskDraft.payload"), value: t("taskDraft.payloadCount", { count: currentDraft.payload.length + reviewed.length, max: MAX_TASK_PAYLOAD_ITEMS }) },
+        { label: t("taskDraft.fileSize"), value: t("taskDraft.bytes", { count: reviewed.reduce((sum, file) => sum + file.size, 0) }) },
+      ],
+    }, async signal => {
+      checkReviewed(expected, signal);
+      let next: TaskDraft;
+      try { next = await importTextFiles(currentDraft, files, localItemId, signal, () => checkReviewed(expected, signal)); }
+      catch (error) {
+        const key = errorKey(error);
+        throw new Error(t(key === "taskDraft.readFailed" ? "taskDraft.importReadFailed" : key));
+      }
+      checkReviewed(expected, signal);
+      commit(next);
+      if (!selectedRef.current) choose(next.payload[currentDraft.payload.length]?.id ?? null);
+      setNotice("taskDraft.filesAdded");
+    });
+  };
   const exportDraft = () => {
     if (!mounted.current || safety.isBusy()) return;
     try {
@@ -155,7 +186,7 @@ export default function TaskDraftWorkspace() {
         <button data-testid="task-draft-reset" type="button" className="button-secondary" disabled={safety.busy} onClick={reset}>{t("taskDraft.reset")}</button>
       </div>
       <p data-testid="task-draft-status" className="meta task-draft-status">{t(dirty ? "taskDraft.unsaved" : "taskDraft.emptyStatus")}</p>
-      {notice && <p className="task-draft-notice" role={notice === "taskDraft.downloadStarted" ? "status" : "alert"}>{t(notice)}</p>}
+      {notice && <p className="task-draft-notice" role={notice === "taskDraft.downloadStarted" || notice === "taskDraft.filesAdded" ? "status" : "alert"}>{t(notice)}</p>}
     </section>
     <div className="task-draft-layout">
       <aside className="panel task-payload-panel" aria-label={t("taskDraft.payload")}>
@@ -165,6 +196,17 @@ export default function TaskDraftWorkspace() {
         <p className="meta">{t("taskDraft.payloadHint")}</p>
         <button data-testid="task-payload-add" type="button" className="button-secondary"
           disabled={safety.busy || draft.payload.length >= MAX_TASK_PAYLOAD_ITEMS} onClick={addText}>{t("taskDraft.addText")}</button>
+        <input data-testid="task-text-import" ref={textFiles} hidden type="file" multiple
+          accept="text/*,.json,.yaml,.yml,.toml,.xml,.rs,.py,.c,.h,.cpp,.hpp,.ts,.js,.md,.sql,.sh"
+          disabled={safety.busy || draft.payload.length >= MAX_TASK_PAYLOAD_ITEMS}
+          onChange={event => {
+            // FileList is live: capture it before clearing so this selection can be retried.
+            const files = Array.from(event.currentTarget.files || []);
+            event.currentTarget.value = ""; importFiles(files);
+          }} />
+        <button data-testid="task-text-import-open" type="button" className="button-secondary"
+          disabled={safety.busy || draft.payload.length >= MAX_TASK_PAYLOAD_ITEMS}
+          onClick={() => textFiles.current?.click()}>{t("taskDraft.importFiles")}</button>
         <ul data-testid="task-payload-list" className="task-payload-list">
           {draft.payload.map(item => <li key={item.id}>
             <button data-testid={`task-payload-item-${item.id}`} data-payload-id={item.id} type="button"

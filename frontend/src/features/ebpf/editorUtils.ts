@@ -1,6 +1,7 @@
 import { analyzeCCode } from "../../utils/cAnalyzer";
+import { localDiagnosticCode, localizeLegacyText, type Translate } from "../../i18n/legacyText";
 
-export function applyMarkers(editor: any, monaco: any, diagnostics: ReturnType<typeof analyzeCCode>["diagnostics"]) {
+export function applyMarkers(editor: any, monaco: any, diagnostics: ReturnType<typeof analyzeCCode>["diagnostics"], translate?: Translate) {
   const model = editor.getModel?.();
   if (!model) return;
 
@@ -9,7 +10,8 @@ export function applyMarkers(editor: any, monaco: any, diagnostics: ReturnType<t
     startColumn: d.column,
     endLineNumber: d.line,
     endColumn: d.endColumn,
-    message: d.message,
+    message: translate ? localizeLegacyText(d.message, translate) : d.message,
+    code: localDiagnosticCode(d.message),
     severity:
       d.severity === "error"
         ? monaco.MarkerSeverity.Error

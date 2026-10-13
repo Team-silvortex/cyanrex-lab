@@ -5,6 +5,46 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.5.9] - 2026-10-13
+
+This compatible patch adds reviewed local multi-file text authoring, complete owned UI translation
+with Korean as the fifth locale, bilingual public documentation and architecture/error-boundary
+cleanup. Source/HTTPS verification strengthens the existing explicit file-delivery test chain;
+normal-app distribution, server-backed task saving, Session issuance and peer/resume deployment
+remain unconnected. Earlier dated evidence retains its original scope. See
+[local release validation](reports/releases/0.5.9/README.md).
+
+### Added
+
+- Add Korean (`ko`, 한국어) as a fifth UI locale with all 865 owned entries, including local editor
+  explanations and safety confirmations. Persist browser selection and label the actual fallback
+  course language without changing source, task revisions, undo, permissions or wire contracts.
+
+- Complete supported UI dictionary parity, localize editor explanations/accessibility and known
+  legacy teaching/runtime messages without changing code, diagnostics identity or wire contracts.
+  Add English architecture and Chinese public guides with translation/documentation regressions.
+
+- Add reviewed multi-file UTF-8 append to local Task drafts with one atomic commit, existing
+  selection/model/undo preservation, bounded validation and stale-read rejection. No server
+  saving, execution, Session issuance or large-file service mounting is connected.
+
+- Add explicit disposable Source/HTTPS integration coverage for controlled file delivery. Original
+  Session/grant authorization, Published bytes and paired routes supply native TLS responses;
+  verify complete selected saving, pre-dispatch revocation and actual TLS-body cancellation.
+  This adds test-only transport framing, not a production listener, trust policy, issuer or mounting.
+
+### Changed
+
+- Organize the service index by existing responsibilities and add a concise bilingual current
+  architecture map. Share private file metadata-error projection between manifest and chunk
+  adapters without changing response status, error outcome, permissions or runtime mounting.
+
+### Fixed
+
+- Reject obsolete course bodies after language changes so a late response cannot overwrite the
+  current document or its actual language label. Complete existing browser fixture responses
+  without relaxing source preservation, confirmation, write or unexpected-request assertions.
+
 ## [0.5.8] - 2026-10-13
 
 This compatible patch connects exact authorized metadata and ordered chunk fetching to private
@@ -1194,7 +1234,8 @@ cross-user collaboration. The frozen public API compatibility baseline remains 0
 The canonical package metadata advanced directly from `0.2.9` to `0.3.1`. Version `0.3.0` identifies
 the frozen API compatibility snapshot only; it was not a package release and must not be tagged.
 
-[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.8...HEAD
+[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.9...HEAD
+[0.5.9]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.8...v0.5.9
 [0.5.8]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.7...v0.5.8
 [0.5.7]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.6...v0.5.7
 [0.5.6]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.5...v0.5.6

@@ -105,9 +105,10 @@ const snippets: Readonly<Record<string, readonly Snippet[]>> = {
   ],
 };
 
-/** Global Monaco registrations are scoped by identity to this editor's current live model. */
+/** Global registrations own one live model; the optional display lookup can read the latest locale. */
 export function registerBasicLanguageIntelligence(
   monaco: typeof Monaco, editor: Monaco.editor.IStandaloneCodeEditor,
+  translate?: (key: string) => string,
 ): Monaco.IDisposable {
   let disposed = false;
   const registrations: Monaco.IDisposable[] = [];
@@ -128,7 +129,9 @@ export function registerBasicLanguageIntelligence(
           startColumn: word.startColumn, endColumn: word.endColumn,
         };
         const suggestions = templates.map(template => ({
-          ...template, range, kind: monaco.languages.CompletionItemKind.Snippet,
+          ...template,
+          detail: translate ? translate(`editorIntelligence.snippets.${language}.${template.label}`) : template.detail,
+          range, kind: monaco.languages.CompletionItemKind.Snippet,
           insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
         }));
         return { suggestions: current() ? suggestions : [] };

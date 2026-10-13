@@ -1,36 +1,27 @@
 use crate::{
     platform_http::errors::HttpError,
-    services::{
-        auth_service::durable_source::{
-            DurableAuthError, SessionCommandError, SessionFileDownloadError,
-        },
-        collaboration_identity_store::IdentityStoreError,
-    },
+    services::auth_service::durable_source::SessionFileDownloadError,
 };
+
+#[cfg(test)]
+use crate::services::{
+    auth_service::durable_source::{DurableAuthError, SessionCommandError},
+    collaboration_identity_store::IdentityStoreError,
+};
+#[cfg(test)]
 use axum::http::StatusCode;
 
 /// Dispatched errors never expose store/namespace diagnostics or infer delivery or rollback.
 pub(super) fn source(error: SessionFileDownloadError) -> HttpError {
-    use SessionFileDownloadError as D;
-    use StatusCode as S;
-    let (status, code) = match error {
-        D::PermissionDenied => (S::NOT_FOUND, "not_found"),
-        D::Session(SessionCommandError::InvalidSession)
-        | D::Session(SessionCommandError::Authentication(DurableAuthError::InvalidCredentials)) => {
-            (S::UNAUTHORIZED, "invalid_session")
-        }
-        D::Session(SessionCommandError::Identity(
-            IdentityStoreError::AccessDenied
-            | IdentityStoreError::ScopeInactive
-            | IdentityStoreError::IdentityInactive
-            | IdentityStoreError::IdentityRetired
-            | IdentityStoreError::StaleIdentity,
-        )) => (S::FORBIDDEN, "access_denied"),
-        _ => (S::SERVICE_UNAVAILABLE, "service_unavailable"),
-    };
-    HttpError::dispatched(status, code)
+    error.into()
 }
 
 #[cfg(test)]
 #[path = "error_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[tokio::test]
+async fn manifest_projection_keeps_complete_private_download_error_matrix() {
+    crate::platform_http::errors::file_download_tests::assert_projection_matrix(source).await;
+}

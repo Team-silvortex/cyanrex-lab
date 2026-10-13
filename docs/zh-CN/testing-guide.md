@@ -1,5 +1,13 @@
 # 当前项目测试指南
 
+未发布的[本地文本文件导入](local-text-file-import.md)有 12 条纯测试、6 条浏览器用例及
+5 条结构守卫，入口为 `test:editor-languages` 与 `test:task-text-import-browser`；
+受控浏览器身份不证明服务端保存或部署。
+
+职责索引见[当前架构图](architecture-map.md)。`scripts/tests/architectureMap.test.mjs`检查原44个
+服务声明、可见性／Unix条件、未挂载组合及双语导航；这是结构守卫，编译后的文件错误矩阵和
+显式Source／HTTPS runner分别验证自己的实际行为。
+
 源码版本 **0.5.8**（**2026-10-13**）已收录分日期的跟进及其测试选择。未发布标记保留当时
 实施阶段，库存和此前 0.5.4 执行记录不是新鲜的 0.5.8 SQL 运行或部署验收；实际发布门禁结果
 及未覆盖范围记录于[项目状态](project-status.md)。
@@ -124,7 +132,8 @@ Rust 公告审计，前端/SDK 检查也包含生产依赖的 npm 审计。因�
 | 未发布实时交付进度观察 | `file_delivery_progress_tdd`、私有实际任务生命周期、`fileDeliveryProgress` 守卫及扩展既有交付SQL；[边界](large-file-delivery-progress.md) | 单最新快照、真实ACK前缀、失败／取消／慢读取与实际输出；不是持久回执、恢复、续传、界面或部署验收 |
 | 未发布显式交付等待取消 | `file_delivery_cancel_tdd`、私有实际任务／通道选择单元、`fileDeliveryCancel` 守卫及扩展既有Source；[边界](large-file-delivery-cancellation.md) | 明确请求／句柄丢弃区别、输入／取消／容量优先级、真实Cancelled后任务资源／输出留存；不是即时kill、回滚、恢复或界面 |
 | 未发布完整HTTPS交付验证 | 三条显式原生 `file_delivery_tls_tdd`、`test-file-delivery-tls.sh` 及 `fileDeliveryTls` 库存守卫；[范围](large-file-delivery-https.md) | 实际一次性TLS、完整保存字节、凭据前身份拒绝及显式等待取消；与SQL权威和已部署局域网验收分开 |
-| 未发布配对分发路由 | `file_distribution_http_tdd`、`fileDistributionHttp` 及 `test-file-delivery.sh` 三条显式组合Source；[边界](large-file-distribution-router.md) | 一套缓存配置、两个独立HTTP门、实际binary owner／元数据／撤权，不是Session签发或隔离服务 |
+| 未发布配对分发路由 | `file_distribution_http_tdd`、`fileDistributionHttp` 及 `test-file-delivery.sh` 六条显式Source（含三条原生HTTPS联验）；[边界](large-file-distribution-router.md) | 一套缓存配置、两个独立HTTP门、实际binary owner／元数据／撤权，不是Session签发或隔离服务 |
+| 未发布真实Source与HTTPS联验 | `file_delivery_tdd` 三条 `source::source_https`、同一 `test-file-delivery.sh` 及 `fileSourceHttps` 守卫；[范围](large-file-source-https.md) | 当前真实grant、原Published字节、单router、原生HTTPS、所选保存、派发前撤权及正文取消；不是局域网部署、签发或隔离 |
 | 草稿导入与发布计划 | Rust `task_draft_publication_tdd`、`taskDraftPublication` 公共守卫、前端 `taskDraft` 共享夹具 | 严格有界 JSON、空白标题拒绝、本地身份剥离、给定准确内容映射及标准导出兼容；不发布内容、不检查当前 Session、不保存浏览器草稿 |
 | 会话草稿发布步骤 | Rust `session_task_draft_publication_tdd`、`scripts/test-session-task-draft-publication.sh`、`sessionTaskDraftPublication` 公共守卫 | 固定分配与 Session 绑定、每次推进一个写入、空/多项成功、确认前缀与未知步骤、取消、撤权及最终真实字节检查；无持久恢复或浏览器保存 |
 | 独立目录草稿发布 | `session_catalog_draft_publication_tdd`、内部 `catalog_draft_publication::tests`、`scripts/test-session-catalog-draft-publication.sh`、`sessionCatalogDraftPublication` 守卫 | 无 I/O 的准确完整定义冻结、独立 token 域、每次推进一个已有 Session 写入、完整 `Some` 确认、保留前缀与未知目标及手动/日志类型隔离；C2-AA 比较另列，不提供恢复、重试或 HTTP/浏览器保存 |

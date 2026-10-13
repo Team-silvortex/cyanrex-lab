@@ -1,5 +1,7 @@
 # TDD Policy
 
+[简体中文](TDD.zh-CN.md)
+
 This repository now follows Test-Driven Development by default.
 
 It covers the existing teaching runtime, general collaboration preparation layers and task-owned

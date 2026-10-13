@@ -1,6 +1,6 @@
-//! Explicit, unmounted HTTP boundary for private schema-3 Task content.
+//! Explicit, unmounted HTTP adapters for private Task content, text Artifacts and files.
 //!
-//! Trusted composition supplies an already initialized durable source, workspace and browser
+//! Trusted composition supplies an already initialized durable source, typed workspace and browser
 //! origin. This module never installs storage, listens, issues cookies, provides CORS, or adopts
 //! the live teaching application's AuthService. The integration owner must separately arrange
 //! secure same-origin transport and delivery of the dedicated durable-session cookie.

@@ -1,5 +1,7 @@
 # Cyanrex Lab Offline Deployment
 
+[简体中文](README-DEPLOY.zh-CN.md)
+
 Runtime package values remain in `manifest.env`. Auditable build details are recorded in
 `release-metadata.json`: package identity/time, Git revision and clean/dirty state, a matching annotated
 version Tag when available, image references/build mode, Compose template source, and the streamed

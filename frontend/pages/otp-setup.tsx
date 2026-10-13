@@ -93,7 +93,7 @@ export default function OtpSetupPage() {
           </div>
         </form>
 
-        {error && <p className="error" style={{ marginTop: 12 }}>{sanitizeForDisplay(error)}</p>}
+        {error && <p className="error" style={{ marginTop: 12 }}>{sanitizeForDisplay(localizeLegacyText(error, t))}</p>}
 
             {payload && (
           <div className="panel" style={{ marginTop: 14, background: "#0b1425" }}>
@@ -123,3 +123,4 @@ export default function OtpSetupPage() {
     </div>
   );
 }
+import { localizeLegacyText } from "../src/i18n/legacyText";

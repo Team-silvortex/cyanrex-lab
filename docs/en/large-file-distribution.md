@@ -120,6 +120,10 @@ An explicit [distribution router composition](large-file-distribution-router.md)
 endpoints from one supplied Source and frozen chunk workspace. HTTP budgets remain independent;
 this cached configuration consistency is not a Session issuer, live mounting or privilege isolation.
 
+Unreleased after the 0.5.8 tag, [real Source over HTTPS](large-file-source-https.md) adds one
+combined native authorization/file/router/TLS/saving test chain, including pre-dispatch revocation
+and actual response-body cancellation. It changes no production listener, policy or dated score.
+
 The first target user workflow is: an authorized publisher uploads a file, explicitly selects recipients,
 and those recipients download the exact published version with resumable progress and integrity checks.
 Teacher authority controls instance deployment; a workspace publisher still needs explicit publishing

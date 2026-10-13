@@ -57,6 +57,10 @@ resume/recovery, physical disk quotas and throughput/RSS benchmarks remain open.
 release evidence, **106 historical status blocks**, **52 existing execution tails**, **8 protected files**
 and the dated capability tensor remain unchanged. Actual results are recorded below.
 
+Unreleased after the 0.5.8 tag, [real Source over HTTPS](large-file-source-https.md) adds one
+combined native authorization/file/router/TLS/saving test chain, including pre-dispatch revocation
+and actual response-body cancellation. It changes no production listener, policy or dated score.
+
 ## Recorded execution — 2026-10-13
 
 This is new external coverage of an existing HTTPS implementation, not a new transport feature or

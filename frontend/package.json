@@ -1,6 +1,6 @@
 {
   "name": "@cyanrex/frontend",
-  "version": "0.5.8",
+  "version": "0.5.9",
   "private": true,
   "scripts": {
     "postinstall": "node scripts/sync-monaco-assets.mjs",
@@ -27,9 +27,12 @@
     "test:event-actions-browser": "node --test tests/eventActions.browser.mjs",
     "test:compiler-check": "node --experimental-strip-types --test tests/compilerCheck.test.mjs",
     "test:semantic-completion": "node --experimental-strip-types --test tests/semanticCompletion.test.mjs",
-    "test:editor-languages": "node --experimental-strip-types --test tests/editorLanguages.test.mjs tests/editorDocument.test.mjs tests/taskDraft.test.mjs",
+    "test:editor-languages": "node --experimental-strip-types --test tests/editorLanguages.test.mjs tests/editorDocument.test.mjs tests/taskDraft.test.mjs tests/textFileImport.test.mjs tests/i18nCoverage.test.mjs tests/editorLocalization.test.mjs tests/legacyLocalization.test.mjs tests/cIntelligenceLocalization.test.mjs tests/koreanLocale.test.mjs tests/koreanProviders.test.mjs",
+    "test:localization-browser": "node --test tests/editorLocalization.browser.mjs tests/runtimeLocalization.browser.mjs tests/koreanLocale.browser.mjs",
+    "test:korean-browser": "node --test tests/koreanLocale.browser.mjs",
     "test:multi-language-editor-browser": "node --test tests/multiLanguageEditor.browser.mjs",
-    "test:task-payload-browser": "node --test tests/taskPayloadEditor.browser.mjs tests/editorFilenameImport.browser.mjs tests/taskNavigation.browser.mjs",
+    "test:task-payload-browser": "node --test tests/taskPayloadEditor.browser.mjs tests/editorFilenameImport.browser.mjs tests/taskNavigation.browser.mjs tests/taskTextFiles.browser.mjs",
+    "test:task-text-import-browser": "node --test tests/taskTextFiles.browser.mjs",
     "test:runtime-request": "node --experimental-strip-types --test tests/runtimeRequest.test.mjs",
     "test:runtime-lifecycle-browser": "node --test tests/runtimeLifecycle.browser.mjs",
     "test:runtime-safety-browser": "node --test tests/runtimeSafety.browser.mjs",

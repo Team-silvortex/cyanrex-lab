@@ -1,5 +1,9 @@
 # Task payload editing
 
+The 2026-10-13 Unreleased [multi-file text import](local-text-file-import.md), after source 0.5.8,
+adds a confirmed atomic batch without replacing the title, old payload or selected editor.
+It stays local-only; JSON whole-draft replacement remains a different action.
+
 Source release **0.5.5** (**2026-10-11**) includes the portable-language follow-up. Its dated
 `Unreleased` label retains the original implementation stage and verification scope. The task editor
 remains local-only; source inclusion does not connect server saving, external language servers or execution.

@@ -1,5 +1,7 @@
 # Contributing to cyanrex-lab
 
+[简体中文](CONTRIBUTING.zh-CN.md)
+
 cyanrex-lab is a free, open-source, self-hosted project moving from eBPF teaching toward a
 domain-neutral collaboration platform. The teaching runtime remains supported while general identity,
 Task, Artifact and Review services are developed separately. Contributions to the platform, domain
@@ -154,7 +156,9 @@ the `frontend/public/course/` tree is generated from those sources, not a second
 English is the primary source language for new interface strings and course
 material. When practical, update the matching Simplified Chinese content in
 the same pull request. Other supported interface languages are Spanish and
-Japanese.
+Japanese and Korean (`ko`). New UI keys must be added to all five merged dictionaries; keep
+interpolation parameters, protocol identifiers and inserted code unchanged. Korean UI support does
+not imply Korean course bodies; retain the explicit fallback notice until those sources exist.
 
 Course contributions should include:
 

@@ -3,6 +3,7 @@ import { useState } from "react";
 import SidebarLayout from "../src/components/SidebarLayout";
 import { getEngineUrl } from "../src/config/runtime";
 import { useI18n } from "../src/i18n/context";
+import { localizeLegacyText } from "../src/i18n/legacyText";
 import { loadPageState, savePageState } from "../src/utils/pageState";
 
 type EnvironmentCheckItem = {
@@ -86,7 +87,7 @@ export default function HelperPage() {
           </button>
         </div>
 
-        {error && <p className="error" style={{ marginTop: 12 }}>{error}</p>}
+        {error && <p className="error" style={{ marginTop: 12 }}>{localizeLegacyText(error, t)}</p>}
 
         {report && (
             <div style={{ marginTop: 16 }}>
@@ -96,7 +97,7 @@ export default function HelperPage() {
             <p>
               <strong>{t("helper.backend")}:</strong> <code>{report.runtime_mode}</code>
             </p>
-            <p className="meta">{report.runtime_guidance}</p>
+            <p className="meta">{localizeLegacyText(report.runtime_guidance, t)}</p>
             <p className="meta">
               {t("helper.generatedAt")}: {new Date(report.generated_at).toLocaleString()}
             </p>
@@ -105,9 +106,9 @@ export default function HelperPage() {
               {report.checks.map((check) => (
                 <article key={check.name} className="panel" style={{ background: "#0b1425" }}>
                   <p>
-                    <strong>{check.name}</strong>: {check.ok ? t("helper.ok") : t("helper.fail")}
+                    <strong>{localizeLegacyText(check.name, t)}</strong>: {check.ok ? t("helper.ok") : t("helper.fail")}
                   </p>
-                  <p className="meta" style={{ margin: 0 }}>{check.detail}</p>
+                  <p className="meta" style={{ margin: 0 }}>{localizeLegacyText(check.detail, t)}</p>
                 </article>
               ))}
             </div>

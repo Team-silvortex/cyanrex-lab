@@ -18,6 +18,7 @@ export default function CourseDocumentPage() {
   const [error, setError] = useState("");
   const [usedFallback, setUsedFallback] = useState(false);
   const [fallbackLocale, setFallbackLocale] = useState<string>("");
+  const [contentLocale, setContentLocale] = useState<string>(locale);
   const labId = slug.startsWith("labs/") ? slug.slice("labs/".length) : "";
 
   const fallbackLocaleName: Record<string, string> = {
@@ -25,6 +26,7 @@ export default function CourseDocumentPage() {
     en: "English",
     es: "Español",
     ja: "日本語",
+    ko: "한국어",
   };
 
   useEffect(() => {
@@ -38,20 +40,24 @@ export default function CourseDocumentPage() {
     const candidates = locale === "zh-CN" ? ["zh-CN", "en"] : [locale, "en", "zh-CN"];
     const loadMarkdown = async () => {
       for (const candidate of candidates) {
+        if (controller.signal.aborted) return;
         try {
           const response = await fetch(`/course/${candidate}/${slug}.md`, { signal: controller.signal });
           if (!response.ok) continue;
-          setMarkdown(await response.text());
+          const body = await response.text();
+          if (controller.signal.aborted) return;
+          setMarkdown(body);
+          setContentLocale(candidate);
           const isFallback = candidate !== locale;
           setUsedFallback(isFallback);
           setFallbackLocale(isFallback ? (fallbackLocaleName[candidate] ?? candidate) : "");
           setError("");
           return;
         } catch (error) {
-          if ((error as Error).name === "AbortError") return;
+          if (controller.signal.aborted || (error as Error).name === "AbortError") return;
         }
       }
-      setError(t("learn.loadFailed"));
+      if (!controller.signal.aborted) setError(t("learn.loadFailed"));
     };
 
     void loadMarkdown();
@@ -68,7 +74,7 @@ export default function CourseDocumentPage() {
         {error && <p className="error">{error}</p>}
         {usedFallback && <p className="meta">{t("learn.documentFallback", { language: fallbackLocale })}</p>}
         {!error && !markdown && <p className="meta">{t("learn.slugLoading")}</p>}
-        {markdown && <MarkdownDocument markdown={markdown} currentSlug={`${slug}.md`} />}
+        {markdown && <MarkdownDocument markdown={markdown} currentSlug={`${slug}.md`} language={contentLocale} />}
         {labId && (
           <div className="row" style={{ marginTop: 20 }}>
             <Link href={`/ebpf?lab=${encodeURIComponent(labId)}`} className="button-link">

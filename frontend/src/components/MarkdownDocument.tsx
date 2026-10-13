@@ -4,9 +4,10 @@ import { Fragment, ReactNode } from "react";
 type Props = {
   markdown: string;
   currentSlug: string;
+  language?: string;
 };
 
-export default function MarkdownDocument({ markdown, currentSlug }: Props) {
+export default function MarkdownDocument({ markdown, currentSlug, language }: Props) {
   const lines = markdown.replace(/\r\n/g, "\n").split("\n");
   const blocks: ReactNode[] = [];
   let index = 0;
@@ -86,7 +87,7 @@ export default function MarkdownDocument({ markdown, currentSlug }: Props) {
     blocks.push(<p key={`paragraph-${index}`}>{inlineMarkdown(paragraph.join(" "), currentSlug)}</p>);
   }
 
-  return <article className="markdown-document">{blocks}</article>;
+  return <article className="markdown-document" lang={language}>{blocks}</article>;
 }
 
 function inlineMarkdown(text: string, currentSlug: string): ReactNode[] {

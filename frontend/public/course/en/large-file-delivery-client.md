@@ -88,6 +88,10 @@ and original ACK descriptor costs from private saving still apply; no new throug
 payload acceptance is implied. Versions/dependencies, published 0.5.7 evidence, **106 historical status
 blocks**, **44 existing execution tails** and the dated capability tensor are preserved.
 
+Unreleased after the 0.5.8 tag, [real Source over HTTPS](large-file-source-https.md) adds one
+combined native authorization/file/router/TLS/saving test chain, including pre-dispatch revocation
+and actual response-body cancellation. It changes no production listener, policy or dated score.
+
 ## Recorded execution 2026-10-13
 
 The inert new entry compiled against actual loopback HTTP, private roots and a **4 MiB + 17**

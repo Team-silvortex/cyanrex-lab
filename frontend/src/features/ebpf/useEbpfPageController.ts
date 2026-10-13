@@ -4,6 +4,7 @@ import "../../utils/monacoLoader";
 import { getEngineUrl } from "../../config/runtime";
 import { analyzeCCode } from "../../utils/cAnalyzer";
 import { registerEbpfIntelligence } from "../../utils/cEbpfIntelligence";
+import { localizeLegacyText } from "../../i18n/legacyText";
 import { loadPageState, savePageState } from "../../utils/pageState";
 import type { LabAttempt, LabProgress } from "../learning/models";
 import { MAX_UPLOAD_BYTES, SAMPLE_EBPF } from "./models";
@@ -56,6 +57,8 @@ export function useEbpfPageController(
   runBlocked = false,
   navigationKey = activeLabId,
 ) {
+  const translate = useRef(t);
+  translate.current = t;
   const [code, setCode] = useState(() => loadPageState<string>("ebpf_code_v1") ?? SAMPLE_EBPF);
   const [error, setError] = useState<string | null>(null);
   const [templates, setTemplates] = useState<EbpfTemplate[]>([]);
@@ -209,12 +212,13 @@ export function useEbpfPageController(
 
   useEffect(() => {
     if (!monacoRef.current || !editorRef.current) return;
-    applyMarkers(editorRef.current, monacoRef.current, diagnostics);
-  }, [diagnostics]);
+    applyMarkers(editorRef.current, monacoRef.current, diagnostics, t);
+  }, [diagnostics, t]);
 
   useEffect(() => {
     if (!intelligenceEditor) return;
-    const registration = registerEbpfIntelligence(intelligenceEditor.monaco, engineUrl, intelligenceEditor.editor, injectedHeaderContext);
+    const registration = registerEbpfIntelligence(intelligenceEditor.monaco, engineUrl, intelligenceEditor.editor, injectedHeaderContext,
+      message => localizeLegacyText(message, translate.current));
     return () => registration.dispose();
   }, [intelligenceEditor, engineUrl, injectedHeaderContext]);
 
@@ -321,14 +325,14 @@ export function useEbpfPageController(
     monaco.editor.setTheme("cyanrex-c");
     setIntelligenceEditor({ editor, monaco });
     onEditorReadyForDebug(editor, monaco);
-    applyMarkers(editor, monaco, analysis.diagnostics);
+    applyMarkers(editor, monaco, analysis.diagnostics, translate.current);
   };
 
   const onEditorChange = (value: string | undefined) => {
     const next = value ?? "";
     setCode(next);
     if (monacoRef.current && editorRef.current) {
-      applyMarkers(editorRef.current, monacoRef.current, analyzeCCode(next, injectedIncludes).diagnostics);
+      applyMarkers(editorRef.current, monacoRef.current, analyzeCCode(next, injectedIncludes).diagnostics, translate.current);
     }
   };
 

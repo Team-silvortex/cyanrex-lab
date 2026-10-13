@@ -40,6 +40,9 @@ export async function setup(role = "admin") {
       if (state.hold) await state.hold();
       if (state.fail || writes.length === state.failAt) return reply({ ok: false, message: "fixture unavailable" }, 503);
     }
+    if (url.pathname === "/settings/ai-agents" && request.method() === "GET" && !url.search && !request.postData()) {
+      return reply({ revision: 0, default_profile_id: null, profiles: [] });
+    }
     switch (url.pathname) {
       case "/auth/me": return reply({ authenticated: true, username: role, role });
       case "/events/unread-count": return reply(state.unreadResult ?? { unread: 0 }, state.unreadStatus || 200);

@@ -13,6 +13,9 @@ use axum::{
 };
 use serde::Serialize;
 
+#[cfg(unix)]
+use crate::services::auth_service::durable_source::SessionFileDownloadError;
+
 pub(super) struct HttpError {
     status: StatusCode,
     code: &'static str,
@@ -47,6 +50,32 @@ impl HttpError {
             outcome: "unconfirmed",
             allow: None,
         }
+    }
+}
+
+#[cfg(unix)]
+impl From<SessionFileDownloadError> for HttpError {
+    fn from(value: SessionFileDownloadError) -> Self {
+        use SessionFileDownloadError as D;
+        use StatusCode as S;
+        // Both file transports project the same private metadata errors. Dispatch establishes
+        // neither delivery nor rollback, and storage/namespace diagnostics remain unexposed.
+        let (status, code) = match value {
+            D::PermissionDenied => (S::NOT_FOUND, "not_found"),
+            D::Session(SessionCommandError::InvalidSession)
+            | D::Session(SessionCommandError::Authentication(
+                DurableAuthError::InvalidCredentials,
+            )) => (S::UNAUTHORIZED, "invalid_session"),
+            D::Session(SessionCommandError::Identity(
+                IdentityStoreError::AccessDenied
+                | IdentityStoreError::ScopeInactive
+                | IdentityStoreError::IdentityInactive
+                | IdentityStoreError::IdentityRetired
+                | IdentityStoreError::StaleIdentity,
+            )) => (S::FORBIDDEN, "access_denied"),
+            _ => (S::SERVICE_UNAVAILABLE, "service_unavailable"),
+        };
+        Self::dispatched(status, code)
     }
 }
 
@@ -158,3 +187,7 @@ impl IntoResponse for HttpError {
         response
     }
 }
+
+#[cfg(all(test, unix))]
+#[path = "file_download_error_tests.rs"]
+pub(super) mod file_download_tests;

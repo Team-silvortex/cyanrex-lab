@@ -5,6 +5,7 @@ import Link from "next/link";
 import LanguageSwitcher from "../src/components/LanguageSwitcher";
 import { getEngineUrl } from "../src/config/runtime";
 import { useI18n } from "../src/i18n/context";
+import { localizeLegacyText } from "../src/i18n/legacyText";
 import { parseSafeRedirectPath, sanitizeForDisplay } from "../src/utils/security";
 
 type LoginResponse = {
@@ -97,7 +98,7 @@ export default function LoginPage() {
           </div>
         </form>
 
-        {error && <p className="error" style={{ marginTop: 12 }}>{sanitizeForDisplay(error)}</p>}
+        {error && <p className="error" style={{ marginTop: 12 }}>{sanitizeForDisplay(localizeLegacyText(error, t))}</p>}
 
         <p className="meta" style={{ marginTop: 12 }}>
           {t("auth.loginHintDefault")}

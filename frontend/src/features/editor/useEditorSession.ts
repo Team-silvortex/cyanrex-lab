@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type RefObject } from "react";
 import type * as Monaco from "monaco-editor";
 import { loader } from "../../utils/monacoLoader";
+import { useI18n } from "../../i18n/context";
 import { resolveEditorLanguage } from "./languages";
 import { configureBuiltinLanguageServices, registerBasicLanguageIntelligence } from "./languageServices";
 
@@ -17,6 +18,9 @@ export function useEditorSession(
   onChange: (source: string) => void,
   onProblems: (markers: Monaco.editor.IMarker[]) => void,
 ) {
+  const { t } = useI18n();
+  const translate = useRef(t);
+  translate.current = t;
   const callbacks = useRef({ onChange, onProblems });
   const initialDocument = useRef(initial);
   callbacks.current = { onChange, onProblems };
@@ -46,7 +50,7 @@ export function useEditorSession(
         // Monaco 0.55.1's occurrence highlighter leaks a rejected delayed promise on model disposal.
         // Keep explicit reference/definition actions; avoid its global cursor-highlighting state.
         occurrencesHighlight: "off",
-        ariaLabel: "Code editor", renderValidationDecorations: "on",
+        ariaLabel: translate.current("editorIntelligence.ariaLabel"), renderValidationDecorations: "on",
       });
       const publishMarkers = () => {
         if (!active || editor.getModel() !== model || model.isDisposed()) return;
@@ -60,7 +64,7 @@ export function useEditorSession(
       const markers = monaco.editor.onDidChangeMarkers(resources => {
         if (resources.some(uri => uri.toString() === model.uri.toString())) publishMarkers();
       });
-      const intelligence = registerBasicLanguageIntelligence(monaco, editor);
+      const intelligence = registerBasicLanguageIntelligence(monaco, editor, key => translate.current(key));
       cleanup = () => {
         intelligence.dispose(); markers.dispose(); changed.dispose();
         editor.dispose(); model.dispose();
@@ -85,5 +89,9 @@ export function useEditorSession(
     }).catch(() => { if (active) { cleanup?.(); setFailed(true); } });
     return () => { active = false; cleanup?.(); };
   }, [container]);
+  // Display-only updates preserve the owned model, providers and undo history.
+  useEffect(() => {
+    session?.editor.updateOptions({ ariaLabel: t("editorIntelligence.ariaLabel") });
+  }, [session, t]);
   return { session, failed };
 }

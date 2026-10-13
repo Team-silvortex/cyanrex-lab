@@ -15,6 +15,7 @@
 [协作式取消](large-file-delivery-cancellation.md)增加单调用请求／等待结果，保留真实任务资源及旧错误；不是即时派发屏障、任务kill、回滚或续传，不重评历史张量。
 [完整HTTPS交付检查](large-file-delivery-https.md)用一次性原生对端验证既有带控制交付；传输身份不等于文件grant权威或已部署局域网验收，不重评历史张量。
 [分发路由](large-file-distribution-router.md)从一个所给Source／分块workspace派生配对端点，独立HTTP预算；缓存一致性不是正常挂载、Session签发或特权进程隔离，不重评历史张量。
+未发布[Source／HTTPS联合检查](large-file-source-https.md)补同一条原生集成覆盖，不接公开服务、不作特权隔离或分日期张量重评。
 
 源码 **0.5.8**（**2026-10-13**）收录上述下载、保存及交付跟进；原实施证据保留日期，
 源码收录不构成张量重新评分。

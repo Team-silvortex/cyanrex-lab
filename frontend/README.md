@@ -1,5 +1,7 @@
 # cyanrex frontend
 
+[简体中文](README.zh-CN.md)
+
 Next.js control plane for Cyanrex eBPF experiments.
 
 Pages compose shared components and feature controllers; runtime endpoints live under `src/config/`,
@@ -14,10 +16,15 @@ for the complete frontend/Engine boundary.
 - `/modules`: module catalog and lifecycle controls
 - `/events`: event filters, export, deletion, and realtime updates
 - `/settings`: per-user event retention settings
-- `/terminal`: administrator-only module command bus and eBPF workspace handoff (not a system shell)
+- `/terminal`: teacher-managed module command bus and eBPF workspace handoff (compatible legacy administrators; not a system shell)
 - `/login`, `/register`, `/otp-setup`, `/account`: account and TOTP flows
 
-The interface supports Simplified Chinese, English, Spanish, and Japanese.
+The interface supports Simplified Chinese, English, Spanish, Japanese, and Korean (`ko`, 한국어).
+Select Korean on the login page or in the sidebar; the choice persists in this browser.
+All 865 owned UI entries are translated, including local editor explanations and safety confirmations.
+Course bodies remain English/Chinese; missing Korean content shows an explicit English fallback notice.
+`npm run test:korean-browser` covers production-page switching, undo, confirmation, narrow screens,
+preference persistence and course fallback. See [translation scope](../docs/en/localization.md).
 
 ## Development
 

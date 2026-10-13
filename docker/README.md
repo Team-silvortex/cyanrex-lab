@@ -1,5 +1,7 @@
 # docker
 
+[简体中文](README.zh-CN.md)
+
 Run the full Cyanrex stack with Docker Compose.
 
 ## Services

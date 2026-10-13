@@ -138,7 +138,9 @@ export default function EditorWorkspace({ item, onChange, disabled = false }: Pr
         <label className="field-label"><span>{t("editor.language")}</span>
           <select data-testid="language-select" value={language} disabled={busy} onChange={event => changeLanguage(event.target.value)}>
             {unsupportedHint && <option value={language}>{language}</option>}
-            {BUILTIN_LANGUAGES.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}
+            {BUILTIN_LANGUAGES.map(item => <option key={item.id} value={item.id}>
+              {item.id === "plaintext" ? t("editorIntelligence.plainText") : item.label}
+            </option>)}
           </select>
         </label>
         <div className="language-editor-buttons">

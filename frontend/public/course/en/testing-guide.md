@@ -1,5 +1,14 @@
 # Current project testing guide
 
+The Unreleased [local text-file import](local-text-file-import.md) has 12 pure tests, 6 browser
+cases and 5 structural guards. Use `test:editor-languages` and `test:task-text-import-browser`;
+controlled browser identity does not prove server saving or deployment.
+
+Architecture ownership is indexed in the [current architecture map](architecture-map.md).
+`scripts/tests/architectureMap.test.mjs` checks all 44 service declarations, visibility/Unix gates,
+unmounted composition and bilingual navigation. These are structural guards; compiled file-error
+matrices and explicit Source/HTTPS runners validate their respective behavior separately.
+
 Source release **0.5.8** (**2026-10-13**) includes the dated follow-ups and their test selections.
 `Unreleased` labels retain the original implementation stage; inventories and earlier 0.5.4 execution
 records are not fresh 0.5.8 SQL runs or deployment acceptance. Actual release-gate results and omissions
@@ -135,7 +144,8 @@ compilation; consult its explicit lists rather than assuming `cargo test` covers
 | Unreleased live delivery progress observation | `file_delivery_progress_tdd`, private actual job lifecycle tests, `fileDeliveryProgress` guards and extended existing delivery SQL; [boundary](large-file-delivery-progress.md) | One latest snapshot, real ACK prefix, errors/cancellation/slow readers and actual output; not durable receipt, recovery, resume, UI or deployment acceptance |
 | Unreleased explicit cancellation of delivery waiting | `file_delivery_cancel_tdd`, private real-job/channel-selection units, `fileDeliveryCancel` guards and extended existing Source cases; [boundary](large-file-delivery-cancellation.md) | Request versus handle-drop, input/cancel/capacity priority, real Cancelled with retained jobs/output; not instantaneous kill, rollback, recovery or UI |
 | Unreleased complete HTTPS delivery verification | Three explicit native `file_delivery_tls_tdd` cases, `test-file-delivery-tls.sh` and `fileDeliveryTls` inventory guards; [scope](large-file-delivery-https.md) | Actual disposable TLS, complete saved bytes, peer refusal before credentials and explicit wait cancellation; separate from SQL authority or deployed-LAN acceptance |
-| Unreleased paired distribution router | `file_distribution_http_tdd`, `fileDistributionHttp` guards and three explicit composed Source cases in `test-file-delivery.sh`; [boundary](large-file-distribution-router.md) | One cached configuration, two independent HTTP gates, real binary owners/metadata/revocation; not a Session issuer or isolated service |
+| Unreleased paired distribution router | `file_distribution_http_tdd`, `fileDistributionHttp` guards and six explicit Source cases, including three combined native HTTPS cases in `test-file-delivery.sh`; [boundary](large-file-distribution-router.md) | One cached configuration, two independent HTTP gates, real binary owners/metadata/revocation; not a Session issuer or isolated service |
+| Unreleased actual Source plus HTTPS delivery | Three `source::source_https` cases in `file_delivery_tdd`, the same `test-file-delivery.sh` and `fileSourceHttps` guards; [scope](large-file-source-https.md) | Actual current grants, original Published bytes, one router, native HTTPS, selected saving, pre-dispatch revocation and response-body cancellation; no deployed LAN, issuer or isolation |
 | Draft import and publication plan | Rust `task_draft_publication_tdd`, `taskDraftPublication` common guards, frontend `taskDraft` shared fixtures | Strict bounded JSON, blank-title rejection, local identity removal, exact supplied-content mapping and canonical-export compatibility; no publication, current-Session check or browser saving |
 | Session draft publication steps | Rust `session_task_draft_publication_tdd`, `scripts/test-session-task-draft-publication.sh`, `sessionTaskDraftPublication` common guards | Fixed allocation and Session binding, one write per advance, empty/multi-item success, confirmed prefix versus unconfirmed step, cancellation, revoked authority and final real-byte checks; no durable recovery or browser saving |
 | Independent catalogue draft publication | `session_catalog_draft_publication_tdd`, internal `catalog_draft_publication::tests`, `scripts/test-session-catalog-draft-publication.sh`, `sessionCatalogDraftPublication` guards | No-I/O exact-definition freeze, independent token domain, one existing Session write per advance, full `Some` confirmation, retained prefix/uncertain target and manual/journal type separation; C2-AA comparison is separate, with no restoration, retry or HTTP/browser saving |

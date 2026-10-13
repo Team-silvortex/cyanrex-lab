@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import { useI18n } from "../../i18n/context";
+import { localizeLegacyText } from "../../i18n/legacyText";
 import { labTitleKey, type LabAttempt } from "./models";
 import { TeacherFeedbackDisplay } from "./TeacherFeedback";
 
@@ -26,7 +27,7 @@ export function AttemptCard({ attempt, children }: { attempt: LabAttempt; childr
       </p>
       {attempt.feedback.length > 0 && <div>
         <strong>{t("teaching.feedback")}</strong>
-        <ul>{attempt.feedback.map((item, index) => <li key={index}>{item}</li>)}</ul>
+        <ul>{attempt.feedback.map((item, index) => <li key={index}>{localizeLegacyText(item, t)}</li>)}</ul>
       </div>}
       <details>
         <summary>{t("teaching.source")}</summary>

@@ -1,5 +1,7 @@
 # scripts
 
+[简体中文](README.zh-CN.md)
+
 Development, validation, operation and distribution tools for Cyanrex. They cover both the existing
 teaching runtime and explicit collaboration preparation; a test runner or provisioning tool does not
 activate the general platform in an existing deployment.

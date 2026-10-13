@@ -69,6 +69,10 @@ execution tails**, **8 protected files**, the dated capability tensor or publish
 UI/SDK mounting, secure Session issuance, an unprivileged data-service launcher, deployed-LAN acceptance,
 resume/recovery and physical disk policy remain open. The following record separates each executed layer.
 
+Unreleased after the 0.5.8 tag, [real Source over HTTPS](large-file-source-https.md) adds one
+combined native authorization/file/router/TLS/saving test chain, including pre-dispatch revocation
+and actual response-body cancellation. It changes no production listener, policy or dated score.
+
 ## Recorded execution — 2026-10-13
 
 All checks below ran natively in `/home/chiharukiryu/cdev/cyanrex-lab`; logs remain under

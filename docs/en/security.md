@@ -239,6 +239,10 @@ An explicit [distribution router composition](large-file-distribution-router.md)
 endpoints from one supplied Source and frozen chunk workspace. HTTP budgets remain independent;
 this cached configuration consistency is not a Session issuer, live mounting or privilege isolation.
 
+Unreleased after the 0.5.8 tag, [real Source over HTTPS](large-file-source-https.md) adds one
+combined native authorization/file/router/TLS/saving test chain, including pre-dispatch revocation
+and actual response-body cancellation. It changes no production listener, policy or dated score.
+
 The **2026-10-08 Unreleased C2-N follow-up** is not part of the published 0.5.4 tag.
 Its [explicit content router](task-content-http.md) shares four request/response slots by default
 (trusted range 1–16) across state clones, including independently built routers using those clones.

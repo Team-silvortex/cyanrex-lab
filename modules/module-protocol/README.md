@@ -1,5 +1,7 @@
 # module-protocol
 
+[简体中文](README.zh-CN.md)
+
 The shared catalog contract is defined by [`../module.schema.json`](../module.schema.json). A direct
 child directory becomes discoverable only when it contains a conforming `module.json` whose `name`
 matches the directory.

@@ -216,6 +216,14 @@ const COMPLETIONS = [
   },
 ] as const;
 
+const descriptiveCompletionLabels = new Set([
+  "hash map declaration", "ring buffer declaration", "per-cpu array declaration", "GPL license",
+]);
+const diagnosticIncludes = new Map([
+  ["cyanrex.include.linux/bpf.h", "linux/bpf.h"],
+  ["cyanrex.include.bpf/bpf_helpers.h", "bpf/bpf_helpers.h"],
+]);
+
 function toCompletionKind(monaco: typeof Monaco, kind: (typeof COMPLETIONS)[number]["kind"]) {
   if (kind === "function") return monaco.languages.CompletionItemKind.Function;
   if (kind === "constant") return monaco.languages.CompletionItemKind.Constant;
@@ -227,6 +235,7 @@ export function registerEbpfIntelligence(
   engineUrl: string,
   editor: Monaco.editor.IStandaloneCodeEditor,
   headerContextKey = "",
+  localize: (message: string) => string = message => message,
 ): Monaco.IDisposable {
   const semanticCompletion = createSemanticCompletion(editor, engineUrl, headerContextKey);
   const completion = monaco.languages.registerCompletionItemProvider("c", {
@@ -242,11 +251,11 @@ export function registerEbpfIntelligence(
       };
 
       const suggestions: Monaco.languages.CompletionItem[] = COMPLETIONS.map((item) => ({
-        label: item.label,
+        label: descriptiveCompletionLabels.has(item.label) ? localize(item.label) : item.label,
         kind: toCompletionKind(monaco, item.kind),
         insertText: item.insertText,
         insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-        detail: item.detail,
+        detail: localize(item.detail),
         range,
       }));
 
@@ -276,6 +285,7 @@ export function registerEbpfIntelligence(
       const word = model.getWordAtPosition(position);
       if (!word) return null;
 
+      if (!Object.prototype.hasOwnProperty.call(HOVER_DOCS, word.word)) return null;
       const doc = HOVER_DOCS[word.word];
       if (!doc) return null;
 
@@ -288,7 +298,7 @@ export function registerEbpfIntelligence(
         },
         contents: [
           { value: `**${doc.title}**` },
-          { value: doc.detail },
+          { value: localize(doc.detail) },
         ],
       };
     },
@@ -359,7 +369,7 @@ export function registerEbpfIntelligence(
         const end = model.getPositionAt((match.index ?? 0) + match[0].length);
         items.push({
           name: match[2],
-          detail: `eBPF hook: ${match[1]}`,
+          detail: localize(`eBPF hook: ${match[1]}`),
           kind: monaco.languages.SymbolKind.Function,
           range: new monaco.Range(start.lineNumber, start.column, end.lineNumber, end.column),
           selectionRange: new monaco.Range(end.lineNumber, Math.max(1, end.column - match[2].length - 1), end.lineNumber, end.column - 1),
@@ -372,7 +382,7 @@ export function registerEbpfIntelligence(
         const end = model.getPositionAt((match.index ?? 0) + match[0].length);
         items.push({
           name: match[1],
-          detail: "eBPF map",
+          detail: localize("eBPF map"),
           kind: monaco.languages.SymbolKind.Object,
           range: new monaco.Range(start.lineNumber, start.column, end.lineNumber, end.column),
           selectionRange: new monaco.Range(end.lineNumber, Math.max(1, end.column - match[1].length - 13), end.lineNumber, end.column),
@@ -406,13 +416,18 @@ export function registerEbpfIntelligence(
       if (!semanticCompletion.owns(model)) return { actions: [], dispose() {} };
       const actions: Monaco.languages.CodeAction[] = [];
       for (const marker of context.markers) {
-        const include = marker.message.match(/^Missing #include <([^>]+)>/);
+        const code = typeof marker.code === "string" ? marker.code : marker.code?.value;
+        const knownCode = code === "cyanrex.license.gpl" || diagnosticIncludes.has(code ?? "");
+        // Stable local diagnostic identities select repairs. Translated text is display only;
+        // historical untagged English markers retain their existing repair behavior.
+        const include = diagnosticIncludes.get(code ?? "")
+          ?? (!knownCode ? marker.message.match(/^Missing #include <([^>]+)>/)?.[1] : undefined);
         if (include) {
-          actions.push(insertAtTopAction(monaco, model, `#include <${include[1]}>\n`, `Add #include <${include[1]}>`, marker));
+          actions.push(insertAtTopAction(monaco, model, `#include <${include}>\n`, localize(`Add #include <${include}>`), marker));
         }
-        if (marker.message === "Missing GPL license declaration") {
+        if (code === "cyanrex.license.gpl" || (!knownCode && marker.message === "Missing GPL license declaration")) {
           actions.push({
-            title: "Add GPL license declaration",
+            title: localize("Add GPL license declaration"),
             kind: "quickfix",
             diagnostics: [marker],
             isPreferred: true,

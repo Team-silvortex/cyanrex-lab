@@ -1,5 +1,7 @@
 # @cyanrex/sdk-js
 
+[简体中文](README.zh-CN.md)
+
 Typed browser and Node.js client for the Cyanrex Lab Engine API.
 
 This package describes the registered, existing runtime HTTP/WebSocket contract. It does not yet

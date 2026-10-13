@@ -1,5 +1,8 @@
 # Current platform feature and module network
 
+For a concise source-responsibility and live/prepared boundary view, start at the
+[current architecture map](architecture-map.md). This page retains the detailed feature edges.
+
 Source release **0.5.8** (**2026-10-13**) includes these follow-ups. Dated `Unreleased` labels retain
 their original implementation stage, source versions and verification scope. Source inclusion does not
 mount preparation APIs, connect browser saving, switch live authentication, migrate storage or validate
@@ -231,6 +234,10 @@ loopback acceptance does not establish deployed LAN, UI or unprivileged-service 
 An explicit [distribution router composition](large-file-distribution-router.md) now derives both
 endpoints from one supplied Source and frozen chunk workspace. HTTP budgets remain independent;
 this cached configuration consistency is not a Session issuer, live mounting or privilege isolation.
+
+Unreleased after the 0.5.8 tag, [real Source over HTTPS](large-file-source-https.md) adds one
+combined native authorization/file/router/TLS/saving test chain, including pre-dispatch revocation
+and actual response-body cancellation. It changes no production listener, policy or dated score.
 
 | Status | Meaning in this map |
 |---|---|

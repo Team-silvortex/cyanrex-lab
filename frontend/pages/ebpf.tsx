@@ -160,7 +160,7 @@ export default function EbpfPage() {
                     wordWrap: "on", smoothScrolling: true, automaticLayout: true }} />
               </div>
               <div className="editor-statusbar">
-                <span className="meta">C · {analysis.metadata.lines} lines · clang: {compiler.status}</span>
+                <span className="meta">C · {t("runtimeText.editorLines", { count: analysis.metadata.lines })} · clang: {compiler.status}</span>
                 <span className="meta">{t("ebpf.runtimeBackend")}: {runtimeBackend}</span>
               </div>
               <details className="editor-debug">
@@ -185,7 +185,7 @@ export default function EbpfPage() {
                 <h3>{t("ebpf.diagnostics")} <span className="count-badge">{diagnostics.length}</span></h3>
                 {diagnostics.length === 0 && <p className="meta">{t("ebpf.noDiagnostics")}</p>}
                 {diagnostics.map((d, idx) => <p key={`${d.line}-${idx}`} className={d.severity === "error" ? "error" : "meta"}>
-                  [{d.severity.toUpperCase()}] L{d.line}:{d.column} {d.message}
+                  [{d.severity.toUpperCase()}] L{d.line}:{d.column} {localizeLegacyText(d.message, t)}
                 </p>)}
               </div>
             </section>
@@ -382,3 +382,4 @@ export default function EbpfPage() {
     </SidebarLayout>
   );
 }
+import { localizeLegacyText } from "../src/i18n/legacyText";

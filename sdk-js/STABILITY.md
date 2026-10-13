@@ -1,5 +1,7 @@
 # SDK Stability Policy
 
+[简体中文](STABILITY.zh-CN.md)
+
 `@cyanrex/sdk-js` is a pre-1.0 internal package. Its compatibility rules are explicit so internal
 consumers can upgrade safely while the package is prepared for independent publication.
 

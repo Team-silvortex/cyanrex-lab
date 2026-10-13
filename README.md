@@ -1,6 +1,8 @@
 # cyanrex-lab
 
-Version: `0.5.8`
+[简体中文](README.zh-CN.md)
+
+Version: `0.5.9`
 
 Cyanrex is evolving into a self-hosted collaboration platform for people, AI Agents and compute
 resources. Tasks, content versions, execution and reviews have separate responsibilities; eBPF teaching
@@ -24,9 +26,13 @@ private process in [SECURITY.md](SECURITY.md).
 
 ## Current development snapshot
 
-As of **2026-10-13**, the source version is **0.5.8**. This patch connects explicit authorized
-manifest/chunk download, private assembly and selected saving, with local progress/cancellation
-and a single-Source distribution router. These internal entries remain outside normal app startup.
+Source 0.5.9 local authoring supports reviewed multi-file text append, retaining old payload and
+the selected editor: [English](docs/en/local-text-file-import.md) · [简体中文](docs/zh-CN/local-text-file-import.md).
+This does not connect server saving or large-file delivery.
+
+As of **2026-10-13**, the source version is **0.5.9**. This patch includes local text-file import,
+architecture/error-boundary cleanup and complete five-language UI dictionaries, including Korean.
+Earlier explicit file download/saving entries remain outside normal app startup.
 The owner-private [task metadata index](docs/en/task-content-index.md) and unmounted HTTP adapter remain included.
 [Large-file distribution preparation](docs/en/large-file-distribution.md) now includes bounded streaming,
 private chunk staging, immutable upload quotas, a chunk journal, whole-byte verification, trusted
@@ -56,7 +62,7 @@ chunks into one exclusive private file with actual whole-digest/readback checks;
 user save path, recover lost progress, delete chunks or mount a complete downloader.
 The reader also retains the original source-relation pin across private Session work. Earlier task decoupling,
 AI host profiles/SDK adapters, C2-O–AA draft preparation and authentication protections remain included.
-See [release notes](CHANGELOG.md#058---2026-10-13) and [local validation](reports/releases/0.5.8/README.md). Normal-app file distribution, mounted client delivery and
+See [release notes](CHANGELOG.md#059---2026-10-13) and [local validation](reports/releases/0.5.9/README.md). Normal-app file distribution, mounted client delivery and
 restart recovery are not connected. Preparation HTTP adapters remain unmounted and the editor local-only;
 neither this release nor passing tests switch legacy authentication or an existing deployment.
 
@@ -95,6 +101,14 @@ these loopback fixtures are not deployed-LAN or live-service acceptance.
 An explicit [distribution router composition](docs/en/large-file-distribution-router.md) derives
 manifest and chunk endpoints from one trusted Source/workspace, with independent HTTP budgets.
 It remains unmounted and does not isolate the privileged Engine or issue Sessions.
+
+Included in 0.5.9, [combined Source/HTTPS verification](docs/en/large-file-source-https.md)
+connects actual current grants, original files, the single router and controlled TLS delivery in
+one explicit test chain. It does not add production mounting, Session issuance or deployment acceptance.
+
+The concise [current architecture map](docs/en/architecture-map.md) separates runtime wiring,
+module ownership and change boundaries from the detailed implementation history. Service grouping
+and shared private file-error projection do not change runtime mounting or permission policy.
 
 0.5.4 C2-T adds separate, immutable intent registration and current-Session-authorized reading
 from a real unstarted draft attempt. It stores bounded private metadata, not text or credentials.

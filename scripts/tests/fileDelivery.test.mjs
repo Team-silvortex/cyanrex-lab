@@ -64,8 +64,23 @@ test("delivery wires actual defaults and composed Source cases with exact native
     if (nested) assert.match(source, /#\[path = "distribution_lifetime\.rs"\]/);
     ignored.push(...names.map(name => `${nested ? "source::" : ""}${module}::${name}`));
   }
+  const https = await read("engine/tests/file_delivery/source_https/mod.rs");
+  assert.match(source, /#\[path = "source_https\/mod\.rs"\]\s*mod source_https;/);
+  let combined = 0;
+  for (const file of await readdir(new URL("engine/tests/file_delivery/source_https/", root))) {
+    if (!file.endsWith(".rs")) continue;
+    const s = await read(`engine/tests/file_delivery/source_https/${file}`);
+    const module = file.replace(/\.rs$/, "");
+    const names = [...s.matchAll(/#\[ignore[^\n]*\][\s\S]*?async fn (postgres_openssl_\w+)\(/g)].map(m => m[1]);
+    const count = (s.match(/#\[(?:tokio::)?test(?:\([^\]]*\))?\]/g) || []).length;
+    assert.equal(count, names.length, "combined Source TLS cases require explicit external execution");
+    if (count) assert.match(https, new RegExp(`\\bmod ${module};`));
+    combined += count;
+    ignored.push(...names.map(name => `source::source_https::${module}::${name}`));
+  }
+  assert.equal(combined, 3);
   assert.equal(defaults, 10, "exact real cases, not helper-only files");
-  assert.equal(ignored.length, 3);
+  assert.equal(ignored.length, 6);
   const runner = await read("scripts/test-file-delivery.sh");
   const inventory = [...runner.matchAll(/\b[\w:]+::postgres_\w+/g)].map(m => m[0]);
   assert.equal(new Set(inventory).size, inventory.length);

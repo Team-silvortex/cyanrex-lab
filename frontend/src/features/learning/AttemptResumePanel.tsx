@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useI18n } from "../../i18n/context";
+import { localizeLegacyText } from "../../i18n/legacyText";
 import { MAX_UPLOAD_BYTES } from "../ebpf/models";
 import type { LabAttempt } from "./models";
 import { loadResumeAttempt, parseResumeTarget } from "./resumeAttempt";
@@ -48,7 +49,7 @@ export function AttemptResumePanel({ engineUrl, attemptId, labId, running, onApp
     <p className="meta">{t("learn.resumeHint")}</p>
     {state.status === "loading" && <p role="status">{t("learn.resumeLoading")}</p>}
     {state.status === "invalid" && <p className="error" role="alert">{t("learn.resumeInvalid")}</p>}
-    {state.status === "failed" && <p className="error" role="alert">{t("learn.resumeFailed")}: {state.message}</p>}
+    {state.status === "failed" && <p className="error" role="alert">{t("learn.resumeFailed")}: {localizeLegacyText(state.message, t)}</p>}
     {state.status === "ready" && <>
       <p className="meta">{new Date(state.attempt.created_at).toLocaleString()} · {t("teaching.stage")}: {state.attempt.stage}</p>
       <TeacherFeedbackDisplay feedback={state.attempt.teacher_feedback} />

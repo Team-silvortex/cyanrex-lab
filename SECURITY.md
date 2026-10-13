@@ -1,5 +1,7 @@
 # Security Policy
 
+[简体中文](SECURITY.zh-CN.md)
+
 cyanrex-lab compiles and loads eBPF programs through a privileged Engine. A
 security issue can therefore affect the host running a lab, not only the web
 application. Please report suspected vulnerabilities privately.

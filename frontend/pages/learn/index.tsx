@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import SidebarLayout from "../../src/components/SidebarLayout";
 import { getEngineUrl } from "../../src/config/runtime";
 import { useI18n } from "../../src/i18n/context";
+import { localizeLegacyText } from "../../src/i18n/legacyText";
 import { LabProgress, labTitleKey } from "../../src/features/learning/models";
 import { AttemptHistory } from "../../src/features/learning/AttemptHistory";
 
@@ -79,13 +80,13 @@ export default function LearnIndexPage() {
                   {t(`learn.status.${progress.status}`)}
                 </span>
               </div>
-              <p className="meta">{progress.lab.summary}</p>
+              <p className="meta">{localizeLegacyText(progress.lab.summary, t)}</p>
               <p className="meta">
                 {t("learn.attemptCount", { count: progress.attempts })}
                 {progress.latest_stage ? ` · ${progress.latest_stage}` : ""}
               </p>
               {progress.latest_feedback.length > 0 && (
-                <p className="meta">{progress.latest_feedback[0]}</p>
+                <p className="meta">{localizeLegacyText(progress.latest_feedback[0], t)}</p>
               )}
               <div className="row">
                 <Link href={`/learn/${progress.lab.doc_slug}`} className="button-link button-secondary">{t("learn.openLab")}</Link>
