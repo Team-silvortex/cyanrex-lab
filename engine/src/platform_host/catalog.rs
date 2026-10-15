@@ -4,6 +4,9 @@ use sqlx_core::{connection::Connection, executor::Executor, transaction::Transac
 use sqlx_postgres::PgConnection;
 use std::time::Duration;
 
+mod expectation;
+pub use expectation::{inspect_platform_database_expected, PlatformCatalogExpectation};
+
 #[derive(Clone, Copy, PartialEq, Eq)]
 struct NamespaceIdentity {
     oid: u32,

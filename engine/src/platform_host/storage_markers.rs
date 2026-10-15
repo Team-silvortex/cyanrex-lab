@@ -69,6 +69,10 @@ pub struct PlatformStorageMarkerObservation {
 }
 
 impl PlatformStorageMarkerObservation {
+    pub(super) fn catalog(&self) -> &PlatformCatalogObservation {
+        &self.catalog
+    }
+
     /// Passive metadata comparison only; does not open storage or revalidate a live target.
     pub fn matches(&self, other: &Self) -> bool {
         self == other

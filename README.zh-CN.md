@@ -2,7 +2,7 @@
 
 [English](README.md)
 
-版本：`0.6.0`
+版本：`0.6.1`
 
 Cyanrex 正在发展为面向人、AI Agent 与计算资源的自托管协作平台。Task、内容版本、执行与评审各有独立职责；eBPF 教学是第一个领域包，而不是所有任务的定义。
 
@@ -22,11 +22,14 @@ cyanrex-lab 是采用 [Apache License 2.0](LICENSE) 的自由开源软件。欢�
 
 源码 0.5.9 的本地创作功能支持经审阅后追加多个文本文件，并保留原有载荷和所选编辑器：[English](docs/en/local-text-file-import.md) · [简体中文](docs/zh-CN/local-text-file-import.md)。这并未连接服务端保存或大文件交付。
 
-截至 **2026-10-15**，源码版本为 **0.6.0**。本次小版本改进 Task、设置与事件布局，并收录独立的
-[Session 生命周期](docs/zh-CN/platform-session-lifecycle.md)、[Session 数量限制](docs/zh-CN/durable-session-stock.md)、
-[宿主目录](docs/zh-CN/platform-host-preflight.md)、[Artifact 根目录](docs/zh-CN/platform-artifact-root.md)与
-[存储标记](docs/zh-CN/platform-storage-markers.md)准备层。它们不挂载平台宿主、不签发 Session，
-也不证明完整 schema 兼容。此前本地文本导入、五语言词典及显式文件下载／保存仍保留；
+截至 **2026-10-15**，源码版本为 **0.6.1**。本补丁收录显式
+[Linux 启动检查](docs/zh-CN/platform-process-startup.md)、[私有配置](docs/zh-CN/platform-startup-input.md)、
+[目录声明](docs/zh-CN/platform-catalog-expectation.md)、[存储诊断](docs/zh-CN/platform-storage-check.md)与
+[保留存储绑定的连接](docs/zh-CN/platform-storage-connection.md)，并修正
+[Session 数据库权限](docs/zh-CN/platform-session-permissions.md)。0.6.0 的 Task／设置／事件布局、
+独立 Session 生命周期及存量限制、宿主目录、Artifact 根与标记准备层继续保留。
+这些组件不挂载平台宿主、不签发 Session，也不证明完整 schema 兼容。
+此前本地文本导入、五语言词典及显式文件下载／保存仍保留；
 通用浏览器保存和分发仍不在正常应用启动路径中。
 所有者私有的 [Task 元数据索引](docs/zh-CN/task-content-index.md)和未挂载的 HTTP 适配器仍包含在内。
 [大文件分发准备](docs/zh-CN/large-file-distribution.md)现已包括有界流式处理、私有分块暂存、不可变上传配额、分块日志、整文件字节验证、可信发布、当前 Session 私有元数据，以及纯发布者/接收者授权契约。
@@ -41,7 +44,7 @@ cyanrex-lab 是采用 [Apache License 2.0](LICENSE) 的自由开源软件。欢�
 显式的[单分块 HTTP 客户端](docs/zh-CN/large-file-chunk-client.md)现在增加可信固定 HTTPS/字面量回环目标、私有逐次调用 cookie，以及独立的响应头/正文期限；等待者取消后，保存任务仍保留请求准入。它仍不在正常应用启动路径中。
 独立的[私有整文件拼装](docs/zh-CN/large-file-chunk-assembly.md)现在将现有旧式分块复制到一个独占私有文件，并执行真实整文件摘要/读回检查；它不选择用户保存路径、不恢复丢失进度、不删除分块，也不挂载完整下载器。
 读取器还会在私有 Session 工作期间保留原始源关系固定。此前的 Task 解耦、AI 宿主配置/SDK 适配器、C2-O–AA 草稿准备和认证保护仍包含在内。
-参见[发布说明](CHANGELOG.md#060---2026-10-15)和[本地验证](reports/releases/0.6.0/README.md)。正常应用文件分发、已挂载的客户端交付以及重启恢复尚未连接。准备层 HTTP 适配器仍未挂载，编辑器仍仅在本地工作；本次发布或测试通过都不会切换旧认证或现有部署。
+参见[发布说明](CHANGELOG.md#061---2026-10-15)和[本地验证](reports/releases/0.6.1/README.md)。正常应用文件分发、已挂载的客户端交付以及重启恢复尚未连接。准备层 HTTP 适配器仍未挂载，编辑器仍仅在本地工作；本次发布或测试通过都不会切换旧认证或现有部署。
 
 已包含在 **0.5.8** 中、此前不在 0.5.7 Tag 内的[有序私有下载](docs/zh-CN/large-file-download-client.md)，现在将顺序 HTTP 分块连接到同一根目录中的整文件拼装。共享流程容量在取消后仍跟随真实文件工作；失败会保留证据并停止。UI 保存/恢复仍未提供。
 

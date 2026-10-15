@@ -1,5 +1,6 @@
 //! Runtime relation identity/shape, not installation or a full historical audit.
 use super::*;
+use sqlx_core::executor::Executor;
 
 pub(super) struct RelationPin {
     oids: Vec<i64>,
@@ -9,16 +10,29 @@ impl RelationPin {
     /// Source-only Session operations require only the three auth tables. Existing private work
     /// also validates the registry tables in the same order and with the same shape restrictions.
     pub async fn capture(tx: &mut Transaction<'_, Postgres>, registry: bool) -> Result<Self> {
-        let lock = if registry {
-            "LOCK TABLE users, sessions, collaboration_auth_source_schema,
+        if registry {
+            sqlx::query("LOCK TABLE users, sessions, collaboration_auth_source_schema,
             collaboration_identity_schema, collaboration_access_schema, collaboration_authorities,
             collaboration_workspaces, collaboration_legacy_workspaces, collaboration_principals,
             collaboration_legacy_identities, collaboration_memberships, collaboration_deployment_grants,
-            collaboration_identity_audit, collaboration_policy_audit IN ACCESS SHARE MODE"
+            collaboration_identity_audit, collaboration_policy_audit IN ACCESS SHARE MODE")
+                .execute(&mut **tx).await?;
         } else {
-            "LOCK TABLE users, sessions, collaboration_auth_source_schema IN ACCESS SHARE MODE"
-        };
-        sqlx::query(lock).execute(&mut **tx).await?;
+            // LOCK TABLE requires table-wide SELECT, unnecessarily exposing credentials to a
+            // Session-only role. PREPARE parses/rewrites but never plans or executes this query;
+            // DEALLOCATE releases the prepared statement while transaction relation locks remain. Use one
+            // Simple Query batch, not a cached/extended prepared query or an executed LIMIT 0.
+            // The fixed reserved name bounds an interrupted batch to one slot per connection.
+            // A collision fails closed: never execute, adopt, remove or retry an existing plan.
+            Executor::execute(
+                &mut **tx,
+                "PREPARE cyanrex_session_source_relations_v1 AS
+                SELECT 1 FROM ONLY users, ONLY sessions,
+                    ONLY collaboration_auth_source_schema LIMIT 0;
+                DEALLOCATE cyanrex_session_source_relations_v1",
+            )
+            .await?;
+        }
         let rows = sqlx::query("WITH expected(relation, key, registry) AS (VALUES
             ('users', ARRAY['username'], false), ('sessions', ARRAY['token'], false),
             ('collaboration_auth_source_schema', ARRAY['singleton'], false),
@@ -54,6 +68,27 @@ impl RelationPin {
                 return Err(DurableAuthError::UnsupportedSchema);
             }
             oids.push(row.try_get("oid")?);
+        }
+        if !registry {
+            if oids.len() != 3 {
+                return Err(DurableAuthError::UnsupportedSchema);
+            }
+            let held: bool = sqlx::query(
+                "SELECT count(DISTINCT l.relation)=3 AS held
+                FROM pg_catalog.pg_locks l
+                WHERE l.pid=pg_catalog.pg_backend_pid() AND l.locktype='relation'
+                    AND l.database=(SELECT d.oid FROM pg_catalog.pg_database d
+                        WHERE d.datname=pg_catalog.current_database())
+                    AND l.relation::bigint = ANY($1)
+                    AND l.mode='AccessShareLock' AND l.granted",
+            )
+            .bind(&oids)
+            .fetch_one(&mut **tx)
+            .await?
+            .try_get("held")?;
+            if !held {
+                return Err(DurableAuthError::UnsupportedSchema);
+            }
         }
         Ok(Self { oids, registry })
     }

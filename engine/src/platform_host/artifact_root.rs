@@ -39,6 +39,10 @@ pub struct PlatformArtifactRootObservation {
 }
 
 impl PlatformArtifactRootObservation {
+    pub(super) fn binds_path(&self, config: &PlatformHostPreflightConfig, path: &Path) -> bool {
+        self.config == *config && path.as_os_str() == self.path.as_os_str()
+    }
+
     /// Passive comparison only; no path is opened or revalidated by this method.
     pub fn matches(&self, other: &Self) -> bool {
         self.config == other.config && self.path == other.path && self.identity == other.identity

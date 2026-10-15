@@ -5,6 +5,50 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-10-15
+
+This patch source release adds explicit low-privilege platform startup checks, strict private
+configuration, original catalog declarations and retained storage connections, and removes an
+unnecessary credential-read privilege from prepared Session relation locking. The platform host,
+public Session issuer and browser saving remain unmounted; no existing storage is migrated.
+See [local release validation](reports/releases/0.6.1/README.md).
+
+### Added
+
+- Add a retained storage connector composing caller-selected original catalog, marker and Artifact-root
+  bindings. Recheck roots before and after each fresh connection's bounded catalog/marker verification,
+  refuse mixed or replaced targets, and close failed unpublished connections without adopting a baseline,
+  adding a pool, mounting a host or changing the diagnostic CLI.
+
+- Add complete trusted catalog identity declarations and strict private input format 2. Reject
+  changed role/database-owner/namespace OIDs before first connection adoption, preserve format-1
+  diagnostics, and reuse single-attempt bounded inspection/close without pools or host startup.
+
+- Add an explicit `check-storage` command composing low-privilege private input with existing
+  Artifact-root, physical-catalog and five-marker read-only checks. Bound one database attempt
+  through close, recheck the original root after runtime teardown, and return no retained baseline,
+  authorization, installer or running host.
+
+- Add a check-only private platform configuration command behind the Linux single-main-thread gate.
+  Require bounded owned no-follow input and strict named JSON records without database connections,
+  environment defaults, secret reporting, first-target adoption or host startup.
+
+- Add an explicit local single-attempt database connector, verifying every fresh connection against
+  the original catalog before handoff. Reject ambient startup options, override active connection
+  defaults and bound dialing/verification without pools, retry, peer-authentication claims or host mounting.
+
+- Add explicit Linux pre-runtime process preparation and `cyanrex-platform check-process`.
+  Verify exact numeric identities/groups, saved/filesystem identities and zero current capabilities;
+  restrict and recheck no-new-privileges before workers. Keep generic errors and real child-only
+  tests without privilege repair, a sandbox claim, Engine construction or a host listener.
+
+### Fixed
+
+- Remove the table-wide credential-read dependency from prepared Source-only Session relation
+  locking. Acquire and verify transaction-held relation locks without planning/executing a probe;
+  preserve original-source checks and fail closed on reserved-plan collisions. Add real restricted-role
+  lifecycle/ACL/lock/trap regressions without granting production privileges or mounting a host.
+
 ## [0.6.0] - 2026-10-15
 
 This minor source release improves Task, Settings and Events layouts and adds independent platform
@@ -1283,7 +1327,9 @@ cross-user collaboration. The frozen public API compatibility baseline remains 0
 The canonical package metadata advanced directly from `0.2.9` to `0.3.1`. Version `0.3.0` identifies
 the frozen API compatibility snapshot only; it was not a package release and must not be tagged.
 
-[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.9...HEAD
+[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.6.1...HEAD
+[0.6.1]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.6.0...v0.6.1
+[0.6.0]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.9...v0.6.0
 [0.5.9]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.8...v0.5.9
 [0.5.8]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.7...v0.5.8
 [0.5.7]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.6...v0.5.7

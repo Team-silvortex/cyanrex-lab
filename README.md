@@ -2,7 +2,7 @@
 
 [简体中文](README.zh-CN.md)
 
-Version: `0.6.0`
+Version: `0.6.1`
 
 Cyanrex is evolving into a self-hosted collaboration platform for people, AI Agents and compute
 resources. Tasks, content versions, execution and reviews have separate responsibilities; eBPF teaching
@@ -30,11 +30,14 @@ Source 0.5.9 local authoring supports reviewed multi-file text append, retaining
 the selected editor: [English](docs/en/local-text-file-import.md) · [简体中文](docs/zh-CN/local-text-file-import.md).
 This does not connect server saving or large-file delivery.
 
-As of **2026-10-15**, the source version is **0.6.0**. This minor release improves Task, Settings and
-Events layouts and adds independent platform [Session lifecycle](docs/en/platform-session-lifecycle.md),
-[Session stock limits](docs/en/durable-session-stock.md), [host catalog](docs/en/platform-host-preflight.md),
-[Artifact root](docs/en/platform-artifact-root.md) and [storage marker](docs/en/platform-storage-markers.md)
-preparation. These do not mount a platform host, issue Sessions or prove complete schema compatibility.
+As of **2026-10-15**, the source version is **0.6.1**. This patch adds explicit
+[Linux startup checks](docs/en/platform-process-startup.md), [private configuration](docs/en/platform-startup-input.md),
+[catalog declarations](docs/en/platform-catalog-expectation.md), [storage diagnostics](docs/en/platform-storage-check.md)
+and [retained storage connections](docs/en/platform-storage-connection.md), plus a
+[Session privilege correction](docs/en/platform-session-permissions.md).
+The 0.6.0 Task/Settings/Events layouts, independent Session lifecycle and stock limits, host catalog,
+Artifact root and storage marker preparation remain included. These do not mount a platform host,
+issue Sessions or prove complete schema compatibility.
 Earlier local text import, five-language dictionaries and explicit file download/saving entries remain;
 generic browser saving and distribution remain outside normal app startup.
 The owner-private [task metadata index](docs/en/task-content-index.md) and unmounted HTTP adapter remain included.
@@ -66,7 +69,7 @@ chunks into one exclusive private file with actual whole-digest/readback checks;
 user save path, recover lost progress, delete chunks or mount a complete downloader.
 The reader also retains the original source-relation pin across private Session work. Earlier task decoupling,
 AI host profiles/SDK adapters, C2-O–AA draft preparation and authentication protections remain included.
-See [release notes](CHANGELOG.md#060---2026-10-15) and [local validation](reports/releases/0.6.0/README.md). Normal-app file distribution, mounted client delivery and
+See [release notes](CHANGELOG.md#061---2026-10-15) and [local validation](reports/releases/0.6.1/README.md). Normal-app file distribution, mounted client delivery and
 restart recovery are not connected. Preparation HTTP adapters remain unmounted and the editor local-only;
 neither this release nor passing tests switch legacy authentication or an existing deployment.
 

@@ -1,18 +1,35 @@
-//! Explicit trusted host configuration and independent read-only preparation gates.
-//! No Engine, listener, installer, credential, Session or runtime authority is constructed here.
+//! Explicit trusted host configuration and independent preparation gates.
+//! No Engine, listener, installer, Session issuer or runtime authority is constructed here.
 
 mod artifact_root;
 mod catalog;
 mod config;
+mod database_connection;
+#[cfg(target_os = "linux")]
+mod process_startup;
+mod storage_check;
+mod storage_connection;
 mod storage_markers;
 
 pub use artifact_root::{
     inspect_platform_artifact_root, verify_platform_artifact_root, PlatformArtifactRootObservation,
 };
 pub use catalog::{
-    inspect_platform_database, verify_platform_database, PlatformCatalogObservation,
+    inspect_platform_database, inspect_platform_database_expected, verify_platform_database,
+    PlatformCatalogExpectation, PlatformCatalogObservation,
 };
 pub use config::{PlatformDatabaseTarget, PlatformHostPreflightConfig, PlatformNamespaces};
+pub use database_connection::{
+    PlatformDatabaseConnectionError, PlatformDatabaseConnector, PlatformDatabaseEndpoint,
+};
+#[cfg(target_os = "linux")]
+pub use process_startup::{
+    prepare_platform_process, PlatformProcessIdentity, PlatformProcessStartup,
+    PlatformProcessStartupError,
+};
+pub use storage_check::check_platform_database_storage;
+pub use storage_check::check_platform_database_storage_expected;
+pub use storage_connection::{PlatformStorageConnectionError, PlatformStorageConnector};
 pub use storage_markers::{
     inspect_platform_storage_markers, verify_platform_storage_markers,
     PlatformStorageMarkerObservation,

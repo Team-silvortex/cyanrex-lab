@@ -94,3 +94,7 @@ SQL 套件须显式提供一次性 `CYANREX_TEST_DATABASE_URL`，再运行
 后续[显式 Session 存量策略](durable-session-stock.md)在可信受限登录中限制持久行数，包含
 过期记录。不将本路由变为签发器，不向原准备层写者强制施加策略，也不完成剩余宿主和
 签发门槛。
+
+0.6.0 之后的未发布跟进为本查询／退出边界验证[受限数据库角色](platform-session-permissions.md)，
+移除 Source-only 整表读取依赖；不完成剩余进程／传输／签发门槛，也不改变含注册表命令的
+独立权限需求。

@@ -9,13 +9,14 @@ identity, content, task and review services are explicitly configured preparatio
 payload editor is local-only, and autonomous AI and general Run orchestration are not implemented.
 
 This index describes the whole project, not only its first teaching domain. The source version is
-**0.6.0** (**2026-10-15**), adding Task/Settings/Events layout improvements, independent Session
-lifecycle and stock limits, and read-only host catalog, Artifact root and storage marker gates.
+**0.6.1** (**2026-10-15**), adding explicit Linux process/private-input checks, catalog declarations,
+storage diagnostics and retained storage bindings, plus the Session privilege correction.
+The 0.6.0 layouts, independent Session lifecycle/stock and original read-only storage gates remain.
 Local multi-file authoring, private task metadata indexing and large-file preparation remain included.
 Earlier task decoupling, C2-O–AA, Next.js 15.5.27, AI host adapters and security boundaries remain in place.
 Source inclusion does not connect generic browser saving, switch live authentication, migrate storage or
 validate a deployment. Dated `Unreleased` descriptions retain their original implementation stage,
-source versions and verification scope; they are not fresh 0.6.0 execution records.
+source versions and verification scope; they are not fresh 0.6.1 execution records.
 The documents distinguish source-release contents, live runtime capabilities
 and target architecture; a built module or passing test does not imply an online deployment.
 
@@ -75,8 +76,15 @@ without replacing the draft or connecting server saving (Unreleased after 0.5.8)
 | Compare architecture, capabilities, implementations and maturity | [Capability tensor and evidence-backed scores](capability-maturity.md) |
 | Know what is implemented and what comes next | [Project status](project-status.md), [target architecture](next-architecture.md) |
 | Inspect the new independent platform Session boundary | [Session lifecycle](platform-session-lifecycle.md); 0.6.0, current-session query and confirmed logout only, no issuer or normal-app mounting |
+| Run existing Session query/logout without password or TOTP reads | [Session database privileges](platform-session-permissions.md); Unreleased after 0.6.0, tested column permissions and nonexecuting relation locks, not a mounted host or read-only role |
 | Bound persistent Session stock during explicitly selected login | [Session stock limits](durable-session-stock.md); 0.6.0 trusted preparation, not a public issuer or automatic expiry cleanup |
 | Check explicit host configuration and database catalog identity | [Host catalog preflight](platform-host-preflight.md); 0.6.0 read-only preparation, not storage health or a mounted host |
+| Check an explicitly selected Linux service process before workers | [Process startup check](platform-process-startup.md); Unreleased after 0.6.0, exact identity/capabilities and no-new-privileges, not a sandbox or running host |
+| Open one explicit local database connection against an original catalog | [Database connector](platform-database-connection.md); Unreleased after 0.6.0, no automatic retry, pool or peer-authentication claim |
+| Declare original catalog identities before the first connection | [Catalog declaration](platform-catalog-expectation.md); Unreleased after 0.6.0, strict private version 2 and immutable comparisons, not authenticated discovery or a running host |
+| Check a private startup configuration after the Linux process gate | [Private startup input](platform-startup-input.md); Unreleased after 0.6.0, strict JSON and file checks without connecting or starting a host |
+| Run one read-only storage diagnostic from that private input | [Storage check](platform-storage-check.md); Unreleased after 0.6.0, actual root/catalog/marker checks and connection close, not a retained runtime baseline |
+| Open fresh connections against retained catalog, marker and root observations | [Retained storage connections](platform-storage-connection.md); Unreleased after 0.6.0, explicit caller-selected bindings, not a pool, current authorization or running host |
 | Recheck an explicitly selected original private Artifact directory | [Artifact root preflight](platform-artifact-root.md); 0.6.0 metadata-only observation, not content health or runtime handoff |
 | Bind five storage version declarations and their scope to an original catalog | [Storage marker observation](platform-storage-markers.md); 0.6.0 marker-only preparation, not complete schema compatibility or authority health |
 | Review centralized large-file distribution and later desktop transfers | [Distribution proposal](large-file-distribution.md), [streaming core](large-file-core.md), [private chunk staging](large-file-staging.md), [upload intent and logical quotas](large-file-upload-intent.md), [local receipts](large-file-upload-staging.md), [write-ahead chunk journal](large-file-chunk-journal.md), [whole-byte observation](large-file-whole-verification.md), [persistent publication metadata](large-file-publication.md), [Session private metadata](large-file-session-metadata.md), [pure publisher/recipient contracts](large-file-access-contract.md); normal-app distribution and desktop transfers not connected |

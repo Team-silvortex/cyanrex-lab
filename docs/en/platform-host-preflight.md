@@ -96,3 +96,11 @@ ownership, valid authority history or healthy stored content. The separate
 existing scope fields without establishing full schema compatibility. Process privileges,
 secure connection configuration, transport acceptance and actual low-privilege host composition remain
 separate gates. There is no migration, bootstrap, automatic cleanup, public login or browser Task saving.
+
+An Unreleased follow-up after 0.6.0 adds a separate [Linux process startup check](platform-process-startup.md).
+It restricts and rechecks an explicitly selected calling-thread identity before workers, not a database
+connection factory or a running host. This catalog observation's original connection limits remain unchanged.
+
+A separate Unreleased [single-attempt connector](platform-database-connection.md) can now use an explicitly
+supplied original observation to verify each newly opened local connection. It does not change these borrowed
+observation APIs into a pool, continuous guard, peer authentication or current resource authority.

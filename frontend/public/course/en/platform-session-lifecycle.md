@@ -105,3 +105,7 @@ listing, reopening and revision-conflict handling connect to that host.
 A subsequent [explicit Session stock policy](durable-session-stock.md) bounds stored rows during
 trusted limited login, including expired records. It does not turn this router into an issuer,
 force policy on old prepared writers or complete the remaining host and issuance gates.
+
+An Unreleased follow-up after 0.6.0 verifies a [credential-restricted database role](platform-session-permissions.md)
+for this query/logout boundary. It removes the Source-only table-wide read dependency, not the
+remaining process/transport/issuer gates or registry-backed commands' separate privilege needs.
