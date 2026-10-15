@@ -178,12 +178,12 @@ export default function TaskDraftWorkspace() {
         <input data-testid="task-title" value={draft.title} maxLength={256} disabled={safety.busy}
           placeholder={t("taskDraft.titlePlaceholder")} onChange={event => changeTitle(event.target.value)} />
       </label>
-      <div className="task-draft-actions">
+      <div className="task-draft-actions" role="group" aria-label={t("taskDraft.title")}>
         <input data-testid="task-draft-import" ref={upload} hidden type="file" accept=".json,application/json" disabled={safety.busy}
           onChange={event => { const file = event.target.files?.[0]; event.target.value = ""; importDraft(file); }} />
         <button type="button" className="button-secondary" disabled={safety.busy} onClick={() => upload.current?.click()}>{t("taskDraft.import")}</button>
         <button data-testid="task-draft-export" type="button" className="button-primary" disabled={safety.busy} onClick={exportDraft}>{t("taskDraft.export")}</button>
-        <button data-testid="task-draft-reset" type="button" className="button-secondary" disabled={safety.busy} onClick={reset}>{t("taskDraft.reset")}</button>
+        <button data-testid="task-draft-reset" type="button" className="button-danger" disabled={safety.busy} onClick={reset}>{t("taskDraft.reset")}</button>
       </div>
       <p data-testid="task-draft-status" className="meta task-draft-status">{t(dirty ? "taskDraft.unsaved" : "taskDraft.emptyStatus")}</p>
       {notice && <p className="task-draft-notice" role={notice === "taskDraft.downloadStarted" || notice === "taskDraft.filesAdded" ? "status" : "alert"}>{t(notice)}</p>}
@@ -193,7 +193,7 @@ export default function TaskDraftWorkspace() {
         <div className="task-payload-heading"><h3>{t("taskDraft.payload")}</h3>
           <span className="meta">{t("taskDraft.payloadCount", { count: draft.payload.length, max: MAX_TASK_PAYLOAD_ITEMS })}</span>
         </div>
-        <p className="meta">{t("taskDraft.payloadHint")}</p>
+        {draft.payload.length === 0 && <p className="meta">{t("taskDraft.payloadHint")}</p>}
         <button data-testid="task-payload-add" type="button" className="button-secondary"
           disabled={safety.busy || draft.payload.length >= MAX_TASK_PAYLOAD_ITEMS} onClick={addText}>{t("taskDraft.addText")}</button>
         <input data-testid="task-text-import" ref={textFiles} hidden type="file" multiple

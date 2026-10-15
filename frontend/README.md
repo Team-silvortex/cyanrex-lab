@@ -1,5 +1,8 @@
 # cyanrex frontend
 
+Source **0.6.0** (**2026-10-15**) includes the layouts below; see [release validation](../reports/releases/0.6.0/README.md).
+Earlier dated browser counts retain their original implementation scope.
+
 [简体中文](README.zh-CN.md)
 
 Next.js control plane for Cyanrex eBPF experiments.
@@ -15,7 +18,7 @@ for the complete frontend/Engine boundary.
 - `/helper`: engine and eBPF environment diagnostics
 - `/modules`: module catalog and lifecycle controls
 - `/events`: event filters, export, deletion, and realtime updates
-- `/settings`: per-user event retention settings
+- `/settings`: event retention/compiler settings, performance metrics, Runner administration and AI metadata
 - `/terminal`: teacher-managed module command bus and eBPF workspace handoff (compatible legacy administrators; not a system shell)
 - `/login`, `/register`, `/otp-setup`, `/account`: account and TOTP flows
 
@@ -25,6 +28,34 @@ All 865 owned UI entries are translated, including local editor explanations and
 Course bodies remain English/Chinese; missing Korean content shows an explicit English fallback notice.
 `npm run test:korean-browser` covers production-page switching, undo, confirmation, narrow screens,
 preference persistence and course fallback. See [translation scope](../docs/en/localization.md).
+
+The local Task workspace keeps title and whole-draft actions compact, bounds the content list,
+and gives the current editor more room. Language capabilities remain below the source; local-only
+warnings and destructive confirmations remain visible. The mobile navigation scrolls independently
+of its close control. `npm run test:task-layout-browser` checks real geometry, five languages,
+32-item selection and unchanged editor/model/undo; it uses the same optional browser setup below.
+
+Settings keeps event/compiler save and reload beside their fields, with metric refresh in its own
+card. Desktop places settings and performance side by side; narrow screens stack the cards.
+Runner, AI metadata and documentation have separate sections that stay mounted without hash
+navigation. Resizing, changing language or refreshing metrics preserves unsaved settings and AI
+drafts. `npm run test:settings-layout-browser` checks these boundaries, reviewed writes, read failures
+and five-language mobile controls against the built frontend with mocked Engine traffic.
+
+The Events page separates filter fields, history refresh/export and destructive deletion.
+Controls have at least 44 px height, long payloads scroll within their cards without truncation,
+and resizing or changing language keeps filter/date/export choices. The account-wide read scope
+and reviewed server-side deletion cutoff remain unchanged. `npm run test:event-layout-browser`
+checks narrow-screen geometry, exact downloads, deletion confirmation and failed read acknowledgement
+with controlled Engine responses; no live event mutation or kernel action is exercised.
+
+Unreleased layout verification on **2026-10-13**, after source **0.5.9**: **369 common checks**,
+**250 frontend tests**, **107 production-page browser cases** and **101 controller browser cases**
+passed. For the same Chinese,
+one-item TypeScript draft at 390/320 × 900 px, the source starts at **874/886 px**, previously
+**1,464/1,558 px**. In the controlled Settings page, save starts at **479/471 px**, previously
+**1,067/1,115 px**, at those same narrow viewport sizes. Browser Engine responses are controlled
+fixtures, not deployment acceptance.
 
 ## Development
 

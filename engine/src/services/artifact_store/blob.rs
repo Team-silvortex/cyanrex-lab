@@ -52,7 +52,7 @@ fn private_file(meta: &Metadata, length: u64) -> bool {
         && meta.len() == length
         && length <= MAX_CONTENT as u64
 }
-fn open_root(path: &Path) -> std::io::Result<File> {
+pub(super) fn open_root(path: &Path) -> std::io::Result<File> {
     let invalid = || std::io::Error::from(std::io::ErrorKind::PermissionDenied);
     if !path.is_absolute() || path.as_os_str().len() > 4096 {
         return Err(invalid());

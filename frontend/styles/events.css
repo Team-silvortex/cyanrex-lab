@@ -1,0 +1,31 @@
+/* Presentation only: keep the original filter, export, acknowledgement and deletion controllers. */
+.events-workspace { display: grid; gap: 16px; min-width: 0; }
+.events-workspace :is(h2, p, span, strong) { overflow-wrap: anywhere; }
+.events-controls h2 { font-size: 22px; }
+.events-summary { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 10px; font-size: 13px; line-height: 1.6; }
+.events-filter-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.events-workspace .field-label :is(input, select) { min-height: 44px; max-width: 100%; }
+.events-workspace input[type="datetime-local"] { display: block; width: 100%; min-width: 0; }
+.events-workspace button { min-height: 44px; max-width: 100%; overflow-wrap: anywhere; }
+.events-actions { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; margin-top: 16px; }
+.events-export-field { flex: 0 1 120px; }
+.events-safe-buttons { flex: 1 1 200px; gap: 8px; }
+.events-danger-actions { display: flex; justify-content: flex-end; margin-top: 16px; padding-top: 14px; border-top: 1px solid #704252; }
+.events-read-status { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 12px; }
+.events-read-status p { font-size: 13px; line-height: 1.6; margin: 0 0 8px; }
+.events-read-status p:last-child { margin-bottom: 0; }
+.events-list { display: grid; gap: 12px; }
+.events-list > p { margin: 0; }
+.event-card { background: #0b1425; }
+.event-metadata { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 6px 0; font-size: 13px; line-height: 1.6; }
+.event-card .event-payload { margin: 0; max-height: 360px; overflow: auto; overscroll-behavior: contain; }
+
+@media (max-width: 700px) {
+  .events-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .events-filter-grid :is(.events-range-field, .events-time-field) { grid-column: 1 / -1; }
+  .events-actions { gap: 10px; }
+  .events-safe-buttons { flex-basis: 100%; }
+  .events-danger-actions { justify-content: flex-start; }
+  .events-read-status p { font-size: 12px; }
+  .event-card .event-payload { max-height: 320px; font-size: 12px; }
+}

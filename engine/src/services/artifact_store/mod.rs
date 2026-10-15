@@ -21,6 +21,11 @@ const MAX_CONTENT: usize = 1_048_576;
 type Result<T> = std::result::Result<T, ArtifactStoreError>;
 type Tx<'a> = Transaction<'a, Postgres>;
 
+/// Reuse the existing read-only private-root walk without constructing a store or touching SQL.
+pub(crate) fn open_private_artifact_root(root: &Path) -> Result<std::fs::File> {
+    blob::open_root(root).map_err(|_| ArtifactStoreError::BlobUnavailable)
+}
+
 #[derive(Clone)]
 pub struct ArtifactStore {
     pool: PgPool,

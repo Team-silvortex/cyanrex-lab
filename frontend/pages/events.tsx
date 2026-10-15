@@ -80,98 +80,110 @@ export default function EventsPage() {
   return (
     <SidebarLayout title={t("events.title")}>
       {safety.dialog}
-      <section className="panel">
-        <h2>{t("events.title")}</h2>
-        <p className="meta">
-          {t("events.status")}: {t(`events.connection${connection[0].toUpperCase()}${connection.slice(1)}`)} | {t("events.total")}: {events.length} | {t("events.filtered")}: {events.length} | {t("events.activeFilters", { count: activeFilterCount })}
-        </p>
-        {streamGap && <p className="meta" role="status">{t("events.streamGap")}</p>}
-        {connection === "closed" && valid && (
-          <button type="button" onClick={() => setStreamRevision((revision) => revision + 1)}>{t("events.retryStream")}</button>
-        )}
-        <p className="meta">{t("events.markReadScope")}</p>
-        {read.readState === "pending" && <p className="meta" role="status">{t("events.markReadPending")}</p>}
-        {read.readState === "error" && <div className="error" role="alert">
-          <p>{t("events.markReadFailed")}</p>
-          <button type="button" onClick={read.retryMarkRead}>{t("events.retryMarkRead")}</button>
-        </div>}
-        <div className="row" style={{ marginTop: 10 }}>
-          <label className="meta">
-            {t("events.category")}:
-            {" "}
-            <select value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value as typeof categoryFilter)}>
-              <option value="all">{t("events.all")}</option>
-              <option value="kernel">{t("events.kernel")}</option>
-              <option value="platform">{t("events.platform")}</option>
-            </select>
-          </label>
-          <label className="meta">
-            {t("events.severity")}:
-            {" "}
-            <select value={severityFilter} onChange={(event) => setSeverityFilter(event.target.value as typeof severityFilter)}>
-              <option value="all">{t("events.all")}</option>
-              <option value="success">{t("events.success")}</option>
-              <option value="warning">{t("events.warning")}</option>
-              <option value="error">{t("events.error")}</option>
-            </select>
-          </label>
-          <label className="meta">
-            {t("events.range")}:
-            {" "}
-            <select value={rangePreset} onChange={(event) => setRangePreset(event.target.value as typeof rangePreset)}>
-              <option value="all">{t("events.all")}</option>
-              <option value="10m">{t("events.last10m")}</option>
-              <option value="1h">{t("events.last1h")}</option>
-              <option value="24h">{t("events.last24h")}</option>
-              <option value="custom">{t("events.custom")}</option>
-            </select>
-          </label>
-          {rangePreset === "custom" && (
-            <>
-              <label className="meta">
-                {t("events.start")}:
-                {" "}
-                <input type="datetime-local" value={startTime} onChange={(event) => setStartTime(event.target.value)} />
-              </label>
-              <label className="meta">
-                {t("events.end")}:
-                {" "}
-                <input type="datetime-local" value={endTime} onChange={(event) => setEndTime(event.target.value)} />
-              </label>
-            </>
-          )}
-            <label className="meta">
-            {t("events.export")}:
-            {" "}
-            <select value={exportFormat} onChange={(event) => setExportFormat(event.target.value as typeof exportFormat)}>
-              <option value="json">{t("events.exportJson")}</option>
-              <option value="csv">{t("events.exportCsv")}</option>
-            </select>
-          </label>
-          <button type="button" onClick={refreshHistory} disabled={!valid || safety.busy}>{t("events.refreshHistory")}</button>
-          <button type="button" onClick={actions.exportEvents} disabled={!valid || actions.exporting}>{t("events.exportDownload")}</button>
-          {actions.exporting && <span className="meta" role="status">{t("events.exporting")}</span>}
-          <button type="button" className="button-danger" disabled={!valid || connection !== "open" || safety.busy || events.length === 0}
-            onClick={deleteFilteredEvents}>{t("events.deleteFiltered")}</button>
-        </div>
-        {error && <p className="error" role="alert">{error}</p>}
-      </section>
+      <div className="events-workspace">
+        <section className="panel events-controls" data-testid="events-controls" aria-label={t("events.title")}>
+          <div className="section-heading">
+            <div>
+              <h2>{t("events.title")}</h2>
+              <div className="meta events-summary">
+                <span>{t("events.status")}: {t(`events.connection${connection[0].toUpperCase()}${connection.slice(1)}`)}</span>
+                <span>{t("events.total")}: {events.length}</span>
+                <span>{t("events.filtered")}: {events.length}</span>
+                <span>{t("events.activeFilters", { count: activeFilterCount })}</span>
+              </div>
+            </div>
+            {connection === "closed" && valid && (
+              <button type="button" className="button-secondary" onClick={() => setStreamRevision((revision) => revision + 1)}>{t("events.retryStream")}</button>
+            )}
+          </div>
+          <div className="events-filter-grid" data-testid="events-filters">
+            <label className="field-label">
+              {t("events.category")}
+              <select aria-label={t("events.category")} value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value as typeof categoryFilter)}>
+                <option value="all">{t("events.all")}</option>
+                <option value="kernel">{t("events.kernel")}</option>
+                <option value="platform">{t("events.platform")}</option>
+              </select>
+            </label>
+            <label className="field-label">
+              {t("events.severity")}
+              <select aria-label={t("events.severity")} value={severityFilter} onChange={(event) => setSeverityFilter(event.target.value as typeof severityFilter)}>
+                <option value="all">{t("events.all")}</option>
+                <option value="success">{t("events.success")}</option>
+                <option value="warning">{t("events.warning")}</option>
+                <option value="error">{t("events.error")}</option>
+              </select>
+            </label>
+            <label className="field-label events-range-field">
+              {t("events.range")}
+              <select aria-label={t("events.range")} value={rangePreset} onChange={(event) => setRangePreset(event.target.value as typeof rangePreset)}>
+                <option value="all">{t("events.all")}</option>
+                <option value="10m">{t("events.last10m")}</option>
+                <option value="1h">{t("events.last1h")}</option>
+                <option value="24h">{t("events.last24h")}</option>
+                <option value="custom">{t("events.custom")}</option>
+              </select>
+            </label>
+            {rangePreset === "custom" && (
+              <>
+                <label className="field-label events-time-field">
+                  {t("events.start")}
+                  <input type="datetime-local" aria-label={t("events.start")} value={startTime} onChange={(event) => setStartTime(event.target.value)} />
+                </label>
+                <label className="field-label events-time-field">
+                  {t("events.end")}
+                  <input type="datetime-local" aria-label={t("events.end")} value={endTime} onChange={(event) => setEndTime(event.target.value)} />
+                </label>
+              </>
+            )}
+          </div>
+          <div className="events-actions" data-testid="events-actions">
+            <label className="field-label events-export-field">
+              {t("events.export")}
+              <select aria-label={t("events.export")} value={exportFormat} onChange={(event) => setExportFormat(event.target.value as typeof exportFormat)}>
+                <option value="json">{t("events.exportJson")}</option>
+                <option value="csv">{t("events.exportCsv")}</option>
+              </select>
+            </label>
+            <div className="row events-safe-buttons">
+              <button type="button" className="button-secondary" onClick={refreshHistory} disabled={!valid || safety.busy}>{t("events.refreshHistory")}</button>
+              <button type="button" className="button-primary" onClick={actions.exportEvents} disabled={!valid || actions.exporting}>{t("events.exportDownload")}</button>
+              {actions.exporting && <span className="meta" role="status">{t("events.exporting")}</span>}
+            </div>
+          </div>
+          <div className="events-danger-actions" data-testid="events-danger-actions" role="group" aria-label={t("events.deleteFiltered")}>
+            <button type="button" className="button-danger" disabled={!valid || connection !== "open" || safety.busy || events.length === 0}
+              onClick={deleteFilteredEvents}>{t("events.deleteFiltered")}</button>
+          </div>
+          {error && <p className="error" role="alert">{error}</p>}
+          <div className="events-read-status">
+            {streamGap && <p className="meta" role="status">{t("events.streamGap")}</p>}
+            <p className="meta">{t("events.markReadScope")}</p>
+            {read.readState === "pending" && <p className="meta" role="status">{t("events.markReadPending")}</p>}
+            {read.readState === "error" && <div className="error" role="alert">
+              <p>{t("events.markReadFailed")}</p>
+              <button type="button" className="button-secondary" onClick={read.retryMarkRead}>{t("events.retryMarkRead")}</button>
+            </div>}
+          </div>
+        </section>
 
-      <section className="panel" style={{ marginTop: 16 }}>
-        {valid && events.length === 0 && <p className="meta">{t(connection === "open" ? "events.noEvents" : "events.loadingHistory")}</p>}
-        {events.map((_, reverseIdx) => {
-          const idx = events.length - 1 - reverseIdx;
-          const event = events[idx];
-          if (!event) return null;
+        <section className="panel events-list" data-testid="events-list">
+          {valid && events.length === 0 && <p className="meta">{t(connection === "open" ? "events.noEvents" : "events.loadingHistory")}</p>}
+          {events.map((_, reverseIdx) => {
+            const idx = events.length - 1 - reverseIdx;
+            const event = events[idx];
+            if (!event) return null;
 
             const safetyBadges = extractSafetyBadges(event, t);
             return (
-              <article key={`${event.timestamp}-${reverseIdx}`} className="panel" style={{ marginBottom: 10, background: "#0b1425" }}>
+              <article key={`${event.timestamp}-${reverseIdx}`} className="panel event-card">
                 <p style={{ margin: 0 }}>
                   <strong>{event.event_type}</strong>
                 </p>
-                <p className="meta" style={{ margin: "6px 0" }}>
-                  {new Date(event.timestamp).toLocaleString()} | {t("events.sourceField")}: {event.source} | {t("events.categoryField")}: {event.category}
+                <p className="meta event-metadata">
+                  <span>{new Date(event.timestamp).toLocaleString()}</span>
+                  <span>{t("events.sourceField")}: {event.source}</span>
+                  <span>{t("events.categoryField")}: {event.category}</span>
                 </p>
                 <p className={`event-tag ${event.color}`} style={{ margin: "0 0 8px 0" }}>
                   {event.severity.toUpperCase()}
@@ -185,11 +197,12 @@ export default function EventsPage() {
                     ))}
                   </div>
                 )}
-                <pre style={{ margin: 0 }}>{JSON.stringify(event.payload, null, 2)}</pre>
+                <pre className="event-payload">{JSON.stringify(event.payload, null, 2)}</pre>
               </article>
             );
           })}
-      </section>
+        </section>
+      </div>
     </SidebarLayout>
   );
 }

@@ -1,6 +1,6 @@
 {
   "name": "@cyanrex/frontend",
-  "version": "0.5.9",
+  "version": "0.6.0",
   "private": true,
   "scripts": {
     "postinstall": "node scripts/sync-monaco-assets.mjs",
@@ -49,7 +49,10 @@
     "test:classroom-browser": "node --test tests/classroomConnection.browser.mjs",
     "test:learning-browser": "node --test tests/learningFeedback.browser.mjs",
     "test:learning-resume-browser": "node --test tests/learningResume.browser.mjs",
-    "test:layout-browser": "node --test tests/workspaceLayout.browser.mjs",
+    "test:layout-browser": "node --test tests/workspaceLayout.browser.mjs tests/taskLayout.browser.mjs tests/settingsLayout.browser.mjs tests/eventLayout.browser.mjs",
+    "test:task-layout-browser": "node --test tests/taskLayout.browser.mjs",
+    "test:settings-layout-browser": "node --test tests/settingsLayout.browser.mjs",
+    "test:event-layout-browser": "node --test tests/eventLayout.browser.mjs",
     "test:safety-browser": "node --test tests/actionSafety.browser.mjs",
     "lint": "next lint"
   },

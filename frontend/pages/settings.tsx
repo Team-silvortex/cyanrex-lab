@@ -42,77 +42,84 @@ export default function SettingsPage() {
   return (
     <SidebarLayout title={t("settings.title")}>
       {safety.dialog}
-      <section className="panel">
-        <h2>{t("settings.title")}</h2>
-        <p className="meta">{t("settings.subtitle")}</p>
+      <div className="settings-workspace">
+        <div className="settings-overview">
+          <section className="panel settings-form" data-testid="settings-form" aria-label={t("settings.title")}>
+            <div className="section-heading">
+              <div>
+                <h2>{t("settings.title")}</h2>
+                <p className="meta">{t("settings.subtitle")}</p>
+              </div>
+            </div>
 
-        <div className="grid cols-2" style={{ marginTop: 12 }}>
-          <label className="meta">
-            {t("settings.maxRecords")}
-            <input
-              type="number" min={50} max={50000} step={1}
-              value={Number.isNaN(form.draft.max_records) ? "" : form.draft.max_records}
-              disabled={controlsDisabled}
-              onChange={(event) => form.changeEvents({ ...form.draft, max_records: event.target.value === "" ? Number.NaN : Number(event.target.value) })}
-              style={{ marginTop: 6, width: "100%" }}
-            />
-          </label>
-          <label className="meta">
-            {t("settings.overflowPolicy")}
-            <select
-              value={form.draft.overflow_policy}
-              disabled={controlsDisabled}
-              onChange={(event) => form.changeEvents({ ...form.draft, overflow_policy: event.target.value as EventSettings["overflow_policy"] })}
-              style={{ marginTop: 6, width: "100%" }}
-            >
-              <option value="drop_oldest">{t("settings.dropOldest")}</option>
-              <option value="drop_new">{t("settings.dropNew")}</option>
-            </select>
-          </label>
+            <div className="grid cols-2" style={{ marginTop: 12 }}>
+              <label className="field-label">
+                {t("settings.maxRecords")}
+                <input
+                  type="number" min={50} max={50000} step={1}
+                  aria-label={t("settings.maxRecords")}
+                  value={Number.isNaN(form.draft.max_records) ? "" : form.draft.max_records}
+                  disabled={controlsDisabled}
+                  onChange={(event) => form.changeEvents({ ...form.draft, max_records: event.target.value === "" ? Number.NaN : Number(event.target.value) })}
+                />
+              </label>
+              <label className="field-label">
+                {t("settings.overflowPolicy")}
+                <select
+                  aria-label={t("settings.overflowPolicy")}
+                  value={form.draft.overflow_policy}
+                  disabled={controlsDisabled}
+                  onChange={(event) => form.changeEvents({ ...form.draft, overflow_policy: event.target.value as EventSettings["overflow_policy"] })}
+                >
+                  <option value="drop_oldest">{t("settings.dropOldest")}</option>
+                  <option value="drop_new">{t("settings.dropNew")}</option>
+                </select>
+              </label>
+            </div>
+
+            <p className="meta" style={{ marginTop: 10 }}>
+              {form.draft.overflow_policy === "drop_oldest" ? t("settings.dropOldestHint") : t("settings.dropNewHint")}
+            </p>
+            {form.compiler && (
+              <label className="checkbox-field settings-compiler">
+                <input
+                  type="checkbox" checked={form.resident} disabled={controlsDisabled}
+                  aria-label={t("settings.residentCompiler")}
+                  onChange={(event) => form.changeResident(event.target.checked)}
+                />
+                <span>
+                  <strong>{t("settings.residentCompiler")}</strong>
+                  <span className="meta" style={{ display: "block", marginTop: 4 }}>
+                    {form.resident ? t("settings.residentCompilerEnabledHint") : t("settings.residentCompilerDisabledHint")}
+                  </span>
+                </span>
+              </label>
+            )}
+            {!form.loading && form.events && !form.compiler && <p role="status" className="meta">{t("settings.compilerUnavailable")}</p>}
+
+            <div className="row settings-form-actions" data-testid="settings-form-actions">
+              <button type="button" className="button-primary" disabled={controlsDisabled} onClick={confirmSave}>
+                {form.saving ? t("settings.saving") : t("settings.save")}
+              </button>
+              <button type="button" className="button-secondary" disabled={form.loading || form.saving || safety.busy} onClick={reload} title={t("settings.reloadHint")}>
+                {t("settings.reload")}
+              </button>
+              {form.loading && <span className="meta">{t("settings.loading")}</span>}
+            </div>
+
+            {form.messageKey && <p role="status" className="meta" style={{ color: "#9cd67a" }}>{t(form.messageKey)}</p>}
+            {form.errorKey && <p role="alert" className="error">{t(form.errorKey)}</p>}
+          </section>
+          <PerformanceMetricsPanel metrics={performance.metrics} summary={performance.hotspotSummary}
+            refreshing={performance.refreshing} stale={performance.stale} error={performance.error} message={performance.message}
+            onRefresh={() => { void performance.refresh(); }} />
         </div>
-
-        <p className="meta" style={{ marginTop: 10 }}>
-          {form.draft.overflow_policy === "drop_oldest" ? t("settings.dropOldestHint") : t("settings.dropNewHint")}
-        </p>
-        {form.compiler && (
-          <label className="row" style={{ marginTop: 16, alignItems: "flex-start" }}>
-            <input
-              type="checkbox" checked={form.resident} disabled={controlsDisabled}
-              onChange={(event) => form.changeResident(event.target.checked)}
-              style={{ marginTop: 3 }}
-            />
-            <span>
-              <strong>{t("settings.residentCompiler")}</strong>
-              <span className="meta" style={{ display: "block", marginTop: 4 }}>
-                {form.resident ? t("settings.residentCompilerEnabledHint") : t("settings.residentCompilerDisabledHint")}
-              </span>
-            </span>
-          </label>
-        )}
-        {!form.loading && form.events && !form.compiler && <p role="status" className="meta">{t("settings.compilerUnavailable")}</p>}
-
+        <div className="settings-management">
+          <RunnerAgentAdminPanel engineUrl={engineUrl} />
+          <AiAgentSettingsPanel engineUrl={engineUrl} />
+        </div>
         <DocumentationLinks />
-        <div className="row" style={{ marginTop: 12 }}>
-          <button type="button" disabled={controlsDisabled} onClick={confirmSave}>
-            {form.saving ? t("settings.saving") : t("settings.save")}
-          </button>
-          <button type="button" disabled={form.loading || form.saving || safety.busy} onClick={reload} title={t("settings.reloadHint")}>
-            {t("settings.reload")}
-          </button>
-          <button type="button" onClick={() => { void performance.refresh(); }} disabled={performance.refreshing}>
-            {performance.refreshing ? t("settings.metricsRefreshing") : t("settings.refreshMetrics")}
-          </button>
-          {form.loading && <span className="meta">{t("settings.loading")}</span>}
-        </div>
-
-        {form.messageKey && <p role="status" className="meta" style={{ color: "#9cd67a" }}>{t(form.messageKey)}</p>}
-        {form.errorKey && <p role="alert" className="error">{t(form.errorKey)}</p>}
-
-        <PerformanceMetricsPanel metrics={performance.metrics} summary={performance.hotspotSummary}
-          refreshing={performance.refreshing} stale={performance.stale} error={performance.error} message={performance.message} />
-        <RunnerAgentAdminPanel engineUrl={engineUrl} />
-        <AiAgentSettingsPanel engineUrl={engineUrl} />
-      </section>
+      </div>
     </SidebarLayout>
   );
 }
@@ -120,7 +127,7 @@ export default function SettingsPage() {
 function DocumentationLinks() {
   const { t } = useI18n();
   return (
-    <section className="panel" style={{ marginTop: 12 }}>
+    <section className="panel settings-documentation" data-testid="settings-documentation" aria-label={t("settings.docsPanelTitle")}>
       <strong>{t("settings.docsPanelTitle")}</strong>
       <p className="meta" style={{ marginTop: 4 }}>{t("settings.docsPanelDescription")}</p>
       <div className="row" style={{ marginTop: 10 }}>

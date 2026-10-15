@@ -2,7 +2,7 @@
 
 [简体中文](README.zh-CN.md)
 
-Version: `0.5.9`
+Version: `0.6.0`
 
 Cyanrex is evolving into a self-hosted collaboration platform for people, AI Agents and compute
 resources. Tasks, content versions, execution and reviews have separate responsibilities; eBPF teaching
@@ -30,9 +30,13 @@ Source 0.5.9 local authoring supports reviewed multi-file text append, retaining
 the selected editor: [English](docs/en/local-text-file-import.md) · [简体中文](docs/zh-CN/local-text-file-import.md).
 This does not connect server saving or large-file delivery.
 
-As of **2026-10-13**, the source version is **0.5.9**. This patch includes local text-file import,
-architecture/error-boundary cleanup and complete five-language UI dictionaries, including Korean.
-Earlier explicit file download/saving entries remain outside normal app startup.
+As of **2026-10-15**, the source version is **0.6.0**. This minor release improves Task, Settings and
+Events layouts and adds independent platform [Session lifecycle](docs/en/platform-session-lifecycle.md),
+[Session stock limits](docs/en/durable-session-stock.md), [host catalog](docs/en/platform-host-preflight.md),
+[Artifact root](docs/en/platform-artifact-root.md) and [storage marker](docs/en/platform-storage-markers.md)
+preparation. These do not mount a platform host, issue Sessions or prove complete schema compatibility.
+Earlier local text import, five-language dictionaries and explicit file download/saving entries remain;
+generic browser saving and distribution remain outside normal app startup.
 The owner-private [task metadata index](docs/en/task-content-index.md) and unmounted HTTP adapter remain included.
 [Large-file distribution preparation](docs/en/large-file-distribution.md) now includes bounded streaming,
 private chunk staging, immutable upload quotas, a chunk journal, whole-byte verification, trusted
@@ -62,7 +66,7 @@ chunks into one exclusive private file with actual whole-digest/readback checks;
 user save path, recover lost progress, delete chunks or mount a complete downloader.
 The reader also retains the original source-relation pin across private Session work. Earlier task decoupling,
 AI host profiles/SDK adapters, C2-O–AA draft preparation and authentication protections remain included.
-See [release notes](CHANGELOG.md#059---2026-10-13) and [local validation](reports/releases/0.5.9/README.md). Normal-app file distribution, mounted client delivery and
+See [release notes](CHANGELOG.md#060---2026-10-15) and [local validation](reports/releases/0.6.0/README.md). Normal-app file distribution, mounted client delivery and
 restart recovery are not connected. Preparation HTTP adapters remain unmounted and the editor local-only;
 neither this release nor passing tests switch legacy authentication or an existing deployment.
 

@@ -13,6 +13,7 @@ type Props = {
   stale: boolean;
   error: string;
   message: string;
+  onRefresh?: () => void;
 };
 
 const formatPercent = (value: number) => `${(value * 100).toFixed(1)}%`;
@@ -23,7 +24,7 @@ const severityColor = (severity: HotspotSeverity) => {
   return "#8ad66a";
 };
 
-export default function PerformanceMetricsPanel({ metrics, summary, refreshing, stale, error, message }: Props) {
+export default function PerformanceMetricsPanel({ metrics, summary, refreshing, stale, error, message, onRefresh }: Props) {
   const { t } = useI18n();
   const color = (severity: HotspotSeverity) => stale ? "#9a9a9a" : severityColor(severity);
   const severityLabel = (severity: HotspotSeverity) => {
@@ -34,9 +35,16 @@ export default function PerformanceMetricsPanel({ metrics, summary, refreshing, 
   };
 
   return (
-    <section className="panel" style={{ marginTop: 14 }}>
-      <h3>{t("settings.performanceTitle")}</h3>
-      <p className="meta">{t("settings.performanceSubtitle")}</p>
+    <section className="panel settings-performance" aria-label={t("settings.performanceTitle")}>
+      <div className="section-heading">
+        <div>
+          <h3>{t("settings.performanceTitle")}</h3>
+          <p className="meta">{t("settings.performanceSubtitle")}</p>
+        </div>
+        {onRefresh && <button type="button" className="button-secondary" disabled={refreshing} onClick={onRefresh}>
+          {refreshing ? t("settings.metricsRefreshing") : t("settings.refreshMetrics")}
+        </button>}
+      </div>
 
       <div role="status">
         {error && <p className="error">{error}</p>}

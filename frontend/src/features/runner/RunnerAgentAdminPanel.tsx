@@ -55,15 +55,16 @@ function RunnerAgentAdmin({ engineUrl }: Props) {
     : "";
 
   return (
-    <section className="panel" style={{ marginTop: 14 }}>
+    <section className="panel settings-runner" aria-label={t("settings.runnerTitle")}>
       {safety.dialog}
-      <div className="row" style={{ justifyContent: "space-between" }}>
+      <div className="section-heading">
         <div>
           <h3>{t("settings.runnerTitle")}</h3>
           <p className="meta">{t("settings.runnerSubtitle")}</p>
         </div>
         <button
           type="button"
+          className="button-secondary"
           onClick={() => void admin.refresh()}
           disabled={admin.loading || admin.refreshing || Boolean(admin.actionId) || safety.busy}
         >

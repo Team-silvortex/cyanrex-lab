@@ -1,0 +1,33 @@
+/* Keep settings sections mounted: layout changes must never reset their drafts or request scopes. */
+.settings-workspace,
+.settings-overview,
+.settings-management { display: grid; gap: 20px; min-width: 0; align-items: start; }
+.settings-overview { grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); }
+.settings-workspace :is(h2, h3, h4, p, legend, code, strong) { overflow-wrap: anywhere; }
+.settings-workspace p { font-size: 14px; line-height: 1.6; }
+.settings-workspace button { min-height: 44px; max-width: 100%; overflow-wrap: anywhere; }
+.settings-workspace .section-heading > div { min-width: 0; flex: 1 1 240px; }
+.settings-form h2 { font-size: 22px; }
+.settings-compiler { align-items: flex-start; margin-top: 16px; }
+.settings-workspace .checkbox-field { color: var(--text); }
+.settings-workspace .checkbox-field input { width: 18px; height: 18px; padding: 0; margin-top: 2px; }
+.settings-form-actions { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); }
+.settings-ai fieldset { margin: 0; background: #0b1425; }
+.settings-ai legend { max-width: 100%; padding: 0 6px; color: var(--muted); font-size: 13px; }
+.settings-ai fieldset > .field-label { margin-top: 12px; }
+.settings-documentation > strong { display: block; }
+.settings-documentation a { display: inline-flex; align-items: center; min-height: 44px; max-width: 100%; overflow-wrap: anywhere; }
+
+@media (max-width: 1199px) {
+  .settings-overview { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 700px) {
+  .settings-workspace,
+  .settings-overview,
+  .settings-management { gap: 16px; }
+  .settings-workspace .grid.cols-2 { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .settings-workspace .field-label :is(input, select) { min-height: 44px; }
+  .settings-workspace .section-heading { gap: 10px; }
+  .settings-documentation .grid.cols-2 { gap: 8px; }
+}

@@ -2,11 +2,33 @@ use super::session_source::SessionSourcePin;
 use super::*;
 
 impl DurableAuthSource {
+    /// Explicit trusted Session stock limits; never public issuance, installation or cleanup.
+    pub async fn login_with_session_limits(
+        &self,
+        username: &LegacyUsername,
+        password: &str,
+        otp: &str,
+        limits: SessionStockLimits,
+    ) -> Result<DurableLogin> {
+        self.login_inner(username, password, otp, Some(limits))
+            .await
+    }
+
     pub async fn login(
         &self,
         username: &LegacyUsername,
         password: &str,
         otp: &str,
+    ) -> Result<DurableLogin> {
+        self.login_inner(username, password, otp, None).await
+    }
+
+    async fn login_inner(
+        &self,
+        username: &LegacyUsername,
+        password: &str,
+        otp: &str,
+        limits: Option<SessionStockLimits>,
     ) -> Result<DurableLogin> {
         if password.len() > 4096 || otp.len() > 64 {
             return Err(DurableAuthError::InvalidInput);
@@ -31,6 +53,12 @@ impl DurableAuthSource {
             if !password_matches
                 || !self.verify_current_totp(&verified.user.totp_secret, otp) { return Err(DurableAuthError::InvalidCredentials); }
             let mut tx = self.transaction().await?;
+            if limits.is_some() {
+                // A default REPEATABLE READ snapshot taken before the writer-fence wait could
+                // miss the competing winner's Session. Preserve READ ONLY; never override it.
+                sqlx::query("SET TRANSACTION ISOLATION LEVEL READ COMMITTED")
+                    .execute(&mut *tx).await?;
+            }
             // The password worker gap must not silently admit an equal-valued replacement source.
             pin.verify(self, &mut tx, true).await?;
             let current = self.account_record(&mut tx, username).await?.ok_or(DurableAuthError::InvalidCredentials)?;
@@ -38,6 +66,10 @@ impl DurableAuthSource {
                 return Err(DurableAuthError::InvalidCredentials);
             }
             let pending_otp = self.prepare_otp_consumption(&current, otp)?;
+            let stock = match limits {
+                Some(limits) => Some(limits.check_before(&mut tx, current.account.account_id).await?),
+                None => None,
+            };
             Self::consume_login_otp(&mut tx, &current, &pending_otp).await?;
             // Consumption triggers may suppress/alter the watermark, credentials or source path.
             pin.verify(self, &mut tx, true).await?;
@@ -52,6 +84,11 @@ impl DurableAuthSource {
             confirmed_one(sqlx::query("INSERT INTO sessions (token, username, account_id, expires_at) VALUES ($1, $2, $3, $4)")
                 .bind(&digest).bind(username.as_str()).bind(verified.account.account_id.as_uuid()).bind(expires_at)
                 .execute(&mut *tx).await?.rows_affected())?;
+            if limits.is_some() {
+                // Fire queued constraints/triggers before original-source and stock readback.
+                // A commit-time extra Session must not escape the bounded entry point's checks.
+                sqlx::query("SET CONSTRAINTS ALL IMMEDIATE").execute(&mut *tx).await?;
+            }
             // INSERT triggers can change credentials/identity in our own transaction. Verify both
             // the exact source generation and complete session row again before COMMIT/publication.
             pin.verify(self, &mut tx, true).await?;
@@ -62,6 +99,9 @@ impl DurableAuthSource {
             if current.otp_watermark != pending_otp.next() { return Err(DurableAuthError::StorageUnavailable); }
             let expected = DurableSession { account: verified.account, expires_at };
             if self.session_record(&mut tx, &digest).await?.as_ref() != Some(&expected) { return Err(DurableAuthError::StorageUnavailable); }
+            if let Some(stock) = stock {
+                stock.verify_after(&mut tx).await?;
+            }
             // The writer/INSERT and final readback may wait across a TOTP boundary. No SQL
             // remains between this fresh OTP check and the attempt to confirm commit.
             self.recheck_otp_consumption(&pending_otp, &current.user.totp_secret, otp)?;

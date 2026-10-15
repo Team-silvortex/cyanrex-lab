@@ -20,7 +20,7 @@ impl From<NamespaceError> for DurableAuthError {
 }
 type NamespaceResult<T> = std::result::Result<T, NamespaceError>;
 
-pub(super) fn valid_name(name: &str) -> bool {
+pub(crate) fn valid_name(name: &str) -> bool {
     !name.is_empty()
         && name.len() <= 63
         && name.as_bytes()[0].is_ascii_lowercase()

@@ -1,9 +1,11 @@
-//! Explicit, unmounted HTTP adapters for private Task content, text Artifacts and files.
+//! Explicit, unmounted HTTP adapters for Session lifecycle, private Task content,
+//! text Artifacts and files.
 //!
 //! Trusted composition supplies an already initialized durable source, typed workspace and browser
-//! origin. This module never installs storage, listens, issues cookies, provides CORS, or adopts
+//! origin. This module never installs storage, listens, issues Sessions, provides CORS, or adopts
 //! the live teaching application's AuthService. The integration owner must separately arrange
 //! secure same-origin transport and delivery of the dedicated durable-session cookie.
+//! Only confirmed Session lifecycle logout clears that cookie; other adapters never set it.
 
 mod admission;
 mod catalog_task;
@@ -17,6 +19,7 @@ mod file_distribution;
 mod file_download_manifest;
 mod handlers;
 mod security;
+mod session_lifecycle;
 mod task_index;
 mod text_artifact;
 pub use catalog_task::{build_catalog_task_content_router, CatalogTaskContentHttpState};
@@ -30,6 +33,8 @@ pub use file_distribution::{
 pub use file_download_manifest::{
     build_file_download_manifest_router, FileDownloadManifestHttpState,
 };
+pub(crate) use security::validate_origin as validate_platform_origin;
+pub use session_lifecycle::{build_session_lifecycle_router, SessionLifecycleHttpState};
 pub use task_index::{build_task_content_index_router, TaskContentIndexHttpState};
 pub use text_artifact::{build_text_artifact_router, TextArtifactHttpState};
 

@@ -9,12 +9,13 @@ identity, content, task and review services are explicitly configured preparatio
 payload editor is local-only, and autonomous AI and general Run orchestration are not implemented.
 
 This index describes the whole project, not only its first teaching domain. The source version is
-**0.5.9** (**2026-10-13**), adding local multi-file text import and architecture/error cleanup while retaining private task metadata indexing, its unmounted HTTP adapter and
-large-file preparation through current grants/sharing, authorized chunk transport and private assembly.
+**0.6.0** (**2026-10-15**), adding Task/Settings/Events layout improvements, independent Session
+lifecycle and stock limits, and read-only host catalog, Artifact root and storage marker gates.
+Local multi-file authoring, private task metadata indexing and large-file preparation remain included.
 Earlier task decoupling, C2-O–AA, Next.js 15.5.27, AI host adapters and security boundaries remain in place.
 Source inclusion does not connect generic browser saving, switch live authentication, migrate storage or
 validate a deployment. Dated `Unreleased` descriptions retain their original implementation stage,
-source versions and verification scope; they are not fresh 0.5.9 execution records.
+source versions and verification scope; they are not fresh 0.6.0 execution records.
 The documents distinguish source-release contents, live runtime capabilities
 and target architecture; a built module or passing test does not imply an online deployment.
 
@@ -73,6 +74,11 @@ without replacing the draft or connecting server saving (Unreleased after 0.5.8)
 | See all current modules and connections | [Current platform feature map](platform-network.md) |
 | Compare architecture, capabilities, implementations and maturity | [Capability tensor and evidence-backed scores](capability-maturity.md) |
 | Know what is implemented and what comes next | [Project status](project-status.md), [target architecture](next-architecture.md) |
+| Inspect the new independent platform Session boundary | [Session lifecycle](platform-session-lifecycle.md); 0.6.0, current-session query and confirmed logout only, no issuer or normal-app mounting |
+| Bound persistent Session stock during explicitly selected login | [Session stock limits](durable-session-stock.md); 0.6.0 trusted preparation, not a public issuer or automatic expiry cleanup |
+| Check explicit host configuration and database catalog identity | [Host catalog preflight](platform-host-preflight.md); 0.6.0 read-only preparation, not storage health or a mounted host |
+| Recheck an explicitly selected original private Artifact directory | [Artifact root preflight](platform-artifact-root.md); 0.6.0 metadata-only observation, not content health or runtime handoff |
+| Bind five storage version declarations and their scope to an original catalog | [Storage marker observation](platform-storage-markers.md); 0.6.0 marker-only preparation, not complete schema compatibility or authority health |
 | Review centralized large-file distribution and later desktop transfers | [Distribution proposal](large-file-distribution.md), [streaming core](large-file-core.md), [private chunk staging](large-file-staging.md), [upload intent and logical quotas](large-file-upload-intent.md), [local receipts](large-file-upload-staging.md), [write-ahead chunk journal](large-file-chunk-journal.md), [whole-byte observation](large-file-whole-verification.md), [persistent publication metadata](large-file-publication.md), [Session private metadata](large-file-session-metadata.md), [pure publisher/recipient contracts](large-file-access-contract.md); normal-app distribution and desktop transfers not connected |
 | Inspect the persistent publisher-grant ledger and own Session reads | [Persistent publisher grants](large-file-publisher-grants.md); included in 0.5.7, outside the 0.5.6 tag, not grant-management authorization or publication permission consumption |
 | Issue or revoke grants through an explicitly configured manager | [Session grant management](large-file-grant-management.md); host-configured exact account, not inherited roles, durable online manager revocation or publication permission consumption |

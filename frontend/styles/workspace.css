@@ -17,7 +17,7 @@
 .nav-link { min-height: 44px; font-size: 14px; }
 .sidebar-footer { margin-top: auto; display: grid; gap: 14px; border-top: 1px solid var(--line); padding-top: 16px; }
 .sidebar-footer label { flex-wrap: wrap; font-size: 13px; }
-.sidebar-footer select { min-height: 36px; flex: 1; min-width: 0; }
+.sidebar-footer select { min-height: 44px; flex: 1; min-width: 0; }
 .menu-toggle, .mobile-page-title { display: none; }
 .content { padding: 24px; }
 .content > :first-child { margin-top: 0; }
@@ -164,6 +164,8 @@
   .menu-toggle > span { font-size: 20px; line-height: 1; }
   .sidebar-body { display: none; flex: 1 0 100%; padding-top: 12px; }
   .sidebar.menu-open .sidebar-body { display: flex; }
+  .sidebar.menu-open { overflow: hidden; }
+  .sidebar.menu-open .sidebar-body { min-height: 0; max-height: calc(100dvh - 100px); overflow-y: auto; overscroll-behavior: contain; }
   .sidebar-footer { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between; margin-top: 0; }
   .sidebar-footer label { flex: 1; }
   .content { padding: 20px; }

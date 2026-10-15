@@ -9,11 +9,12 @@ Cyanrex 正从 eBPF 教学应用转向面向人类、AI Agent 与计算资源的
 继续可用；通用身份、内容、任务和审阅服务属于显式配置的准备层，任务 payload 编辑器目前只保存
 本地草稿。自主 AI 与通用 Run 编排尚未实现。
 
-本索引覆盖整个项目，不只覆盖首个教学领域。源码版本为 **0.5.9**（**2026-10-13**），新增本地多文本文件导入及架构／错误边界整理，并保留私人
-任务元数据索引、未挂载 HTTP 适配及推进至当前授权／分享、认证分块传输和私有拼装的大文件准备层。
+本索引覆盖整个项目，不只覆盖首个教学领域。源码版本为 **0.6.0**（**2026-10-15**），新增 Task／设置／事件布局优化、
+独立 Session 生命周期与存量限制，以及只读宿主目录、Artifact 根与存储标记门槛。
+本地多文本创作、私人任务元数据索引及大文件准备层仍包含在内。
 此前任务解耦、C2-O–AA、Next.js 15.5.27、AI 宿主适配与安全边界保持不变。源码收录不接通通用
 浏览器保存、不切换在线认证、不迁移存储，也不验收部署。分日期的未发布说明保留原实施阶段、
-源码版本与验证范围，不是新鲜的 0.5.9 执行记录。
+源码版本与验证范围，不是新鲜的 0.6.0 执行记录。
 以下文档区分源码发布内容、现用运行能力和目标架构，
 模块存在或测试通过不表示已有在线部署。
 
@@ -61,6 +62,11 @@ Cyanrex 正从 eBPF 教学应用转向面向人类、AI Agent 与计算资源的
 | 当前全部模块及连接关系 | [当前平台功能地图](platform-network.md) |
 | 按架构、功能、实现和成熟度切片 | [功能张量与证据评分](capability-maturity.md) |
 | 哪些已完成以及下一步 | [项目状态](project-status.md)、[目标架构](next-architecture.md) |
+| 查看新的独立平台 Session 边界 | [Session 生命周期](platform-session-lifecycle.md)；0.6.0，只查当前会话并确认退出，不签发或挂载正常应用 |
+| 在显式选出的登录入口限制持久会话存量 | [Session 存量限制](durable-session-stock.md)；0.6.0 可信准备层，不是公开签发器或自动过期清理 |
+| 核对显式宿主配置与数据库目录身份 | [宿主目录预检](platform-host-preflight.md)；0.6.0 只读准备层，不是存储健康检查或已挂载宿主 |
+| 复核明确选出的原私有 Artifact 目录 | [Artifact 根预检](platform-artifact-root.md)；0.6.0 纯元数据观察，不是内容健康检查或运行能力交接 |
+| 将五项存储版本与已有作用域字段绑定到原目录 | [存储标记观察](platform-storage-markers.md)；0.6.0 标记准备层，不是完整 schema 兼容或权限健康检查 |
 | 审阅集中大文件分发和后续桌面互传 | [分发提案](large-file-distribution.md)、[流式核心](large-file-core.md)、[私有分块暂存](large-file-staging.md)、[上传意图与逻辑配额](large-file-upload-intent.md)、[本地回执](large-file-upload-staging.md)、[分块写前日志](large-file-chunk-journal.md)、[整文件字节观察](large-file-whole-verification.md)、[持久发布元数据](large-file-publication.md)、[Session 私有元数据](large-file-session-metadata.md)、[纯发布／接收契约](large-file-access-contract.md)；正常应用分发及桌面互传未接通 |
 | 查看持久发布权限账本及本人 Session 读取 | [持久发布权限](large-file-publisher-grants.md)；收录于 0.5.7，不在 0.5.6 标签内，不是授权管理认证或发布权限消费 |
 | 通过明确配置的管理者签发／撤销授权 | [Session 授权管理](large-file-grant-management.md)；宿主指定准确账号，不继承角色，不是持久在线管理权撤销或发布权限消费 |

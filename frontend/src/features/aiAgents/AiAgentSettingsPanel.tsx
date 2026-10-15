@@ -49,7 +49,7 @@ function AiAgentSettings({ engineUrl }: { engineUrl: string }) {
       base_url: "", model: "", credential_ref: null, enabled: false }] };
   });
 
-  return <section className="panel" aria-label={t("aiAgents.title")} style={{ marginTop: 14 }}>
+  return <section className="panel settings-ai" aria-label={t("aiAgents.title")}>
     {safety.dialog}
     <h3>{t("aiAgents.title")}</h3>
     <p className="meta">{t("aiAgents.subtitle")}</p>
@@ -60,7 +60,7 @@ function AiAgentSettings({ engineUrl }: { engineUrl: string }) {
     {form.messageKey && <p role="status">{t(form.messageKey)}</p>}
     {form.draft && <>
       <div className="row" style={{ gap: 12, flexWrap: "wrap" }}>
-        <label>{t("aiAgents.defaultProfile")} <select aria-label={t("aiAgents.defaultProfile")} disabled={disabled}
+        <label className="field-label">{t("aiAgents.defaultProfile")} <select aria-label={t("aiAgents.defaultProfile")} disabled={disabled}
           value={form.draft.default_profile_id ?? ""} onChange={event => edit(draft => ({ ...draft, default_profile_id: event.target.value || null }))}>
           <option value="">{t("aiAgents.noDefault")}</option>
           {form.draft.profiles.filter(profile => profile.enabled).map((profile, index) =>
@@ -90,7 +90,7 @@ function AiAgentSettings({ engineUrl }: { engineUrl: string }) {
             onChange={model => changeProfile(index, { model })} />
           <TextField label={t("aiAgents.credentialRef")} value={profile.credential_ref ?? ""} placeholder="TEAM_AI_KEY"
             onChange={credential_ref => changeProfile(index, { credential_ref: credential_ref || null })} />
-          <label><input type="checkbox" checked={profile.enabled} onChange={event => edit(draft => ({ ...draft,
+          <label className="checkbox-field"><input type="checkbox" checked={profile.enabled} onChange={event => edit(draft => ({ ...draft,
             default_profile_id: !event.target.checked && draft.default_profile_id === profile.id ? null : draft.default_profile_id,
             profiles: draft.profiles.map((item, position) => position === index ? { ...item, enabled: event.target.checked } : item) }))} /> {t("aiAgents.enabled")}</label>
           <button type="button" className="button-danger" style={{ marginLeft: 12 }} onClick={() => edit(draft => ({ ...draft,

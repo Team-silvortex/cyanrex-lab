@@ -13,7 +13,7 @@ const SESSION_COOKIE: &str = "cyanrex_platform_session";
 const MAX_COOKIE_BYTES: usize = 8 * 1024;
 const MAX_REQUEST_BYTES: usize = 64 * 1024;
 
-pub(super) fn validate_origin(value: &str) -> Result<(), TaskContentHttpConfigError> {
+pub(crate) fn validate_origin(value: &str) -> Result<(), TaskContentHttpConfigError> {
     let invalid = TaskContentHttpConfigError::InvalidOrigin;
     if value.len() > 2048 {
         return Err(invalid);

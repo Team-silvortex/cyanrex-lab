@@ -5,6 +5,55 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-15
+
+This minor source release improves Task, Settings and Events layouts and adds independent platform
+Session lifecycle, bounded Session stock and read-only host preparation gates under proposal #3.
+The teaching runtime and public API compatibility remain unchanged. The platform host, Session
+issuer and generic browser saving remain unmounted; storage markers do not establish complete
+schema compatibility or deployment health. See [local release validation](reports/releases/0.6.0/README.md).
+
+### Added
+
+- Add independent read-only observation of five storage version/scope markers under the original
+  host catalog binding. Lock candidate markers before the observation snapshot, reject unsafe
+  metadata and replacements, and keep credentials, business bodies and authority history unread.
+  Marker acceptance is not complete schema compatibility, authorization or live host composition.
+
+- Add independent read-only Artifact root preflight using the original private directory walk.
+  Retain the original descriptor, exact host configuration/path and security metadata, and reject
+  replaced or unsafe roots without content reads, permission repair or runtime capability handoff.
+
+- Add explicit trusted platform host configuration and catalog-only database preflight. Borrow one
+  caller-owned connection for bounded read-only inspection, pin physical database and namespace
+  identities, and reject unsafe runtime roles without installing or repairing storage. Keep the
+  library unmounted; empty namespaces do not establish schema, authority or content health.
+
+- Add explicitly configured per-account/source Session stock limits to a separate trusted login
+  entry point. Count expired and invalid stored rows without implicit deletion, retain original
+  atomic OTP/source guards, and recheck stock after immediate/deferred writes under a fresh writer
+  snapshot. Preserve old prepared login and teaching auth; no public issuer or host is connected.
+
+- Add an explicit, unmounted platform Session lifecycle adapter: query the current durable Session
+  and clear the dedicated host-only Cookie only after original-source logout is confirmed. Retain
+  strict browser admission, private failure outcomes and response-lifetime capacity. Add disposable
+  SQL fault/wait/cancellation regressions and bilingual boundaries under proposal #3; no issuer,
+  normal-app mounting, teaching-auth switch, storage migration or browser Task saving is connected.
+
+### Changed
+
+- Compact local Task/editor controls, bound mobile content lists and move retained capability
+  explanations below the source. Distinguish destructive actions and keep the mobile navigation
+  close control outside its scrolling body without changing drafts, confirmations or authority.
+
+- Separate settings, performance, Runner, AI metadata and documentation cards. Keep save/reload
+  beside their fields and metric refresh in its own card; improve narrow-screen controls without
+  unmounting drafts, changing request scopes or bypassing reviewed writes.
+
+- Group event filters and refresh/export controls, separate destructive deletion and enlarge
+  narrow-screen controls. Bound long payload display without truncating data or changing the
+  original filter, download, reviewed deletion or account-wide read acknowledgement behavior.
+
 ## [0.5.9] - 2026-10-13
 
 This compatible patch adds reviewed local multi-file text authoring, complete owned UI translation

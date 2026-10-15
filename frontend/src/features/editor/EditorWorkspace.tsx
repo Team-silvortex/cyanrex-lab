@@ -143,13 +143,13 @@ export default function EditorWorkspace({ item, onChange, disabled = false }: Pr
             </option>)}
           </select>
         </label>
-        <div className="language-editor-buttons">
+        <div className="language-editor-buttons" role="group" aria-label={t("editor.title")}>
           <input data-testid="editor-import" ref={upload} type="file" hidden onChange={event => {
             const file = event.target.files?.[0]; event.target.value = ""; importFile(file);
           }} />
           <button className="button-secondary" disabled={busy} onClick={() => upload.current?.click()}>{t("editor.import")}</button>
           <button data-testid="editor-download" className="button-primary" disabled={busy} onClick={download}>{t("editor.download")}</button>
-          <button data-testid="editor-reset" className="button-secondary" disabled={busy} onClick={reset}>{t("editor.reset")}</button>
+          <button data-testid="editor-reset" className="button-danger" disabled={busy} onClick={reset}>{t("editor.reset")}</button>
         </div>
       </div>
       <div className="language-editor-tools">
@@ -159,11 +159,6 @@ export default function EditorWorkspace({ item, onChange, disabled = false }: Pr
           onClick={() => void runAction("editor.action.formatDocument")}>{t("editor.format")}</button>
         <button data-testid="editor-symbols" className="button-secondary" disabled={busy || !profile.capabilities.includes("symbols")}
           onClick={() => void runAction("editor.action.quickOutline")}>{t("editor.symbols")}</button>
-        <span className="meta">{t("editor.unsaved")}</span>
-      </div>
-      <div data-testid="editor-capabilities" className="editor-capabilities">
-        <strong>{t(`editor.tier.${profile.tier}`)}</strong>
-        <span>{profile.capabilities.map(capability => t(`editor.capability.${capability}`)).join(" · ") || t("editor.noService")}</span>
       </div>
       {unsupportedHint && <p data-testid="editor-unsupported-hint" className="meta" role="status">
         {t("editor.unsupportedHint", { language })}
@@ -171,6 +166,11 @@ export default function EditorWorkspace({ item, onChange, disabled = false }: Pr
       {!session && <p role={failed ? "alert" : "status"}>{t(failed ? "editor.loadFailed" : "editor.loading")}</p>}
       <div ref={container} className="language-editor-surface" />
       {notice && <p role={notice === "editor.downloadStarted" ? "status" : "alert"} className="editor-notice">{t(notice)}</p>}
+      <div data-testid="editor-capabilities" className="editor-capabilities">
+        <strong>{t(`editor.tier.${profile.tier}`)}</strong>
+        <span>{profile.capabilities.map(capability => t(`editor.capability.${capability}`)).join(" · ") || t("editor.noService")}</span>
+        <span>{t("editor.unsaved")}</span>
+      </div>
     </section>
     <section className="panel editor-problems" data-testid="editor-problems" aria-label={t("editor.problems")}>
       <h3>{t("editor.problems")} {profile.capabilities.includes("diagnostics") && `(${problems.length})`}</h3>

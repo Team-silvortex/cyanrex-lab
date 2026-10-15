@@ -65,6 +65,7 @@ mod schema;
 mod session_cleanup;
 mod session_commands;
 mod session_source;
+mod session_stock;
 mod sessions;
 mod source_relations;
 mod task_commands;
@@ -114,16 +115,25 @@ pub use file_recipient_commands::{
 pub use file_sharing::{
     SessionFileRecipientGrantIssue, SessionFileSharingError, SessionFileSharingWorkspace,
 };
+pub(crate) use namespace::valid_name as valid_platform_namespace;
 pub use reconciliation::{AuthorityReconciliation, ReconciliationError};
 #[cfg(unix)]
 pub use review_commands::{SessionReviewError, SessionReviewWorkspace};
 pub use session_commands::{SessionBindCommand, SessionCommandError, SessionPolicyCommand};
+pub use session_stock::SessionStockLimits;
 #[cfg(unix)]
 pub use task_commands::{
     SessionCatalogTaskContentWorkspace, SessionCatalogTaskWorkspace, SessionTaskContent,
     SessionTaskContentWorkspace, SessionTaskInputs, SessionTaskInputsWorkspace,
 };
 pub use task_commands::{SessionTaskContentIndexWorkspace, SessionTaskError, SessionTaskWorkspace};
+
+#[cfg(test)]
+#[path = "session_stock_sql/mod.rs"]
+mod session_stock_sql_tests;
+#[cfg(test)]
+#[path = "session_stock_tests.rs"]
+mod session_stock_tests;
 
 #[derive(Clone)]
 pub struct DurableAuthSource {
