@@ -1,5 +1,14 @@
 # 当前项目测试指南
 
+[格式 3 标记声明](platform-marker-expectation.md)新增三条纯值、九条严格输入测试，以及
+`bash scripts/test-platform-marker-expectation.sh` 的五条显式 SQL 选择，验证原身份声明／当前
+诊断兼容，不是已部署宿主或局域网安全验收。
+
+**2026-10-16 未发布**的[绑定会话连接](platform-session-connection.md)新增
+`platform_session_backend_tdd` 传输回归及显式数据库／角色／锁／触发器脚本
+`bash scripts/test-platform-session-connection.sh`。只使用一次性 `CYANREX_TEST_DATABASE_URL`，
+测试不挂载宿主或公开签发 Session。
+
 未发布的[本地文本文件导入](local-text-file-import.md)有 12 条纯测试、6 条浏览器用例及
 5 条结构守卫，入口为 `test:editor-languages` 与 `test:task-text-import-browser`；
 受控浏览器身份不证明服务端保存或部署。

@@ -12,6 +12,14 @@ impl SessionSourcePin {
         tx: &mut Transaction<'_, Postgres>,
         writer: bool,
     ) -> Result<Self> {
+        Self::capture_for(source.authority_id, tx, writer).await
+    }
+
+    pub async fn capture_for(
+        authority_id: AuthorityId,
+        tx: &mut Transaction<'_, Postgres>,
+        writer: bool,
+    ) -> Result<Self> {
         let namespace = NamespacePin::capture(tx).await?;
         let search_path = Self::search_path(tx).await?;
         let relations = RelationPin::capture(tx, false).await?;
@@ -20,7 +28,7 @@ impl SessionSourcePin {
             relations,
             search_path,
         };
-        pin.verify(source, tx, writer).await?;
+        pin.verify_for(authority_id, tx, writer).await?;
         Ok(pin)
     }
 
@@ -50,9 +58,18 @@ impl SessionSourcePin {
         tx: &mut Transaction<'_, Postgres>,
         writer: bool,
     ) -> Result<()> {
+        self.verify_for(source.authority_id, tx, writer).await
+    }
+
+    pub async fn verify_for(
+        &self,
+        authority_id: AuthorityId,
+        tx: &mut Transaction<'_, Postgres>,
+        writer: bool,
+    ) -> Result<()> {
         self.verify_namespace(tx).await?;
         self.relations.verify(tx).await?;
-        source.lock_source(tx, writer).await?;
+        DurableAuthSource::lock_source_for(authority_id, tx, writer).await?;
         DurableAuthSource::verify_schema(tx).await?;
         self.verify_namespace(tx).await
     }

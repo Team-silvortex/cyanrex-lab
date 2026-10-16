@@ -7,6 +7,7 @@ mod config;
 mod database_connection;
 #[cfg(target_os = "linux")]
 mod process_startup;
+mod session_connection;
 mod storage_check;
 mod storage_connection;
 mod storage_markers;
@@ -27,11 +28,14 @@ pub use process_startup::{
     prepare_platform_process, PlatformProcessIdentity, PlatformProcessStartup,
     PlatformProcessStartupError,
 };
+pub use session_connection::PlatformSessionConnector;
 pub use storage_check::check_platform_database_storage;
 pub use storage_check::check_platform_database_storage_expected;
+pub use storage_check::check_platform_database_storage_markers_expected;
 pub use storage_connection::{PlatformStorageConnectionError, PlatformStorageConnector};
 pub use storage_markers::{
-    inspect_platform_storage_markers, verify_platform_storage_markers,
+    inspect_platform_storage_markers, inspect_platform_storage_markers_expected,
+    verify_platform_storage_markers, PlatformStorageMarkerExpectation,
     PlatformStorageMarkerObservation,
 };
 

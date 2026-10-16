@@ -14,7 +14,8 @@ test("host preflight is a separate explicit library boundary with no runtime com
     assert.doesNotMatch(await read(path), /PlatformHostPreflightConfig|inspect_platform_database|verify_platform_database/, path);
   }
   const config = codeOnly(await read("engine/src/platform_host/config.rs"));
-  assert.match(config, /validate_platform_origin/);
+  assert.match(config, /platform_origin::validate\(\s*origin\s*\)/);
+  assert.doesNotMatch(config, /platform_http|validate_platform_origin/);
   assert.match(config, /valid_platform_namespace/);
   assert.match(config, /SessionStockLimits/);
   assert.doesNotMatch(config, /Deserialize|Serialize|Default|std::env|\.connect\(|std::fs|PgConnectOptions|database_password/);

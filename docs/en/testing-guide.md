@@ -1,5 +1,14 @@
 # Current project testing guide
 
+[Format 3 marker declarations](platform-marker-expectation.md) add three pure value tests, nine
+strict input tests and five opt-in SQL selections in `bash scripts/test-platform-marker-expectation.sh`.
+They verify declared identities/current-diagnostic compatibility, not deployed host or LAN security.
+
+The **2026-10-16 Unreleased** [bound Session connection](platform-session-connection.md) adds
+`platform_session_backend_tdd` transport regressions and the explicit
+`bash scripts/test-platform-session-connection.sh` database/role/lock/trigger runner. Use only a
+disposable `CYANREX_TEST_DATABASE_URL`; these tests neither mount a host nor issue public Sessions.
+
 The Unreleased [local text-file import](local-text-file-import.md) has 12 pure tests, 6 browser
 cases and 5 structural guards. Use `test:editor-languages` and `test:task-text-import-browser`;
 controlled browser identity does not prove server saving or deployment.

@@ -9,11 +9,14 @@ const codeOnly = source => source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/
 test("storage diagnostics use one connection and one budget through inspection and close without a retained baseline", async () => {
   const code = codeOnly(await read("engine/src/platform_host/storage_check.rs"));
   for (const value of ["pub async fn check_platform_database_storage", "-> Result<()>", "options(config, endpoint, password)",
-    "tokio::time::timeout(Duration::from_secs(10)", "inspect_platform_database(config, &mut connection)",
-    "inspect_platform_storage_markers(config, &mut connection, &catalog)", "inspected.and(closed)"])
+    "tokio::time::timeout(Duration::from_secs(10)", "inspect_platform_database(config, connection)",
+    "inspect_platform_storage_markers(config, connection, &catalog)", "inspected.and(closed)"])
     assert.ok(code.includes(value), value);
   assert.equal([...code.matchAll(/dial\(&options\)/g)].length, 1);
-  assert.match(code, /let inspected = async[\s\S]*?\.await;\s*let closed = connection\s*\.close\(\)/);
+  assert.match(code, /let inspected = expected\.inspect\(config, &mut connection\)\.await;\s*let closed = connection\s*\.close\(\)/);
+  const inspect = code.split("async fn inspect(")[1]?.split("\n}\n")[0] ?? "";
+  assert.match(inspect, /Self::Current\s*=>\s*inspect_platform_database\(config, connection\)\.await\?/);
+  assert.doesNotMatch(inspect, /dial\(|\.close\(|timeout\(/);
   assert.doesNotMatch(code, /PlatformDatabaseConnector|PgPool|PoolOptions|from_str|std::env|set_var|remove_var|println!|eprintln!|install_|GRANT |REVOKE |CREATE |Serialize|tracing::/);
   assert.ok((await read("engine/src/platform_host/mod.rs")).includes("pub use storage_check::check_platform_database_storage"));
 });
@@ -26,10 +29,11 @@ test("the CLI gates retained private input, observes the root before runtime, an
   const code = codeOnly(await read("engine/src/bin/cyanrex-platform/storage_check.rs"));
   const observe = code.indexOf("inspect_platform_artifact_root(");
   const build = code.indexOf("Builder::new_current_thread()");
-  const run = code.indexOf(".block_on(check_platform_database_storage(");
+  const run = code.indexOf(".block_on(async");
   const drop = code.indexOf("drop(runtime)");
   const verify = code.indexOf("verify_platform_artifact_root(");
   assert.ok(observe >= 0 && observe < build && build < run && run < drop && drop < verify);
+  assert.match(code.slice(run, drop), /match\s+&input\.storage_expectation/);
   assert.ok(code.lastIndexOf("process.verify_before_runtime()") > verify);
   assert.ok(code.includes("inspected.and(root).and(process)"));
   assert.doesNotMatch(code + main, /new_multi_thread|TcpListener|PgPool|build_state|AuthService|tracing_subscriber|dotenv|env::var\(|set_var|remove_var|install_empty/);

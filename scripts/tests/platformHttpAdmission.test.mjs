@@ -35,7 +35,10 @@ test("prepared HTTP capacity is bounded trusted configuration shared by state cl
   assert.match(state, /#\[derive\(Clone\)\]\s*pub struct TaskContentHttpState/);
   assert.match(state, /Arc\s*<\s*Semaphore\s*>/);
   assert.match(state, /pub fn with_capacity\([\s\S]*?max_in_flight:\s*usize/);
-  assert.match(state, /(?:1\s*\.\.=\s*16|MAX_[A-Z_]+\s*:\s*usize\s*=\s*16)/);
+  assert.match(state, /config::validate\(origin, &\[max_in_flight\]\)\?;/);
+  const configuration = codeOnly(await read("engine/src/platform_http/config.rs"));
+  assert.match(configuration, /security::validate_origin\(origin\)\?;[\s\S]*capacities\s*\.iter\(\)\s*\.any\([\s\S]*!\(1\s*\.\.=\s*16\)\.contains\(/);
+  assert.ok(state.indexOf("config::validate(origin, &[max_in_flight])?") < state.indexOf("Semaphore::new(max_in_flight)"));
   assert.match(state, /Self::with_capacity\([\s\S]*?,\s*4\s*\)/,
     "the compatibility constructor keeps a bounded default of four");
   assert.match(state, /Semaphore::new\(max_in_flight\)/);

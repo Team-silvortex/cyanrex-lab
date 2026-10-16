@@ -1,7 +1,8 @@
-use super::config::ValidatedInput;
+use super::config::{StorageExpectation, ValidatedInput};
 use cyanrex_engine::platform_host::{
     check_platform_database_storage, check_platform_database_storage_expected,
-    inspect_platform_artifact_root, verify_platform_artifact_root, PlatformProcessStartup,
+    check_platform_database_storage_markers_expected, inspect_platform_artifact_root,
+    verify_platform_artifact_root, PlatformProcessStartup,
 };
 
 pub(super) fn check(input: ValidatedInput, process: &PlatformProcessStartup) -> Result<(), ()> {
@@ -16,20 +17,38 @@ pub(super) fn check(input: ValidatedInput, process: &PlatformProcessStartup) -> 
         .build()
     {
         Ok(runtime) => {
-            let result = match input.catalog_expectation.as_ref() {
-                Some(expected) => runtime.block_on(check_platform_database_storage_expected(
-                    &input.config,
-                    &input.endpoint,
-                    &input.password,
-                    expected,
-                )),
-                None => runtime.block_on(check_platform_database_storage(
-                    &input.config,
-                    &input.endpoint,
-                    &input.password,
-                )),
-            }
-            .map_err(|_| ());
+            let result = runtime
+                .block_on(async {
+                    match &input.storage_expectation {
+                        StorageExpectation::Markers(expected) => {
+                            check_platform_database_storage_markers_expected(
+                                &input.config,
+                                &input.endpoint,
+                                &input.password,
+                                expected,
+                            )
+                            .await
+                        }
+                        StorageExpectation::Catalog(expected) => {
+                            check_platform_database_storage_expected(
+                                &input.config,
+                                &input.endpoint,
+                                &input.password,
+                                expected,
+                            )
+                            .await
+                        }
+                        StorageExpectation::Current => {
+                            check_platform_database_storage(
+                                &input.config,
+                                &input.endpoint,
+                                &input.password,
+                            )
+                            .await
+                        }
+                    }
+                })
+                .map_err(|_| ());
             drop(runtime);
             result
         }

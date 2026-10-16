@@ -1,5 +1,9 @@
 # 单次平台存储检查
 
+**2026-10-16 未发布**的[格式 3 诊断](platform-marker-expectation.md)在读取标记行之前核对声明
+目录及全部五标记身份，一条新连接完成检查及关闭；格式 1／2 语义、进程／根门禁及仅检查输出
+保留，不启动宿主。
+
 已于 **2026-10-15** 收录至源码 **0.6.1**，见[发布验证](../../reports/releases/0.6.1/README.md)。
 下文保留原实施阶段及验证范围；源码收录不代表部署验收。
 
@@ -10,7 +14,7 @@
 
 ## 对显式选定的目标执行
 
-沿用 [check-config](platform-startup-input.md) 的严格版本 1 或版本 2 JSON 与私有文件规则。
+沿用 [check-config](platform-startup-input.md) 的严格版本 1、2 或 3 JSON 与私有文件规则。
 仅在独立审阅服务身份、补充组和本地数据库路由后执行：
 
 ```bash
@@ -31,7 +35,7 @@ cargo run --manifest-path engine/Cargo.toml --locked --bin cyanrex-platform -- \
 命令先按显式策略准备低权限进程，读取私有输入并复验单主线程状态。随后观察现有、有效 UID
 所有且权限为 `0700` 的 Artifact 根，不创建或枚举内容，然后才构造 current-thread Tokio runtime。
 
-运行时调用 `check_platform_database_storage(config, endpoint, password)`。该独立库诊断只复用
+格式 1 运行时调用 `check_platform_database_storage(config, endpoint, password)`。该独立库诊断只复用
 连接器内部的显式选项／拨号构造，不从新发现的观察构造 `PlatformDatabaseConnector`。
 同一个十秒预算覆盖一次连接尝试、原只读目录事务、原只读五标记事务及显式关闭连接。
 检查失败也走有界关闭；检查或关闭任一失败均不能输出成功。
@@ -41,7 +45,8 @@ cargo run --manifest-path engine/Cargo.toml --locked --bin cyanrex-platform -- \
 完整配置不符在拨号前拒绝；实际目录须与全部声明身份匹配，才进入标记检查。版本 1 保留原诊断。
 
 运行时销毁后，即使数据库工作失败，也复验原 Artifact 根及进程。根元数据 I/O 在数据库期限
-之外，同步文件系统（包括 NFS／FUSE）没有硬耗时上限。两笔数据库事务及根快照不是跨资源
+之外，同步文件系统（包括 NFS／FUSE）没有硬耗时上限。格式 1／2 的两笔事务（格式 3 为一笔
+声明事务）及根快照不是跨资源
 原子快照，也不是阻止同 UID／root 修改的锁。超时或终止会丢弃尚未发布的客户端状态，不证明
 失联服务器已经结束回滚。
 

@@ -10,7 +10,10 @@ const dir = "engine/src/platform_http/file_download_manifest/";
 // Composition/inventory only; compiled Rust bodies and explicit SQL establish actual behavior.
 test("manifest HTTP freezes an independent bounded host state and cached original scope", async () => {
   const s = code(await read(`${dir}mod.rs`));
-  for (const phrase of ["FileDownloadManifestHttpState", "SessionFileDownloadWorkspace", "security::validate_origin", "origin, 4", "1..=16", "Arc<Semaphore>", "Semaphore::new(capacity)", "security::response_headers", "/platform/v1/file-manifests", ".fallback"]) assert.ok(s.includes(phrase), phrase);
+  for (const phrase of ["FileDownloadManifestHttpState", "SessionFileDownloadWorkspace", "config::validate(origin, &[capacity])?", "origin, 4", "Arc<Semaphore>", "Semaphore::new(capacity)", "security::response_headers", "/platform/v1/file-manifests", ".fallback"]) assert.ok(s.includes(phrase), phrase);
+  const configuration = code(await read("engine/src/platform_http/config.rs"));
+  assert.match(configuration, /security::validate_origin\(origin\)\?;[\s\S]*capacities\s*\.iter\(\)\s*\.any\([\s\S]*!\(1\.\.=16\)\.contains\(/);
+  assert.ok(s.indexOf("config::validate(origin, &[capacity])?") < s.indexOf("Semaphore::new(capacity)"));
   assert.doesNotMatch(s, /Serialize|Deserialize|install_empty|\.begin\(|\.acquire\(|SessionBind|std::(?:fs|net|env)|tokio::spawn|reqwest/);
   const source = code(await read("engine/src/services/auth_service/durable_source/file_download.rs"));
   assert.match(source, /pub\(crate\) fn file_scope\(&self\)[^{]*\{\s*self\.publication\.scope\(\)\s*\}/);
@@ -18,12 +21,18 @@ test("manifest HTTP freezes an independent bounded host state and cached origina
 });
 
 test("manifest HTTP accepts only six bounded raw exact-version selectors without request attribution", async () => {
-  const s = code(await read(`${dir}contract.rs`)).split("#[cfg(test)]")[0];
-  for (const phrase of ["MAX_QUERY_BYTES: usize = 512", "[None; 6]", "query.contains(['%', '+'])", "value.contains('=')", "fields[index].replace(value)", "MAX_FILE_TRANSFER_BYTES", "FileVersionRef", '"workspace": scope', "SessionFileDownloadRequest"]) assert.ok(s.includes(phrase), phrase);
-  const keys = [...s.matchAll(/"(\w+)" => \d/g)].map(m => m[1]);
+  const s = code(await read(`${dir}contract.rs`)).replace(/#\[cfg\(test\)\]\s*use[^;]+;\s*/g, "").split("#[cfg(test)]")[0];
+  const helper = code(await read("engine/src/platform_http/file_selectors.rs")).split("#[cfg(test)]")[0];
+  for (const phrase of ["MAX_QUERY_BYTES: usize = 512", '[""; N]', "query.contains(['%', '+'])", "value.contains('=')", "!fields[index].is_empty()", "fields[index] = value"]) assert.ok(helper.includes(phrase), phrase);
+  for (const phrase of ["file_selectors::parse(", "file_selectors::decimal(", "MAX_FILE_TRANSFER_BYTES", "FileVersionRef", '"workspace": scope', "SessionFileDownloadRequest"]) assert.ok(s.includes(phrase), phrase);
+  const call = s.match(/file_selectors::parse\(\s*query,\s*\[([\s\S]*?)\]\s*,?\s*\)\?/);
+  assert.ok(call);
+  const keys = [...call[1].matchAll(/"(\w+)"/g)].map(m => m[1]);
   assert.deepEqual(keys, ["grant_id", "upload_id", "file_id", "version_id", "byte_length", "sha256"]);
-  assert.ok(s.includes("length.starts_with('0')") && s.includes("byte.is_ascii_digit()"));
-  assert.doesNotMatch(s, /chunk_index|percent_decode|serde_urlencoded|owner_id|recipient_id|namespace|std::fs|sqlx|tokio::spawn/);
+  assert.ok(helper.includes("value.starts_with('0')") && helper.includes("byte.is_ascii_digit()"));
+  assert.match(s, /byte_length > MAX_FILE_TRANSFER_BYTES/);
+  assert.doesNotMatch(s, /chunk_index|query\.(?:split|contains)|split_once|const MAX_QUERY_BYTES|percent_decode|serde_urlencoded|owner_id|recipient_id|namespace|std::fs|sqlx|tokio::spawn/);
+  assert.doesNotMatch(helper, /percent_decode|serde_urlencoded|serde_json|HashMap|BTreeMap|\bVec\b|\bString\b|owner_id|recipient_id|namespace|std::fs|sqlx|tokio::spawn/);
 });
 
 test("manifest HTTP composes cheap gates one current Source call and ordinary JSON admission", async () => {

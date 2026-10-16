@@ -7,6 +7,33 @@ use sqlx_core::{connection::Connection, transaction::Transaction};
 use sqlx_postgres::PgConnection;
 use std::time::Duration;
 
+mod expectation;
+pub use expectation::{
+    inspect_platform_storage_markers_expected, PlatformStorageMarkerExpectation,
+};
+
+#[derive(Clone, Copy)]
+enum CatalogBinding<'a> {
+    Observed(&'a PlatformCatalogObservation),
+    Declared(&'a super::PlatformCatalogExpectation),
+}
+
+impl CatalogBinding<'_> {
+    fn config_matches(self, config: &PlatformHostPreflightConfig) -> bool {
+        match self {
+            Self::Observed(expected) => expected.config_matches(config),
+            Self::Declared(expected) => expected.config_matches(config),
+        }
+    }
+
+    fn matches(self, current: &PlatformCatalogObservation) -> bool {
+        match self {
+            Self::Observed(expected) => expected.matches(current),
+            Self::Declared(expected) => expected.matches(current),
+        }
+    }
+}
+
 #[derive(Clone, Copy)]
 enum Scope {
     Version,
@@ -90,6 +117,21 @@ pub async fn inspect_platform_storage_markers(
     connection: &mut PgConnection,
     expected_catalog: &PlatformCatalogObservation,
 ) -> Result<PlatformStorageMarkerObservation> {
+    inspect_bound(
+        config,
+        connection,
+        CatalogBinding::Observed(expected_catalog),
+        None,
+    )
+    .await
+}
+
+async fn inspect_bound(
+    config: &PlatformHostPreflightConfig,
+    connection: &mut PgConnection,
+    expected_catalog: CatalogBinding<'_>,
+    expected_markers: Option<&[MarkerIdentity; 5]>,
+) -> Result<PlatformStorageMarkerObservation> {
     if !expected_catalog.config_matches(config) {
         return Err(PlatformHostPreflightError::CatalogChanged);
     }
@@ -98,7 +140,7 @@ pub async fn inspect_platform_storage_markers(
     }
     tokio::time::timeout(Duration::from_secs(10), async {
         catalog::require_idle(connection).await?;
-        observe_owned(config, connection, expected_catalog).await
+        observe_owned(config, connection, expected_catalog, expected_markers).await
     })
     .await
     .map_err(|_| PlatformHostPreflightError::StorageUnavailable)?
@@ -113,8 +155,38 @@ pub async fn verify_platform_storage_markers(
     if !expected.catalog.config_matches(config) {
         return Err(PlatformHostPreflightError::StorageMarkersChanged);
     }
-    let current = inspect_platform_storage_markers(config, connection, &expected.catalog).await?;
+    let current = inspect_bound(
+        config,
+        connection,
+        CatalogBinding::Observed(&expected.catalog),
+        Some(&expected.markers),
+    )
+    .await?;
     if !expected.matches(&current) {
+        return Err(PlatformHostPreflightError::StorageMarkersChanged);
+    }
+    Ok(())
+}
+
+/// Internal business-transaction guard: retains locks until the caller's commit/rollback.
+/// Never opens a new snapshot or changes the retained observation; the caller bounds this work.
+pub(super) async fn verify_in_transaction(
+    config: &PlatformHostPreflightConfig,
+    tx: &mut Transaction<'_, Postgres>,
+    expected: &PlatformStorageMarkerObservation,
+) -> Result<()> {
+    if !expected.catalog.config_matches(config) {
+        return Err(PlatformHostPreflightError::StorageMarkersChanged);
+    }
+    if !expected.matches(
+        &collect(
+            config,
+            tx,
+            CatalogBinding::Observed(&expected.catalog),
+            Some(&expected.markers),
+        )
+        .await?,
+    ) {
         return Err(PlatformHostPreflightError::StorageMarkersChanged);
     }
     Ok(())
@@ -123,12 +195,13 @@ pub async fn verify_platform_storage_markers(
 async fn observe_owned(
     config: &PlatformHostPreflightConfig,
     connection: &mut PgConnection,
-    expected_catalog: &PlatformCatalogObservation,
+    expected_catalog: CatalogBinding<'_>,
+    expected_markers: Option<&[MarkerIdentity; 5]>,
 ) -> Result<PlatformStorageMarkerObservation> {
     let mut tx = connection
         .begin_with("BEGIN ISOLATION LEVEL REPEATABLE READ, READ ONLY")
         .await?;
-    let observed = collect(config, &mut tx, expected_catalog).await;
+    let observed = collect(config, &mut tx, expected_catalog, expected_markers).await;
     match observed {
         Ok(observation) => {
             tx.commit().await?;
@@ -161,7 +234,8 @@ fn qualified(config: &PlatformHostPreflightConfig, marker: &Marker) -> String {
 async fn collect(
     config: &PlatformHostPreflightConfig,
     tx: &mut Transaction<'_, Postgres>,
-    expected_catalog: &PlatformCatalogObservation,
+    expected_catalog: CatalogBinding<'_>,
+    expected_markers: Option<&[MarkerIdentity; 5]>,
 ) -> Result<PlatformStorageMarkerObservation> {
     sqlx::query("SET LOCAL statement_timeout = '5s'")
         .execute(&mut **tx)
@@ -193,18 +267,25 @@ async fn collect(
     let mut markers = Vec::with_capacity(MARKERS.len());
     for marker in &MARKERS {
         let identity = shape(config, tx, marker, namespace_oids[marker.namespace]).await?;
+        markers.push(identity);
+    }
+    let markers: [MarkerIdentity; 5] = markers
+        .try_into()
+        .map_err(|_| PlatformHostPreflightError::UnsupportedStorageMarker)?;
+    // Verify ALL fixed identities before reading ANY marker row, including a later-table mismatch.
+    // Retained observations and explicit declarations use this same no-adoption boundary.
+    if expected_markers.is_some_and(|expected| expected != &markers) {
+        return Err(PlatformHostPreflightError::StorageMarkersChanged);
+    }
+    for (marker, identity) in MARKERS.iter().zip(markers) {
         read_marker(config, tx, marker, identity).await?;
         if shape(config, tx, marker, namespace_oids[marker.namespace]).await? != identity {
             return Err(PlatformHostPreflightError::StorageMarkersChanged);
         }
-        markers.push(identity);
     }
     if !expected_catalog.matches(&catalog::collect(config, tx).await?) {
         return Err(PlatformHostPreflightError::CatalogChanged);
     }
-    let markers = markers
-        .try_into()
-        .map_err(|_| PlatformHostPreflightError::UnsupportedStorageMarker)?;
     Ok(PlatformStorageMarkerObservation {
         catalog: observed_catalog,
         markers,

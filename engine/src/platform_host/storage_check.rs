@@ -2,11 +2,59 @@
 use super::{
     database_connection::{dial, options},
     inspect_platform_database, inspect_platform_database_expected,
-    inspect_platform_storage_markers, PlatformCatalogExpectation, PlatformDatabaseEndpoint,
-    PlatformHostPreflightConfig, PlatformHostPreflightError as Error, Result,
+    inspect_platform_storage_markers, inspect_platform_storage_markers_expected,
+    PlatformCatalogExpectation, PlatformDatabaseEndpoint, PlatformHostPreflightConfig,
+    PlatformHostPreflightError as Error, PlatformStorageMarkerExpectation, Result,
 };
 use sqlx_core::connection::Connection;
+use sqlx_postgres::PgConnection;
 use std::time::Duration;
+
+enum Expected<'a> {
+    Current,
+    Catalog(&'a PlatformCatalogExpectation),
+    Markers(&'a PlatformStorageMarkerExpectation),
+}
+
+impl Expected<'_> {
+    fn config_matches(&self, config: &PlatformHostPreflightConfig) -> bool {
+        match self {
+            Self::Current => true,
+            Self::Catalog(expected) => expected.config_matches(config),
+            Self::Markers(expected) => expected.config_matches(config),
+        }
+    }
+
+    async fn inspect(
+        self,
+        config: &PlatformHostPreflightConfig,
+        connection: &mut PgConnection,
+    ) -> Result<()> {
+        let catalog = match self {
+            Self::Current => inspect_platform_database(config, connection).await?,
+            Self::Catalog(expected) => {
+                inspect_platform_database_expected(config, connection, expected).await?
+            }
+            Self::Markers(expected) => {
+                return inspect_platform_storage_markers_expected(config, connection, expected)
+                    .await
+                    .map(|_| ())
+            }
+        };
+        inspect_platform_storage_markers(config, connection, &catalog).await?;
+        Ok(())
+    }
+}
+
+/// One-shot original catalog AND five-marker declaration check, not a retained runtime baseline.
+pub async fn check_platform_database_storage_markers_expected(
+    config: &PlatformHostPreflightConfig,
+    endpoint: &PlatformDatabaseEndpoint,
+    password: &str,
+    expected: &PlatformStorageMarkerExpectation,
+) -> Result<()> {
+    check(config, endpoint, password, Expected::Markers(expected)).await
+}
 
 /// One fresh explicit connection; observe configured physical target/role/namespaces and five
 /// current version/scope markers, then close. No observation or connection is returned or retained.
@@ -17,7 +65,7 @@ pub async fn check_platform_database_storage(
     endpoint: &PlatformDatabaseEndpoint,
     password: &str,
 ) -> Result<()> {
-    check(config, endpoint, password, None).await
+    check(config, endpoint, password, Expected::Current).await
 }
 
 /// The same one-shot diagnostic, but compare against an explicit trusted catalog declaration
@@ -28,16 +76,16 @@ pub async fn check_platform_database_storage_expected(
     password: &str,
     expected: &PlatformCatalogExpectation,
 ) -> Result<()> {
-    check(config, endpoint, password, Some(expected)).await
+    check(config, endpoint, password, Expected::Catalog(expected)).await
 }
 
 async fn check(
     config: &PlatformHostPreflightConfig,
     endpoint: &PlatformDatabaseEndpoint,
     password: &str,
-    expected: Option<&PlatformCatalogExpectation>,
+    expected: Expected<'_>,
 ) -> Result<()> {
-    if expected.is_some_and(|expected| !expected.config_matches(config)) {
+    if !expected.config_matches(config) {
         return Err(Error::CatalogChanged);
     }
     // Options reject captured PGOPTIONS before any network call, without changing global state.
@@ -46,17 +94,7 @@ async fn check(
         let mut connection = dial(&options)
             .await
             .map_err(|_| Error::StorageUnavailable)?;
-        let inspected = async {
-            let catalog = match expected {
-                Some(expected) => {
-                    inspect_platform_database_expected(config, &mut connection, expected).await?
-                }
-                None => inspect_platform_database(config, &mut connection).await?,
-            };
-            inspect_platform_storage_markers(config, &mut connection, &catalog).await?;
-            Ok(())
-        }
-        .await;
+        let inspected = expected.inspect(config, &mut connection).await;
         // Close after either inspection outcome, within the same total database deadline.
         // Timeout/cancellation instead drops unpublished state; it is not remote rollback proof.
         let closed = connection

@@ -87,7 +87,7 @@ test("portable hints stay independent from editor profiles and introduce no serv
   assert.match(synchronize, /getLanguageId\s*\(\s*\)\s*===\s*profile\s*\.\s*id/);
   assert.doesNotMatch(synchronize, /getLanguageId\s*\(\s*\)\s*===\s*language\b/);
   for (const path of ["frontend/src/features/tasks/taskDraft.ts", "frontend/src/features/tasks/taskPayloadLanguage.ts",
-    "frontend/src/features/tasks/TaskDraftWorkspace.tsx", "frontend/src/features/editor/useEditorSession.ts",
+    "frontend/src/features/tasks/TaskDraftWorkspace.tsx", "frontend/src/features/tasks/useTaskDraftController.ts", "frontend/src/features/editor/useEditorSession.ts",
     "frontend/src/features/editor/EditorWorkspace.tsx"]) assert.doesNotMatch(codeOnly(await read(path)),
     /\b(?:fetch|WebSocket|EventSource|localStorage|sessionStorage|indexedDB)\b|from\s*["'][^"']*(?:sdk|\/api)[^"']*["']|\/platform\/v1\//, path);
   const publicFiles = await Promise.all(["engine/src/application.rs", "engine/src/state.rs", "engine/openapi/openapi.json"]

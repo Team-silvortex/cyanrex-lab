@@ -1,5 +1,9 @@
 # One shot platform storage check
 
+The **2026-10-16 Unreleased** [format 3 diagnostic](platform-marker-expectation.md) verifies declared
+catalog and all five marker identities before marker-row reads, on one fresh connection through close.
+It preserves format 1/2 semantics, process/root gates and check-only output; it starts no host.
+
 Included in source **0.6.1** on **2026-10-15**; see [release validation](../../reports/releases/0.6.1/README.md).
 The implementation-stage wording below keeps its original scope; source inclusion is not deployment acceptance.
 
@@ -11,7 +15,7 @@ authorization or reusable readiness receipt. The teaching Engine and its startup
 
 ## Run against an explicitly selected target
 
-Use the same strict version 1 or version 2 JSON and private-file policy as
+Use the same strict version 1, 2 or 3 JSON and private-file policy as
 [check-config](platform-startup-input.md). Only after independently reviewing the service identity,
 groups and local database route, run:
 
@@ -36,7 +40,7 @@ The command first prepares the explicit low-privilege process, reads the private
 single-main-thread state. It then observes the existing effective-UID-owned `0700` Artifact root,
 without creating it or enumerating contents, before constructing a current-thread Tokio runtime.
 
-The runtime invokes `check_platform_database_storage(config, endpoint, password)`. This separate
+For format 1, the runtime invokes `check_platform_database_storage(config, endpoint, password)`. This separate
 library diagnostic shares only the connector's internal explicit options/dial builders; it does not
 construct a `PlatformDatabaseConnector` from a newly discovered observation. One ten-second budget
 covers a single connection attempt, the original read-only catalog transaction, the original read-only

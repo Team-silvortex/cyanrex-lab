@@ -30,6 +30,19 @@ pub struct PlatformStorageConnector {
 }
 
 impl PlatformStorageConnector {
+    pub(super) fn config(&self) -> &PlatformHostPreflightConfig {
+        &self.config
+    }
+
+    pub(super) async fn verify_transaction(
+        &self,
+        tx: &mut sqlx_core::transaction::Transaction<'_, crate::sqlx_compat::Postgres>,
+    ) -> Result<()> {
+        super::storage_markers::verify_in_transaction(&self.config, tx, &self.original_markers)
+            .await
+            .map_err(|_| PlatformStorageConnectionError::Unavailable)
+    }
+
     /// Pure composition of genuine caller-selected observations, not historical discovery.
     /// Incompatible complete configurations, catalog identities or raw path spellings fail.
     pub fn new(

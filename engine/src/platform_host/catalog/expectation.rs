@@ -14,6 +14,10 @@ pub struct PlatformCatalogExpectation {
 }
 
 impl PlatformCatalogExpectation {
+    pub(in crate::platform_host) fn role_oid(&self) -> u32 {
+        self.role_oid
+    }
+
     /// Namespace OIDs and their owner OIDs are ordered Source, Task, Artifact.
     pub fn new(
         config: PlatformHostPreflightConfig,

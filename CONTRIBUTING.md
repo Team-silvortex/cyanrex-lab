@@ -142,8 +142,10 @@ git push origin v0.5.0
 ```
 
 The release owner should verify the tag target, distribution checksum, extracted-package smoke result,
-and changelog links before publication. A pushed version tag also runs the dedicated release metadata
-workflow; this validates the tag but does not publish a release or move any ref.
+and changelog links before publication. A pushed version tag also runs the dedicated release workflow:
+it validates immutable metadata, builds the offline Docker package, checks tag-bound extraction and
+live-kernel installation smoke, and verifies the candidate. These remote results require separate
+verification; the workflow does not create a GitHub Release, publish npm packages or deploy services.
 
 ## Course Material and Translations
 

@@ -1,5 +1,6 @@
 //! Trusted unmounted composition only, never a listener or an isolation of the privileged Engine.
 use super::{
+    config,
     errors::HttpError,
     file_chunk_read::{self, FileChunkReadHttpState},
     file_download_manifest::{self, FileDownloadManifestHttpState},
@@ -59,10 +60,7 @@ impl FileDistributionHttpState {
         manifest_capacity: usize,
         chunk_capacity: usize,
     ) -> Result<Self, FileDistributionHttpConfigError> {
-        security::validate_origin(origin)?;
-        if !(1..=16).contains(&manifest_capacity) || !(1..=16).contains(&chunk_capacity) {
-            return Err(FileDistributionHttpConfigError::InvalidCapacity);
-        }
+        config::validate(origin, &[manifest_capacity, chunk_capacity])?;
         let manifest_workspace = workspace
             .manifest_workspace_for(&source)
             .map_err(|_| FileDistributionHttpConfigError::InvalidWorkspace)?;

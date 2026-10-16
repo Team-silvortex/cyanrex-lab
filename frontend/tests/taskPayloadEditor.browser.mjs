@@ -301,6 +301,93 @@ taskTest("a delayed child file read cannot update a new task after history navig
   }
 });
 
+// Keep genuine native JSON bytes pending; do not inject draft state or replace Monaco workers.
+// setupTask uses real Next routes/models and mocks only Engine identity/unread reads, not server authorization.
+async function heldTaskJsonRead(page) {
+  return page.evaluateHandle(() => {
+    const descriptor = Object.getOwnPropertyDescriptor(File.prototype, "arrayBuffer");
+    const original = File.prototype.arrayBuffer;
+    const state = {
+      calls: 0, completed: 0, pending: null,
+      restore() {
+        if (descriptor) Object.defineProperty(File.prototype, "arrayBuffer", descriptor);
+        else delete File.prototype.arrayBuffer;
+      },
+      async release() {
+        const pending = state.pending; state.pending = null;
+        if (pending) await pending();
+      },
+    };
+    Object.defineProperty(File.prototype, "arrayBuffer", { configurable: true, writable: true, value: function () {
+      if (this.name !== "task-fixture.json") return original.call(this);
+      state.calls++;
+      return new Promise((resolve, reject) => {
+        state.pending = async () => {
+          try { const bytes = await original.call(this); state.completed++; resolve(bytes); }
+          catch (error) { reject(error); }
+        };
+      });
+    } });
+    return state;
+  });
+}
+
+for (const transition of ["same-owner anchor and edits", "owner navigation"]) {
+  taskTest(`late confirmed whole-task JSON cannot replace a draft after ${transition}`, async f => {
+    const original = await keptDraft(f);
+    const candidate = taskDraft([textItem("late_json_candidate", {
+      filename: "late.md", language: "markdown", revision: 17, text: "# Late whole-task replacement\n",
+    })], "This old reviewed import must never publish");
+    const model = await f.page.evaluateHandle(() => window.monaco.editor.getModels()[0]);
+    const held = await heldTaskJsonRead(f.page);
+    try {
+      await f.chooseImport(candidate);
+      await confirmation(f.page).waitFor();
+      assert.equal(await held.evaluate(state => state.calls), 0, "preview does not read JSON bytes");
+      await approve(f.page).click();
+      await f.page.waitForFunction(state => state.calls === 1 && state.pending !== null, held);
+      assert.deepEqual(await f.ids(), original.payload.map(item => item.id));
+      assert.equal(await f.source(), original.payload[0].text, "the pending import has not replaced the editor");
+      if (transition === "same-owner anchor and edits") {
+        const authBefore = f.engineRequests.filter(request => request.path === "/auth/me").length;
+        await f.page.evaluate(() => window.next.router.push("/tasks/new#json-import-dismissed"));
+        await f.page.waitForURL(`${baseUrl}/tasks/new#json-import-dismissed`);
+        await confirmation(f.page).waitFor({ state: "detached" });
+        assert.equal(await model.evaluate(value => !value.isDisposed()
+          && value === window.monaco.editor.getModels()[0]), true);
+        assert.equal(f.engineRequests.filter(request => request.path === "/auth/me").length, authBefore);
+        await f.page.getByTestId("task-title").fill("Current owner edited after cancelling the import");
+        await f.setSource("Current owner has a newer payload revision, not the reviewed JSON.");
+      } else {
+        await f.page.evaluate(() => window.next.router.push("/account"));
+        await f.page.waitForURL(`${baseUrl}/account`);
+        await f.page.waitForFunction(() => window.monaco.editor.getModels().length === 0);
+        assert.equal(await model.evaluate(value => value.isDisposed()), true);
+        await f.page.locator('nav a[href="/tasks/new"]').click();
+        await f.page.waitForURL(`${baseUrl}/tasks/new`);
+        await f.page.getByTestId("task-title").fill("A newly owned task after pending JSON");
+        await f.add();
+        await f.setSource("New owner content survives the old reviewed import.");
+      }
+      const before = await f.export();
+      await held.evaluate(async state => { await state.release(); });
+      assert.deepEqual(await held.evaluate(state => ({ calls: state.calls, completed: state.completed })),
+        { calls: 1, completed: 1 }, "the delayed result contains one completed native File read");
+      assert.deepEqual(await f.export(), before, "late whole-task bytes cannot replace the current owner's exact draft");
+      await f.current(before.payload[0]);
+      if (transition === "same-owner anchor and edits") {
+        assert.equal(before.payload[0].id, original.payload[0].id);
+        assert.equal(before.payload[0].revision, original.payload[0].revision + 1);
+        assert.equal(await model.evaluate(value => !value.isDisposed()
+          && value === window.monaco.editor.getModels()[0]), true);
+      }
+    } finally {
+      try { await held.evaluate(async state => { state.restore(); await state.release(); }); }
+      finally { await held.dispose(); await model.dispose(); }
+    }
+  });
+}
+
 for (const [label, invalid] of [
   ["unsupported payload kind", taskDraft([textItem("unknown", { kind: "code" })], "Rejected kind")],
   ["duplicate payload identities", taskDraft([textItem("duplicate"), textItem("duplicate", { text: "different" })])],

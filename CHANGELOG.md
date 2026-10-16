@@ -5,6 +5,43 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.6.2] - 2026-10-16
+
+This patch source release connects existing Session operations to retained platform storage, adds
+strict format 3 marker identity declarations, and separates startup, HTTP and local Task controller
+responsibilities. Public contracts remain compatible; the platform host, Session issuer and browser
+saving remain unmounted. See [local release validation](reports/releases/0.6.2/README.md).
+
+### Added
+
+- Add complete trusted five-marker identity declarations and strict private input format 3. Compare
+  all original relation OIDs/owners before any marker-row read, reuse the early check for retained
+  observations, and keep format 1/2 diagnostics compatible without adopting or exporting a baseline.
+
+- Connect retained platform storage to existing Session query/logout and the explicit Session HTTP
+  adapter without a pool or issuer. Verify original catalog/markers inside the same business
+  transaction, reuse Source pins and final fresh reads, and clear the dedicated Cookie only after
+  confirmed logout. Preserve the old pooled API and leave host/CLI mounting and browser saving separate.
+
+### Changed
+
+- Replace independent optional startup declarations with one private storage-check mode, centralize
+  strict missing/present parsing and exhaustively dispatch diagnostics. Move the shared pure Origin
+  policy out of HTTP so host configuration no longer depends on a transport adapter. Preserve public
+  APIs, input formats, transaction boundaries, deadlines and explicit connection/root teardown.
+
+- Centralize pure HTTP Origin/capacity validation across seven state families and file distribution.
+  Keep Origin-first errors, both distribution capacities checked before workspace matching, and each
+  state's independent clone-shared admission budget and response-body lifetime unchanged.
+
+- Share bounded raw file-query and canonical decimal parsing between manifest and chunk adapters.
+  Keep their exact six/seven-field inventories, typed identities, geometry checks, trusted scope
+  projection and separate JSON/binary response ownership; do not decode or normalize selectors.
+
+- Separate the local Task draft controller from rendering and file-picker handles. Preserve reviewed
+  confirmations, revision/generation guards, atomic imports and controlled-editor ownership without
+  changing draft JSON, layout, persistence or network behavior.
+
 ## [0.6.1] - 2026-10-15
 
 This patch source release adds explicit low-privilege platform startup checks, strict private
@@ -1327,7 +1364,8 @@ cross-user collaboration. The frozen public API compatibility baseline remains 0
 The canonical package metadata advanced directly from `0.2.9` to `0.3.1`. Version `0.3.0` identifies
 the frozen API compatibility snapshot only; it was not a package release and must not be tagged.
 
-[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.6.1...HEAD
+[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.6.2...HEAD
+[0.6.2]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.9...v0.6.0
 [0.5.9]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.8...v0.5.9

@@ -2,8 +2,8 @@
 use cyanrex_engine::{
     models::collaboration::{AuthorityId, WorkspaceId, WorkspaceRef},
     platform_host::{
-        PlatformCatalogExpectation, PlatformDatabaseEndpoint, PlatformDatabaseTarget,
-        PlatformHostPreflightConfig, PlatformNamespaces,
+        PlatformDatabaseEndpoint, PlatformDatabaseTarget, PlatformHostPreflightConfig,
+        PlatformNamespaces,
     },
     services::auth_service::durable_source::SessionStockLimits,
 };
@@ -13,9 +13,19 @@ use std::path::{Path, PathBuf};
 mod map_only;
 use map_only::MapOnly;
 mod expected_catalog;
-use expected_catalog::ExpectedField;
+use expected_catalog::Identity as CatalogIdentity;
+mod expected_markers;
+use expected_markers::Identity as MarkerIdentity;
+mod presence;
+use presence::Presence;
+mod storage_identity;
+pub(super) use storage_identity::StorageExpectation;
 #[cfg(test)]
 mod expectation_tests;
+#[cfg(test)]
+mod marker_expectation_tests;
+#[cfg(test)]
+mod representation_tests;
 #[cfg(test)]
 mod tests;
 
@@ -32,7 +42,9 @@ struct Input {
     session_limits: MapOnly<Limits>,
     artifact_root: String,
     #[serde(default)]
-    catalog_identity: ExpectedField,
+    catalog_identity: Presence<CatalogIdentity>,
+    #[serde(default)]
+    marker_identity: Presence<MarkerIdentity>,
 }
 
 #[derive(Deserialize)]
@@ -75,7 +87,7 @@ pub(super) struct ValidatedInput {
     pub(super) endpoint: PlatformDatabaseEndpoint,
     pub(super) password: String,
     pub(super) artifact_root: PathBuf,
-    pub(super) catalog_expectation: Option<PlatformCatalogExpectation>,
+    pub(super) storage_expectation: StorageExpectation,
 }
 
 pub(super) fn check(path: &Path) -> Result<(), ()> {
@@ -97,7 +109,7 @@ fn parse(bytes: &[u8]) -> Result<ValidatedInput, ()> {
     let input = serde_json::from_slice::<MapOnly<Input>>(bytes)
         .map_err(|_| ())?
         .0;
-    if (input.format_version != 1 && input.format_version != 2)
+    if (input.format_version != 1 && input.format_version != 2 && input.format_version != 3)
         || input.database.0.password.len() > 4096
         || input.database.0.password.contains('\0')
         || !canonical_path(&input.artifact_root)
@@ -138,7 +150,12 @@ fn parse(bytes: &[u8]) -> Result<ValidatedInput, ()> {
         .map_err(|_| ())?,
     )
     .map_err(|_| ())?;
-    let catalog_expectation = input.catalog_identity.bind(input.format_version, &config)?;
+    let storage_expectation = StorageExpectation::bind(
+        input.format_version,
+        input.catalog_identity,
+        input.marker_identity,
+        &config,
+    )?;
     // The check-only caller discards this value; explicit storage diagnostics consume it once.
     // Drop is not secure zeroization. Parsing opens no target or Artifact path.
     Ok(ValidatedInput {
@@ -146,7 +163,7 @@ fn parse(bytes: &[u8]) -> Result<ValidatedInput, ()> {
         endpoint,
         password: database.password,
         artifact_root: PathBuf::from(input.artifact_root),
-        catalog_expectation,
+        storage_expectation,
     })
 }
 

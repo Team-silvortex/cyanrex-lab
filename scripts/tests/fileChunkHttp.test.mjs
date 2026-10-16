@@ -24,9 +24,14 @@ test("binary chunk GET retains cheap gates and exactly one existing source comma
 
 test("binary query and headers keep bounded trusted version projection without payload copies", async () => {
   const s = code(await read(`${dir}contract.rs`));
-  for (const phrase of ["MAX_QUERY_BYTES: usize = 512", "[None; 7]", "MAX_FILE_TRANSFER_BYTES", "MAX_FILE_TRANSFER_CHUNKS", "FileVersionRef", "workspace\": scope", "chunk.chunk_sha256()", "application/octet-stream", "x-cyanrex-file-transfer-version", "x-cyanrex-file-id", "x-cyanrex-file-version-id", "x-cyanrex-chunk-index", "x-cyanrex-chunk-sha256", "x-cyanrex-file-sha256", "chunk.bin"]) assert.ok(s.includes(phrase), phrase);
-  for (const key of ["grant_id", "upload_id", "file_id", "version_id", "byte_length", "sha256", "chunk_index"]) assert.ok(s.includes(`"${key}" =>`), key);
-  assert.doesNotMatch(s, /chunk\.bytes\(\)\.(?:to_vec|to_owned)|Bytes::copy_from_slice|base64|\bsha2\b|std::fs|tokio::fs/);
+  const helper = code(await read("engine/src/platform_http/file_selectors.rs")).split("#[cfg(test)]")[0];
+  for (const phrase of ["MAX_QUERY_BYTES: usize = 512", '[""; N]', "query.contains(['%', '+'])", "value.contains('=')", "!fields[index].is_empty()", "fields[index] = value"]) assert.ok(helper.includes(phrase), phrase);
+  for (const phrase of ["file_selectors::parse(", "file_selectors::decimal(", "MAX_FILE_TRANSFER_BYTES", "MAX_FILE_TRANSFER_CHUNKS", "FileVersionRef", "workspace\": scope", "chunk.chunk_sha256()", "application/octet-stream", "x-cyanrex-file-transfer-version", "x-cyanrex-file-id", "x-cyanrex-file-version-id", "x-cyanrex-chunk-index", "x-cyanrex-chunk-sha256", "x-cyanrex-file-sha256", "chunk.bin"]) assert.ok(s.includes(phrase), phrase);
+  const call = s.match(/file_selectors::parse\(\s*query,\s*\[([\s\S]*?)\]\s*,?\s*\)\?/);
+  assert.ok(call);
+  assert.deepEqual([...call[1].matchAll(/"(\w+)"/g)].map(m => m[1]), ["grant_id", "upload_id", "file_id", "version_id", "byte_length", "sha256", "chunk_index"]);
+  assert.match(s, /byte_length > MAX_FILE_TRANSFER_BYTES \|\| chunk_index >= MAX_FILE_TRANSFER_CHUNKS as u64/);
+  assert.doesNotMatch(s, /query\.(?:split|contains)|split_once|const MAX_QUERY_BYTES|fn decimal\(|chunk\.bytes\(\)\.(?:to_vec|to_owned)|Bytes::copy_from_slice|base64|\bsha2\b|std::fs|tokio::fs/);
 });
 
 test("binary data owns both leases beyond EOF and first-frame expiry has no detached timer", async () => {
@@ -41,7 +46,11 @@ test("binary adapter stays explicitly unmounted and does not widen older request
   for (const phrase of ["mod file_chunk_read", "build_file_chunk_read_router", "FileChunkReadHttpState"]) assert.ok(exports.includes(phrase), phrase);
   for (const path of ["engine/src/main.rs", "engine/src/state.rs", "engine/src/application.rs", "engine/openapi/openapi.json"]) assert.doesNotMatch(code(await read(path)), /file-chunks|FileChunkReadHttpState|build_file_chunk_read_router/, path);
   const state = code(await read(`${dir}mod.rs`));
-  for (const phrase of ["security::validate_origin", "origin, 4", "1..=16", "Arc<Semaphore>", "security::response_headers"]) assert.ok(state.includes(phrase), phrase);
+  for (const phrase of ["config::validate(origin, &[capacity])?", "origin, 4", "Arc<Semaphore>", "security::response_headers"]) assert.ok(state.includes(phrase), phrase);
+  const configuration = code(await read("engine/src/platform_http/config.rs"));
+  assert.match(configuration, /security::validate_origin\(origin\)\?;[\s\S]*capacities\s*\.iter\(\)\s*\.any\([\s\S]*!\(1\.\.=16\)\.contains\(/);
+  assert.match(state, /admission: Arc::new\(Semaphore::new\(capacity\)\)/);
+  assert.ok(state.indexOf("config::validate(origin, &[capacity])?") < state.indexOf("Semaphore::new(capacity)"));
   assert.doesNotMatch(state, /install_empty|\.begin\(|\.acquire\(|SessionBind|TaskDefinition|Runner|reqwest|std::fs/);
 });
 

@@ -9,6 +9,7 @@
 
 mod admission;
 mod catalog_task;
+mod config;
 mod contract;
 mod errors;
 #[cfg(unix)]
@@ -17,6 +18,8 @@ mod file_chunk_read;
 mod file_distribution;
 #[cfg(unix)]
 mod file_download_manifest;
+#[cfg(unix)]
+mod file_selectors;
 mod handlers;
 mod security;
 mod session_lifecycle;
@@ -33,7 +36,6 @@ pub use file_distribution::{
 pub use file_download_manifest::{
     build_file_download_manifest_router, FileDownloadManifestHttpState,
 };
-pub(crate) use security::validate_origin as validate_platform_origin;
 pub use session_lifecycle::{build_session_lifecycle_router, SessionLifecycleHttpState};
 pub use task_index::{build_task_content_index_router, TaskContentIndexHttpState};
 pub use text_artifact::{build_text_artifact_router, TextArtifactHttpState};
@@ -79,10 +81,7 @@ impl TaskContentHttpState {
         origin: &str,
         max_in_flight: usize,
     ) -> Result<Self, TaskContentHttpConfigError> {
-        security::validate_origin(origin)?;
-        if !(1..=16).contains(&max_in_flight) {
-            return Err(TaskContentHttpConfigError::InvalidCapacity);
-        }
+        config::validate(origin, &[max_in_flight])?;
         Ok(Self {
             source,
             workspace,

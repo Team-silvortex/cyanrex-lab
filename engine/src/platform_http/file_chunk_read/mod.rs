@@ -4,7 +4,7 @@ mod contract;
 mod errors;
 mod handlers;
 
-use super::{security, TaskContentHttpConfigError};
+use super::{config, security, TaskContentHttpConfigError};
 use crate::services::auth_service::durable_source::{
     DurableAuthSource, SessionFileChunkReadWorkspace,
 };
@@ -37,10 +37,7 @@ impl FileChunkReadHttpState {
         origin: &str,
         capacity: usize,
     ) -> Result<Self, TaskContentHttpConfigError> {
-        security::validate_origin(origin)?;
-        if !(1..=16).contains(&capacity) {
-            return Err(TaskContentHttpConfigError::InvalidCapacity);
-        }
+        config::validate(origin, &[capacity])?;
         Ok(Self {
             source,
             workspace,

@@ -1,5 +1,9 @@
 # Platform Session lifecycle
 
+A **2026-10-16 Unreleased** [retained-storage backend](platform-session-connection.md) adds an
+explicit alternative to the original pooled Source state. Its Origin comes from the bound config;
+transaction guards and confirmed Cookie behavior remain required. The router is still unmounted.
+
 Included in source **0.6.0** on **2026-10-15**; see [release validation](../../reports/releases/0.6.0/README.md).
 The dated implementation scope below remains historical, not a new deployment acceptance.
 

@@ -25,7 +25,10 @@ async function sources(directory, extension) {
 test("metadata HTTP binds strict raw positional queries to one trusted current-Session command", async () => {
   const state = codeOnly(await read(`${directory}/mod.rs`));
   assert.deepEqual(names(state, "TaskContentIndexHttpState"), ["source", "workspace", "origin", "admission"]);
-  for (const pattern of [/SessionTaskContentIndexWorkspace/, /security::validate_origin/, /origin, 4\)/, /1\.\.=16/, /Arc::new\(Semaphore::new/, /response_headers/]) assert.match(state, pattern);
+  for (const pattern of [/SessionTaskContentIndexWorkspace/, /config::validate\(origin, &\[max_in_flight\]\)\?;/, /origin, 4\)/, /Arc::new\(Semaphore::new\(max_in_flight\)\)/, /response_headers/]) assert.match(state, pattern);
+  const configuration = codeOnly(await read("engine/src/platform_http/config.rs"));
+  assert.match(configuration, /security::validate_origin\(origin\)\?;[\s\S]*capacities\s*\.iter\(\)\s*\.any\([\s\S]*!\(1\.\.=16\)\.contains\(/);
+  assert.ok(state.indexOf("config::validate(origin, &[max_in_flight])?") < state.indexOf("Semaphore::new(max_in_flight)"));
   const handler = codeOnly(await read(`${directory}/handlers.rs`));
   assert.equal([...handler.matchAll(/\.list_session_content_tasks\s*\(/g)].length, 1);
   for (const pattern of [/Method::GET/, /method_not_allowed\("GET"\)/, /request\.uri\(\)\.query\(\)/, /security::credentials/, /admission::acquire/, /admission::response/, /security::request_bytes\(request, true\)/, /state\.workspace\.index_scope\(\)/]) assert.match(handler, pattern);

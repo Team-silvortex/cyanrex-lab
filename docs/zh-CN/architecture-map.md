@@ -1,5 +1,12 @@
 # 当前架构与变更边界
 
+**2026-10-16 收录于 0.6.2** 的[绑定会话适配](platform-session-connection.md)将
+`platform_host/session_connection.rs` 接到共用的私有 Session 事务助手及显式 HTTP 后端。
+保留存储和新鲜 Source 校验共用每条命令的事务，不增加连接池回退、签发或正常应用组合。
+
+另行的[格式 3 诊断](platform-marker-expectation.md)在行读取前核完整目录／五标记声明，
+不收编首次观察对象，也不构造运行宿主。
+
 源码 **0.5.9** 已收录，API **0.3.0**，梳理日期 **2026-10-13**。原整理属于0.5.8标签后的
 跟进，源码收录不改变存储Schema或服务挂载。
 
@@ -26,7 +33,7 @@ Cyanrex目前有一条已连接的教学应用、另行组合的协作后端，�
 |---|---|---|
 | 教学应用 | 浏览器 → 原AuthService／路由守卫 → 教学、事件、部署与Runner服务 | 一次实验运行不自动创建通用Task或Artifact |
 | 显式协作后端 | 可信宿主 → DurableAuthSource会话命令 → 私人资源存储 | 不由AppState构建，platform HTTP路由仍未挂载 |
-| 本地payload编辑 | `/tasks/new`及兼容`/editor` → TaskDraftWorkspace → 受控文本编辑器 → 本地JSON | 本地ID与语言提示不是服务端引用或执行权限 |
+| 本地payload编辑 | `/tasks/new`及兼容`/editor` → TaskDraftWorkspace 组合 useTaskDraftController → 受控文本编辑器 → 本地JSON | 本地ID与语言提示不是服务端引用或执行权限 |
 | 显式文件交付 | 当前准确文件grant → Source清单／分块核验 → 所给router → 受控客户端 → 所选保存 | 已有真实Source／HTTPS联验，正常应用／UI／SDK仍未接通 |
 
 教师管理现用教学与部署，单人模式同样如此；这不转化为读取他人私人Task、Artifact、Review
@@ -43,7 +50,7 @@ Cyanrex目前有一条已连接的教学应用、另行组合的协作后端，�
 | 当前会话命令 | `engine/src/services/auth_service/durable_source/`、`engine/src/services/collaboration_identity_store/` | 派生准确当前执行者、审计成员及原始pin；资源检查和最终权限留在Source事务 |
 | 资源持久化 | `engine/src/services/task_store/`、`engine/src/services/artifact_store/`、`engine/src/services/review_store/` | 可信直接存储不认证给定所有者，Session适配借用其事务机制 |
 | HTTP投影 | `engine/src/platform_http/` | 核请求并投影原命令，不重复权限、不安装Schema或签发Session |
-| 本地宿主交互 | `frontend/src/features/tasks/`、`frontend/src/features/editor/`、`sdk-js/src/agents/` | 草稿拥有payload，编辑器拥有显示／工具；SDK工具仍受原Engine权限与宿主批准约束 |
+| 本地宿主交互 | `frontend/src/features/tasks/useTaskDraftController.ts`、`frontend/src/features/editor/`、`sdk-js/src/agents/` | 任务本地控制器拥有payload／生命周期，视图渲染／选文件，编辑器拥有显示／工具；SDK仍受原Engine权限与宿主批准约束 |
 
 中立契约与冻结定义不依赖教学提供器。领域证据和普通Task payload不能互换：代码、笔记和配置
 都可以只是内容，不要求评估或Run。Review记录、规则结果和Task状态变化是独立操作，不自动互转。
@@ -51,6 +58,37 @@ Cyanrex目前有一条已连接的教学应用、另行组合的协作后端，�
 `prepared_resource_sql`共用私人SQL设置与表检查，不决定权限；`legacy_workspace`只做离线权限
 预览，不是在线认证或迁移。较宽的durable_source目录目前承载账号／Session来源、事务授权和
 显式资源命令三类职责；同目录不代表可把命令事务抽成一个提前权限判断。
+
+## 平台准备层职责
+
+**2026-10-16 收录于 0.6.2** 的内部整理保留原公开 API 及输入格式：
+
+- `engine/src/platform_origin.rs` 持有纯规范 Origin 策略，宿主配置及 HTTP 配置分别依赖它、
+  各自映射错误；纯宿主配置不再依赖 HTTP 适配器。Origin 接受范围不变。
+- `bin/cyanrex-platform/config/` 持有严格输入解码和纯声明构造。私有 `Presence<T>` 统一区分
+  字段缺失与显式提供；null、重复键、位置数组仍被拒绝。只有 `storage_identity.rs` 选择
+  合法的版本／声明组合，构造 `StorageExpectation::{Current,Catalog,Markers}`，去除两个
+  独立可选声明及其不合法的同时存在状态。
+- CLI 持有进程／私有文件／根门禁、单 runtime 及穷尽模式分派；runtime 销毁后，即使失败
+  也复核根与进程。`platform_host/storage_check.rs` 持有单次连接、数据库总时限，以及
+  检查成功或失败后的显式关闭；各 inspector 继续拥有自己的 SQL 和快照边界。
+
+格式 1／2 仍在原来的两个只读 repeatable-read 事务中依次检查目录及当前标记；格式 3 保留
+单个声明标记事务，在行读取前核全部五个原始身份。不把这些诊断与 Session 命令抽成同一
+事务包装：保留会话连接、业务事务、不确定结果和关闭预算各有不同。没有新增运行宿主、
+存储收编、重试或公开配置模式。
+
+## HTTP 配置与准入
+
+同日收录的跟进把 HTTP 纯配置规则归入私有 `engine/src/platform_http/config.rs`：先检查
+规范 Origin，再检查所给各容量均为 **1–16**。Task、目录任务、索引、文本 Artifact、Session、
+清单及分块状态只委托这段校验，不共用准入对象。文件分发组合仍先检查两项容量，再匹配
+缓存工作区，错误优先级不变。
+
+七类状态仍各自拥有 Origin 字符串，并各自创建 `Arc<Semaphore>`；克隆共享本状态的名额，
+独立构造的状态互不占用。默认容量仍为 **4**，分发的清单／分块独立状态仍为 **4/4**。
+助手不创建信号量、不读取存储，也不规定命令时限；响应正文、字节所有者、Source 工作区及
+Session 事务继续保留原释放／授权边界。不增加全局 HTTP 配额、公开配置 API 或运行挂载。
 
 ## 服务导航
 
@@ -105,9 +143,13 @@ Cancelled终止被选择的等待／续跑，不杀已派发OS工作；进度关
 
 小整理可以共享纯辅助、明确归属、去除准确投影重复，但必须保留各state-family预算、完整版本
 匹配、错误优先级、Source事务pin、不确定结果和原API名称。本轮只共用文件元数据错误投影。
+该“本轮”指 2026-10-13 整理；上文后续的平台准备层整理另行共用严格记录存在性及纯 Origin
+策略，不合并运行时寿命。
 
-后续候选，非本轮已实现：清单／分块共用私人严格selector解析、manual／catalogue草稿共用纯
-目标准备、旧学习结果到教学证据的强类型转换；各自准入、fingerprint、评估和事务仍须分开。
+私有 `engine/src/platform_http/file_selectors.rs` 现共用严格的 512 字节原始查询／十进制解析
+机制；适配器各自保留六／七字段、强类型 ID／摘要、可信 scope、范围检查及不同响应所有权。
+后续候选仍是 manual／catalogue 草稿共用纯目标准备、旧学习结果到教学证据的强类型转换；
+各自准入、fingerprint、评估和事务仍须分开。
 
 新运行组合需要独立提案审阅：安全持久Session签发、无特权宿主边界、显式存储配置，再到公共
 UI／SDK契约和真实局域网验收。导出路由或loopback用例通过不能替代这些步骤。恢复、自动重试／
@@ -138,3 +180,19 @@ UI／SDK契约和真实局域网验收。导出路由或loopback用例通过不�
   日志留在 `/tmp/cyanrex-architecture-WRV3tmc3`。
 
 以上是整理／回归结果，不是新前端／SDK构建、已部署局域网／内核验收、安全审计、正常挂载或发布。
+
+## 2026年10月16日验证
+
+- 新增五条架构守卫先因缺少目标结构全部失败，整理后全部通过；不冒称生产故障 Red。
+  三条公开构造器 Origin 测试及三种格式／15 次子进程 CLI 矩阵在整理前后均通过；新增纯
+  测试还覆盖严格存在性及强类型模式。
+- 完整后端／通用门通过 **1,202 项 Rust 测试**、**918 项显式忽略**、**117 个结果组**及
+  **431 项通用检查**，零失败、零 Rust 告警。
+- 新鲜隔离 PostgreSQL 回归覆盖九个相邻 runner，共 **41 条唯一用例**全部通过；另行复跑
+  的 CLI 矩阵不重复计数。所有夹具数据库／角色均已回收，仅 socket 的实例已停止，所属
+  data／socket 目录已删除（约 **55 MiB**），日志保留在
+  `/tmp/cyanrex-host-architecture-mS4w8RRE`。
+- 摘要检查保留 **2,812 个受保护文件**，包括此前未提交工作、CI、依赖、版本／API 基线及
+  历史报告。双语源文档与课程副本已同步。
+
+以上验证内部准备层整理，不代表重跑前端／SDK 构建、新宿主组合、已部署局域网验收、发布或推送。

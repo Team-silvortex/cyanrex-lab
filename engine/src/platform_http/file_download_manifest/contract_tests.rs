@@ -25,11 +25,25 @@ fn canonical_selectors_are_order_independent_and_use_only_trusted_scope() {
     let selected = parse(QUERY);
     assert_eq!(selected.expected_file.workspace(), scope());
     assert_eq!(selected.expected_file.byte_length(), 17);
-    let reversed = QUERY.split('&').rev().collect::<Vec<_>>().join("&");
-    let other = parse(&reversed);
-    assert_eq!(other.grant_id, selected.grant_id);
-    assert_eq!(other.upload_id, selected.upload_id);
-    assert_eq!(other.expected_file, selected.expected_file);
+    fn every_order(parts: &mut [&str], start: usize, checked: &mut usize) {
+        if start == parts.len() {
+            let other = parse(&parts.join("&"));
+            let selected = parse(QUERY);
+            assert_eq!(other.grant_id, selected.grant_id);
+            assert_eq!(other.upload_id, selected.upload_id);
+            assert_eq!(other.expected_file, selected.expected_file);
+            *checked += 1;
+            return;
+        }
+        for index in start..parts.len() {
+            parts.swap(start, index);
+            every_order(parts, start + 1, checked);
+            parts.swap(start, index);
+        }
+    }
+    let mut checked = 0;
+    every_order(&mut QUERY.split('&').collect::<Vec<_>>(), 0, &mut checked);
+    assert_eq!(checked, 720);
 }
 
 #[test]
@@ -48,6 +62,17 @@ fn exact_six_fields_reject_missing_duplicates_unknowns_and_empty_pairs() {
         assert!(download_request(Some(&missing), scope()).is_err());
         assert!(download_request(Some(&format!("{QUERY}&{}", parts[omitted])), scope()).is_err());
         let key = parts[omitted].split_once('=').unwrap().0;
+        let different = match key {
+            "byte_length" => "18".to_owned(),
+            "sha256" => "b".repeat(64),
+            _ => "00000000-0000-4000-8000-0000000000ff".to_owned(),
+        };
+        for conflicting in [
+            format!("{QUERY}&{key}={different}"),
+            format!("{key}={different}&{QUERY}"),
+        ] {
+            assert!(download_request(Some(&conflicting), scope()).is_err());
+        }
         assert!(download_request(
             Some(&QUERY.replace(parts[omitted], &format!("{key}="))),
             scope()
@@ -96,6 +121,11 @@ fn raw_selectors_reject_percent_plus_uuid_and_digest_aliases() {
     }
     for bad in [
         QUERY.replace("grant_id=", "%67rant_id="),
+        QUERY.replace("grant_id=", "Grant_id="),
+        QUERY.replace("grant_id=", "grаnt_id="), // Cyrillic а is not the ASCII key.
+        QUERY.replace("&upload_id=", "%26upload_id="),
+        QUERY.replace("byte_length=17", "byte_length%3D17"),
+        QUERY.replace("&upload_id=", ";upload_id="),
         QUERY.replace("byte_length=17", "byte_length=%31%37"),
         QUERY.replace("byte_length=17", "byte_length=+17"),
         QUERY.replace(&"a".repeat(64), &"A".repeat(64)),
@@ -155,7 +185,11 @@ fn canonical_decimal_file_bound_and_empty_digest_are_enforced() {
 
 #[test]
 fn raw_query_limit_rejects_oversize_input_without_decode_or_projection() {
-    let query = format!("{QUERY}&{}", "x".repeat(MAX_QUERY_BYTES + 1));
-    assert!(query.len() > MAX_QUERY_BYTES);
-    assert!(download_request(Some(&query), scope()).is_err());
+    // Canonical selectors cannot reach 512 bytes. These exact-size invalid digests check
+    // stable rejection at both raw boundaries, not acceptance of a 512-byte request.
+    for length in [512, 513] {
+        let padded = QUERY.replace(&"a".repeat(64), &"a".repeat(64 + length - QUERY.len()));
+        assert_eq!(padded.len(), length);
+        assert!(download_request(Some(&padded), scope()).is_err());
+    }
 }

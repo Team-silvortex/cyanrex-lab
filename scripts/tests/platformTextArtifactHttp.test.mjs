@@ -41,7 +41,11 @@ test("text Artifact HTTP reuses bounded transport and the two current-Session co
     /"cyanrex\.task-text"/, /"text\/plain"/, /2\s*\*\s*1024\s*\*\s*1024/]) assert.match(all, pattern);
   assert.match(all, /Arc\s*<\s*Semaphore\s*>/);
   assert.match(all, /Self::with_capacity\([\s\S]*?,\s*4\s*\)/);
-  assert.match(all, /1\s*\.\.=\s*16/);
+  assert.match(all, /config::validate\(origin, &\[max_in_flight\]\)\?;/);
+  assert.match(all, /admission: Arc::new\(Semaphore::new\(max_in_flight\)\)/);
+  assert.ok(all.indexOf("config::validate(origin, &[max_in_flight])?") < all.indexOf("Semaphore::new(max_in_flight)"));
+  const configuration = codeOnly(await read("engine/src/platform_http/config.rs"));
+  assert.match(configuration, /security::validate_origin\(origin\)\?;[\s\S]*capacities\s*\.iter\(\)\s*\.any\([\s\S]*!\(1\s*\.\.=\s*16\)\.contains\(/);
   const transport = codeOnly(await read("engine/src/platform_http/security.rs"));
   assert.match(transport, /MAX_REQUEST_BYTES:\s*usize\s*=\s*64\s*\*\s*1024/);
   assert.match(transport, /bounded_request_bytes\(request, empty, MAX_REQUEST_BYTES\)/);

@@ -27,15 +27,29 @@ fn canonical_query_is_order_independent_and_uses_only_trusted_scope() {
     assert_eq!(selected.download.expected_file.workspace(), scope());
     assert_eq!(selected.download.expected_file.byte_length(), 17);
     assert_eq!(selected.chunk_index, 0);
-    let reversed = QUERY.split('&').rev().collect::<Vec<_>>().join("&");
-    let other = parse(&reversed);
-    assert_eq!(other.download.grant_id, selected.download.grant_id);
-    assert_eq!(other.download.upload_id, selected.download.upload_id);
-    assert_eq!(
-        other.download.expected_file,
-        selected.download.expected_file
-    );
-    assert_eq!(other.chunk_index, selected.chunk_index);
+    fn every_order(parts: &mut [&str], start: usize, checked: &mut usize) {
+        if start == parts.len() {
+            let other = parse(&parts.join("&"));
+            let selected = parse(QUERY);
+            assert_eq!(other.download.grant_id, selected.download.grant_id);
+            assert_eq!(other.download.upload_id, selected.download.upload_id);
+            assert_eq!(
+                other.download.expected_file,
+                selected.download.expected_file
+            );
+            assert_eq!(other.chunk_index, selected.chunk_index);
+            *checked += 1;
+            return;
+        }
+        for index in start..parts.len() {
+            parts.swap(start, index);
+            every_order(parts, start + 1, checked);
+            parts.swap(start, index);
+        }
+    }
+    let mut checked = 0;
+    every_order(&mut QUERY.split('&').collect::<Vec<_>>(), 0, &mut checked);
+    assert_eq!(checked, 5_040);
 }
 
 #[test]
@@ -53,6 +67,19 @@ fn every_field_is_required_and_duplicates_unknowns_or_empty_pairs_fail_closed() 
         assert!(chunk_request(Some(&missing), scope()).is_err(), "{missing}");
         let duplicate = format!("{QUERY}&{}", parts[omitted]);
         assert!(chunk_request(Some(&duplicate), scope()).is_err());
+        let (key, _) = parts[omitted].split_once('=').unwrap();
+        let different = match key {
+            "byte_length" => "18".to_owned(),
+            "chunk_index" => "1".to_owned(),
+            "sha256" => "b".repeat(64),
+            _ => "00000000-0000-4000-8000-0000000000ff".to_owned(),
+        };
+        for conflicting in [
+            format!("{QUERY}&{key}={different}"),
+            format!("{key}={different}&{QUERY}"),
+        ] {
+            assert!(chunk_request(Some(&conflicting), scope()).is_err());
+        }
     }
     for bad in [
         format!("{QUERY}&owner=someone"),
@@ -90,6 +117,11 @@ fn raw_query_rejects_encoded_plus_noncanonical_uuid_and_digest_aliases() {
     }
     for bad in [
         QUERY.replace("grant_id=", "%67rant_id="),
+        QUERY.replace("grant_id=", "Grant_id="),
+        QUERY.replace("grant_id=", "grаnt_id="), // Cyrillic а is not the ASCII key.
+        QUERY.replace("&upload_id=", "%26upload_id="),
+        QUERY.replace("byte_length=17", "byte_length%3D17"),
+        QUERY.replace("&upload_id=", ";upload_id="),
         QUERY.replace("chunk_index=0", "chunk_index=%30"),
         QUERY.replace("chunk_index=0", "chunk_index=+0"),
         QUERY.replace(&"a".repeat(64), &"A".repeat(64)),
@@ -156,8 +188,15 @@ fn canonical_decimal_geometry_limits_and_empty_digest_are_checked_before_dispatc
 
 #[test]
 fn raw_query_byte_budget_does_not_allocate_or_decode_unbounded_input() {
-    let oversized = format!("{QUERY}&{}", "x".repeat(MAX_QUERY_BYTES + 1));
-    assert!(chunk_request(Some(&oversized), scope()).is_err());
+    // Canonical selectors are shorter than 512 bytes. Padding the digest reaches the exact
+    // raw boundaries but is semantically invalid, so this does not prove acceptance at 512.
+    for length in [512, 513] {
+        let padded = QUERY.replace(&"a".repeat(64), &"a".repeat(64 + length - QUERY.len()));
+        assert_eq!(padded.len(), length);
+        assert!(chunk_request(Some(&padded), scope()).is_err());
+    }
+    let manifest_only = QUERY.strip_suffix("&chunk_index=0").unwrap();
+    assert!(chunk_request(Some(manifest_only), scope()).is_err());
     let non_ascii = QUERY.replace("chunk_index=0", "chunk_index=０");
     assert!(chunk_request(Some(&non_ascii), scope()).is_err());
 }

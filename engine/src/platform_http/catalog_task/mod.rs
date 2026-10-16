@@ -3,7 +3,7 @@
 mod contract;
 mod handlers;
 
-use super::{security, TaskContentHttpConfigError};
+use super::{config, security, TaskContentHttpConfigError};
 use crate::services::auth_service::durable_source::{
     DurableAuthSource, SessionCatalogTaskContentWorkspace,
 };
@@ -36,10 +36,7 @@ impl CatalogTaskContentHttpState {
         origin: &str,
         max_in_flight: usize,
     ) -> Result<Self, TaskContentHttpConfigError> {
-        security::validate_origin(origin)?;
-        if !(1..=16).contains(&max_in_flight) {
-            return Err(TaskContentHttpConfigError::InvalidCapacity);
-        }
+        config::validate(origin, &[max_in_flight])?;
         Ok(Self {
             source,
             workspace,

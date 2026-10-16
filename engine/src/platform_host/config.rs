@@ -1,7 +1,7 @@
 use super::{PlatformHostPreflightError, Result};
 use crate::{
     models::collaboration::WorkspaceRef,
-    platform_http::validate_platform_origin,
+    platform_origin,
     services::auth_service::durable_source::{valid_platform_namespace, SessionStockLimits},
 };
 
@@ -112,7 +112,7 @@ impl PlatformHostPreflightConfig {
         target: PlatformDatabaseTarget,
         limits: SessionStockLimits,
     ) -> Result<Self> {
-        validate_platform_origin(origin).map_err(|_| PlatformHostPreflightError::InvalidOrigin)?;
+        platform_origin::validate(origin).map_err(|_| PlatformHostPreflightError::InvalidOrigin)?;
         Ok(Self {
             origin: origin.to_owned(),
             scope,

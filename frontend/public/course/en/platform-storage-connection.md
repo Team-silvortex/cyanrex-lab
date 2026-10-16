@@ -69,8 +69,10 @@ defaults, pool, listener, issuer, CLI mode or configuration format is added.
 
 This Unix library does not prepare a process. A trusted host must separately apply the
 [Linux process gate](platform-process-startup.md) before secrets, workers and connections.
-Composition with the resource adapters' pools, platform routes, secure Session issuance and browser
-saving remains separate; no teaching Engine is constructed or switched.
+A 2026-10-16 Unreleased [existing-Session adapter](platform-session-connection.md) now consumes this
+connector without a pool and rechecks its original catalog/markers inside query/logout transactions.
+Resource adapters, normal platform startup, secure Session issuance and browser saving remain
+separate; no teaching Engine is constructed or switched.
 
 ## Verification
 

@@ -1,5 +1,13 @@
 # Current platform feature and module network
 
+**2026-10-16, included in 0.6.2:** the [bound Session path](platform-session-connection.md) is
+retained storage → one fresh connection → original catalog/markers and Source pins in one business
+transaction → fresh Session/absence read → confirmed commit → explicit HTTP projection. It has no
+pool fallback, issuer or normal-app mounting; Task/Artifact resource composition remains separate.
+
+[Format 3 inspection](platform-marker-expectation.md) separately follows trusted catalog/marker
+declaration → one fresh connection → all identities before marker rows → close/discard, not host startup.
+
 For a concise source-responsibility and live/prepared boundary view, start at the
 [current architecture map](architecture-map.md). This page retains the detailed feature edges.
 

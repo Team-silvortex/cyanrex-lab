@@ -1,5 +1,9 @@
 # Explicit platform catalog identity
 
+A **2026-10-16 Unreleased** [marker declaration](platform-marker-expectation.md) can consume this
+complete catalog declaration and bind all five relation OIDs/owners before any marker-row read.
+Private format 3 requires both declarations; the original format 2 diagnostic remains compatible.
+
 Included in source **0.6.1** on **2026-10-15**; see [release validation](../../reports/releases/0.6.1/README.md).
 The implementation-stage wording below keeps its original scope; source inclusion is not deployment acceptance.
 

@@ -21,7 +21,10 @@ test("distribution accepts one opaque source workspace and independent bounded c
   assert.match(s, /pub fn new\(\s*source: DurableAuthSource,\s*workspace: SessionFileChunkReadWorkspace,\s*origin: &str,?\s*\)/);
   assert.match(s, /pub fn with_capacities\([\s\S]*?manifest_capacity: usize,\s*chunk_capacity: usize/);
   for (const phrase of ["FileDistributionHttpConfigError", "InvalidOrigin", "InvalidCapacity", "InvalidWorkspace", "origin, 4, 4", "manifests: FileDownloadManifestHttpState", "chunks: FileChunkReadHttpState"]) assert.ok(s.includes(phrase), phrase);
-  ordered(s.slice(s.indexOf("pub fn with_capacities(")), ["security::validate_origin(origin)?", "1..=16", ".manifest_workspace_for(&source)", "FileDownloadManifestHttpState::with_capacity", "source.clone()", "FileChunkReadHttpState::with_capacity(source, workspace, origin, chunk_capacity)"]);
+  const configuration = code(await read(`${dir}config.rs`));
+  ordered(configuration.slice(configuration.indexOf("security::validate_origin(origin)?")), ["security::validate_origin(origin)?", "capacities", ".iter()", ".any(", "!(1..=16).contains(", "TaskContentHttpConfigError::InvalidCapacity"]);
+  ordered(s.slice(s.indexOf("pub fn with_capacities(")), ["config::validate(origin, &[manifest_capacity, chunk_capacity])?", ".manifest_workspace_for(&source)", "FileDownloadManifestHttpState::with_capacity", "source.clone()", "FileChunkReadHttpState::with_capacity(source, workspace, origin, chunk_capacity)"]);
+  assert.match(s, /FileDownloadManifestHttpState::with_capacity\(\s*source\.clone\(\),\s*manifest_workspace,\s*origin,\s*manifest_capacity,?\s*\)/);
   assert.doesNotMatch(s, /Serialize|Deserialize|pub (?:manifests|chunks):|pub fn (?:source|workspace|router|manifest)|SessionBind|install_empty|\.begin\(|\.connect\(|std::(?:fs|net|env)|tokio::spawn|Semaphore::new/);
   const exports = await read(`${dir}mod.rs`);
   assert.match(exports, /#\[cfg\(unix\)\]\s*mod file_distribution;/);

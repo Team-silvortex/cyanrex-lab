@@ -20,9 +20,12 @@ test("selected text files use bounded preflight and one accepted whole-draft con
   const workspace = await read("frontend/src/features/tasks/TaskDraftWorkspace.tsx");
   assert.match(workspace, /data-testid="task-text-import"[\s\S]*?\bmultiple\b/);
   assert.ok(workspace.includes('data-testid="task-text-import-open"'));
-  const start = workspace.indexOf("const importFiles ="), end = workspace.indexOf("const exportDraft =", start);
+  assert.match(workspace, /useTaskDraftController\s*\(\s*t\s*\)/);
+  assert.doesNotMatch(code(workspace), /\b(?:importTextFiles|preflightTextFiles|commit|setDraft|draftRef|selectedRef)\b/);
+  const controller = await read("frontend/src/features/tasks/useTaskDraftController.ts");
+  const start = controller.indexOf("const importFiles ="), end = controller.indexOf("const exportDraft =", start);
   assert.ok(start >= 0 && end > start);
-  const flow = workspace.slice(start, end);
+  const flow = controller.slice(start, end);
   assert.ok(flow.indexOf("preflightTextFiles") < flow.indexOf("safety.request"));
   assert.ok(flow.indexOf("safety.request") < flow.indexOf("await importTextFiles"));
   assert.equal((flow.match(/commit\(next\)/g) || []).length, 1);
@@ -35,7 +38,9 @@ test("text-file import translations retain all four locales and explicit local-o
   const messages = await read("frontend/src/i18n/locales/taskDraft.ts");
   for (const key of ["importFiles", "importFilesConfirm", "filesAdded", "selectedFiles", "importReadFailed"]) assert.equal((messages.match(new RegExp(`\\b${key}:`, "g")) || []).length, 4, key);
   const workspace = await read("frontend/src/features/tasks/TaskDraftWorkspace.tsx");
-  for (const phrase of ["taskDraft.importFiles", "taskDraft.importFilesConfirm", "taskDraft.filesAdded", "dangerous: false"]) assert.ok(workspace.includes(phrase), phrase);
+  const controller = await read("frontend/src/features/tasks/useTaskDraftController.ts");
+  for (const phrase of ["taskDraft.importFiles", "taskDraft.importFilesConfirm", "taskDraft.filesAdded", "dangerous: false"]) assert.ok(controller.includes(phrase), phrase);
+  assert.ok(workspace.includes("taskDraft.importFiles"));
   assert.match(workspace, /notice === "taskDraft\.filesAdded"/);
 });
 

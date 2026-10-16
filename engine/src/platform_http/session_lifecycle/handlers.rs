@@ -44,7 +44,7 @@ struct LogoutResponse {
 }
 
 fn source_error(_: DurableAuthError) -> HttpError {
-    // A Source failure establishes neither rollback nor an absent Session. Keep all storage,
+    // A backend failure establishes neither rollback nor an absent Session. Keep all storage,
     // schema and authority diagnostics private, without a cookie-clearing fallback.
     HttpError::dispatched(StatusCode::SERVICE_UNAVAILABLE, "service_unavailable")
 }
@@ -96,10 +96,10 @@ async fn handle(
     security::request_bytes(request, true).await?;
     match selected {
         Endpoint::Session => {
-            // One Source-owned operation verifies the original relations, exact account
+            // One selected backend operation verifies the original relations, exact account
             // incarnation and fresh expiry, and confirms its read transaction before return.
             let session = state
-                .source
+                .backend
                 .validate_session(&token)
                 .await
                 .map_err(source_error)?;
@@ -118,7 +118,7 @@ async fn handle(
         Endpoint::Logout => {
             // Do not pre-validate: canonical unknown/expired tokens may confirm original-source
             // absence. Only this operation's confirmed success authorizes browser cookie removal.
-            state.source.logout(&token).await.map_err(source_error)?;
+            state.backend.logout(&token).await.map_err(source_error)?;
             let mut response = Json(LogoutResponse {
                 schema_version: 1,
                 ok: true,

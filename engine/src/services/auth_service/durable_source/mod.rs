@@ -66,6 +66,7 @@ mod session_cleanup;
 mod session_commands;
 mod session_source;
 mod session_stock;
+pub(crate) mod session_transaction;
 mod sessions;
 mod source_relations;
 mod task_commands;
@@ -224,7 +225,7 @@ fn confirmed_one(rows: u64) -> Result<()> {
         Err(DurableAuthError::StorageUnavailable)
     }
 }
-fn valid_token(token: &str) -> bool {
+pub(crate) fn valid_token(token: &str) -> bool {
     token.len() == 36
         && Uuid::parse_str(token).is_ok_and(|id| !id.is_nil() && id.to_string() == token)
 }
@@ -251,6 +252,13 @@ impl DurableAuthSource {
         Ok(tx)
     }
     async fn lock_source(&self, connection: &mut PgConnection, writer: bool) -> Result<()> {
+        Self::lock_source_for(self.authority_id, connection, writer).await
+    }
+    async fn lock_source_for(
+        authority_id: AuthorityId,
+        connection: &mut PgConnection,
+        writer: bool,
+    ) -> Result<()> {
         // Coherent account/session snapshots, including absent rows, across independent pools.
         let query = if writer {
             "SELECT version, authority_id FROM collaboration_auth_source_schema WHERE singleton FOR UPDATE"
@@ -261,7 +269,7 @@ impl DurableAuthSource {
         if row.try_get::<i32, _>("version")? != SOURCE_SCHEMA_VERSION {
             return Err(DurableAuthError::UnsupportedSchema);
         }
-        if AuthorityId::try_from(row.try_get::<Uuid, _>("authority_id")?)? != self.authority_id {
+        if AuthorityId::try_from(row.try_get::<Uuid, _>("authority_id")?)? != authority_id {
             return Err(DurableAuthError::SourceMismatch);
         }
         Ok(())

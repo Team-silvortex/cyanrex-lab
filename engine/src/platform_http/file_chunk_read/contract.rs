@@ -3,64 +3,42 @@ use crate::{
         FileGrantId, FileId, FileUploadId, FileVersionId, FileVersionRef, Sha256Digest,
         WorkspaceRef, MAX_FILE_TRANSFER_BYTES, MAX_FILE_TRANSFER_CHUNKS,
     },
-    platform_http::errors::HttpError,
+    platform_http::{errors::HttpError, file_selectors},
     services::auth_service::durable_source::{
         SessionFileChunkRead, SessionFileChunkReadRequest, SessionFileDownloadRequest,
     },
 };
 use axum::http::{header, HeaderMap, HeaderValue, StatusCode};
 
-const MAX_QUERY_BYTES: usize = 512;
-
 /// Raw canonical selectors only. Scope and owner attribution never come from the request.
 pub(super) fn chunk_request(
     query: Option<&str>,
     scope: WorkspaceRef,
 ) -> Result<SessionFileChunkReadRequest, HttpError> {
-    let query = query.ok_or_else(HttpError::invalid_request)?;
-    if query.is_empty() || query.len() > MAX_QUERY_BYTES || query.contains(['%', '+']) {
-        return Err(HttpError::invalid_request());
-    }
-    let mut fields = [None; 7];
-    for pair in query.split('&') {
-        let (name, value) = pair
-            .split_once('=')
-            .ok_or_else(HttpError::invalid_request)?;
-        if value.is_empty() || value.contains('=') {
-            return Err(HttpError::invalid_request());
-        }
-        let index = match name {
-            "grant_id" => 0,
-            "upload_id" => 1,
-            "file_id" => 2,
-            "version_id" => 3,
-            "byte_length" => 4,
-            "sha256" => 5,
-            "chunk_index" => 6,
-            _ => return Err(HttpError::invalid_request()),
-        };
-        if fields[index].replace(value).is_some() {
-            return Err(HttpError::invalid_request());
-        }
-    }
-    let field = |index: usize| fields[index].ok_or_else(HttpError::invalid_request);
-    let grant_id: FileGrantId = field(0)?
+    let [grant_id, upload_id, file_id, version_id, byte_length, sha256, chunk_index] =
+        file_selectors::parse(
+            query,
+            [
+                "grant_id",
+                "upload_id",
+                "file_id",
+                "version_id",
+                "byte_length",
+                "sha256",
+                "chunk_index",
+            ],
+        )?;
+    let grant_id: FileGrantId = grant_id.parse().map_err(|_| HttpError::invalid_request())?;
+    let upload_id: FileUploadId = upload_id
         .parse()
         .map_err(|_| HttpError::invalid_request())?;
-    let upload_id: FileUploadId = field(1)?
+    let file_id: FileId = file_id.parse().map_err(|_| HttpError::invalid_request())?;
+    let version_id: FileVersionId = version_id
         .parse()
         .map_err(|_| HttpError::invalid_request())?;
-    let file_id: FileId = field(2)?
-        .parse()
-        .map_err(|_| HttpError::invalid_request())?;
-    let version_id: FileVersionId = field(3)?
-        .parse()
-        .map_err(|_| HttpError::invalid_request())?;
-    let byte_length = decimal(field(4)?)?;
-    let sha256: Sha256Digest = field(5)?
-        .parse()
-        .map_err(|_| HttpError::invalid_request())?;
-    let chunk_index = decimal(field(6)?)?;
+    let byte_length = file_selectors::decimal(byte_length)?;
+    let sha256: Sha256Digest = sha256.parse().map_err(|_| HttpError::invalid_request())?;
+    let chunk_index = file_selectors::decimal(chunk_index)?;
     if byte_length > MAX_FILE_TRANSFER_BYTES || chunk_index >= MAX_FILE_TRANSFER_CHUNKS as u64 {
         return Err(HttpError::invalid_request());
     }
@@ -82,16 +60,6 @@ pub(super) fn chunk_request(
         },
         chunk_index: u32::try_from(chunk_index).map_err(|_| HttpError::invalid_request())?,
     })
-}
-
-fn decimal(value: &str) -> Result<u64, HttpError> {
-    if value.is_empty()
-        || (value.len() > 1 && value.starts_with('0'))
-        || !value.bytes().all(|byte| byte.is_ascii_digit())
-    {
-        return Err(HttpError::invalid_request());
-    }
-    value.parse().map_err(|_| HttpError::invalid_request())
 }
 
 /// All binary metadata is selected by the Source result, never reflected from query selectors.

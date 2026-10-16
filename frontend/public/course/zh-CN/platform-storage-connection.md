@@ -56,8 +56,10 @@
 不增加 SQLx 选项、环境默认值、连接池、监听、签发、CLI 模式或配置格式。
 
 此 Unix 库不准备进程；可信宿主仍须在秘密、工作线程及连接之前另行应用
-[Linux 进程门禁](platform-process-startup.md)。资源适配器连接池、平台路由、安全 Session 签发及
-浏览器保存的组合仍须独立推进；不构造或切换教学 Engine。
+[Linux 进程门禁](platform-process-startup.md)。2026-10-16 未发布的
+[已有会话适配](platform-session-connection.md)现无连接池地消费此连接器，在查询／退出事务内
+复验原目录／标记。资源适配、正常平台启动、安全 Session 签发及浏览器保存仍须独立推进，
+不构造或切换教学 Engine。
 
 ## 验证
 

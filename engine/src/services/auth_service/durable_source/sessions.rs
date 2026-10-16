@@ -1,4 +1,5 @@
 use super::session_source::SessionSourcePin;
+use super::session_transaction::{PreparedSessionLogout, PreparedSessionRead};
 use super::*;
 
 impl DurableAuthSource {
@@ -119,32 +120,7 @@ impl DurableAuthSource {
         connection: &mut PgConnection,
         digest: &str,
     ) -> Result<Option<DurableSession>> {
-        // SQLx's binary chrono decoder can panic on PostgreSQL infinity or its wider finite
-        // upper range. Project invalid values as NULL; never hide a corrupt Session as absent.
-        let row = sqlx::query("SELECT s.username, s.account_id,
-            CASE WHEN isfinite(s.expires_at) AND s.expires_at <= $2 THEN s.expires_at END AS expires_at FROM sessions s
-            JOIN users u ON u.username = s.username AND u.account_id = s.account_id WHERE s.token = $1 FOR SHARE OF s, u")
-            .bind(digest).bind(DateTime::<Utc>::MAX_UTC).fetch_optional(&mut *connection).await?;
-        let Some(row) = row else {
-            return Ok(None);
-        };
-        let username = row.try_get::<String, _>("username")?.parse()?;
-        let account_id = LegacyAccountId::try_from(row.try_get::<Uuid, _>("account_id")?)?;
-        let expires_at = row
-            .try_get::<Option<DateTime<Utc>>, _>("expires_at")
-            .map_err(|_| DurableAuthError::InvalidRecord)?
-            .ok_or(DurableAuthError::InvalidRecord)?;
-        if expires_at <= Self::now(connection).await? {
-            return Ok(None);
-        }
-        Ok(Some(DurableSession {
-            account: DurableAccountRef {
-                authority_id: self.authority_id,
-                username,
-                account_id,
-            },
-            expires_at,
-        }))
+        super::session_transaction::record(self.authority_id, connection, digest).await
     }
 
     /// Fresh, read-only authentication snapshot; does not authorize a later policy/identity write.
@@ -155,15 +131,8 @@ impl DurableAuthSource {
         }
         bounded(async {
             let mut tx = self.transaction().await?;
-            let pin = SessionSourcePin::capture(self, &mut tx, false).await?;
-            // Lock the observed Session/account, then recheck the source before the final fresh
-            // expiry read. Guard waits must never make an earlier validity result reusable.
-            self.session_record(&mut tx, &hash_session_token(token))
-                .await?;
-            pin.verify(self, &mut tx, false).await?;
-            let session = self
-                .session_record(&mut tx, &hash_session_token(token))
-                .await?;
+            let prepared = PreparedSessionRead::prepare(self.authority_id, &mut tx, token).await?;
+            let session = prepared.finish(&mut tx).await?;
             tx.commit().await?;
             Ok(session)
         })
@@ -177,25 +146,9 @@ impl DurableAuthSource {
         }
         bounded(async {
             let mut tx = self.transaction().await?;
-            let pin = SessionSourcePin::capture(self, &mut tx, true).await?;
-            let digest = hash_session_token(token);
-            let deleted = sqlx::query("DELETE FROM sessions WHERE token = $1")
-                .bind(&digest)
-                .execute(&mut *tx)
-                .await?;
-            if deleted.rows_affected() > 1 {
-                return Err(DurableAuthError::StorageUnavailable);
-            }
-            // A DELETE trigger may suppress deletion and redirect unqualified reads to an empty
-            // shadow. Prove we still read the original source before checking absence.
-            pin.verify(self, &mut tx, true).await?;
-            let remaining = sqlx::query("SELECT token FROM sessions WHERE token = $1 FOR SHARE")
-                .bind(&digest)
-                .fetch_optional(&mut *tx)
-                .await?;
-            if remaining.is_some() {
-                return Err(DurableAuthError::StorageUnavailable);
-            }
+            let prepared =
+                PreparedSessionLogout::prepare(self.authority_id, &mut tx, token).await?;
+            prepared.finish(&mut tx).await?;
             tx.commit().await?;
             Ok(())
         })

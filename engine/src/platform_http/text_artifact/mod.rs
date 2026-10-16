@@ -1,5 +1,5 @@
 //! Separate, unmounted text publication transport; no installer, issuer or Task/journal writer.
-use super::{security, TaskContentHttpConfigError};
+use super::{config, security, TaskContentHttpConfigError};
 use crate::services::auth_service::durable_source::{DurableAuthSource, SessionArtifactWorkspace};
 use axum::{middleware, routing::any, Router};
 use std::sync::Arc;
@@ -32,10 +32,7 @@ impl TextArtifactHttpState {
         origin: &str,
         max_in_flight: usize,
     ) -> Result<Self, TaskContentHttpConfigError> {
-        security::validate_origin(origin)?;
-        if !(1..=16).contains(&max_in_flight) {
-            return Err(TaskContentHttpConfigError::InvalidCapacity);
-        }
+        config::validate(origin, &[max_in_flight])?;
         Ok(Self {
             source,
             workspace,

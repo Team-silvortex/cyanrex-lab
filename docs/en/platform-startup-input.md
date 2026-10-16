@@ -1,5 +1,9 @@
 # Private platform startup configuration check
 
+The **2026-10-16 Unreleased** [format 3](platform-marker-expectation.md) requires both complete
+catalog and five-marker identity declarations. Formats 1/2 retain their original diagnostic meaning;
+neither may include `marker_identity`, even null. The private-file gates and 16 KiB limit are unchanged.
+
 Included in source **0.6.1** on **2026-10-15**; see [release validation](../../reports/releases/0.6.1/README.md).
 The implementation-stage wording below keeps its original scope; source inclusion is not deployment acceptance.
 
@@ -97,6 +101,15 @@ Version 1 forbids that field even when null; version 2 never discovers or fills 
 All new records retain strict map-only, duplicate/unknown-field and 16 KiB checks.
 `check-config` validates the declaration only; it does not authenticate or observe those objects.
 
+## Internal mode ownership
+
+The 2026-10-16 internal refactor centralizes strict missing/present record decoding and selects
+exactly one private storage-check mode: version 1 current diagnostics, version 2 catalog declaration,
+or version 3 catalog plus marker declaration. It does not add JSON fields, relax rejection rules or
+perform I/O during parsing. Declaration records construct typed expectations; only the selector owns
+version/presence rules. The CLI and library retain separate runtime/inspection/close responsibilities;
+see [platform preparation ownership](architecture-map.md#platform-preparation-ownership).
+
 ## Verification
 
 ```bash
@@ -113,6 +126,6 @@ before final assertions and preserve parent identity, flag and environment. Thes
 tests, not database, TLS, deployed-LAN, Session issuance or browser-save acceptance.
 
 A later separate [check-storage command](platform-storage-check.md) consumes the same validated
-version 1 or version 2 input for one read-only root/database diagnostic. Version 2 compares the explicit
-catalog declaration first. `check-config` still discards it without
+version 1, 2 or 3 input for one read-only root/database diagnostic. Version 2 compares the explicit
+catalog declaration first; version 3 additionally requires the original five marker identities before row reads. `check-config` still discards it without
 opening those targets; neither command creates a retained host baseline or starts a host.

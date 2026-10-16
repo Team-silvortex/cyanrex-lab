@@ -6,7 +6,7 @@ use axum::{
     middleware::Next,
     response::Response,
 };
-use std::{future::poll_fn, net::IpAddr, pin::Pin, time::Duration};
+use std::{future::poll_fn, pin::Pin, time::Duration};
 use uuid::Uuid;
 
 const SESSION_COOKIE: &str = "cyanrex_platform_session";
@@ -14,35 +14,7 @@ const MAX_COOKIE_BYTES: usize = 8 * 1024;
 const MAX_REQUEST_BYTES: usize = 64 * 1024;
 
 pub(crate) fn validate_origin(value: &str) -> Result<(), TaskContentHttpConfigError> {
-    let invalid = TaskContentHttpConfigError::InvalidOrigin;
-    if value.len() > 2048 {
-        return Err(invalid);
-    }
-    let url = reqwest::Url::parse(value).map_err(|_| invalid)?;
-    if url.origin().ascii_serialization() != value
-        || !url.username().is_empty()
-        || url.password().is_some()
-        || url.path() != "/"
-        || url.query().is_some()
-        || url.fragment().is_some()
-    {
-        return Err(invalid);
-    }
-    let host = url.host_str().ok_or(invalid)?;
-    if host.contains('*') {
-        return Err(invalid);
-    }
-    let loopback = host == "localhost"
-        || host
-            .trim_start_matches('[')
-            .trim_end_matches(']')
-            .parse::<IpAddr>()
-            .is_ok_and(|ip| ip.is_loopback());
-    if url.scheme() == "https" || (url.scheme() == "http" && loopback) {
-        Ok(())
-    } else {
-        Err(invalid)
-    }
+    crate::platform_origin::validate(value).map_err(|_| TaskContentHttpConfigError::InvalidOrigin)
 }
 
 fn single<'a>(headers: &'a HeaderMap, name: &str) -> Option<&'a HeaderValue> {

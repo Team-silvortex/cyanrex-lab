@@ -5,6 +5,7 @@ import test from "node:test";
 const root = new URL("../../", import.meta.url);
 const read = path => readFile(new URL(path, root), "utf8");
 const codeOnly = source => source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
+const compact = source => source.replace(/\s+/g, "");
 
 test("trusted catalog declarations remain distinct from genuine observations and bind all identities", async () => {
   const code = codeOnly(await read("engine/src/platform_host/catalog/expectation.rs"));
@@ -33,25 +34,39 @@ test("single-attempt connections and close-bounded diagnostics check immutable d
   const storage = codeOnly(await read("engine/src/platform_host/storage_check.rs"));
   assert.ok(storage.indexOf("!expected.config_matches(config)") < storage.indexOf("let options = options"));
   assert.equal([...storage.matchAll(/dial\(&options\)/g)].length, 1);
-  assert.ok(storage.includes("inspect_platform_database_expected(config, &mut connection, expected).await?"));
+  const inspect = storage.split("async fn inspect(")[1]?.split("\n}\n")[0] ?? "";
+  const declared = inspect.split("Self::Catalog(expected) =>")[1]?.split("Self::Markers(expected) =>")[0] ?? "";
+  assert.ok(compact(declared).includes("inspect_platform_database_expected(config,connection,expected).await?"));
+  assert.doesNotMatch(declared, /inspect_platform_database\(|\.or_else\(/);
   assert.ok(storage.includes("inspected.and(closed)"));
   const cli = codeOnly(await read("engine/src/bin/cyanrex-platform/storage_check.rs"));
-  for (const value of ["input.catalog_expectation.as_ref()", "check_platform_database_storage_expected(",
+  for (const value of ["match &input.storage_expectation", "StorageExpectation::Catalog(expected)", "check_platform_database_storage_expected(",
     "check_platform_database_storage(", "drop(runtime)", "inspected.and(root).and(process)"])
     assert.ok(cli.includes(value), value);
+  const selected = cli.split("StorageExpectation::Catalog(expected) =>")[1]?.split("StorageExpectation::Current =>")[0] ?? "";
+  assert.ok(selected.includes("check_platform_database_storage_expected("));
+  assert.doesNotMatch(selected, /check_platform_database_storage\(|\.or_else\(/);
 });
 
 test("strict private version two input forwards duplicate keys and never infers omitted catalog identities", async () => {
   const config = codeOnly(await read("engine/src/bin/cyanrex-platform/config.rs"));
   const expected = codeOnly(await read("engine/src/bin/cyanrex-platform/config/expected_catalog.rs"));
-  assert.ok(config.includes("input.catalog_identity.bind(input.format_version, &config)?"));
-  for (const value of ["(1, Self::Absent)", "(2, Self::Present(MapOnly(identity)))", "_ => Err(())",
-    "MapOnly::<Identity>::deserialize(deserializer)", "PlatformCatalogExpectation::new(",
-    "identity.role_oid", "identity.database_owner_oid", "identity.source.0.oid", "identity.task.0.oid",
-    "identity.artifacts.0.oid", "identity.source.0.owner_oid", "identity.task.0.owner_oid", "identity.artifacts.0.owner_oid"])
+  const presence = codeOnly(await read("engine/src/bin/cyanrex-platform/config/presence.rs"));
+  const selector = codeOnly(await read("engine/src/bin/cyanrex-platform/config/storage_identity.rs"));
+  assert.match(config, /catalog_identity\s*:\s*Presence<CatalogIdentity>/);
+  assert.ok(compact(config).includes("StorageExpectation::bind(input.format_version,input.catalog_identity,input.marker_identity,&config,)"));
+  for (const value of ["(1,Presence::Absent,Presence::Absent)=>Ok(Self::Current)",
+    "(2,Presence::Present(MapOnly(catalog)),Presence::Absent)=>", "catalog.bind(config).map(Self::Catalog)",
+    "(3,Presence::Present(MapOnly(catalog)),Presence::Present(MapOnly(markers)))=>",
+    "markers.bind(catalog.bind(config)?).map(Self::Markers)", "_=>Err(())"])
+    assert.ok(compact(selector).includes(value), value);
+  assert.ok(compact(presence).includes("MapOnly::<T>::deserialize(deserializer).map(Self::Present)"));
+  for (const value of ["PlatformCatalogExpectation::new(",
+    "self.role_oid", "self.database_owner_oid", "self.source.0.oid", "self.task.0.oid",
+    "self.artifacts.0.oid", "self.source.0.owner_oid", "self.task.0.owner_oid", "self.artifacts.0.owner_oid"])
     assert.ok(expected.includes(value), value);
   assert.equal([...expected.matchAll(/deny_unknown_fields/g)].length, 2);
-  assert.doesNotMatch(config + expected, /serde_json::Value|from_value|untagged|std::env|std::fs|ConnectOptions|inspect_platform|unwrap_or_default|Option<u32>/);
+  assert.doesNotMatch(config + expected + presence + selector, /serde_json::Value|from_value|untagged|std::env|std::fs|ConnectOptions|inspect_platform|unwrap_or_default|Option<u32>/);
 });
 
 test("four exact SQL selections and bilingual declaration guides remain connected to CI and course copies", async () => {

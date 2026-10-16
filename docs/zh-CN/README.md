@@ -9,13 +9,13 @@ Cyanrex 正从 eBPF 教学应用转向面向人类、AI Agent 与计算资源的
 继续可用；通用身份、内容、任务和审阅服务属于显式配置的准备层，任务 payload 编辑器目前只保存
 本地草稿。自主 AI 与通用 Run 编排尚未实现。
 
-本索引覆盖整个项目，不只覆盖首个教学领域。源码版本为 **0.6.1**（**2026-10-15**），新增显式 Linux
-进程／私有输入检查、目录声明、存储诊断与保留存储绑定的连接，并修正 Session 权限。
+本索引覆盖整个项目，不只覆盖首个教学领域。源码版本为 **0.6.2**（**2026-10-16**），新增绑定
+Session 操作、格式 3 标记身份及内部启动／HTTP／Task 控制器职责分离；保留 0.6.1 启动、存储与 Session 权限工作。
 0.6.0 的布局、独立 Session 生命周期与存量限制，以及原只读存储门槛继续保留。
 本地多文本创作、私人任务元数据索引及大文件准备层仍包含在内。
 此前任务解耦、C2-O–AA、Next.js 15.5.27、AI 宿主适配与安全边界保持不变。源码收录不接通通用
 浏览器保存、不切换在线认证、不迁移存储，也不验收部署。分日期的未发布说明保留原实施阶段、
-源码版本与验证范围，不是新鲜的 0.6.1 执行记录。
+源码版本与验证范围，不是新鲜的 0.6.2 执行记录。
 以下文档区分源码发布内容、现用运行能力和目标架构，
 模块存在或测试通过不表示已有在线部署。
 
@@ -73,6 +73,8 @@ Cyanrex 正从 eBPF 教学应用转向面向人类、AI Agent 与计算资源的
 | 在 Linux 进程门禁后检查私有启动配置 | [私有启动输入](platform-startup-input.md)；0.6.0 之后未发布，严格 JSON／文件检查，不连接或启动宿主 |
 | 从该私有输入执行一次只读存储诊断 | [存储检查](platform-storage-check.md)；0.6.0 之后未发布，实际根／目录／标记检查及关闭连接，不保留运行基线 |
 | 对保留的原目录、标记及根观察建立新连接 | [保留存储绑定的连接](platform-storage-connection.md)；0.6.0 之后未发布，调用方显式选定观察，不是连接池、当前授权或运行宿主 |
+| 经保留的平台存储查询或结束已有 Session | [绑定存储的会话连接](platform-session-connection.md)；0.6.2 已收录，同一事务核原存储／Source，不建连接池、不签发或挂载宿主 |
+| 首次检查前声明原目录及五标记身份 | [标记身份声明](platform-marker-expectation.md)；0.6.2 已收录，严格格式 3 诊断，不收编基线或启动宿主 |
 | 复核明确选出的原私有 Artifact 目录 | [Artifact 根预检](platform-artifact-root.md)；0.6.0 纯元数据观察，不是内容健康检查或运行能力交接 |
 | 将五项存储版本与已有作用域字段绑定到原目录 | [存储标记观察](platform-storage-markers.md)；0.6.0 标记准备层，不是完整 schema 兼容或权限健康检查 |
 | 审阅集中大文件分发和后续桌面互传 | [分发提案](large-file-distribution.md)、[流式核心](large-file-core.md)、[私有分块暂存](large-file-staging.md)、[上传意图与逻辑配额](large-file-upload-intent.md)、[本地回执](large-file-upload-staging.md)、[分块写前日志](large-file-chunk-journal.md)、[整文件字节观察](large-file-whole-verification.md)、[持久发布元数据](large-file-publication.md)、[Session 私有元数据](large-file-session-metadata.md)、[纯发布／接收契约](large-file-access-contract.md)；正常应用分发及桌面互传未接通 |

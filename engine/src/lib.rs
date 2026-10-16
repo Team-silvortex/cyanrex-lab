@@ -7,6 +7,8 @@ pub mod models;
 pub mod platform_host;
 #[cfg(unix)]
 pub mod platform_http;
+#[cfg(unix)]
+mod platform_origin;
 pub mod routes;
 pub mod services;
 mod sqlx_compat;

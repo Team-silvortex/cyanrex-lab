@@ -1,9 +1,10 @@
 # Project Status
 
+**2026-10-16, included in 0.6.2:** [bound Session connections](platform-session-connection.md) combine retained storage with query/logout and explicit HTTP state; [format 3 diagnostics](platform-marker-expectation.md) require original catalog/marker declarations before row reads. Neither starts a host/issuer or connects browser saving. Earlier snapshots below retain their dated scope.
+
 Snapshot date: **2026-10-13**. Source version: **0.5.9**, adding reviewed local multi-file text import, complete five-language UI including Korean, bilingual guides, architecture/error-boundary cleanup and Source/HTTPS test coverage. Private task indexing and explicit file delivery remain included but unmounted; normal-app distribution, server-backed task saving and resumption remain absent. Earlier task decoupling, AI host adapters and authentication protections remain in place.
 
-0.5.4 C2-T–W retains immutable intents, explicit journaled dispatch, private journal inspection and
-one-resource observation. The original C2-P path stays independent; metadata agreement is not a receipt,
+0.5.4 C2-T–W retains immutable intents, explicit journaled dispatch, private journal inspection and one-resource observation. The original C2-P path stays independent; metadata agreement is not a receipt,
 restart recovery or retry permission. 0.5.5 adds shared HTTP admission and separate C2-X/Y text/catalogue
 routers, both unmounted; C2-Z/AA independently publishes and observes a frozen catalogue draft without
 entering the manual checkpoint/journal workflow. Neither connects browser saving or automatic assessment.

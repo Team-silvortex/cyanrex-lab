@@ -1,20 +1,7 @@
-//! Version-gated strict declarations; absence is distinct from an explicitly supplied null.
+//! Strict catalog record and pure construction; version/presence selection has one owner.
 use super::MapOnly;
 use cyanrex_engine::platform_host::{PlatformCatalogExpectation, PlatformHostPreflightConfig};
-use serde::{Deserialize, Deserializer};
-
-#[derive(Default)]
-pub(super) enum ExpectedField {
-    #[default]
-    Absent,
-    Present(MapOnly<Identity>),
-}
-
-impl<'de> Deserialize<'de> for ExpectedField {
-    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        MapOnly::<Identity>::deserialize(deserializer).map(Self::Present)
-    }
-}
+use serde::Deserialize;
 
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -33,32 +20,22 @@ struct Namespace {
     owner_oid: u32,
 }
 
-impl ExpectedField {
+impl Identity {
     pub(super) fn bind(
         self,
-        version: u8,
         config: &PlatformHostPreflightConfig,
-    ) -> Result<Option<PlatformCatalogExpectation>, ()> {
-        match (version, self) {
-            (1, Self::Absent) => Ok(None),
-            (2, Self::Present(MapOnly(identity))) => PlatformCatalogExpectation::new(
-                config.clone(),
-                identity.role_oid,
-                identity.database_owner_oid,
-                [
-                    identity.source.0.oid,
-                    identity.task.0.oid,
-                    identity.artifacts.0.oid,
-                ],
-                [
-                    identity.source.0.owner_oid,
-                    identity.task.0.owner_oid,
-                    identity.artifacts.0.owner_oid,
-                ],
-            )
-            .map(Some)
-            .map_err(|_| ()),
-            _ => Err(()),
-        }
+    ) -> Result<PlatformCatalogExpectation, ()> {
+        PlatformCatalogExpectation::new(
+            config.clone(),
+            self.role_oid,
+            self.database_owner_oid,
+            [self.source.0.oid, self.task.0.oid, self.artifacts.0.oid],
+            [
+                self.source.0.owner_oid,
+                self.task.0.owner_oid,
+                self.artifacts.0.owner_oid,
+            ],
+        )
+        .map_err(|_| ())
     }
 }

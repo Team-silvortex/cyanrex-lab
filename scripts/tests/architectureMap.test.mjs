@@ -60,7 +60,9 @@ test("neutral metadata and local payload boundaries remain separate from teachin
   assert.match(await read("frontend/pages/editor.tsx"), /export \{ default \} from "\.\/tasks\/new"/);
   const draft = await read("frontend/src/features/tasks/TaskDraftWorkspace.tsx");
   assert.match(draft, /\.\.\/editor\/EditorWorkspace/);
-  assert.doesNotMatch(draft, /\bfetch\s*\(|requestPrivate|\/platform\/v1|createAgentBridge|runtimeRequest/);
+  assert.match(draft, /useTaskDraftController\s*\(\s*t\s*\)/);
+  for (const source of [draft, await read("frontend/src/features/tasks/useTaskDraftController.ts")])
+    assert.doesNotMatch(source, /\bfetch\s*\(|requestPrivate|\/platform\/v1|createAgentBridge|runtimeRequest/);
   assert.match(await read("sdk-js/src/agents/bridge.ts"), /approveMutation/);
 });
 

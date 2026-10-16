@@ -9,14 +9,14 @@ identity, content, task and review services are explicitly configured preparatio
 payload editor is local-only, and autonomous AI and general Run orchestration are not implemented.
 
 This index describes the whole project, not only its first teaching domain. The source version is
-**0.6.1** (**2026-10-15**), adding explicit Linux process/private-input checks, catalog declarations,
-storage diagnostics and retained storage bindings, plus the Session privilege correction.
+**0.6.2** (**2026-10-16**), adding bound Session operations, format 3 marker identities and internal
+startup/HTTP/Task-controller separation. The 0.6.1 startup, storage and Session privilege work remains.
 The 0.6.0 layouts, independent Session lifecycle/stock and original read-only storage gates remain.
 Local multi-file authoring, private task metadata indexing and large-file preparation remain included.
 Earlier task decoupling, C2-O–AA, Next.js 15.5.27, AI host adapters and security boundaries remain in place.
 Source inclusion does not connect generic browser saving, switch live authentication, migrate storage or
 validate a deployment. Dated `Unreleased` descriptions retain their original implementation stage,
-source versions and verification scope; they are not fresh 0.6.1 execution records.
+source versions and verification scope; they are not fresh 0.6.2 execution records.
 The documents distinguish source-release contents, live runtime capabilities
 and target architecture; a built module or passing test does not imply an online deployment.
 
@@ -85,6 +85,8 @@ without replacing the draft or connecting server saving (Unreleased after 0.5.8)
 | Check a private startup configuration after the Linux process gate | [Private startup input](platform-startup-input.md); Unreleased after 0.6.0, strict JSON and file checks without connecting or starting a host |
 | Run one read-only storage diagnostic from that private input | [Storage check](platform-storage-check.md); Unreleased after 0.6.0, actual root/catalog/marker checks and connection close, not a retained runtime baseline |
 | Open fresh connections against retained catalog, marker and root observations | [Retained storage connections](platform-storage-connection.md); Unreleased after 0.6.0, explicit caller-selected bindings, not a pool, current authorization or running host |
+| Query or end an existing Session through retained platform storage | [Bound Session connections](platform-session-connection.md); Included in 0.6.2, same-transaction original storage/Source guards, no pool, issuer or mounted host |
+| Declare original catalog and five-marker identities before the first inspection | [Marker identity declarations](platform-marker-expectation.md); Included in 0.6.2, strict format 3 diagnostics, no baseline adoption or host startup |
 | Recheck an explicitly selected original private Artifact directory | [Artifact root preflight](platform-artifact-root.md); 0.6.0 metadata-only observation, not content health or runtime handoff |
 | Bind five storage version declarations and their scope to an original catalog | [Storage marker observation](platform-storage-markers.md); 0.6.0 marker-only preparation, not complete schema compatibility or authority health |
 | Review centralized large-file distribution and later desktop transfers | [Distribution proposal](large-file-distribution.md), [streaming core](large-file-core.md), [private chunk staging](large-file-staging.md), [upload intent and logical quotas](large-file-upload-intent.md), [local receipts](large-file-upload-staging.md), [write-ahead chunk journal](large-file-chunk-journal.md), [whole-byte observation](large-file-whole-verification.md), [persistent publication metadata](large-file-publication.md), [Session private metadata](large-file-session-metadata.md), [pure publisher/recipient contracts](large-file-access-contract.md); normal-app distribution and desktop transfers not connected |

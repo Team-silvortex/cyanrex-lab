@@ -34,7 +34,11 @@ test("catalogue HTTP is trusted configuration with strict streaming exact-refere
   assert.match(fields(state, "CatalogTaskContentHttpState"), /workspace\s*:\s*SessionCatalogTaskContentWorkspace/);
   assert.doesNotMatch(fields(state, "CatalogTaskContentHttpState"), /\bpub\b/);
   assert.match(state, /pub\s+fn\s+build_catalog_task_content_router/);
-  assert.match(state, /1\.\.=16/);
+  assert.match(state, /config::validate\(origin, &\[max_in_flight\]\)\?;/);
+  assert.match(state, /admission: Arc::new\(Semaphore::new\(max_in_flight\)\)/);
+  assert.ok(state.indexOf("config::validate(origin, &[max_in_flight])?") < state.indexOf("Semaphore::new(max_in_flight)"));
+  const configuration = codeOnly(await read("engine/src/platform_http/config.rs"));
+  assert.match(configuration, /security::validate_origin\(origin\)\?;[\s\S]*capacities\s*\.iter\(\)\s*\.any\([\s\S]*!\(1\.\.=16\)\.contains\(/);
   const contract = codeOnly(await read("engine/src/platform_http/catalog_task/contract.rs"));
   assert.deepEqual(names(contract, "Create"), ["schema_version", "task_id", "definition_ref", "manifest"]);
   assert.match(fields(contract, "Create"), /definition_ref\s*:\s*MapOnly\s*<\s*DefinitionRef\s*>/);
