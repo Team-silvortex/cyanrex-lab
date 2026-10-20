@@ -77,6 +77,19 @@ impl SessionLifecycleHttpState {
         Self::configured(Backend::Platform(connector), &origin, max_in_flight)
     }
 
+    #[cfg(unix)]
+    pub(super) fn with_platform_connector(
+        connector: PlatformSessionConnector,
+        max_in_flight: usize,
+    ) -> Result<Self, TaskContentHttpConfigError> {
+        let origin = connector.origin().to_owned();
+        Self::configured(
+            Backend::Platform(Arc::new(connector)),
+            &origin,
+            max_in_flight,
+        )
+    }
+
     fn configured(
         backend: Backend,
         origin: &str,
@@ -93,10 +106,15 @@ impl SessionLifecycleHttpState {
 
 /// Explicit, unmounted router only; no listener, login, enrollment or teaching-auth fallback.
 pub fn build_session_lifecycle_router(state: SessionLifecycleHttpState) -> Router {
-    Router::new()
-        .route("/platform/v1/session", any(handlers::dispatch))
-        .route("/platform/v1/session/logout", any(handlers::dispatch))
+    routes()
         .fallback(handlers::dispatch)
         .layer(middleware::from_fn(security::response_headers))
         .with_state(state)
+}
+
+/// Exact private routes only; a composition provides one fallback and private header policy.
+pub(super) fn routes() -> Router<SessionLifecycleHttpState> {
+    Router::new()
+        .route("/platform/v1/session", any(handlers::dispatch))
+        .route("/platform/v1/session/logout", any(handlers::dispatch))
 }

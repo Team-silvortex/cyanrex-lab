@@ -5,12 +5,44 @@ use sqlx_core::executor::Executor;
 pub(super) struct RelationPin {
     oids: Vec<i64>,
     registry: bool,
+    private_index: bool,
 }
 impl RelationPin {
     /// Source-only Session operations require only the three auth tables. Existing private work
     /// also validates the registry tables in the same order and with the same shape restrictions.
     pub async fn capture(tx: &mut Transaction<'_, Postgres>, registry: bool) -> Result<Self> {
-        if registry {
+        Self::capture_mode(tx, registry, false).await
+    }
+
+    /// Index-only roles need relation locks without credential-wide SELECT. This retains the
+    /// same fourteen-table identity/shape checks and proves each actual transaction-owned lock.
+    pub async fn capture_private_index(tx: &mut Transaction<'_, Postgres>) -> Result<Self> {
+        Self::capture_mode(tx, true, true).await
+    }
+
+    async fn capture_mode(
+        tx: &mut Transaction<'_, Postgres>,
+        registry: bool,
+        private_index: bool,
+    ) -> Result<Self> {
+        if private_index {
+            // Parse/rewrite only, never plan or execute this SELECT. One reserved name bounds
+            // interrupted work; collisions fail without removing or adopting an existing plan.
+            // DEALLOCATE leaves all relation locks held by this same business transaction.
+            Executor::execute(
+                &mut **tx,
+                "PREPARE cyanrex_private_index_relations_v1 AS
+                SELECT 1 FROM ONLY users, ONLY sessions,
+                    ONLY collaboration_auth_source_schema, ONLY collaboration_identity_schema,
+                    ONLY collaboration_access_schema, ONLY collaboration_authorities,
+                    ONLY collaboration_workspaces, ONLY collaboration_legacy_workspaces,
+                    ONLY collaboration_principals, ONLY collaboration_legacy_identities,
+                    ONLY collaboration_memberships, ONLY collaboration_deployment_grants,
+                    ONLY collaboration_identity_audit, ONLY collaboration_policy_audit;
+                DEALLOCATE cyanrex_private_index_relations_v1",
+            )
+            .await?;
+        } else if registry {
             sqlx::query("LOCK TABLE users, sessions, collaboration_auth_source_schema,
             collaboration_identity_schema, collaboration_access_schema, collaboration_authorities,
             collaboration_workspaces, collaboration_legacy_workspaces, collaboration_principals,
@@ -89,12 +121,41 @@ impl RelationPin {
             if !held {
                 return Err(DurableAuthError::UnsupportedSchema);
             }
+        } else if private_index {
+            if oids.len() != 14 {
+                return Err(DurableAuthError::UnsupportedSchema);
+            }
+            let held: bool = sqlx::query(
+                "SELECT count(DISTINCT l.relation)=14 AS held
+                FROM pg_catalog.pg_locks l
+                WHERE l.pid=pg_catalog.pg_backend_pid() AND l.locktype='relation'
+                    AND l.database=(SELECT d.oid FROM pg_catalog.pg_database d
+                        WHERE d.datname=pg_catalog.current_database())
+                    AND l.relation::bigint = ANY($1)
+                    AND l.mode='AccessShareLock' AND l.granted",
+            )
+            .bind(&oids)
+            .fetch_one(&mut **tx)
+            .await?
+            .try_get("held")?;
+            if !held {
+                return Err(DurableAuthError::UnsupportedSchema);
+            }
         }
-        Ok(Self { oids, registry })
+        Ok(Self {
+            oids,
+            registry,
+            private_index,
+        })
     }
 
     pub async fn verify(&self, tx: &mut Transaction<'_, Postgres>) -> Result<()> {
-        if Self::capture(tx, self.registry).await?.oids != self.oids {
+        let current = if self.private_index {
+            Self::capture_private_index(tx).await?
+        } else {
+            Self::capture(tx, self.registry).await?
+        };
+        if current.oids != self.oids {
             return Err(DurableAuthError::SourceMismatch);
         }
         Ok(())

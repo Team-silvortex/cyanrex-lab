@@ -1,11 +1,14 @@
 # 当前架构与变更边界
 
+源码 **0.6.3** 已收录独立[绑定登录](platform-login-connection.md)，经原存储为已有账号受限签发
+Session；独立[登录 HTTP](platform-login-http.md)投影 Cookie，[共享 Session 路由](platform-session-router.md)组合同一绑定；显式[回环宿主](platform-loopback-host.md)接通[私人任务索引](platform-task-index-connection.md)、[只读重开](platform-task-content-connection.md)、[手动空 Draft 创建](platform-task-create-connection.md)及[预期修订清单换版](platform-task-replace-connection.md)，可选[原生 TLS](platform-loopback-tls-host.md)和[服务状态通知](platform-host-notifications.md)，不发布新 Artifact 字节、不写状态、不接局域网或浏览器／SDK 保存。
+
 **2026-10-16 收录于 0.6.2** 的[绑定会话适配](platform-session-connection.md)将
 `platform_host/session_connection.rs` 接到共用的私有 Session 事务助手及显式 HTTP 后端。
 保留存储和新鲜 Source 校验共用每条命令的事务，不增加连接池回退、签发或正常应用组合。
 
 另行的[格式 3 诊断](platform-marker-expectation.md)在行读取前核完整目录／五标记声明，
-不收编首次观察对象，也不构造运行宿主。
+**0.6.3** 收录的独立[声明式存储打开](platform-storage-open.md)在核声明及确认关闭后返回保留绑定，不启动宿主或迁移存储；早期实施阶段标签保留原范围与证据。
 
 源码 **0.5.9** 已收录，API **0.3.0**，梳理日期 **2026-10-13**。原整理属于0.5.8标签后的
 跟进，源码收录不改变存储Schema或服务挂载。
@@ -49,7 +52,7 @@ Cyanrex目前有一条已连接的教学应用、另行组合的协作后端，�
 | 强类型领域评估 | `engine/src/services/task_catalog.rs`、`engine/src/domain_packs/ebpf_teaching/` | TaskCatalog<P>持有提供器证据及评估，内置教学包不进入中立契约 |
 | 当前会话命令 | `engine/src/services/auth_service/durable_source/`、`engine/src/services/collaboration_identity_store/` | 派生准确当前执行者、审计成员及原始pin；资源检查和最终权限留在Source事务 |
 | 资源持久化 | `engine/src/services/task_store/`、`engine/src/services/artifact_store/`、`engine/src/services/review_store/` | 可信直接存储不认证给定所有者，Session适配借用其事务机制 |
-| HTTP投影 | `engine/src/platform_http/` | 核请求并投影原命令，不重复权限、不安装Schema或签发Session |
+| HTTP投影 | `engine/src/platform_http/` | 核请求并投影显式命令，仅独立登录适配器交付确认后的 Session Cookie；不重复权限、不安装 Schema 或监听 |
 | 本地宿主交互 | `frontend/src/features/tasks/useTaskDraftController.ts`、`frontend/src/features/editor/`、`sdk-js/src/agents/` | 任务本地控制器拥有payload／生命周期，视图渲染／选文件，编辑器拥有显示／工具；SDK仍受原Engine权限与宿主批准约束 |
 
 中立契约与冻结定义不依赖教学提供器。领域证据和普通Task payload不能互换：代码、笔记和配置

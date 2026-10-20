@@ -39,17 +39,24 @@ test("consumption uses caller-owned compare-and-update and post-write watermark 
   assert.match(storage, /password_salt = \$5 AND password_hash = \$6 AND totp_secret = \$7/);
   assert.match(storage, /confirmed_one\(/);
   assert.doesNotMatch(storage, /\.begin\(|\.commit\(|std::env|OnceLock|LazyLock/);
-  const sessions = await read("durable_source/sessions.rs");
-  assert.match(sessions, /consume_login_otp\(&mut tx, &current, &pending_otp\)\.await\?/);
+  const sessions = codeOnly(await read("durable_source/sessions.rs"));
+  assert.match(sessions, /verified\.prepare\(&context, &mut tx, otp, limits\)\.await\?;\s*prepared\.commit\(&context, tx, otp\)\.await/);
+  assert.doesNotMatch(sessions, /consume_login_otp|INSERT INTO sessions|otp_consumption::prepare/);
+  const login = codeOnly(await read("durable_source/login_transaction.rs"));
+  assert.match(login, /consume_login_otp\(tx, &current, &pending_otp\)\.await\?/);
+  assert.match(login, /consumed\.otp_watermark != pending_otp\.next\(\)/);
+  assert.match(login, /current\.otp_watermark != self\.pending_otp\.next\(\)/);
+  assert.match(login, /self\.pending_otp\s*\.recheck\(&current\.user\.totp_secret, otp, context\.now\(\)\)\?;\s*tx\.commit\(\)\.await\?/);
+  assert.match(login, /SessionSourcePin::capture_for/);
   const rotation = await read("durable_source/credentials.rs");
   assert.match(rotation, /UPDATE users SET password_salt[\s\S]*?otp_last_counter = \$8/);
   assert.match(rotation, /AND otp_last_counter = \$9/);
-  for (const body of [sessions, rotation]) {
+  for (const body of [login, rotation]) {
     assert.match(body, /otp_watermark != pending_otp\.next\(\)/);
     assert.match(body, /\.bind\(pending_otp\.(?:previous|next)\(\)\.stored\(\)\)|consume_login_otp/);
     assert.match(body, /SessionSourcePin::capture/);
-    assert.match(body, /recheck_otp_consumption\(&pending_otp,/);
   }
+  assert.match(rotation, /recheck_otp_consumption\(&pending_otp,/);
 });
 
 test("OTP consumption policy has explicit inputs and no storage, environment or current-time effects", async () => {

@@ -15,6 +15,7 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
     match arguments[0].as_str() {
         "extract" => run_extract(&arguments[1..]),
         "verify" => run_verify(&arguments[1..]),
+        "verify-controls" => run_verify_controls(&arguments[1..]),
         "verify-loaded-images" => run_verify_loaded_images(&arguments[1..]),
         command => Err(format!(
             "unknown package command {command:?}; run with package --help"
@@ -25,8 +26,13 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
 fn exactly_one_path(arguments: &[String], command: &str) -> Result<std::path::PathBuf, String> {
     let parsed = ParsedArguments::new(arguments, &[])?;
     if parsed.positionals.len() != 1 {
+        let directory = if command == "verify-controls" {
+            "installed package directory"
+        } else {
+            "extracted package directory"
+        };
         return Err(format!(
-            "package {command} requires exactly one extracted package directory"
+            "package {command} requires exactly one {directory}"
         ));
     }
     Ok(std::path::PathBuf::from(&parsed.positionals[0]))
@@ -47,6 +53,18 @@ fn run_verify_loaded_images(arguments: &[String]) -> Result<(), String> {
     let package = exactly_one_path(arguments, "verify-loaded-images")?;
     installed_package::verify_loaded_images(&package)?;
     println!("[cyanrex] Loaded Docker image identities match the release package.");
+    Ok(())
+}
+
+fn run_verify_controls(arguments: &[String]) -> Result<(), String> {
+    let package = exactly_one_path(arguments, "verify-controls")?;
+    installed_package::verify_deployment_controls(&package, env!("CARGO_PKG_VERSION"))?;
+    println!(
+        "[cyanrex] Release metadata and control checksums are consistent: deploy.sh, docker-compose.yml, cyanrex-release."
+    );
+    println!(
+        "[cyanrex] This is not a service health, runtime configuration, image-content or signature check."
+    );
     Ok(())
 }
 
@@ -109,9 +127,12 @@ fn print_help() {
              [--expect-tag <vx.y.z>] [--expect-source-state <state>]\n\
              [--expect-image-mode <mode>]\n\
            cyanrex-release package verify <extracted-package>\n\
+           cyanrex-release package verify-controls <installed-directory>\n\
            cyanrex-release package verify-loaded-images <extracted-package>\n\
          \n\
          verify checks a freshly extracted directory before runtime files are created.\n\
+         verify-controls checks current-version metadata and three deployment control files only;\n\
+         it ignores runtime files and does not execute deployment commands or prove service health.\n\
          verify-loaded-images checks checksum-bound metadata and loaded Docker IDs only."
     );
 }

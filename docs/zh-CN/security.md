@@ -1,5 +1,34 @@
 # 安全与部署边界
 
+源码 **0.6.3** 已收录显式回环／TLS 宿主、受限 Session 签发及私人 Task 创建／列举／重开／清单换版。
+不接通浏览器／SDK 保存、新字节发布、局域网或存储迁移；早期实施阶段标签保留原范围与证据。
+
+未发布的[手动 Draft 清单换版](platform-task-replace-connection.md)只增加准确
+`PUT /platform/v1/tasks/{task_id}/content`，正文为版本、预期修订和完整清单。当前所有者可修改
+Draft 标题或已有本人准确文本引用，Task／outbox 修改前后核旧／新字节，再进行最终新鲜授权
+及 COMMIT。不发布 Artifact、不改状态、不接受自报所有者、不授予教师全局权限，也不接
+浏览器／SDK 保存；未确认结果仍不授予重试、收编或回滚确定性。
+
+未发布的[空任务创建](platform-task-create-connection.md)只在 `POST /platform/v1/tasks` 创建当前
+所有者的手动 Draft。严格正文仅含 `schema_version`、`task_id`、`title`；所有者和工作区来自
+当前经审计成员与原存储绑定。准确 POST Origin／marker／Cookie 及最终新鲜会话检查先于确认
+创建；不授予载荷／Artifact 发布、浏览器保存、教师全局权限、重试、收编或回滚确定性。
+
+独立未发布的[原绑定任务内容读取](platform-task-content-connection.md)只增加当前所有者空／文本
+任务的 GET 重开。准确字节继承原根描述符，取消后实际 worker 仍持名额，最终原根／存储检查
+先于新鲜会话授权和提交；不授权内容写入、跨所有者审阅或浏览器保存。
+
+未发布的[原绑定任务索引](platform-task-index-connection.md)只在显式工作区宿主返回当前所有者
+元数据。原存储检查先于最终新鲜会话授权；教师角色不授予跨所有者列表权限。不增加密码整表
+读取、内容路由、自动授权、Schema 安装或正常教学认证回退。
+
+未发布的[原生 HTTPS 回环宿主](platform-loopback-tls-host.md)，复用私有 TLS 材料及原无特权
+Session 路径，不暴露 Engine 或提供明文代理。客户端仍须验证明确 CA 与准确 IP，服务端密钥／
+SAN 匹配不证明 PKI 信任；Secure Cookie 不按端口隔离。局域网／DNS 及浏览器安全域部署仍独立。
+
+可选[服务状态通知](platform-host-notifications.md)只向显式选择的本地 datagram 对端发送固定
+Ready／Stopping；发送不代表管理器确认、持续健康或回滚，通知错误也不能跳过原停机排空。
+
 源码版本 **0.5.8**（**2026-10-13**）已收录这些跟进；分日期的 `Unreleased`/未发布标记保留
 当时实施阶段、源码版本和验证范围。源码收录不代表准备层 API 已挂载、浏览器保存已接通、
 在线认证已切换、存储已迁移或运行实例已经验收。

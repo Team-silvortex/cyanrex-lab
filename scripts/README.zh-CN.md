@@ -20,8 +20,44 @@ Cyanrex 的开发、验证、运维和分发工具，覆盖现有教学运行时
   - 检测具有相同 instance ID 的 Compose project 是否已运行
   - 通过 `--allow-existing-running` 支持重新连接流程
   - 预检重复端口和 project ID，支持并发启动安全
-- `start-lock.sh`：由 `start.sh` 加载的共享运行时 helper，为同一实例的 Compose 操作
-  （start/stop/status/logs）提供互斥。
+- `start-lock.sh`：由 `start.sh` 加载的共享运行时 helper，为同一实例的启动／停止写操作提供互斥；
+  状态和日志读取不占用锁。
+- `runtime-config.sh`：启动器／诊断共用的目标选择，按 CLI、非空继承环境、字面 `.env` 字段、默认值
+  依次取值，加锁前固定项目身份，向 Compose 显式传入 env-file 绝对路径。
+  启动的其余 `.env` 配置仍采用可信 shell 语义，执行后检查目标漂移。
+- `test-platform-login-connection.sh`：准确选择一次性 PostgreSQL 用例，验证保留绑定内部登录、
+  受限签发角色、OTP／存量／故障及真实密码工作间隙。必须显式提供 `CYANREX_TEST_DATABASE_URL`，
+  不隐式初始化、迁移或选择应用数据库。
+- `test-platform-login-http.sh`：准确选择七条一次性 PostgreSQL 用例，验证独立未挂载登录路由、
+  真实受限角色的 Cookie 签发、响应准入及交付取消。须显式提供 `CYANREX_TEST_DATABASE_URL`，
+  不启动宿主或回退应用数据库。
+- `test-platform-storage-open.sh`：七条准确一次性 PostgreSQL 用例，验证完整可信声明到保留绑定、
+  只读权限、原身份漂移及真实标记等待／取消。须显式提供 `CYANREX_TEST_DATABASE_URL`，不启动宿主
+  或安装器。
+- `test-platform-session-router.sh`：七条准确一次性 PostgreSQL 用例，验证同一原绑定的登录／查询／
+  退出、克隆共享的独立准入通道、原对象漂移及交付取消。须显式提供 `CYANREX_TEST_DATABASE_URL`，
+  不挂载应用或监听。
+- `test-platform-task-index-connection.sh`：八条准确一次性 PostgreSQL 用例，覆盖保留原绑定的
+  所有者私人元数据、受限权限、漂移、真实过期等待、HTTP 准入及真实无能力回环子进程。
+  须显式提供 `CYANREX_TEST_DATABASE_URL`，不部署服务。
+- `test-platform-task-content-connection.sh`：八条准确一次性 PostgreSQL 用例，覆盖私人空／文本任务重开、
+  原描述符、准确修订、损坏、过期及只读 HTTP／实际宿主准入；须显式提供 `CYANREX_TEST_DATABASE_URL`，
+  不写入或接通浏览器保存。
+- `test-platform-task-create-connection.sh`：八条准确一次性 PostgreSQL 用例，覆盖私人手动空 Draft、
+  原绑定、窄写权限、最终会话检查、冲突／未知结果及 HTTP／实际宿主准入。须显式提供
+  `CYANREX_TEST_DATABASE_URL`，详见[创建边界](../docs/zh-CN/platform-task-create-connection.md)，
+  不发布载荷或接通浏览器保存。
+- `test-platform-task-replace-connection.sh`：十条准确一次性 PostgreSQL 用例，覆盖手动 Draft
+  清单换版、预期修订、原绑定、准确旧／新本人文本、当前授权、延期故障及 HTTP／真实宿主准入。
+  须显式提供 `CYANREX_TEST_DATABASE_URL`，详见[换版边界](../docs/zh-CN/platform-task-replace-connection.md)，
+  不发布 Artifact 或接通浏览器保存。
+- `test-platform-loopback-host.sh`：八条准确一次性 PostgreSQL 用例，验证真实无能力 CLI 启动、
+  HTTP Session 操作、原对象漂移、权限及可观测信号排空。须显式提供 `CYANREX_TEST_DATABASE_URL`，
+  只创建测试自有子进程，不部署局域网／TLS 服务。
+- `test-platform-loopback-tls-host.sh`：八条准确一次性 PostgreSQL／真实回环宿主选择，涵盖可选
+  明文／TLS 服务状态通知，不证明已安装服务托管。
+  须显式提供 `CYANREX_TEST_DATABASE_URL`；OpenSSL 仅生成合成测试身份，验证 Secure Cookie、
+  对端拒绝、原绑定和信号排空，不证明局域网／浏览器部署。
 - `quality-gate.sh`：用于提交／CI 检查的单命令质量门禁。
   - 每种模式还检查文件行数、版本／OpenAPI 漂移及仓库工具
   - 默认：运行后端、前端和 JavaScript SDK 检查
@@ -272,6 +308,11 @@ Cyanrex 的开发、验证、运维和分发工具，覆盖现有教学运行时
 - `debug-system.sh`：为本地故障排查收集环境／运行时诊断。
   - 输出工具链版本、kernel capability 状态、Compose backend 状态和端口检查
   - 用于 `./start.sh diagnose`
+  - 可选 `.env` 键按字面读取、不 source；缺键和检查失败不终止报告
+  - 核验端口的环回健康 GET 忽略 curl 用户／代理配置，连接／总请求限时 3／10 秒，不是整份报告期限
+- `tests/debugSystem.test.mjs` 和 `tests/startOperations.test.mjs`：隔离的启动器／诊断回归，使用
+  合成配置、假部署工具及真实挂起的环回 HTTP 对端，检查探测期限、配置优先级、锁与卷的准确实例身份、
+  只读不执行 shell、目标漂移拒绝、日志参数、读写锁分离及不追踪凭据。
 - `runner-agent.sh`：准备和管理可选的无特权 Compose compiler Agent。
   - `start`、`stop`、`status`、`logs` 和只处理秘密的 `prepare` 操作
   - 不输出 token 地创建缺失 bootstrap token，并挂载 mode-0600 Docker Secret
@@ -385,6 +426,8 @@ CI 的 `Performance Regression` workflow 也可以通过 `baseline_json` 参数�
 - `package-distribution.sh`：构建并打包用于隔离网络部署的分发产物。
   - 构建或拉取并导出 PostgreSQL、Engine 和 frontend Docker image
   - 生成 `deploy.sh`、`run.sh`、`stop.sh` 及可丢弃环境的 `install-smoke.sh`
+  - 嵌入 `templates/deploy.sh`；正常启动由包内 `cyanrex-release smoke wait-health` 预检配置并执行
+    有总期限的类型化 JSON 健康轮询，不回退到宿主 curl／wget
   - 输出 checksum-bound `release-metadata.json`，不包含 build-host absolute path
   - 默认输出 `dist/cyanrex-lab-<version>-<timestamp>.tar.gz`
 - `distribution-install-smoke.sh`：打包为 `install-smoke.sh`；验证新解包的 release，包括 checksum、
@@ -464,6 +507,10 @@ Runner Agent 和 live-kernel 脚本优先使用 `cyanrex-release`；shell/Python
 手动组合环境提供迁移回退。安装冒烟要求原生 CLI。创建任何 runtime 文件前，用
 `./cyanrex-release package verify .` 验证新解包的软件包；加载 image 后用
 `./cyanrex-release package verify-loaded-images .` 对照 checksum-bound metadata 检查 content ID。
+
+已有运行时文件的安装目录可用 `./cyanrex-release package verify-controls .`，只核匹配 CLI 版本、
+受校验和保护的元数据和三个部署控制文件，不读取或执行 `.env`、读取镜像正文或调用 Docker／SSH。
+它不是全包、配置、服务健康或签名验证，文件检查也不原子，见[日常运维说明](../docker/README-DEPLOY.zh-CN.md#已安装实例的日常检查)。
 
 解包前验证完整下载的 Tag candidate（目录应只包含 archive、其 checksum、live-kernel report
 及其 checksum）：

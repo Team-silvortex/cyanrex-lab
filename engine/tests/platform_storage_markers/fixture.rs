@@ -1,4 +1,4 @@
-pub(super) use crate::catalog_fixture::{within, Fixture};
+pub(super) use super::catalog_fixture::{within, Fixture};
 use sqlx_core::{query::query, row::Row};
 
 const MARKERS: [&str; 5] = [
@@ -145,7 +145,7 @@ pub(super) async fn prepare(fixture: &Fixture) {
 
 #[derive(PartialEq, Eq)]
 pub(super) struct Snapshot {
-    catalog: crate::catalog_fixture::Snapshot,
+    catalog: super::catalog_fixture::Snapshot,
     tables: Vec<(i64, String, String, String)>,
 }
 

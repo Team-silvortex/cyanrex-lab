@@ -1,5 +1,9 @@
 # Troubleshooting Guide
 
+Source **0.6.3** includes explicit loopback/TLS hosting, limited Session issuance and private
+Task create/list/reopen/manifest replacement. Browser/SDK saving, new-byte publication, LAN access
+and migration remain absent; earlier implementation-stage labels retain their original scope.
+
 First identify which path you are using: the existing teaching runtime, the local task draft editor,
 or an explicitly initialized collaboration store. They have different persistence and authorization
 contracts; see the [platform map](platform-network.md). An absent future feature is not a deployment fault.
@@ -43,11 +47,57 @@ are not instructions to run migrations or fault-injection tests on a deployment.
 docker compose -f docker/docker-compose.yml ps
 ```
 
+`./start.sh logs` follows all services; add a service name to select one. Ctrl-C closes the log
+viewer, not the stack. Status and log viewing no longer hold the startup lock, so an open log stream
+does not block stopping the same instance. Starts and stops remain serialized; a concurrent status
+read is an observation, not proof that a transition has finished.
+
+`--debug` prints a safe notice instead of tracing shell commands and credential assignments. Do not
+use `bash -x` to collect shareable startup logs. Tool and service output can still contain sensitive
+information; review it before sharing.
+
+All source-launcher actions select instance, ports and bind address in this order: explicit CLI
+option, nonempty inherited environment variable, `docker/.env`, then the built-in default. Stop,
+status, logs and both diagnostic entries use the same selection rules as start. Repeat any CLI or
+environment overrides when operating that instance; the launcher does not remember the last target.
+The project is always `cyanrex-<instance-id>`; `CYANREX_COMPOSE_PROJECT` does not override it. Instance IDs must be
+1–63 lowercase letters, digits, underscores or hyphens; invalid IDs fail instead of being silently
+rewritten. For example, use `./start.sh diagnose --instance-id room-a --engine-port 18080`.
+
+These five nonsecret selectors accept standalone literal assignments with optional `export`, outer
+single/double quotes, whitespace, inline comments and CRLF; the last assignment wins. Dynamic
+expressions and multiline values are unsupported. Read-only commands do not source `.env` or create
+credentials. Start still evaluates its other settings as a trusted shell file, against the selected
+instance, and refuses a later target change. A default volume expression follows that instance;
+an explicit custom PostgreSQL volume remains your responsibility to keep separate between instances.
+Compose receives the absolute `docker/.env` path explicitly, not a file selected by the caller’s
+working directory or `COMPOSE_ENV_FILES`. It must support `--env-file` and the checked-in Compose
+template; obsolete legacy versions are not retried with implicit configuration. Keep `.env` compatible
+with Compose dotenv syntax; startup evaluation is not a promise to support arbitrary shell programs.
+
+Direct `./scripts/debug-system.sh` diagnostics tolerate missing optional configuration keys and
+continue after a failed Compose/HTTP check. Its one loopback health request ignores curl user/proxy
+settings, has a 3-second connect and 10-second total
+request limit, and skips invalid ports. Other tools are not covered by that HTTP deadline.
+
 Health check:
 
 ```bash
-curl http://127.0.0.1:8080/health
+curl -q --noproxy '*' -fsS --connect-timeout 3 --max-time 10 http://127.0.0.1:8080/health
 ```
+
+For an installed offline package, run `./cyanrex-release package verify-controls .` from its package
+directory before comparing controls with a trusted matching-version copy. This checks metadata and
+three deployment controls without reading `.env` or image contents, running Docker/SSH or changing
+services. It is not full-package, configuration, health or signature verification. Use
+`./deploy.sh status` and `./deploy.sh logs engine` there; source-checkout `start.sh` paths do not apply
+to a package. The package's `README-DEPLOY.md` includes the routine operations sequence.
+
+The browser Helper requires an explicit fresh check. Starting again clears previous results; failed,
+incomplete or timed-out requests do not retain a successful readiness display. Reloading the page
+does not restore an earlier report. Check again after changing the instance or session; displayed
+results are snapshots, not a deployment or ongoing service-health guarantee.
+The 10-second browser deadline does not guarantee that Engine checks or subprocesses have stopped.
 
 Docker published ports default to loopback; native/WSL startup currently sets `ENGINE_HOST=0.0.0.0`.
 Inspect actual listeners and restrict LAN ingress. On remote hosts, prefer the reviewed SSH tunnel

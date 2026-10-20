@@ -1,79 +1,16 @@
-import { useState } from "react";
+import { useRouter } from "next/router";
 
 import SidebarLayout from "../src/components/SidebarLayout";
 import { getEngineUrl } from "../src/config/runtime";
 import { useI18n } from "../src/i18n/context";
 import { localizeLegacyText } from "../src/i18n/legacyText";
-import { loadPageState, savePageState } from "../src/utils/pageState";
-
-type EnvironmentCheckItem = {
-  name: string;
-  ok: boolean;
-  detail: string;
-};
-
-type EnvironmentReport = {
-  overall_ok: boolean;
-  generated_at: string;
-  runtime_mode: "native-linux" | "wsl2" | "docker";
-  runtime_guidance: string;
-  checks: EnvironmentCheckItem[];
-};
-
-type RunnerStatus = {
-  mode: string;
-  isolation: string;
-  instance_id: string;
-  max_concurrent: number;
-  max_per_user: number;
-  active_total: number;
-  active_for_current_user: number;
-  available_slots: number;
-  execution_timeout_seconds: number;
-};
+import { useEnvironmentCheck } from "../src/features/helper/useEnvironmentCheck";
 
 export default function HelperPage() {
   const { t } = useI18n();
-  const [report, setReport] = useState<EnvironmentReport | null>(() =>
-    loadPageState<EnvironmentReport>("helper_report_v1"),
-  );
-  const [runner, setRunner] = useState<RunnerStatus | null>(() =>
-    loadPageState<RunnerStatus>("helper_runner_status_v1"),
-  );
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(() =>
-    loadPageState<string>("helper_error_v1"),
-  );
-
-  const engineUrl = getEngineUrl();
-
-  const runCheck = async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const [environmentResponse, runnerResponse] = await Promise.all([
-        fetch(`${engineUrl}/helper/environment`, { credentials: "include" }),
-        fetch(`${engineUrl}/runner/status`, { credentials: "include" }),
-      ]);
-      if (!environmentResponse.ok || !runnerResponse.ok) {
-        throw new Error(`HTTP ${environmentResponse.status}/${runnerResponse.status}`);
-      }
-      const environmentJson = (await environmentResponse.json()) as EnvironmentReport;
-      const runnerJson = (await runnerResponse.json()) as RunnerStatus;
-      setReport(environmentJson);
-      setRunner(runnerJson);
-      savePageState("helper_report_v1", environmentJson);
-      savePageState("helper_runner_status_v1", runnerJson);
-      savePageState("helper_error_v1", "");
-    } catch (err) {
-      const msg = (err as Error).message;
-      setError(msg);
-      savePageState("helper_error_v1", msg);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const router = useRouter();
+  const { snapshot, loading, errorKey, runCheck } = useEnvironmentCheck(getEngineUrl(), router.asPath);
+  const report = snapshot?.report, runner = snapshot?.runner;
 
   return (
     <SidebarLayout title={t("helper.title")}>
@@ -82,12 +19,14 @@ export default function HelperPage() {
         <p className="meta">{t("helper.subtitle")}</p>
 
         <div className="row" style={{ marginTop: 12 }}>
-          <button type="button" onClick={runCheck} disabled={loading}>
+          <button type="button" onClick={() => void runCheck()} disabled={loading}>
             {loading ? t("helper.checking") : t("helper.runCheck")}
           </button>
         </div>
 
-        {error && <p className="error" style={{ marginTop: 12 }}>{localizeLegacyText(error, t)}</p>}
+        {!snapshot && !loading && !errorKey && <p className="meta" role="status">{t("helper.explicitCheckHint")}</p>}
+        {loading && <p className="meta" role="status">{t("helper.checking")}</p>}
+        {errorKey && <p className="error" role="alert" style={{ marginTop: 12 }}>{t(errorKey)}</p>}
 
         {report && (
             <div style={{ marginTop: 16 }}>

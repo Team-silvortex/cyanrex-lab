@@ -51,14 +51,11 @@ async fn handle(
 ) -> Result<Response, HttpError> {
     security::request_bytes(request, true).await?;
     let after = page.after.map(|task_id| TaskRef {
-        workspace: state.workspace.index_scope(),
+        workspace: state.backend.scope(),
         task_id,
     });
     // One existing current-Session command owns filtering, validation and final authorization.
-    let committed = state
-        .source
-        .list_session_content_tasks(&token, &state.workspace, after, page.limit)
-        .await?;
+    let committed = state.backend.list(&token, after, page.limit).await?;
     Ok((
         StatusCode::OK,
         Json(contract::IndexResponse::from(committed)),

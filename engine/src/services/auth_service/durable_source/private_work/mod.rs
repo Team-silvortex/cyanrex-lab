@@ -10,6 +10,7 @@ use crate::{
         CollaborationIdentityStore as Registry, IdentityStoreError,
     },
 };
+mod authority;
 mod subjects;
 #[cfg(unix)]
 mod timed;
@@ -70,48 +71,7 @@ impl DurableAuthSource {
         target: &str,
         scope: WorkspaceRef,
     ) -> WorkResult<PrivateWorkContext> {
-        if !valid_token(token) {
-            return Err(SessionCommandError::InvalidSession.into());
-        }
-        let digest = hash_session_token(token);
-        let source = NamespacePin::capture(tx).await?;
-        if source.name == target {
-            return Err(PrivateWorkError::InvalidNamespace);
-        }
-        let relations = RelationPin::capture(tx, true).await?;
-        if scope.authority_id != self.authority_id {
-            return Err(DurableAuthError::SourceMismatch.into());
-        }
-        self.lock_source(tx, false).await?;
-        Self::verify_schema(tx).await?;
-        Registry::lock_session_command_scope(tx, scope).await?;
-        let session = self
-            .session_record(tx, &digest)
-            .await?
-            .ok_or(SessionCommandError::InvalidSession)?;
-        let owner = Registry::session_private_work_actor(
-            tx,
-            scope,
-            &session.account.username,
-            session.account.account_id,
-        )
-        .await?;
-        source.verify(tx).await?;
-        NamespacePin::select(tx, target).await?;
-        let selected = NamespacePin::capture(tx).await?;
-        if selected.name != target || selected.has_same_oid(&source) {
-            return Err(PrivateWorkError::InvalidNamespace);
-        }
-        Ok(PrivateWorkContext {
-            owner,
-            scope,
-            session,
-            digest,
-            source,
-            relations,
-            targets: vec![selected],
-            selected: 0,
-        })
+        PrivateWorkContext::begin_for(self.authority_id, tx, token, target, scope).await
     }
 }
 impl PrivateWorkContext {
@@ -164,38 +124,6 @@ impl PrivateWorkContext {
         source: &DurableAuthSource,
         tx: &mut Transaction<'_, Postgres>,
     ) -> WorkResult<()> {
-        self.check_authority(source, tx).await?;
-        source
-            .recheck_command_session(tx, &self.digest, &self.session)
-            .await?;
-        Ok(())
-    }
-
-    async fn check_authority(
-        &self,
-        source: &DurableAuthSource,
-        tx: &mut Transaction<'_, Postgres>,
-    ) -> WorkResult<()> {
-        self.targets[self.selected].verify(tx).await?;
-        for target in &self.targets {
-            NamespacePin::select(tx, &target.name).await?;
-            target.verify(tx).await?;
-        }
-        NamespacePin::select(tx, &self.source.name).await?;
-        self.source.verify(tx).await?;
-        self.relations.verify(tx).await?;
-        source.lock_source(tx, false).await?;
-        Registry::lock_session_command_scope(tx, self.scope).await?;
-        let current = Registry::session_private_work_actor(
-            tx,
-            self.scope,
-            &self.session.account.username,
-            self.session.account.account_id,
-        )
-        .await?;
-        if current != self.owner {
-            return Err(SessionCommandError::InvalidSession.into());
-        }
-        Ok(())
+        self.finish_retained_for(source.authority_id, tx).await
     }
 }

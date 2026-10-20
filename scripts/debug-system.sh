@@ -4,6 +4,7 @@ set -euo pipefail
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 COMPOSE_FILE="$PROJECT_ROOT/docker/docker-compose.yml"
 ENV_FILE="$PROJECT_ROOT/docker/.env"
+source "$PROJECT_ROOT/scripts/runtime-config.sh"
 
 log() {
   echo "[cyanrex-debug] $*"
@@ -43,29 +44,23 @@ run_check() {
 env_value() {
   local key="$1"
   if [ -f "$ENV_FILE" ]; then
-    grep "^${key}=" "$ENV_FILE" | tail -n 1 | cut -d= -f2-
+    awk -v key="$key" '
+      index($0, key "=") == 1 { value = substr($0, length(key) + 2); found = 1 }
+      END { if (found) printf "%s", value; else printf "undefined" }
+    ' "$ENV_FILE"
     return
   fi
   printf "undefined"
 }
 
-value_or_default() {
-  local value="$1"
-  local default="$2"
-  if [ -z "$value" ] || [ "$value" = "undefined" ]; then
-    printf "%s" "$default"
-  else
-    printf "%s" "$value"
-  fi
-}
-
-instance="$(value_or_default "${CYANREX_INSTANCE_ID:-$(env_value CYANREX_INSTANCE_ID)}" "default")"
-instance="$(printf "%s" "$instance" | tr -cd 'A-Za-z0-9_-')"
-project="$(value_or_default "${CYANREX_COMPOSE_PROJECT:-$(env_value CYANREX_COMPOSE_PROJECT)}" "cyanrex-${instance}")"
-engine_port="$(value_or_default "${CYANREX_ENGINE_PORT:-$(env_value CYANREX_ENGINE_PORT)}" "8080")"
-frontend_port="$(value_or_default "${CYANREX_FRONTEND_PORT:-$(env_value CYANREX_FRONTEND_PORT)}" "3000")"
-postgres_port="$(value_or_default "${CYANREX_POSTGRES_PORT:-$(env_value CYANREX_POSTGRES_PORT)}" "15432")"
-bind_address="$(value_or_default "${CYANREX_BIND_ADDRESS:-$(env_value CYANREX_BIND_ADDRESS)}" "127.0.0.1")"
+load_runtime_selectors
+apply_runtime_identity
+instance="$CYANREX_INSTANCE_ID"
+project="$CYANREX_COMPOSE_PROJECT"
+engine_port="$CYANREX_ENGINE_PORT"
+frontend_port="$CYANREX_FRONTEND_PORT"
+postgres_port="$CYANREX_POSTGRES_PORT"
+bind_address="$CYANREX_BIND_ADDRESS"
 
 log "Starting diagnostics for instance '${instance}' (project '${project}')"
 log "Timestamp: $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
@@ -116,8 +111,8 @@ fi
 detect_compose_cmd
 if [ "${#COMPOSE_CMD[@]}" -gt 0 ] && [ -f "$ENV_FILE" ]; then
   log "Compose backend: ${COMPOSE_CMD[*]}"
-  run_check "${COMPOSE_CMD[@]}" -p "$project" -f "$COMPOSE_FILE" ps
-  run_check "${COMPOSE_CMD[@]}" -p "$project" -f "$COMPOSE_FILE" config --services
+  run_check "${COMPOSE_CMD[@]}" --env-file "$ENV_FILE" -p "$project" -f "$COMPOSE_FILE" ps
+  run_check "${COMPOSE_CMD[@]}" --env-file "$ENV_FILE" -p "$project" -f "$COMPOSE_FILE" config --services
 elif [ "${#COMPOSE_CMD[@]}" -gt 0 ]; then
   warn "docker/.env missing; skipping compose interpolation-sensitive checks"
 else
@@ -127,7 +122,7 @@ fi
 for port_name in engine:$engine_port frontend:$frontend_port postgres:$postgres_port; do
   label="${port_name%%:*}"
   port="${port_name#*:}"
-  if ! [[ "$port" =~ ^[0-9]+$ ]]; then
+  if ! valid_runtime_port "$port"; then
     warn "skip invalid port for ${label}: ${port}"
     continue
   fi
@@ -144,8 +139,10 @@ for port_name in engine:$engine_port frontend:$frontend_port postgres:$postgres_
   fi
 done
 
-if command -v curl >/dev/null 2>&1; then
-  run_check curl -fsS "http://127.0.0.1:${engine_port}/health"
+if ! valid_runtime_port "$engine_port"; then
+  warn "skip health request: invalid Engine port"
+elif command -v curl >/dev/null 2>&1; then
+  run_check curl -q --noproxy '*' -fsS --connect-timeout 3 --max-time 10 "http://127.0.0.1:${engine_port}/health"
 else
   warn "curl not installed"
 fi

@@ -92,7 +92,7 @@ fi
 assert_contains "$PACKAGE_SCRIPT" 'FRONTEND_NPM_REGISTRY:-https://registry.npmjs.org'
 assert_contains "$PACKAGE_SCRIPT" 'basename "$ARCHIVE_PATH"'
 assert_contains "$PACKAGE_SCRIPT" "printf 'POSTGRES_IMAGE=%q"
-assert_contains "$PACKAGE_SCRIPT" 'compose --profile runner-agent down'
+assert_contains "$ROOT_DIR/scripts/templates/deploy.sh" 'compose --profile runner-agent down'
 assert_contains "$SMOKE_SCRIPT" 'up --pull never'
 assert_contains "$SMOKE_SCRIPT" 'CYANREX_ENGINE_IMAGE="$ENGINE_IMAGE"'
 assert_contains "$SMOKE_SCRIPT" 'CYANREX_SMOKE_BIND_ADDRESS'

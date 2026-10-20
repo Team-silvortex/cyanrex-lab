@@ -30,6 +30,26 @@ pub struct PlatformStorageConnector {
 }
 
 impl PlatformStorageConnector {
+    pub(super) fn content_reader(
+        &self,
+        workers: std::sync::Arc<tokio::sync::Semaphore>,
+    ) -> std::result::Result<
+        crate::services::artifact_store::ArtifactContentReader,
+        crate::services::artifact_store::ArtifactStoreError,
+    > {
+        self.original_root.content_reader(workers)
+    }
+
+    pub(super) fn verify_artifact_root(&self) -> Result<()> {
+        verify_platform_artifact_root(&self.config, &self.root_path, &self.original_root)
+            .map_err(|_| PlatformStorageConnectionError::Unavailable)
+    }
+
+    /// Crate-only public metadata for validation before splitting host capabilities.
+    pub(crate) fn origin(&self) -> &str {
+        self.config.origin()
+    }
+
     pub(super) fn config(&self) -> &PlatformHostPreflightConfig {
         &self.config
     }

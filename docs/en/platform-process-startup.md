@@ -1,5 +1,12 @@
 # Linux platform process startup check
 
+Source **0.6.3** includes explicit loopback/TLS hosting, limited Session issuance and private
+Task create/list/reopen/manifest replacement. Browser/SDK saving, new-byte publication, LAN access
+and migration remain absent; earlier implementation-stage labels retain their original scope.
+
+The Unreleased [loopback host](platform-loopback-host.md) now reuses these checks before private
+input and runtime creation. The `check-process` diagnostic below retains its check-only behavior.
+
 Included in source **0.6.1** on **2026-10-15**; see [release validation](../../reports/releases/0.6.1/README.md).
 The implementation-stage wording below keeps its original scope; source inclusion is not deployment acceptance.
 

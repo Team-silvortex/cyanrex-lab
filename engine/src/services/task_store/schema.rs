@@ -40,11 +40,21 @@ impl TaskStore {
     }
 
     pub(super) async fn check_schema(&self, tx: &mut Tx<'_>, lock: bool) -> Result<()> {
-        Self::namespace(tx).await?;
-        // Pin relation identity/shape against ordinary concurrent DDL for the transaction.
-        sqlx::query("LOCK TABLE collaboration_task_schema, collaboration_tasks, collaboration_task_outbox IN ACCESS SHARE MODE")
+        check_schema_in_transaction(tx, self.scope, self.storage_version, lock).await
+    }
+}
+
+pub(super) async fn check_schema_in_transaction(
+    tx: &mut Tx<'_>,
+    scope: WorkspaceRef,
+    storage_version: i32,
+    lock: bool,
+) -> Result<()> {
+    TaskStore::namespace(tx).await?;
+    // Pin relation identity/shape against ordinary concurrent DDL for the transaction.
+    sqlx::query("LOCK TABLE collaboration_task_schema, collaboration_tasks, collaboration_task_outbox IN ACCESS SHARE MODE")
             .execute(&mut **tx).await?;
-        let rows = sqlx::query("SELECT c.relname, c.relkind::text AS kind, c.relpersistence::text AS persistence,
+    let rows = sqlx::query("SELECT c.relname, c.relkind::text AS kind, c.relpersistence::text AS persistence,
             c.relrowsecurity AS rls, c.relispartition AS partition,
             to_regclass(c.relname)::oid = c.oid AS resolved,
             EXISTS(SELECT 1 FROM pg_inherits i WHERE i.inhrelid = c.oid OR i.inhparent = c.oid) AS inheritance
@@ -52,26 +62,25 @@ impl TaskStore {
             WHERE n.nspname = current_schema() AND c.relname IN
             ('collaboration_task_schema', 'collaboration_tasks', 'collaboration_task_outbox')")
             .fetch_all(&mut **tx).await?;
-        if !prepared_resource_sql::ordinary_tables(&rows, 3)? {
-            return Err(TaskStoreError::UnsupportedSchema);
-        }
-        let statement = if lock {
-            "SELECT version, authority_id, workspace_id FROM collaboration_task_schema WHERE singleton FOR SHARE"
-        } else {
-            "SELECT version, authority_id, workspace_id FROM collaboration_task_schema WHERE singleton"
-        };
-        let row = sqlx::query(statement)
-            .fetch_optional(&mut **tx)
-            .await?
-            .ok_or(TaskStoreError::UnsupportedSchema)?;
-        if row.try_get::<i32, _>("version")? != self.storage_version {
-            return Err(TaskStoreError::UnsupportedSchema);
-        }
-        if row.try_get::<uuid::Uuid, _>("authority_id")? != self.scope.authority_id.as_uuid()
-            || row.try_get::<uuid::Uuid, _>("workspace_id")? != self.scope.workspace_id.as_uuid()
-        {
-            return Err(TaskStoreError::ScopeMismatch);
-        }
-        Ok(())
+    if !prepared_resource_sql::ordinary_tables(&rows, 3)? {
+        return Err(TaskStoreError::UnsupportedSchema);
     }
+    let statement = if lock {
+        "SELECT version, authority_id, workspace_id FROM collaboration_task_schema WHERE singleton FOR SHARE"
+    } else {
+        "SELECT version, authority_id, workspace_id FROM collaboration_task_schema WHERE singleton"
+    };
+    let row = sqlx::query(statement)
+        .fetch_optional(&mut **tx)
+        .await?
+        .ok_or(TaskStoreError::UnsupportedSchema)?;
+    if row.try_get::<i32, _>("version")? != storage_version {
+        return Err(TaskStoreError::UnsupportedSchema);
+    }
+    if row.try_get::<uuid::Uuid, _>("authority_id")? != scope.authority_id.as_uuid()
+        || row.try_get::<uuid::Uuid, _>("workspace_id")? != scope.workspace_id.as_uuid()
+    {
+        return Err(TaskStoreError::ScopeMismatch);
+    }
+    Ok(())
 }

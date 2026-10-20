@@ -1,5 +1,21 @@
 # 当前平台功能与模块网络
 
+源码 **0.6.3** 已收录显式回环／TLS 宿主、受限 Session 签发及私人 Task 创建／列举／重开／清单换版。
+不接通浏览器／SDK 保存、新字节发布、局域网或存储迁移；早期实施阶段标签保留原范围与证据。
+
+未发布的[原生 TLS 回环分支](platform-loopback-tls-host.md)，将宿主扩展为私有证书／密钥 →
+有界握手 → 原 HTTP Session 路由与 Secure Cookie，不增加局域网／DNS 监听、公共资源路由
+或浏览器工作流。
+
+可选[服务状态通知](platform-host-notifications.md)接通显式管理器开关 → 原校验启动／绑定 →
+Ready → 监听关闭 → Stopping → 原排空，不代表已安装服务、持续健康探针或重启／重试路径。
+
+0.6.2 之后未发布的显式 Linux [回环宿主](platform-loopback-host.md)，接通进程与私有格式 3
+守卫 → 原声明式存储 → 同一共享工作区路由 → 真实有界 HTTP/1.1 登录／查询／退出及
+[私人任务元数据](platform-task-index-connection.md)、[只读重开](platform-task-content-connection.md)及[手动空 Draft 创建](platform-task-create-connection.md)。独立[清单换版](platform-task-replace-connection.md)
+按预期修订接受完整标题／已有本人文本引用清单，不要求代码或 Run；不接 Artifact 发布、状态写入、正常教学 AppState、
+局域网、代理后端、浏览器／SDK 保存或分发路由。下文按日期记录的源码边仍保留原范围。
+
 **2026-10-16，已收录于 0.6.2：**[绑定会话链路](platform-session-connection.md)为原存储 → 单次新
 连接 → 同一业务事务内原目录／标记与 Source 固定 → 新鲜 Session／缺席读取 → 确认提交 → 显式 HTTP
 投影。无连接池回退、签发或正常应用挂载，Task／Artifact 资源组合仍独立。
@@ -81,7 +97,7 @@ Schema 3 元数据读取及当前 Session 下的所有者私有列表。每页�
 
 源码 0.5.5 上同日独立的**未发布[索引 HTTP 适配](task-content-index-http.md)**只增加显式
 GET 传输 → 已有当前会话索引 → 有界元数据投影。精确 `/platform/v1/task-index` 使用严格原始
-分页、私有响应头与共享响应存活期名额。它仍未挂载；旧内容路由及全部浏览器、SDK/OpenAPI、
+分页、私有响应头与共享响应存活期名额。后续原绑定宿主只挂载此索引；旧内容路由及全部浏览器、SDK/OpenAPI、
 存储、执行和恢复连接保持不变。
 
 独立的 **2026-10-11 未发布[大文件核心](large-file-core.md)**增加严格共享清单 → 有界

@@ -31,8 +31,10 @@ test("borrowed file helpers retain original pins and leave commit ownership with
   }
   const guard = codeOnly(await read("engine/src/services/auth_service/durable_source/private_work/mod.rs"));
   assert.match(guard, /relations: RelationPin/);
-  assert.match(guard, /let relations = RelationPin::capture/);
-  assert.match(guard, /self\.relations\.verify/);
+  assert.match(guard, /PrivateWorkContext::begin_for\(self\.authority_id, tx, token, target, scope\)/);
+  const authority = codeOnly(await read("engine/src/services/auth_service/durable_source/private_work/authority.rs"));
+  assert.match(authority, /RelationMode::Full => RelationPin::capture\(tx, true\)/);
+  assert.match(authority, /self\.relations\.verify/);
 });
 
 test("Session file metadata runner exactly inventories wired ignored cases", async () => {

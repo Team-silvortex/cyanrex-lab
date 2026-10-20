@@ -4,10 +4,13 @@ import test from "node:test";
 
 const source = (file) => readFile(new URL(`../../engine/src/services/auth_service/${file}`, import.meta.url), "utf8");
 
-function checkFreshnessStages(body, mutation, label) {
-  const stages = ["verify_current_totp", "prepare_otp_consumption", "recheck_otp_consumption"];
+function checkFreshnessStages(body, mutation, label, stages = [
+  /self\.verify_current_totp\s*\(/g,
+  /self\.prepare_otp_consumption\s*\(/g,
+  /self\.recheck_otp_consumption\s*\(/g,
+]) {
   const calls = stages.map((stage) => {
-    const matches = [...body.matchAll(new RegExp(`self\\.${stage}\\s*\\(`, "g"))];
+    const matches = [...body.matchAll(stage)];
     assert.equal(matches.length, 1, `${label}: exactly one ${stage} stage`);
     return matches[0].index;
   });
@@ -28,7 +31,20 @@ function checkFreshnessStages(body, mutation, label) {
 test("durable login checks current OTP after password work, before write and after final SQL", async () => {
   const sessions = await source("durable_source/sessions.rs");
   const login = sessions.slice(sessions.indexOf("pub async fn login("), sessions.indexOf("pub(super) async fn session_record("));
-  checkFreshnessStages(login, "INSERT INTO sessions", "login");
+  assert.match(login, /let context = LoginContext::from_source\(self\)/);
+  assert.match(login, /PreparedLoginRead::prepare\(&context, &mut tx, username\)\.await\?;\s*tx\.commit\(\)\.await\?;/);
+  assert.match(login, /prepared\.verify_password\(&context, password, otp\)\.await\?;[\s\S]*?verified\.prepare\(&context, &mut tx, otp, limits\)\.await\?;\s*prepared\.commit\(&context, tx, otp\)\.await/);
+  const shared = await source("durable_source/login_transaction.rs");
+  const protocol = shared.slice(shared.indexOf("let (salt, hash) ="));
+  checkFreshnessStages(protocol, "INSERT INTO sessions", "shared login", [
+    /otp::verify_at\s*\(/g,
+    /otp_consumption::prepare\s*\(/g,
+    /self\.pending_otp\s*\.recheck\s*\(/g,
+  ]);
+  assert.equal([...protocol.matchAll(/context\.now\(\)/g)].length, 3, "each login OTP stage uses the same source clock context");
+  assert.match(shared, /#\[cfg\(test\)\]\s+otp_clock\s*:/);
+  assert.match(shared, /#\[cfg\(test\)\]\s+otp_clock:\s*source\.otp_clock\.clone\(\)/);
+  assert.match(shared, /#\[cfg\(test\)\][\s\S]*?self\.otp_clock/);
 });
 
 test("durable password rotation checks current OTP after password work, before write and after final SQL", async () => {

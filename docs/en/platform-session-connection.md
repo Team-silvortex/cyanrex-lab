@@ -1,5 +1,15 @@
 # Existing Sessions over retained platform storage
 
+Source **0.6.3** includes explicit loopback/TLS hosting, limited Session issuance and private
+Task create/list/reopen/manifest replacement. Browser/SDK saving, new-byte publication, LAN access
+and migration remain absent; earlier implementation-stage labels retain their original scope.
+
+Unreleased after 0.6.2, the separate [bound login connector](platform-login-connection.md) adds
+explicit limited internal issuance. This query/logout capability and its HTTP state gain no login method.
+Its separate [login HTTP adapter](platform-login-http.md) also remains unmounted, without changing this capability.
+The [shared Session router](platform-session-router.md) privately shares one original storage binding
+between the separate command capabilities; this connector still has no issuer method.
+
 Included in **0.6.2** on **2026-10-16**, this follow-up after **0.6.1** connects the
 [retained storage connector](platform-storage-connection.md) to existing Session query/logout and
 the explicit [Session HTTP adapter](platform-session-lifecycle.md). It follows

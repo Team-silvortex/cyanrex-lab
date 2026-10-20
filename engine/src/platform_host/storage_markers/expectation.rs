@@ -8,6 +8,11 @@ pub struct PlatformStorageMarkerExpectation {
 }
 
 impl PlatformStorageMarkerExpectation {
+    /// Consume a checked assertion only inside host composition; never export a baseline getter.
+    pub(in crate::platform_host) fn into_catalog(self) -> PlatformCatalogExpectation {
+        self.catalog
+    }
+
     /// Fixed order: auth Source, identity, access, Task, Artifact schema markers.
     pub fn new(
         catalog: PlatformCatalogExpectation,

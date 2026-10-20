@@ -5,6 +5,88 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+No changes yet.
+
+## [0.6.3] - 2026-10-20
+
+This patch source release adds an independent low-privilege loopback platform host, native TLS,
+bounded Session issuance and owner-private Task creation, listing, reopening and Draft manifest
+replacement. Code and execution remain optional; Artifact publication, generic browser/SDK saving,
+LAN deployment, teaching-authentication migration and automatic recovery remain separate.
+Deployment diagnostics and package-control checks also improve.
+See [local release validation](reports/releases/0.6.3/README.md).
+
+### Added
+
+- Add title-only empty manual Draft creation at exact POST `/platform/v1/tasks`, deriving the owner
+  from the current audited Session and retaining the original storage. Confirm matching Task/outbox
+  records only after deferred side effects, original bindings and final authorization are checked.
+- Add current-owner manual Draft manifest replacement at exact PUT `/platform/v1/tasks/{task_id}/content`,
+  using expected revision and existing exact owned text references. Validate the complete old/new
+  content union before and after deferred writes; preserve immutable files, private ownership and
+  optimistic conflicts. Keep byte publication, status changes, execution and browser saving separate.
+- Add retained owner-private Task reopening at exact GET `/platform/v1/tasks/{task_id}`, with
+  empty payload and verified ordered text from exact Artifact revisions. Inherit the original root
+  descriptor, bound actual file workers through cancellation, and publish only after final current
+  Session/storage checks and confirmed commit. Keep Artifact publication, frontend saving and binary payloads separate.
+- Add an owner-private Task metadata index over the original retained platform storage binding,
+  including valid zero-payload Tasks and final same-transaction Session authorization. Compose it
+  with Session routes in the explicit plain/TLS loopback host with independent response admission;
+  preserve the old Session-only builder, narrow credential privileges and separate content capabilities/browser saving.
+- Add explicit `--notify-systemd` to the two loopback hosts, with one retained nonblocking Unix
+  datagram peer, post-verification Ready and pre-drain Stopping. Fail closed on notification errors
+  without skipping shutdown drain; add no installed service, watchdog, automatic restart or recovery.
+- Add native `serve-loopback-tls` over the same original-storage Session host, with strict private
+  certificate/key loading, positive key matching and exact IP SAN checks, bounded TLS admission and
+  Secure Cookies. Keep client trust, Cookie-safe domain planning, LAN and browser deployment separate.
+- Add Linux `cyanrex-platform serve-loopback` for the three platform Session routes with exact
+  low-privilege process/private format 3/original-storage gates, literal loopback authority and bounded
+  HTTP/1.1 admission. Drain existing work on signals without mutation retries or compensation; leave
+  LAN/TLS, proxy backends, teaching AppState and browser integration separate.
+- Add an independent, unmounted platform Session router combining login, query and logout over one
+  privately shared original storage binding. Preserve separate login/lifecycle admission lanes,
+  clone-shared login limits and existing command/Cookie behavior, without mounting teaching or host routes.
+- Add `open_platform_storage_expected` to create a retained storage connector only after complete
+  declared catalog/five-marker inspection, successful initial client close and original-root
+  rechecks. Capture connection options once, preserve read-only diagnostics, and add no host listener.
+- Add an independent, unmounted platform login HTTP adapter over the explicit retained issuer.
+  Bound pre-authentication rate, concurrent response lifetimes and streamed JSON; refuse existing
+  platform Cookies and project only confirmed success into one sensitive, host-only Session Cookie.
+  Keep delivery uncertainty explicit and existing teaching/lifecycle composition unchanged.
+- Add an explicit `PlatformLoginConnector` for limited existing-account login through retained
+  platform storage. Share private credential/OTP/stock stages with the original prepared Source,
+  recheck original bindings across password work and publish secrets only after confirmed commit;
+  keep query/logout capabilities, public HTTP issuance and teaching authentication separate.
+- Add the read-only `cyanrex-release package verify-controls` command for an installed offline
+  package. Reuse the existing matching-version metadata and three-control checksum checks without
+  reading runtime configuration or image contents, invoking deployment tools or relaxing full-package verification.
+
+### Changed
+
+- Make Helper environment/Runner observations explicit and page-local. Clear old results before
+  checking again, validate bounded complete responses, cancel obsolete waits and publish only a
+  complete successful pair; failed refreshes no longer leave an old readiness display.
+- Distinguish source-checkout and extracted-package Runner commands in deployment settings, with a
+  navigation link to environment checks, and document safe routine checks separately from disposable installation smoke.
+- Keep source-launcher status/log reads outside startup locks, preserve start/stop serialization,
+  and omit empty log service arguments. Replace debug shell tracing with a credential-safe notice.
+- Let diagnostics finish with missing optional configuration, preserve literal values without
+  executing them, and bound the loopback health request while rejecting invalid port targets.
+- Select source-launcher instance coordinates before locking with CLI > nonempty inherited environment
+  > literal file selectors > defaults. Share the project across start/stop/logs/status/diagnostics,
+  explicitly select the Compose env file, expand default volumes against the selected instance,
+  reject invalid IDs and refuse later target drift.
+- Validate offline deployment health settings before Docker operations, and use the dedicated public
+  `smoke wait-health` client with one request/body/retry deadline, bounded typed JSON and no proxy,
+  redirect or credentials. Preserve running services on health failure and report skipped checks as
+  unverified. Extract the generated deployment body into a static template while preserving package checksum coverage.
+
+### Fixed
+
+- Revalidate the original Artifact namespace and table shape after deferred Task creation effects,
+  rejecting changes such as enabled RLS even when markers remain unchanged. Preserve the narrow
+  metadata-only creation profile without weakening existing content-read permissions.
+
 ## [0.6.2] - 2026-10-16
 
 This patch source release connects existing Session operations to retained platform storage, adds

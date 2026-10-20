@@ -7,6 +7,14 @@ use std::path::PathBuf;
 use std::time::Duration;
 
 pub fn run(arguments: &[String]) -> Result<(), String> {
+    // A supplied wait budget must never be mistaken for a successful help request.
+    // Keep historical help parsing for existing smoke commands unchanged.
+    if arguments
+        .first()
+        .is_some_and(|value| value == "wait-health")
+    {
+        return crate::smoke_wait_health::run(&arguments[1..]);
+    }
     if arguments.is_empty()
         || arguments
             .iter()
@@ -260,7 +268,7 @@ fn numeric_option(
     Ok(value)
 }
 
-fn print_help() {
+pub(super) fn print_help() {
     println!(
         "Run native release acceptance probes\n\
          \n\
@@ -268,9 +276,16 @@ fn print_help() {
            cyanrex-release smoke health [options]\n\
            cyanrex-release smoke live-kernel [options]\n\
            cyanrex-release smoke runner-agent [options]\n\
+           cyanrex-release smoke wait-health --engine-url <origin> [options]\n\
          \n\
          Health options:\n\
            --engine-url <origin>       Engine URL (default: CYANREX_SMOKE_ENGINE_URL)\n\
+         \n\
+         Wait-health options (public GET /health only; no credentials, proxy or redirects):\n\
+           --engine-url <origin>       Required explicit HTTP(S) origin, including LAN HTTP\n\
+           --timeout-seconds <1-3600>  Total HTTP/body/poll deadline (default: 90)\n\
+           --poll-seconds <1-60>       Delay after a failed probe (default: 2)\n\
+           --check-only               Validate without any network request\n\
          \n\
          Live kernel options:\n\
            --engine-url <origin>       Engine URL (default: CYANREX_SMOKE_ENGINE_URL)\n\

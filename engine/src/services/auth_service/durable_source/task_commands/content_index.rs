@@ -1,9 +1,7 @@
 //! Owner-private metadata index, separate from Artifact reads and writable content handles.
+use super::super::task_index_transaction::PreparedTaskIndexRead;
 use super::*;
-use crate::services::{
-    task_catalog::TaskDefinitionCatalog,
-    task_store::{validate_index_page_request, TaskContentIndexPage, TaskContentIndexStore},
-};
+use crate::services::{task_catalog::TaskDefinitionCatalog, task_store::TaskContentIndexPage};
 
 /// Trusted namespace and optional frozen definitions, not a client-selected owner or resource path.
 /// No Artifact namespace is supplied: listing does not prove that task content is readable.
@@ -15,6 +13,12 @@ pub struct SessionTaskContentIndexWorkspace {
 }
 
 impl SessionTaskContentIndexWorkspace {
+    pub(in super::super) fn transaction_config(
+        &self,
+    ) -> (&str, WorkspaceRef, Option<&TaskDefinitionCatalog>) {
+        (&self.namespace, self.scope, self.definitions.as_ref())
+    }
+
     /// Trusted HTTP composition scopes a position-only cursor; requests cannot select this scope.
     #[cfg(unix)]
     pub(crate) fn index_scope(&self) -> WorkspaceRef {
@@ -53,32 +57,19 @@ impl DurableAuthSource {
         after: Option<TaskRef>,
         limit: Option<usize>,
     ) -> TaskResult<TaskContentIndexPage> {
-        if !valid_token(token) {
-            return Err(SessionCommandError::InvalidSession.into());
-        }
-        validate_index_page_request(workspace.scope, after, limit)?;
-        if workspace.scope.authority_id != self.authority_id {
-            return Err(DurableAuthError::SourceMismatch.into());
-        }
+        PreparedTaskIndexRead::validate(self.authority_id, token, workspace, after, limit)?;
         tokio::time::timeout(Duration::from_secs(10), async {
             let mut tx = self.transaction().await?;
-            let context = self
-                .begin_private_work(&mut tx, token, &workspace.namespace, workspace.scope)
-                .await?;
-            let store = match &workspace.definitions {
-                Some(catalog) => TaskContentIndexStore::from_definitions(
-                    self.pool.clone(),
-                    workspace.scope,
-                    catalog,
-                ),
-                None => TaskContentIndexStore::new(self.pool.clone(), workspace.scope),
-            };
-            // This borrowed read shares authorization, namespace pins and commit with the source.
-            // Owner identity comes only from the locked current Session, never from the cursor.
-            let pending = store
-                .list_in_transaction(&mut tx, context.owner, after, limit)
-                .await?;
-            context.finish(self, &mut tx).await?;
+            let prepared = PreparedTaskIndexRead::prepare(
+                self.authority_id,
+                &mut tx,
+                token,
+                workspace,
+                after,
+                limit,
+            )
+            .await?;
+            let pending = prepared.finish(&mut tx).await?;
             tx.commit().await?;
             Ok(pending)
         })

@@ -38,6 +38,23 @@ enum OriginalCatalog {
 }
 
 impl PlatformDatabaseConnector {
+    /// Only the host's expected-binding factory supplies these already validated local options.
+    /// Retain that same capture rather than reading any ambient startup options a second time.
+    pub(super) fn from_expected_options(
+        config: PlatformHostPreflightConfig,
+        expectation: PlatformCatalogExpectation,
+        options: PgConnectOptions,
+    ) -> Result<Self> {
+        if !expectation.config_matches(&config) {
+            return Err(PlatformDatabaseConnectionError::InvalidConfig);
+        }
+        Ok(Self {
+            config,
+            original: OriginalCatalog::Expected(expectation),
+            options,
+        })
+    }
+
     pub(super) fn binds_catalog(
         &self,
         config: &PlatformHostPreflightConfig,

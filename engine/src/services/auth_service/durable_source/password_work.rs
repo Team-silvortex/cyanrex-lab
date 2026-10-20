@@ -88,3 +88,7 @@ mod tests;
 #[cfg(test)]
 #[path = "login_password_sql_tests.rs"]
 mod login_sql_tests;
+
+#[cfg(all(test, target_os = "linux"))]
+#[path = "platform_login_gap_sql_tests.rs"]
+mod platform_login_gap_sql_tests;

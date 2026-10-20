@@ -1,5 +1,8 @@
 # 项目进度状态
 
+**源码 0.6.3 已收录：**显式[回环](platform-loopback-host.md)／[TLS](platform-loopback-tls-host.md)宿主、受限 [Session 签发](platform-login-http.md)及[原绑定任务索引](platform-task-index-connection.md)，将私人任务接入同一工作区组合。
+任务允许没有 payload、代码或 Run；另有[只读内容重开](platform-task-content-connection.md)、[手动空 Draft 创建](platform-task-create-connection.md)及[预期修订清单换版](platform-task-replace-connection.md)，可修改标题或已有的本人准确文本引用，不发布新 Artifact 字节。状态写入、浏览器／SDK 保存、局域网与迁移仍未接通；早期实施阶段标签保留原范围与证据。
+
 **2026-10-16，已收录于 0.6.2：**[绑定存储的会话连接](platform-session-connection.md)现将原存储
 观察接到已有查询／退出及显式 HTTP 状态。每次单次连接的业务事务保留目录／标记和 Source 守卫，
 另有[格式 3 诊断](platform-marker-expectation.md)在行读取前要求原目录／标记声明；不增加监听、

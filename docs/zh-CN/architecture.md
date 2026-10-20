@@ -1,5 +1,20 @@
 # 系统架构
 
+源码 **0.6.3** 已收录显式回环／TLS 宿主、受限 Session 签发及私人 Task 创建／列举／重开／清单换版。
+不接通浏览器／SDK 保存、新字节发布、局域网或存储迁移；早期实施阶段标签保留原范围与证据。
+
+未发布的[原生 HTTPS 回环模式](platform-loopback-tls-host.md)，在原宿主启动／存储／HTTP
+驱动上增加显式私有 TLS 身份及握手准入，客户端信任、Cookie 安全域及局域网／浏览器部署仍独立。
+
+可选[服务状态通知](platform-host-notifications.md)在进程检查后增加可信显式 Unix datagram
+生命周期通道，不安装服务托管，也不改变 Session 授权。
+
+0.6.2 之后未发布的独立 [Linux 回环 Session 宿主](platform-loopback-host.md)，现组合进程／
+私有输入守卫、一份原存储绑定、三条 Session 路由、[私人任务索引](platform-task-index-connection.md)、[只读重开](platform-task-content-connection.md)
+及[手动空 Draft 创建](platform-task-create-connection.md)；独立[Draft 清单换版](platform-task-replace-connection.md)
+修改标题或已有的本人准确文本引用，不要求代码或 Run。七条路由共享原绑定，六个响应通道彼此独立；
+不发布 Artifact 或写入状态，不挂载正常教学 AppState、局域网、代理后端或平台浏览器保存。
+
 先读精简的[当前架构图](architecture-map.md)：[运行接线](architecture-map.md#runtime-wiring)、
 职责与[变更边界](architecture-map.md#change-boundaries)。本文保留展开的实施决策及分日期
 跟进，不把所有切片合成一个已部署方案。

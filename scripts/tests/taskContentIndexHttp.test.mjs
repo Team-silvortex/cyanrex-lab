@@ -24,15 +24,19 @@ async function sources(directory, extension) {
 // Structural wiring and inventory guards only; Rust and disposable SQL tests prove behavior.
 test("metadata HTTP binds strict raw positional queries to one trusted current-Session command", async () => {
   const state = codeOnly(await read(`${directory}/mod.rs`));
-  assert.deepEqual(names(state, "TaskContentIndexHttpState"), ["source", "workspace", "origin", "admission"]);
+  assert.deepEqual(names(state, "TaskContentIndexHttpState"), ["backend", "origin", "admission"]);
   for (const pattern of [/SessionTaskContentIndexWorkspace/, /config::validate\(origin, &\[max_in_flight\]\)\?;/, /origin, 4\)/, /Arc::new\(Semaphore::new\(max_in_flight\)\)/, /response_headers/]) assert.match(state, pattern);
   const configuration = codeOnly(await read("engine/src/platform_http/config.rs"));
   assert.match(configuration, /security::validate_origin\(origin\)\?;[\s\S]*capacities\s*\.iter\(\)\s*\.any\([\s\S]*!\(1\.\.=16\)\.contains\(/);
   assert.ok(state.indexOf("config::validate(origin, &[max_in_flight])?") < state.indexOf("Semaphore::new(max_in_flight)"));
   const handler = codeOnly(await read(`${directory}/handlers.rs`));
-  assert.equal([...handler.matchAll(/\.list_session_content_tasks\s*\(/g)].length, 1);
-  for (const pattern of [/Method::GET/, /method_not_allowed\("GET"\)/, /request\.uri\(\)\.query\(\)/, /security::credentials/, /admission::acquire/, /admission::response/, /security::request_bytes\(request, true\)/, /state\.workspace\.index_scope\(\)/]) assert.match(handler, pattern);
-  assert.ok(handler.indexOf("request_bytes(request, true)") < handler.indexOf(".list_session_content_tasks("));
+  assert.equal([...handler.matchAll(/state\.backend\.list\s*\(/g)].length, 1);
+  assert.equal([...state.matchAll(/\.list_session_content_tasks\s*\(/g)].length, 2, "one command per exclusively selected backend");
+  assert.match(state, /Source\s*\{\s*source: DurableAuthSource,\s*workspace: SessionTaskContentIndexWorkspace/);
+  assert.match(state, /Platform\(Arc<PlatformTaskIndexConnector>\)/);
+  assert.doesNotMatch(state, /\.or_else\(|connect_lazy|\.validate_session\(/);
+  for (const pattern of [/Method::GET/, /method_not_allowed\("GET"\)/, /request\.uri\(\)\.query\(\)/, /security::credentials/, /admission::acquire/, /admission::response/, /security::request_bytes\(request, true\)/, /state\.backend\.scope\(\)/]) assert.match(handler, pattern);
+  assert.ok(handler.indexOf("request_bytes(request, true)") < handler.indexOf("state.backend.list("));
   const contract = codeOnly(await read(`${directory}/contract.rs`));
   assert.deepEqual(names(contract, "PageRequest"), ["after", "limit"]);
   for (const pattern of [/query\.len\(\) > 128/, /query\.split\('&'\)/, /split_once\('='\)/, /"after" if page\.after\.is_none\(\)/, /"limit" if page\.limit\.is_none\(\)/, /starts_with\('0'\)/, /is_ascii_digit/, /1\.\.=32/, /_ => return Err/]) assert.match(contract, pattern);

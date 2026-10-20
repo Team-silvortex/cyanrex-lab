@@ -14,12 +14,29 @@ mod commands;
 mod draft;
 #[cfg(test)]
 mod draft_tests;
+mod reader;
 mod records;
 mod schema;
 pub use draft::ArtifactDraft;
+pub(crate) use reader::ArtifactContentReader;
 const MAX_CONTENT: usize = 1_048_576;
 type Result<T> = std::result::Result<T, ArtifactStoreError>;
 type Tx<'a> = Transaction<'a, Postgres>;
+
+/// Namespace/schema pin only; no root opening, content read, publication or commit.
+pub(crate) async fn validate_artifact_namespace_in_transaction(
+    tx: &mut Tx<'_>,
+    scope: WorkspaceRef,
+) -> Result<()> {
+    schema::check_metadata_schema(scope, tx, true).await
+}
+
+fn check_scope(scope: WorkspaceRef, workspace: WorkspaceRef, owner: PrincipalRef) -> Result<()> {
+    if workspace != scope || owner.authority_id != scope.authority_id {
+        return Err(ArtifactStoreError::ScopeMismatch);
+    }
+    Ok(())
+}
 
 /// Reuse the existing read-only private-root walk without constructing a store or touching SQL.
 pub(crate) fn open_private_artifact_root(root: &Path) -> Result<std::fs::File> {
@@ -92,10 +109,7 @@ impl ArtifactStore {
         })
     }
     fn check_scope(&self, workspace: WorkspaceRef, owner: PrincipalRef) -> Result<()> {
-        if workspace != self.scope || owner.authority_id != self.scope.authority_id {
-            return Err(ArtifactStoreError::ScopeMismatch);
-        }
-        Ok(())
+        check_scope(self.scope, workspace, owner)
     }
     async fn transaction(&self, readonly: bool) -> Result<Tx<'_>> {
         let mut tx = prepared_resource_sql::begin(&self.pool, readonly).await?;
@@ -103,16 +117,12 @@ impl ArtifactStore {
         Ok(tx)
     }
     async fn read_blob(&self, revision: &ArtifactRevision) -> Result<Vec<u8>> {
-        let (blobs, revision) = (self.blobs.clone(), revision.clone());
-        tokio::task::spawn_blocking(move || blobs.read(&revision))
+        ArtifactContentReader::from_store(self)
+            .read_blob(revision)
             .await
-            .map_err(|_| ArtifactStoreError::BlobUnavailable)?
     }
     async fn verify_blob_root(&self) -> Result<()> {
-        let blobs = self.blobs.clone();
-        tokio::task::spawn_blocking(move || blobs.verify())
-            .await
-            .map_err(|_| ArtifactStoreError::BlobUnavailable)?
+        ArtifactContentReader::from_store(self).verify_root().await
     }
     /// Exact revision only. Neither digest knowledge nor shared content bypasses owner filtering.
     pub async fn read(
@@ -123,7 +133,9 @@ impl ArtifactStore {
         self.check_scope(reference.workspace, owner)?;
         bounded(async {
             let mut tx = self.transaction(true).await?;
-            let result = self.read_content(&mut tx, reference, owner, false).await?;
+            let result = ArtifactContentReader::from_store(self)
+                .read_content(&mut tx, reference, owner, false)
+                .await?;
             tx.commit().await?;
             Ok(result)
         })
@@ -137,41 +149,15 @@ impl ArtifactStore {
         reference: &ArtifactRef,
         owner: PrincipalRef,
     ) -> Result<Option<ArtifactContent>> {
-        self.check_scope(reference.workspace, owner)?;
-        self.read_content(tx, reference, owner, true).await
+        ArtifactContentReader::from_store(self)
+            .read_in_transaction(tx, reference, owner)
+            .await
     }
 
     /// Pin schema metadata even when a trusted composition has no content references to read.
     pub(crate) async fn validate_namespace_in_transaction(&self, tx: &mut Tx<'_>) -> Result<()> {
-        self.check_schema(tx, true).await
-    }
-
-    async fn read_content(
-        &self,
-        tx: &mut Tx<'_>,
-        reference: &ArtifactRef,
-        owner: PrincipalRef,
-        lock: bool,
-    ) -> Result<Option<ArtifactContent>> {
-        self.check_schema(tx, lock).await?;
-        let Some(head) = self.head(tx, reference.artifact_id, owner, lock).await? else {
-            return Ok(None);
-        };
-        let found = if head.reference.revision_id == reference.revision_id {
-            Some(head.clone())
-        } else {
-            self.revision(tx, reference.artifact_id, reference.revision_id, owner)
-                .await?
-        };
-        let Some(revision) = found else {
-            return Ok(None);
-        };
-        if revision.reference != *reference
-            || u64::from(revision.sequence) > u64::from(head.sequence)
-        {
-            return Err(ArtifactStoreError::InvalidRecord);
-        }
-        let bytes = self.read_blob(&revision).await?;
-        Ok(Some(ArtifactContent { revision, bytes }))
+        ArtifactContentReader::from_store(self)
+            .validate_namespace_in_transaction(tx)
+            .await
     }
 }

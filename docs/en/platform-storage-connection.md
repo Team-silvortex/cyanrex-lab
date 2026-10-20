@@ -1,5 +1,9 @@
 # Platform connections with retained storage bindings
 
+Source **0.6.3** includes explicit loopback/TLS hosting, limited Session issuance and private
+Task create/list/reopen/manifest replacement. Browser/SDK saving, new-byte publication, LAN access
+and migration remain absent; earlier implementation-stage labels retain their original scope.
+
 Included in source **0.6.1** on **2026-10-15**; see [release validation](../../reports/releases/0.6.1/README.md).
 The implementation-stage wording below keeps its original scope; source inclusion is not deployment acceptance.
 
@@ -8,6 +12,9 @@ This Unreleased follow-up after **0.6.0**, under
 database connector, five storage-marker observations and private Artifact-root observation.
 Each explicit call returns one fresh connection only after comparing all three original bindings.
 It is an unmounted library, not a running platform host or current Session authorization.
+
+The separate Unreleased [expected-storage opener](platform-storage-open.md) now inspects complete
+trusted declarations and confirms the initial close before returning this retained capability.
 
 ## Explicit construction
 

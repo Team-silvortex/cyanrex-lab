@@ -83,10 +83,14 @@ async fn unavailable_session_task_commands_never_fall_back_or_accept_actor_claim
 #[test]
 fn session_task_adapter_cannot_use_detached_authentication_or_live_composition() {
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
-    let source = std::fs::read_to_string(
-        root.join("src/services/auth_service/durable_source/task_commands/mod.rs"),
-    )
-    .unwrap();
+    let read = |file| {
+        std::fs::read_to_string(
+            root.join("src/services/auth_service/durable_source")
+                .join(file),
+        )
+        .unwrap()
+    };
+    let source = read("task_commands/mod.rs");
     for forbidden in [
         "validate_session(",
         "command_actor(",
@@ -105,12 +109,43 @@ fn session_task_adapter_cannot_use_detached_authentication_or_live_composition()
     ] {
         assert!(source.contains(helper), "{helper}");
     }
-    let guard = std::fs::read_to_string(
-        root.join("src/services/auth_service/durable_source/private_work/mod.rs"),
-    )
-    .unwrap();
-    assert!(guard.contains("recheck_command_session"));
-    assert!(!guard.contains("validate_session("));
+    let guard = read("private_work/mod.rs");
+    let authority = read("private_work/authority.rs");
+    for text in [&guard, &authority] {
+        for forbidden in ["validate_session(", "command_actor(", "AppState"] {
+            assert!(!text.contains(forbidden), "{forbidden}");
+        }
+    }
+    let compact = |text: &str| text.split_whitespace().collect::<String>();
+    let guard = compact(&guard);
+    let authority = compact(&authority);
+    assert!(guard
+        .contains("PrivateWorkContext::begin_for(self.authority_id,tx,token,target,scope).await"));
+    assert!(guard.contains("self.finish_retained(source,tx).await"));
+    assert!(guard.contains("self.finish_retained_for(source.authority_id,tx).await"));
+    assert!(authority
+        .contains("Self::begin(authority_id,tx,token,target,scope,RelationMode::Full).await"));
+    assert!(authority.contains("letsession=session_transaction::record(authority_id,tx,&digest).await?.ok_or(SessionCommandError::InvalidSession)?"));
+    let finish = authority
+        .split_once("asyncfnfinish_retained_for(")
+        .unwrap()
+        .1
+        .split_once("asyncfnfinish_from_source_for(")
+        .unwrap()
+        .0;
+    assert!(finish.contains("self.targets[self.selected].verify(tx).await?;self.check_authority_for(authority_id,tx).await?;self.recheck_session_for(authority_id,tx).await"));
+    let recheck = authority
+        .split_once("asyncfnrecheck_session_for(")
+        .unwrap()
+        .1;
+    assert!(recheck.contains("ifsession_transaction::record(authority_id,tx,&self.digest).await?.as_ref()!=Some(&self.session){returnErr(SessionCommandError::InvalidSession.into());}Ok(())"));
+    let record = compact(&read("session_transaction.rs"));
+    assert!(record.contains("FORSHAREOFs,u"));
+    assert!(
+        record.contains("ifexpires_at<=DurableAuthSource::now(connection).await?{returnOk(None);}")
+    );
+    assert!(compact(&source)
+        .contains("context.finish(self,&muttx).await?;tx.commit().await?;Ok(pending)"));
     for file in ["src/state.rs", "src/application.rs"] {
         assert!(!std::fs::read_to_string(root.join(file))
             .unwrap()

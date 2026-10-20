@@ -7,8 +7,15 @@ use chrono::{DateTime, Utc};
 mod catalog;
 #[path = "content_commands.rs"]
 mod commands;
+#[path = "content_create.rs"]
+mod create;
 #[path = "content_records.rs"]
 mod records;
+#[path = "content_replace.rs"]
+mod replacement;
+pub(crate) use create::create_manual_content_in_transaction;
+pub(super) use records::read_content_record;
+pub(crate) use replacement::replace_manual_content_in_transaction;
 
 /// A stored metadata pair. This value is not a credential or evidence that referenced bytes exist.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -66,35 +73,53 @@ impl TaskContentStore {
         reference: TaskRef,
         owner: PrincipalRef,
     ) -> Result<Option<TaskContentSnapshot>> {
-        self.store.check_scope(reference, owner)?;
-        self.store.check_schema(tx, true).await?;
-        self.read(tx, reference, owner, true).await
+        get_content_in_transaction(
+            tx,
+            self.store.scope,
+            self.definitions.as_ref(),
+            reference,
+            owner,
+        )
+        .await
     }
 
     fn check_manifest_scope(&self, manifest: &TaskContentManifest) -> Result<()> {
-        if manifest
-            .payload()
-            .iter()
-            .any(|item| item.artifact().workspace != self.store.scope)
-        {
-            return Err(TaskStoreError::ScopeMismatch);
-        }
-        Ok(())
+        check_manifest_scope(self.store.scope, manifest)
     }
 
+    #[cfg(test)]
     fn validate_record(&self, snapshot: &TaskContentSnapshot) -> Result<()> {
-        self.store.validate_snapshot(&snapshot.task)?;
-        match (&self.definitions, &snapshot.task.definition) {
-            (None, None) => {}
-            (Some(catalog), Some(definition))
-                if catalog.get(&definition.reference) == Some(definition) => {}
-            _ => return Err(TaskStoreError::InvalidRecord),
-        }
-        snapshot
-            .manifest
-            .validate_task_snapshot(&snapshot.task)
-            .map_err(|_| TaskStoreError::InvalidRecord)
+        validate_content_record(self.store.scope, self.definitions.as_ref(), snapshot)
     }
+}
+
+fn check_manifest_scope(scope: WorkspaceRef, manifest: &TaskContentManifest) -> Result<()> {
+    if manifest
+        .payload()
+        .iter()
+        .any(|item| item.artifact().workspace != scope)
+    {
+        return Err(TaskStoreError::ScopeMismatch);
+    }
+    Ok(())
+}
+
+fn validate_content_record(
+    scope: WorkspaceRef,
+    definitions: Option<&TaskDefinitionCatalog>,
+    snapshot: &TaskContentSnapshot,
+) -> Result<()> {
+    task_records::validate_snapshot(scope, &snapshot.task)?;
+    match (definitions, &snapshot.task.definition) {
+        (None, None) => {}
+        (Some(catalog), Some(definition))
+            if catalog.get(&definition.reference) == Some(definition) => {}
+        _ => return Err(TaskStoreError::InvalidRecord),
+    }
+    snapshot
+        .manifest
+        .validate_task_snapshot(&snapshot.task)
+        .map_err(|_| TaskStoreError::InvalidRecord)
 }
 
 fn next_revision(revision: RevisionNumber) -> Result<RevisionNumber> {

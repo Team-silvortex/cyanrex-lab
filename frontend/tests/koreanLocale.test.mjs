@@ -27,7 +27,7 @@ test("Korean is an explicit selectable locale with a complete independent dictio
   assert.ok(translations.ko, "persisted Korean preferences must resolve their own dictionary");
   assert.notEqual(translations.ko, translations.en);
   const korean = flatten(translations.ko);
-  assert.equal(Object.keys(english).length, 865);
+  assert.equal(Object.keys(english).length, 870);
   assert.deepEqual(Object.keys(korean).sort(), Object.keys(english).sort());
   for (const [key, value] of Object.entries(korean)) {
     assert.ok(value.trim(), key);
@@ -43,7 +43,9 @@ test("Korean translates critical identity safety editor and local-only notices r
     "classroom.discoveryHint", "classroom.joinImpact", "safety.title", "safety.running", "safety.failed", "safety.compilerTarget",
     "editor.localOnly", "editorIntelligence.ariaLabel", "editorIntelligence.plainText", "editorIntelligence.snippets.rust.fn",
     "taskDraft.importFilesConfirm", "taskDraft.filesAdded", "settings.verifyBeforeSave", "learn.documentFallback",
-    "aiAgents.endpointHint", "aiAgents.credentialRef", "runtimeText.missingGpl", "runtimeText.cHoverPass"]) {
+    "aiAgents.endpointHint", "aiAgents.credentialRef", "runtimeText.missingGpl", "runtimeText.cHoverPass",
+    "helper.explicitCheckHint", "helper.checkFailed", "settings.runnerSourceCheckout",
+    "settings.runnerOfflinePackage", "settings.runnerEnvironmentCheck"]) {
     assert.match(korean[key], /[\uac00-\ud7a3]/u, key);
     assert.notEqual(korean[key], english[key], key);
   }

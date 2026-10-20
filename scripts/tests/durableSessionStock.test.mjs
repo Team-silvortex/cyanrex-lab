@@ -23,33 +23,38 @@ test("Session stock is explicit trusted configuration without a legacy or HTTP s
 
 test("bounded login retains one original protocol and checks stock around original writes", async () => {
   const sessions = codeOnly(await read(`${auth}/sessions.rs`));
+  const shared = codeOnly(await read(`${auth}/login_transaction.rs`));
   assert.match(sessions, /pub async fn login_with_session_limits\(/);
   assert.match(sessions, /login_inner\([\s\S]*?None\)/);
   assert.match(sessions, /login_inner\([\s\S]*?Some\(limits\)/);
   assert.match(sessions, /SET TRANSACTION ISOLATION LEVEL READ COMMITTED/);
-  assert.match(sessions, /SET CONSTRAINTS ALL IMMEDIATE/);
-  assert.match(sessions, /SessionSourcePin::capture/);
-  assert.match(sessions, /consume_login_otp/);
-  assert.match(sessions, /recheck_otp_consumption/);
-  const prepare = sessions.indexOf("self.prepare_otp_consumption");
-  const before = sessions.indexOf("limits.check_before", prepare);
-  const consume = sessions.indexOf("consume_login_otp", before);
-  const insertion = sessions.indexOf("INSERT INTO sessions", consume);
-  const flush = sessions.indexOf("SET CONSTRAINTS ALL IMMEDIATE", insertion);
-  const sourceReadback = sessions.indexOf("pin.verify", flush);
-  const selectedSession = sessions.indexOf("self.session_record", sourceReadback);
-  const after = sessions.indexOf("stock.verify_after", selectedSession);
-  const proof = sessions.indexOf("self.recheck_otp_consumption", after);
-  const commit = sessions.indexOf("tx.commit().await?", proof);
+  assert.match(sessions, /PreparedLoginRead::prepare\(&context, &mut tx, username\)\.await\?;\s*tx\.commit\(\)\.await\?;/);
+  assert.match(sessions, /let verified = prepared\.verify_password\(&context, password, otp\)\.await\?;/);
+  assert.match(sessions, /let prepared = verified\.prepare\(&context, &mut tx, otp, limits\)\.await\?;\s*prepared\.commit\(&context, tx, otp\)\.await/);
+  assert.doesNotMatch(sessions, /INSERT INTO sessions|consume_login_otp|otp_consumption::prepare/);
+  assert.match(shared, /SET CONSTRAINTS ALL IMMEDIATE/);
+  assert.match(shared, /SessionSourcePin::capture_for/);
+  assert.match(shared, /consume_login_otp/);
+  const prepare = shared.indexOf("otp_consumption::prepare");
+  const before = shared.indexOf("limits.check_before", prepare);
+  const consume = shared.indexOf("consume_login_otp", before);
+  const insertion = shared.indexOf("INSERT INTO sessions", consume);
+  const flush = shared.indexOf("SET CONSTRAINTS ALL IMMEDIATE", insertion);
+  const sourceReadback = shared.indexOf(".verify_for", flush);
+  const selectedSession = shared.indexOf("super::session_transaction::record", sourceReadback);
+  const after = shared.indexOf("stock.verify_after", selectedSession);
+  const proof = shared.indexOf(".recheck(", after);
+  const commit = shared.indexOf("tx.commit().await?", proof);
   assert.ok(prepare >= 0 && prepare < before && before < consume && consume < insertion &&
     insertion < flush && flush < sourceReadback && sourceReadback < selectedSession &&
     selectedSession < after && after < proof && proof < commit);
-  assert.doesNotMatch(sessions.slice(proof, commit), /\.await/);
-  for (const statement of ["SET TRANSACTION ISOLATION LEVEL READ COMMITTED", "SET CONSTRAINTS ALL IMMEDIATE"]) {
-    assert.match(sessions, new RegExp(`if limits\\.is_some\\(\\)\\s*\\{[^{}]*${statement}`));
+  assert.doesNotMatch(shared.slice(proof, commit), /\.await/);
+  for (const [body, statement] of [[sessions, "SET TRANSACTION ISOLATION LEVEL READ COMMITTED"], [shared, "SET CONSTRAINTS ALL IMMEDIATE"]]) {
+    assert.match(body, new RegExp(`if limits\\.is_some\\(\\)\\s*\\{[^{}]*${statement}`));
   }
-  assert.equal([...sessions.matchAll(/\bverify_password\(/g)].length, 1);
-  assert.doesNotMatch(sessions, /prune_expired_sessions|DELETE FROM sessions[\s\S]*?expires_at|SET TRANSACTION READ WRITE/);
+  assert.equal([...sessions.matchAll(/\.verify_password\(/g)].length, 1);
+  assert.equal([...shared.matchAll(/let password_matches = verify_password\(/g)].length, 1);
+  assert.doesNotMatch(`${sessions}\n${shared}`, /prune_expired_sessions|DELETE FROM sessions[\s\S]*?expires_at|SET TRANSACTION READ WRITE/);
   const stock = codeOnly(await read(`${auth}/session_stock.rs`));
   assert.match(stock, /COUNT\(\*\)|count\(\*\)/);
   assert.match(stock, /LIMIT \$\d/);

@@ -32,6 +32,8 @@ mod artifact_commands;
 mod bootstrap;
 #[cfg(unix)]
 mod catalog_draft_publication;
+#[cfg(unix)]
+pub(crate) mod content_payload;
 mod credentials;
 mod deletion;
 #[cfg(unix)]
@@ -51,6 +53,7 @@ mod file_publishing;
 mod file_recipient_commands;
 #[cfg(unix)]
 mod file_sharing;
+pub(crate) mod login_transaction;
 mod namespace;
 mod otp;
 mod otp_consumption;
@@ -70,6 +73,13 @@ pub(crate) mod session_transaction;
 mod sessions;
 mod source_relations;
 mod task_commands;
+#[cfg(unix)]
+pub(crate) mod task_content_transaction;
+#[cfg(unix)]
+pub(crate) mod task_create_transaction;
+pub(crate) mod task_index_transaction;
+#[cfg(unix)]
+pub(crate) mod task_replace_transaction;
 
 #[cfg(unix)]
 pub use artifact_commands::{SessionArtifactError, SessionArtifactWorkspace};
@@ -282,28 +292,10 @@ impl DurableAuthSource {
             .try_get("now")?)
     }
     fn admit_login(&self, username: &LegacyUsername) -> Result<()> {
-        let mut attempts = self
-            .attempts
-            .lock()
-            .map_err(|_| DurableAuthError::StorageUnavailable)?;
-        let window = Duration::from_secs(300);
-        attempts.retain(|_, (_, at)| at.elapsed() < window);
-        if !attempts.contains_key(username.as_str()) && attempts.len() >= 1024 {
-            return Err(DurableAuthError::RateLimited);
-        }
-        let (count, _) = attempts
-            .entry(username.to_string())
-            .or_insert((0, Instant::now()));
-        if *count >= 5 {
-            return Err(DurableAuthError::RateLimited);
-        }
-        *count += 1;
-        Ok(())
+        login_transaction::LoginContext::from_source(self).admit(username)
     }
     fn clear_login_attempts(&self, username: &LegacyUsername) {
-        if let Ok(mut attempts) = self.attempts.lock() {
-            attempts.remove(username.as_str());
-        }
+        login_transaction::LoginContext::from_source(self).clear(username);
     }
 }
 

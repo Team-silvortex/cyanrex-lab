@@ -15,6 +15,7 @@ mod smoke_health;
 mod smoke_http;
 mod smoke_live_kernel;
 mod smoke_runner_agent;
+mod smoke_wait_health;
 mod ssh_cli;
 mod strict_json;
 
@@ -58,8 +59,8 @@ fn print_help() {
          Usage:\n\
            cyanrex-release candidate verify <bundle> [options]\n\
            cyanrex-release evidence <create|verify> [options]\n\
-           cyanrex-release package <extract|verify|verify-loaded-images> [options]\n\
-           cyanrex-release smoke <health|live-kernel|runner-agent> [options]\n\
+           cyanrex-release package <extract|verify|verify-controls|verify-loaded-images> [options]\n\
+           cyanrex-release smoke <health|wait-health|live-kernel|runner-agent> [options]\n\
            cyanrex-release ssh <plan|apply> [options]\n\
            cyanrex-release --version\n\
          \n\

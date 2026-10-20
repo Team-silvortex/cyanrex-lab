@@ -21,24 +21,92 @@ pub(super) fn encode(snapshot: &TaskContentSnapshot) -> Result<(String, String)>
     Ok((task, manifest))
 }
 
-impl TaskContentStore {
-    fn decode(
-        &self,
-        task: Option<String>,
-        manifest: Option<String>,
-    ) -> Result<TaskContentSnapshot> {
-        // Neither SQL NULL nor an over-limit projection means "metadata absent" in schema 3.
-        let task = serde_json::from_str(&task.ok_or(TaskStoreError::InvalidRecord)?)
-            .map_err(|_| TaskStoreError::InvalidRecord)?;
-        let manifest = TaskContentManifest::parse_json(
-            manifest.ok_or(TaskStoreError::InvalidRecord)?.as_bytes(),
-        )
+fn decode(
+    scope: WorkspaceRef,
+    definitions: Option<&TaskDefinitionCatalog>,
+    task: Option<String>,
+    manifest: Option<String>,
+) -> Result<TaskContentSnapshot> {
+    // Neither SQL NULL nor an over-limit projection means "metadata absent" in schema 3.
+    let task = serde_json::from_str(&task.ok_or(TaskStoreError::InvalidRecord)?)
         .map_err(|_| TaskStoreError::InvalidRecord)?;
-        let snapshot = TaskContentSnapshot { task, manifest };
-        self.validate_record(&snapshot)?;
-        Ok(snapshot)
-    }
+    let manifest =
+        TaskContentManifest::parse_json(manifest.ok_or(TaskStoreError::InvalidRecord)?.as_bytes())
+            .map_err(|_| TaskStoreError::InvalidRecord)?;
+    let snapshot = TaskContentSnapshot { task, manifest };
+    validate_content_record(scope, definitions, &snapshot)?;
+    Ok(snapshot)
+}
 
+/// Strict schema-3 head/event decoding on the caller's transaction, without a pool or commit.
+pub(in crate::services::task_store) async fn read_content_record(
+    tx: &mut Tx<'_>,
+    scope: WorkspaceRef,
+    definitions: Option<&TaskDefinitionCatalog>,
+    reference: TaskRef,
+    owner: PrincipalRef,
+    lock: bool,
+) -> Result<Option<TaskContentSnapshot>> {
+    let statement = if lock {
+        "SELECT owner_id, revision, CASE WHEN octet_length(snapshot) <= 32768 THEN snapshot END AS snapshot,
+            CASE WHEN octet_length(manifest) <= 65536 THEN manifest END AS manifest
+            FROM collaboration_tasks WHERE task_id = $1 AND owner_id = $2 FOR UPDATE"
+    } else {
+        "SELECT owner_id, revision, CASE WHEN octet_length(snapshot) <= 32768 THEN snapshot END AS snapshot,
+            CASE WHEN octet_length(manifest) <= 65536 THEN manifest END AS manifest
+            FROM collaboration_tasks WHERE task_id = $1 AND owner_id = $2"
+    };
+    let Some(row) = sqlx::query(statement)
+        .bind(reference.task_id.as_uuid())
+        .bind(owner.principal_id.as_uuid())
+        .fetch_optional(&mut **tx)
+        .await?
+    else {
+        return Ok(None);
+    };
+    let snapshot = decode(
+        scope,
+        definitions,
+        row.try_get("snapshot")?,
+        row.try_get("manifest")?,
+    )?;
+    if snapshot.task.reference != reference
+        || snapshot.task.owner != owner
+        || row.try_get::<uuid::Uuid, _>("owner_id")? != owner.principal_id.as_uuid()
+        || row.try_get::<i64, _>("revision")? != u64::from(snapshot.task.revision) as i64
+    {
+        return Err(TaskStoreError::InvalidRecord);
+    }
+    // A new statement after FOR UPDATE sees the winner's committed event. Ordinary reads
+    // instead run under the shared repeatable-read transaction, so the pair cannot tear.
+    let event = sqlx::query(
+        "SELECT event_id, actor_id, revision, event_type,
+            CASE WHEN octet_length(snapshot) <= 32768 THEN snapshot END AS snapshot,
+            CASE WHEN octet_length(manifest) <= 65536 THEN manifest END AS manifest
+            FROM collaboration_task_outbox WHERE task_id = $1 ORDER BY revision DESC LIMIT 1",
+    )
+    .bind(reference.task_id.as_uuid())
+    .fetch_optional(&mut **tx)
+    .await?
+    .ok_or(TaskStoreError::InvalidRecord)?;
+    let recorded = decode(
+        scope,
+        definitions,
+        event.try_get("snapshot")?,
+        event.try_get("manifest")?,
+    )?;
+    if recorded != snapshot
+        || event.try_get::<uuid::Uuid, _>("event_id")?.is_nil()
+        || event.try_get::<uuid::Uuid, _>("actor_id")? != owner.principal_id.as_uuid()
+        || event.try_get::<i64, _>("revision")? != u64::from(snapshot.task.revision) as i64
+        || event.try_get::<String, _>("event_type")? != event_type(&snapshot.task)
+    {
+        return Err(TaskStoreError::InvalidRecord);
+    }
+    Ok(Some(snapshot))
+}
+
+impl TaskContentStore {
     pub(in crate::services::task_store) async fn read(
         &self,
         tx: &mut Tx<'_>,
@@ -46,53 +114,15 @@ impl TaskContentStore {
         owner: PrincipalRef,
         lock: bool,
     ) -> Result<Option<TaskContentSnapshot>> {
-        let statement = if lock {
-            "SELECT owner_id, revision, CASE WHEN octet_length(snapshot) <= 32768 THEN snapshot END AS snapshot,
-            CASE WHEN octet_length(manifest) <= 65536 THEN manifest END AS manifest
-            FROM collaboration_tasks WHERE task_id = $1 AND owner_id = $2 FOR UPDATE"
-        } else {
-            "SELECT owner_id, revision, CASE WHEN octet_length(snapshot) <= 32768 THEN snapshot END AS snapshot,
-            CASE WHEN octet_length(manifest) <= 65536 THEN manifest END AS manifest
-            FROM collaboration_tasks WHERE task_id = $1 AND owner_id = $2"
-        };
-        let Some(row) = sqlx::query(statement)
-            .bind(reference.task_id.as_uuid())
-            .bind(owner.principal_id.as_uuid())
-            .fetch_optional(&mut **tx)
-            .await?
-        else {
-            return Ok(None);
-        };
-        let snapshot = self.decode(row.try_get("snapshot")?, row.try_get("manifest")?)?;
-        if snapshot.task.reference != reference
-            || snapshot.task.owner != owner
-            || row.try_get::<uuid::Uuid, _>("owner_id")? != owner.principal_id.as_uuid()
-            || row.try_get::<i64, _>("revision")? != u64::from(snapshot.task.revision) as i64
-        {
-            return Err(TaskStoreError::InvalidRecord);
-        }
-        // A new statement after FOR UPDATE sees the winner's committed event. Ordinary reads
-        // instead run under the shared repeatable-read transaction, so the pair cannot tear.
-        let event = sqlx::query(
-            "SELECT event_id, actor_id, revision, event_type,
-            CASE WHEN octet_length(snapshot) <= 32768 THEN snapshot END AS snapshot,
-            CASE WHEN octet_length(manifest) <= 65536 THEN manifest END AS manifest
-            FROM collaboration_task_outbox WHERE task_id = $1 ORDER BY revision DESC LIMIT 1",
+        read_content_record(
+            tx,
+            self.store.scope,
+            self.definitions.as_ref(),
+            reference,
+            owner,
+            lock,
         )
-        .bind(reference.task_id.as_uuid())
-        .fetch_optional(&mut **tx)
-        .await?
-        .ok_or(TaskStoreError::InvalidRecord)?;
-        let recorded = self.decode(event.try_get("snapshot")?, event.try_get("manifest")?)?;
-        if recorded != snapshot
-            || event.try_get::<uuid::Uuid, _>("event_id")?.is_nil()
-            || event.try_get::<uuid::Uuid, _>("actor_id")? != owner.principal_id.as_uuid()
-            || event.try_get::<i64, _>("revision")? != u64::from(snapshot.task.revision) as i64
-            || event.try_get::<String, _>("event_type")? != event_type(&snapshot.task)
-        {
-            return Err(TaskStoreError::InvalidRecord);
-        }
-        Ok(Some(snapshot))
+        .await
     }
 
     pub(super) async fn update_and_confirm(
@@ -101,61 +131,85 @@ impl TaskContentStore {
         snapshot: &TaskContentSnapshot,
         expected_revision: RevisionNumber,
     ) -> Result<()> {
-        self.validate_record(snapshot)?;
-        let (raw, metadata) = encode(snapshot)?;
-        confirmed_one(
-            sqlx::query(
-                "UPDATE collaboration_tasks SET revision = $3, snapshot = $4, manifest = $5
-            WHERE task_id = $1 AND owner_id = $2 AND revision = $6",
-            )
-            .bind(snapshot.task.reference.task_id.as_uuid())
-            .bind(snapshot.task.owner.principal_id.as_uuid())
-            .bind(u64::from(snapshot.task.revision) as i64)
-            .bind(&raw)
-            .bind(&metadata)
-            .bind(u64::from(expected_revision) as i64)
-            .execute(&mut **tx)
-            .await?
-            .rows_affected(),
-        )?;
-        self.append_and_confirm(tx, snapshot, &raw, &metadata).await
+        update_and_confirm(
+            tx,
+            self.store.scope,
+            self.definitions.as_ref(),
+            snapshot,
+            expected_revision,
+        )
+        .await
     }
+}
 
-    pub(super) async fn append_and_confirm(
-        &self,
-        tx: &mut Tx<'_>,
-        snapshot: &TaskContentSnapshot,
-        raw: &str,
-        manifest: &str,
-    ) -> Result<()> {
-        confirmed_one(
-            sqlx::query(
-                "INSERT INTO collaboration_task_outbox
+pub(super) async fn update_and_confirm(
+    tx: &mut Tx<'_>,
+    scope: WorkspaceRef,
+    definitions: Option<&TaskDefinitionCatalog>,
+    snapshot: &TaskContentSnapshot,
+    expected_revision: RevisionNumber,
+) -> Result<()> {
+    validate_content_record(scope, definitions, snapshot)?;
+    let (raw, metadata) = encode(snapshot)?;
+    confirmed_one(
+        sqlx::query(
+            "UPDATE collaboration_tasks SET revision = $3, snapshot = $4, manifest = $5
+            WHERE task_id = $1 AND owner_id = $2 AND revision = $6",
+        )
+        .bind(snapshot.task.reference.task_id.as_uuid())
+        .bind(snapshot.task.owner.principal_id.as_uuid())
+        .bind(u64::from(snapshot.task.revision) as i64)
+        .bind(&raw)
+        .bind(&metadata)
+        .bind(u64::from(expected_revision) as i64)
+        .execute(&mut **tx)
+        .await?
+        .rows_affected(),
+    )?;
+    append_and_confirm(tx, scope, definitions, snapshot, &raw, &metadata).await
+}
+
+pub(super) async fn append_and_confirm(
+    tx: &mut Tx<'_>,
+    scope: WorkspaceRef,
+    definitions: Option<&TaskDefinitionCatalog>,
+    snapshot: &TaskContentSnapshot,
+    raw: &str,
+    manifest: &str,
+) -> Result<()> {
+    confirmed_one(
+        sqlx::query(
+            "INSERT INTO collaboration_task_outbox
             (event_id, task_id, revision, actor_id, event_type, snapshot, manifest)
             VALUES ($1, $2, $3, $4, $5, $6, $7)",
-            )
-            .bind(uuid::Uuid::new_v4())
-            .bind(snapshot.task.reference.task_id.as_uuid())
-            .bind(u64::from(snapshot.task.revision) as i64)
-            .bind(snapshot.task.owner.principal_id.as_uuid())
-            .bind(event_type(&snapshot.task))
-            .bind(raw)
-            .bind(manifest)
-            .execute(&mut **tx)
-            .await?
-            .rows_affected(),
-        )?;
-        self.store.check_schema(tx, true).await?;
-        // Head/event agreement alone misses a trigger rewriting both consistently. Compare the
-        // entire pair with the expected operation, not merely its references or current revision.
-        if self
-            .read(tx, snapshot.task.reference, snapshot.task.owner, true)
-            .await?
-            .as_ref()
-            != Some(snapshot)
-        {
-            return Err(TaskStoreError::InvalidRecord);
-        }
-        Ok(())
+        )
+        .bind(uuid::Uuid::new_v4())
+        .bind(snapshot.task.reference.task_id.as_uuid())
+        .bind(u64::from(snapshot.task.revision) as i64)
+        .bind(snapshot.task.owner.principal_id.as_uuid())
+        .bind(event_type(&snapshot.task))
+        .bind(raw)
+        .bind(manifest)
+        .execute(&mut **tx)
+        .await?
+        .rows_affected(),
+    )?;
+    schema::check_schema_in_transaction(tx, scope, TASK_CONTENT_STORAGE_VERSION, true).await?;
+    // Head/event agreement alone misses a trigger rewriting both consistently. Compare the
+    // entire pair with the expected operation, not merely its references or current revision.
+    if read_content_record(
+        tx,
+        scope,
+        definitions,
+        snapshot.task.reference,
+        snapshot.task.owner,
+        true,
+    )
+    .await?
+    .as_ref()
+        != Some(snapshot)
+    {
+        return Err(TaskStoreError::InvalidRecord);
     }
+    Ok(())
 }

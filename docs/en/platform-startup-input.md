@@ -1,5 +1,12 @@
 # Private platform startup configuration check
 
+Source **0.6.3** includes explicit loopback/TLS hosting, limited Session issuance and private
+Task create/list/reopen/manifest replacement. Browser/SDK saving, new-byte publication, LAN access
+and migration remain absent; earlier implementation-stage labels retain their original scope.
+
+The separate Unreleased [loopback host](platform-loopback-host.md) runs only complete format 3
+input with its exact local Origin/bind policy. It does not change the diagnostic commands below.
+
 The **2026-10-16 Unreleased** [format 3](platform-marker-expectation.md) requires both complete
 catalog and five-marker identity declarations. Formats 1/2 retain their original diagnostic meaning;
 neither may include `marker_identity`, even null. The private-file gates and 16 KiB limit are unchanged.

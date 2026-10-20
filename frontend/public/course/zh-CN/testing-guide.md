@@ -1,5 +1,60 @@
 # 当前项目测试指南
 
+源码 **0.6.3** 已收录显式回环／TLS 宿主、受限 Session 签发及私人 Task 创建／列举／重开／清单换版。
+不接通浏览器／SDK 保存、新字节发布、局域网或存储迁移；早期实施阶段标签保留原范围与证据。
+
+未发布的[手动 Draft 清单换版](platform-task-replace-connection.md)增加十条 HTTP 单测及
+`bash scripts/test-platform-task-replace-connection.sh` 十条准确 SQL／HTTP／真实宿主选择，覆盖
+预期修订、空／仅标题修改与已有文本引用、严格 PUT、原绑定和旧／新字节、当前授权、延期故障
+及第六响应通道；不代表 Artifact 发布、状态写入或浏览器／SDK 集成。
+
+未发布的[空任务创建](platform-task-create-connection.md)增加十条 HTTP 单测及
+`bash scripts/test-platform-task-create-connection.sh` 八条准确 SQL／HTTP／真实宿主选择，覆盖
+私人手动 Draft、严格版本／标识／标题输入、原绑定、受限写入、最终会话检查、冲突／未知结果
+及独立第五响应通道；不代表载荷发布、浏览器保存、SDK/OpenAPI 或自动重试。
+
+未发布的[原绑定内容读取](platform-task-content-connection.md)新增八条只读 HTTP 单测、原根／worker
+单测及 `bash scripts/test-platform-task-content-connection.sh` 八条准确 SQL／真实宿主选择，覆盖空任务、
+按序准确文本、所有者／账号、原描述符、损坏、窄权限、实际过期等待与取消；旧 Task／Artifact 写入及
+索引／宿主仍按独立回归组验证。
+
+未发布的[原绑定任务索引](platform-task-index-connection.md)增加四条工作区路由单测，以及
+`bash scripts/test-platform-task-index-connection.sh` 八条准确 SQL／HTTP／真实宿主用例，覆盖
+空 payload、双所有者隔离、原对象漂移、真实等待／最终过期、严格预读、受限权限及响应存活期；
+浏览器保存仍独立。
+
+可选[服务状态通知](platform-host-notifications.md)增加真实 Unix datagram、清空能力 CLI 默认测试，
+及下列 TLS 宿主 runner 的三条准确 SQL 选择，覆盖 Ready／Stopping、启动拒绝与发送失败后真实
+排空；不证明已安装服务托管。
+
+未发布的[原生 HTTPS 回环宿主](platform-loopback-tls-host.md)，增加默认私有材料／真实 TLS
+传输和 CLI 测试，以及 `bash scripts/test-platform-loopback-tls-host.sh` 的原五条 SQL；
+加上通知三条，runner 现共八条准确选择。
+需要 OpenSSL 生成一次性测试身份，产品宿主不调用它。客户端 CA／IP、SNI／ALPN、握手准入及
+Secure Cookie 不证明浏览器或已部署局域网验收。
+
+未发布的[回环宿主](platform-loopback-host.md)新增真实 CLI 拒绝、私有 TCP 传输测试及
+`bash scripts/test-platform-loopback-host.sh` 的八条准确 SQL／子进程用例，覆盖原启动绑定、
+真实 HTTP 登录／查询／退出、权限及可观测信号排空。合成 TCP 路由不绕过生产启动，也不证明
+浏览器／局域网／TLS 验收。
+
+未发布的[共享 Session 路由](platform-session-router.md)新增默认组合传输测试及
+`bash scripts/test-platform-session-router.sh` 七条准确 SQL 用例，覆盖同一真实绑定、独立通道、
+原对象漂移及确认后交付取消。默认关闭 Source 夹具只证明后端失败，真实查询／退出须由 SQL 验证。
+
+未发布的[声明式存储打开](platform-storage-open.md)新增默认本地探针测试及
+`bash scripts/test-platform-storage-open.sh` 的七条准确一次性 PostgreSQL 选择，验证声明到保留
+绑定、只读权限、身份漂移及真实锁等待取消，不证明已挂载宿主或浏览器／局域网验收。
+
+独立未发布的[登录 HTTP 适配](platform-login-http.md)新增私有默认传输测试及
+`bash scripts/test-platform-login-http.sh` 的七条准确受限角色 SQL 用例，覆盖有界准入、
+敏感 Cookie 投影及确认后未交付响应；不证明浏览器送达、丢失 COMMIT 确认、TLS 或已挂载宿主。
+
+未发布的[保留绑定登录连接器](platform-login-connection.md)新增 API／默认测试及
+`bash scripts/test-platform-login-connection.sh`：十二条受限角色 SQL 用例，加三条观察真实排队
+密码工作的准确库测试，核对连接／锁释放、取消后名额保留、原绑定漂移和最初账号缺失。
+只使用一次性 `CYANREX_TEST_DATABASE_URL`；这是内部签发验证，不是公共登录或局域网验收。
+
 [格式 3 标记声明](platform-marker-expectation.md)新增三条纯值、九条严格输入测试，以及
 `bash scripts/test-platform-marker-expectation.sh` 的五条显式 SQL 选择，验证原身份声明／当前
 诊断兼容，不是已部署宿主或局域网安全验收。

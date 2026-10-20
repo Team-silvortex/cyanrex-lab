@@ -5,6 +5,7 @@ COMPOSE_FILE="$ROOT_DIR/docker/docker-compose.yml"
 ENV_FILE="$ROOT_DIR/docker/.env"
 COMPOSE_CMD=()
 source "$ROOT_DIR/scripts/start-lock.sh"
+source "$ROOT_DIR/scripts/runtime-config.sh"
 ensure_runtime_secrets() {
   if [ ! -f "$ENV_FILE" ]; then
     require_cmd openssl
@@ -29,50 +30,17 @@ ensure_runtime_secrets() {
       "CYANREX_ROTATE_ADMIN_CREDENTIALS=false" > "$ENV_FILE"
     echo "[cyanrex] Generated private runtime credentials in docker/.env (mode 0600)."
   fi
+  local runtime_shell
+  runtime_shell="$(runtime_env_read shell)"
   set -a
-  # shellcheck disable=SC1090
-  source "$ENV_FILE"
+  # Non-selector settings remain a trusted shell file, evaluated against the selected instance.
+  source /dev/stdin <<< "$runtime_shell"
   set +a
-  : "${CYANREX_INSTANCE_ID:=default}"
-  : "${CYANREX_ENGINE_PORT:=8080}"
-  : "${CYANREX_FRONTEND_PORT:=3000}"
-  : "${CYANREX_POSTGRES_PORT:=15432}"
-  : "${CYANREX_BIND_ADDRESS:=127.0.0.1}"
-  : "${CYANREX_COMPOSE_PROJECT:=cyanrex-${CYANREX_INSTANCE_ID}}"
+  if [ "$(runtime_target_snapshot)" != "$SELECTED_RUNTIME_TARGET" ]; then
+    echo "Error: runtime configuration changed the locked target; no deployment started." >&2
+    return 1
+  fi
   LOCAL_DATABASE_URL="postgres://postgres:${POSTGRES_PASSWORD}@localhost:${CYANREX_POSTGRES_PORT}/cyanrex"
-}
-sanitize_instance_id() {
-  local value="${1:-default}"
-  value="${value//[^a-zA-Z0-9_-]/}"
-  if [ -z "$value" ]; then
-    value="default"
-  fi
-  printf "%s" "$value"
-}
-validate_port() {
-  local name="$1"
-  local value="$2"
-  if ! [[ "$value" =~ ^[0-9]+$ ]]; then
-    echo "Error: --${name} must be numeric. Got: ${value}" >&2
-    exit 1
-  fi
-  if [ "$value" -lt 1 ] || [ "$value" -gt 65535 ]; then
-    echo "Error: --${name} must be in range 1..65535. Got: ${value}" >&2
-    exit 1
-  fi
-}
-normalize_and_apply_runtime_env() {
-  CYANREX_INSTANCE_ID="$(sanitize_instance_id "${CYANREX_INSTANCE_ID}")"
-  validate_port engine "$CYANREX_ENGINE_PORT"
-  validate_port frontend "$CYANREX_FRONTEND_PORT"
-  validate_port postgres "$CYANREX_POSTGRES_PORT"
-  CYANREX_COMPOSE_PROJECT="cyanrex-${CYANREX_INSTANCE_ID}"
-  export CYANREX_INSTANCE_ID
-  export CYANREX_ENGINE_PORT
-  export CYANREX_FRONTEND_PORT
-  export CYANREX_POSTGRES_PORT
-  export CYANREX_BIND_ADDRESS
-  export CYANREX_COMPOSE_PROJECT
 }
 parse_runtime_overrides() {
   RUNTIME_ARGS=()
@@ -152,9 +120,9 @@ usage() {
   cat <<'USAGE'
 Usage:
   ./start.sh start [--mode auto|docker|wsl|native] [options]
-  ./start.sh diagnose
-  ./start.sh stop|status [--instance-id <id>]
-  ./start.sh logs [service]
+  ./start.sh diagnose [options]
+  ./start.sh stop|status [options]
+  ./start.sh logs [service] [options]
 Modes:
   --mode docker  Full stack in Docker (default).
   --mode wsl     Native engine/frontend inside WSL2.
@@ -196,7 +164,7 @@ resolve_compose_command() {
 }
 compose() {
   resolve_compose_command
-  "${COMPOSE_CMD[@]}" -p "${CYANREX_COMPOSE_PROJECT}" -f "$COMPOSE_FILE" "$@"
+  "${COMPOSE_CMD[@]}" --env-file "$(runtime_compose_env_file)" -p "${CYANREX_COMPOSE_PROJECT}" -f "$COMPOSE_FILE" "$@"
 }
 require_native_linux_host() {
   if [ "$1" = "native-linux" ] && [ "$(uname -s 2>/dev/null)" != "Linux" ]; then
@@ -320,7 +288,6 @@ start_docker_stack() {
 
   require_cmd docker
   ensure_runtime_secrets
-  normalize_and_apply_runtime_env
   run_instance_conflict_check docker
   run_host_preflight
   check_registry_mirrors
@@ -367,7 +334,6 @@ start_local_stack() {
   require_cmd npm
   require_cmd sudo
   ensure_runtime_secrets
-  normalize_and_apply_runtime_env
   run_instance_conflict_check local
   RUNNING_LOCAL_STACK=1
   run_host_preflight
@@ -431,11 +397,7 @@ status_stack() {
 
 logs_stack() {
   require_cmd docker
-  if [ $# -gt 0 ]; then
-    compose logs -f "$1"
-  else
-    compose logs -f
-  fi
+  compose logs -f "$@"
 }
 
 assert_supported_options() {
@@ -483,11 +445,8 @@ if [ "$action" = "--local" ]; then
   set -- "start" "--local"
 fi
 
-CYANREX_INSTANCE_ID="${CYANREX_INSTANCE_ID:-default}"
-CYANREX_ENGINE_PORT="${CYANREX_ENGINE_PORT:-8080}"
-CYANREX_FRONTEND_PORT="${CYANREX_FRONTEND_PORT:-3000}"
-CYANREX_POSTGRES_PORT="${CYANREX_POSTGRES_PORT:-15432}"
-CYANREX_BIND_ADDRESS="${CYANREX_BIND_ADDRESS:-127.0.0.1}"
+case "$action" in -h|--help|help) usage; exit 0 ;; esac
+load_runtime_selectors
 SKIP_CONFLICT_CHECK="${SKIP_CONFLICT_CHECK:-0}"
 SKIP_START_LOCK="${SKIP_START_LOCK:-0}"
 CYANREX_DEBUG="${CYANREX_DEBUG:-0}"
@@ -497,7 +456,8 @@ if [ "$#" -gt 0 ]; then
 fi
 parse_runtime_overrides "$@"
 normalize_and_apply_runtime_env
-if [ "${CYANREX_DEBUG:-0}" = "1" ]; then CYANREX_DEBUG=1; set -x; fi
+readonly SELECTED_RUNTIME_TARGET="$(runtime_target_snapshot)"
+if [ "${CYANREX_DEBUG:-0}" = "1" ]; then echo "[cyanrex] Debug mode: command tracing is disabled to protect runtime credentials."; fi
 
 case "$action" in
   start)
@@ -560,7 +520,7 @@ case "$action" in
     esac
   ;;
   stop)
-    assert_supported_options "stop" --instance-id --skip-start-lock --debug
+    assert_supported_options "stop" --instance-id --engine-port --frontend-port --postgres-port --bind-address --skip-start-lock --debug
     with_instance_lock
     if [ "${#RUNTIME_ARGS[@]}" -gt 0 ]; then
       echo "Unknown argument(s) for stop: ${RUNTIME_ARGS[*]}" >&2
@@ -570,8 +530,7 @@ case "$action" in
     stop_stack
     ;;
   status)
-    assert_supported_options "status" --instance-id --skip-start-lock --debug
-    with_instance_lock
+    assert_supported_options "status" --instance-id --engine-port --frontend-port --postgres-port --bind-address --skip-start-lock --debug
     if [ "${#RUNTIME_ARGS[@]}" -gt 0 ]; then
       echo "Unknown argument(s) for status: ${RUNTIME_ARGS[*]}" >&2
       usage
@@ -580,14 +539,14 @@ case "$action" in
     status_stack
     ;;
   diagnose)
-    assert_supported_options "diagnose" --debug
+    assert_supported_options "diagnose" --debug --instance-id --engine-port --frontend-port --postgres-port --bind-address
+    if [ "${#RUNTIME_ARGS[@]}" -gt 0 ]; then echo "Unknown arguments for diagnose." >&2; exit 1; fi
     "$ROOT_DIR/scripts/debug-system.sh"
     ;;
   logs)
-    assert_supported_options "logs" --instance-id --skip-start-lock --debug
-    with_instance_lock
+    assert_supported_options "logs" --instance-id --engine-port --frontend-port --postgres-port --bind-address --skip-start-lock --debug
     extract_log_service_arg
-    logs_stack "$LOG_SERVICE"
+    logs_stack "${RUNTIME_ARGS[@]}"
     ;;
   -h|--help|help)
     usage

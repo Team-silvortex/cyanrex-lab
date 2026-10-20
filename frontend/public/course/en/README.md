@@ -9,14 +9,14 @@ identity, content, task and review services are explicitly configured preparatio
 payload editor is local-only, and autonomous AI and general Run orchestration are not implemented.
 
 This index describes the whole project, not only its first teaching domain. The source version is
-**0.6.2** (**2026-10-16**), adding bound Session operations, format 3 marker identities and internal
-startup/HTTP/Task-controller separation. The 0.6.1 startup, storage and Session privilege work remains.
+**0.6.3**, including explicit loopback/TLS hosting, limited Session issuance and private Task
+create/list/reopen/manifest replacement. The **2026-10-16 0.6.2** bound Session, format 3 and internal startup/HTTP/Task-controller separation, plus the 0.6.1 startup/storage/Session privilege work, remain.
 The 0.6.0 layouts, independent Session lifecycle/stock and original read-only storage gates remain.
 Local multi-file authoring, private task metadata indexing and large-file preparation remain included.
 Earlier task decoupling, C2-O–AA, Next.js 15.5.27, AI host adapters and security boundaries remain in place.
-Source inclusion does not connect generic browser saving, switch live authentication, migrate storage or
-validate a deployment. Dated `Unreleased` descriptions retain their original implementation stage,
-source versions and verification scope; they are not fresh 0.6.2 execution records.
+Source inclusion does not connect browser/SDK saving, publish new Artifact bytes, switch live authentication,
+add LAN access, migrate storage or validate a deployment. Dated `Unreleased` descriptions retain their original
+implementation stage, source versions and verification scope; they are not fresh 0.6.3 execution records.
 The documents distinguish source-release contents, live runtime capabilities
 and target architecture; a built module or passing test does not imply an online deployment.
 
@@ -53,7 +53,8 @@ It returns bounded pages without Artifact reads, HTTP/SDK/UI, writes, migration 
 follow-up is separate from the preceding release and verification records.
 
 A separate **[index HTTP adapter](task-content-index-http.md), included in 0.5.6,**
-projects that current-Session page at exact `GET /platform/v1/task-index`. It remains unmounted,
+projects that current-Session page at exact `GET /platform/v1/task-index`. The later retained-host
+[index connection](platform-task-index-connection.md) mounts it only in the explicit workspace host,
 with strict raw pagination queries and private response-lifetime admission; existing content routers,
 Session issuance, SDK/OpenAPI and browser behavior do not change.
 
@@ -85,7 +86,18 @@ without replacing the draft or connecting server saving (Unreleased after 0.5.8)
 | Check a private startup configuration after the Linux process gate | [Private startup input](platform-startup-input.md); Unreleased after 0.6.0, strict JSON and file checks without connecting or starting a host |
 | Run one read-only storage diagnostic from that private input | [Storage check](platform-storage-check.md); Unreleased after 0.6.0, actual root/catalog/marker checks and connection close, not a retained runtime baseline |
 | Open fresh connections against retained catalog, marker and root observations | [Retained storage connections](platform-storage-connection.md); Unreleased after 0.6.0, explicit caller-selected bindings, not a pool, current authorization or running host |
+| Open a retained binding from complete trusted declarations | [Expected-storage opener](platform-storage-open.md); Unreleased, declared checks and confirmed close before capability handoff; the factory itself starts no listener |
 | Query or end an existing Session through retained platform storage | [Bound Session connections](platform-session-connection.md); Included in 0.6.2, same-transaction original storage/Source guards, no pool, issuer or mounted host |
+| Log in an existing account against that original binding | [Bound login](platform-login-connection.md); Unreleased after 0.6.2, explicit limited internal issuance, not public HTTP login, Cookie delivery or a running host |
+| Project confirmed login into a dedicated Cookie | [Login HTTP adapter](platform-login-http.md); Unreleased, independently constructed and unmounted; bounded request admission, not deployed TLS or browser authentication |
+| Combine login, Session query and logout over one original binding | [Shared Session router](platform-session-router.md); Unreleased, independent admission lanes and one private fallback; no normal application or browser mounting |
+| List owner-private Task metadata without code or execution | [Retained Task index](platform-task-index-connection.md); Unreleased, original storage and final current-Session authorization; no content reopening or browser saving |
+| Reopen your saved empty or text-payload Task through the independent host | [Retained content reads](platform-task-content-connection.md); Unreleased, original root descriptor and verified exact revisions, GET-only; no writes or browser integration |
+| Create your own manual Draft without payload, code or a Run | [Retained empty Task creation](platform-task-create-connection.md); Unreleased, strict ID/title POST and final current-Session authorization; no payload publication, browser saving or SDK/OpenAPI |
+| Revise a manual Draft title or its existing exact text references | [Retained manifest replacement](platform-task-replace-connection.md); Unreleased, expected-revision PUT and verified old/new owned bytes; no Artifact publication, status writes or browser/SDK integration |
+| Run Session routes and private Task creation/reads/replacement in a low-privilege Linux process | [Loopback host](platform-loopback-host.md); Unreleased, format 3 and exact Origin/bind, bounded HTTP/1.1 and signal drain; no LAN/TLS, proxy backend or browser integration |
+| Run the same routes directly over native HTTPS loopback | [TLS loopback host](platform-loopback-tls-host.md); Unreleased, private certificate/key and IP SAN checks, bounded handshake and Secure Cookie; no CA installation, LAN/browser or Cookie-port isolation |
+| Report host startup and shutdown to an explicitly selected service manager | [Service notifications](platform-host-notifications.md); Unreleased, opt-in Ready/Stopping over Unix datagrams, not installed supervision, continuous health or recovery |
 | Declare original catalog and five-marker identities before the first inspection | [Marker identity declarations](platform-marker-expectation.md); Included in 0.6.2, strict format 3 diagnostics, no baseline adoption or host startup |
 | Recheck an explicitly selected original private Artifact directory | [Artifact root preflight](platform-artifact-root.md); 0.6.0 metadata-only observation, not content health or runtime handoff |
 | Bind five storage version declarations and their scope to an original catalog | [Storage marker observation](platform-storage-markers.md); 0.6.0 marker-only preparation, not complete schema compatibility or authority health |

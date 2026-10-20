@@ -107,6 +107,17 @@ impl BlobDirectory {
             directory,
         })
     }
+    pub(super) fn from_retained_root(path: &Path, original: &File) -> Result<Self> {
+        let directory = original
+            .try_clone()
+            .map_err(|_| ArtifactStoreError::BlobUnavailable)?;
+        let retained = Self {
+            path: path.to_owned(),
+            directory,
+        };
+        retained.verify()?;
+        Ok(retained)
+    }
     pub(super) fn verify(&self) -> Result<()> {
         let operation = || -> std::io::Result<()> {
             let visible = open_root(&self.path)?;

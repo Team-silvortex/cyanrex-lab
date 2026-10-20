@@ -1,5 +1,24 @@
 # Platform capability tensor and maturity
 
+Source **0.6.3** includes explicit loopback/TLS hosting, limited Session issuance and private
+Task create/list/reopen/manifest replacement. Browser/SDK saving, new-byte publication, LAN access
+and migration remain absent; earlier implementation-stage labels retain their original scope.
+
+Unreleased [retained content reads](platform-task-content-connection.md) add exact saved text/empty
+Task reopening with original descriptors, bounded workers and actual host tests. This does not
+rescore the dated tensor or establish browser saving, sharing or deployed classroom acceptance.
+
+The Unreleased [retained Task index](platform-task-index-connection.md) adds original-storage,
+current-owner metadata and actual host tests, including zero-payload Tasks. This does not rescore
+the dated tensor or establish content reopening, browser saving or classroom deployment.
+
+The Unreleased [native HTTPS loopback host](platform-loopback-tls-host.md) adds actual bounded TLS
+transport and Secure Cookie tests, not a dated tensor rescore, browser receipt or deployed-LAN review.
+
+The Unreleased [loopback Session host](platform-loopback-host.md), after 0.6.2, adds actual
+low-privilege CLI/HTTP composition and explicit process/TCP/SQL tests. It does not rescore this dated
+tensor or establish LAN/TLS, proxy-backend or browser acceptance.
+
 The October 12 Unreleased [authorized chunk snapshots](large-file-chunk-read.md) connect bounded
 private bytes and original-authority reentry. A separate [binary HTTP adapter](large-file-chunk-http.md)
 adds unmounted exact GET and byte-owner admission. These notes do not rescore the dated tensor,

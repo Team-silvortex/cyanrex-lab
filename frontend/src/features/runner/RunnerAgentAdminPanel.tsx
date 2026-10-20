@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { useConfirmedAction } from "../../components/useConfirmedAction";
 
@@ -81,7 +82,17 @@ function RunnerAgentAdmin({ engineUrl }: Props) {
         <div className="panel" style={{ borderLeft: "4px solid #f3b33d", marginTop: 10 }}>
           <strong>{t("settings.runnerDisabled")}</strong>
           <p className="meta">{t("settings.runnerDisabledHint")}</p>
-          <code>./scripts/runner-agent.sh start</code>
+          <div className="grid cols-2">
+            <div>
+              <p className="meta">{t("settings.runnerSourceCheckout")}</p>
+              <code style={{ overflowWrap: "anywhere" }}>./scripts/runner-agent.sh start</code>
+            </div>
+            <div>
+              <p className="meta">{t("settings.runnerOfflinePackage")}</p>
+              <code style={{ overflowWrap: "anywhere" }}>./runner-agent.sh start</code>
+            </div>
+          </div>
+          <p className="meta"><Link href="/helper">{t("settings.runnerEnvironmentCheck")}</Link></p>
         </div>
       )}
 

@@ -1,5 +1,68 @@
 # Current project testing guide
 
+Source **0.6.3** includes explicit loopback/TLS hosting, limited Session issuance and private
+Task create/list/reopen/manifest replacement. Browser/SDK saving, new-byte publication, LAN access
+and migration remain absent; earlier implementation-stage labels retain their original scope.
+
+Unreleased [manual Draft manifest replacement](platform-task-replace-connection.md) adds ten HTTP units
+and ten exact SQL/HTTP/actual-host selections in `bash scripts/test-platform-task-replace-connection.sh`.
+Coverage includes expected revisions, empty/title-only and existing text references, strict PUT input,
+original bindings and old/new bytes, current authority, deferred faults, and the sixth response lane.
+These checks do not establish Artifact publication, status writes or browser/SDK integration.
+
+Unreleased [empty Task creation](platform-task-create-connection.md) adds ten HTTP units and eight exact
+SQL/HTTP/actual-host selections in `bash scripts/test-platform-task-create-connection.sh`. They cover
+owner-private manual Draft creation, strict version/ID/title input, original bindings, restricted writes,
+final Session checks, conflict/unknown outcomes and an independent fifth response lane. These tests do
+not establish payload publication, browser saving, SDK/OpenAPI or automatic retries.
+
+Unreleased [retained content reads](platform-task-content-connection.md) add eight read-only HTTP
+units, original-root/worker units and eight exact SQL/actual-host selections in
+`bash scripts/test-platform-task-content-connection.sh`. They verify empty and exact ordered text,
+owner/account isolation, original descriptors, corruption, narrow permissions, observed expiry waits
+and cancellation. Old Task/Artifact writes and index/host flows remain separate regression cohorts.
+
+The Unreleased [retained Task index](platform-task-index-connection.md) adds four workspace-router
+units and eight exact SQL/HTTP/actual-host cases in `bash scripts/test-platform-task-index-connection.sh`.
+They cover zero-payload Tasks, two-owner isolation, original drift, observed waits/final expiry,
+strict lookahead, restricted privileges and response lifetime; browser saving remains separate.
+
+The optional [service notifications](platform-host-notifications.md) add actual Unix-datagram and
+capless CLI defaults plus three exact SQL selections in the TLS-host runner below. Ready/Stopping,
+startup refusal and failed delivery with observed drain do not prove installed service supervision.
+
+The Unreleased [native HTTPS loopback host](platform-loopback-tls-host.md) adds default private-material
+and real TLS transport/CLI tests plus five original SQL cases in the now eight-case
+`bash scripts/test-platform-loopback-tls-host.sh` runner.
+OpenSSL is required to generate disposable test identities, not to run the host. Client CA/IP checks,
+SNI/ALPN, handshake admission and Secure Cookies do not establish browser or deployed-LAN acceptance.
+
+The Unreleased [loopback host](platform-loopback-host.md) adds actual CLI rejection and private TCP
+transport tests, plus eight exact SQL/child-process selections in `bash scripts/test-platform-loopback-host.sh`.
+They cover original startup bindings, real HTTP login/query/logout, permissions and observed signal
+drains. Synthetic TCP routers do not bypass production startup or establish browser/LAN/TLS acceptance.
+
+The Unreleased [shared Session router](platform-session-router.md) adds default combined-transport
+tests and seven exact SQL cases in `bash scripts/test-platform-session-router.sh`, covering one
+genuine binding, independent lanes, original drift and cancelled confirmed delivery. The closed-Source
+default fixture proves backend failure only; real query/logout success requires the SQL runner.
+
+The Unreleased [expected-storage opener](platform-storage-open.md) adds default local-probe tests
+and seven exact disposable PostgreSQL selections in `bash scripts/test-platform-storage-open.sh`.
+They verify declared-to-retained binding, readonly permissions, identity drift and observed lock-wait
+cancellation, not a mounted host or browser/LAN acceptance.
+
+The separate Unreleased [login HTTP adapter](platform-login-http.md) adds private default transport
+tests and seven exact restricted-role SQL cases in `bash scripts/test-platform-login-http.sh`.
+They cover bounded admission, sensitive Cookie projection and confirmed-but-undelivered responses;
+they do not prove browser receipt, lost COMMIT acknowledgement, TLS or a mounted host.
+
+The Unreleased [retained login connector](platform-login-connection.md) adds an API/default target
+and `bash scripts/test-platform-login-connection.sh`: twelve restricted-role SQL cases plus three
+exact library cases observing real queued password work. The latter verify connection/lock release,
+permit retention after cancellation, original-binding drift and initial-account absence. Use only a
+disposable `CYANREX_TEST_DATABASE_URL`; these are internal issuance tests, not public login or LAN acceptance.
+
 [Format 3 marker declarations](platform-marker-expectation.md) add three pure value tests, nine
 strict input tests and five opt-in SQL selections in `bash scripts/test-platform-marker-expectation.sh`.
 They verify declared identities/current-diagnostic compatibility, not deployed host or LAN security.

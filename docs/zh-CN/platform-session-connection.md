@@ -1,5 +1,14 @@
 # 保留平台存储绑定的已有会话操作
 
+源码 **0.6.3** 已收录显式回环／TLS 宿主、受限 Session 签发及私人 Task 创建／列举／重开／清单换版。
+不接通浏览器／SDK 保存、新字节发布、局域网或存储迁移；早期实施阶段标签保留原范围与证据。
+
+0.6.2 之后未发布的独立[登录连接器](platform-login-connection.md)增加显式受限内部签发。
+本查询／退出能力及其 HTTP 状态不新增登录方法。
+其独立[登录 HTTP 适配](platform-login-http.md)同样未挂载，不改变本能力。
+[共享 Session 路由](platform-session-router.md)在两种独立命令能力间私有共享一份原存储绑定，
+本连接器仍不增加签发方法。
+
 **2026-10-16 收录于 0.6.2**，此 0.6.1 之后的跟进将
 [保留存储绑定的连接器](platform-storage-connection.md)接到已有 Session 查询／退出及
 显式 [Session HTTP 适配](platform-session-lifecycle.md)。此切片遵循

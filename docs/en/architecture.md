@@ -1,5 +1,24 @@
 # System Architecture
 
+Source **0.6.3** includes explicit loopback/TLS hosting, limited Session issuance and private
+Task create/list/reopen/manifest replacement. Browser/SDK saving, new-byte publication, LAN access
+and migration remain absent; earlier implementation-stage labels retain their original scope.
+
+The Unreleased [native HTTPS loopback mode](platform-loopback-tls-host.md) reuses that host's
+startup, original storage and HTTP driver with explicit private TLS identity and handshake admission.
+Client trust, Cookie-safe domain planning and deployed LAN/browser access remain separate.
+
+Optional [service notifications](platform-host-notifications.md) add a trusted, explicit Unix-datagram
+lifecycle channel after process checks, without installing supervision or changing Session authority.
+
+Unreleased after 0.6.2, the independent [Linux loopback Session host](platform-loopback-host.md)
+now composes process/private-input gates, one original storage binding, three Session routes and
+the [owner-private Task metadata index](platform-task-index-connection.md), [read-only content reopening](platform-task-content-connection.md)
+and [empty manual Draft creation](platform-task-create-connection.md). Separate [Draft manifest replacement](platform-task-replace-connection.md)
+updates titles or existing exact owned text references; code and Run remain optional. Its seven routes share
+one original binding and six independent response lanes, without Artifact publication or status writes.
+It does not mount normal teaching AppState, LAN access, a proxy backend or platform browser saving.
+
 Start with the concise [current architecture map](architecture-map.md):
 [runtime wiring](architecture-map.md#runtime-wiring), ownership and
 [change boundaries](architecture-map.md#change-boundaries). This page retains the expanded

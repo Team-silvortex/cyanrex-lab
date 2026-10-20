@@ -39,6 +39,21 @@ pub struct PlatformArtifactRootObservation {
 }
 
 impl PlatformArtifactRootObservation {
+    pub(super) fn content_reader(
+        &self,
+        workers: std::sync::Arc<tokio::sync::Semaphore>,
+    ) -> std::result::Result<
+        crate::services::artifact_store::ArtifactContentReader,
+        crate::services::artifact_store::ArtifactStoreError,
+    > {
+        crate::services::artifact_store::ArtifactContentReader::from_retained_root(
+            self.config.scope(),
+            Path::new(&self.path),
+            &self.file,
+            workers,
+        )
+    }
+
     pub(super) fn binds_path(&self, config: &PlatformHostPreflightConfig, path: &Path) -> bool {
         self.config == *config && path.as_os_str() == self.path.as_os_str()
     }

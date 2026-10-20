@@ -24,7 +24,44 @@ fixtures or build-cache cleanup targets. The script catalogue below retains indi
   - supports `--allow-existing-running` for re-attach flows
   - supports concurrent launch safety by preflighting duplicate ports and project IDs
 - `start-lock.sh`: shared runtime helper loaded by `start.sh` for same-instance
-  compose-operations mutual exclusion (start/stop/status/logs).
+  write-operation mutual exclusion (start/stop); status and log reads do not hold it.
+- `runtime-config.sh`: shared source-launcher/diagnostic target selection. CLI beats nonempty inherited
+  environment, then literal `.env` selectors, then defaults; canonical project identity is selected
+  before locking. Compose receives the explicit absolute env-file path. Other startup `.env` settings
+  retain trusted shell semantics, with a final target-drift check.
+- `test-platform-login-connection.sh`: exact disposable PostgreSQL selections for retained internal
+  login, restricted issuer permissions, OTP/stock/faults and real password-work gaps. Requires an
+  explicit `CYANREX_TEST_DATABASE_URL`; it never initializes, migrates or targets an application database implicitly.
+- `test-platform-login-http.sh`: seven exact disposable PostgreSQL selections for the independent,
+  unmounted login router, real restricted-role Cookie issuance, response admission and cancelled
+  delivery. Requires explicit `CYANREX_TEST_DATABASE_URL`; no host startup or application database fallback.
+- `test-platform-storage-open.sh`: seven exact disposable PostgreSQL selections for complete trusted
+  declarations to retained bindings, readonly permissions, original identity drift and real marker
+  waits/cancellation. Requires explicit `CYANREX_TEST_DATABASE_URL`; it starts no host or installer.
+- `test-platform-session-router.sh`: seven exact disposable PostgreSQL cases for login/query/logout
+  over one original binding, independent clone-shared admission lanes, original drift and cancelled
+  delivery. Requires explicit `CYANREX_TEST_DATABASE_URL`; it mounts no application or listener.
+- `test-platform-task-index-connection.sh`: eight exact disposable PostgreSQL cases for retained
+  owner-private metadata, restricted privileges, drift, observed expiry waits, HTTP admission and
+  an actual capless loopback child. Requires explicit `CYANREX_TEST_DATABASE_URL`; no deployed service.
+- `test-platform-task-content-connection.sh`: eight exact disposable PostgreSQL cases for owner-private
+  empty/text Task reopening, original descriptors, exact revisions, corruption, expiry and read-only
+  HTTP/actual host admission. Requires explicit `CYANREX_TEST_DATABASE_URL`; no writes or browser saving.
+- `test-platform-task-create-connection.sh`: eight exact disposable PostgreSQL cases for owner-private
+  empty manual Draft creation, original bindings, narrow write permissions, final Session checks,
+  conflicts/unknown outcomes and HTTP/actual host admission. Requires explicit `CYANREX_TEST_DATABASE_URL`;
+  see [the create boundary](../docs/en/platform-task-create-connection.md). No payload publication or browser saving.
+- `test-platform-task-replace-connection.sh`: ten exact disposable PostgreSQL cases for manual Draft
+  manifest replacement, expected revisions, original bindings, exact old/new owned text, current authority,
+  deferred faults and HTTP/actual host admission. Requires explicit `CYANREX_TEST_DATABASE_URL`;
+  see [the replacement boundary](../docs/en/platform-task-replace-connection.md). No Artifact publication or browser saving.
+- `test-platform-loopback-host.sh`: eight exact disposable PostgreSQL selections for actual capless
+  CLI startup, HTTP Session operations, original drift, permissions and observed signal drain. Requires
+  explicit `CYANREX_TEST_DATABASE_URL`; creates only owned test children, not a deployed LAN/TLS service.
+- `test-platform-loopback-tls-host.sh`: eight exact disposable PostgreSQL/actual loopback host
+  selections. Requires explicit `CYANREX_TEST_DATABASE_URL` and OpenSSL only for synthetic test identity
+  generation; verifies Secure Cookie flow, peer refusal, original bindings, signal drain and optional
+  plain/TLS service notifications, not installed supervision or LAN/browser deployment.
 - `quality-gate.sh`: single-command quality gate for submit/CI checks.
   - every mode also checks file length, version/OpenAPI drift, and repository tooling
   - default: run backend + frontend + JavaScript SDK checks
@@ -313,6 +350,12 @@ fixtures or build-cache cleanup targets. The script catalogue below retains indi
 - `debug-system.sh`: collect environment/runtime diagnostics for local troubleshooting.
   - prints toolchain versions, kernel capability status, compose backend status, and port checks
   - intended for `./start.sh diagnose`
+  - optional `.env` keys are read literally, never sourced; missing keys and failed checks do not abort the report
+  - the validated loopback health GET ignores curl user/proxy settings and has connect/total limits of 3/10 seconds, not a whole-report deadline
+- `tests/debugSystem.test.mjs` and `tests/startOperations.test.mjs`: isolated launcher/diagnostic regressions
+  with synthetic configuration and fake deployment tools, plus a real hanging loopback HTTP peer;
+  verify bounded probing, selector precedence, exact lock/volume identity, no read-only shell evaluation,
+  target-drift rejection, log arguments, read/write lock separation and no credential xtrace.
 - `runner-agent.sh`: prepare and manage the optional unprivileged Compose compiler Agent.
   - `start`, `stop`, `status`, `logs`, and secret-only `prepare` actions
   - creates a missing bootstrap token without printing it and mounts a mode-0600 Docker Secret
@@ -430,6 +473,8 @@ In CI, workflow `Performance Regression` can also consume a baseline by passing 
 - `package-distribution.sh`: build and package distributable artifacts for air-gapped deployment.
   - builds or pulls and exports PostgreSQL, Engine, and frontend Docker images
   - generates `deploy.sh`, `run.sh`, `stop.sh`, and a disposable `install-smoke.sh`
+  - embeds `templates/deploy.sh`; normal startup validates and runs bounded typed-JSON health polling
+    with the bundled `cyanrex-release smoke wait-health`, without a host curl/wget fallback
   - emits checksum-bound `release-metadata.json` without build-host absolute paths
   - outputs `dist/cyanrex-lab-<version>-<timestamp>.tar.gz` by default
 - `distribution-install-smoke.sh`: packaged as `install-smoke.sh`; validates a freshly extracted
@@ -512,6 +557,12 @@ remain migration fallbacks for older or manually assembled environments. Install
 the native CLI. Use `./cyanrex-release package verify .` before creating any runtime files to verify a
 freshly extracted package, and `./cyanrex-release package verify-loaded-images .` after loading its
 images to check their content IDs against the checksum-bound metadata.
+
+For an installed package with runtime files, `./cyanrex-release package verify-controls .` checks the
+matching CLI version, checksum-bound metadata and three deployment controls only. It never reads or
+executes `.env`, reads image contents or invokes Docker/SSH. It is not full-package, configuration,
+service-health or signature verification; file checks are not atomic. See the
+[routine operations guide](../docker/README-DEPLOY.md#routine-checks-on-an-installed-package).
 
 Verify a complete downloaded Tag candidate before extraction (use a directory containing only the
 archive, its checksum, the live-kernel report, and its checksum):

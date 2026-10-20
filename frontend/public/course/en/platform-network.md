@@ -1,5 +1,25 @@
 # Current platform feature and module network
 
+Source **0.6.3** includes explicit loopback/TLS hosting, limited Session issuance and private
+Task create/list/reopen/manifest replacement. Browser/SDK saving, new-byte publication, LAN access
+and migration remain absent; earlier implementation-stage labels retain their original scope.
+
+The Unreleased [native TLS loopback branch](platform-loopback-tls-host.md) extends that host with
+private certificate/key → bounded handshake → the same HTTP Session routes and Secure Cookie.
+It adds no LAN/DNS listener, public resource routes or browser workflow.
+
+Optional [service notifications](platform-host-notifications.md) connect explicit supervisor opt-in →
+original verified startup/bind → Ready → listener closure → Stopping → existing drain.
+This is not an installed service, continuous health probe or restart/retry path.
+
+Unreleased after 0.6.2, the explicit Linux [loopback host](platform-loopback-host.md) connects process
+and private format 3 gates → original expected storage → one shared workspace router → actual bounded
+HTTP/1.1 login/query/logout, [private Task metadata](platform-task-index-connection.md), [read-only reopening](platform-task-content-connection.md)
+and [empty manual Draft creation](platform-task-create-connection.md). Separate [manifest replacement](platform-task-replace-connection.md)
+accepts an expected revision and a complete manifest of title and already-owned exact text references. Code and a Run remain
+optional. This adds no Artifact publication, status writes, normal teaching
+AppState, LAN listener, proxy backend, browser/SDK saving or distribution routes.
+
 **2026-10-16, included in 0.6.2:** the [bound Session path](platform-session-connection.md) is
 retained storage → one fresh connection → original catalog/markers and Source pins in one business
 transaction → fresh Session/absence read → confirmed commit → explicit HTTP projection. It has no
@@ -104,7 +124,7 @@ or whole-store health. No Artifact/file read, public edge, UI, write, installer,
 The separate same-day **Unreleased [index HTTP adapter](task-content-index-http.md)** on source
 0.5.5 adds only explicit GET transport → existing current-Session index → bounded metadata projection.
 Its exact `/platform/v1/task-index` route has strict raw pagination, private headers and shared
-response-lifetime admission. The route remains unmounted; old content routers and all browser,
+response-lifetime admission. The later retained-host branch mounts only this index; old content routers and all browser,
 SDK/OpenAPI, storage, execution and recovery connections remain unchanged.
 
 The separate **2026-10-11 Unreleased [large-file core](large-file-core.md)** introduces

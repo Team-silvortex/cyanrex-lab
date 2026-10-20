@@ -11,21 +11,25 @@ pub(super) fn event_type(snapshot: &TaskSnapshot) -> &'static str {
     }
 }
 
+pub(super) fn validate_snapshot(scope: WorkspaceRef, snapshot: &TaskSnapshot) -> Result<()> {
+    check_scope(scope, snapshot.reference, snapshot.owner)
+        .map_err(|_| TaskStoreError::InvalidRecord)?;
+    draft::validate_content(&snapshot.title, &snapshot.definition, &snapshot.input_refs)
+        .map_err(|_| TaskStoreError::InvalidRecord)?;
+    if snapshot
+        .input_refs
+        .iter()
+        .any(|input| input.workspace != scope)
+        || (u64::from(snapshot.revision) == 1 && snapshot.status != TaskStatus::Draft)
+    {
+        return Err(TaskStoreError::InvalidRecord);
+    }
+    Ok(())
+}
+
 impl TaskStore {
     pub(super) fn validate_snapshot(&self, snapshot: &TaskSnapshot) -> Result<()> {
-        self.check_scope(snapshot.reference, snapshot.owner)
-            .map_err(|_| TaskStoreError::InvalidRecord)?;
-        draft::validate_content(&snapshot.title, &snapshot.definition, &snapshot.input_refs)
-            .map_err(|_| TaskStoreError::InvalidRecord)?;
-        if snapshot
-            .input_refs
-            .iter()
-            .any(|input| input.workspace != self.scope)
-            || (u64::from(snapshot.revision) == 1 && snapshot.status != TaskStatus::Draft)
-        {
-            return Err(TaskStoreError::InvalidRecord);
-        }
-        Ok(())
+        validate_snapshot(self.scope, snapshot)
     }
 
     pub(super) async fn read(

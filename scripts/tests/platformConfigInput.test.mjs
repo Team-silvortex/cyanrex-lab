@@ -15,7 +15,7 @@ test("check-config gates private input before any worker and checks the main thr
   const worker = code.indexOf("spawn_scoped");
   assert.ok(prepare >= 0 && prepare < firstGate && firstGate < input && input < finalGate && finalGate < worker);
   assert.ok(code.slice(finalGate, worker).includes("return result"));
-  for (const value of ["check-config", "--config", "is_absolute()", "take(10)", "4096",
+  for (const value of ["check-config", "--config", "is_absolute()", "take(17)", "4096",
     "platform configuration check passed; no host started", "platform configuration check failed; no host started"])
     assert.ok(code.includes(value), value);
   assert.doesNotMatch(code, /tokio|PgPool|ConnectOptions|TcpListener|build_state|AuthService|dotenv|env::var\(|set_var|remove_var/);

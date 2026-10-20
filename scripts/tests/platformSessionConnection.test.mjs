@@ -10,12 +10,14 @@ const compact = source => source.replace(/\s+/g, "");
 // Structural inventories supplement, never replace, real SQL/HTTP transaction evidence.
 test("platform Session composition owns one retained storage binding without issuing or pooling", async () => {
   const code = codeOnly(await read("engine/src/platform_host/session_connection.rs"));
-  for (const value of ["pub struct PlatformSessionConnector", "storage: PlatformStorageConnector",
+  for (const value of ["pub struct PlatformSessionConnector", "storage: Arc<PlatformStorageConnector>",
     "pub fn new(storage: PlatformStorageConnector)", "self.storage.config().origin()",
     "self.storage.config().scope().authority_id", "DurableAuthError::StorageUnavailable"])
     assert.ok(code.includes(value), value);
   const methods = [...code.matchAll(/pub (?:async )?fn (\w+)\(/g)].map(match => match[1]);
   assert.deepEqual(methods, ["new", "origin", "validate_session", "logout"]);
+  assert.match(code, /pub\(super\) fn from_shared\(storage: Arc<PlatformStorageConnector>\)/);
+  assert.match(code, /Self::from_shared\(Arc::new\(storage\)\)/);
   const construction = code.split("pub fn new(")[1]?.split("pub fn origin(")[0] ?? "";
   assert.doesNotMatch(construction, /\.connect\(|inspect_|verify_|std::fs|std::env|query\(/);
   assert.doesNotMatch(code, /derive\([^)]*(?:Debug|Clone|Serialize|Deserialize)[^)]*\)\]\s*pub struct PlatformSessionConnector/);

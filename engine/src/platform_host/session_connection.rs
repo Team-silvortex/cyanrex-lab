@@ -5,16 +5,20 @@ use crate::services::auth_service::durable_source::{
     valid_token, DurableAuthError, DurableSession,
 };
 use sqlx_core::connection::Connection;
-use std::time::Duration;
+use std::{sync::Arc, time::Duration};
 
 /// Complete commands only. No Clone/Debug, pool, credential export, baseline export or half-command API.
 pub struct PlatformSessionConnector {
-    storage: PlatformStorageConnector,
+    storage: Arc<PlatformStorageConnector>,
 }
 
 impl PlatformSessionConnector {
     /// Pure composition. Authority and Origin come only from the original storage configuration.
     pub fn new(storage: PlatformStorageConnector) -> Self {
+        Self::from_shared(Arc::new(storage))
+    }
+
+    pub(super) fn from_shared(storage: Arc<PlatformStorageConnector>) -> Self {
         Self { storage }
     }
 

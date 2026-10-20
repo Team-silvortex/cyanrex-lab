@@ -41,8 +41,10 @@ test("schema-3 catalog content is explicit exact frozen metadata, not a relaxed 
   assert.match(configured, /Some\s*\(\s*catalog\s*\.\s*clone\s*\(\s*\)\s*\)/);
   assert.match(body(catalog, "catalog_definition"), /\.\s*get\s*\(\s*reference\s*\)/);
   assert.match(body(catalog, "catalog_definition"), /TaskStoreError\s*::\s*UnknownDefinition/);
-  assert.match(body(store, "validate_record"), /catalog\s*\.\s*get\s*\(\s*&definition\s*\.\s*reference\s*\)\s*==\s*Some\s*\(\s*definition\s*\)/);
-  assert.match(body(store, "validate_record"), /_\s*=>\s*return\s+Err\s*\(\s*TaskStoreError\s*::\s*InvalidRecord\s*\)/);
+  assert.match(body(store, "validate_record"), /validate_content_record\s*\(\s*self\.store\.scope\s*,\s*self\.definitions\.as_ref\(\)\s*,\s*snapshot\s*\)/);
+  const validate = body(store, "validate_content_record");
+  assert.match(validate, /catalog\s*\.\s*get\s*\(\s*&definition\s*\.\s*reference\s*\)\s*==\s*Some\s*\(\s*definition\s*\)/);
+  assert.match(validate, /_\s*=>\s*return\s+Err\s*\(\s*TaskStoreError\s*::\s*InvalidRecord\s*\)/);
   for (const name of ["create", "create_in_transaction"]) {
     assert.match(body(commands, name), /self\s*\.\s*definitions\s*\.\s*is_some\s*\(\s*\)/);
     assert.match(body(commands, name), /TaskStoreError\s*::\s*InvalidInput/);

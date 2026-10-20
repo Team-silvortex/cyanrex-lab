@@ -18,32 +18,42 @@ async function sources(directory, extension) {
 test("content index bounds UUID pages and validates lookahead through unchanged strict readers", async () => {
   const code = codeOnly(await read("engine/src/services/task_store/content_index.rs"));
   for (const pattern of [/limit\.unwrap_or\(20\)/, /1\.\.=32/, /WHERE owner_id = \$1/, /task_id > \$2/, /ORDER BY task_id LIMIT \$3/, /\(limit \+ 1\) as i64/, /store\.transaction\(true\)/]) assert.match(code, pattern);
-  assert.match(code, /Some\(_\) => catalog\.as_ref\(\)\.ok_or\(TaskStoreError::InvalidRecord\)\?/);
-  assert.match(code, /\.read\(tx, reference, owner, lock\)/);
+  assert.match(code, /Some\(_\) => Some\(definitions\.ok_or\(TaskStoreError::InvalidRecord\)\?\)/);
+  assert.match(code, /content::read_content_record\(tx, scope, selected_definitions, reference, owner, lock\)/);
   assert.equal([...code.matchAll(/WHERE FALSE/g)].length, 2, "empty pages still probe required Task/outbox columns without reading rows");
-  assert.ok(code.indexOf("check_schema(tx, lock).await?") < code.indexOf("WHERE FALSE"));
+  assert.ok(code.indexOf("check_schema_in_transaction(tx, scope, TASK_CONTENT_STORAGE_VERSION, lock).await?") < code.indexOf("WHERE FALSE"));
   assert.ok(code.lastIndexOf("WHERE FALSE") < code.indexOf("WHERE owner_id = $1"));
   assert.match(code, /snapshot\.task != selected/);
-  assert.ok(code.indexOf(".read(tx, reference, owner, lock)") < code.indexOf("if entries.len() < limit"));
+  assert.ok(code.indexOf("content::read_content_record(") < code.indexOf("if entries.len() < limit"));
   assert.match(code, /entries\.last\(\)\.map\(\|entry\| entry\.reference\)/);
   assert.match(code, /pub struct TaskContentIndexEntry[\s\S]*?pub payload_items: usize,/);
   assert.doesNotMatch(code, /pub (?:async )?fn (?:create|replace|transition|install|delete|into_)|Serialize|Deserialize|TaskProvider|ArtifactStore|std::(?:fs|env)|INSERT INTO|UPDATE collaboration|DELETE FROM/);
   assert.match(await read("engine/src/services/task_store/content.rs"), /catalog\.get\(&definition\.reference\) == Some\(definition\)/);
+  const record = codeOnly(await read("engine/src/services/task_store/content_records.rs"));
+  assert.match(record, /validate_content_record\(scope, definitions, &snapshot\)/);
+  assert.match(record, /recorded != snapshot/);
+  assert.match(record, /event_type\(&snapshot\.task\)/);
 });
 
 test("Session index derives owner and final authority inside one source-owned transaction", async () => {
   const code = codeOnly(await read("engine/src/services/auth_service/durable_source/task_commands/content_index.rs"));
-  assert.match(code, /if !valid_token\(token\)/);
-  assert.ok(code.indexOf("validate_index_page_request(workspace.scope, after, limit)?") < code.indexOf("self.transaction().await?"));
-  assert.match(code, /workspace\.scope\.authority_id != self\.authority_id/);
+  assert.ok(code.indexOf("PreparedTaskIndexRead::validate(self.authority_id, token, workspace, after, limit)?") < code.indexOf("self.transaction().await?"));
   assert.equal([...code.matchAll(/self\.transaction\(\)/g)].length, 1);
-  assert.match(code, /begin_private_work\(&mut tx, token, &workspace\.namespace, workspace\.scope\)/);
-  assert.match(code, /list_in_transaction\(&mut tx, context\.owner, after, limit\)/);
-  assert.ok(code.indexOf("context.finish(self, &mut tx).await?") < code.indexOf("tx.commit().await?"));
+  assert.match(code, /PreparedTaskIndexRead::prepare\(/);
+  assert.ok(code.indexOf("prepared.finish(&mut tx).await?") < code.indexOf("tx.commit().await?"));
   assert.ok(code.indexOf("tx.commit().await?") < code.indexOf("Ok(pending)"));
   assert.doesNotMatch(code, /pub owner:|Serialize|Deserialize|Artifact|\.list\(|install|std::(?:fs|env)|spawn|Role::|teacher/i);
-  const guard = await read("engine/src/services/auth_service/durable_source/private_work/mod.rs");
-  assert.match(guard, /recheck_command_session\(tx, &self\.digest, &self\.session\)/);
+  const prepared = codeOnly(await read("engine/src/services/auth_service/durable_source/task_index_transaction.rs"));
+  assert.match(prepared, /if !valid_token\(token\)/);
+  assert.match(prepared, /validate_index_page_request\(scope, after, limit\)\?/);
+  assert.match(prepared, /scope\.authority_id != authority_id/);
+  assert.match(prepared, /PrivateWorkContext::begin_index_for\(authority_id, tx, token, namespace, scope\)/);
+  assert.match(prepared, /read_content_index_in_transaction\(tx, scope, definitions, context\.owner, after, limit\)/);
+  assert.match(prepared, /context\.finish_retained_for\(authority_id, tx\)\.await\?/);
+  assert.match(prepared, /\.finish_from_source_for\(self\.authority_id, tx\)/);
+  const guard = codeOnly(await read("engine/src/services/auth_service/durable_source/private_work/authority.rs"));
+  assert.match(guard, /self\.recheck_session_for\(authority_id, tx\)\.await/);
+  assert.match(guard, /session_transaction::record\(authority_id, tx, &self\.digest\)/);
 });
 
 test("metadata index is not mounted through the live application SDK or browser surfaces", async () => {

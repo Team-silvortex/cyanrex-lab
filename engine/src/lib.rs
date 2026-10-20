@@ -1,3 +1,6 @@
+#[cfg(test)]
+extern crate self as cyanrex_engine;
+
 pub mod application;
 pub mod config;
 pub mod domain_packs;

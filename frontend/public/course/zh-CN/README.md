@@ -9,13 +9,13 @@ Cyanrex 正从 eBPF 教学应用转向面向人类、AI Agent 与计算资源的
 继续可用；通用身份、内容、任务和审阅服务属于显式配置的准备层，任务 payload 编辑器目前只保存
 本地草稿。自主 AI 与通用 Run 编排尚未实现。
 
-本索引覆盖整个项目，不只覆盖首个教学领域。源码版本为 **0.6.2**（**2026-10-16**），新增绑定
-Session 操作、格式 3 标记身份及内部启动／HTTP／Task 控制器职责分离；保留 0.6.1 启动、存储与 Session 权限工作。
+本索引覆盖整个项目，不只覆盖首个教学领域。源码 **0.6.3** 收录显式回环／TLS 宿主、受限 Session
+签发及私人 Task 创建／列举／重开／清单换版。**2026-10-16 的 0.6.2** 绑定 Session、格式 3 标记身份及内部启动／HTTP／Task 控制器职责分离，以及 0.6.1 启动／存储／Session 权限工作继续保留。
 0.6.0 的布局、独立 Session 生命周期与存量限制，以及原只读存储门槛继续保留。
 本地多文本创作、私人任务元数据索引及大文件准备层仍包含在内。
-此前任务解耦、C2-O–AA、Next.js 15.5.27、AI 宿主适配与安全边界保持不变。源码收录不接通通用
-浏览器保存、不切换在线认证、不迁移存储，也不验收部署。分日期的未发布说明保留原实施阶段、
-源码版本与验证范围，不是新鲜的 0.6.2 执行记录。
+此前任务解耦、C2-O–AA、Next.js 15.5.27、AI 宿主适配与安全边界保持不变。源码收录不接通
+浏览器／SDK 保存、新 Artifact 字节发布或局域网，不切换在线认证、不迁移存储，也不验收部署。分日期的未发布说明保留原实施阶段、
+源码版本与验证范围，不是新鲜的 0.6.3 执行记录。
 以下文档区分源码发布内容、现用运行能力和目标架构，
 模块存在或测试通过不表示已有在线部署。
 
@@ -47,7 +47,8 @@ Session 操作、格式 3 标记身份及内部启动／HTTP／Task 控制器职
 不接 HTTP/SDK/UI，不写入、不迁移或恢复；本跟进与此前发布及验证记录分开。
 
 0.5.6 另收录 **[索引 HTTP 适配](task-content-index-http.md)**，
-在精确 `GET /platform/v1/task-index` 投影该当前会话页面。它仍未挂载，严格解析原始分页查询，
+在精确 `GET /platform/v1/task-index` 投影该当前会话页面。后续[原绑定索引](platform-task-index-connection.md)
+仅在显式工作区宿主挂载此入口，严格解析原始分页查询，
 私有名额持续至响应正文结束；原内容路由、Session 签发、SDK/OpenAPI 及浏览器行为不变。
 
 **0.5.6 [大文件准备层](large-file-distribution.md)**提供了独立组合的流式、暂存、上传配额、日志、
@@ -73,7 +74,18 @@ Session 操作、格式 3 标记身份及内部启动／HTTP／Task 控制器职
 | 在 Linux 进程门禁后检查私有启动配置 | [私有启动输入](platform-startup-input.md)；0.6.0 之后未发布，严格 JSON／文件检查，不连接或启动宿主 |
 | 从该私有输入执行一次只读存储诊断 | [存储检查](platform-storage-check.md)；0.6.0 之后未发布，实际根／目录／标记检查及关闭连接，不保留运行基线 |
 | 对保留的原目录、标记及根观察建立新连接 | [保留存储绑定的连接](platform-storage-connection.md)；0.6.0 之后未发布，调用方显式选定观察，不是连接池、当前授权或运行宿主 |
+| 从完整可信声明打开保留绑定 | [声明式存储打开](platform-storage-open.md)；未发布，核声明并确认关闭后才交接能力，工厂本身不启动监听 |
 | 经保留的平台存储查询或结束已有 Session | [绑定存储的会话连接](platform-session-connection.md)；0.6.2 已收录，同一事务核原存储／Source，不建连接池、不签发或挂载宿主 |
+| 通过该原绑定登录已有账号 | [绑定存储的登录](platform-login-connection.md)；0.6.2 之后未发布，显式受限内部签发，不是公开 HTTP 登录、Cookie 交付或运行宿主 |
+| 将确认登录投影为专用 Cookie | [登录 HTTP 适配](platform-login-http.md)；未发布，独立构造且未挂载；有界请求准入不等于已部署 TLS 或浏览器认证 |
+| 在一份原绑定上组合登录、会话查询与退出 | [共享 Session 路由](platform-session-router.md)；未发布，独立准入通道及统一私有 fallback，不挂载正常应用或浏览器 |
+| 不依赖代码或执行地列出自己的任务元数据 | [原绑定任务索引](platform-task-index-connection.md)；未发布，原存储及最终当前会话授权，不接内容重开或浏览器保存 |
+| 经独立宿主重开自己的空任务或文本 payload | [原绑定内容读取](platform-task-content-connection.md)；未发布，原根描述符、准确修订及仅 GET，不接写入或浏览器集成 |
+| 不依赖 payload、代码或 Run 地创建自己的手动 Draft | [原绑定空任务创建](platform-task-create-connection.md)；未发布，严格标识／标题 POST 及最终当前会话授权，不接载荷发布、浏览器保存或 SDK/OpenAPI |
+| 修改手动 Draft 标题或已有准确文本引用 | [原绑定清单换版](platform-task-replace-connection.md)；未发布，预期修订 PUT 与旧／新本人字节核验，不接 Artifact 发布、状态写入或浏览器／SDK 集成 |
+| 在独立低权限 Linux 进程运行 Session 与私人任务创建／读取／换版 | [回环宿主](platform-loopback-host.md)；未发布，格式 3、准确 Origin／bind、有界 HTTP/1.1 及信号排空；非局域网／TLS、代理后端或浏览器集成 |
+| 经原生 HTTPS 回环运行同一组路由 | [TLS 回环宿主](platform-loopback-tls-host.md)；未发布，私有证书／密钥及 IP SAN 核对、有界握手与 Secure Cookie；不安装 CA，不证明局域网／浏览器或 Cookie 端口隔离 |
+| 向显式选择的服务管理器报告宿主启动与停机 | [服务状态通知](platform-host-notifications.md)；未发布，可选 Unix datagram Ready／Stopping，不代表已安装托管、持续健康或重启恢复 |
 | 首次检查前声明原目录及五标记身份 | [标记身份声明](platform-marker-expectation.md)；0.6.2 已收录，严格格式 3 诊断，不收编基线或启动宿主 |
 | 复核明确选出的原私有 Artifact 目录 | [Artifact 根预检](platform-artifact-root.md)；0.6.0 纯元数据观察，不是内容健康检查或运行能力交接 |
 | 将五项存储版本与已有作用域字段绑定到原目录 | [存储标记观察](platform-storage-markers.md)；0.6.0 标记准备层，不是完整 schema 兼容或权限健康检查 |

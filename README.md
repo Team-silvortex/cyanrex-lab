@@ -2,14 +2,14 @@
 
 [简体中文](README.zh-CN.md)
 
-Version: `0.6.2`
+Version: `0.6.3`
 
 Cyanrex is evolving into a self-hosted collaboration platform for people, AI Agents and compute
 resources. Tasks, content versions, execution and reviews have separate responsibilities; eBPF teaching
 is the first domain package, not the definition of every task.
 
-The current application still runs the teaching workflow. The general collaboration backend is an
-explicit preparation layer, the new task editor keeps local drafts, and AI orchestration is not implemented.
+The current application still runs the teaching workflow. The collaboration backend now also has an
+explicit independent low-privilege host; the task editor remains local-only, and AI orchestration is not implemented.
 
 Documentation: [English](docs/en/README.md) · [简体中文](docs/zh-CN/README.md)
 · Architecture: [English](docs/en/architecture.md) · [简体中文](docs/zh-CN/architecture.md)
@@ -26,22 +26,36 @@ private process in [SECURITY.md](SECURITY.md).
 
 ## Current development snapshot
 
+Both loopback hosts now support explicit [service-state notifications](docs/en/platform-host-notifications.md)
+after verified startup and before shutdown drain; no service installation or automatic restart is added.
+
+The separate [native HTTPS loopback mode](docs/en/platform-loopback-tls-host.md) now adds strict
+private TLS identity loading, bounded handshakes and Secure Session Cookies. Client trust and
+Cookie-safe domain planning remain explicit; this is not LAN or browser deployment.
+
+Included in source 0.6.3, the independent Linux [loopback Session host](docs/en/platform-loopback-host.md)
+connects private format 3 input, original storage, Session routes, the [private Task index](docs/en/platform-task-index-connection.md), [read-only content reopening](docs/en/platform-task-content-connection.md)
+and [empty Task creation](docs/en/platform-task-create-connection.md) with bounded HTTP/1.1 and signal drain.
+Separate [Draft manifest replacement](docs/en/platform-task-replace-connection.md) now changes a title or
+already-owned exact text references using an expected revision. Payload, code and a Run are optional;
+Artifact publication, browser/SDK integration, LAN deployment and a proxy backend remain separate.
+
 Source 0.5.9 local authoring supports reviewed multi-file text append, retaining old payload and
 the selected editor: [English](docs/en/local-text-file-import.md) · [简体中文](docs/zh-CN/local-text-file-import.md).
 This does not connect server saving or large-file delivery.
 
-As of **2026-10-16**, the source version is **0.6.2**. This patch adds
-[existing Session operations over retained storage](docs/en/platform-session-connection.md) and
-[format 3 marker identity declarations](docs/en/platform-marker-expectation.md). Internal startup,
-HTTP configuration/query parsing and local Task controller responsibilities are separated without
-changing public contracts. The 0.6.1 Linux startup/private-input checks, catalog declarations,
-storage diagnostics/connections and Session privilege correction remain included.
-The 0.6.0 Task/Settings/Events layouts, independent Session lifecycle and stock limits, host catalog,
-Artifact root and storage marker preparation remain included. These do not mount a platform host,
-issue Sessions or prove complete schema compatibility.
+As of **2026-10-20**, the source version is **0.6.3**. This patch adds independent plain/native-TLS
+loopback hosts, bounded Session issuance and owner-private Task create/list/reopen/manifest replacement.
+Six independent response lanes share one original retained binding; code, payload and execution are
+optional. Deployment guidance, page-local Helper checks, bounded health observations and installed
+package control verification also improve. Four already-locked HTTP/TLS libraries become direct
+dependencies; no new package versions are resolved. Public teaching contracts and API compatibility
+remain unchanged. Earlier Linux startup/private-input checks, storage declarations, retained Session
+operations and local authoring remain included; the explicit host does not replace teaching AppState,
+migrate authentication or establish LAN/browser deployment acceptance.
 Earlier local text import, five-language dictionaries and explicit file download/saving entries remain;
 generic browser saving and distribution remain outside normal app startup.
-The owner-private [task metadata index](docs/en/task-content-index.md) and unmounted HTTP adapter remain included.
+The owner-private [task metadata index](docs/en/task-content-index.md) is mounted only in the explicit host.
 [Large-file distribution preparation](docs/en/large-file-distribution.md) now includes bounded streaming,
 private chunk staging, immutable upload quotas, a chunk journal, whole-byte verification, trusted
 publication, current-Session private metadata and pure publisher/recipient grant contracts.
@@ -70,8 +84,8 @@ chunks into one exclusive private file with actual whole-digest/readback checks;
 user save path, recover lost progress, delete chunks or mount a complete downloader.
 The reader also retains the original source-relation pin across private Session work. Earlier task decoupling,
 AI host profiles/SDK adapters, C2-O–AA draft preparation and authentication protections remain included.
-See [release notes](CHANGELOG.md#062---2026-10-16) and [local validation](reports/releases/0.6.2/README.md). Normal-app file distribution, mounted client delivery and
-restart recovery are not connected. Preparation HTTP adapters remain unmounted and the editor local-only;
+See [release notes](CHANGELOG.md#063---2026-10-20) and [local validation](reports/releases/0.6.3/README.md). Normal-app file distribution, mounted client delivery and
+restart recovery are not connected. Other preparation HTTP adapters remain unmounted and the editor local-only;
 neither this release nor passing tests switch legacy authentication or an existing deployment.
 
 Included in **0.5.8**, previously outside the 0.5.7 tag: [ordered private download](docs/en/large-file-download-client.md)
@@ -310,9 +324,9 @@ not implied by the teaching HTTP endpoints below.
     - max retained records
     - overflow policy: `drop_oldest` / `drop_new`
 - Page state persistence (sessionStorage):
-  - helper report cache
   - events filter state
   - eBPF editor and runtime controls
+- Helper reports are explicit page-local observations and are not restored from sessionStorage.
 
 ## Quick Start
 
@@ -335,7 +349,7 @@ Useful commands:
 ./start.sh start --mode native # Engine targets the native Linux kernel
 ./start.sh start --local
 ./start.sh start              # fast-start (default, no forced rebuild)
-./start.sh start --debug      # enable detailed startup tracing
+./start.sh start --debug      # safe debug notice; commands are not traced
 ./start.sh start --rebuild    # force rebuild when deps/Dockerfile changed
 ./start.sh start --pull       # pull base images before start
 ./start.sh start --skip-conflict-check  # skip preflight port/project conflict check

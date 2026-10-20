@@ -3,10 +3,10 @@
 The **0.6.2** [bound Session adapter](platform-session-connection.md), included **2026-10-16**, connects
 `platform_host/session_connection.rs` to the shared private Session transaction helpers and an
 explicit HTTP backend. Retained storage and fresh Source checks share each command transaction;
-there is no pool fallback, issuer or normal application composition.
+that query/logout capability has no pool fallback or issuer. Source **0.6.3** includes separate [bound login](platform-login-connection.md), [login HTTP](platform-login-http.md) and [shared Session router](platform-session-router.md) capabilities for limited issuance and Cookie projection; the explicit [loopback host](platform-loopback-host.md) adds the [private Task index](platform-task-index-connection.md), [read-only reopening](platform-task-content-connection.md), [empty manual Draft creation](platform-task-create-connection.md) and [expected-revision manifest replacement](platform-task-replace-connection.md), with optional [native TLS](platform-loopback-tls-host.md) and [service notifications](platform-host-notifications.md), not new Artifact bytes, status writes, LAN deployment or browser/SDK saving.
 
 Separate [format 3 diagnostics](platform-marker-expectation.md) bind complete catalog/five-marker
-declarations before row reads, without adopting first-seen objects or constructing a running host.
+declarations before row reads; the [expected-storage opener](platform-storage-open.md), included in **0.6.3**, returns retained bindings only after declared checks and close, without starting a host or migrating storage. Earlier implementation-stage labels retain their original scope and evidence.
 
 Included in source **0.5.9**, API **0.3.0**, reviewed **2026-10-13**. This organization originally
 followed the 0.5.8 tag; release inclusion does not change storage schemas or service mounting.
@@ -51,7 +51,7 @@ paths, not two interchangeable login implementations.
 | Typed domain evaluation | `engine/src/services/task_catalog.rs`, `engine/src/domain_packs/ebpf_teaching/` | TaskCatalog<P> owns provider-bound evidence and assessment; the teaching pack stays outside neutral contracts |
 | Current-Session commands | `engine/src/services/auth_service/durable_source/`, `engine/src/services/collaboration_identity_store/` | Derive exact current actor, audited membership and original pins; resource checks and final authority stay in the source-owned transaction |
 | Resource persistence | `engine/src/services/task_store/`, `engine/src/services/artifact_store/`, `engine/src/services/review_store/` | Trusted direct stores do not authenticate supplied owners; Session adapters borrow their transaction mechanics |
-| HTTP projection | `engine/src/platform_http/` | Validate requests and project existing commands; do not duplicate permission logic, install schemas or issue Sessions |
+| HTTP projection | `engine/src/platform_http/` | Validate and project explicit commands; only the separate login adapter delivers confirmed Session Cookies; no duplicate permissions, schema installation or listener |
 | Local host interaction | `frontend/src/features/tasks/useTaskDraftController.ts`, `frontend/src/features/editor/`, `sdk-js/src/agents/` | Task-local controller owns payload/lifecycle; view renders/picks files; editor owns display/tools; SDK retains current Engine authority and host approval |
 
 Neutral contracts and frozen definition metadata do not depend on the teaching provider. Domain

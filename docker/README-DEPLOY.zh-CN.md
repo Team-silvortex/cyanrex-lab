@@ -80,3 +80,40 @@ cp .env.example .env
 ```
 
 只有外部编排器负责就绪检查时，才设置 `CYANREX_DEPLOY_WAIT_FOR_HEALTH=0`。
+
+正常 `up` 在调用 Docker 前，先由包内 CLI 校验健康配置。健康阶段使用 `smoke wait-health`：
+`CYANREX_DEPLOY_HEALTH_TIMEOUT_SECONDS` 默认 90（1–3600 秒），
+`CYANREX_DEPLOY_HEALTH_POLL_SECONDS` 默认 2（1–60 秒）。连接、响应头／正文读取和重试等待
+共用一个总期限；零或非法值在启动服务前报错。该期限不包括 `.env` 求值、Docker 操作或镜像加载。
+
+只有完整 JSON 中 `status: "ok"` 才通过，响应数据最多 4 KiB。公开 GET 不发送凭据，禁用代理和
+重定向；可使用明确指定的局域网 HTTP 地址，但不证明服务器身份。它只确认 Engine 健康，
+不代表前端、登录或全栈就绪。超时或不健康时返回失败，不自动停止服务或回滚；请检查
+`./deploy.sh status` 和 `./deploy.sh logs engine`。跳过检查时明确提示就绪状态未经验证。
+
+## 已安装实例的日常检查
+
+在部署主机上进入解压后的包目录执行。使用可信、与包版本一致的 CLI；`verify-controls` 拒绝
+其他版本的软件包。
+
+```bash
+./cyanrex-release package verify-controls .
+./deploy.sh status
+./cyanrex-release smoke health --engine-url http://127.0.0.1:8080
+./deploy.sh logs engine
+```
+
+第一条仅核对受校验和保护的元数据，以及 `deploy.sh`、`docker-compose.yml`、`cyanrex-release`
+三个控制文件。它允许运行时文件存在，不读取或执行 `.env`，不读取镜像归档正文，也不调用
+Docker 或 SSH。不检查配置、服务健康、全部包文件或发布者真实性，文件观察也不是原子快照。
+`package verify` 仍用于新解压目录；不要为让它通过而删除运行时文件。
+
+其余命令分别查看 Compose 状态、探测明确选择的 Engine 健康地址，以及持续跟随日志（Ctrl-C
+退出）。健康端口应与实例配置一致。控制文件校验失败时，先停止并与另行验证的包比较，不要
+覆盖 `.env`、删除卷，或在已安装实例上重跑 `install-smoke.sh`；该脚本只用于一次性验收。
+
+浏览器的**环境助手**由操作者显式发起环境／Runner 检查。开始新检查时清除旧结果，只有两项
+请求完整成功才显示；失败后需明确重试。结果只保留在当前页面，不恢复跨会话缓存，也不表示
+持续就绪或部署授权。**部署与设置**区分源码目录和离线包目录的 Runner 命令，须在部署主机
+执行，不是在浏览器中执行。
+浏览器等待限时 10 秒；取消等待不证明 Engine 检查或子进程已经停止。

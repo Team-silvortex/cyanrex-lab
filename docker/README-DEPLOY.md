@@ -94,3 +94,46 @@ The optional unprivileged compiler Agent can be enabled after the main stack is 
 ```
 
 Set `CYANREX_DEPLOY_WAIT_FOR_HEALTH=0` only when an external orchestrator owns readiness checks.
+
+Normal `up` validates health settings with the bundled CLI before invoking Docker. The health phase
+uses `smoke wait-health`: `CYANREX_DEPLOY_HEALTH_TIMEOUT_SECONDS` defaults to 90 (1–3600), and
+`CYANREX_DEPLOY_HEALTH_POLL_SECONDS` defaults to 2 (1–60). A single deadline covers connection,
+response headers/body and retry delays; zero or invalid values fail before starting services.
+This deadline does not cover `.env` evaluation, Docker operations or image loading.
+
+Only a complete JSON response with `status: "ok"` passes, with at most 4 KiB of response data.
+The public GET sends no credentials and disables proxies and redirects; HTTP to an explicitly
+selected LAN address is allowed, but does not authenticate the server. It proves Engine health only,
+not frontend, login or complete-stack readiness. A timeout or unhealthy response exits unsuccessfully
+without stopping services or rolling back; inspect `./deploy.sh status` and `./deploy.sh logs engine`.
+Skipping the check explicitly reports readiness as unverified.
+
+## Routine checks on an installed package
+
+Run these from the extracted package directory on the deployment host. Use a trusted copy of the
+matching-version CLI; `verify-controls` rejects a package from another version.
+
+```bash
+./cyanrex-release package verify-controls .
+./deploy.sh status
+./cyanrex-release smoke health --engine-url http://127.0.0.1:8080
+./deploy.sh logs engine
+```
+
+The first command checks checksum-bound metadata and only `deploy.sh`, `docker-compose.yml` and
+`cyanrex-release`. It tolerates runtime files, never reads or executes `.env`, does not read image
+archive contents, and does not call Docker or SSH. It does not check configuration, service health,
+all package files or publisher authenticity, and its file observations are not an atomic snapshot.
+Keep `package verify` for a freshly extracted directory; do not delete runtime files to make it pass.
+
+The other commands inspect Compose state, probe the selected Engine health URL, or follow logs until
+Ctrl-C. Adjust the health port to your configured instance. If a control checksum fails, stop and
+compare with a separately verified package; do not overwrite `.env`, delete volumes or rerun
+`install-smoke.sh` on the installed instance. That smoke test is for disposable acceptance only.
+
+In the browser, **Helper** runs an explicit environment/Runner check. A new check clears old results;
+only a complete successful pair is displayed, and errors require a deliberate retry. Results stay in
+the current page rather than a cross-session cache. They are observations, not continuous readiness
+or authorization to deploy. **Deployment & settings** distinguishes source-checkout and offline-package
+Runner commands; execute them on the deployment host, not in the browser.
+The browser wait is limited to 10 seconds; cancelling it does not prove Engine checks or subprocesses stopped.

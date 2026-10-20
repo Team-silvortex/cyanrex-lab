@@ -1,11 +1,13 @@
-//! Explicit, unmounted HTTP adapters for Session lifecycle, private Task content,
+//! Explicit HTTP adapters for Session login/lifecycle, private Task content,
 //! text Artifacts and files.
+//! These adapters remain unmounted in the normal teaching application.
 //!
 //! Trusted composition supplies an already initialized durable source, typed workspace and browser
-//! origin. This module never installs storage, listens, issues Sessions, provides CORS, or adopts
-//! the live teaching application's AuthService. The integration owner must separately arrange
-//! secure same-origin transport and delivery of the dedicated durable-session cookie.
-//! Only confirmed Session lifecycle logout clears that cookie; other adapters never set it.
+//! origin. This module never installs storage, listens, provides CORS, or adopts the live teaching
+//! application's AuthService. Only the explicit platform host mounts the workspace composition;
+//! other adapters remain standalone. The integration owner must arrange secure same-origin
+//! transport. Only the explicit login issuer sets the dedicated durable-session cookie after
+//! confirmed commit; only confirmed Session lifecycle logout clears it.
 
 mod admission;
 mod catalog_task;
@@ -23,8 +25,20 @@ mod file_selectors;
 mod handlers;
 mod security;
 mod session_lifecycle;
+#[cfg(unix)]
+mod session_login;
+#[cfg(unix)]
+mod session_router;
+#[cfg(unix)]
+mod task_content_read;
+#[cfg(unix)]
+mod task_content_replace;
+#[cfg(unix)]
+mod task_create;
 mod task_index;
 mod text_artifact;
+#[cfg(unix)]
+mod workspace_router;
 pub use catalog_task::{build_catalog_task_content_router, CatalogTaskContentHttpState};
 #[cfg(unix)]
 pub use file_chunk_read::{build_file_chunk_read_router, FileChunkReadHttpState};
@@ -37,8 +51,20 @@ pub use file_download_manifest::{
     build_file_download_manifest_router, FileDownloadManifestHttpState,
 };
 pub use session_lifecycle::{build_session_lifecycle_router, SessionLifecycleHttpState};
+#[cfg(unix)]
+pub use session_login::{build_session_login_router, SessionLoginHttpState};
+#[cfg(unix)]
+pub use session_router::{build_platform_session_router, PlatformSessionHttpState};
+#[cfg(unix)]
+pub use task_content_read::{build_task_content_read_router, TaskContentReadHttpState};
+#[cfg(unix)]
+pub use task_content_replace::{build_task_content_replace_router, TaskContentReplaceHttpState};
+#[cfg(unix)]
+pub use task_create::{build_task_create_router, TaskCreateHttpState};
 pub use task_index::{build_task_content_index_router, TaskContentIndexHttpState};
 pub use text_artifact::{build_text_artifact_router, TextArtifactHttpState};
+#[cfg(unix)]
+pub use workspace_router::{build_platform_workspace_router, PlatformWorkspaceHttpState};
 
 use crate::services::auth_service::durable_source::{
     DurableAuthSource, SessionTaskContentWorkspace,

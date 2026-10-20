@@ -1,5 +1,20 @@
 # 平台功能张量与成熟度
 
+源码 **0.6.3** 已收录显式回环／TLS 宿主、受限 Session 签发及私人 Task 创建／列举／重开／清单换版。
+不接通浏览器／SDK 保存、新字节发布、局域网或存储迁移；早期实施阶段标签保留原范围与证据。
+
+未发布的[原绑定内容读取](platform-task-content-connection.md)新增准确已保存文本／空任务重开、
+原描述符、有界 worker 与真实宿主测试；不重评分日期张量，不证明浏览器保存、共享或课堂部署验收。
+
+未发布的[原绑定任务索引](platform-task-index-connection.md)增加原存储、当前所有者元数据与
+真实宿主测试，包含空 payload 任务；不重评分日期张量，也不证明内容重开、浏览器保存或课堂部署。
+
+未发布的[原生 HTTPS 回环宿主](platform-loopback-tls-host.md)，增加实际有界 TLS 及 Secure
+Cookie 测试，不重评分日期张量，不证明浏览器送达或已部署局域网验收。
+
+0.6.2 之后未发布的[回环 Session 宿主](platform-loopback-host.md)，增加实际低权限 CLI／HTTP
+组合及显式进程／TCP／SQL 测试，不重评分日期张量，不证明局域网／TLS、代理后端或浏览器验收。
+
 10 月 12 日[授权分块快照](large-file-chunk-read.md)接通有界私有字节与原授权重入。
 独立[二进制 HTTP 适配](large-file-chunk-http.md)再接未挂载准确 GET 及字节所有者准入。
 这些实现说明不重新评分分日期张量，不刷新旧证据，也不构成已挂载传输／客户端验收。

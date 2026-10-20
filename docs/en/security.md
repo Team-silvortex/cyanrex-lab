@@ -1,5 +1,41 @@
 # Security and deployment boundaries
 
+Source **0.6.3** includes explicit loopback/TLS hosting, limited Session issuance and private
+Task create/list/reopen/manifest replacement. Browser/SDK saving, new-byte publication, LAN access
+and migration remain absent; earlier implementation-stage labels retain their original scope.
+
+Unreleased [manual Draft manifest replacement](platform-task-replace-connection.md) adds only exact
+`PUT /platform/v1/tasks/{task_id}/content` with schema version, expected revision and complete manifest.
+The current owner may revise a Draft title or existing exact owned text references; old and new bytes
+are checked around the Task/outbox mutation before final fresh authorization and COMMIT. The route
+does not publish Artifacts, change status, accept a claimed owner, grant teacher-wide access or connect
+browser/SDK saving. Unconfirmed results still grant no retry, adoption or rollback certainty.
+
+Unreleased [empty Task creation](platform-task-create-connection.md) adds only current-owner manual Drafts
+at `POST /platform/v1/tasks`. Its strict body contains only `schema_version`, `task_id` and `title`;
+owner and workspace derive from current audited membership and the original storage binding. Exact POST
+Origin/marker/Cookie and final fresh Session checks precede confirmed creation. No payload/Artifact
+publication, browser saving, teacher-wide permission, retry, adoption or rollback certainty is granted.
+
+The separate Unreleased [retained Task content read](platform-task-content-connection.md) adds only
+GET reopening of current-owner empty/text Tasks. Exact bytes inherit the original root descriptor,
+actual workers retain slots after cancellation, and final root/storage checks precede fresh Session
+authorization and commit. No content writes, cross-owner review or browser saving is authorized.
+
+The Unreleased [retained Task index](platform-task-index-connection.md) exposes only the current
+owner's metadata in the explicit workspace host. Original storage checks precede final fresh Session
+authorization; a teacher role grants no cross-owner listing. No credential-wide SELECT, content route,
+automatic grant, schema installation or normal teaching-auth fallback is added.
+
+The Unreleased [native HTTPS loopback host](platform-loopback-tls-host.md) uses private TLS material
+and the original unprivileged Session path, without exposing Engine or providing a plaintext proxy.
+Clients must validate their explicit CA and exact IP; server key/SAN matching is not PKI trust.
+Secure Cookies are not port-isolated. LAN/DNS listeners and Cookie-safe browser deployment remain separate.
+
+Optional [service notifications](platform-host-notifications.md) send only fixed Ready/Stopping values
+to an explicitly selected local datagram peer. Delivery is not manager acknowledgement, continuous
+health or rollback; notification errors cannot skip the original shutdown drain.
+
 Source release **0.5.8** (**2026-10-13**) includes these follow-ups. Dated `Unreleased` labels retain
 their original implementation stage, source versions and verification scope. Source inclusion does not
 mount preparation APIs, connect browser saving, switch live authentication, migrate storage or validate

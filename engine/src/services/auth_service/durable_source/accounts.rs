@@ -50,41 +50,7 @@ impl DurableAuthSource {
         connection: &mut PgConnection,
         username: &LegacyUsername,
     ) -> Result<Option<AccountRecord>> {
-        let row = sqlx::query("SELECT username, account_id, password_salt, password_hash, totp_secret, otp_last_counter FROM users WHERE username = $1 FOR SHARE")
-            .bind(username.as_str()).fetch_optional(connection).await?;
-        row.map(|row| {
-            let name: String = row.try_get("username")?;
-            let account = DurableAccountRef {
-                authority_id: self.authority_id,
-                username: name.clone().parse()?,
-                account_id: LegacyAccountId::try_from(row.try_get::<Uuid, _>("account_id")?)?,
-            };
-            let user = UserRecord {
-                username: name,
-                password_salt: row.try_get("password_salt")?,
-                password_hash: row.try_get("password_hash")?,
-                totp_secret: row.try_get("totp_secret")?,
-            };
-            password_profile::validate(&user.password_hash)?;
-            if user.password_salt.len() > 128
-                || user.totp_secret.len() > 128
-                || super::super::decode_base32_secret(&user.totp_secret)
-                    .is_none_or(|bytes| bytes.is_empty())
-            {
-                return Err(DurableAuthError::InvalidRecord);
-            }
-            let otp_watermark = otp_consumption::Watermark::from_stored(
-                row.try_get::<i64, _>("otp_last_counter")
-                    .map_err(|_| DurableAuthError::InvalidRecord)?,
-            )
-            .map_err(|_| DurableAuthError::InvalidRecord)?;
-            Ok(AccountRecord {
-                account,
-                user,
-                otp_watermark,
-            })
-        })
-        .transpose()
+        account_record(self.authority_id, connection, username).await
     }
 
     /// Trusted registration-adapter primitive, not public enrollment or teacher bootstrap.
@@ -117,4 +83,46 @@ impl DurableAuthSource {
         })
         .await
     }
+}
+
+pub(super) async fn account_record(
+    authority_id: AuthorityId,
+    connection: &mut PgConnection,
+    username: &LegacyUsername,
+) -> Result<Option<AccountRecord>> {
+    let row = sqlx::query("SELECT username, account_id, password_salt, password_hash, totp_secret, otp_last_counter FROM users WHERE username = $1 FOR SHARE")
+        .bind(username.as_str()).fetch_optional(connection).await?;
+    row.map(|row| {
+        let name: String = row.try_get("username")?;
+        let account = DurableAccountRef {
+            authority_id,
+            username: name.clone().parse()?,
+            account_id: LegacyAccountId::try_from(row.try_get::<Uuid, _>("account_id")?)?,
+        };
+        let user = UserRecord {
+            username: name,
+            password_salt: row.try_get("password_salt")?,
+            password_hash: row.try_get("password_hash")?,
+            totp_secret: row.try_get("totp_secret")?,
+        };
+        password_profile::validate(&user.password_hash)?;
+        if user.password_salt.len() > 128
+            || user.totp_secret.len() > 128
+            || super::super::decode_base32_secret(&user.totp_secret)
+                .is_none_or(|bytes| bytes.is_empty())
+        {
+            return Err(DurableAuthError::InvalidRecord);
+        }
+        let otp_watermark = otp_consumption::Watermark::from_stored(
+            row.try_get::<i64, _>("otp_last_counter")
+                .map_err(|_| DurableAuthError::InvalidRecord)?,
+        )
+        .map_err(|_| DurableAuthError::InvalidRecord)?;
+        Ok(AccountRecord {
+            account,
+            user,
+            otp_watermark,
+        })
+    })
+    .transpose()
 }

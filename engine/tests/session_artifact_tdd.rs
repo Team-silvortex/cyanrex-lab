@@ -126,7 +126,11 @@ fn session_artifact_authorization_stays_inside_source_transaction_without_live_w
         root.join("src/services/auth_service/durable_source/private_work/mod.rs"),
     )
     .unwrap();
-    for source in [&adapter, &guard] {
+    let authority = fs::read_to_string(
+        root.join("src/services/auth_service/durable_source/private_work/authority.rs"),
+    )
+    .unwrap();
+    for source in [&adapter, &guard, &authority] {
         for forbidden in [
             "validate_session(",
             "command_actor(",
@@ -146,7 +150,11 @@ fn session_artifact_authorization_stays_inside_source_transaction_without_live_w
     ] {
         assert!(adapter.contains(helper), "{helper}");
     }
-    assert!(guard.contains("recheck_command_session"));
+    assert!(guard.contains("self.finish_retained_for(source.authority_id, tx).await"));
+    assert!(authority.contains("self.check_authority_for(authority_id, tx).await?"));
+    assert!(authority.contains("self.recheck_session_for(authority_id, tx).await"));
+    assert!(authority.contains("session_transaction::record(authority_id, tx, &self.digest)"));
+    assert!(authority.contains("!= Some(&self.session)"));
     for file in ["src/application.rs", "src/state.rs"] {
         assert!(!fs::read_to_string(root.join(file))
             .unwrap()

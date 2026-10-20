@@ -43,6 +43,21 @@ test("malformed Runner inventory cannot crash neighboring settings controls", ()
   assert.equal(await f.page.getByRole("heading", { name: "Runner Agent Operations", exact: true }).count(), 1);
 }));
 
+test("disabled Runner guidance distinguishes source and offline deployments without executing commands", () => run(async f => {
+  await f.mount(); await f.inventory(agentInventory([], { enabled: false }), jobInventory([]));
+  for (const locale of ["en", "zh-CN", "es", "ja", "ko"]) {
+    await f.page.evaluate(locale => fixture.setLocale(locale), locale); await f.advance(1);
+    assert.equal(await f.page.locator("code").filter({ hasText: /^\.\/scripts\/runner-agent\.sh start$/ }).count(), 1);
+    assert.equal(await f.page.locator("code").filter({ hasText: /^\.\/runner-agent\.sh start$/ }).count(), 1);
+    const link = f.page.locator('a[href="/helper"]');
+    assert.equal(await link.count(), 1);
+    assert.ok((await link.innerText()).trim().length > 0);
+    assert.doesNotMatch(await f.page.locator("main").innerText(), /settings\.runner(?:SourceCheckout|OfflinePackage|EnvironmentCheck)/);
+  }
+  assert.equal((await f.requests()).filter(request => request.method !== "GET").length, 0);
+  assert.equal(await f.probe().count(), 0);
+}));
+
 test("stalled inventory reads time out and release refresh", () => run(async f => {
   await f.mount(); const old = await f.latest("/runner/agents"); await f.advance(10010);
   assert.equal((await f.requests())[old].aborted, true);

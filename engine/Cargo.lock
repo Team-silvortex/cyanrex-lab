@@ -352,7 +352,7 @@ dependencies = [
 
 [[package]]
 name = "cyanrex-engine"
-version = "0.6.2"
+version = "0.6.3"
 dependencies = [
  "argon2",
  "axum",
@@ -364,8 +364,11 @@ dependencies = [
  "hmac",
  "http-body",
  "http-body-util",
+ "hyper",
+ "hyper-util",
  "libc",
  "reqwest",
+ "rustls",
  "serde",
  "serde_json",
  "sha1",
@@ -375,6 +378,7 @@ dependencies = [
  "tar",
  "thiserror 2.0.19",
  "tokio",
+ "tokio-rustls",
  "tokio-tungstenite",
  "tower",
  "tower-http",

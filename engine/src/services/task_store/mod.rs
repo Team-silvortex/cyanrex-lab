@@ -12,13 +12,17 @@ use std::{future::Future, time::Duration};
 mod commands;
 mod content;
 mod content_index;
+mod content_read;
 mod draft;
 mod records;
 mod replace;
 mod schema;
+pub(crate) use content::create_manual_content_in_transaction;
+pub(crate) use content::replace_manual_content_in_transaction;
 pub use content::{TaskContentSnapshot, TaskContentStore};
-pub(crate) use content_index::validate_index_page_request;
+pub(crate) use content_index::{read_content_index_in_transaction, validate_index_page_request};
 pub use content_index::{TaskContentIndexEntry, TaskContentIndexPage, TaskContentIndexStore};
+pub(crate) use content_read::get_content_in_transaction;
 pub(crate) use draft::validate_input_refs;
 pub use draft::TaskDraft;
 
@@ -61,6 +65,13 @@ pub enum TaskStoreError {
 type Result<T> = std::result::Result<T, TaskStoreError>;
 type Tx<'a> = Transaction<'a, Postgres>;
 
+fn check_scope(scope: WorkspaceRef, reference: TaskRef, owner: PrincipalRef) -> Result<()> {
+    if reference.workspace != scope || owner.authority_id != scope.authority_id {
+        return Err(TaskStoreError::ScopeMismatch);
+    }
+    Ok(())
+}
+
 impl From<sqlx::Error> for TaskStoreError {
     fn from(error: sqlx::Error) -> Self {
         if error
@@ -96,10 +107,7 @@ impl TaskStore {
     }
 
     fn check_scope(&self, reference: TaskRef, owner: PrincipalRef) -> Result<()> {
-        if reference.workspace != self.scope || owner.authority_id != self.scope.authority_id {
-            return Err(TaskStoreError::ScopeMismatch);
-        }
-        Ok(())
+        check_scope(self.scope, reference, owner)
     }
 
     async fn transaction(&self, readonly: bool) -> Result<Tx<'_>> {

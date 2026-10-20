@@ -53,47 +53,16 @@ impl TaskContentStore {
         manifest: TaskContentManifest,
         definition: Option<TaskDefinition>,
     ) -> Result<TaskContentSnapshot> {
-        let reference = TaskRef {
-            workspace: self.store.scope,
+        create::create_selected_in_transaction(
+            tx,
+            self.store.scope,
+            self.definitions.as_ref(),
             task_id,
-        };
-        self.store.check_scope(reference, owner)?;
-        self.check_manifest_scope(&manifest)?;
-        self.store.check_schema(tx, true).await?;
-        let now = Utc::now();
-        let snapshot = TaskContentSnapshot {
-            task: TaskSnapshot {
-                schema_version: CoreSchemaVersion,
-                reference,
-                owner,
-                title: manifest.title().into(),
-                definition,
-                input_refs: manifest.input_refs(),
-                status: TaskStatus::Draft,
-                revision: 1.try_into().map_err(|_| TaskStoreError::InvalidInput)?,
-                created_at: now,
-                updated_at: now,
-            },
+            owner,
             manifest,
-        };
-        self.validate_record(&snapshot)?;
-        let (raw, metadata) = records::encode(&snapshot)?;
-        confirmed_one(
-            sqlx::query(
-                "INSERT INTO collaboration_tasks
-            (task_id, owner_id, revision, snapshot, manifest) VALUES ($1, $2, 1, $3, $4)",
-            )
-            .bind(task_id.as_uuid())
-            .bind(owner.principal_id.as_uuid())
-            .bind(&raw)
-            .bind(&metadata)
-            .execute(&mut **tx)
-            .await?
-            .rows_affected(),
-        )?;
-        self.append_and_confirm(tx, &snapshot, &raw, &metadata)
-            .await?;
-        Ok(snapshot)
+            definition,
+        )
+        .await
     }
 
     /// Replaces the whole Draft metadata pair at one expected revision. Publication is separate.
@@ -127,17 +96,16 @@ impl TaskContentStore {
         expected_revision: RevisionNumber,
         manifest: TaskContentManifest,
     ) -> Result<TaskContentSnapshot> {
-        self.store.check_scope(reference, owner)?;
-        self.check_manifest_scope(&manifest)?;
-        self.store.check_schema(tx, true).await?;
-        let current = self
-            .read(tx, reference, owner, true)
-            .await?
-            .ok_or(TaskStoreError::NotFound)?;
-        let snapshot = prepare_replacement(&current, expected_revision, manifest, Utc::now())?;
-        self.update_and_confirm(tx, &snapshot, expected_revision)
-            .await?;
-        Ok(snapshot)
+        replacement::replace_content_in_transaction(
+            tx,
+            self.store.scope,
+            self.definitions.as_ref(),
+            reference,
+            owner,
+            expected_revision,
+            manifest,
+        )
+        .await
     }
 
     /// Preserves all metadata while advancing only the existing Task lifecycle.

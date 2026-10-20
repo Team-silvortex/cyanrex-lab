@@ -2,11 +2,11 @@
 
 [English](README.md)
 
-版本：`0.6.2`
+版本：`0.6.3`
 
 Cyanrex 正在发展为面向人、AI Agent 与计算资源的自托管协作平台。Task、内容版本、执行与评审各有独立职责；eBPF 教学是第一个领域包，而不是所有任务的定义。
 
-当前应用仍运行教学流程。通用协作后端是显式准备层，新任务编辑器保留本地草稿，AI 编排尚未实现。
+当前应用仍运行教学流程。协作后端另有显式、独立的低权限宿主；任务编辑器仍保留本地草稿，AI 编排尚未实现。
 
 文档：[English](docs/en/README.md) · [简体中文](docs/zh-CN/README.md)
 · 架构：[English](docs/en/architecture.md) · [简体中文](docs/zh-CN/architecture.md)
@@ -20,18 +20,31 @@ cyanrex-lab 是采用 [Apache License 2.0](LICENSE) 的自由开源软件。欢�
 
 ## 当前开发快照
 
+两种回环宿主现支持显式[服务状态通知](docs/zh-CN/platform-host-notifications.md)，在校验启动后报告
+就绪、停机排空前报告 Stopping；不安装服务或自动重启。
+
+独立[原生 HTTPS 回环模式](docs/zh-CN/platform-loopback-tls-host.md)，现增加严格私有 TLS
+身份加载、有界握手及 Secure Session Cookie；客户端信任与 Cookie 安全域规划仍须显式管理，
+不代表局域网或浏览器部署。
+
+源码 0.6.3 收录独立 Linux [回环 Session 宿主](docs/zh-CN/platform-loopback-host.md)，
+连接私有格式 3 输入、原存储、Session 路由、[私人任务索引](docs/zh-CN/platform-task-index-connection.md)、[只读内容重开](docs/zh-CN/platform-task-content-connection.md)
+及[空任务创建](docs/zh-CN/platform-task-create-connection.md)，增加有界 HTTP/1.1 与信号排空。
+独立[Draft 清单换版](docs/zh-CN/platform-task-replace-connection.md)现可按预期修订修改标题或已属于
+本人的准确文本引用；payload、代码和 Run 均可选，Artifact 发布、浏览器／SDK 集成、局域网部署
+和代理后端仍是独立边界。
+
 源码 0.5.9 的本地创作功能支持经审阅后追加多个文本文件，并保留原有载荷和所选编辑器：[English](docs/en/local-text-file-import.md) · [简体中文](docs/zh-CN/local-text-file-import.md)。这并未连接服务端保存或大文件交付。
 
-截至 **2026-10-16**，源码版本为 **0.6.2**。本补丁收录
-[保留存储上的已有 Session 操作](docs/zh-CN/platform-session-connection.md)及
-[格式 3 标记身份声明](docs/zh-CN/platform-marker-expectation.md)，并分离内部启动、HTTP 配置／
-查询解析与本地 Task 控制器职责，保持公开契约不变。0.6.1 的 Linux 启动／私有输入检查、
-目录声明、存储诊断／连接及 Session 权限修正继续保留。0.6.0 的 Task／设置／事件布局、
-独立 Session 生命周期及存量限制、宿主目录、Artifact 根与标记准备层继续保留。
-这些组件不挂载平台宿主、不签发 Session，也不证明完整 schema 兼容。
+截至 **2026-10-20**，源码版本为 **0.6.3**。本补丁收录独立明文／原生 TLS 回环宿主、
+有界 Session 签发及所有者私人 Task 创建／列举／重开／清单换版。六条独立响应通道共享同一原
+存储绑定，代码、payload 和执行均可选；另改进部署提示、页面所有的 Helper 检查、有界健康观察
+及已安装包控制文件验证。四个已有锁定 HTTP／TLS 库成为直接依赖，没有新增解析的包版本。
+原教学公开契约和 API 兼容性保持不变。此前 Linux 启动／私有输入检查、存储声明、保留 Session
+操作和本地创作继续保留；显式宿主不替换教学 AppState，不迁移认证，也不构成局域网／浏览器部署验收。
 此前本地文本导入、五语言词典及显式文件下载／保存仍保留；
 通用浏览器保存和分发仍不在正常应用启动路径中。
-所有者私有的 [Task 元数据索引](docs/zh-CN/task-content-index.md)和未挂载的 HTTP 适配器仍包含在内。
+所有者私有的 [Task 元数据索引](docs/zh-CN/task-content-index.md)仅在显式宿主挂载。
 [大文件分发准备](docs/zh-CN/large-file-distribution.md)现已包括有界流式处理、私有分块暂存、不可变上传配额、分块日志、整文件字节验证、可信发布、当前 Session 私有元数据，以及纯发布者/接收者授权契约。
 已包含在 0.5.7 中的[发布者授权后续工作](docs/zh-CN/large-file-publisher-grants.md)增加了可信持久化撤销和当前 Session 的自身元数据读取。
 独立的 [Session 授权管理](docs/zh-CN/large-file-grant-management.md)现在要求由宿主显式配置精确的管理者/账户世代；教师或部署角色并不赋予该权限。
@@ -44,7 +57,7 @@ cyanrex-lab 是采用 [Apache License 2.0](LICENSE) 的自由开源软件。欢�
 显式的[单分块 HTTP 客户端](docs/zh-CN/large-file-chunk-client.md)现在增加可信固定 HTTPS/字面量回环目标、私有逐次调用 cookie，以及独立的响应头/正文期限；等待者取消后，保存任务仍保留请求准入。它仍不在正常应用启动路径中。
 独立的[私有整文件拼装](docs/zh-CN/large-file-chunk-assembly.md)现在将现有旧式分块复制到一个独占私有文件，并执行真实整文件摘要/读回检查；它不选择用户保存路径、不恢复丢失进度、不删除分块，也不挂载完整下载器。
 读取器还会在私有 Session 工作期间保留原始源关系固定。此前的 Task 解耦、AI 宿主配置/SDK 适配器、C2-O–AA 草稿准备和认证保护仍包含在内。
-参见[发布说明](CHANGELOG.md#062---2026-10-16)和[本地验证](reports/releases/0.6.2/README.md)。正常应用文件分发、已挂载的客户端交付以及重启恢复尚未连接。准备层 HTTP 适配器仍未挂载，编辑器仍仅在本地工作；本次发布或测试通过都不会切换旧认证或现有部署。
+参见[发布说明](CHANGELOG.md#063---2026-10-20)和[本地验证](reports/releases/0.6.3/README.md)。正常应用文件分发、已挂载的客户端交付以及重启恢复尚未连接。其他准备层 HTTP 适配器仍未挂载，编辑器仍仅在本地工作；本次发布或测试通过都不会切换旧认证或现有部署。
 
 已包含在 **0.5.8** 中、此前不在 0.5.7 Tag 内的[有序私有下载](docs/zh-CN/large-file-download-client.md)，现在将顺序 HTTP 分块连接到同一根目录中的整文件拼装。共享流程容量在取消后仍跟随真实文件工作；失败会保留证据并停止。UI 保存/恢复仍未提供。
 
@@ -206,9 +219,9 @@ cyanrex-lab/
     - 最大保留记录数
     - 溢出策略：`drop_oldest` / `drop_new`
 - 页面状态持久化（sessionStorage）：
-  - 辅助报告缓存
   - 事件过滤状态
   - eBPF 编辑器与运行时控件
+- 辅助环境报告只在当前页面显式检查，不从 sessionStorage 恢复。
 
 ## 快速开始
 
@@ -231,7 +244,7 @@ cyanrex-lab/
 ./start.sh start --mode native # Engine targets the native Linux kernel
 ./start.sh start --local
 ./start.sh start              # fast-start (default, no forced rebuild)
-./start.sh start --debug      # enable detailed startup tracing
+./start.sh start --debug      # safe debug notice; commands are not traced
 ./start.sh start --rebuild    # force rebuild when deps/Dockerfile changed
 ./start.sh start --pull       # pull base images before start
 ./start.sh start --skip-conflict-check  # skip preflight port/project conflict check

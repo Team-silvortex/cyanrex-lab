@@ -1,6 +1,6 @@
 {
   "name": "@cyanrex/frontend",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "private": true,
   "scripts": {
     "postinstall": "node scripts/sync-monaco-assets.mjs",
@@ -11,7 +11,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test:private-request": "node --experimental-strip-types --test tests/privateRequest.test.mjs",
+    "test:private-request": "node --experimental-strip-types --test tests/privateRequest.test.mjs tests/helperRequest.test.mjs",
+    "test:helper-browser": "node --test tests/helperDiagnostics.browser.mjs",
     "test:performance-hotspots": "node --experimental-strip-types --test tests/performanceHotspots.test.mjs",
     "test:performance-metrics": "node --experimental-strip-types --test tests/performanceMetrics.test.mjs",
     "test:performance-metrics-browser": "node --test tests/performanceMetrics.browser.mjs",
