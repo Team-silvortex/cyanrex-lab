@@ -61,7 +61,7 @@ test("TLS material stays bounded private input with strict framing and positive 
     assert.ok(pem.includes(value), value);
   assert.doesNotMatch(pem, /pem_slice_iter|filter_map|from_pem_file|std::env|Command::/);
   const manifest = await read("engine/Cargo.toml");
-  assert.match(manifest, /^rustls = \{ version = "=0\.23\.45", default-features = false, features = \["ring", "std", "tls12"\] \}/m);
+  assert.match(manifest, /^rustls = \{ version = "=0\.23\.46", default-features = false, features = \["ring", "std", "tls12"\] \}/m);
   assert.match(manifest, /^tokio-rustls = \{ version = "=0\.26\.4", default-features = false, features = \["ring", "tls12"\] \}/m);
   assert.doesNotMatch(manifest, /^rustls-pemfile\s*=/m);
 });

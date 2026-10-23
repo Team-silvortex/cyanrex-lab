@@ -731,11 +731,18 @@ After class:
   libraries safe, and the audit does not inventory vendor code embedded inside generated assets.
 - We run `cargo audit` for Rust backend dependencies and track accepted exceptions in
   `scripts/security-audit-exceptions.json`.
-- The locked rustls dependency is at least 0.23.45, addressing the TLS 1.3 handshake encryption-level
-  validation issue [RUSTSEC-2026-0285](https://rustsec.org/advisories/RUSTSEC-2026-0285.html).
-  Rebuild and redeploy Engine and Runner Agent binaries/images; changing the lockfile alone does not
-  patch a running process. Offline preflight checks this known version floor; live audit checks for
-  additional advisories.
+- The Unreleased dependency floors are rustls 0.23.46 and quinn-proto 0.11.18. They address the
+  0.6.3 CI findings RUSTSEC-2026-0346 through 0349 (rustls) and 0338 through 0342 (quinn-proto),
+  while retaining the [TLS handshake fix](https://rustsec.org/advisories/RUSTSEC-2026-0285.html).
+  The [quinn-proto 0.11.18 floor](https://rustsec.org/advisories/RUSTSEC-2026-0338.html) is necessary;
+  0.11.17 does not fix all five findings. QUIC is not enabled by the current reqwest features, but its
+  optional locked dependencies are still audited. No audit exception or TLS policy relaxation is added.
+  A fresh audit also requires [rustls-webpki 0.103.16](https://rustsec.org/advisories/RUSTSEC-2026-0382.html)
+  and [webpki-roots 1.0.10](https://rustsec.org/advisories/RUSTSEC-2026-0381.html) to reject distrusted
+  emSign certificate paths and remove the affected bundled root.
+  Rebuild and redeploy Engine, platform host and Runner Agent binaries/images; changing the lockfile
+  alone does not patch a running process or published 0.6.3 artifacts. Offline preflight checks these
+  known version floors; live audit checks for additional advisories.
 - There are currently no accepted advisory exceptions. The former `rsa`/`sqlx-mysql` dependency
   chain is no longer in the lockfile.
 - Each accepted advisory has a review deadline and must be re-evaluated before it expires.

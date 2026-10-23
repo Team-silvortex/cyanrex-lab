@@ -5,7 +5,14 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
-No changes yet.
+### Fixed
+
+- Fix the 0.6.3 CI security-audit failures by updating rustls to 0.23.46 and quinn-proto to
+  0.11.18, covering RUSTSEC-2026-0338 through 0342 and 0346 through 0349 without audit exceptions.
+  Also update rustls-webpki to 0.103.16 and webpki-roots to 1.0.10 for the newly reported
+  certificate-trust advisories RUSTSEC-2026-0382 and 0381.
+  Add offline version-floor regressions while retaining the live audit and existing TLS policy.
+  Rebuild and redeploy affected binaries/images to apply the fixes; published 0.6.3 artifacts are unchanged.
 
 ## [0.6.3] - 2026-10-20
 

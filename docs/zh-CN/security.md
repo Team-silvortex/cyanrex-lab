@@ -586,10 +586,16 @@ ssh -L 3000:127.0.0.1:3000 \
   不证明所有依赖或部署中的动态库安全，依赖审计也不会盘点生成资源中内嵌的第三方代码。
 - 我们会对 Rust 后端执行 `cargo audit`，并将已接受的告警记录在
   `scripts/security-audit-exceptions.json`。
-- 锁定的 rustls 依赖至少为 0.23.45，修复 TLS 1.3 握手加密层级校验问题
-  [RUSTSEC-2026-0285](https://rustsec.org/advisories/RUSTSEC-2026-0285.html)。需要重新构建并部署
-  Engine 和 Runner Agent 二进制文件/镜像，修改锁文件不会修补运行中的进程。
-  离线预检覆盖该已知安全版本下限，联网审计继续检查其他安全公告。
+- Unreleased 的依赖下限为 rustls 0.23.46 和 quinn-proto 0.11.18，修复 0.6.3 CI 报告的
+  RUSTSEC-2026-0346 至 0349（rustls）及 0338 至 0342（quinn-proto），同时保留
+  [TLS 握手修复](https://rustsec.org/advisories/RUSTSEC-2026-0285.html)。必须采用
+  [quinn-proto 0.11.18 下限](https://rustsec.org/advisories/RUSTSEC-2026-0338.html)，0.11.17 尚未
+  修复全部五项告警。当前 reqwest 功能未启用 QUIC，但其可选锁定依赖仍需审计；不新增例外或放宽 TLS 策略。
+  新一轮审计还要求升级至 [rustls-webpki 0.103.16](https://rustsec.org/advisories/RUSTSEC-2026-0382.html)
+  和 [webpki-roots 1.0.10](https://rustsec.org/advisories/RUSTSEC-2026-0381.html)，拒绝不再受信的
+  emSign 证书路径并移除受影响的内置根证书。
+  需要重新构建并部署 Engine、平台宿主及 Runner Agent 二进制文件/镜像；修改锁文件不会修补运行中的
+  进程或已发布的 0.6.3 产物。离线预检覆盖这些已知安全版本下限，联网审计继续检查其他安全公告。
 - 当前没有已接受的安全公告例外；原先的 `rsa`/`sqlx-mysql` 依赖链已不在锁文件中。
 - 每个例外都包含复核截止日期，需要在到期前重新评估依赖版本。
 
