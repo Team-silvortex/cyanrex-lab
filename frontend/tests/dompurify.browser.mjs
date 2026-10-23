@@ -62,7 +62,7 @@ async function run(callback) {
 
 test("generated Monaco uses the patched DOMPurify instance", () => run(async page => {
   const actual = await page.evaluate(() => ({ version: __sanitizerFixture.version, sanitize: typeof __sanitizerFixture.sanitize, editor: typeof __monacoFixture.editor.create }));
-  assert.deepEqual(actual, { version: "3.4.16", sanitize: "function", editor: "function" });
+  assert.deepEqual(actual, { version: "3.4.17", sanitize: "function", editor: "function" });
 }));
 
 test("normal HTML sanitization preserves safe formatting and removes executable markup", () => run(async page => {
@@ -73,6 +73,47 @@ test("normal HTML sanitization preserves safe formatting and removes executable 
   });
   assert.deepEqual(actual, { text: "safe fixture", scripts: 0, handler: null, href: null, events: 0 });
 }));
+
+// GHSA-cg2g-xh64-v4q7: each fragment is harmless until forbidden separators are removed.
+// Inspect the merged character data without evaluating it in any template engine.
+for (const mode of ["IN_PLACE", "RETURN_DOM", "RETURN_DOM_FRAGMENT"]) {
+  for (const expression of ["${7*7}", "{{7*7}}", "<%7*7%>"]) {
+    test(`SAFE_FOR_TEMPLATES scrubs ${expression} reassembled inside an attached shadow root in ${mode}`, () => run(async page => {
+      const actual = await page.evaluate(({ mode, expression }) => {
+        const host = document.createElement("div");
+        host.id = "fixture-shadow";
+        // RETURN_DOM modes clone the actual attached shadow tree, not a string surrogate.
+        const shadow = host.attachShadow({ mode: "open", clonable: true });
+        const strong = document.createElement("strong");
+        strong.textContent = "safe shadow formatting";
+        const fragments = document.createElement("span");
+        for (const [index, character] of [...expression].entries()) {
+          if (index) fragments.append(document.createElement("object"));
+          fragments.append(document.createTextNode(character));
+        }
+        shadow.append(strong, fragments);
+        const before = { expression: fragments.textContent, fragmented: fragments.childNodes.length > expression.length };
+        const result = __sanitizerFixture.sanitize(host, { SAFE_FOR_TEMPLATES: true, [mode]: true });
+        const returnedHost = mode === "IN_PLACE" ? result : result.querySelector("#fixture-shadow");
+        const returnedShadow = returnedHost?.shadowRoot;
+        returnedShadow?.normalize();
+        return {
+          before,
+          hasShadow: Boolean(returnedShadow),
+          identity: result === host,
+          formatting: returnedShadow?.querySelector("strong")?.textContent,
+          separators: returnedShadow?.querySelectorAll("object").length,
+          templateSurvives: /\$\{|\{\{|<%/.test(returnedShadow?.textContent || ""),
+          events: __fixtureEvents,
+        };
+      }, { mode, expression });
+      assert.deepEqual(actual, {
+        before: { expression, fragmented: true }, hasShadow: true, identity: mode === "IN_PLACE",
+        formatting: "safe shadow formatting", separators: 0, templateSurvives: false, events: 0,
+      });
+    }));
+  }
+}
 
 for (const [hook, custom] of [["beforeSanitizeElements", false], ["afterSanitizeElements", false], ["afterSanitizeAttributes", false], ["afterSanitizeElements", true]]) {
   test(`IN_PLACE ${hook} removal neutralizes detached ${custom ? "custom" : "ordinary"} descendants`, () => run(async page => {
@@ -94,6 +135,71 @@ for (const [hook, custom] of [["beforeSanitizeElements", false], ["afterSanitize
     }, { hook, custom });
     assert.deepEqual(actual, { removed: true, handler: null, events: 0 });
   }));
+}
+
+// GHSA-mrv2-3pqr-j5jr: remove a different node, not the current hook node as above.
+for (const hook of ["beforeSanitizeElements", "uponSanitizeElement", "afterSanitizeElements", "beforeSanitizeAttributes", "afterSanitizeAttributes"]) {
+  for (const detached of ["parent", "nextSibling"]) {
+    test(`IN_PLACE ${hook} removal neutralizes an unvisited ${detached} subtree`, () => run(async page => {
+      const actual = await page.evaluate(({ hook, detached }) => {
+        const root = document.createElement("div"), wrapper = document.createElement("figure");
+        const trigger = document.createElement("img"), image = document.createElement("img");
+        const safe = document.createElement("strong");
+        safe.textContent = "safe remaining formatting";
+        image.setAttribute("onerror", "globalThis.__fixtureEvents++");
+        // No src is assigned: even the vulnerable baseline makes no request or automatic event.
+        if (detached === "parent") { wrapper.append(trigger, image); root.append(wrapper, safe); }
+        else { wrapper.append(image); root.append(trigger, wrapper, safe); }
+        document.body.append(root);
+        let calls = 0;
+        __sanitizerFixture.addHook(hook, node => {
+          if (node !== trigger) return;
+          calls++;
+          if (detached === "parent") node.parentNode.remove();
+          else node.nextElementSibling.remove();
+        });
+        try {
+          const returned = __sanitizerFixture.sanitize(root, { IN_PLACE: true });
+          const handler = image.getAttribute("onerror");
+          // Only dispatch after proving the dangerous attribute has already been stripped.
+          if (handler === null) image.dispatchEvent(new Event("error"));
+          return { calls, same: returned === root, detached: !root.contains(image),
+            formatting: root.querySelector("strong")?.textContent, handler, events: __fixtureEvents };
+        } finally { __sanitizerFixture.removeAllHooks(); root.remove(); }
+      }, { hook, detached });
+      assert.deepEqual(actual, { calls: 1, same: true, detached: true,
+        formatting: "safe remaining formatting", handler: null, events: 0 });
+    }));
+  }
+}
+
+// GHSA-c6gr-qvv4-5v3f: XHTML preserves attributeName case; HTML is the control path.
+// Parse detached output only: never mount SMIL or activate its javascript: value.
+for (const media of ["application/xhtml+xml", "text/html"]) {
+  for (const target of ["href", "xlink:href"]) {
+    test(`${media} SMIL ${target} rewriting is rejected while safe animation and SVG text remain`, () => run(async page => {
+      const actual = await page.evaluate(({ media, target }) => {
+        const config = {
+          PARSER_MEDIA_TYPE: media,
+          ALLOWED_TAGS: ["svg", "a", "animate", "text"],
+          ALLOWED_ATTR: ["id", media === "text/html" ? "attributename" : "attributeName", "values", "dur", "fill", "x", "y"],
+        };
+        const dirty = `<svg xmlns="http://www.w3.org/2000/svg"><a id="bad-link"><animate id="bad-animation" attributeName="${target}" values="x;javascript:globalThis.__fixtureEvents++" dur="0.01s" fill="freeze"/></a><animate id="safe-animation" attributeName="opacity" values="0;1" dur="1s"/><text x="1" y="2">safe SVG formatting</text></svg>`;
+        const clean = __sanitizerFixture.sanitize(dirty, config);
+        const parsed = new DOMParser().parseFromString(clean, media);
+        const bad = parsed.querySelector("#bad-animation"), safe = parsed.querySelector("#safe-animation");
+        return {
+          parserErrors: parsed.querySelectorAll("parsererror").length,
+          badAnimationPresent: Boolean(bad), safeAnimationPresent: Boolean(safe),
+          badTarget: bad?.getAttribute("attributeName"),
+          safeTarget: safe?.getAttribute("attributeName"), safeValues: safe?.getAttribute("values"),
+          formatting: parsed.querySelector("text")?.textContent, events: __fixtureEvents,
+        };
+      }, { media, target });
+      assert.deepEqual(actual, { parserErrors: 0, badAnimationPresent: true, safeAnimationPresent: true,
+        badTarget: null, safeTarget: "opacity", safeValues: "0;1", formatting: "safe SVG formatting", events: 0 });
+    }));
+  }
 }
 
 test("IN_PLACE cannot return a force-removed raw-text root for unsafe reparsing", () => run(async page => {

@@ -9,7 +9,7 @@ const { parse } = require("next/dist/compiled/acorn");
 
 export const MONACO_SANITIZER = Object.freeze({
   monacoVersion: "0.55.1",
-  dompurifyVersion: "3.4.16",
+  dompurifyVersion: "3.4.17",
   originalFile: "editor.api-CalNCsUg.js",
   originalSha256: "c10d0058fe0ee5d2c46c3b6cbb28474407be5d45ada35973f3230561f82c4de5",
   instance: "K_",

@@ -10,9 +10,9 @@ import {
 } from "../scripts/monaco-sanitizer.mjs";
 
 const root = new URL("../", import.meta.url);
-const fixture = `/*! @license DOMPurify 3.4.16 | fixture */
+const fixture = `/*! @license DOMPurify 3.4.17 | fixture */
 const outside = "private";
-function createDOMPurify() { const DOMPurify = {}; DOMPurify.version = "3.4.16"; return DOMPurify; }
+function createDOMPurify() { const DOMPurify = {}; DOMPurify.version = "3.4.17"; return DOMPurify; }
 var purify = createDOMPurify();
 export { purify as default };
 //# sourceMappingURL=purify.es.mjs.map
@@ -22,12 +22,12 @@ test("the official ESM default is isolated inside one expression without leaking
   const wrapped = wrapOfficialSanitizer(fixture);
   const context = vm.createContext({ outside: "unchanged" });
   const result = vm.runInContext(`var K_ = ${wrapped}; K_.version`, context);
-  assert.equal(result, "3.4.16");
+  assert.equal(result, "3.4.17");
   assert.equal(context.outside, "unchanged");
   assert.equal(context.purify, undefined);
   assert.equal(context.createDOMPurify, undefined);
   assert.doesNotMatch(wrapped, /sourceMappingURL/);
-  assert.match(wrapped, /@license DOMPurify 3\.4\.16/);
+  assert.match(wrapped, /@license DOMPurify 3\.4\.17/);
 });
 
 function publicationFixture(failure) {
@@ -98,15 +98,15 @@ test("publication moves only the fully patched private stage and removes no unre
 
 test("unexpected official versions, imports, missing or multiple exports and markers fail closed", () => {
   for (const bad of [
-    fixture.replaceAll("3.4.16", "3.4.15"),
-    fixture.replace('DOMPurify.version = "3.4.16"', 'DOMPurify.version = "3.4.15"'),
+    fixture.replaceAll("3.4.17", "3.4.16"),
+    fixture.replace('DOMPurify.version = "3.4.17"', 'DOMPurify.version = "3.4.16"'),
     fixture.replace("export { purify as default };", ""),
     fixture.replace("export { purify as default };", "export { purify };"),
     `${fixture}\nexport const extra = 1;`,
     `import value from "remote";\n${fixture}`,
     fixture.replace("var purify", 'import("remote"); var purify'),
     fixture.replace("/*! @license DOMPurify", "/*! different library"),
-    `/*! @license DOMPurify 3.4.16 | duplicate */\n${fixture}`,
+    `/*! @license DOMPurify 3.4.17 | duplicate */\n${fixture}`,
   ]) assert.throws(() => wrapOfficialSanitizer(bad));
 });
 
@@ -155,7 +155,7 @@ test("real installed assets get a new deterministic chunk URL and no stale AMD r
   }
   await collect(base);
   const dompurifySource = await readFile(new URL("node_modules/dompurify/dist/purify.es.mjs", root), "utf8");
-  const options = { files, dompurifySource, monacoVersion: "0.55.1", dompurifyVersion: "3.4.16" };
+  const options = { files, dompurifySource, monacoVersion: "0.55.1", dompurifyVersion: "3.4.17" };
   const result = prepareMonacoSanitizer(options);
   assert.match(result.chunkFile, /^editor\.api-cyanrex-[a-f0-9]{16}\.js$/);
   assert.equal(result.replacements.size, 27);
@@ -164,8 +164,8 @@ test("real installed assets get a new deterministic chunk URL and no stale AMD r
   assert.equal(prepareMonacoSanitizer(options).chunkFile, result.chunkFile);
   for (const source of result.replacements.values()) assert.ok(!source.includes(MONACO_SANITIZER.originalFile.slice(0, -3)));
   assert.match(result.replacements.get("editor/editor.main.js"), new RegExp(path.basename(result.chunkFile, ".js")));
-  assert.match(result.replacements.get(result.chunkFile), /DOMPurify 3\.4\.16/);
-  for (const change of [{ monacoVersion: "0.57.0" }, { dompurifyVersion: "3.4.15" }, { files: new Map() }]) {
+  assert.match(result.replacements.get(result.chunkFile), /DOMPurify 3\.4\.17/);
+  for (const change of [{ monacoVersion: "0.57.0" }, { dompurifyVersion: "3.4.16" }, { files: new Map() }]) {
     assert.throws(() => prepareMonacoSanitizer({ ...options, ...change }));
   }
   const missing = new Map(files); missing.delete("editor/editor.main.js");

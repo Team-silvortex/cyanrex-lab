@@ -1,4 +1,4 @@
-define("vs/editor.api-cyanrex-62bb4bd5a8703c3f",["exports"],(function(so){"use strict";var $d,jd,ac,xC,Ip,Dp,xu,sl,ku,Ep,TC,Np,Yd,Rp,Du,Mp,Nu,Ap,Pp,Op,Xd,Tu,RC,Ru,uc,Mu,AC,Fp,Wp,Au,Pu,Ou,Bp,Hp,Vp,zp,Up,Qd,$p,jp,Gp,Zp,Yp,Xp,Qp,Jp,em,Wu,Bu,tm,im,FC,WC,gc,nm,Uu,sm,om,ol,$u,rm,am,lm,HC,cm,mc,ju,dm,VC,zC,qu,Ku,hm,um,fm,gm,pm,UC,Zu,$C,mm,jC,qC,Yu,_m,KC,bm,Cm,wm,rl,_c,al,eh,ym,Lm,xm,km,Im,Dm;function QB(){return globalThis._VSCODE_NLS_MESSAGES}function rR(){return globalThis._VSCODE_NLS_LANGUAGE}const Cie=rR()==="pseudo"||typeof document<"u"&&document.location&&typeof document.location.hash=="string"&&document.location.hash.indexOf("pseudo=true")>=0;function QS(o,e){let t;return e.length===0?t=o:t=o.replace(/\{(\d+)\}/g,(i,n)=>{const s=n[0],r=e[s];let a=i;return typeof r=="string"?a=r:(typeof r=="number"||typeof r=="boolean"||r===void 0||r===null)&&(a=String(r)),a}),Cie&&(t="［"+t.replace(/[aouei]/g,"$&$&")+"］"),t}function m(o,e,...t){return QS(typeof o=="number"?JB(o,e):e,t)}function JB(o,e){const t=QB()?.[o];if(typeof t!="string"){if(typeof e=="string")return e;throw new Error(`!!! NLS MISSING: ${o} !!!`)}return t}function H(o,e,...t){let i;typeof o=="number"?i=JB(o,e):i=e;const n=QS(i,t);return{value:n,original:e===i?n:QS(e,t)}}function vie(o,e){const t=o;typeof t.vscodeWindowId!="number"&&Object.defineProperty(t,"vscodeWindowId",{get:()=>e})}const Ct=window,uN=class uN{constructor(){this.mapWindowIdToZoomFactor=new Map}getZoomFactor(e){return this.mapWindowIdToZoomFactor.get(this.getWindowId(e))??1}getWindowId(e){return e.vscodeWindowId}};uN.INSTANCE=new uN;let aR=uN;function e6(o,e,t){typeof e=="string"&&(e=o.matchMedia(e)),e.addEventListener("change",t)}function lR(o){return aR.INSTANCE.getZoomFactor(o)}const Rm=navigator.userAgent,Bs=Rm.indexOf("Firefox")>=0,JS=Rm.indexOf("AppleWebKit")>=0,iv=Rm.indexOf("Chrome")>=0,Xu=!iv&&Rm.indexOf("Safari")>=0,t6=!iv&&!Xu&&JS;Rm.indexOf("Electron/")>=0;const i6=Rm.indexOf("Android")>=0;let cR=!1;if(typeof Ct.matchMedia=="function"){const o=Ct.matchMedia("(display-mode: standalone) or (display-mode: window-controls-overlay)"),e=Ct.matchMedia("(display-mode: fullscreen)");cR=o.matches,e6(Ct,o,({matches:t})=>{cR&&e.matches||(cR=t)})}function dR(){return globalThis.MonacoEnvironment}class wie{constructor(){this.listeners=[],this.unexpectedErrorHandler=function(e){setTimeout(()=>{throw e.stack?Mm.isErrorNoTelemetry(e)?new Mm(e.message+`
+define("vs/editor.api-cyanrex-52e79ad52c0f344c",["exports"],(function(so){"use strict";var $d,jd,ac,xC,Ip,Dp,xu,sl,ku,Ep,TC,Np,Yd,Rp,Du,Mp,Nu,Ap,Pp,Op,Xd,Tu,RC,Ru,uc,Mu,AC,Fp,Wp,Au,Pu,Ou,Bp,Hp,Vp,zp,Up,Qd,$p,jp,Gp,Zp,Yp,Xp,Qp,Jp,em,Wu,Bu,tm,im,FC,WC,gc,nm,Uu,sm,om,ol,$u,rm,am,lm,HC,cm,mc,ju,dm,VC,zC,qu,Ku,hm,um,fm,gm,pm,UC,Zu,$C,mm,jC,qC,Yu,_m,KC,bm,Cm,wm,rl,_c,al,eh,ym,Lm,xm,km,Im,Dm;function QB(){return globalThis._VSCODE_NLS_MESSAGES}function rR(){return globalThis._VSCODE_NLS_LANGUAGE}const Cie=rR()==="pseudo"||typeof document<"u"&&document.location&&typeof document.location.hash=="string"&&document.location.hash.indexOf("pseudo=true")>=0;function QS(o,e){let t;return e.length===0?t=o:t=o.replace(/\{(\d+)\}/g,(i,n)=>{const s=n[0],r=e[s];let a=i;return typeof r=="string"?a=r:(typeof r=="number"||typeof r=="boolean"||r===void 0||r===null)&&(a=String(r)),a}),Cie&&(t="［"+t.replace(/[aouei]/g,"$&$&")+"］"),t}function m(o,e,...t){return QS(typeof o=="number"?JB(o,e):e,t)}function JB(o,e){const t=QB()?.[o];if(typeof t!="string"){if(typeof e=="string")return e;throw new Error(`!!! NLS MISSING: ${o} !!!`)}return t}function H(o,e,...t){let i;typeof o=="number"?i=JB(o,e):i=e;const n=QS(i,t);return{value:n,original:e===i?n:QS(e,t)}}function vie(o,e){const t=o;typeof t.vscodeWindowId!="number"&&Object.defineProperty(t,"vscodeWindowId",{get:()=>e})}const Ct=window,uN=class uN{constructor(){this.mapWindowIdToZoomFactor=new Map}getZoomFactor(e){return this.mapWindowIdToZoomFactor.get(this.getWindowId(e))??1}getWindowId(e){return e.vscodeWindowId}};uN.INSTANCE=new uN;let aR=uN;function e6(o,e,t){typeof e=="string"&&(e=o.matchMedia(e)),e.addEventListener("change",t)}function lR(o){return aR.INSTANCE.getZoomFactor(o)}const Rm=navigator.userAgent,Bs=Rm.indexOf("Firefox")>=0,JS=Rm.indexOf("AppleWebKit")>=0,iv=Rm.indexOf("Chrome")>=0,Xu=!iv&&Rm.indexOf("Safari")>=0,t6=!iv&&!Xu&&JS;Rm.indexOf("Electron/")>=0;const i6=Rm.indexOf("Android")>=0;let cR=!1;if(typeof Ct.matchMedia=="function"){const o=Ct.matchMedia("(display-mode: standalone) or (display-mode: window-controls-overlay)"),e=Ct.matchMedia("(display-mode: fullscreen)");cR=o.matches,e6(Ct,o,({matches:t})=>{cR&&e.matches||(cR=t)})}function dR(){return globalThis.MonacoEnvironment}class wie{constructor(){this.listeners=[],this.unexpectedErrorHandler=function(e){setTimeout(()=>{throw e.stack?Mm.isErrorNoTelemetry(e)?new Mm(e.message+`
 
 `+e.stack):new Error(e.message+`
 
@@ -317,7 +317,7 @@ ${e}</tr>
 `}strong({tokens:e}){return`<strong>${this.parser.parseInline(e)}</strong>`}em({tokens:e}){return`<em>${this.parser.parseInline(e)}</em>`}codespan({text:e}){return`<code>${e}</code>`}br(e){return"<br>"}del({tokens:e}){return`<del>${this.parser.parseInline(e)}</del>`}link({href:e,title:t,tokens:i}){const n=this.parser.parseInline(i),s=jj(e);if(s===null)return n;e=s;let r='<a href="'+e+'"';return t&&(r+=' title="'+t+'"'),r+=">"+n+"</a>",r}image({href:e,title:t,text:i}){const n=jj(e);if(n===null)return i;e=n;let s=`<img src="${e}" alt="${i}"`;return t&&(s+=` title="${t}"`),s+=">",s}text(e){return"tokens"in e&&e.tokens?this.parser.parseInline(e.tokens):e.text}}class oO{strong({text:e}){return e}em({text:e}){return e}codespan({text:e}){return e}del({text:e}){return e}html({text:e}){return e}text({text:e}){return e}link({text:e}){return""+e}image({text:e}){return""+e}br(){return""}}class Pl{options;renderer;textRenderer;constructor(e){this.options=e||fg,this.options.renderer=this.options.renderer||new iw,this.renderer=this.options.renderer,this.renderer.options=this.options,this.renderer.parser=this,this.textRenderer=new oO}static parse(e,t){return new Pl(t).parse(e)}static parseInline(e,t){return new Pl(t).parseInline(e)}parse(e,t=!0){let i="";for(let n=0;n<e.length;n++){const s=e[n];if(this.options.extensions&&this.options.extensions.renderers&&this.options.extensions.renderers[s.type]){const a=s,l=this.options.extensions.renderers[a.type].call({parser:this},a);if(l!==!1||!["space","hr","heading","code","table","blockquote","list","html","paragraph","text"].includes(a.type)){i+=l||"";continue}}const r=s;switch(r.type){case"space":{i+=this.renderer.space(r);continue}case"hr":{i+=this.renderer.hr(r);continue}case"heading":{i+=this.renderer.heading(r);continue}case"code":{i+=this.renderer.code(r);continue}case"table":{i+=this.renderer.table(r);continue}case"blockquote":{i+=this.renderer.blockquote(r);continue}case"list":{i+=this.renderer.list(r);continue}case"html":{i+=this.renderer.html(r);continue}case"paragraph":{i+=this.renderer.paragraph(r);continue}case"text":{let a=r,l=this.renderer.text(a);for(;n+1<e.length&&e[n+1].type==="text";)a=e[++n],l+=`
 `+this.renderer.text(a);t?i+=this.renderer.paragraph({type:"paragraph",raw:l,text:l,tokens:[{type:"text",raw:l,text:l}]}):i+=l;continue}default:{const a='Token with "'+r.type+'" type was not found.';if(this.options.silent)return console.error(a),"";throw new Error(a)}}}return i}parseInline(e,t){t=t||this.renderer;let i="";for(let n=0;n<e.length;n++){const s=e[n];if(this.options.extensions&&this.options.extensions.renderers&&this.options.extensions.renderers[s.type]){const a=this.options.extensions.renderers[s.type].call({parser:this},s);if(a!==!1||!["escape","html","link","image","strong","em","codespan","br","del","text"].includes(s.type)){i+=a||"";continue}}const r=s;switch(r.type){case"escape":{i+=t.text(r);break}case"html":{i+=t.html(r);break}case"link":{i+=t.link(r);break}case"image":{i+=t.image(r);break}case"strong":{i+=t.strong(r);break}case"em":{i+=t.em(r);break}case"codespan":{i+=t.codespan(r);break}case"br":{i+=t.br(r);break}case"del":{i+=t.del(r);break}case"text":{i+=t.text(r);break}default:{const a='Token with "'+r.type+'" type was not found.';if(this.options.silent)return console.error(a),"";throw new Error(a)}}}return i}}class nk{options;constructor(e){this.options=e||fg}static passThroughHooks=new Set(["preprocess","postprocess","processAllTokens"]);preprocess(e){return e}postprocess(e){return e}processAllTokens(e){return e}}class iq{defaults=QP();options=this.setOptions;parse=this.parseMarkdown(Al.lex,Pl.parse);parseInline=this.parseMarkdown(Al.lexInline,Pl.parseInline);Parser=Pl;Renderer=iw;TextRenderer=oO;Lexer=Al;Tokenizer=Jx;Hooks=nk;constructor(...e){this.use(...e)}walkTokens(e,t){let i=[];for(const n of e)switch(i=i.concat(t.call(this,n)),n.type){case"table":{const s=n;for(const r of s.header)i=i.concat(this.walkTokens(r.tokens,t));for(const r of s.rows)for(const a of r)i=i.concat(this.walkTokens(a.tokens,t));break}case"list":{const s=n;i=i.concat(this.walkTokens(s.items,t));break}default:{const s=n;this.defaults.extensions?.childTokens?.[s.type]?this.defaults.extensions.childTokens[s.type].forEach(r=>{const a=s[r].flat(1/0);i=i.concat(this.walkTokens(a,t))}):s.tokens&&(i=i.concat(this.walkTokens(s.tokens,t)))}}return i}use(...e){const t=this.defaults.extensions||{renderers:{},childTokens:{}};return e.forEach(i=>{const n={...i};if(n.async=this.defaults.async||n.async||!1,i.extensions&&(i.extensions.forEach(s=>{if(!s.name)throw new Error("extension name required");if("renderer"in s){const r=t.renderers[s.name];r?t.renderers[s.name]=function(...a){let l=s.renderer.apply(this,a);return l===!1&&(l=r.apply(this,a)),l}:t.renderers[s.name]=s.renderer}if("tokenizer"in s){if(!s.level||s.level!=="block"&&s.level!=="inline")throw new Error("extension level must be 'block' or 'inline'");const r=t[s.level];r?r.unshift(s.tokenizer):t[s.level]=[s.tokenizer],s.start&&(s.level==="block"?t.startBlock?t.startBlock.push(s.start):t.startBlock=[s.start]:s.level==="inline"&&(t.startInline?t.startInline.push(s.start):t.startInline=[s.start]))}"childTokens"in s&&s.childTokens&&(t.childTokens[s.name]=s.childTokens)}),n.extensions=t),i.renderer){const s=this.defaults.renderer||new iw(this.defaults);for(const r in i.renderer){if(!(r in s))throw new Error(`renderer '${r}' does not exist`);if(["options","parser"].includes(r))continue;const a=r,l=i.renderer[a],c=s[a];s[a]=(...d)=>{let h=l.apply(s,d);return h===!1&&(h=c.apply(s,d)),h||""}}n.renderer=s}if(i.tokenizer){const s=this.defaults.tokenizer||new Jx(this.defaults);for(const r in i.tokenizer){if(!(r in s))throw new Error(`tokenizer '${r}' does not exist`);if(["options","rules","lexer"].includes(r))continue;const a=r,l=i.tokenizer[a],c=s[a];s[a]=(...d)=>{let h=l.apply(s,d);return h===!1&&(h=c.apply(s,d)),h}}n.tokenizer=s}if(i.hooks){const s=this.defaults.hooks||new nk;for(const r in i.hooks){if(!(r in s))throw new Error(`hook '${r}' does not exist`);if(r==="options")continue;const a=r,l=i.hooks[a],c=s[a];nk.passThroughHooks.has(r)?s[a]=d=>{if(this.defaults.async)return Promise.resolve(l.call(s,d)).then(u=>c.call(s,u));const h=l.call(s,d);return c.call(s,h)}:s[a]=(...d)=>{let h=l.apply(s,d);return h===!1&&(h=c.apply(s,d)),h}}n.hooks=s}if(i.walkTokens){const s=this.defaults.walkTokens,r=i.walkTokens;n.walkTokens=function(a){let l=[];return l.push(r.call(this,a)),s&&(l=l.concat(s.call(this,a))),l}}this.defaults={...this.defaults,...n}}),this}setOptions(e){return this.defaults={...this.defaults,...e},this}lexer(e,t){return Al.lex(e,t??this.defaults)}parser(e,t){return Pl.parse(e,t??this.defaults)}parseMarkdown(e,t){return(n,s)=>{const r={...s},a={...this.defaults,...r},l=this.onError(!!a.silent,!!a.async);if(this.defaults.async===!0&&r.async===!1)return l(new Error("marked(): The async option was set to true by an extension. Remove async: false from the parse options object to return a Promise."));if(typeof n>"u"||n===null)return l(new Error("marked(): input parameter is undefined or null"));if(typeof n!="string")return l(new Error("marked(): input parameter is of type "+Object.prototype.toString.call(n)+", string expected"));if(a.hooks&&(a.hooks.options=a),a.async)return Promise.resolve(a.hooks?a.hooks.preprocess(n):n).then(c=>e(c,a)).then(c=>a.hooks?a.hooks.processAllTokens(c):c).then(c=>a.walkTokens?Promise.all(this.walkTokens(c,a.walkTokens)).then(()=>c):c).then(c=>t(c,a)).then(c=>a.hooks?a.hooks.postprocess(c):c).catch(l);try{a.hooks&&(n=a.hooks.preprocess(n));let c=e(n,a);a.hooks&&(c=a.hooks.processAllTokens(c)),a.walkTokens&&this.walkTokens(c,a.walkTokens);let d=t(c,a);return a.hooks&&(d=a.hooks.postprocess(d)),d}catch(c){return l(c)}}}onError(e,t){return i=>{if(i.message+=`
 Please report this to https://github.com/markedjs/marked.`,e){const n="<p>An error occurred:</p><pre>"+Pr(i.message+"",!0)+"</pre>";return t?Promise.resolve(n):n}if(t)return Promise.reject(i);throw i}}}const gg=new iq;function wi(o,e){return gg.parse(o,e)}wi.options=wi.setOptions=function(o){return gg.setOptions(o),wi.defaults=gg.defaults,Vj(wi.defaults),wi},wi.getDefaults=QP,wi.defaults=fg,wi.use=function(...o){return gg.use(...o),wi.defaults=gg.defaults,Vj(wi.defaults),wi},wi.walkTokens=function(o,e){return gg.walkTokens(o,e)},wi.parseInline=gg.parseInline,wi.Parser=Pl,wi.parser=Pl.parse,wi.Renderer=iw,wi.TextRenderer=oO,wi.Lexer=Al,wi.lexer=Al.lex,wi.Tokenizer=Jx,wi.Hooks=nk,wi.parse=wi,wi.options,wi.setOptions,wi.use,wi.walkTokens,wi.parseInline;const Rbe=wi;Pl.parse;const nw=Al.lex;function Mbe(o){return JSON.stringify(o,Abe)}function rO(o){let e=JSON.parse(o);return e=aO(e),e}function Abe(o,e){return e instanceof RegExp?{$mid:2,source:e.source,flags:e.flags}:e}function aO(o,e=0){if(!o||e>200)return o;if(typeof o=="object"){switch(o.$mid){case 1:return be.revive(o);case 2:return new RegExp(o.source,o.flags);case 17:return new Date(o.source)}if(o instanceof ch||o instanceof Uint8Array)return o;if(Array.isArray(o))for(let t=0;t<o.length;++t)o[t]=aO(o[t],e+1);else for(const t in o)Object.hasOwnProperty.call(o,t)&&(o[t]=aO(o[t],e+1))}return o}var K_ = (() => {
-/*! @license DOMPurify 3.4.16 | (c) Cure53 and other contributors | Released under the Apache license 2.0 and Mozilla Public License 2.0 | github.com/cure53/DOMPurify/blob/3.4.16/LICENSE */
+/*! @license DOMPurify 3.4.17 | (c) Cure53 and other contributors | Released under the Apache license 2.0 and Mozilla Public License 2.0 | github.com/cure53/DOMPurify/blob/3.4.17/LICENSE */
 function _OverloadYield(e, d) {
 	this.v = e, this.k = d;
 }
@@ -441,9 +441,12 @@ Array.prototype.indexOf;
 const arrayLastIndexOf = unapply(Array.prototype.lastIndexOf);
 const arrayPop = unapply(Array.prototype.pop);
 const arrayPush = unapply(Array.prototype.push);
-Array.prototype.slice;
+const arraySlice = unapply(Array.prototype.slice);
 const arraySplice = unapply(Array.prototype.splice);
 const arrayIsArray = Array.isArray;
+const setCreate = unconstruct(Set);
+const setAdd = unapply(Set.prototype.add);
+const setHas = unapply(Set.prototype.has);
 const stringToLowerCase = unapply(String.prototype.toLowerCase);
 const stringToString = unapply(String.prototype.toString);
 const stringMatch = unapply(String.prototype.match);
@@ -587,6 +590,25 @@ function lookupGetter(object, prop) {
 		return null;
 	}
 	return fallbackValue;
+}
+/**
+* Like lookupGetter, but for accessor properties only, and returns null
+* instead of a null-returning fallback when no getter exists on the chain.
+* Lets a caller fall back to a direct property read in environments that
+* lack the getter, where a fallback returning null would be indistinguishable
+* from a legitimate null value (e.g. namespaceURI of a no-namespace element).
+*
+* @param object - The object (usually a prototype) to start the lookup at.
+* @param prop - The accessor property name.
+* @returns The unapplied getter, or null if none was found.
+*/
+function lookupAccessor(object, prop) {
+	while (object !== null) {
+		const desc = getOwnPropertyDescriptor(object, prop);
+		if (desc) return desc.get ? unapply(desc.get) : null;
+		object = getPrototypeOf(object);
+	}
+	return null;
 }
 function isRegex(value) {
 	try {
@@ -1272,7 +1294,7 @@ const NODE_TYPE = {
 	documentFragment: 11,
 	notation: 12
 };
-const LITERAL_TEXT_ELEMENT_NAMES = [
+const LITERAL_TEXT_ELEMENTS = freeze(addToSet({}, [
 	"style",
 	"script",
 	"xmp",
@@ -1281,15 +1303,7 @@ const LITERAL_TEXT_ELEMENT_NAMES = [
 	"noframes",
 	"plaintext",
 	"noscript"
-];
-const LITERAL_TEXT_ELEMENTS = freeze(addToSet({}, LITERAL_TEXT_ELEMENT_NAMES));
-const LITERAL_TEXT_CLOSE = function() {
-	const map = {};
-	arrayForEach(LITERAL_TEXT_ELEMENT_NAMES, (name) => {
-		map[name] = seal(new RegExp("</" + name + "(?=[\\t\\n\\f\\r />])", "i"));
-	});
-	return freeze(map);
-}();
+]));
 const getGlobal = function getGlobal() {
 	return typeof window === "undefined" ? null : window;
 };
@@ -1367,7 +1381,7 @@ const _resolveObjectOption = function _resolveObjectOption(cfg, key, makeFallbac
 function createDOMPurify() {
 	let window = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : getGlobal();
 	const DOMPurify = (root) => createDOMPurify(root);
-	DOMPurify.version = "3.4.16";
+	DOMPurify.version = "3.4.17";
 	DOMPurify.removed = [];
 	if (!window || !window.document || window.document.nodeType !== NODE_TYPE.document || !window.Element) {
 		DOMPurify.isSupported = false;
@@ -1398,6 +1412,10 @@ function createDOMPurify() {
 	};
 	const _readNodeName = function _readNodeName(node) {
 		return getNodeName ? getNodeName(node) : node.nodeName;
+	};
+	const getNamespaceURI = lookupAccessor(ElementPrototype, "namespaceURI");
+	const _readNamespaceURI = function _readNamespaceURI(element) {
+		return getNamespaceURI ? getNamespaceURI(element) : element.namespaceURI;
 	};
 	if (typeof HTMLTemplateElement === "function") {
 		const template = document.createElement("template");
@@ -1519,6 +1537,7 @@ function createDOMPurify() {
 	const SANITIZE_NAMED_PROPS_PREFIX = "user-content-";
 	let KEEP_CONTENT = true;
 	let IN_PLACE = false;
+	let IN_PLACE_VISITED = null;
 	let USE_PROFILES = {};
 	let FORBID_CONTENTS = null;
 	const DEFAULT_FORBID_CONTENTS = addToSet({}, [
@@ -1792,18 +1811,23 @@ function createDOMPurify() {
 	*  return. Return true otherwise.
 	*/
 	const _checkValidNamespace = function _checkValidNamespace(element) {
-		let parent = getParentNode(element);
-		if (!parent || !parent.tagName) parent = {
-			namespaceURI: NAMESPACE,
-			tagName: "template"
-		};
-		const tagName = stringToLowerCase(element.tagName);
-		const parentTagName = stringToLowerCase(parent.tagName);
-		if (!ALLOWED_NAMESPACES[element.namespaceURI]) return false;
-		if (element.namespaceURI === SVG_NAMESPACE) return _checkSvgNamespace(tagName, parent, parentTagName);
-		if (element.namespaceURI === MATHML_NAMESPACE) return _checkMathMlNamespace(tagName, parent, parentTagName);
-		if (element.namespaceURI === HTML_NAMESPACE) return _checkHtmlNamespace(tagName, parent, parentTagName);
-		if (PARSER_MEDIA_TYPE === "application/xhtml+xml" && ALLOWED_NAMESPACES[element.namespaceURI]) return true;
+		const elementNamespace = _readNamespaceURI(element);
+		const tagName = stringToLowerCase(_readNodeName(element));
+		const parentNode = getParentNode(element);
+		let parent;
+		let parentTagName;
+		if (parentNode && _readNodeType(parentNode) === NODE_TYPE.element) {
+			parent = { namespaceURI: _readNamespaceURI(parentNode) };
+			parentTagName = stringToLowerCase(_readNodeName(parentNode));
+		} else {
+			parent = { namespaceURI: NAMESPACE };
+			parentTagName = "template";
+		}
+		if (!ALLOWED_NAMESPACES[elementNamespace]) return false;
+		if (elementNamespace === SVG_NAMESPACE) return _checkSvgNamespace(tagName, parent, parentTagName);
+		if (elementNamespace === MATHML_NAMESPACE) return _checkMathMlNamespace(tagName, parent, parentTagName);
+		if (elementNamespace === HTML_NAMESPACE) return _checkHtmlNamespace(tagName, parent, parentTagName);
+		if (PARSER_MEDIA_TYPE === "application/xhtml+xml" && ALLOWED_NAMESPACES[elementNamespace]) return true;
 		return false;
 	};
 	/**
@@ -1847,36 +1871,21 @@ function createDOMPurify() {
 		}
 	};
 	/**
-	* _neutralizeRoot
-	*
-	* Fail-closed teardown of an in-place root after the sanitize walk aborts
-	* (campaign-3 F2). An internal throw mid-walk — e.g. a page-registered
-	* custom element's reaction detaches a node so `_forceRemove`'s deliberate
-	* parentless guard throws, or any other re-entrant engine mutation — would
-	* otherwise leave the caller's *live* tree half-sanitized, with everything
-	* after the abort point still carrying its handlers. There is no safe way
-	* to resume the walk (the tree mutated under us), so we strip the root bare:
-	* remove every child and every attribute, then let the caller's catch see
-	* the original error. Clobber-safe (cached `remove`/`childNodes`/`attributes`
-	* getters; the root was already clobber-pre-flighted at the IN_PLACE entry).
+	* Fail-closed teardown of an in-place root: strip every disallowed attribute
+	* in the subtree first, so nothing armed is left behind, then remove all
+	* children and the root's own attributes.
 	*
 	* @param root the in-place root to empty
 	*/
 	const _neutralizeRoot = function _neutralizeRoot(root) {
 		_neutralizeSubtree(root);
 		const childNodes = getChildNodes(root);
-		if (childNodes) {
-			const snapshot = [];
-			arrayForEach(childNodes, (child) => {
-				arrayPush(snapshot, child);
-			});
-			arrayForEach(snapshot, (child) => {
-				try {
-					remove(child);
-				} catch (_) {}
-			});
-		}
-		const attributes = getAttributes(root);
+		if (childNodes) arrayForEach(arraySlice(childNodes), (child) => {
+			try {
+				remove(child);
+			} catch (_) {}
+		});
+		const attributes = _readNodeType(root) === NODE_TYPE.element ? getAttributes(root) : null;
 		if (attributes) for (let i = attributes.length - 1; i >= 0; --i) {
 			const attribute = attributes[i];
 			const name = attribute && attribute.name;
@@ -1884,18 +1893,9 @@ function createDOMPurify() {
 		}
 	};
 	/**
-	* _removeAttribute
-	*
-	* Name-based getAttributeNode()/removeAttribute() ASCII-lowercase their
-	* lookup key for HTML elements in an HTML document, so they silently miss an
-	* attribute whose stored qualified name still contains uppercase ASCII
-	* letters. That happens when the node came from a case-preserving source
-	* (an XML/XHTML document imported via importNode(), or createAttributeNS()),
-	* where e.g. `ONERROR` survives the walk: the policy check lowercases to
-	* `onerror` and rejects it, but `removeAttribute('ONERROR')` looks up
-	* `onerror` and finds nothing. Remove the exact Attr node instead, which is
-	* case- and namespace-exact, and fall back to name-based removal only when
-	* the caller could not supply the node.
+	* Removes an attribute, preferably as its exact Attr node: name-based
+	* removal lowercases the name in HTML documents and misses case-preserved
+	* names, e.g. from imported XHTML.
 	*
 	* @param name an Attribute name
 	* @param element a DOM node
@@ -1929,12 +1929,8 @@ function createDOMPurify() {
 		}
 	};
 	/**
-	* _stripDisallowedAttributes
-	*
-	* Removes every attribute the active configuration does not allow from a
-	* single element, using the same allowlist as the main attribute pass (so
-	* `on*` handlers go, but no `/^on/` blocklist is introduced). Used only to
-	* neutralise nodes that are being discarded from an in-place tree.
+	* Removes every attribute the configuration does not allow. Used to
+	* neutralize nodes discarded from an in-place tree.
 	*
 	* @param element the element to strip
 	*/
@@ -1949,77 +1945,158 @@ function createDOMPurify() {
 		}
 	};
 	/**
-	* _neutralizeSubtree
+	* Iterative depth-first walk, so deep trees cannot overflow the call stack,
+	* reading through the cached getters, so clobbering cannot hide children.
+	* When `visit` returns false, the node's children are skipped. With
+	* `intoShadow`, open shadow roots are walked after their host's children.
 	*
-	* Completes the audit-5 F1 fix across every removal path. The KEEP_CONTENT
-	* move-hoist neutralises only disallowed-tag removals; clobber, mXSS-canary,
-	* namespace, comment, processing-instruction and KEEP_CONTENT:false removals
-	* all drop their subtree wholesale via `_forceRemove`. On the IN_PLACE path
-	* those dropped nodes are detached from the caller's LIVE tree but a
-	* handler-bearing original among them (an `<img onerror>`/`<video>` that was
-	* loading) keeps its queued resource event, which fires in page scope after
-	* sanitize returns. This walks a removed subtree and strips every attribute
-	* the active configuration does not allow — so `on*` handlers are cancelled
-	* through the SAME allowlist that governs kept nodes, not a separate `/^on/`
-	* blocklist. Run synchronously before sanitize returns, i.e. before any
-	* queued event can fire. Hook-free by design: these nodes leave the output,
-	* so firing attribute hooks for them would be surprising. Clobber-safe reads;
-	* a doomed clobbered node may shadow `removeAttribute` (its own attributes are
-	* irrelevant — it is discarded — while its non-clobbered descendants, e.g.
-	* the `<img>`, are reached and scrubbed).
-	*
-	* @param root the root of a removed subtree to neutralise
+	* @param root where to start
+	* @param visit called for every node
+	* @param intoShadow whether to enter open shadow roots
 	*/
-	const _neutralizeSubtree = function _neutralizeSubtree(root) {
+	const _walkTree = function _walkTree(root, visit) {
+		let intoShadow = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : false;
 		const stack = [root];
 		while (stack.length > 0) {
 			const node = stack.pop();
-			if (_readNodeType(node) === NODE_TYPE.element) _stripDisallowedAttributes(node);
+			if (visit(node) === false) continue;
+			if (intoShadow && _readNodeType(node) === NODE_TYPE.element) {
+				const shadowRoot = getShadowRoot(node);
+				if (_isDocumentFragment(shadowRoot)) stack.push(shadowRoot);
+			}
 			const childNodes = getChildNodes(node);
 			if (childNodes) for (let i = childNodes.length - 1; i >= 0; --i) stack.push(childNodes[i]);
 		}
 	};
 	/**
-	* _neutralizePatchLinkage
+	* Strips disallowed attributes from every element of a discarded subtree,
+	* so a handler that is already queued (a loading image) cannot fire.
 	*
-	* IN_PLACE entry pre-pass (declarative-partial-updates / streaming
-	* hardening, https://github.com/WICG/declarative-partial-updates).
-	*
-	* The main walk strips patch linkage (`for`/`patchsrc`) and removes range
-	* markers (PIs / markup comments) node-by-node, in document order, AS it
-	* reaches each node. On a live in-place root that leaves a window: from the
-	* moment the root is connected until the walk arrives at a given node, that
-	* node's linkage is live. A patch applied on connection/stream can fire as
-	* a microtask during the walk and inject or teleport an unsanitized DOM
-	* range into a region the iterator has already passed and will not revisit,
-	* so the post-return "tree is sanitized" contract is violated. Sweep the
-	* whole tree once up front and sever every linkage before the walk begins,
-	* closing that window.
-	*
-	* This CANNOT undo a patch that already fired before sanitize ran — that is
-	* the irreducible "do not IN_PLACE a live-connected attacker tree" caveat —
-	* but it closes everything from sanitize-start onward. Gated on SAFE_FOR_XML
-	* to group with the rest of the declarative-partial-updates handling and
-	* stay overridable, consistent with the codebase.
-	*
-	* Clobber-safe traversal (cached childNodes getter); per-node try/catch so a
-	* clobbered root cannot defeat the sweep of its non-clobbered descendants.
-	*
-	* NOTE (pending real-Chrome confirmation, see test/declarative-patch-probe
-	* .html Q1): this mirrors the existing policy of keeping `for` on
-	* <label>/<output>. If the shipping feature can drive a patch through a
-	* surviving `for`-on-label/output + `id` pair, this pre-pass and the
-	* attribute check at _isBasicCustomElement's caller must additionally drop
-	* that pair on the IN_PLACE path. Left as-is until the taxonomy is verified.
-	*
-	* @param root the in-place root to sweep
+	* @param root the root of a removed subtree
 	*/
+	const _neutralizeSubtree = function _neutralizeSubtree(root) {
+		_walkTree(root, (node) => {
+			if (_readNodeType(node) === NODE_TYPE.element) _stripDisallowedAttributes(node);
+		});
+	};
 	/**
-	* Central policy for declarative-partial-updates patch-linkage attributes,
-	* shared by the _neutralizePatchLinkage pre-pass and _isValidAttribute so
-	* the two sites cannot drift: `patchsrc` always links, `for` links
-	* everywhere except on <label>/<output>, and the whole policy is gated on
-	* SAFE_FOR_XML (see the rationale block in _isValidAttribute).
+	* All nodes under `root`, root first, including open shadow roots. Template
+	* content is not entered, it is inert.
+	*
+	* @param root the in-place root
+	* @return the nodes
+	*/
+	const _collectLiveNodes = function _collectLiveNodes(root) {
+		const nodes = [];
+		_walkTree(root, (node) => {
+			nodes.push(node);
+		}, true);
+		return nodes;
+	};
+	/**
+	* Strips disallowed attributes from every element that was under the
+	* in-place root when the call started and no longer is, whatever removed
+	* or moved it.
+	*
+	* @param root the in-place root
+	* @param before the root's nodes, collected before the walk
+	*/
+	const _neutralizeEscapedElements = function _neutralizeEscapedElements(root, before) {
+		const reachable = setCreate();
+		arrayForEach(_collectLiveNodes(root), (node) => {
+			if (_readNodeType(node) === NODE_TYPE.element) setAdd(reachable, node);
+		});
+		arrayForEach(before, (node) => {
+			if (_readNodeType(node) === NODE_TYPE.element && !setHas(reachable, node)) _stripDisallowedAttributes(node);
+		});
+	};
+	/**
+	* Neutralizes everything that left the in-place tree during the call: what
+	* DOMPurify removed, and what hooks or custom elements removed or moved out.
+	*
+	* @param root the in-place root
+	* @param before the root's nodes, collected before the walk
+	* @return true if the root itself was removed
+	*/
+	const _neutralizeDiscarded = function _neutralizeDiscarded(root, before) {
+		let rootRemoved = false;
+		arrayForEach(DOMPurify.removed, (entry) => {
+			if (entry.element) {
+				rootRemoved = rootRemoved || entry.element === root;
+				_neutralizeSubtree(entry.element);
+			}
+		});
+		_neutralizeEscapedElements(root, before);
+		return rootRemoved;
+	};
+	const MAX_UNVISITED_ROUNDS = 8;
+	/**
+	* The walk only moves forward, so a node moved to a position it already
+	* passed is never visited. Give every original node that is still in the
+	* tree but unvisited the normal treatment, hooks included. Nodes created
+	* during the call are left alone. Fails closed if the tree keeps changing.
+	*
+	* @param root the in-place root
+	* @param before the root's nodes, collected before the walk
+	*/
+	const _sanitizeUnvisitedNodes = function _sanitizeUnvisitedNodes(root, before) {
+		const visited = IN_PLACE_VISITED;
+		let original = null;
+		const getOriginal = () => {
+			if (!original) {
+				original = setCreate();
+				arrayForEach(before, (beforeNode) => {
+					setAdd(original, beforeNode);
+				});
+			}
+			return original;
+		};
+		for (let round = 0;; round++) {
+			const live = _collectLiveNodes(root);
+			const containers = [root];
+			let pending = false;
+			arrayForEach(live, (node) => {
+				if (_readNodeType(node) === NODE_TYPE.documentFragment) arrayPush(containers, node);
+				else if (!pending && !setHas(visited, node)) pending = setHas(getOriginal(), node);
+			});
+			if (!pending) return;
+			if (round >= MAX_UNVISITED_ROUNDS) throw typeErrorCreate("the tree kept changing during in-place sanitization; refusing to return it");
+			arrayForEach(containers, (container, index) => {
+				_sanitizeUnvisitedIn(container, index > 0, root, getOriginal());
+			});
+		}
+	};
+	/**
+	* One _sanitizeUnvisitedNodes pass over the root or an open shadow root.
+	*
+	* @param container the root or an open shadow root
+	* @param inShadow whether container is a shadow root
+	* @param root the in-place root
+	* @param original the root's nodes collected before the walk, as a set
+	*/
+	const _sanitizeUnvisitedIn = function _sanitizeUnvisitedIn(container, inShadow, root, original) {
+		const iterator = _createNodeIterator(container);
+		let node;
+		while (node = iterator.nextNode()) {
+			if (!setHas(original, node) || setHas(IN_PLACE_VISITED, node)) continue;
+			if (inShadow) _executeHooks(hooks.uponSanitizeShadowNode, node, null);
+			_sanitizeElements(node, root);
+			_sanitizeAttributes(node, root);
+			if (_isDocumentFragment(node.content)) _sanitizeShadowDOM2(node.content);
+		}
+	};
+	/**
+	* Records that _sanitizeElements processed `node`. No-op outside IN_PLACE.
+	*
+	* @param node the node being processed
+	*/
+	const _markVisited = function _markVisited(node) {
+		if (IN_PLACE_VISITED) setAdd(IN_PLACE_VISITED, node);
+	};
+	/**
+	* Patch-linkage attributes (declarative partial updates): `patchsrc`
+	* always, `for` everywhere except on <label> and <output>. Gated on
+	* SAFE_FOR_XML. Shared by the IN_PLACE pre-pass and _isValidAttribute.
 	*
 	* @param lcName the transformCaseFunc'd attribute name
 	* @param lcTag the transformCaseFunc'd tag name of the carrying element
@@ -2030,17 +2107,26 @@ function createDOMPurify() {
 		if (lcName === "patchsrc") return true;
 		return lcName === "for" && lcTag !== "label" && lcTag !== "output";
 	};
+	/**
+	* IN_PLACE pre-pass: sever all patch linkage before the walk, so no patch
+	* can fire mid-walk into a part of the tree the walker already passed.
+	* Removes range markers (processing instructions, comments with markup)
+	* and strips linkage attributes. It cannot undo a patch that already fired.
+	*
+	* TODO: if the shipped feature can patch through `for` on <label>/<output>,
+	* drop that pair here too (see test/declarative-patch-probe.html).
+	*
+	* @param root the in-place root to sweep
+	*/
 	const _neutralizePatchLinkage = function _neutralizePatchLinkage(root) {
 		if (!SAFE_FOR_XML) return;
-		const stack = [root];
-		while (stack.length > 0) {
-			const node = stack.pop();
+		_walkTree(root, (node) => {
 			const nodeType = _readNodeType(node);
 			if (nodeType === NODE_TYPE.processingInstruction || nodeType === NODE_TYPE.comment && regExpTest(COMMENT_MARKUP_PROBE, node.data)) {
 				try {
 					remove(node);
 				} catch (_) {}
-				continue;
+				return false;
 			}
 			if (nodeType === NODE_TYPE.element) {
 				const element = node;
@@ -2050,9 +2136,8 @@ function createDOMPurify() {
 					if (element.hasAttribute && element.hasAttribute("for") && _isPatchLinkageAttribute("for", lcTag)) element.removeAttribute("for");
 				} catch (_) {}
 			}
-			const childNodes = getChildNodes(node);
-			if (childNodes) for (let i = childNodes.length - 1; i >= 0; --i) stack.push(childNodes[i]);
-		}
+			return true;
+		});
 	};
 	/**
 	* _initDocument
@@ -2129,6 +2214,27 @@ function createDOMPurify() {
 	*/
 	const _scrubTemplateExpressions2 = function _scrubTemplateExpressions(node) {
 		var _node$querySelectorAl;
+		_scrubOwnCharacterData(node);
+		const templates = (_node$querySelectorAl = node.querySelectorAll) === null || _node$querySelectorAl === void 0 ? void 0 : _node$querySelectorAl.call(node, "template");
+		if (templates) arrayForEach(templates, (tmpl) => {
+			if (_isDocumentFragment(tmpl.content)) _scrubTemplateExpressions2(tmpl.content);
+		});
+	};
+	/**
+	* _scrubOwnCharacterData
+	*
+	* Non-recursive core of _scrubTemplateExpressions: normalize `node` and
+	* strip template expressions from its own character data only. Does not
+	* enter <template>.content or attached shadow roots (NodeIterator never
+	* does). Used by _sanitizeShadowDOM, where every nested template content
+	* and shadow root is already walked - and therefore scrubbed - by its own
+	* recursive _sanitizeShadowDOM call; recursing here as well would rescrub
+	* each nested fragment once per ancestor, which is quadratic in nesting
+	* depth.
+	*
+	* @param node The root whose own character data should be scrubbed.
+	*/
+	const _scrubOwnCharacterData = function _scrubOwnCharacterData(node) {
 		node.normalize();
 		const doc = getOwnerDocument ? getOwnerDocument(node) : node.ownerDocument;
 		const walker = createNodeIterator.call(doc || node, node, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_COMMENT | NodeFilter.SHOW_CDATA_SECTION | NodeFilter.SHOW_PROCESSING_INSTRUCTION, null);
@@ -2137,10 +2243,6 @@ function createDOMPurify() {
 			currentNode.data = _stripTemplateExpressions(currentNode.data);
 			currentNode = walker.nextNode();
 		}
-		const templates = (_node$querySelectorAl = node.querySelectorAll) === null || _node$querySelectorAl === void 0 ? void 0 : _node$querySelectorAl.call(node, "template");
-		if (templates) arrayForEach(templates, (tmpl) => {
-			if (_isDocumentFragment(tmpl.content)) _scrubTemplateExpressions2(tmpl.content);
-		});
 	};
 	/**
 	* _isClobbered
@@ -2216,7 +2318,7 @@ function createDOMPurify() {
 	*/
 	const _isUnsafeNode = function _isUnsafeNode(currentNode, tagName) {
 		if (SAFE_FOR_XML && currentNode.hasChildNodes() && !_isNode(currentNode.firstElementChild) && regExpTest(ELEMENT_MARKUP_PROBE, currentNode.textContent) && regExpTest(ELEMENT_MARKUP_PROBE, currentNode.innerHTML)) return true;
-		if (SAFE_FOR_XML && currentNode.namespaceURI === HTML_NAMESPACE && LITERAL_TEXT_ELEMENTS[tagName] && (_isNode(currentNode.firstElementChild) || typeof currentNode.textContent === "string" && regExpTest(LITERAL_TEXT_CLOSE[tagName], currentNode.textContent))) return true;
+		if (SAFE_FOR_XML && LITERAL_TEXT_ELEMENTS[tagName] && _readNodeType(currentNode) === NODE_TYPE.element && _readNamespaceURI(currentNode) === HTML_NAMESPACE && (_isNode(currentNode.firstElementChild) || typeof currentNode.textContent === "string" && regExpTest(ELEMENT_MARKUP_PROBE, currentNode.textContent))) return true;
 		if (currentNode.nodeType === NODE_TYPE.processingInstruction) return true;
 		if (SAFE_FOR_XML && currentNode.nodeType === NODE_TYPE.comment && regExpTest(COMMENT_MARKUP_PROBE, currentNode.data)) return true;
 		return false;
@@ -2260,7 +2362,7 @@ function createDOMPurify() {
 	*/
 	const _sanitizeDisallowedNode = function _sanitizeDisallowedNode(currentNode, tagName, root) {
 		if (!FORBID_TAGS[tagName] && _isBasicCustomElement(tagName) && _matchesNameCheck(CUSTOM_ELEMENT_HANDLING.tagNameCheck, tagName)) return false;
-		if (KEEP_CONTENT && !FORBID_CONTENTS[tagName]) {
+		if (KEEP_CONTENT && !FORBID_CONTENTS[tagName] && !FORBID_CONTENTS[stringToLowerCase(tagName)]) {
 			const parentNode = getParentNode(currentNode);
 			const childNodes = getChildNodes(currentNode);
 			if (childNodes && parentNode) {
@@ -2293,35 +2395,13 @@ function createDOMPurify() {
 		return set === defaultSet || set === setConfigSet ? clone(set) : set;
 	};
 	/**
-	* Shared guard for a node that a hook has detached from the walk tree,
-	* used after each element-hook site in _sanitizeElements. Detaching is a
-	* long-standing user pattern (issue #469; draw.io-style foreignObject
-	* filtering). Per the cached, unclobberable parentNode getter the node is
-	* genuinely out of the tree, so it can reach neither the serialized
-	* output nor an IN_PLACE live tree; treat it as removed and stop
-	* processing it. Without this guard, the unsafe-node / namespace checks
-	* would call _forceRemove on a parentless node and hit the REPORT-3
-	* fail-closed throw — which exists for nodes DOMPurify wants gone but
-	* *cannot* detach (clobbered / parentless roots), the opposite of a node
-	* that is already safely gone. The walk root is exempt: a detached
-	* IN_PLACE root is legitimate input and must still be fully sanitized,
-	* and a kill-decision on it must keep hitting the REPORT-3 throw.
-	*
-	* Nodes detached by hooks stay the hook's responsibility for placement:
-	* they are not recorded in DOMPurify.removed, so the post-walk IN_PLACE
-	* pass (which iterates DOMPurify.removed) does not reach them. But a
-	* hook-detached subtree can still hold a queued resource-event handler -
-	* e.g. an <img onload> that began loading when the caller built the live
-	* tree - which fires in page scope after sanitize returns even though the
-	* handler never reached the returned tree. That is the audit-5 F1 hazard,
-	* and the documented node.remove() hook pattern walks straight into it.
-	* So on the IN_PLACE path we neutralize the detached subtree inline,
-	* stripping its non-allow-listed attributes before returning, exactly as
-	* the post-walk pass does for _forceRemove'd subtrees.
+	* A hook may have detached the node it was called for. If so, treat it as
+	* removed and stop processing it; the walk root is exempt. On the IN_PLACE
+	* path the detached subtree is neutralized right away.
 	*
 	* @param currentNode the node a hook may have detached
 	* @param root the current walk root
-	* @return true if the node is detached and now handled, false otherwise
+	* @return true if the node was detached
 	*/
 	const _handleHookDetachedNode = function _handleHookDetachedNode(currentNode, root) {
 		if (currentNode === root || getParentNode(currentNode) !== null) return false;
@@ -2338,6 +2418,7 @@ function createDOMPurify() {
 	* @return true if node was killed, false if left alive
 	*/
 	const _sanitizeElements = function _sanitizeElements(currentNode, root) {
+		_markVisited(currentNode);
 		_executeHooks(hooks.beforeSanitizeElements, currentNode, null);
 		if (_handleHookDetachedNode(currentNode, root)) return true;
 		if (_isClobbered(currentNode)) {
@@ -2481,6 +2562,22 @@ function createDOMPurify() {
 		}
 	};
 	/**
+	* _isUnsafeAttributeValue
+	*
+	* Value-based attribute checks that the attribute walk applies before any
+	* hook can force-keep an attribute, shared with the public
+	* isValidAttribute() so that it never approves a value sanitize() would
+	* strip.
+	*
+	* @param name the attribute name as found on the node (case preserved)
+	* @param value the attribute value
+	* @returns true if the attribute must be removed because of its value
+	*/
+	const _isUnsafeAttributeValue = function _isUnsafeAttributeValue(name, value) {
+		if (SAFE_FOR_XML && regExpTest(/((--!?|])>)|<\/(style|script|title|xmp|textarea|noscript|iframe|noembed|noframes)/i, value)) return true;
+		return stringToLowerCase(name) === "attributename" && stringMatch(value, "href") !== null;
+	};
+	/**
 	* _sanitizeAttributes
 	*
 	* @protect attributes
@@ -2524,11 +2621,7 @@ function createDOMPurify() {
 				value = SANITIZE_NAMED_PROPS_PREFIX + value;
 				recreatedNamedProp = true;
 			}
-			if (SAFE_FOR_XML && regExpTest(/((--!?|])>)|<\/(style|script|title|xmp|textarea|noscript|iframe|noembed|noframes)/i, value)) {
-				_removeAttribute(name, currentNode, attr);
-				continue;
-			}
-			if (lcName === "attributename" && stringMatch(value, "href")) {
+			if (_isUnsafeAttributeValue(name, value)) {
 				_removeAttribute(name, currentNode, attr);
 				continue;
 			}
@@ -2576,24 +2669,13 @@ function createDOMPurify() {
 				}
 			}
 		}
+		if (SAFE_FOR_TEMPLATES) _scrubOwnCharacterData(fragment);
 		_executeHooks(hooks.afterSanitizeShadowDOM, fragment, null);
 	};
 	/**
-	* _sanitizeAttachedShadowRoots
-	*
-	* Walks `root` and feeds every attached shadow root we encounter into
-	* the existing _sanitizeShadowDOM pipeline. The default node iterator
-	* does not descend into shadow trees, so nodes inside an attached
-	* shadow root would otherwise be skipped entirely.
-	*
-	* Two real input paths put attached shadow roots in front of us:
-	*   1. IN_PLACE on a DOM node that already has shadow roots attached.
-	*   2. DOM-node input where importNode(dirty, true) deep-clones the
-	*      shadow root because it was created with `clonable: true`.
-	*
-	* This pass runs once, up front, so the main iteration loop (and the
-	* existing _sanitizeShadowDOM template-content recursion) stay
-	* untouched — string-input paths are not affected.
+	* Sanitizes every attached shadow root under `root`, since the node
+	* iterator does not enter shadow trees. Needed for IN_PLACE input and for
+	* DOM input whose clonable shadow roots were copied by importNode().
 	*
 	* @param root the subtree root to walk for attached shadow roots
 	*/
@@ -2658,6 +2740,8 @@ function createDOMPurify() {
 		if (hooks.uponSanitizeAttribute.length > 0) ALLOWED_ATTR = clone(ALLOWED_ATTR);
 		DOMPurify.removed = [];
 		const inPlace = IN_PLACE && typeof dirty !== "string" && _isNode(dirty);
+		let inPlaceNodes = [];
+		const outerVisited = IN_PLACE_VISITED;
 		if (inPlace) {
 			_neutralizePatchLinkage(dirty);
 			const nn = _readNodeName(dirty);
@@ -2672,12 +2756,8 @@ function createDOMPurify() {
 				_neutralizeRoot(dirty);
 				throw typeErrorCreate("root node is clobbered and cannot be sanitized in-place");
 			}
-			try {
-				_sanitizeAttachedShadowRoots(dirty);
-			} catch (error) {
-				_neutralizeRoot(dirty);
-				throw error;
-			}
+			inPlaceNodes = _collectLiveNodes(dirty);
+			IN_PLACE_VISITED = setCreate();
 		} else if (_isNode(dirty)) {
 			body = _initDocument("<!---->");
 			importedNode = body.ownerDocument.importNode(dirty, true);
@@ -2693,30 +2773,25 @@ function createDOMPurify() {
 		if (body && FORCE_BODY) _forceRemove(body.firstChild);
 		const walkRoot = inPlace ? dirty : body;
 		try {
+			if (inPlace) _sanitizeAttachedShadowRoots(dirty);
 			const nodeIterator = _createNodeIterator(walkRoot);
 			while (currentNode = nodeIterator.nextNode()) {
 				_sanitizeElements(currentNode, walkRoot);
 				_sanitizeAttributes(currentNode, walkRoot);
 				if (_isDocumentFragment(currentNode.content)) _sanitizeShadowDOM2(currentNode.content);
 			}
+			if (inPlace) _sanitizeUnvisitedNodes(dirty, inPlaceNodes);
 		} catch (error) {
 			if (inPlace) {
 				_neutralizeRoot(dirty);
-				arrayForEach(DOMPurify.removed, (entry) => {
-					if (entry.element) _neutralizeSubtree(entry.element);
-				});
+				_neutralizeDiscarded(dirty, inPlaceNodes);
 			}
 			throw error;
+		} finally {
+			IN_PLACE_VISITED = outerVisited;
 		}
 		if (inPlace) {
-			let rootWasRemoved = false;
-			arrayForEach(DOMPurify.removed, (entry) => {
-				if (entry.element) {
-					if (entry.element === dirty) rootWasRemoved = true;
-					_neutralizeSubtree(entry.element);
-				}
-			});
-			if (rootWasRemoved) throw typeErrorCreate("a node selected for removal could not be safely returned; refusing to sanitize in place");
+			if (_neutralizeDiscarded(dirty, inPlaceNodes)) throw typeErrorCreate("a node selected for removal could not be safely returned; refusing to sanitize in place");
 			if (SAFE_FOR_TEMPLATES) _scrubTemplateExpressions2(dirty);
 			return dirty;
 		}
@@ -2753,6 +2828,7 @@ function createDOMPurify() {
 		if (!CONFIG) _parseConfig({});
 		const lcTag = transformCaseFunc(tag);
 		const lcName = transformCaseFunc(attr);
+		if (typeof value === "string" && (_isUnsafeAttributeValue(attr, value) || !ALLOW_SELF_CLOSE_IN_ATTR && regExpTest(SELF_CLOSING_TAG, value))) return false;
 		return _isValidAttribute(lcTag, lcName, value);
 	};
 	DOMPurify.addHook = function(entryPoint, hookFunction) {

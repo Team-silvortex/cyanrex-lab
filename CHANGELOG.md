@@ -7,6 +7,9 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ### Fixed
 
+- Fix the follow-up frontend CI audit by updating Next.js to 15.5.28 and DOMPurify to 3.4.17.
+  Retain the existing sharp floor and audit threshold; update the exact Monaco sanitizer contract
+  and offline dependency guards so regenerated assets also contain the patched sanitizer.
 - Fix the 0.6.3 CI security-audit failures by updating rustls to 0.23.46 and quinn-proto to
   0.11.18, covering RUSTSEC-2026-0338 through 0342 and 0346 through 0349 without audit exceptions.
   Also update rustls-webpki to 0.103.16 and webpki-roots to 1.0.10 for the newly reported

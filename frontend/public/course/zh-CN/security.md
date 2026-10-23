@@ -563,7 +563,15 @@ ssh -L 3000:127.0.0.1:3000 \
 
 ## 依赖扫描治理
 
-- 前端依赖下限为 Next.js 15.5.27、DOMPurify 3.4.16、sharp 0.35.5 和 source-map-js 1.2.2。
+- Unreleased 前端依赖下限为 Next.js 15.5.28、DOMPurify 3.4.17、sharp 0.35.5 和 source-map-js 1.2.2。
+  2026-10-23 的后续 CI 审计报告 Next.js 与 DOMPurify 两个受影响的包。Next.js 15.5.28 修复
+  [SVG 图片优化问题](https://github.com/vercel/next.js/security/advisories/GHSA-2464-fhr4-w9xw)及
+  [Server Actions 拒绝服务](https://github.com/vercel/next.js/security/advisories/GHSA-p3m5-59mp-jv5r)，
+  保留现有 sharp 0.35.5 下限。DOMPurify 3.4.17 修复
+  [shadow root 模板表达式](https://github.com/cure53/DOMPurify/security/advisories/GHSA-cg2g-xh64-v4q7)、
+  [钩子移除父／兄弟子树](https://github.com/cure53/DOMPurify/security/advisories/GHSA-mrv2-3pqr-j5jr)及
+  [XHTML SMIL 属性](https://github.com/cure53/DOMPurify/security/advisories/GHSA-c6gr-qvv4-5v3f)。
+  npm 与维护者公告的严重等级可能不同；不更改审计阈值或添加例外。
   2026-10-08 的 Unreleased 门禁在 Next.js 15.5.24 中发现一项中危依赖告警，涉及上游
   [SSG/ISR 页面缓存投毒](https://github.com/vercel/next.js/security/advisories/GHSA-4jqv-mc3x-m676)和
   [catch-all 路由缓存投毒](https://github.com/vercel/next.js/security/advisories/GHSA-mcj8-r9mp-w47p)
@@ -625,6 +633,14 @@ chunk 做测试插桩，取得 Monaco 使用的同一清理器实例，检查 HT
 从请求拦截提供的本机文件加载新 chunk 和语言注册图。夹具不启动 Next 或 Engine、不产生外网访问；
 不证明应用已存在可利用漏洞，也不是已部署前端验收。应用修复需要重新生成、构建并部署资源，
 依赖审计零告警不能代替这些步骤。
+
+### Unreleased 前端审计后续修复
+
+当前资源契约要求 DOMPurify 3.4.17，同时保留原 Monaco 0.55.1 chunk 摘要、语法检查及精确引用库存。
+重新生成时一并替换净化器 chunk 及所有 AMD 引用，使用新的内容摘要 URL；仅更新 override 不会修补
+此前生成或部署的资源。上文 0.5.3 的证据仍为历史记录。显式浏览器夹具另检查 shadow root 模板重组、
+钩子移除父节点或尚未遍历的兄弟节点、XHTML SMIL 属性，并保留安全内容对照。这些独立净化器检查
+不等于 Next.js 漏洞利用回归或已部署环境验收。应用两个包的修复都需要重新构建并部署前端。
 
 ## 安全事件处理
 

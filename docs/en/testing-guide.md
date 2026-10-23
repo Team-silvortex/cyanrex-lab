@@ -534,7 +534,7 @@ node frontend/scripts/sync-monaco-assets.mjs
 npm --prefix frontend run test:dompurify-browser
 ```
 
-This explicit suite contains ten cases. Nine instrument the actual generated AMD chunk to inspect the
+The original 0.5.3 fixture contains ten cases. Nine instrument the actual generated AMD chunk to inspect the
 same DOMPurify instance used by Monaco, not merely the root npm package. They cover the patched
 version, safe formatting and executable-markup removal, before/after-element and after-attribute
 removal hooks including kept custom elements, rejected rawtext roots, healthy root identity, and
@@ -549,6 +549,16 @@ no production frontend build or Engine URL. These are component/browser regressi
 application exploitability, a deployed sanitizer version or end-to-end acceptance. Browser execution
 is opt-in; the default frontend gate runs the pure tooling units, not these ten browser cases.
 The suite inventory is not a passing result; dated outcomes remain in [project status](project-status.md).
+
+### Unreleased sanitizer regression follow-up
+
+The current contract requires DOMPurify 3.4.17. The same `test:dompurify-browser` entry retains the
+original cases and adds attached-shadow template reassembly across DOM output modes, hooks removing
+a parent or an unvisited sibling, and XHTML SMIL attribute targets. Safe text/animation controls and
+positive shadow-root assertions prevent an empty result from passing. These tests use the actual
+generated Monaco instance, block external requests, and neither evaluate template expressions nor
+exercise Next.js vulnerabilities. Run them only after regenerating matching assets as above; they
+remain opt-in and do not establish deployed-environment acceptance.
 
 Real transport checks are separate. The ignored `runner_agent_client_tdd` case starts a loopback HTTP
 server and uses Linux Clang with the BPF target; it compiles without attaching a program. The event

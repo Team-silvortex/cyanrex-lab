@@ -472,7 +472,7 @@ node frontend/scripts/sync-monaco-assets.mjs
 npm --prefix frontend run test:dompurify-browser
 ```
 
-该显式套件包含十项用例，其中九项通过测试插桩取得实际生成 AMD chunk 中 Monaco 使用的同一
+原 0.5.3 夹具包含十项用例，其中九项通过测试插桩取得实际生成 AMD chunk 中 Monaco 使用的同一
 DOMPurify 实例，不只检查根 npm 包。覆盖修复版本、安全格式保留及可执行标记移除、元素处理前后和属性处理后
 的移除钩子（含保留的自定义元素）、rawtext 根节点拒绝、健康根节点身份，以及真实 Monaco hover
 渲染。测试插桩不写入生成的生产资源。
@@ -484,6 +484,14 @@ Playwright/Chromium 路径配置，但不要求生产前端构建或 Engine URL�
 不是应用可利用性、已部署清理器版本或端到端验收的证明。浏览器执行为 opt-in；默认前端门禁运行
 纯工具单测，不包含这十项浏览器用例。用例库存不等于通过结果，分日期执行结果仍见
 [项目进度](project-status.md)。
+
+### Unreleased 净化器回归后续验证
+
+当前契约要求 DOMPurify 3.4.17。相同的 `test:dompurify-browser` 入口保留原用例，并增加不同 DOM
+输出模式下 attached shadow root 的模板重组、钩子移除父节点或尚未遍历的兄弟节点、XHTML SMIL
+目标属性。安全文本／动画对照和 shadow root 存在性断言防止空结果误通过。这些测试使用实际生成的
+Monaco 实例，阻止外网请求，不求值模板表达式，也不验证 Next.js 漏洞。须先按上文重新生成匹配资源；
+用例仍需显式执行，不代表已部署环境验收。
 
 真实传输另行验证。ignored 的 `runner_agent_client_tdd` 用例启动回环 HTTP 服务并使用支持 BPF
 目标的 Linux Clang，只编译、不挂载程序。事件流压力夹具检查真实节奏发送、过载和阻塞连接。

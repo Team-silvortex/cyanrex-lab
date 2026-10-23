@@ -3,9 +3,11 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 // Offline guards for these named advisories, not a replacement for the live npm audit.
-const floors = { dompurify: "3.4.16", sharp: "0.35.5", "source-map-js": "1.2.2" };
-// GHSA-4jqv-mc3x-m676 and GHSA-mcj8-r9mp-w47p are fixed in this stable Next release.
-const nextFloor = "15.5.27";
+// DOMPurify GHSA-cg2g-xh64-v4q7, GHSA-mrv2-3pqr-j5jr and GHSA-c6gr-qvv4-5v3f.
+const floors = { dompurify: "3.4.17", sharp: "0.35.5", "source-map-js": "1.2.2" };
+// Also retain the earlier cache fixes; these two newer advisories require 15.5.28.
+// GHSA-2464-fhr4-w9xw and GHSA-p3m5-59mp-jv5r.
+const nextFloor = "15.5.28";
 const readJson = async file => JSON.parse(await readFile(new URL(file, import.meta.url), "utf8"));
 
 function atLeast(version, floor) {
@@ -25,7 +27,8 @@ function supportedNext(version) {
 
 test("frontend dependencies retain the Next, DOMPurify, sharp and source-map-js security floors", async () => {
   assert.equal(supportedNext("15.5.26"), false);
-  assert.equal(supportedNext("15.5.27"), true);
+  assert.equal(supportedNext("15.5.27"), false);
+  assert.equal(supportedNext("15.5.28"), true);
   assert.equal(supportedNext("16.0.0"), false);
   const manifest = await readJson("../../frontend/package.json");
   const nextRange = manifest.dependencies?.next;

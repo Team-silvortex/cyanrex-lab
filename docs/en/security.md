@@ -706,7 +706,15 @@ After class:
 
 ## Dependency Audit Policy
 
-- Frontend dependency floors are Next.js 15.5.27, DOMPurify 3.4.16, sharp 0.35.5 and source-map-js 1.2.2.
+- Unreleased frontend dependency floors are Next.js 15.5.28, DOMPurify 3.4.17, sharp 0.35.5 and source-map-js 1.2.2.
+  The 2026-10-23 follow-up CI audit reports two affected packages, Next.js and DOMPurify.
+  Next.js 15.5.28 addresses [SVG image optimization](https://github.com/vercel/next.js/security/advisories/GHSA-2464-fhr4-w9xw)
+  and [Server Actions denial of service](https://github.com/vercel/next.js/security/advisories/GHSA-p3m5-59mp-jv5r);
+  the existing sharp 0.35.5 floor is retained. DOMPurify 3.4.17 addresses
+  [shadow-root template expressions](https://github.com/cure53/DOMPurify/security/advisories/GHSA-cg2g-xh64-v4q7),
+  [detached parent/sibling hooks](https://github.com/cure53/DOMPurify/security/advisories/GHSA-mrv2-3pqr-j5jr)
+  and [XHTML SMIL attributes](https://github.com/cure53/DOMPurify/security/advisories/GHSA-c6gr-qvv4-5v3f).
+  Audit severities may differ between npm and maintainer records; no threshold or exception is changed.
   The 2026-10-08 Unreleased gate found one moderate dependency finding in Next.js 15.5.24, covering
   the upstream [SSG/ISR page cache poisoning](https://github.com/vercel/next.js/security/advisories/GHSA-4jqv-mc3x-m676)
   and [catch-all route cache poisoning](https://github.com/vercel/next.js/security/advisories/GHSA-mcj8-r9mp-w47p)
@@ -780,6 +788,17 @@ editor entry to resolve the new chunk and language-registration graph from inter
 The fixture starts no Next or Engine service and makes no external network contact; it does not prove
 an application exploit or validate a deployed frontend. Rebuild and redeploy generated assets to apply
 the change; a clean dependency audit alone does not replace those steps.
+
+### Unreleased frontend audit follow-up
+
+The current asset contract requires DOMPurify 3.4.17 while retaining the original Monaco 0.55.1
+chunk digest, syntax checks and exact reference inventory. Regeneration replaces the generated
+sanitizer chunk and all AMD references together, with a new content-derived URL; changing the
+override alone leaves previously generated or deployed assets unchanged. The 0.5.3 evidence above
+remains historical. The explicit browser fixture additionally exercises shadow-root template
+reassembly, hooks removing a parent or unvisited sibling, and XHTML SMIL attributes, with safe
+content controls. These isolated sanitizer checks do not establish Next.js exploit resistance or
+deployed-environment acceptance. Rebuild and redeploy the frontend to apply both package fixes.
 
 ## Security Incident Response
 
