@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -66,7 +67,7 @@ test("bilingual sharing docs keep publisher ownership separate from download or 
   for (const lang of ["en", "zh-CN"]) {
     const doc = await read(`docs/${lang}/large-file-sharing.md`);
     for (const phrase of ["SessionFileSharingWorkspace", "SessionFileRecipientGrantIssue", "SessionFileSharingError", "issue_session_file_recipient_grant", "revoke_session_file_recipient_grant", "expected_file", "READ COMMITTED", "READ ONLY", "SHARE ROW EXCLUSIVE", "SET CONSTRAINTS ALL IMMEDIATE", "0.5.6", "0.3.0", "test-session-file-sharing.sh"]) assert.ok(doc.includes(phrase), `${lang}: ${phrase}`);
-    for (const file of ["README", "architecture", "security", "platform-network", "project-status", "testing-guide", "large-file-distribution", "large-file-access-contract", "large-file-recipient-grants", "large-file-session-publication"]) assert.ok((await read(`docs/${lang}/${file}.md`)).includes("large-file-sharing.md"), `${lang}: ${file}`);
+    for (const file of ["README", "architecture", "security", "platform-network", "project-status", "testing-guide", "large-file-distribution", "large-file-access-contract", "large-file-recipient-grants", "large-file-session-publication"]) await assertDocumentationReference(`docs/${lang}/${file}.md`, `docs/${lang}/large-file-sharing.md`);
     assert.ok((await read(`docs/${lang}/testing-guide.md`)).includes("fileSharing"));
   }
 });

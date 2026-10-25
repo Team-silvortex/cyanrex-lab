@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -67,7 +68,7 @@ test("bilingual byte-read docs preserve snapshot and unmounted transport boundar
   for (const lang of ["en", "zh-CN"]) {
     const doc = await read(`docs/${lang}/large-file-chunk-read.md`);
     for (const phrase of ["SessionFileChunkReadWorkspace", "SessionFileChunkReadRequest", "SessionFileChunkReadError", "read_session_file_chunk", "READ COMMITTED", "READ ONLY", "4 MiB", "0.5.6", "0.3.0", "test-session-file-chunk-read.sh"]) assert.ok(doc.includes(phrase), `${lang}: ${phrase}`);
-    for (const file of ["README", "architecture", "security", "platform-network", "project-status", "testing-guide", "large-file-distribution", "large-file-download-manifest"]) assert.ok((await read(`docs/${lang}/${file}.md`)).includes("large-file-chunk-read.md"), `${lang}: ${file}`);
+    for (const file of ["README", "architecture", "security", "platform-network", "project-status", "testing-guide", "large-file-distribution", "large-file-download-manifest"]) await assertDocumentationReference(`docs/${lang}/${file}.md`, `docs/${lang}/large-file-chunk-read.md`);
     assert.ok((await read(`docs/${lang}/testing-guide.md`)).includes("fileChunkRead"));
   }
 });

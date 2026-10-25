@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -78,7 +79,7 @@ test("bilingual storage guides distinguish current observations, original runtim
     assert.match(prose, locale === "en" ? /no hard time bound/ : /没有硬耗时上限/);
     assert.match(prose, locale === "en" ? /valid same-name substitution/ : /有效同名替换/);
     for (const path of ["README.md", "platform-startup-input.md"])
-      assert.ok((await read(`docs/${locale}/${path}`)).includes("platform-storage-check.md"));
+      await assertDocumentationReference(`docs/${locale}/${path}`, `docs/${locale}/platform-storage-check.md`);
     assert.equal(source, await read(`frontend/public/course/${locale}/platform-storage-check.md`));
   }
 });

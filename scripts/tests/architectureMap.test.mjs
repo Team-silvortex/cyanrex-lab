@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, stat } from "node:fs/promises";
 import test from "node:test";
@@ -74,15 +75,15 @@ test("current architecture maps keep independent permissions budgets and documen
     const paths = [...source.matchAll(/`((?:engine|frontend|sdk-js|scripts|reports)\/[\w./-]+)`/g)].map(match => match[1]);
     assert.ok(paths.length >= 12);
     for (const path of paths) await stat(new URL(`../../${path}`, import.meta.url));
-    for (const path of ["architecture.md", "platform-network.md", "README.md"]) assert.ok((await read(`docs/${lang}/${path}`)).includes("architecture-map.md"), `${lang}: ${path}`);
+    for (const path of ["architecture.md", "platform-network.md", "README.md"]) await assertDocumentationReference(`docs/${lang}/${path}`, `docs/${lang}/architecture-map.md`);
   }
 });
 
 test("architecture navigation separates current modules dated scores and historical execution", async () => {
-  assert.ok((await read("README.md")).includes("docs/en/architecture-map.md"));
+  await assertDocumentationReference("README.md", "docs/en/architecture-map.md");
   for (const lang of ["en", "zh-CN"]) {
     const source = await read(`docs/${lang}/architecture-map.md`);
-    for (const path of ["architecture.md", "platform-network.md", "capability-maturity.md", "project-status.md", "testing-guide.md", "large-file-source-https.md", "task-domain-boundary.md", "ai-agent-integration.md"]) assert.ok(source.includes(path), `${lang}: ${path}`);
+    for (const path of ["architecture.md", "platform-network.md", "capability-maturity.md", "project-status.md", "testing-guide.md", "large-file-source-https.md", "task-domain-boundary.md", "ai-agent-integration.md"]) await assertDocumentationReference(`docs/${lang}/architecture-map.md`, `docs/${lang}/${path}`);
     const sections = lang === "en" ? ["## Runtime wiring", "## Change boundaries"] : ['id="runtime-wiring"', 'id="change-boundaries"'];
     for (const section of sections) assert.ok(source.includes(section), `${lang}: ${section}`);
     assert.equal(await read(`frontend/public/course/${lang}/architecture-map.md`), source);

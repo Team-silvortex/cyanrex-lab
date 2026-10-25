@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -89,7 +90,7 @@ test("bilingual publisher docs preserve the metadata-only and unreleased boundar
       assert.ok(doc.includes(phrase), `${lang}: ${phrase}`);
     }
     for (const file of ["README", "architecture", "security", "platform-network", "project-status", "testing-guide"]) {
-      assert.ok((await read(`docs/${lang}/${file}.md`)).includes("large-file-publisher-grants.md"), `${lang}: ${file}`);
+      await assertDocumentationReference(`docs/${lang}/${file}.md`, `docs/${lang}/large-file-publisher-grants.md`);
     }
     assert.ok((await read(`docs/${lang}/testing-guide.md`)).includes("filePublisherGrant"));
   }

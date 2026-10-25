@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -86,6 +87,6 @@ test("selected saving stays unmounted and bilingual notes distinguish host capab
   for (const lang of ["en", "zh-CN"]) {
     const doc = await read(`docs/${lang}/large-file-save.md`);
     for (const phrase of ["0.5.7", "0.3.0", "FileSaveTarget", "save_assembled_file", "AssembledFile", "SavedFile", "FileSaveError", "FileVersionRef", "O_EXCL", "O_NOFOLLOW", "0700", "0400", "64 KiB", "64 GiB", "Unconfirmed", "file_save_tdd", "fileSave", "106", "42"]) assert.ok(doc.includes(phrase), `${lang}: ${phrase}`);
-    for (const file of ["README", "architecture", "security", "platform-network", "project-status", "testing-guide", "capability-maturity", "large-file-distribution", "large-file-chunk-assembly", "large-file-download-client", "large-file-manifest-client"]) assert.ok((await read(`docs/${lang}/${file}.md`)).includes("large-file-save.md"), `${lang}: ${file}`);
+    for (const file of ["README", "architecture", "security", "platform-network", "project-status", "testing-guide", "capability-maturity", "large-file-distribution", "large-file-chunk-assembly", "large-file-download-client", "large-file-manifest-client"]) await assertDocumentationReference(`docs/${lang}/${file}.md`, `docs/${lang}/large-file-save.md`);
   }
 });

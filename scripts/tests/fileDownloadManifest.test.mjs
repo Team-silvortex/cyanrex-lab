@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -57,7 +58,7 @@ test("bilingual manifest docs distinguish current metadata from future byte auth
   for (const lang of ["en", "zh-CN"]) {
     const doc = await read(`docs/${lang}/large-file-download-manifest.md`);
     for (const phrase of ["SessionFileDownloadWorkspace", "SessionFileDownloadRequest", "SessionFileDownloadError", "get_session_file_download_manifest", "expected_file", "READ COMMITTED", "READ ONLY", "FOR SHARE", "0.5.6", "0.3.0", "test-session-file-download.sh"]) assert.ok(doc.includes(phrase), `${lang}: ${phrase}`);
-    for (const file of ["README", "architecture", "security", "platform-network", "project-status", "testing-guide", "large-file-distribution", "large-file-access-contract", "large-file-recipient-grants", "large-file-sharing"]) assert.ok((await read(`docs/${lang}/${file}.md`)).includes("large-file-download-manifest.md"), `${lang}: ${file}`);
+    for (const file of ["README", "architecture", "security", "platform-network", "project-status", "testing-guide", "large-file-distribution", "large-file-access-contract", "large-file-recipient-grants", "large-file-sharing"]) await assertDocumentationReference(`docs/${lang}/${file}.md`, `docs/${lang}/large-file-download-manifest.md`);
     assert.ok((await read(`docs/${lang}/testing-guide.md`)).includes("fileDownloadManifest"));
   }
 });

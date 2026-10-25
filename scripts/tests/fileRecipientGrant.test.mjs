@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -77,7 +78,7 @@ test("bilingual recipient docs retain independent metadata and unreleased scope"
   for (const lang of ["en", "zh-CN"]) {
     const doc = await read(`docs/${lang}/large-file-recipient-grants.md`);
     for (const phrase of ["FileRecipientGrantStore", "SessionFileRecipientGrantWorkspace", "SessionFileRecipientGrantError", "FileVersionRef", "grant_payload", "recorded_at", "READ COMMITTED", "READ ONLY", "FOR SHARE", "0.5.6", "0.3.0", "test-file-recipient-grants.sh", "test-session-file-recipient-grants.sh"]) assert.ok(doc.includes(phrase), `${lang}: ${phrase}`);
-    for (const file of ["README", "architecture", "security", "platform-network", "project-status", "testing-guide", "large-file-distribution", "large-file-access-contract", "large-file-publisher-grants", "large-file-session-publication"]) assert.ok((await read(`docs/${lang}/${file}.md`)).includes("large-file-recipient-grants.md"), `${lang}: ${file}`);
+    for (const file of ["README", "architecture", "security", "platform-network", "project-status", "testing-guide", "large-file-distribution", "large-file-access-contract", "large-file-publisher-grants", "large-file-session-publication"]) await assertDocumentationReference(`docs/${lang}/${file}.md`, `docs/${lang}/large-file-recipient-grants.md`);
     assert.ok((await read(`docs/${lang}/testing-guide.md`)).includes("fileRecipientGrant"));
   }
 });

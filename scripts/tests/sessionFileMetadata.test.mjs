@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -67,7 +68,7 @@ test("bilingual Session metadata docs separate private intent from distribution 
     for (const phrase of ["SessionFileUploadWorkspace", "SessionFilePublicationWorkspace", "READ COMMITTED", "READ ONLY", "FOR SHARE", "Published", "test-session-file-metadata.sh", "0.5.5"]) {
       assert.ok(doc.includes(phrase), `${lang}: ${phrase}`);
     }
-    assert.ok((await read(`docs/${lang}/README.md`)).includes("large-file-session-metadata.md"));
+    await assertDocumentationReference(`docs/${lang}/README.md`, `docs/${lang}/large-file-session-metadata.md`);
     assert.ok((await read(`docs/${lang}/testing-guide.md`)).includes("sessionFileMetadata"));
   }
 });

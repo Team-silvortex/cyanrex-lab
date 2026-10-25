@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -92,6 +93,6 @@ test("shared Session documentation distinguishes independent lanes and unknown b
     assert.match(guide, locale === "en" ? /does not prove Cookie delivery/ : /不证明浏览器收到了/);
     assert.equal(guide, await read(`frontend/public/course/${locale}/platform-session-router.md`));
     for (const path of ["README.md", "platform-login-http.md", "platform-storage-open.md", "architecture-map.md", "testing-guide.md"])
-      assert.ok((await read(`docs/${locale}/${path}`)).includes("platform-session-router.md"), `${locale}: ${path}`);
+      await assertDocumentationReference(`docs/${locale}/${path}`, `docs/${locale}/platform-session-router.md`);
   }
 });

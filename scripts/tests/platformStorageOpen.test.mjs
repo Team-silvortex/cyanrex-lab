@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -81,6 +82,6 @@ test("bilingual expected-storage guides separate retained capability from diagno
     assert.match(guide, locale === "en" ? /Cancelling the future/ : /取消 future/);
     assert.equal(guide, await read(`frontend/public/course/${locale}/platform-storage-open.md`));
     for (const file of ["README.md", "platform-storage-connection.md", "architecture-map.md", "testing-guide.md"])
-      assert.ok((await read(`docs/${locale}/${file}`)).includes("platform-storage-open.md"), `${locale}: ${file}`);
+      await assertDocumentationReference(`docs/${locale}/${file}`, `docs/${locale}/platform-storage-open.md`);
   }
 });

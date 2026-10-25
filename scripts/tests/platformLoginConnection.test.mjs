@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -90,7 +91,7 @@ test("bilingual login guides distinguish internal issuance from public delivery"
       assert.ok(guide.includes(value), value);
     assert.match(guide, locale === "en" ? /does not start a host/ : /不启动宿主/);
     assert.match(guide, locale === "en" ? /Public issuance still needs/ : /公共签发仍须/);
-    assert.ok((await read(`docs/${locale}/README.md`)).includes("platform-login-connection.md"));
+    await assertDocumentationReference(`docs/${locale}/README.md`, `docs/${locale}/platform-login-connection.md`);
     assert.equal(guide, await read(`frontend/public/course/${locale}/platform-login-connection.md`));
   }
 });

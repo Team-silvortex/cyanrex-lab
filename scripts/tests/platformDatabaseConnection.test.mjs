@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -75,7 +76,7 @@ test("bilingual connection guides distinguish post-authentication identity check
     assert.match(prose, locale === "en" ? /not forced read-only/ : /不强制只读/);
     assert.match(prose, locale === "en" ? /not yet composed/ : /尚未与/);
     for (const path of ["README.md", "platform-host-preflight.md"])
-      assert.ok((await read(`docs/${locale}/${path}`)).includes("platform-database-connection.md"));
+      await assertDocumentationReference(`docs/${locale}/${path}`, `docs/${locale}/platform-database-connection.md`);
     assert.equal(source, await read(`frontend/public/course/${locale}/platform-database-connection.md`));
   }
 });

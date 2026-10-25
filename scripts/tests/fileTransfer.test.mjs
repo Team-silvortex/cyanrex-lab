@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -80,7 +81,7 @@ test("private chunk staging remains a separate default-tested Unix preparation b
     assert.match(staging, /ChunkStaging/);
     assert.match(staging, /Unconfirmed/);
     assert.match(staging, /0400/);
-    assert.ok((await read(`docs/${lang}/README.md`)).includes("large-file-staging.md"));
+    await assertDocumentationReference(`docs/${lang}/README.md`, `docs/${lang}/large-file-staging.md`);
   }
 });
 
@@ -106,6 +107,6 @@ test("large-file bilingual documentation separates implemented checks from uncon
     assert.match(core, /64 KiB/);
     assert.match(core, /4 MiB/);
     assert.match(core, /fsync/);
-    assert.ok((await read(`docs/${lang}/README.md`)).includes("large-file-core.md"));
+    await assertDocumentationReference(`docs/${lang}/README.md`, `docs/${lang}/large-file-core.md`);
   }
 });

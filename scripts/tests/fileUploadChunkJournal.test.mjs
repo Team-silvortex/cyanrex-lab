@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -81,7 +82,7 @@ test("bilingual journal docs distinguish historical records from recovery and or
     for (const phrase of ["FileUploadChunkJournal", "JournaledFileUploadStaging", "UploadChunkRecord", "Unknown", "Confirmed", "READ COMMITTED", "16,384", "test-file-upload-chunk-journal.sh"]) {
       assert.ok(docs.includes(phrase), `${lang}: ${phrase}`);
     }
-    assert.ok((await read(`docs/${lang}/README.md`)).includes("large-file-chunk-journal.md"));
+    await assertDocumentationReference(`docs/${lang}/README.md`, `docs/${lang}/large-file-chunk-journal.md`);
     assert.ok((await read(`docs/${lang}/testing-guide.md`)).includes("fileUploadChunkJournal"));
   }
 });

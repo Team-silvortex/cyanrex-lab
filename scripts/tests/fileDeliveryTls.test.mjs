@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -70,6 +71,6 @@ test("current bilingual HTTPS notes separate transport identity from authorizati
   for (const lang of ["en", "zh-CN"]) {
     const s = await read(`docs/${lang}/large-file-delivery-https.md`);
     for (const phrase of ["0.5.7", "0.3.0", "2026-10-13", "OpenSSL", "file_delivery_tls_tdd", "trusted_root_pem", "Cancelled", "Complete", "0700", "test-file-delivery-tls.sh", "fileDeliveryTls", "106", "52", "8"]) assert.ok(s.includes(phrase), `${lang}: ${phrase}`);
-    for (const file of ["README", "architecture", "security", "platform-network", "project-status", "testing-guide", "capability-maturity", "large-file-distribution", "large-file-delivery-client", "large-file-delivery-cancellation"]) assert.ok((await read(`docs/${lang}/${file}.md`)).includes("large-file-delivery-https.md"), `${lang}: ${file}`);
+    for (const file of ["README", "architecture", "security", "platform-network", "project-status", "testing-guide", "capability-maturity", "large-file-distribution", "large-file-delivery-client", "large-file-delivery-cancellation"]) await assertDocumentationReference(`docs/${lang}/${file}.md`, `docs/${lang}/large-file-delivery-https.md`);
   }
 });

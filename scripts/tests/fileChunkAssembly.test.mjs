@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -61,7 +62,7 @@ test("assembly bilingual current boundaries are linked without changing release 
   for (const lang of ["en", "zh-CN"]) {
     const doc = await read(`docs/${lang}/large-file-chunk-assembly.md`);
     for (const phrase of ["0.5.6", "0.3.0", "assemble_staged_file", "AssembledFile", "FileVersionRef", "f1-", "64 KiB", "64 GiB", "Unconfirmed", "file_chunk_assembly_tdd", "fileChunkAssembly"]) assert.ok(doc.includes(phrase), `${lang}: ${phrase}`);
-    for (const file of ["README", "architecture", "security", "platform-network", "project-status", "testing-guide", "large-file-distribution", "large-file-staging", "large-file-chunk-client", "capability-maturity"]) assert.ok((await read(`docs/${lang}/${file}.md`)).includes("large-file-chunk-assembly.md"), `${lang}: ${file}`);
+    for (const file of ["README", "architecture", "security", "platform-network", "project-status", "testing-guide", "large-file-distribution", "large-file-staging", "large-file-chunk-client", "capability-maturity"]) await assertDocumentationReference(`docs/${lang}/${file}.md`, `docs/${lang}/large-file-chunk-assembly.md`);
   }
-  assert.ok((await read("README.md")).includes("large-file-chunk-assembly.md"));
+  await assertDocumentationReference("README.md", "docs/en/large-file-chunk-assembly.md");
 });

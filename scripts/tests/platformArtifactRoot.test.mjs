@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -47,6 +48,6 @@ test("bilingual root guides distinguish directory identity from content health a
     assert.match(text, locale === "en" ? /synchronous/ : /同步/);
     assert.match(text, locale === "en" ? /no hard|not a hard/ : /不.*硬.*期限|没有.*硬.*期限/);
     assert.match(text, locale === "en" ? /not.*content health|not.*content integrity|neither[\s\S]*?prove content integrity/ : /不.*内容健康|不.*内容完整/);
-    assert.ok((await read(`docs/${locale}/README.md`)).includes("platform-artifact-root.md"));
+    await assertDocumentationReference(`docs/${locale}/README.md`, `docs/${locale}/platform-artifact-root.md`);
   }
 });

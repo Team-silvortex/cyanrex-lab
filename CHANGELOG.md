@@ -5,6 +5,13 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- Separate concise project entry points, role-based documentation paths, current status, detailed
+  runtime/topic references and dated status archives. Preserve historical evidence, synchronize both
+  documentation languages and course copies, and check bounded Markdown navigation instead of
+  requiring every overview to repeat the same implementation links.
+
 ### Fixed
 
 - Fix the follow-up frontend CI audit by updating Next.js to 15.5.28 and DOMPurify to 3.4.17.

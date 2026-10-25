@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
@@ -53,7 +54,7 @@ test("bilingual process docs separate irreversible startup checks from sandbox a
       assert.ok(source.includes(value), value);
     assert.match(source, locale === "en" ? /not a sandbox/ : /不是沙箱/);
     assert.match(source, locale === "en" ? /does not start a host/ : /不启动宿主/);
-    assert.ok((await read(`docs/${locale}/README.md`)).includes("platform-process-startup.md"));
-    assert.ok((await read(`docs/${locale}/platform-host-preflight.md`)).includes("platform-process-startup.md"));
+    await assertDocumentationReference(`docs/${locale}/README.md`, `docs/${locale}/platform-process-startup.md`);
+    await assertDocumentationReference(`docs/${locale}/platform-host-preflight.md`, `docs/${locale}/platform-process-startup.md`);
   }
 });

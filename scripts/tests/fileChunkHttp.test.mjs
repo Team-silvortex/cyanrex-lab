@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -75,7 +76,7 @@ test("binary HTTP runner executes the complete wired ignored inventory and docs 
   for (const lang of ["en", "zh-CN"]) {
     const doc = await read(`docs/${lang}/large-file-chunk-http.md`);
     for (const phrase of ["0.5.6", "0.3.0", "FileChunkReadHttpState", "build_file_chunk_read_router", "/platform/v1/file-chunks", "Bytes::from_owner", "read_session_file_chunk", "test-file-chunk-http.sh"]) assert.ok(doc.includes(phrase), `${lang}: ${phrase}`);
-    for (const file of ["README", "architecture", "security", "platform-network", "project-status", "testing-guide", "large-file-distribution", "large-file-chunk-read", "capability-maturity"]) assert.ok((await read(`docs/${lang}/${file}.md`)).includes("large-file-chunk-http.md"), `${lang}: ${file}`);
+    for (const file of ["README", "architecture", "security", "platform-network", "project-status", "testing-guide", "large-file-distribution", "large-file-chunk-read", "capability-maturity"]) await assertDocumentationReference(`docs/${lang}/${file}.md`, `docs/${lang}/large-file-chunk-http.md`);
     assert.ok((await read(`docs/${lang}/testing-guide.md`)).includes("fileChunkHttp"));
   }
 });

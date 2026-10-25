@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -112,6 +113,6 @@ test("CI selects every exact native TLS host SQL boundary and documentation keep
     assert.equal(guide, await read(`frontend/public/course/${locale}/platform-loopback-tls-host.md`));
     for (const file of ["README.md", "platform-loopback-host.md", "platform-session-router.md", "architecture.md",
       "architecture-map.md", "platform-network.md", "security.md", "capability-maturity.md", "testing-guide.md"])
-      assert.ok((await read(`docs/${locale}/${file}`)).includes("platform-loopback-tls-host.md"), `${locale}: ${file}`);
+      await assertDocumentationReference(`docs/${locale}/${file}`, `docs/${locale}/platform-loopback-tls-host.md`);
   }
 });

@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
@@ -64,7 +65,7 @@ test("default CLI tests and bilingual docs preserve check-only boundaries and pr
     assert.match(source, locale === "en" ? /does not connect/ : /不连接数据库/);
     assert.match(source, locale === "en" ? /not secure zeroization/ : /不等于安全清零/);
     for (const path of ["README.md", "platform-process-startup.md"])
-      assert.ok((await read(`docs/${locale}/${path}`)).includes("platform-startup-input.md"));
+      await assertDocumentationReference(`docs/${locale}/${path}`, `docs/${locale}/platform-startup-input.md`);
     assert.equal(source, await read(`frontend/public/course/${locale}/platform-startup-input.md`));
   }
 });

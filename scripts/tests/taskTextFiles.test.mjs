@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
@@ -59,7 +60,7 @@ test("text-file import has bilingual instructions distinct from server saving an
   for (const lang of ["en", "zh-CN"]) {
     const source = await read(`docs/${lang}/local-text-file-import.md`);
     for (const phrase of ["0.5.8", "2026-10-13", "32", "256 KiB", "8 MiB", "UTF-8", "10", "textFileImport", "taskTextFiles", "JSON"]) assert.ok(source.includes(phrase), `${lang}: ${phrase}`);
-    for (const path of ["README.md", "editor.md", "architecture-map.md", "testing-guide.md"]) assert.ok((await read(`docs/${lang}/${path}`)).includes("local-text-file-import.md"), `${lang}: ${path}`);
+    for (const path of ["README.md", "editor.md", "architecture-map.md", "testing-guide.md"]) await assertDocumentationReference(`docs/${lang}/${path}`, `docs/${lang}/local-text-file-import.md`);
     assert.equal(await read(`frontend/public/course/${lang}/local-text-file-import.md`), source);
   }
 });

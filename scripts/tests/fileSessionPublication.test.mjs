@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -61,7 +62,7 @@ test("bilingual Session file-publication documentation preserves timing and deli
       assert.ok(doc.includes(phrase), `${lang}: ${phrase}`);
     }
     for (const name of ["README", "architecture", "security", "platform-network", "project-status", "testing-guide", "large-file-distribution", "large-file-access-contract", "large-file-grant-management", "large-file-publisher-grants", "large-file-publication"]) {
-      assert.ok((await read(`docs/${lang}/${name}.md`)).includes("large-file-session-publication.md"), `${lang}: ${name}`);
+      await assertDocumentationReference(`docs/${lang}/${name}.md`, `docs/${lang}/large-file-session-publication.md`);
     }
     assert.ok((await read(`docs/${lang}/testing-guide.md`)).includes("fileSessionPublication"));
   }

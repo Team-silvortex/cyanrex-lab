@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -103,6 +104,6 @@ test("delivery remains unmounted and current bilingual notes retain private targ
   for (const lang of ["en", "zh-CN"]) {
     const s = await read(`docs/${lang}/large-file-delivery-client.md`);
     for (const word of ["0.5.7", "0.3.0", "2026-10-13", "fetch_granted_and_save", "FileSaveTarget", "SavedFile", "FileVersionRef", "FileGrantedSaveError", "FileGrantedDownloadError", "FileSaveError", "0700", "file_delivery_tdd", "test-file-delivery.sh", "fileDelivery", "106", "44"]) assert.ok(s.includes(word), `${lang}: ${word}`);
-    for (const doc of ["README", "architecture", "security", "platform-network", "project-status", "testing-guide", "capability-maturity", "large-file-distribution", "large-file-download-client", "large-file-manifest-client", "large-file-save"]) assert.ok((await read(`docs/${lang}/${doc}.md`)).includes("large-file-delivery-client.md"), `${lang}: ${doc}`);
+    for (const doc of ["README", "architecture", "security", "platform-network", "project-status", "testing-guide", "capability-maturity", "large-file-distribution", "large-file-download-client", "large-file-manifest-client", "large-file-save"]) await assertDocumentationReference(`docs/${lang}/${doc}.md`, `docs/${lang}/large-file-delivery-client.md`);
   }
 });

@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -84,6 +85,6 @@ test("manifest HTTP stays unmounted and current bilingual notes preserve authori
   for (const lang of ["en", "zh-CN"]) {
     const doc = await read(`docs/${lang}/large-file-manifest-http.md`);
     for (const phrase of ["0.5.7", "0.3.0", "FileDownloadManifestHttpState", "SessionFileDownloadWorkspace", "build_file_download_manifest_router", "/platform/v1/file-manifests", "get_session_file_download_manifest", "FileTransferManifest", "Content-Length", "READ ONLY", "1152 KiB", "not_attempted", "unconfirmed", "test-file-download-manifest-http.sh", "fileManifestHttp", "106", "38"]) assert.ok(doc.includes(phrase), `${lang}: ${phrase}`);
-    for (const file of ["README", "architecture", "security", "platform-network", "project-status", "testing-guide", "capability-maturity", "large-file-distribution", "large-file-download-manifest", "large-file-download-client"]) assert.ok((await read(`docs/${lang}/${file}.md`)).includes("large-file-manifest-http.md"), `${lang}: ${file}`);
+    for (const file of ["README", "architecture", "security", "platform-network", "project-status", "testing-guide", "capability-maturity", "large-file-distribution", "large-file-download-manifest", "large-file-download-client"]) await assertDocumentationReference(`docs/${lang}/${file}.md`, `docs/${lang}/large-file-manifest-http.md`);
   }
 });

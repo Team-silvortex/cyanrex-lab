@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -77,6 +78,6 @@ test("bilingual preflight documentation distinguishes catalog identity from heal
       "pg_control_system", "READ ONLY", "issues/3"]) assert.ok(document.includes(name), name);
     assert.match(document, locale === "en" ? /catalog-only/ : /只读目录|仅目录/);
     assert.match(document, locale === "en" ? /unmounted|no listener/ : /未挂载|不启动监听/);
-    assert.ok((await read(`docs/${locale}/README.md`)).includes("platform-host-preflight.md"));
+    await assertDocumentationReference(`docs/${locale}/README.md`, `docs/${locale}/platform-host-preflight.md`);
   }
 });

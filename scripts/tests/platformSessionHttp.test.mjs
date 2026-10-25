@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -50,7 +51,7 @@ test("session lifecycle documents fixed cookie clearing and the still separate i
       "Path=/platform/v1", "SameSite=Strict", "Max-Age=0", "HttpOnly", "Secure", "issues/3"]) assert.ok(document.includes(value), value);
     assert.match(document, locale === "en" ? /unmounted/i : /未挂载/);
     assert.match(document, locale === "en" ? /unknown|unconfirmed/i : /不确定|未确认/);
-    assert.ok((await read(`docs/${locale}/README.md`)).includes("platform-session-lifecycle.md"));
+    await assertDocumentationReference(`docs/${locale}/README.md`, `docs/${locale}/platform-session-lifecycle.md`);
   }
 });
 

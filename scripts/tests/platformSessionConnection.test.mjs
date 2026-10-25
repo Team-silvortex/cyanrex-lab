@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -122,7 +123,7 @@ test("bilingual Session connection guides and generated copies retain the curren
     const prose = guide.replace(/\s+/g, " ");
     assert.match(prose, locale === "en" ? /unmounted|not mounted|no listener or issuer is started/i : /未挂载|不启动监听或签发方/);
     assert.match(prose, locale === "en" ? /not public partial commands or reusable authorization/i : /不公开半完成命令或可复用权限/);
-    assert.ok((await read(`docs/${locale}/README.md`)).includes("platform-session-connection.md"));
+    await assertDocumentationReference(`docs/${locale}/README.md`, `docs/${locale}/platform-session-connection.md`);
     assert.equal(guide, await read(`frontend/public/course/${locale}/platform-session-connection.md`));
   }
 });

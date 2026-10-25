@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -94,7 +95,7 @@ test("bilingual upload docs distinguish logical reservations from authenticated 
     for (const phrase of ["FileUploadStore", "LegacyAccountId", "16 TiB", "256", "READ COMMITTED", "test-file-upload-intent.sh"]) {
       assert.ok(docs.includes(phrase), `${lang}: ${phrase}`);
     }
-    assert.ok((await read(`docs/${lang}/README.md`)).includes("large-file-upload-intent.md"));
+    await assertDocumentationReference(`docs/${lang}/README.md`, `docs/${lang}/large-file-upload-intent.md`);
     assert.ok((await read(`docs/${lang}/testing-guide.md`)).includes("fileUploadIntent"));
   }
 });

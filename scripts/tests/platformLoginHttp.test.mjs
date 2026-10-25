@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -84,7 +85,7 @@ test("bilingual login HTTP guides distinguish unmounted projection from deployed
       assert.ok(guide.includes(value), `${locale}: ${value}`);
     assert.match(guide, locale === "en" ? /router is unmounted/ : /路由仍未挂载/);
     assert.match(guide, locale === "en" ? /does not prove the browser/ : /不证明浏览器/);
-    assert.ok((await read(`docs/${locale}/README.md`)).includes("platform-login-http.md"));
+    await assertDocumentationReference(`docs/${locale}/README.md`, `docs/${locale}/platform-login-http.md`);
     assert.equal(guide, await read(`frontend/public/course/${locale}/platform-login-http.md`));
   }
 });

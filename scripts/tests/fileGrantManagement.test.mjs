@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -51,7 +52,7 @@ test("bilingual Session grant-management docs state config revocation and unconn
       assert.ok(doc.includes(phrase), `${lang}: ${phrase}`);
     }
     for (const file of ["README", "architecture", "security", "platform-network", "project-status", "testing-guide", "large-file-publisher-grants", "large-file-distribution", "large-file-access-contract"]) {
-      assert.ok((await read(`docs/${lang}/${file}.md`)).includes("large-file-grant-management.md"), `${lang}: ${file}`);
+      await assertDocumentationReference(`docs/${lang}/${file}.md`, `docs/${lang}/large-file-grant-management.md`);
     }
     assert.ok((await read(`docs/${lang}/testing-guide.md`)).includes("fileGrantManagement"));
   }

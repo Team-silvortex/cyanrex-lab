@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -41,7 +42,7 @@ test("bilingual file grant documentation separates selectors from authenticated 
       assert.ok(doc.includes(phrase), `${lang}: ${phrase}`);
     }
     for (const name of ["README", "architecture", "security", "platform-network", "project-status", "testing-guide", "large-file-distribution"]) {
-      assert.ok((await read(`docs/${lang}/${name}.md`)).includes("large-file-access-contract.md"), `${lang}: ${name}`);
+      await assertDocumentationReference(`docs/${lang}/${name}.md`, `docs/${lang}/large-file-access-contract.md`);
     }
     assert.ok((await read(`docs/${lang}/testing-guide.md`)).includes("fileAccess"));
   }

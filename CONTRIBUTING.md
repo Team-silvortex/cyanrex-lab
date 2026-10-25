@@ -149,9 +149,20 @@ verification; the workflow does not create a GitHub Release, publish npm package
 
 ## Course Material and Translations
 
-Project-wide documentation starts at [the index](docs/en/README.md). Keep current capability summaries
-in project status, source relationships in architecture/the platform map, and prior runs in development
-history or dated evidence. Do not rewrite historical hashes, versions or failure counts to imply new acceptance.
+Project-wide documentation starts at [the index](docs/en/README.md). Keep each layer focused:
+
+- The root README covers positioning, current capability boundaries and a short start path.
+- The documentation index guides readers by role; the [reference index](docs/en/reference-index.md)
+  owns the complete topic catalogue instead of repeating every implementation link on each entry page.
+- Project status describes current capabilities, gaps and next decisions; architecture/network guides
+  explain responsibilities and connections. Runtime commands and endpoint detail belong in the
+  [runtime reference](docs/en/runtime-reference.md) or their component guide.
+- Dated runs belong in development history, status archives or reports. Preserve their versions,
+  hashes and failure counts; do not rewrite them to imply new acceptance.
+
+Keep reference links reachable from the entry pages. Documentation navigation tests follow bounded
+local Markdown paths, so a new feature does not need a repeated paragraph in every overview.
+
 Update English and Chinese sources under `docs/`, then run `node frontend/scripts/sync-course-docs.mjs`;
 the `frontend/public/course/` tree is generated from those sources, not a second place to author changes.
 

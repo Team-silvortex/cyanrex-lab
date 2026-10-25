@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -87,6 +88,6 @@ test("progress remains local metadata with current bilingual limits and no norma
   for (const lang of ["en", "zh-CN"]) {
     const s = await read(`docs/${lang}/large-file-delivery-progress.md`);
     for (const phrase of ["0.5.7", "0.3.0", "2026-10-13", "channel()", "latest()", "changed().await", "staged_chunks()", "staged_bytes()", "total_bytes()", "total_chunks()", "FetchingManifest", "StagingChunks", "Assembling", "Saving", "Complete", "None", "file_delivery_progress_tdd", "fileDeliveryProgress", "106", "48"]) assert.ok(s.includes(phrase), `${lang}: ${phrase}`);
-    for (const file of ["README", "architecture", "security", "platform-network", "project-status", "testing-guide", "capability-maturity", "large-file-distribution", "large-file-delivery-client", "large-file-user-save"]) assert.ok((await read(`docs/${lang}/${file}.md`)).includes("large-file-delivery-progress.md"), `${lang}: ${file}`);
+    for (const file of ["README", "architecture", "security", "platform-network", "project-status", "testing-guide", "capability-maturity", "large-file-distribution", "large-file-delivery-client", "large-file-user-save"]) await assertDocumentationReference(`docs/${lang}/${file}.md`, `docs/${lang}/large-file-delivery-progress.md`);
   }
 });

@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -73,6 +74,6 @@ test("cancellation stays unmounted with current bilingual cooperative and retain
   for (const lang of ["en", "zh-CN"]) {
     const s = await read(`docs/${lang}/large-file-delivery-cancellation.md`);
     for (const phrase of ["0.5.7", "0.3.0", "2026-10-13", "FileDeliveryCancelHandle", "FileDeliveryCancellation", "FileControlledSaveError", "cancel(self)", "Delivery(InvalidInput)", "Cancelled", "0400", "file_delivery_cancel_tdd", "fileDeliveryCancel", "106", "50", "8"]) assert.ok(s.includes(phrase), `${lang}: ${phrase}`);
-    for (const file of ["README", "architecture", "security", "platform-network", "project-status", "testing-guide", "capability-maturity", "large-file-distribution", "large-file-delivery-client", "large-file-delivery-progress"]) assert.ok((await read(`docs/${lang}/${file}.md`)).includes("large-file-delivery-cancellation.md"), `${lang}: ${file}`);
+    for (const file of ["README", "architecture", "security", "platform-network", "project-status", "testing-guide", "capability-maturity", "large-file-distribution", "large-file-delivery-client", "large-file-delivery-progress"]) await assertDocumentationReference(`docs/${lang}/${file}.md`, `docs/${lang}/large-file-delivery-cancellation.md`);
   }
 });

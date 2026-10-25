@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -85,7 +86,7 @@ test("bilingual publication docs distinguish persistent metadata from restored a
     for (const phrase of ["FileUploadPublisher", "FileUploadPublicationStore", "FileUploadPublicationAttempt", "FileUploadPublicationRecord", "Ready", "Unknown", "Confirmed", "NotReady", "READ COMMITTED", "READ ONLY", "64 KiB", "16,384", "1–256", "test-file-upload-publication.sh"]) {
       assert.ok(docs.includes(phrase), `${lang}: ${phrase}`);
     }
-    assert.ok((await read(`docs/${lang}/README.md`)).includes("large-file-publication.md"));
+    await assertDocumentationReference(`docs/${lang}/README.md`, `docs/${lang}/large-file-publication.md`);
     assert.ok((await read(`docs/${lang}/testing-guide.md`)).includes("fileUploadPublication"));
   }
 });

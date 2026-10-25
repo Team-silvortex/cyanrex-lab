@@ -4,684 +4,160 @@
 
 Version: `0.6.3`
 
-Cyanrex is evolving into a self-hosted collaboration platform for people, AI Agents and compute
-resources. Tasks, content versions, execution and reviews have separate responsibilities; eBPF teaching
-is the first domain package, not the definition of every task.
+Cyanrex is a self-hosted collaboration and teaching platform. A Task owns its goal and optional
+content payload; code and execution are not required. eBPF teaching is the first supported domain,
+not the definition of every task.
 
-The current application still runs the teaching workflow. The collaboration backend now also has an
-explicit independent low-privilege host; the task editor remains local-only, and AI orchestration is not implemented.
+The current teaching application, local task authoring and independent platform host have different
+entry points and persistence boundaries. Start with the path that matches your work below.
 
-Documentation: [English](docs/en/README.md) · [简体中文](docs/zh-CN/README.md)
-· Architecture: [English](docs/en/architecture.md) · [简体中文](docs/zh-CN/architecture.md)
-· Current feature map: [English](docs/en/platform-network.md) · [简体中文](docs/zh-CN/platform-network.md)
-· Capability maturity: [English](docs/en/capability-maturity.md) · [简体中文](docs/zh-CN/capability-maturity.md)
-· Progress and roadmap: [English](docs/en/project-status.md) · [简体中文](docs/zh-CN/project-status.md)
-· Testing: [English](docs/en/testing-guide.md) · [简体中文](docs/zh-CN/testing-guide.md)
-· [Changelog](CHANGELOG.md)
+[Documentation](docs/en/README.md) · [Current status](docs/en/project-status.md) ·
+[Architecture map](docs/en/architecture-map.md) · [Reference index](docs/en/reference-index.md) ·
+[Changelog](CHANGELOG.md)
 
-cyanrex-lab is free and open source under the [Apache License 2.0](LICENSE).
-Contributions are welcome; start with [CONTRIBUTING.md](CONTRIBUTING.md), follow the
-[community code of conduct](CODE_OF_CONDUCT.md), and report vulnerabilities through the
-private process in [SECURITY.md](SECURITY.md).
+## Start here
 
-## Current development snapshot
+- **Learn:** follow the [student guide](docs/en/student-guide.md) and five introductory labs.
+- **Teach:** use the [teacher guide](docs/en/teacher-guide.md) for classroom and deployment authority.
+- **Deploy or maintain:** choose the [Docker guide](docker/README.md) or
+  [installed-package operations](docker/README-DEPLOY.md); use the [runtime reference](docs/en/runtime-reference.md)
+  for complete commands and API details.
+- **Develop the platform:** read the [architecture map](docs/en/architecture-map.md),
+  [capability map](docs/en/platform-network.md) and [contributing guide](CONTRIBUTING.md).
+- **Integrate an API:** start with the [JavaScript SDK](sdk-js/README.md), not a preparatory platform route.
 
-Both loopback hosts now support explicit [service-state notifications](docs/en/platform-host-notifications.md)
-after verified startup and before shutdown drain; no service installation or automatic restart is added.
-
-The separate [native HTTPS loopback mode](docs/en/platform-loopback-tls-host.md) now adds strict
-private TLS identity loading, bounded handshakes and Secure Session Cookies. Client trust and
-Cookie-safe domain planning remain explicit; this is not LAN or browser deployment.
-
-Included in source 0.6.3, the independent Linux [loopback Session host](docs/en/platform-loopback-host.md)
-connects private format 3 input, original storage, Session routes, the [private Task index](docs/en/platform-task-index-connection.md), [read-only content reopening](docs/en/platform-task-content-connection.md)
-and [empty Task creation](docs/en/platform-task-create-connection.md) with bounded HTTP/1.1 and signal drain.
-Separate [Draft manifest replacement](docs/en/platform-task-replace-connection.md) now changes a title or
-already-owned exact text references using an expected revision. Payload, code and a Run are optional;
-Artifact publication, browser/SDK integration, LAN deployment and a proxy backend remain separate.
-
-Source 0.5.9 local authoring supports reviewed multi-file text append, retaining old payload and
-the selected editor: [English](docs/en/local-text-file-import.md) · [简体中文](docs/zh-CN/local-text-file-import.md).
-This does not connect server saving or large-file delivery.
-
-As of **2026-10-20**, the source version is **0.6.3**. This patch adds independent plain/native-TLS
-loopback hosts, bounded Session issuance and owner-private Task create/list/reopen/manifest replacement.
-Six independent response lanes share one original retained binding; code, payload and execution are
-optional. Deployment guidance, page-local Helper checks, bounded health observations and installed
-package control verification also improve. Four already-locked HTTP/TLS libraries become direct
-dependencies; no new package versions are resolved. Public teaching contracts and API compatibility
-remain unchanged. Earlier Linux startup/private-input checks, storage declarations, retained Session
-operations and local authoring remain included; the explicit host does not replace teaching AppState,
-migrate authentication or establish LAN/browser deployment acceptance.
-Earlier local text import, five-language dictionaries and explicit file download/saving entries remain;
-generic browser saving and distribution remain outside normal app startup.
-The owner-private [task metadata index](docs/en/task-content-index.md) is mounted only in the explicit host.
-[Large-file distribution preparation](docs/en/large-file-distribution.md) now includes bounded streaming,
-private chunk staging, immutable upload quotas, a chunk journal, whole-byte verification, trusted
-publication, current-Session private metadata and pure publisher/recipient grant contracts.
-A [publisher-grant follow-up](docs/en/large-file-publisher-grants.md), included in 0.5.7,
-adds trusted persistent revocation and current-Session own metadata reads.
-Separate [Session grant management](docs/en/large-file-grant-management.md) now requires an explicitly
-host-configured exact manager/account generation; teacher/deployment roles do not confer it.
-Separate [Session publication](docs/en/large-file-session-publication.md) now consumes current publisher
-permission for real bytes and an atomically authorized insert; recipient delivery and online manager revocation remain separate.
-Separate [recipient grants](docs/en/large-file-recipient-grants.md) now persist exact file/account
-bindings and provide current own-recipient metadata reads; download admission remains separate.
-Separate [publisher-owned sharing](docs/en/large-file-sharing.md) now issues exact Published-version
-grants under current publisher permission and lets the original publisher revoke old shares independently.
-Separate [recipient download manifests](docs/en/large-file-download-manifest.md) now check a current
-independent recipient grant against exact trusted Published metadata; this does not grant later bytes.
-The separate [verified chunk reader](docs/en/large-file-chunk-read.md) now returns up to 4 MiB after
-private file verification and original-authority reentry; returned bytes retain a bounded capacity lease.
-The separate [HTTP chunk receiver](docs/en/large-file-chunk-receiver.md) now verifies a supplied exact
-response through explicit EOF before exclusive private staging; real save work owns its buffer/control
-through cancellation. It does not start network requests or assemble/resume a whole-file download.
-The explicit [single-chunk HTTP client](docs/en/large-file-chunk-client.md) now adds a trusted fixed
-HTTPS/literal-loopback target, private per-call cookies and separate header/body deadlines; save jobs
-retain request admission after waiter cancellation. It remains outside normal application startup.
-Separate [private whole-file assembly](docs/en/large-file-chunk-assembly.md) now copies existing legacy
-chunks into one exclusive private file with actual whole-digest/readback checks; it does not select a
-user save path, recover lost progress, delete chunks or mount a complete downloader.
-The reader also retains the original source-relation pin across private Session work. Earlier task decoupling,
-AI host profiles/SDK adapters, C2-O–AA draft preparation and authentication protections remain included.
-See [release notes](CHANGELOG.md#063---2026-10-20) and [local validation](reports/releases/0.6.3/README.md). Normal-app file distribution, mounted client delivery and
-restart recovery are not connected. Other preparation HTTP adapters remain unmounted and the editor local-only;
-neither this release nor passing tests switch legacy authentication or an existing deployment.
-
-Included in **0.5.8**, previously outside the 0.5.7 tag: [ordered private download](docs/en/large-file-download-client.md)
-now joins sequential HTTP chunks to same-root whole assembly. Shared flow capacity follows real
-file work through cancellation; failures preserve evidence and stop. UI saving/resume remain absent.
-
-The separate [recipient manifest HTTP](docs/en/large-file-manifest-http.md) exposes exact
-authorized metadata through an unmounted JSON GET. The new [exact manifest client](docs/en/large-file-manifest-client.md)
-can fetch that complete expected version and compose metadata → ordered chunks → private assembly;
-even empty files require metadata GET. Later chunk authorization and UI save/resume remain separate.
-The new [explicit private save](docs/en/large-file-save.md) copies the original acknowledged `f1`
-into a host-selected new file in a separate private directory, without overwrite or receipt adoption.
-The internal original descriptor proof stays private; UI file picking and resume remain absent.
-
-The new [authorized delivery call](docs/en/large-file-delivery-client.md) joins these stages in one explicit operation.
-One original whole-flow lease remains owned by actual chunk/assembly/save work after cancellation;
-first failure stops with no retry/adoption, and UI saving, resume and normal mounting remain separate.
-
-The separate [owned user-directory target](docs/en/large-file-user-save.md) explicitly accepts 0700/0750/0755
-without relaxing private staging. Original directory UID/GID/mode checks and checked saving remain;
-file picking, writable shared folders, resume and live mounting are separate.
-
-The optional [live delivery observer](docs/en/large-file-delivery-progress.md) reports a latest per-call
-phase and actual acknowledged chunk prefix. Slow/dropped readers do not add a consumption queue;
-full staging and observation closure are not saved-file success, recovery or worker termination.
-
-An optional [cooperative cancellation handle](docs/en/large-file-delivery-cancellation.md) stops this
-call's waiting when selected, not already-dispatched file work. Dropping the handle is not cancellation;
-request/completion races use the returned result, without automatic cleanup or retry.
-
-Explicit [whole-delivery HTTPS verification](docs/en/large-file-delivery-https.md) checks this existing
-chain with disposable native TLS peers. Certificate identity is separate from current file grants;
-these loopback fixtures are not deployed-LAN or live-service acceptance.
-
-An explicit [distribution router composition](docs/en/large-file-distribution-router.md) derives
-manifest and chunk endpoints from one trusted Source/workspace, with independent HTTP budgets.
-It remains unmounted and does not isolate the privileged Engine or issue Sessions.
-
-Included in 0.5.9, [combined Source/HTTPS verification](docs/en/large-file-source-https.md)
-connects actual current grants, original files, the single router and controlled TLS delivery in
-one explicit test chain. It does not add production mounting, Session issuance or deployment acceptance.
-
-The concise [current architecture map](docs/en/architecture-map.md) separates runtime wiring,
-module ownership and change boundaries from the detailed implementation history. Service grouping
-and shared private file-error projection do not change runtime mounting or permission policy.
-
-0.5.4 C2-T adds separate, immutable intent registration and current-Session-authorized reading
-from a real unstarted draft attempt. It stores bounded private metadata, not text or credentials.
-The original dispatcher is not gated by the journal; restart recovery, retry and browser saving remain
-separate. See [draft intent records](docs/en/session-task-draft-intent.md).
-
-0.5.4 C2-U adds an opt-in, consuming journaled dispatcher for that original attempt. It commits
-each step record before starting resource work, then rechecks current ownership and Session in a
-separate transaction that commits the resource SQL and its marker together. Fresh schema-2 journals
-are explicit; schema 1 is not migrated. Uncertain outcomes stop without retry or restart recovery,
-and the original C2-P path remains independent. See [journaled dispatch](docs/en/session-task-draft-dispatch.md).
-
-0.5.4 C2-V separately inspects the schema-2 journal under the current Session's exact owner/account
-binding. It reports recorded committed steps and an optional Unknown target without reading resources,
-restoring the wrapper or authorizing retry. See [journal inspection](docs/en/session-task-draft-journal-inspection.md).
-
-0.5.4 C2-W separately observes one recorded step's actual resource in the same authorized
-transaction as its journal capture and final recheck. The result separates recorded status from
-metadata agreement and returns no body; it is not a receipt, recovery or retry protocol. See
-[journal step observation](docs/en/session-task-draft-journal-observation.md).
-
-The 0.5.4 Next.js 15.5.27 dependency update addresses the newly reported cache-poisoning
-advisories; it does not update a running deployment. See [dependency audit policy](docs/en/security.md#dependency-audit-policy).
-
-The **C2-Y follow-up included in 0.5.5** adds an
-independent [catalogue task-content HTTP adapter](docs/en/catalog-task-content-http.md)
-([简体中文](docs/zh-CN/catalog-task-content-http.md)). Creation chooses an exact configured definition;
-the old manual interface stays unchanged. Both are unmounted preparation, with no Session issuer,
-automatic assessment, publication/journal integration, live OpenAPI/SDK exposure or browser saving.
-
-The independent **C2-Z follow-up included in 0.5.5** adds
-[catalogue draft publication](docs/en/session-catalog-task-draft-publication.md)
-([简体中文](docs/zh-CN/session-catalog-task-draft-publication.md)). Pure preparation freezes an exact
-full definition; each explicit advance publishes one Artifact or finally creates its catalogue Draft.
-The new opaque attempt cannot enter old manual checkpoint/journal/observation types and supplies no
-HTTP, assessment, durable recovery, automatic retry, issuer, browser saving or migration.
-
-The independent **C2-AA follow-up included in 0.5.5**
-adds [catalogue target observation](docs/en/session-catalog-task-draft-observation.md)
-([简体中文](docs/zh-CN/session-catalog-task-draft-observation.md)). One current-Session read compares an
-exact unknown target with the frozen definition and planned text; the body-free result never changes
-attempt state, confirms the earlier write or enables retry. Public saving and durable recovery remain
-separate work.
-
-| Area | Implemented boundary | Still separate |
-|---|---|---|
-| Existing teaching workflow | eBPF editing, checks, execution, learning history and teacher feedback | Shared-kernel execution is not student isolation |
-| Task payload editor | Local task drafts with optional text items and 14 language profiles | No server saving, external LSP or code execution from this editor |
-| Collaboration preparation | Explicit identity/session, Task, Artifact and Review stores and authorized private commands | No live authentication cutover or cross-user collaboration UI |
-| Draft input replacement | Owner/revision checks and exact old/new Artifact verification | Content publication is separate; browser save/conflict handling is not connected |
-| Task content | Schema-3 Task/manifest/outbox transactions, exact text checks and a standalone HTTP boundary | No public Session issuer, application mounting or browser saving |
-
-Code is one optional payload item, not a mandatory Task field. Task storage schema 2 and the separate
-content schema 3 remain explicit preparation formats with no automatic migration between them;
-storage and product versions evolve independently.
-Start with the [documentation index](docs/en/README.md) / [文档索引](docs/zh-CN/README.md) and
-[current progress and next steps](docs/en/project-status.md#next-decision-points) /
-[当前进度与下一步](docs/zh-CN/project-status.md#下一阶段决策点). Dated test and network snapshots remain historical evidence.
-
-## Next-generation Architecture
-
-The platform separates four kinds of work that the original teaching attempt combined:
-
-| Concept | Responsibility | Current boundary |
-|---|---|---|
-| Task | Goal, definition, owner, exact inputs and lifecycle | Private persistent commands; no general completion or acceptance policy |
-| Artifact | Immutable content revision and digest | Private files plus transactional metadata; independent of a task type |
-| Run | One execution attempt and its resources | General model is preparatory; the existing eBPF Runner remains the active execution path |
-| Review | Version-bound judgment and comment history | Private human commands; no general cross-user reviewer grant |
-
-Identity and Workspace scope resource ownership. A current Session command rechecks authority within
-the storage transaction; supplying an owner ID is not authentication. Domain packages define typed
-evidence and assessment rules without becoming the platform's identity or persistence model. The
-existing teaching adapter uses the built-in eBPF package; admitting a catalogue definition does not
-execute its policy or automatically approve a Task.
-
-Three paths coexist today:
-
-- **Teaching runtime:** browser → existing authenticated APIs → teaching stores and local eBPF Runner.
-- **Local task editing:** task draft → selected text payload → local language providers → explicit download.
-- **Collaboration preparation:** configured durable Session source → authorized private Task/Artifact/Review commands.
-
-The last two paths are not connected through public task APIs. A task draft download is not server
-publication. Publishing an Artifact does not move a Task to its latest revision, and a private Review
-does not accept a Task. Runner Agents are remote compile/probe workers, not autonomous AI Agents.
-
-See the [concepts](docs/en/concepts.md), [system architecture](docs/en/architecture.md) and
-[next-generation design (简体中文)](docs/zh-CN/next-architecture.md) for model and migration decisions.
-The design remains a target, not a declaration that process isolation, generic Runs, AI coordination,
-cross-user collaboration or live migration is complete. Development chronology is kept separately in
-[English](docs/en/development-history.md) / [简体中文](docs/zh-CN/development-history.md).
-
-## Repository Layout
-
-```text
-cyanrex-lab/
-├ frontend/        # Next.js shell, local task/editor features and teaching UI
-├ engine/          # Rust/Axum runtime and explicit collaboration preparation
-│  └ src/
-│     ├ models/collaboration/ # domain-neutral identity and work contracts
-│     ├ services/            # live services and separate durable stores/commands
-│     └ domain_packs/        # built-in eBPF teaching definitions and rules
-├ sdk-js/          # typed browser/Node.js API client
-├ modules/         # versioned module catalog and manifest contract
-│  ├ module-ebpf
-│  ├ module-network
-│  └ module-protocol
-├ scripts/         # development, validation, provisioning and release tools
-├ CHANGELOG.md      # auditable release history and unreleased changes
-├ docs/            # English/Chinese platform, runtime, course and historical evidence guides
-├ docker/          # compose and container assets
-└ start.sh         # unified launcher
-```
-
-The browser is the interaction layer. The privileged Rust Engine currently combines control and
-execution: live authentication, authorization, persistence, compilation, eBPF loading, and event
-streaming. General stores are not wired into that live AppState. See the architecture document before
-adding a service, route or deployment mode; code-level separation is not separate operating-system processes.
+The [documentation index](docs/en/README.md) provides role-based reading paths. The
+[reference index](docs/en/reference-index.md) groups detailed contracts, implementation guides and history.
 
 ## Current Capabilities
 
-This section describes the running application and explicitly labelled local-only additions.
-General collaboration commands are covered by the [platform feature map](docs/en/platform-network.md),
-not implied by the teaching HTTP endpoints below.
+| Area | Available path | Important boundary |
+|---|---|---|
+| Teaching | Authenticated browser workflow, eBPF checks/runs, learning history and teacher feedback | Shared-kernel execution is not student isolation |
+| Task authoring | Local drafts, optional text payloads, 14 editor language profiles, reviewed imports and downloads | No generic browser server saving, autosave or Run dispatch |
+| Platform host | Explicit Linux loopback HTTP/native TLS host with bounded Sessions and owner-private Task create/list/reopen/manifest replacement | Separate startup and storage; not a LAN or browser deployment |
+| Large-file transfer | Authorized publication, grants, verified chunks and explicit delivery components | Not mounted in the normal application UI; no restart recovery |
+| SDK and AI adaptation | Typed Engine client, host profiles and explicit agent tool-format adapters | No autonomous AI orchestration or provider transport |
 
-- TDD-first backend workflow (`engine/tests/routes_tdd.rs`)
-- Axum API server with:
-  - versioned module discovery and catalog-backed control endpoints
-  - eBPF run pipeline endpoint (`/ebpf/run`)
-  - compile-only clang diagnostics (`/ebpf/check`)
-  - semantic C/eBPF completion (`/ebpf/complete`)
-  - eBPF template catalog (`/ebpf/templates`)
-  - eBPF attachment endpoints (`/ebpf/attachments`, `/ebpf/attachments/details`, `/ebpf/detach`)
-  - eBPF kernel trace stream (`/ws/events`, plus `/events` snapshot)
-  - eBPF attach diagnostics events (`ebpf.attach_verified / ebpf.attach_missing / ebpf.attach_not_applicable`)
-  - helper environment check endpoint (`/helper/environment`)
-  - user script endpoints (`/scripts`, `/scripts/save`, `/scripts/delete`)
-  - event settings endpoint (`/settings/events`)
-  - C header module endpoints (catalog/download/delete/select/inject metadata)
-  - learning progress endpoints for student labs and teacher overview
-  - structured teacher management command bus (`/command`) for module lifecycle and experiment handoff
-  - generated OpenAPI 3.1 contract (`/openapi.json`) with Engine route/access and SDK coverage checks
-- Auth system:
-  - register/login/logout/session (`HTTP cookie`)
-  - OTP/TOTP verification
-  - OTP bootstrap QR flow
-  - password change via `current_password + otp`
-  - account deletion via `password + otp`
-- Password security:
-  - no plaintext storage
-  - Argon2 password hashing with legacy-hash verification compatibility
-  - persisted session tokens are stored as SHA-256 digests
-- Auth persistence:
-  - PostgreSQL-backed `users` + `sessions`
-  - limited volatile fallback when `CYANREX_DB_FALLBACK` permits it; not a durable-write guarantee
-  - configured durable logout/password changes/account deletion fail closed on unconfirmed writes;
-    SQL-admitted login cannot silently publish a memory-only session
-  - see [database-outage boundaries](docs/en/security.md#sessions-and-database-outages)
-- Frontend pages:
-  - `/dashboard`, `/ebpf`, `/tasks/new`, `/editor`, `/learn`, `/teaching`, `/helper`, `/modules`, `/events`, `/terminal`
-  - `/login`, `/register`, `/join`, `/otp-setup`, `/account`
-  - teacher-managed Terminal with structured results, module snapshots, and session history
-  - `/tasks/new` (also `/editor`), added in 0.4.9: a local task draft owns up to 32 text payload items;
-    code is optional and edited through 14 built-in language profiles. Confirmed file/whole-task JSON
-    imports and explicit downloads do not imply server Task/Artifact saving, execution or autosave.
-    JS/TS workers are shared, not a multi-workspace security sandbox;
-    see the [editor guide](docs/en/editor.md) for persistence and navigation limits.
-- JavaScript SDK:
-  - typed ESM package covering the browser-facing Engine API
-  - public request/response models generated from 90 OpenAPI component schemas
-  - generated `client.operation(operationId, input)` layer and runtime metadata for all 65
-    non-Runner-Agent operations, alongside the stable hand-designed namespaces
-  - AI host configuration helpers and explicit tool-format adapters in `@cyanrex/sdk-js/agents`;
-    no provider transport or autonomous delegation, and writes require trusted per-call approval
-  - additive-only compatibility baseline for 77 public client namespace and method paths
-  - browser credentials, Node session-cookie capture, Origin-based CSRF support, cancellation, and typed errors
-  - coverage checked against every non-Runner-Agent Engine operation in the generated API contract
-  - dry-run package manifest, declaration-closure, and ESM consumer-import acceptance checks
-- Frontend i18n:
-  - supported languages: Simplified Chinese (`zh-CN`), English (`en`), Spanish (`es`), Japanese (`ja`)
-  - sidebar + auth pages + core runtime pages integrated
-  - language preference persisted in browser local storage
-- Event center:
-  - user-scoped persistent event storage
-  - category split: `kernel` / `platform`
-  - severity + color: success=green, warning=yellow, error=red
-  - sidebar unread badge (red dot + count)
-  - export by filters (`/events/export`)
-  - delete by same filters (`/events/delete`)
-  - per-user event retention settings:
-    - max retained records
-    - overflow policy: `drop_oldest` / `drop_new`
-- Page state persistence (sessionStorage):
-  - events filter state
-  - eBPF editor and runtime controls
-- Helper reports are explicit page-local observations and are not restored from sessionStorage.
+The UI supports English, Simplified Chinese, Spanish, Japanese and Korean. Course bodies are English
+and Simplified Chinese; other interface languages retain an explicit course-language fallback.
+
+See [project status](docs/en/project-status.md) for current gaps and next steps, and
+[capability maturity](docs/en/capability-maturity.md) for implementation and evidence detail.
+Released changes and post-tag security fixes are recorded separately in [CHANGELOG.md](CHANGELOG.md).
 
 ## Quick Start
 
-完整文档入口：[Cyanrex 项目文档](docs/zh-CN/README.md)。现有教学流程中，教师建议先阅读
-[教师快速开始](docs/zh-CN/teacher-guide.md)，学生从
-[学生快速开始](docs/zh-CN/student-guide.md)进入课程。
-
-### 1) Start services
+Run the existing teaching application on a trusted Linux/WSL2 host or a disposable Docker environment.
+Read the [security guide](docs/en/security.md) before granting kernel privileges.
 
 ```bash
-./start.sh
-```
-
-Useful commands:
-
-```bash
-./start.sh start --mode auto   # WSL2-native inside WSL; Docker elsewhere
-./start.sh start --mode wsl    # Engine targets the WSL2 kernel
-./start.sh start --mode docker # Engine targets the Docker host/VM kernel
-./start.sh start --mode native # Engine targets the native Linux kernel
-./start.sh start --local
-./start.sh start              # fast-start (default, no forced rebuild)
-./start.sh start --debug      # safe debug notice; commands are not traced
-./start.sh start --rebuild    # force rebuild when deps/Dockerfile changed
-./start.sh start --pull       # pull base images before start
-./start.sh start --skip-conflict-check  # skip preflight port/project conflict check
-./start.sh start --instance-id room-a    # same instance starts are auto-locked by instance ID
-./start.sh start --skip-start-lock       # bypass start-lock when debugging only
-./start.sh diagnose          # run system-level diagnostic checks
+./start.sh start --mode docker
 ./start.sh status
+./start.sh diagnose
 ./start.sh logs
 ./start.sh stop
 ```
 
-The eBPF Engine always runs on a Linux kernel. On Windows, use WSL2-native mode for direct access
-to the WSL kernel, or Docker mode for a disposable teaching sandbox. Docker mode is intentionally
-privileged and must not be exposed to untrusted users.
+Use `--mode wsl` for the WSL2 Linux kernel or `--mode native` for native Linux.
+eBPF always targets a Linux kernel; Docker Desktop observes its VM kernel, not the desktop OS.
 
-### 2) Open UI
+Default local endpoints:
 
 - Frontend: `http://localhost:3000`
 - Engine health: `http://localhost:8080/health`
-- Postgres: `127.0.0.1:15432` (not exposed to the LAN)
+- PostgreSQL: `127.0.0.1:15432`, not exposed to the LAN
 
-Use `/ebpf` and `/learn` for the existing teaching workflow. In the current development tree,
-`/tasks/new` opens the local task payload editor (`/editor` is its compatibility entry). Read the
-[editor guide](docs/en/editor.md) before relying on persistence: it does not save to the server.
-Starting the application does not initialize or migrate the separate collaboration stores.
+The seeded `admin` account has the `teacher` role and manages both teaching and deployment.
+Single-person use makes you the teacher. Initial password and TOTP material are generated in the
+private, Git-ignored `docker/.env`; do not publish that file. Registration is disabled by default.
 
-### 2.5) Build a distribution package
+Use `/ebpf` and `/learn` for teaching. `/tasks/new` (`/editor` is a compatibility entry) owns a
+local task draft; a downloaded draft is not a server-saved Task.
+The [editor guide](docs/en/editor.md) explains persistence and navigation limits.
 
-For classroom deployment or offline distribution, create a packaged artifact with prebuilt Docker images:
+For the **independent platform host**, follow its [explicit startup guide](docs/en/platform-loopback-host.md).
+Starting the teaching application does not initialize or migrate collaboration storage.
+Full launcher options, account settings and runtime endpoints are in the
+[runtime reference](docs/en/runtime-reference.md).
 
-```bash
-./scripts/package-distribution.sh --version 0.5.5
+## Next-generation Architecture
+
+Task, Artifact, Run and Review have separate responsibilities: task intent and lifecycle, immutable
+content revisions, an execution attempt, and version-bound judgment. Identity and Workspace scope
+ownership; a current Session authorizes commands within their storage transaction.
+
+The [architecture map](docs/en/architecture-map.md) describes current wiring.
+The [detailed architecture](docs/en/architecture.md) records implementation boundaries; the
+[next-generation design](docs/en/next-architecture.md) describes the target, not completed AI,
+generic Run, cross-user collaboration or live-migration capabilities.
+
+## Repository Layout
+
+```text
+frontend/
+engine/
+sdk-js/
+modules/
+docker/
+scripts/
+docs/
+reports/
 ```
 
-This produces:
+`frontend/public/course/` is generated from `docs/`; edit the sources and then synchronize.
+Detailed document responsibilities and the complete topic inventory are in the
+[reference index](docs/en/reference-index.md).
 
-- `dist/cyanrex-lab-0.5.5-<timestamp>.tar.gz`
-- `dist/cyanrex-lab-0.5.5-<timestamp>.tar.gz.sha256`
+## Deployment and updates
 
-The archive contains the PostgreSQL, Engine, and frontend images. On a disposable Docker host,
-verify the freshly extracted package end to end with `./install-smoke.sh`. It checks the package
-manifest and `release-metadata.json`, loads the offline images with registry pulls disabled, generates
-temporary secrets, starts every required service and the optional compiler Agent, runs authenticated
-probes, then removes its temporary stack and volume. The release metadata records the source revision
-and clean/dirty state, matching annotated version Tag when present, image references/content IDs/build
-mode, and the image archive SHA-256 without exposing a build-host path. Installation acceptance pins
-the packaged image references and verifies all three loaded Docker content IDs before probing services.
-The metadata is checksum-bound but not signed. The smoke test refuses to overwrite an existing `.env`.
-Installation acceptance uses the bundled Rust CLI for package validation, loaded-image identity checks,
-and Engine health checks; its default packaged path no longer requires Python on the Docker host.
-Set `CYANREX_SMOKE_RUN_LIVE_KERNEL=1` only on a disposable privileged Linux host to additionally run
-the packaged `live-kernel-smoke.sh`: it attaches the built-in Aya `sched_switch` ring-buffer program,
-requires a uniquely identified real kernel event, detaches the exact pin, and rejects residual attachments.
-New packages run this flow through the adjacent native `cyanrex-release smoke live-kernel` client; the
-script retains its shell/Python path for compatibility with older or manually assembled packages.
-Set `CYANREX_KERNEL_SMOKE_REPORT=/safe/output/report.json` to atomically write machine-readable evidence;
-the script refuses to overwrite an existing report.
+A source checkout and an extracted offline package use different operational commands.
+Use the [deployment guide](docker/README-DEPLOY.md) for package verification, routine health
+observations and safe updates, and the [runtime reference](docs/en/runtime-reference.md#25-build-a-distribution-package)
+for packaging and verified extraction.
 
-Verify that report later against the exact extracted package metadata:
-
-```bash
-./cyanrex-release evidence verify /safe/output/report.json \
-  --release-metadata ./release-metadata.json
-```
-
-New offline packages carry this native Rust verifier without standalone Python release helpers. The
-Python implementations remain in source checkouts as compatibility and cross-implementation references.
-
-For an artifact downloaded from the Tag workflow, place its four files in a dedicated directory and
-verify the complete candidate from a trusted checkout of the matching source Tag before extracting it:
-
-```bash
-release_revision="$(git rev-list -n 1 v0.5.5)"
-cargo run --quiet --manifest-path engine/Cargo.toml --locked --bin cyanrex-release -- \
-  candidate verify /path/to/downloaded-candidate \
-  --expect-version 0.5.5 --expect-revision "$release_revision" --expect-tag v0.5.5 \
-  --extract-to /path/to/new-output-directory
-```
-
-This streams the archive without extracting it, rejects links, path traversal, duplicate members, and
-unchecksummed payloads, then binds the exact archived metadata to the separately checksummed live-kernel
-evidence. Extraction starts only after the complete candidate passes, writes only regular files into a
-private temporary directory, preserves script execution bits, and refuses an existing output path.
-Until release signing is configured, these checks prove bundle consistency rather than publisher
-authenticity.
-
-For a locally built two-file package that has no Tag acceptance report, use the same verified extraction
-path without the evidence step from a trusted source checkout:
-
-```bash
-cargo run --quiet --manifest-path engine/Cargo.toml --locked --bin cyanrex-release -- \
-  package extract /path/to/archive-and-checksum \
-  --output /path/to/new-output-directory
-```
-
-The previous `scripts/release-package.py` entry point remains temporarily available for compatibility.
-
-Usage on target machine:
-
-```bash
-cd /path/to/new-output-directory/cyanrex-lab-*
-cp .env.example .env   # update credentials/bind settings as needed
-./run.sh               # start
-./stop.sh              # stop
-```
-
-The package now includes a richer `deploy.sh` helper:
-
-```bash
-./deploy.sh up     # start (default behavior)
-./deploy.sh status # show service status
-./deploy.sh logs   # follow logs
-./deploy.sh down   # stop services
-```
-
-`run.sh` and `stop.sh` remain compatibility wrappers.
-
-If `.env` is missing or still contains placeholder values, startup will fail with an explicit
-prompt to initialize secrets first.
-
-### 3) Private deployment teacher account
-
-- username: `admin`
-- role: `teacher` — personal use makes you the teacher; teaching and deployment share one identity
-- password and TOTP secret: generated on first start in `docker/.env`
-- `docker/.env` is mode `0600` and ignored by Git; do not publish it
-
-You can override with environment variables before the first start:
-
-- `CYANREX_ADMIN_USERNAME` (direct Engine startup; supported launchers retain the username `admin`)
-- `CYANREX_ADMIN_PASSWORD`
-- `CYANREX_ADMIN_TOTP_SECRET`
-- `CYANREX_ADMIN_USERNAMES` (legacy optional teacher-authority allowlist, comma/space-separated)
-- `CYANREX_TEACHER_USERNAMES` (optional full teaching/deployment authority for verified existing accounts)
-- `CYANREX_ALLOW_MISSING_ORIGIN` (optional, default: disabled) — allow CSRF-protected state-changing routes without `Origin`/`Referer`
-- Event persistence tuning (optional):
-  - `CYANREX_EVENT_PERSIST_QUEUE_WARNING_ENABLED` (default `true`)
-  - `CYANREX_EVENT_PERSIST_QUEUE_WARNING_RATIO_PCT` (default `80`)
-  - `CYANREX_EVENT_PERSIST_QUEUE_CLEAR_RATIO_PCT` (default `40`)
-  - `CYANREX_EVENT_PERSIST_QUEUE_WARNING_INTERVAL_MS` (default `10000`)
-
-Registration and password-only TOTP bootstrap are disabled by default. Set
-`CYANREX_ALLOW_REGISTRATION=true` only for a supervised lab. Core eBPF and
-user scripts are available to authenticated users. Teachers manage modules, compiler settings, Runner
-Agents, teaching and Terminal; students cannot use those management routes. Existing administrator
-accounts/configuration remain compatible, but login and session roles now report `teacher`.
-
-Single-person use needs only the seeded teacher account, not public registration or an administrator
-switch. Public registration rejects reserved teacher/legacy-admin names and cannot choose a role.
-The deployment teacher cannot delete itself. Before upgrading, review both allowlists: previous
-teachers now gain full deployment authority. Upgrade frontend and Engine together; see the
-[teacher guide](docs/en/teacher-guide.md) for appointment, ownership and isolation limits.
-
-Module directories opt into discovery with a v1 `module.json` manifest. Engine startup rejects
-malformed manifests and lifecycle requests reject unknown names. Start/stop only update the
-single-process control state; Cyanrex never executes files from a module directory. Override the
-catalog root with `CYANREX_MODULES_DIR` when running outside the repository or packaged image.
-
-## Auth API (Implemented)
-
-- `POST /auth/register`
-- `POST /auth/login`
-  - response includes `role` (`teacher` / `student`; `admin` retained as a legacy schema value)
-- `POST /auth/totp/bootstrap`
-- `GET /auth/me`
-  - response includes current authenticated `role`
-- `POST /auth/logout`
-- `POST /auth/password/change` (requires auth session + OTP)
-- `POST /auth/delete` (requires auth session + OTP)
-
-## eBPF APIs (Implemented)
-
-- `POST /ebpf/check`
-  - compile-only clang syntax check; never loads code into the kernel
-  - returns structured line/column diagnostics
-- `POST /ebpf/complete`
-  - clang semantic completion at a one-based cursor position
-  - returns header symbols, macros, types, functions, and structure fields
-- `POST /ebpf/run`
-  - accepts optional `program_name`, `template_id`, and `lab_id`
-  - accepts optional `runtime_backend` (`bpftool` | `aya`)
-  - supports `sampling_per_sec` to control kernel event sampling rate
-  - supports `stream_seconds` to control stream duration
-  - supports `enable_kernel_stream` toggle
-  - kernel stream prefers `ringbuf event_pipe` and falls back to `tracelog`
-  - `aya` backend currently targets tracepoint attach path (first-class for sched switch sampler)
-- `GET /ebpf/attachments`
-- `GET /ebpf/attachments/details`
-- `POST /ebpf/detach`
-- `GET /ebpf/templates`
-  - includes typical templates: `xdp`, `tracepoint`, `ringbuf skeleton`, `ringbuf high-freq sampler`
-- `GET /events`
-  - event snapshot
-- `GET /ws/events`
-  - realtime event stream
-- `GET /settings/events`
-  - get current user event retention settings
-- `POST /settings/events`
-  - update user event retention settings (`max_records`, `overflow_policy`)
-- `GET /helper/environment`
-  - runtime checks include `bpftool_autoattach`, `bpftool_link_show`, `btf_dump`, `bpffs_mount_type`, `runtime_context`
-
-## Runner APIs (Implemented)
-
-- `GET /runner/status` — authenticated capacity and explicit isolation level
-- `GET /runner/overview` — teacher-only active lease owners and deadlines
-- `POST /runner/agent/register` — optional token-authenticated remote node registration
-- `POST /runner/agent/heartbeat` — health and capacity heartbeat for a registered node
-- `GET /runner/agents` — teacher-only remote node inventory
-- `POST /runner/jobs/probe`, `/runner/jobs/compile-check`, `/runner/jobs/cancel` — teacher-only remote job lifecycle
-- `POST /runner/agent/jobs/claim`, `/sync`, `/result` — signed Agent job protocol
-- `GET /runner/jobs` — teacher-only job inventory
-- `GET /ebpf/check/backends` — authenticated, sanitized local and eligible Agent compiler inventory
-- `POST`, `GET /ebpf/check/remote` and `POST /ebpf/check/remote/cancel` — user-scoped asynchronous remote diagnostics
-- `/ebpf/run` executes through the replaceable `RunnerDriver` boundary
-- Local Runner defaults to two global jobs, one job per user, and a 45-second execution timeout
-- `shared_kernel` is reported explicitly; quotas do not replace per-student VM isolation
-- Agent jobs use per-node HMAC credentials, replay protection, leases, capability matching, cancellation, and bounded results
-- Remote diagnostics require an explicit editor selection and never silently fall back; local checking remains the default
-- Optional compile jobs use restricted Clang and never load or return eBPF objects; `/ebpf/run` remote dispatch remains disabled
-- `cyanrex-runner-agent` connects trusted Linux, WSL2, and unprivileged container nodes to this protocol
-- `scripts/runner-agent.sh start` enables the optional hardened Compose Agent; the matching smoke script verifies the authenticated editor path
-- Teachers can inspect Agent health/capacity and probe or cancel recent jobs from **Deployment & settings → Runner Agent Operations**
-
-## Scripts APIs (Implemented)
-
-- `GET /scripts` (user-scoped list)
-- `POST /scripts/save` (user-scoped create)
-- `POST /scripts/delete` (user-scoped delete)
-
-## Learning APIs (Implemented)
-
-- `GET /learning/labs` — current user's five-lab catalog and progress
-- `GET /learning/attempts` — current user's backend-recorded run attempts
-- `GET /learning/teacher/overview` — teacher/admin classroom progress summary
-- `GET /learning/teacher/attempts?username=...&limit=...` — staff-only bounded attempt,
-  feedback, and submitted-source review for one student
-- `POST /learning/teacher/feedback` — teacher/admin saves a student-visible comment on an existing
-  attempt; requires CSRF origin and `{ username, attempt_id, comment, expected_revision }`
-- Feedback is plain text (1–2000 characters after trimming), with server-assigned reviewer and time.
-  Use revision `0` for a first comment, then the last read revision; stale edits return `409`.
-  Feedback is persisted with the attempt and never changes automatic completion or the submitted source.
-- Students can review their own submissions and teacher feedback in **Learn → My lab history**.
-- `/ebpf/run` records an attempt only when a known `lab_id` is supplied; completion is calculated
-  from the real run, required template/source patterns, and attachment verification.
+Installation smoke and live-kernel acceptance belong on disposable hosts, not an installed classroom
+instance. A dependency or lockfile change does not patch running binaries or containers; rebuild and
+redeploy. Do not expose the privileged Engine directly to untrusted networks.
 
 ## API Contract
 
-- `GET /openapi.json` serves the versioned OpenAPI 3.1 document without authentication.
-- [`engine/openapi/openapi.json`](engine/openapi/openapi.json) is generated from the registered Axum
-  routes plus maintained request/response schemas.
-- The quality gate rejects route or access-tier drift between the Engine and OpenAPI document, plus
-  unexpected JavaScript SDK coverage or generated-model drift.
-- SDK consumers can import generated schemas from `@cyanrex/sdk-js/openapi` and operation metadata/types
-  from `@cyanrex/sdk-js/operations` after packaging.
-- A frozen `0.3.0` compatibility baseline rejects removed operations, access changes, narrowed
-  requests, and weakened successful-response guarantees while allowing additive evolution.
+The existing Engine serves its generated [OpenAPI 3.1 contract](engine/openapi/openapi.json) at
+`GET /openapi.json`. The [Engine reference](engine/README.md) and
+[JavaScript SDK guide](sdk-js/README.md) cover runtime access and integration.
+The independent platform host is not automatically part of that public Engine/SDK contract.
 
-Regenerate and validate it after changing routes or wire models:
-
-```bash
-node scripts/generate-openapi.mjs
-node scripts/openapi-contract.mjs
-node scripts/api-compatibility.mjs
-node scripts/generate-sdk-types.mjs
-```
-
-## Auth Persistence
-
-These tables belong to the existing runtime, not the explicit durable collaboration source. Its
-namespace installation, account incarnations and current-Session transactions are documented in
-[durable authentication](docs/en/collaboration-auth-source.md); do not point preparatory installers
-at an existing deployment or assume the stores are automatically synchronized.
-
-- Tables: `users`, `sessions`
-- Migration template: `engine/migrations/0001_auth_users_sessions.sql`
-
-## Data Persistence
-
-- `event_records` for event center (`engine/migrations/0002_event_records.sql`)
-- `user_scripts` for script storage (`engine/migrations/0003_user_scripts.sql`)
-- `learning_attempts` for source snapshots, automated feedback, and lab progress
-  (`engine/migrations/0004_learning_attempts.sql`)
+Full authentication, eBPF, Runner, script, learning and persistence details are in the
+[runtime API reference](docs/en/runtime-reference.md#auth-api-implemented).
 
 ## Engineering Rule
 
-- This repo is TDD-first.
-- Flow: `Red -> Green -> Refactor`.
-- For backend route changes, update tests in `engine/tests/` first.
-- For API changes, regenerate the OpenAPI document and keep its component schemas current.
-- Replace the compatibility baseline only as part of an explicitly reviewed compatibility reset.
-- Maintained source files are limited to 600 lines; documentation files are limited to 2000 lines.
-- See `TDD.md` for team conventions.
-
-Run the same checks used by CI before submitting changes:
+Follow [CONTRIBUTING.md](CONTRIBUTING.md) and [TDD.md](TDD.md). Run checks from the repository root:
 
 ```bash
-./scripts/quality-gate.sh
+./scripts/quality-gate.sh --security
 ```
 
-`--format-only` runs common preflight and formatting, not application tests. See the
-[testing guide](docs/en/testing-guide.md) for default, disposable-database, browser, SDK and privileged
-acceptance boundaries. The [historical network](docs/en/functional-network.md) and its
-[JSON snapshot](docs/functional-network.json) are preserved evidence, not today's complete inventory.
+The security option requires `cargo-audit`; install it with `cargo install cargo-audit --locked`.
+The [testing guide](docs/en/testing-guide.md) separates default checks, explicit database/browser
+fixtures and privileged acceptance. Passing a mocked browser fixture does not prove live authorization
+or server saving.
 
 ### CI Gate (`ci-gate`)
 
-- Workflow `CI` now runs checks in parallel and then uses a final `ci-gate` job to aggregate results:
-  - `security-audit`
-  - `file-lengths`
-  - `engine`
-  - `frontend`
-  - `sdk`
-  - `permissions`
-  - `distribution`
-- Set branch protection to require only `ci-gate` (instead of each matrix-like job), then any failed job will fail the required gate.
-- Recommended GitHub branch rule (GitHub UI):
-  - Settings → Branches → Branch protection rules
-  - Add rule for default branch (for example, `main`)
-  - Enable **Require status checks to pass before merging**
-  - Add required status check: `CI gate`
-  - (Optional) keep each sub-job unchecked to reduce noise; `ci-gate` already aggregates failures.
+The `CI gate` aggregates the required audit, formatting, Rust, frontend, SDK, permissions and distribution
+jobs. See the [runtime CI reference](docs/en/runtime-reference.md#ci-gate-ci-gate) for details.
 
 ### Tag candidate acceptance
 
-Pushing a new annotated `v<major>.<minor>.<patch>` Tag runs `Release Candidate Validation`. After
-validating the immutable version tree, it builds the offline archive from that exact commit, requires
-`release-metadata.json` to report the same Tag/revision with a clean source and locally built images,
-runs `install-smoke.sh` against the extracted archive (including loaded-image content ID checks), and
-enables its privileged live-kernel attach/event/detach acceptance before uploading the accepted archive
-plus outer checksum as a 30-day workflow artifact. The artifact also retains a separately checksummed
-live-kernel report bound to the candidate metadata, kernel environment, unique event, and exact cleanup;
-verified extraction replaces direct archive expansion in CI and Tag acceptance. The unified candidate
-verifier streams and checks the complete four-file artifact before upload and can safely extract it after
-download. This does not create a GitHub Release or sign/publish packages.
+New annotated version tags trigger immutable metadata and offline-package acceptance checks;
+they do not publish a GitHub Release or deploy services. Follow the
+[release workflow](CONTRIBUTING.md#release-workflow), and keep dated outcomes in
+[release reports](reports/releases/0.6.3/README.md) rather than the homepage.
+
+## Contributing
+
+Cyanrex is free and open source under [Apache License 2.0](LICENSE). Contributions to collaboration,
+teaching domains, payload tools, translations and operations are welcome.
+Follow the [code of conduct](CODE_OF_CONDUCT.md) and report vulnerabilities through the
+[private security process](SECURITY.md).

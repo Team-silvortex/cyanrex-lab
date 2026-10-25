@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -72,7 +73,7 @@ test("bilingual whole upload docs separate current bytes from historical receipt
     for (const phrase of ["FileUploadStaging::verify_file", "UploadFileObservation", "UploadFileVerificationError", "64 KiB", "16,384", "Unknown", "Confirmed", "test-file-upload-whole.sh"]) {
       assert.ok(docs.includes(phrase), `${lang}: ${phrase}`);
     }
-    assert.ok((await read(`docs/${lang}/README.md`)).includes("large-file-whole-verification.md"));
+    await assertDocumentationReference(`docs/${lang}/README.md`, `docs/${lang}/large-file-whole-verification.md`);
     assert.ok((await read(`docs/${lang}/testing-guide.md`)).includes("fileUploadWhole"));
   }
 });

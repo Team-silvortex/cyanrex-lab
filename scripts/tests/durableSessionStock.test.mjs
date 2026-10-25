@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -99,6 +100,6 @@ test("stock documentation separates stored limits from deployment and automatic 
       "StorageUnavailable", "READ COMMITTED", "SET CONSTRAINTS ALL IMMEDIATE", "issues/3"]) assert.ok(doc.includes(value), value);
     assert.match(doc, locale === "en" ? /expired|expiry/ : /过期/);
     assert.match(doc, locale === "en" ? /unmounted|no host|not a host/ : /未挂载|不启动宿主/);
-    assert.ok((await read(`docs/${locale}/README.md`)).includes("durable-session-stock.md"));
+    await assertDocumentationReference(`docs/${locale}/README.md`, `docs/${locale}/durable-session-stock.md`);
   }
 });

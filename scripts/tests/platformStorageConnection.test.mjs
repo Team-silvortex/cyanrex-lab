@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
@@ -80,7 +81,7 @@ test("four exact storage SQL selectors and bilingual scope documents remain wire
       "platform-catalog-expectation.md", "platform-storage-markers.md", "platform-process-startup.md", "CYANREX_TEST_DATABASE_URL"])
       assert.ok(guide.includes(value), value);
     for (const file of ["README.md", "platform-database-connection.md", "platform-storage-check.md"])
-      assert.ok((await read(`docs/${locale}/${file}`)).includes("platform-storage-connection.md"));
+      await assertDocumentationReference(`docs/${locale}/${file}`, `docs/${locale}/platform-storage-connection.md`);
     assert.equal(guide, await read(`frontend/public/course/${locale}/platform-storage-connection.md`));
   }
 });

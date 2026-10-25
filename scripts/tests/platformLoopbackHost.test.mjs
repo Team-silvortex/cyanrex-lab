@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -118,6 +119,6 @@ test("every real host SQL case is selected exactly and bilingual scope stays exp
     assert.equal(guide, await read(`frontend/public/course/${locale}/platform-loopback-host.md`));
     for (const file of ["README.md", "architecture-map.md", "architecture.md", "platform-network.md", "capability-maturity.md", "testing-guide.md", "platform-session-router.md",
       "platform-storage-open.md", "platform-login-http.md", "platform-process-startup.md", "platform-startup-input.md"])
-      assert.ok((await read(`docs/${locale}/${file}`)).includes("platform-loopback-host.md"), `${locale}: ${file}`);
+      await assertDocumentationReference(`docs/${locale}/${file}`, `docs/${locale}/platform-loopback-host.md`);
   }
 });

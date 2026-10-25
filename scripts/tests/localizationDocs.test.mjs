@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
-import { readFile, readdir, access } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
+import { assertDocumentationLinks } from "./helpers/documentation-navigation.mjs";
 
 const root = new URL("../../", import.meta.url).pathname;
 const companions = ["README", "CONTRIBUTING", "SECURITY", "CODE_OF_CONDUCT", "TDD",
@@ -58,11 +59,7 @@ test("all bilingual documentation themes have a counterpart including the histor
 
 test("translated public guides resolve local Markdown destinations rather than orphaning their navigation", async () => {
   for (const name of companions) {
-    const file = `${name}.zh-CN.md`, text = await read(file);
-    for (const match of text.matchAll(/\[[^\]]+\]\(([^)]+)\)/g)) {
-      const target = match[1].split("#")[0];
-      if (!target.endsWith(".md") || /^[a-z][a-z0-9+.-]*:/i.test(target)) continue;
-      await access(path.resolve(root, path.dirname(file), target));
-    }
+    await assertDocumentationLinks(`${name}.md`);
+    await assertDocumentationLinks(`${name}.zh-CN.md`);
   }
 });

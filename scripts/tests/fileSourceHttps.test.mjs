@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -80,6 +81,6 @@ test("Source HTTPS stays test-only with bilingual evidence distinct from release
   for (const lang of ["en", "zh-CN"]) {
     const s = await read(`docs/${lang}/large-file-source-https.md`);
     for (const phrase of ["0.5.8", "0.3.0", "2026-10-13", "OpenSSL", "BeforeDispatch", "Content-Length", "Bytes", "Unavailable", "TimedOut", "InvalidResponse", "Cancelled", "file_delivery_tdd", "test-file-delivery.sh", "fileSourceHttps", "106", "56"]) assert.ok(s.includes(phrase), `${lang}: ${phrase}`);
-    for (const name of ["README", "architecture", "security", "platform-network", "project-status", "testing-guide", "capability-maturity", "large-file-distribution", "large-file-delivery-client", "large-file-delivery-https", "large-file-distribution-router"]) assert.ok((await read(`docs/${lang}/${name}.md`)).includes("large-file-source-https.md"), `${lang}: ${name}`);
+    for (const name of ["README", "architecture", "security", "platform-network", "project-status", "testing-guide", "capability-maturity", "large-file-distribution", "large-file-delivery-client", "large-file-delivery-https", "large-file-distribution-router"]) await assertDocumentationReference(`docs/${lang}/${name}.md`, `docs/${lang}/large-file-source-https.md`);
   }
 });

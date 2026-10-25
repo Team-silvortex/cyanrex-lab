@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -90,6 +91,6 @@ test("paired distribution remains unmounted with current bilingual consistency a
   for (const lang of ["en", "zh-CN"]) {
     const s = await read(`docs/${lang}/large-file-distribution-router.md`);
     for (const phrase of ["0.5.7", "0.3.0", "2026-10-13", "FileDistributionHttpState", "FileDistributionHttpConfigError", "with_capacities", "build_file_distribution_router", "/platform/v1/file-manifests", "/platform/v1/file-chunks", "not_attempted", "Bytes", "file_distribution_http_tdd", "test-file-delivery.sh", "fileDistributionHttp", "106", "54", "8"]) assert.ok(s.includes(phrase), `${lang}: ${phrase}`);
-    for (const file of ["README", "architecture", "security", "platform-network", "project-status", "testing-guide", "capability-maturity", "large-file-distribution", "large-file-manifest-http", "large-file-chunk-http"]) assert.ok((await read(`docs/${lang}/${file}.md`)).includes("large-file-distribution-router.md"), `${lang}: ${file}`);
+    for (const file of ["README", "architecture", "security", "platform-network", "project-status", "testing-guide", "capability-maturity", "large-file-distribution", "large-file-manifest-http", "large-file-chunk-http"]) await assertDocumentationReference(`docs/${lang}/${file}.md`, `docs/${lang}/large-file-distribution-router.md`);
   }
 });

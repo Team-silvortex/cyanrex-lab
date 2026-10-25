@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -207,10 +208,10 @@ test("bilingual retained index guides preserve optional payload and explicit hos
     assert.match(guide, locale === "en"
       ? /neither path connects browser saving, cross-user teaching review or Task acceptance/
       : /两者都不等于浏览器保存、跨用户教学审阅或任务验收/);
-    assert.ok(guide.includes("platform-task-content-connection.md"), "separate read-only content path is explicit");
+    await assertDocumentationReference(`docs/${locale}/platform-task-index-connection.md`, `docs/${locale}/platform-task-content-connection.md`);
     assert.equal(guide, await read(`frontend/public/course/${locale}/platform-task-index-connection.md`));
     for (const file of ["README.md", "architecture.md", "architecture-map.md", "platform-network.md",
       "testing-guide.md", "platform-loopback-host.md", "platform-loopback-tls-host.md", "platform-session-router.md"])
-      assert.ok((await read(`docs/${locale}/${file}`)).includes("platform-task-index-connection.md"), `${locale}: ${file}`);
+      await assertDocumentationReference(`docs/${locale}/${file}`, `docs/${locale}/platform-task-index-connection.md`);
   }
 });

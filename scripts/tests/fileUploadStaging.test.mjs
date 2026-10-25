@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -84,7 +85,7 @@ test("bilingual upload-bound docs distinguish local receipts from durable progre
     for (const phrase of ["FileUploadStaging", "Ready", "Unknown", "Confirmed", "READ COMMITTED", "READ ONLY", "O_EXCL", "test-file-upload-staging.sh"]) {
       assert.ok(docs.includes(phrase), `${lang}: ${phrase}`);
     }
-    assert.ok((await read(`docs/${lang}/README.md`)).includes("large-file-upload-staging.md"));
+    await assertDocumentationReference(`docs/${lang}/README.md`, `docs/${lang}/large-file-upload-staging.md`);
     assert.ok((await read(`docs/${lang}/testing-guide.md`)).includes("fileUploadStaging"));
   }
 });

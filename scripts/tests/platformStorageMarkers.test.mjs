@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -73,6 +74,6 @@ test("bilingual marker guides do not promote declared versions into full schema 
     const prose = text.replace(/\s+/g, " ");
     assert.match(prose, locale === "en" ? /not.*complete schema|not.*full schema/ : /不.*完整.*schema|不.*完整.*结构/);
     assert.match(text, locale === "en" ? /unmounted|no listener/ : /未挂载|不启动监听/);
-    assert.ok((await read(`docs/${locale}/README.md`)).includes("platform-storage-markers.md"));
+    await assertDocumentationReference(`docs/${locale}/README.md`, `docs/${locale}/platform-storage-markers.md`);
   }
 });

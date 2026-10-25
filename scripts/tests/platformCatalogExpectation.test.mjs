@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -94,7 +95,7 @@ test("four exact SQL selections and bilingual declaration guides remain connecte
       "platform-startup-input.md", "platform-storage-check.md", "CYANREX_TEST_DATABASE_URL"])
       assert.ok(guide.includes(value), value);
     for (const file of ["README.md", "platform-startup-input.md", "platform-storage-check.md", "platform-database-connection.md"])
-      assert.ok((await read(`docs/${locale}/${file}`)).includes("platform-catalog-expectation.md"));
+      await assertDocumentationReference(`docs/${locale}/${file}`, `docs/${locale}/platform-catalog-expectation.md`);
     assert.equal(guide, await read(`frontend/public/course/${locale}/platform-catalog-expectation.md`));
   }
 });

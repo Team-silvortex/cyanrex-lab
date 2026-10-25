@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -79,6 +80,6 @@ test("ordered private downloading stays outside normal startup and has bilingual
   for (const lang of ["en", "zh-CN"]) {
     const doc = await read(`docs/${lang}/large-file-download-client.md`);
     for (const phrase of ["0.5.7", "0.3.0", "FileChunkClient", "fetch_and_assemble", "FileChunkClientConfig.capacity", "Arc<OwnedSemaphorePermit>", "total_timeout", "FileDownloadError", "AssembledFile", "test-file-download-client.sh", "fileDownloadClient", "106", "36"]) assert.ok(doc.includes(phrase), `${lang}: ${phrase}`);
-    for (const file of ["README", "architecture", "security", "platform-network", "project-status", "testing-guide", "large-file-distribution", "large-file-chunk-client", "large-file-chunk-receiver", "large-file-chunk-assembly", "capability-maturity"]) assert.ok((await read(`docs/${lang}/${file}.md`)).includes("large-file-download-client.md"), `${lang}: ${file}`);
+    for (const file of ["README", "architecture", "security", "platform-network", "project-status", "testing-guide", "large-file-distribution", "large-file-chunk-client", "large-file-chunk-receiver", "large-file-chunk-assembly", "capability-maturity"]) await assertDocumentationReference(`docs/${lang}/${file}.md`, `docs/${lang}/large-file-download-client.md`);
   }
 });

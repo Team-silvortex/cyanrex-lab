@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -81,6 +82,6 @@ test("user directory choice remains trusted local host only and bilingual privac
   for (const lang of ["en", "zh-CN"]) {
     const s = await read(`docs/${lang}/large-file-user-save.md`);
     for (const phrase of ["0.5.7", "0.3.0", "2026-10-13", "open_user_directory", "0700", "0750", "0755", "UID", "GID", "mtime", "ctime", "0400", "O_EXCL", "Unconfirmed", "file_user_save_tdd", "fileUserSave", "106", "46"]) assert.ok(s.includes(phrase), `${lang}: ${phrase}`);
-    for (const file of ["README", "architecture", "security", "platform-network", "project-status", "testing-guide", "capability-maturity", "large-file-distribution", "large-file-download-client", "large-file-manifest-client", "large-file-save", "large-file-delivery-client"]) assert.ok((await read(`docs/${lang}/${file}.md`)).includes("large-file-user-save.md"), `${lang}: ${file}`);
+    for (const file of ["README", "architecture", "security", "platform-network", "project-status", "testing-guide", "capability-maturity", "large-file-distribution", "large-file-download-client", "large-file-manifest-client", "large-file-save", "large-file-delivery-client"]) await assertDocumentationReference(`docs/${lang}/${file}.md`, `docs/${lang}/large-file-user-save.md`);
   }
 });

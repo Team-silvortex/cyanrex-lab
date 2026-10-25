@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -123,7 +124,7 @@ test("bilingual marker declaration guides and generated navigation retain diagno
       "oid", "owner_oid", "check-config", "check-storage", "platform-catalog-expectation.md",
       "platform-storage-check.md", "CYANREX_TEST_DATABASE_URL"])
       assert.ok(guide.includes(value), value);
-    assert.ok((await read(`docs/${locale}/README.md`)).includes("platform-marker-expectation.md"));
+    await assertDocumentationReference(`docs/${locale}/README.md`, `docs/${locale}/platform-marker-expectation.md`);
     assert.equal(guide, await read(`frontend/public/course/${locale}/platform-marker-expectation.md`));
   }
 });

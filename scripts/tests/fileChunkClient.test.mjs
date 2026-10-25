@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -71,7 +72,7 @@ test("chunk client runner exactly wires SQL and TLS inventory with bilingual cur
   for (const lang of ["en", "zh-CN"]) {
     const doc = await read(`docs/${lang}/large-file-chunk-client.md`);
     for (const phrase of ["0.5.6", "0.3.0", "FileChunkClient", "FileChunkClientConfig", "FileChunkTransport", "new_https", "new_loopback", "fetch_and_stage", "ReceivedFileChunk", "retry(reqwest::retry::never())", "Content-Length", "OpenSSL", "test-file-chunk-client.sh"]) assert.ok(doc.includes(phrase), `${lang}: ${phrase}`);
-    for (const file of ["README", "architecture", "security", "platform-network", "project-status", "testing-guide", "large-file-distribution", "large-file-chunk-http", "large-file-chunk-receiver", "capability-maturity"]) assert.ok((await read(`docs/${lang}/${file}.md`)).includes("large-file-chunk-client.md"), `${lang}: ${file}`);
+    for (const file of ["README", "architecture", "security", "platform-network", "project-status", "testing-guide", "large-file-distribution", "large-file-chunk-http", "large-file-chunk-receiver", "capability-maturity"]) await assertDocumentationReference(`docs/${lang}/${file}.md`, `docs/${lang}/large-file-chunk-client.md`);
     assert.ok((await read(`docs/${lang}/testing-guide.md`)).includes("fileChunkClient"));
   }
 });

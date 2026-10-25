@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -134,6 +135,6 @@ test("bilingual replacement guides distinguish verified manifest edits from byte
     assert.equal(guide, await read(`frontend/public/course/${locale}/platform-task-replace-connection.md`));
     for (const file of ["README.md", "architecture.md", "architecture-map.md", "platform-network.md", "testing-guide.md",
       "platform-loopback-host.md", "platform-loopback-tls-host.md"])
-      assert.ok((await read(`docs/${locale}/${file}`)).includes("platform-task-replace-connection.md"), `${locale}: ${file}`);
+      await assertDocumentationReference(`docs/${locale}/${file}`, `docs/${locale}/platform-task-replace-connection.md`);
   }
 });

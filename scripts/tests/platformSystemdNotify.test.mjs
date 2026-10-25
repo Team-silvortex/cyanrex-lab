@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
@@ -86,7 +87,7 @@ test("notification documentation separates manual integration, kernel send and s
     assert.match(guide, locale === "en" ? /installs no unit/ : /不安装.*unit|不安装.*单元|未安装.*单元/);
     assert.equal(guide, await read(`frontend/public/course/${locale}/platform-host-notifications.md`));
     for (const file of ["platform-loopback-host.md", "platform-loopback-tls-host.md", "testing-guide.md"])
-      assert.ok((await read(`docs/${locale}/${file}`)).includes("platform-host-notifications.md"), `${locale}: ${file}`);
+      await assertDocumentationReference(`docs/${locale}/${file}`, `docs/${locale}/platform-host-notifications.md`);
   }
   assert.equal((await read(".github/workflows/ci.yml")).trimEnd().split("\n").length, 600,
     "extend the existing explicit runner instead of adding a duplicate CI step");

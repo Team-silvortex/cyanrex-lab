@@ -1,3 +1,4 @@
+import { assertDocumentationReference } from "./helpers/documentation-navigation.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
@@ -61,6 +62,6 @@ test("bilingual role guides distinguish credential restrictions from read-only r
     const prose = source.replace(/\s+/g, " ");
     assert.match(prose, locale === "en" ? /not a read-only role/ : /不是只读角色/);
     assert.match(prose, locale === "en" ? /does not start a host/ : /不启动宿主/);
-    assert.ok((await read(`docs/${locale}/README.md`)).includes("platform-session-permissions.md"));
+    await assertDocumentationReference(`docs/${locale}/README.md`, `docs/${locale}/platform-session-permissions.md`);
   }
 });
