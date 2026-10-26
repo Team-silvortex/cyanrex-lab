@@ -2,7 +2,7 @@
 
 [English](README.md)
 
-版本：`0.6.3`
+版本：`0.6.4`
 
 Cyanrex 是自托管的协作与教学平台。Task 管理目标及可选的内容载荷，任务不必包含代码，也不必
 发起执行。eBPF 教学是首个支持的领域，不是所有任务的定义。
@@ -145,7 +145,7 @@ reports/
 
 新的注释版本 tag 会触发不可变元数据及离线包验收，不会发布 GitHub Release 或部署服务。
 遵循[发布流程](CONTRIBUTING.zh-CN.md#发布流程)，分日期的执行结果保留在
-[发布报告](reports/releases/0.6.3/README.md)，不再展开于首页。
+[发布报告](reports/releases/0.6.4/README.md)，不再展开于首页。
 
 ## 参与贡献
 

@@ -1,7 +1,7 @@
 # Current platform feature and module network
 
 Source **0.6.3** includes explicit loopback/TLS hosting, limited Session issuance and private
-Task create/list/reopen/manifest replacement. Browser/SDK saving, new-byte publication, LAN access
+Task create/list/reopen/manifest replacement. Browser/SDK saving, LAN access
 and migration remain absent; earlier implementation-stage labels retain their original scope.
 
 The Unreleased [native TLS loopback branch](platform-loopback-tls-host.md) extends that host with
@@ -17,7 +17,10 @@ and private format 3 gates → original expected storage → one shared workspac
 HTTP/1.1 login/query/logout, [private Task metadata](platform-task-index-connection.md), [read-only reopening](platform-task-content-connection.md)
 and [empty manual Draft creation](platform-task-create-connection.md). Separate [manifest replacement](platform-task-replace-connection.md)
 accepts an expected revision and a complete manifest of title and already-owned exact text references. Code and a Run remain
-optional. This adds no Artifact publication, status writes, normal teaching
+optional. Unreleased [retained text publication](platform-text-artifact-connection.md) adds a separate
+private POST in both CLI hosts: eight routes/seven lanes over one retained storage Arc. Old constructors
+stay seven-route/six-lane with publication disabled; all seven new capacities are validated before splitting.
+Global admission remains 16 connections and actual text workers remain four. This adds no status writes, normal teaching
 AppState, LAN listener, proxy backend, browser/SDK saving or distribution routes.
 
 **2026-10-16, included in 0.6.2:** the [bound Session path](platform-session-connection.md) is
@@ -452,7 +455,7 @@ evidence or topology; matching/invisibility does not establish prior commit/roll
 | Durable Session → own Artifact revision → own Task exact inputs → Draft replacement | Implemented preparatory backend path; public API and browser adapter are absent. |
 | Durable Session → exact owned Artifact target/evidence → human Review history | Implemented preparatory backend path; cross-user review authority and acceptance remain absent. |
 | Legacy accounts/scripts/attempts → durable identity/Artifacts/Tasks/Reviews | Planned migration, writer fencing and cutover; no implicit dual write or adoption. |
-| Browser task save → Artifact publication → Task create/replace → conflict recovery | W10–W14 provide content contracts, an unmounted HTTP adapter and pure mapping; W15 composes internal create-only steps and W16 observes current targets without recovery. W23 separately supplies unmounted text HTTP publication. Explicit login/installation, public dispatch, durable recovery and browser save/conflict handling remain missing. |
+| Browser task save → Artifact publication → Task create/replace → conflict recovery | W10–W16 and W23 retain their prepared scopes. A separate retained text POST and Task commands are now explicitly hosted on loopback; browser authentication/transport, save/conflict handling and durable recovery remain missing. |
 | Supplied Artifact content → draft plan binding → Task content manifest | W02 ⇢ W14 ⇢ W10 checks supplied bytes and metadata only; no storage call, current authorization or proof of prior publication. Local U03 → W14 remains unconnected. |
 | Draft plan → explicit Session publication steps → Task create | W14 ⇢ W15 ⇢ W12 uses I04 and W05 independently for current authorization/publication. Separate transactions, in-memory outcome tracking; no browser bridge or automatic recovery. |
 | Unconfirmed attempt → current target observation | W15 ⇢ W16 uses I04 and one W05 or W12 read. Separate observation times, no returned body or state restoration; this read branch adds no representative write chain. |

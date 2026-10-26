@@ -24,7 +24,7 @@ impl ArtifactDraft {
         Ok(draft)
     }
 }
-pub(super) fn validate_metadata(title: &str, media: &str, length: u64) -> Result<()> {
+pub(crate) fn validate_metadata(title: &str, media: &str, length: u64) -> Result<()> {
     let token = |value: &str| {
         !value.is_empty()
             && value

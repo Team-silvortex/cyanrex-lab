@@ -1,9 +1,9 @@
 # Project status
 
-Reviewed **2026-10-25**. Product version remains **0.6.3**; the public API compatibility baseline is
-**0.3.0**. HEAD also includes the Rust dependency follow-up `ab2b292` and frontend dependency
-follow-up `be94db9`, after the `164d64a` version commit. Those fixes do not change the published
-0.6.3 artifacts or turn the release report into validation of a later commit.
+Reviewed **2026-10-26**. Product version is **0.6.4**; the public API compatibility baseline remains
+**0.3.0**. This release includes retained text publication and the default-off Session/private Task
+shell with reading and manual-Draft metadata saves, not raw-text saving or browser TLS acceptance.
+Earlier 0.6.3 artifacts and dated release evidence retain their original scope.
 
 Cyanrex is a self-hosted **collaboration and teaching platform**. A Task describes work; code is
 one optional payload, not the organizing center. Notes, configuration and code can use the text
@@ -22,7 +22,7 @@ Three application paths coexist. They are not interchangeable authentication or 
 |---|---|---|
 | Teaching application | Existing browser authentication, classrooms, five labs, feedback, execution and teacher deployment management | Uses the existing AuthService and teaching storage; old attempts are not generic Tasks or Runs |
 | Local Task editor | Optional text payload, controlled editors, reviewed import and local JSON export | Page-memory drafts; no generic server save, autosave or browser persistence |
-| Explicit platform host | Linux plain or native-TLS loopback hosting with limited Session issuance and private Task commands | Separately provisioned original storage; no normal-app/browser/SDK cutover or LAN listener |
+| Explicit platform host | Linux plain/native-TLS loopback hosting, limited Sessions, private Task commands and opt-in reading/Draft metadata saves | Separately provisioned original storage; no normal-app/text-save/SDK cutover or LAN listener |
 
 Additional Rust stores, HTTP adapters, draft-publication helpers and file-delivery components can be
 composed explicitly. Their availability does not mean that the normal application mounts them.
@@ -66,11 +66,12 @@ not imply Korean course bodies. See [Task editing](editor.md) and [local file im
 
 ## Private platform host
 
-Source 0.6.3 includes explicit `cyanrex-platform serve-loopback` and `serve-loopback-tls` modes.
+Source 0.6.4 includes explicit `cyanrex-platform serve-loopback` and `serve-loopback-tls` modes.
 They verify low-privilege process identity, private format 3 input, the declared original catalog,
 five storage markers and the original Artifact root. They do not construct teaching AppState.
 
-The host combines seven concrete routes over one original retained storage binding:
+Included in 0.6.4, retained text publication is explicit in both CLI modes. The host now combines
+eight concrete routes over one original retained storage binding:
 
 | Method and path | Implemented command |
 |---|---|
@@ -81,20 +82,33 @@ The host combines seven concrete routes over one original retained storage bindi
 | GET `/platform/v1/tasks/{task_id}` | Reopen an owned Task, including empty or verified ordered text content |
 | POST `/platform/v1/tasks` | Create an empty manual Draft using a strict version/Task-ID/title request |
 | PUT `/platform/v1/tasks/{task_id}/content` | Replace a manual Draft manifest with an expected revision and existing exact owned text references |
+| POST `/platform/v1/text-artifacts` | Create a private fixed-profile text Artifact; return only confirmed metadata |
 
 The private index is metadata, not proof that every content file remains readable. Reopening checks
 the exact referenced content rather than trusting the index. Creation requires neither payload nor
 code. Replacement can change a title, labels, order or references; it publishes no new Artifact bytes.
 Task status, catalogue creation, assessment and execution are not mounted by these commands.
 
-Six independent response-lifetime admission lanes cover login, Session lifecycle, index, content
-read, empty creation and manifest replacement. Explicit construction preserves older narrow APIs;
-the full pooled write router and file-distribution router are not silently merged into the host.
+Seven independent response-lifetime lanes cover login, Session lifecycle, index, content read, empty
+creation, manifest replacement and text publication. The CLI opts into `with_text_publication_capacities`;
+old constructors remain seven-route/six-lane with publication disabled. All seven capacities are checked
+before splitting one original storage Arc. Global admission is still 16 connections, not 28 guaranteed
+requests. The pooled write/read and file-distribution routers are not merged into the host.
 
 Native TLS adds private certificate/key checks, exact IP SAN matching, bounded handshake work and
 Secure Cookies. Optional service notifications report verified Ready and pre-drain Stopping.
 Neither mode supplies DNS/LAN hosting, an installed service, automatic restart, a proxy backend or
-a browser deployment. Plain loopback availability alone is not a browser Cookie deployment plan.
+a complete browser Task workflow. Plain loopback availability alone is not a Cookie-safe deployment plan.
+
+Included in 0.6.4, `--session-ui` is default-off: seven fixed assets/five languages, dedicated Sessions,
+explicit 20-entry private pages and inert text/empty-payload reopening. Strict scope/revision/pins/hash
+checks use 128 KiB index/50 MiB content wire, 16,384 frames and 32 × 256 KiB decoded limits. A narrow
+manual-Draft title/display-label save preserves pins/order/bytes/count: one 64 KiB PUT, strict HTTP 200
+metadata ACK (128 KiB/4,096 frames), not a fresh text read. Save/dirty/unknown leave dialogs default Cancel.
+Ten seconds bounds waiting, not parsing/server work. Denial/context changes/pagehide clear private DOM
+and quarantine local work without cross-Session restore/replay; explicit discard is required to continue.
+No raw-text save, new Artifact, Task creation/Run, normal Next draft/SDK, new API or grant is connected.
+Unknown is not rollback/retry authority. Cookies are not port-isolated; legacy NSS still blocks browser TLS.
 
 For setup and exact contracts, start at the [platform references](reference-index.md).
 The [loopback guide](platform-loopback-host.md), [TLS guide](platform-loopback-tls-host.md) and
@@ -133,20 +147,31 @@ Artifact storage supports private immutable revisions, digest-bound references a
 metadata/events. Internal current-Session publication and reads, plus independent text HTTP
 preparation, exist outside the retained host's mounted Task surface.
 
+[Retained text publication](platform-text-artifact-connection.md), included in 0.6.4, supplies a create-only
+connector, standalone POST and explicit plain/TLS host composition, with a fixed text profile and
+deferred-work exact-head checks. This does not connect browser text saving or update a Task. The
+combined host role retains old grants and adds only three Artifact INSERTs.
+
 Task content storage atomically updates Task/manifest/outbox metadata. Existing text replacement
 validates the complete old/new reference union, including removed content, around deferred writes.
 It preserves immutable Artifact files and prior Review history.
 
 Review supports revisioned private human opinions on exact Artifact targets/evidence. It does not
 supply cross-user reviewer grants, generic Task acceptance, automatic assessment or AI review.
-A complete browser save workflow still needs reviewed new-byte publication and client conflict/
-uncertain-outcome handling, not just another editor button.
+A complete browser text-save workflow still needs reviewed browser authentication/transport integration
+and client conflict/uncertain-outcome handling, not just another editor button.
 
 ### Draft publication and recovery
 
 Internal import/planning, create-only publication steps, checkpoints, immutable intents, journaled
 dispatch and read-only observation are implemented as distinct capabilities. Manual and catalogue
 paths preserve their own definition, identity and outcome rules.
+
+An Unreleased [browser-side content-save attempt](task-draft-publication.md#unreleased-browser-side-existing-draft-save-attempt)
+freezes a draft and existing manual Task baseline, hashes text locally, then hands out single-use
+Artifact/manifest descriptors with separate pending outcomes. Supplied confirmations establish only
+consistency; no fetch, Session/Origin configuration, UI saving or persistent recovery is connected.
+Completion covers the frozen attempt only and does not clear the current local editor's dirty state.
 
 These helpers do not create a whole-draft transaction. Confirmed prefixes can survive a failed later
 step; metadata agreement is not a historical receipt. Reading an intent or checkpoint does not
@@ -208,11 +233,11 @@ without one whole-project completion percentage.
 The immediate mainline is a **private, payload-neutral Task workflow**. The retained host supplies
 a bounded server edge, not the completed browser product. Work should proceed in this order:
 
-1. Define an explicit new-text publication boundary for the original retained storage, including
-   current authority, private file ownership and uncertain commit outcomes. Do not mount an old
-   pooled router or infer permission from a local draft ID.
-2. Connect browser authentication, private listing/reopening and explicit saving through reviewed
-   contracts. Preserve unsaved edits, expected revisions, conflicts and cancel/unknown states.
+1. Define browser-to-host Task integration, including Cookie-safe Origin/client trust and separate
+   publication/Task-update outcomes. Preserve current authority and private file ownership;
+   do not mount an old pooled router or infer permission from a local draft ID.
+2. Extend the opt-in metadata-save page to text publication only through separately reviewed
+   contracts. Preserve separate local drafts, unsaved edits, expected revisions, conflicts and cancel/unknown states.
    A local export and a successful metadata PUT must remain distinct operations.
 3. Verify the real browser-to-server chain with actual authentication/storage, competing edits,
    rejected authority, restart behavior and uncertain delivery before calling private saving complete.
@@ -256,6 +281,27 @@ block external networking and do not establish Next.js exploitability or a deplo
 Remote CI, release artifacts and deployed services require their own verified results. This status
 does not claim that the post-release commits passed remote CI, upgraded installed instances or
 re-ran every optional suite. Documentation reorganization is not another product acceptance run.
+
+### 2026-10-26 Unreleased Session-page validation
+
+On the uncommitted working tree, locked default Cargo tests passed **1,451**, with **1,028 ignored**
+and no warnings. The common/format gate passed **584** source/contract tests and its tooling checks.
+The new route/CLI tests are included in that Cargo count, not additional passes.
+Explicit real Chrome UI fixtures passed **12** with mock APIs; the real plain SQL/browser selector
+passed separately, including the failed-logout/manual-check/explicit-confirmation path. Its OTP is
+handed off only after the browser is ready, with no login retry. Existing plain/TLS host and text
+publication regressions passed **22** exact SQL selectors. The adjacent pure content-save attempt
+passed **36** units; this is not Task saving through the new page. Desktop/360px screenshots were
+checked. TLS-browser acceptance remains blocked by local legacy NSS; no CA/HOME/verification bypass
+was used, and CI wiring is not a remote pass. The owned socket-only PostgreSQL 18 fixture was stopped
+and its 56 MiB generated data removed; logs/screenshots remain outside the repository. No version,
+commit or push was made for this slice.
+
+The same-day read-only Task follow-up passed 1,451 default Rust tests (1,029 ignored), 610 common
+tests (including 20 pure read-contract units), 12 new and 12 original mocked-API browser cases,
+the real plain Task and Session browser selectors, and 16 existing index/content SQL regressions.
+The malformed-401/403-body active-state bug had a browser Red then Green; no old content survives denial.
+Desktop/360px screenshots were checked; this is not Task saving or TLS-browser acceptance. The temporary database was stopped and its generated data removed.
 
 ## Development history
 

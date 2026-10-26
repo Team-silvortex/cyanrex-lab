@@ -4,7 +4,8 @@
 独立低权限平台宿主现在可以创建所有者私有的空白手动 Task。最小后端链路为：创建空白 Draft →
 [列出私人元数据](platform-task-index-connection.md) → [重开已存任务](platform-task-content-connection.md)。
 代码是可选 payload，不要求编辑器、评估或 Run。独立[Draft 清单换版](platform-task-replace-connection.md)
-现可修改标题或已有本人准确文本引用；Artifact 发布和浏览器保存仍未接通，原教学认证和本地草稿路径不变。
+现可修改标题或已有本人准确文本引用。本空创建命令不发布 Artifact；独立[原绑定文本发布](platform-text-artifact-connection.md)
+现由宿主显式接入。浏览器保存仍未接通，原教学认证和本地草稿路径不变。
 
 ## 严格的空任务契约
 
@@ -62,14 +63,16 @@ Artifact 命名空间；不创建 Artifact 业务行或文件。仅元数据校�
 派发前错误为 `not_attempted`；派发后错误均为 `unconfirmed`，包括通用私人冲突。不暴露存储路径
 或驱动诊断。
 
-明文和原生 TLS 回环宿主现有七条具体路由：三条 Session、私人索引 GET、任务项 GET、空创建
-POST 及独立清单换版 PUT。`PlatformWorkspaceHttpState` 将同一个原存储 Arc 拆为六个能力、六条独立快速失败准入
+`PlatformWorkspaceHttpState` 原构造器保留七条路由：三条 Session、私人索引 GET、任务项 GET、空创建
+POST 及清单换版 PUT；将同一个原存储 Arc 拆为六个能力、六条独立快速失败准入
 通道。各容量 1–16、默认四；克隆共享名额，持续到响应正文最后一帧／丢弃。这不是全局内存、
 连接、worker、持久存储配额或分布式滥用防护。
 
 `with_create_capacities(storage, login, lifecycle, index, content, create)` 及旧 `with_capacities`、
 `with_content_capacities` 签名保留，换版默认四；新增 `with_replace_capacities(storage, login,
-lifecycle, index, content, create, replace)` 在分配／拆分前验证全部六容量。仅 Session、独立只读及
+lifecycle, index, content, create, replace)` 在分配／拆分前验证全部六容量，仍不启用发布。
+两个 CLI 宿主显式使用 `with_text_publication_capacities` 增加私人文本 POST，为八路由／七通道；
+全部七容量验证后才拆分同一原存储 Arc。CLI 各通道四名额，全局 16 连接不保证 28 请求并发。仅 Session、独立只读及
 仅创建路由不变，不合并原完整连接池写路由。SDK/OpenAPI、前端传输、LAN／DNS 监听和教学
 AppState 仍是独立边界。
 
@@ -83,6 +86,7 @@ Artifact 业务 SELECT／写入；重开另需原有明确读取配置。不新�
 ```bash
 env CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 cargo test --manifest-path engine/Cargo.toml --locked --lib platform_http::task_create
 bash scripts/test-platform-task-create-connection.sh
+bash scripts/test-platform-text-publication-host.sh
 ```
 
 运行器要求显式、可丢弃、具管理权限的 `CYANREX_TEST_DATABASE_URL`。十条 HTTP 单测和八条准确
@@ -90,3 +94,5 @@ bash scripts/test-platform-task-create-connection.sh
 可观测等待后过期与取消、受限角色权限、响应准入和真实低权限回环进程。不实现浏览器保存／恢复、
 文本／二进制发布、目录定义、状态转换、Run 派发或局域网部署；标题／已有引用换版属于独立
 保留绑定能力，不是本仅创建路由的方法。
+第二个运行器清点六条真实 SQL／工作区／明文／TLS 选择，含原构造器兼容；库存不是通过结果。
+文本发布仍是独立命令。

@@ -18,6 +18,7 @@ mod task_content_connection;
 mod task_create_connection;
 mod task_index_connection;
 mod task_replace_connection;
+mod text_artifact_connection;
 
 pub use artifact_root::{
     inspect_platform_artifact_root, verify_platform_artifact_root, PlatformArtifactRootObservation,
@@ -39,6 +40,7 @@ pub use process_startup::{
 pub use session_connection::PlatformSessionConnector;
 pub(crate) use session_pair::{
     split_platform_session_connectors, split_platform_task_replace_connectors,
+    split_platform_text_publication_connectors,
 };
 pub use storage_check::check_platform_database_storage;
 pub use storage_check::check_platform_database_storage_expected;
@@ -54,6 +56,7 @@ pub use task_content_connection::PlatformTaskContentConnector;
 pub use task_create_connection::PlatformTaskCreateConnector;
 pub use task_index_connection::PlatformTaskIndexConnector;
 pub use task_replace_connection::PlatformTaskReplaceConnector;
+pub use text_artifact_connection::PlatformTextArtifactConnector;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, thiserror::Error)]
 pub enum PlatformHostPreflightError {

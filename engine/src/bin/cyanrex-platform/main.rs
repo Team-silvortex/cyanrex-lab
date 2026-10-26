@@ -7,6 +7,8 @@ mod private_input;
 #[cfg(target_os = "linux")]
 mod serve_loopback;
 #[cfg(target_os = "linux")]
+mod session_ui;
+#[cfg(target_os = "linux")]
 mod storage_check;
 
 #[cfg(target_os = "linux")]
@@ -14,12 +16,13 @@ enum Command {
     Process,
     Config(std::path::PathBuf),
     Storage(std::path::PathBuf),
-    ServeLoopback(std::path::PathBuf, std::net::SocketAddr, bool),
+    ServeLoopback(std::path::PathBuf, std::net::SocketAddr, bool, bool),
     ServeLoopbackTls(
         std::path::PathBuf,
         std::net::SocketAddr,
         std::path::PathBuf,
         std::path::PathBuf,
+        bool,
         bool,
     ),
 }
@@ -33,8 +36,8 @@ fn identity() -> Result<
     (),
 > {
     use cyanrex_engine::platform_host::PlatformProcessIdentity;
-    let args: Vec<_> = std::env::args_os().skip(1).take(17).collect();
-    if !matches!(args.len(), 7 | 9 | 11 | 12 | 15 | 16)
+    let args: Vec<_> = std::env::args_os().skip(1).take(18).collect();
+    if !matches!(args.len(), 7 | 9 | 11 | 12 | 13 | 15 | 16 | 17)
         || args.iter().take(7).any(|arg| arg.len() > 2048)
         || args.iter().skip(7).any(|arg| arg.len() > 4096)
     {
@@ -44,8 +47,15 @@ fn identity() -> Result<
         .iter()
         .map(|arg| arg.to_str().ok_or(()))
         .collect::<Result<_, _>>()?;
-    let notify_systemd = text.last() == Some(&"--notify-systemd");
-    let shape = text.len() - usize::from(notify_systemd);
+    // Fixed suffix order; duplicates, aliases and diagnostic flags never reach private input.
+    let session_ui = text.last() == Some(&"--session-ui");
+    let without_ui = text.len() - usize::from(session_ui);
+    let notify_systemd = text.get(without_ui - 1) == Some(&"--notify-systemd");
+    let shape = without_ui - usize::from(notify_systemd);
+    if (session_ui || notify_systemd) && !matches!(text[0], "serve-loopback" | "serve-loopback-tls")
+    {
+        return Err(());
+    }
     let input = match (text[0], shape) {
         ("check-process", 7) => Command::Process,
         (mode @ ("check-config" | "check-storage"), 9)
@@ -67,6 +77,7 @@ fn identity() -> Result<
                 std::path::PathBuf::from(text[8]),
                 serve_loopback::parse_bind(text[10])?,
                 notify_systemd,
+                session_ui,
             )
         }
         ("serve-loopback-tls", 15)
@@ -84,6 +95,7 @@ fn identity() -> Result<
                 std::path::PathBuf::from(text[12]),
                 std::path::PathBuf::from(text[14]),
                 notify_systemd,
+                session_ui,
             )
         }
         _ => return Err(()),
@@ -127,11 +139,19 @@ fn check(
     let checked = prepare_platform_process(identity).map_err(|_| ())?;
     prepare_platform_process(identity).map_err(|_| ())?;
     checked.verify_before_runtime().map_err(|_| ())?;
-    if let Command::ServeLoopback(path, bind, notify_systemd) = input {
-        return serve_loopback::run(path, *bind, &checked, *notify_systemd);
+    if let Command::ServeLoopback(path, bind, notify_systemd, session_ui) = input {
+        return serve_loopback::run(path, *bind, &checked, *notify_systemd, *session_ui);
     }
-    if let Command::ServeLoopbackTls(path, bind, cert, key, notify_systemd) = input {
-        return serve_loopback::run_tls(path, *bind, cert, key, &checked, *notify_systemd);
+    if let Command::ServeLoopbackTls(path, bind, cert, key, notify_systemd, session_ui) = input {
+        return serve_loopback::run_tls(
+            path,
+            *bind,
+            cert,
+            key,
+            &checked,
+            *notify_systemd,
+            *session_ui,
+        );
     }
     if let Command::Config(path) = input {
         let result = config::check(path);
@@ -161,7 +181,7 @@ fn main() {
             Ok(value) => value,
             Err(()) => {
                 eprintln!(
-                    "usage: cyanrex-platform check-process|check-config|check-storage|serve-loopback|serve-loopback-tls --uid N --gid N --groups GID,...|none [--config /absolute/input.json [--bind LOOPBACK:PORT [--cert ABS --key ABS] [--notify-systemd]]]"
+                    "usage: cyanrex-platform check-process|check-config|check-storage|serve-loopback|serve-loopback-tls --uid N --gid N --groups GID,...|none [--config /absolute/input.json [--bind LOOPBACK:PORT [--cert ABS --key ABS] [--notify-systemd] [--session-ui]]]"
                 );
                 std::process::exit(64);
             }

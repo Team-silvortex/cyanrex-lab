@@ -39,8 +39,9 @@ pub(super) fn run(
     bind: SocketAddr,
     process: &PlatformProcessStartup,
     notify_systemd: bool,
+    session_ui: bool,
 ) -> Result<(), ()> {
-    run_with_transport(path, bind, process, None, notify_systemd)
+    run_with_transport(path, bind, process, None, notify_systemd, session_ui)
 }
 
 pub(super) fn run_tls(
@@ -50,8 +51,16 @@ pub(super) fn run_tls(
     key: &Path,
     process: &PlatformProcessStartup,
     notify_systemd: bool,
+    session_ui: bool,
 ) -> Result<(), ()> {
-    run_with_transport(path, bind, process, Some((cert, key)), notify_systemd)
+    run_with_transport(
+        path,
+        bind,
+        process,
+        Some((cert, key)),
+        notify_systemd,
+        session_ui,
+    )
 }
 
 fn run_with_transport(
@@ -60,6 +69,7 @@ fn run_with_transport(
     process: &PlatformProcessStartup,
     tls_paths: Option<(&Path, &Path)>,
     notify_systemd: bool,
+    session_ui: bool,
 ) -> Result<(), ()> {
     install_panic_hook();
     // Explicit opt-in is checked after the process gate, before any private input is read.
@@ -113,8 +123,16 @@ fn run_with_transport(
         let checked = process.verify_current_thread().map_err(|_| ());
         let storage = opened.map_err(|_| ())?;
         checked?;
-        let state = PlatformWorkspaceHttpState::new(storage).map_err(|_| ())?;
+        let state = PlatformWorkspaceHttpState::with_text_publication_capacities(
+            storage, 4, 4, 4, 4, 4, 4, 4,
+        )
+        .map_err(|_| ())?;
         let router = build_platform_workspace_router(state);
+        let router = if session_ui {
+            router.merge(super::session_ui::routes(&format!("{scheme}://{bind}")))
+        } else {
+            router
+        };
         // Register both signals before the final bind. No background signal task or runtime.
         use tokio::signal::unix::{signal, SignalKind};
         let mut terminate = signal(SignalKind::terminate()).map_err(|_| ())?;

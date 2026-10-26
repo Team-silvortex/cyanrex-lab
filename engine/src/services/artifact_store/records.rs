@@ -145,30 +145,33 @@ impl ArtifactStore {
         revision: &ArtifactRevision,
         bytes: Vec<u8>,
     ) -> Result<()> {
-        let raw = encode(revision)?;
-        confirmed_one(sqlx::query("INSERT INTO collaboration_artifact_revisions (revision_id, artifact_id, sequence, snapshot)
+        publish(
+            &ArtifactContentWriter::from_store(self),
+            tx,
+            revision,
+            bytes,
+        )
+        .await
+    }
+}
+
+/// Shared publication mechanics; no deferred-constraint barrier or commit is added to old APIs.
+pub(super) async fn publish(
+    writer: &ArtifactContentWriter,
+    tx: &mut Tx<'_>,
+    revision: &ArtifactRevision,
+    bytes: Vec<u8>,
+) -> Result<()> {
+    let raw = encode(revision)?;
+    confirmed_one(sqlx::query("INSERT INTO collaboration_artifact_revisions (revision_id, artifact_id, sequence, snapshot)
             VALUES ($1, $2, $3, $4)")
             .bind(revision.reference.revision_id.as_uuid()).bind(revision.reference.artifact_id.as_uuid())
             .bind(u64::from(revision.sequence) as i64).bind(&raw).execute(&mut **tx).await?.rows_affected())?;
-        let (blobs, published) = (self.blobs.clone(), revision.clone());
-        tokio::task::spawn_blocking(move || blobs.write_once(&published, &bytes))
-            .await
-            .map_err(|_| ArtifactStoreError::BlobUnavailable)??;
-        confirmed_one(sqlx::query("INSERT INTO collaboration_artifact_outbox (event_id, artifact_id, revision_id, sequence, actor_id, event_type, snapshot)
+    writer.write_blob(revision, bytes).await?;
+    confirmed_one(sqlx::query("INSERT INTO collaboration_artifact_outbox (event_id, artifact_id, revision_id, sequence, actor_id, event_type, snapshot)
             VALUES ($1, $2, $3, $4, $5, $6, $7)")
             .bind(uuid::Uuid::new_v4()).bind(revision.reference.artifact_id.as_uuid()).bind(revision.reference.revision_id.as_uuid())
             .bind(u64::from(revision.sequence) as i64).bind(revision.owner.principal_id.as_uuid())
             .bind(event_type(revision.sequence)).bind(raw).execute(&mut **tx).await?.rows_affected())?;
-        self.check_schema(tx, true).await?;
-        if self
-            .head(tx, revision.reference.artifact_id, revision.owner, true)
-            .await?
-            .as_ref()
-            != Some(revision)
-        {
-            return Err(ArtifactStoreError::InvalidRecord);
-        }
-        self.read_blob(revision).await?;
-        Ok(())
-    }
+    writer.verify_in_transaction(tx, revision).await
 }

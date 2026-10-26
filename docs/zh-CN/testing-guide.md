@@ -1,7 +1,13 @@
 # 当前项目测试指南
 
 源码 **0.6.3** 已收录显式回环／TLS 宿主、受限 Session 签发及私人 Task 创建／列举／重开／清单换版。
-不接通浏览器／SDK 保存、新字节发布、局域网或存储迁移；早期实施阶段标签保留原范围与证据。
+不接通浏览器／SDK 保存、局域网或存储迁移；早期实施阶段标签保留原范围与证据。
+
+Unreleased [原绑定文本发布](platform-text-artifact-connection.md)新增
+`bash scripts/test-platform-text-publication-host.sh` 六条真实 SQL／工作区／明文／TLS 选择库存，
+覆盖原七路由／六通道构造器和显式八路由／七通道 CLI 组合、原绑定、当前权限、独立响应通道、
+最小新增 INSERT、私人遗留文件及发布／关联／重开。库存不是通过结果，也不证明浏览器／SDK 验收；
+全局 16 连接、四个真实文本 worker 和既有登录／Task／读取权限不变。
 
 未发布的[手动 Draft 清单换版](platform-task-replace-connection.md)增加十条 HTTP 单测及
 `bash scripts/test-platform-task-replace-connection.sh` 十条准确 SQL／HTTP／真实宿主选择，覆盖
@@ -433,6 +439,77 @@ bash scripts/test-session-task-revisions.sh
 失败不构成自动删除残留内容的许可。
 
 ## 浏览器与传输套件
+
+### 可选的独立宿主 Session 网页
+
+原生宿主尾部的 `--session-ui` 参数在 `/platform/` 提供七个固定资源，含 `tasks.js`、
+`task-edit.js` 与 `task-contract.js`，默认关闭。五语言私人 Task 页只读正文，并确认手动 Draft
+标题／显示标签保存，不改引用／顺序／字节／条数。不接原文修改、新 Artifact、创建、Run 写入、
+正常 Next 本地草稿／SDK、认证 API／权限或教学认证回退。以下显式测试均需绝对路径
+`CYANREX_PLAYWRIGHT_MODULE` 与 `CYANREX_CHROMIUM_PATH`：
+
+```bash
+bash scripts/test-platform-session-ui-browser.sh
+bash scripts/test-platform-task-reader-browser.sh
+bash scripts/test-platform-task-metadata-browser.sh
+# 另需显式一次性 PostgreSQL URL、OpenSSL 和 certutil：
+bash scripts/test-platform-browser-session.sh
+# 只读 Task 路径使用真实明文宿主，不证明 TLS 浏览器验收：
+bash scripts/test-platform-browser-tasks.sh
+bash scripts/test-platform-browser-task-metadata.sh
+```
+
+Session UI runner 使用真实 Chrome、生产资源与 CSP，但 **Session API 为 mock**，检查确认锁、
+有界响应、未知结果不重放写入、五语言和 360px 触控布局。恢复事件由合成的 persisted
+`pagehide/pageshow` 触发，不代表真实 BFCache 导航验收；空帧及迟到响应用例明确使用 fetch 替身。
+Session SQL runner 精确选择两条 ignored 用例：真实明文／原生 TLS 浏览器登录、Cookie 回读、取消与
+确认退出，独立核对 Session／OTP／账号以及 Task／Artifact 资源不变。明文用例另注入真实的
+退出删除权限失败，检查 Cookie／Session 保留；手动检查状态后仍须再次显式确认退出。
+
+Task-reader 夹具列举 12 条真实 Chrome、**mock API** 用例：显式每页 20 项、惰性纯文本／空
+payload／未知语言、有序引用与摘要、畸形／超限响应、撤权形状错误、Session 变化、合成页面
+生命周期及迟到代次拒绝。这些 UI 断言不证明 SQL 权限。公共套件中的
+`platformTaskReaderContract.test.mjs` 另有 20 条纯 Node 用例，核解析前重复／转义键、深度／token、
+安全数值、准确作用域／修订／清单／内容、UTF-8 上限和本地 SHA-256。读取限制为索引报文
+128 KiB、内容报文 50 MiB、16,384 帧及解码后 32 × 256 KiB；十秒等待不抢占同步解析或服务端
+工作。Task 401／403、Session 检查、确认退出开始派发及 pagehide 必须清旧数据，迟到响应不能恢复。
+
+Task SQL／浏览器 runner 精确选择一条 ignored 明文宿主用例，经真实当前权限验证私人分页／
+重开与撤权，同时核 Task／Artifact 无写入。库存不等于选择已通过，也不证明 TLS 浏览器、
+局域网、编辑或保存验收。
+
+Unreleased 显示信息夹具列举 12 条 mock API 浏览器用例：默认取消的预览确认、单次 PUT、严格
+HTTP 200 回执、空 Draft／非 Draft 边界、本地校验、dirty／未知导航守卫、冲突不重放、畸形／
+超限／丢失响应，以及失权／pagehide 隔离且不跨 Session 恢复。预览／私人 DOM 清空，受控迟到
+ACK 不能恢复尝试。`platformTaskMetadataContract.test.mjs` 另列举 20 条纯 Node 用例，核仅改
+显示信息的描述和严格三键回执：安全修订加一、同 Task／owner／创建时间、不改有序引用，
+不重新 hash 或宣称来源证明。请求／回执为 64 KiB／128 KiB，回执最多 4,096 帧，浏览器等待
+十秒，不是解析／服务端硬期限。元数据保存后正文仍是先前未变副本，不证明新鲜读取。
+
+显示信息 SQL／浏览器 runner 精确选择一条 ignored 明文宿主用例，核确认元数据、竞争修订冲突
+和撤权，并比较保留 Artifact 文件及不变的引用／顺序／条数。它与 mock UI、原文保存和 TLS
+浏览器验收分开，库存不构成通过结果；UI 不增加数据库权限或 HTTP API。
+
+TLS 浏览器验收需 Chrome 146+，且 **不能已有旧 `~/.pki/nssdb`**：Chromium 会优先使用该库，
+而非夹具的私有 XDG NSS 目录。遇到此环境必须拒绝，不得删除或修改用户信任库、覆盖 HOME，
+或跳过证书校验。合适的一次性工作机先验证不信任测试 CA，再只将该 CA 导入自己临时 NSS 库，
+重新启动浏览器并正常校验证书。本机旧 NSS 阻塞该浏览器 TLS 用例，原生 TLS socket 回归不能
+替代。CI 通过 `scripts/test-platform-browser-ci.sh` 安装临时固定版本浏览器工具后运行三个 mock
+及三个 SQL／浏览器 runner；接入不等于远端 CI 已通过。默认 Rust／源码检查、mock UI、真实 SQL／浏览器和真实
+TLS 结果须在[项目进度](project-status.md)中分开记录。
+
+### 2026-10-26 本地显示信息保存验证
+
+未提交的 0.6.3 工作树通过 `quality-gate.sh --backend-only`：636 项公共检查、1451 项默认
+Rust 测试通过，1030 项忽略，无警告。三个 mock API Chrome 套件各通过 12 项；另行通过
+13 条精确一次性 SQL 选择：新增显示信息浏览器用例、原明文 Session 和只读 Task 浏览器各一条，
+以及十条 Task 换版用例。独立存储核对确认仅推进一次修订／事件、Artifact 文件不变，旧修订
+不能覆盖新版本，撤销后的 Session 不能写入。显示信息契约 20 项已含在公共数量中；另一个仍未
+挂载的内容保存帮助层通过 36 项单测，不代表浏览器原文保存验收。保持拒绝正文未结束的响应头
+用例在修复清屏前实际失败、修复后通过；合成生命周期和受控迟到 fetch 仍保留各自限制。
+已检查桌面／360px 截图；浏览器 TLS 仍受上述环境限制，CI 接入不是远端通过结果。
+仅 socket 的 PostgreSQL 18 夹具已停止，56 MiB 生成数据已删除，日志及截图留在仓库外。
+本切片未改版本、提交或推送。
 
 依赖 Next 页面的套件使用**生产前端构建**，构建时令 `NEXT_PUBLIC_ENGINE_URL` 指向纯夹具地址；测试时设置匹配的
 `CYANREX_UI_ENGINE_URL` 和临时前端的 `CYANREX_UI_BASE_URL`。默认无法找到运行时或浏览器时，

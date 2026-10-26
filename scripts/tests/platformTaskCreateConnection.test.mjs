@@ -155,7 +155,7 @@ test("workspace creation stays separate from a sixth replacement capability and 
     assert.doesNotMatch(split, /inspect_|verify_|\.connect\(|std::(?:env|fs)/);
   }
   const workspace = compact(await read("engine/src/platform_http/workspace_router/mod.rs"));
-  assert.equal([...workspace.matchAll(/\.merge\(/g)].length, 6);
+  assert.equal([...workspace.split("ifletSome(text)=state.text")[0].matchAll(/\.merge\(/g)].length, 6);
   assert.equal([...workspace.matchAll(/\.fallback\(/g)].length, 1);
   for (const value of ["Self::with_capacities(storage,4,4,4)", "Self::with_content_capacities(storage,login_capacity,lifecycle_capacity,index_capacity,4,)",
     "Self::with_create_capacities(storage,login_capacity,lifecycle_capacity,index_capacity,content_capacity,4,)",

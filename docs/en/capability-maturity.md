@@ -1,8 +1,12 @@
 # Platform capability tensor and maturity
 
-Source **0.6.3** includes explicit loopback/TLS hosting, limited Session issuance and private
-Task create/list/reopen/manifest replacement. Browser/SDK saving, new-byte publication, LAN access
-and migration remain absent; earlier implementation-stage labels retain their original scope.
+Source **0.6.4** includes explicit loopback/TLS hosting, limited Sessions, private Task commands,
+retained text publication and a default-off Session/Task shell for reading and manual-Draft metadata saves.
+Raw-text/normal-app/SDK saving, LAN access and migration remain absent; browser TLS is not locally accepted.
+Earlier implementation-stage labels and dated tensor scores retain their original scope.
+
+[Retained text publication](platform-text-artifact-connection.md), included in 0.6.4, is explicitly selected by
+both CLI hosts (eight routes/seven lanes); old workspace constructors stay seven-route/six-lane.
 
 Unreleased [retained content reads](platform-task-content-connection.md) add exact saved text/empty
 Task reopening with original descriptors, bounded workers and actual host tests. This does not

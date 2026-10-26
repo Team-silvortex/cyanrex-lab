@@ -3,18 +3,21 @@ use crate::{
         ArtifactContent, ArtifactId, ArtifactRevision, ArtifactRevisionId, CoreSchemaVersion,
     },
     platform_http::errors::HttpError,
-    services::{artifact_store::ArtifactDraft, task_content::validate_text_bytes},
+    services::{
+        artifact_store::{validate_artifact_metadata, ArtifactDraft},
+        task_content::validate_text_bytes,
+    },
 };
 use axum::http::StatusCode;
 use serde::{Deserialize, Serialize};
 
 pub(super) const TEXT_KIND: &str = "cyanrex.task-text";
 pub(super) const TEXT_MEDIA: &str = "text/plain";
-pub(super) const MAX_WIRE_BYTES: usize = 2 * 1024 * 1024;
+pub(in crate::platform_http) const MAX_WIRE_BYTES: usize = 2 * 1024 * 1024;
 
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
-pub(super) struct Create {
+pub(in crate::platform_http) struct Create {
     pub schema_version: CoreSchemaVersion,
     pub artifact_id: ArtifactId,
     pub revision_id: ArtifactRevisionId,
@@ -22,6 +25,14 @@ pub(super) struct Create {
     text: String,
 }
 impl Create {
+    /// Shared wire profile, validated before either backend dispatch without cloning text bytes.
+    pub(in crate::platform_http) fn into_text_parts(self) -> Result<(String, String), HttpError> {
+        validate_text_bytes(self.text.as_bytes()).map_err(|_| HttpError::invalid_request())?;
+        validate_artifact_metadata(&self.title, TEXT_MEDIA, self.text.len() as u64)
+            .map_err(|_| HttpError::invalid_request())?;
+        Ok((self.title, self.text))
+    }
+
     pub(super) fn into_draft(self) -> Result<ArtifactDraft, HttpError> {
         validate_text_bytes(self.text.as_bytes()).map_err(|_| HttpError::invalid_request())?;
         ArtifactDraft::new(
@@ -37,7 +48,7 @@ impl Create {
 }
 
 #[derive(Serialize)]
-pub(super) struct TextResponse {
+pub(in crate::platform_http) struct TextResponse {
     schema_version: u8,
     artifact: ArtifactRevision,
     #[serde(skip_serializing_if = "Option::is_none")]

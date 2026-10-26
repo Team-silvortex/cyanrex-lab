@@ -61,6 +61,31 @@ Artifact/修订坐标，但允许同一 Artifact 的不同修订。若两项正�
 存储来源可信、提交已确认或存在可复用权限。组合本纯层的发布方必须通过当前 Session Artifact 命令取得
 结果，C2-M 修改 Task 前仍须独立复核引用、所有者与 Session。
 
+## 未发布的浏览器侧既有 Draft 保存尝试
+
+[`taskContentSave.ts`](../../frontend/src/features/tasks/taskContentSave.ts) 与
+[`taskSaveContract.ts`](../../frontend/src/features/tasks/taskSaveContract.ts) 增加未挂载、单次内容保存尝试。
+`prepareTaskContentSave(draft, {task, manifest}, guard, allocations)` 冻结输入并异步计算本地 SHA-256，
+不做 fetch、Cookie、环境、存储或 UI 操作；`TaskDraftWorkspace` 及其控制器仍只在本地工作。
+
+严格基线必须是 Task／manifest 元数据一致的既有手工 Draft，固定目标、所有者、工作区及服务端预期修订。
+本地项 ID／修订不上传；新的 Artifact／修订 UUID 由调用者显式分配。
+guard 中的 `generation`、`revision`、`contextEpoch` 只阻止本地陈旧工作，不认证调用者或授予权限。
+本模块不创建新 Task：未来适配器须先取得空 Task 的确认 201 基线，或明确读取既有 Task。
+
+每项文本只交出一次发布描述，给定 Artifact 元数据须与分配 ID、固定 owner／scope 和计划文本摘要准确一致，
+才能推进下一项。全部项之后才交出带固定 `expected_revision` 的完整清单 PUT；空／仅标题 payload 直接 PUT。
+只有准确 Task 响应符合冻结尝试且修订为 **预期 + 1** 才完成，不自动清除当前编辑器 dirty 状态。
+
+交出描述时即先记为 pending，此时尚无实际传输；只能保守称结果未知，不能证明已经派发 I/O。
+停止、取消、guard 陈旧、冲突或非法确认都保留确认前缀及 pending，不重试、收编、删除、导入检查点或恢复。
+guard 陈旧后晚到的回执不能确认该 pending。公开确认只检查给定 DTO 的一致性，即使匹配也不证明
+网络来源或 COMMIT；仍缺可信的真实适配器。
+
+同源浏览器 UI 交付和专用平台 Session 入口仍缺失，不新增 Origin 配置、代理／CORS 放宽或旧教学
+AuthService Cookie 回退。`npm --prefix frontend run test:task-content-save` 只选择纯状态／契约测试，
+不证明实网浏览器保存、认证、持久恢复或部署验收；下方分日期 C2-O 证据保持原样。
+
 ## 秘密与不可信内容
 
 草稿正文只是数据，包括代码、标记和配置。解析及绑定不执行正文、不读取其中路径、不访问 URL，

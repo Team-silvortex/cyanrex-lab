@@ -5,7 +5,7 @@ use axum::{middleware, routing::any, Router};
 use std::sync::Arc;
 use tokio::sync::Semaphore;
 
-mod contract;
+pub(super) mod contract;
 mod handlers;
 
 #[derive(Clone)]

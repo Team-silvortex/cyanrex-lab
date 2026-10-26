@@ -31,30 +31,9 @@ impl ArtifactStore {
         owner: PrincipalRef,
         draft: ArtifactDraft,
     ) -> Result<ArtifactRevision> {
-        self.check_scope(self.scope, owner)?;
-        self.check_schema(tx, true).await?;
-        let revision = ArtifactRevision {
-            schema_version: CoreSchemaVersion,
-            reference: ArtifactRef {
-                workspace: self.scope,
-                artifact_id,
-                revision_id,
-                sha256: blob::digest(&draft.bytes),
-            },
-            owner,
-            sequence: 1.try_into().map_err(|_| ArtifactStoreError::InvalidInput)?,
-            parent: None,
-            kind: draft.kind,
-            title: draft.title,
-            media_type: draft.media_type,
-            byte_length: draft.bytes.len() as u64,
-            created_at: Utc::now(),
-        };
-        confirmed_one(sqlx::query("INSERT INTO collaboration_artifacts (artifact_id, owner_id, head_revision_id, sequence) VALUES ($1, $2, $3, 1)")
-            .bind(artifact_id.as_uuid()).bind(owner.principal_id.as_uuid()).bind(revision_id.as_uuid())
-            .execute(&mut **tx).await?.rows_affected())?;
-        self.publish(tx, &revision, draft.bytes).await?;
-        Ok(revision)
+        ArtifactContentWriter::from_store(self)
+            .create_in_transaction(tx, artifact_id, revision_id, owner, draft)
+            .await
     }
 
     /// A new immutable revision with one exact current parent; no branching, retyping or owner changes.
@@ -140,4 +119,40 @@ impl ArtifactStore {
         self.publish(tx, &revision, draft.bytes).await?;
         Ok(revision)
     }
+}
+
+/// Shared pending first revision. The caller owns namespace selection, authorization and commit.
+pub(super) async fn create_in_transaction(
+    writer: &ArtifactContentWriter,
+    tx: &mut Tx<'_>,
+    artifact_id: ArtifactId,
+    revision_id: ArtifactRevisionId,
+    owner: PrincipalRef,
+    draft: ArtifactDraft,
+) -> Result<ArtifactRevision> {
+    let scope = writer.scope();
+    check_scope(scope, scope, owner)?;
+    schema::check_schema(scope, tx, true).await?;
+    let revision = ArtifactRevision {
+        schema_version: CoreSchemaVersion,
+        reference: ArtifactRef {
+            workspace: scope,
+            artifact_id,
+            revision_id,
+            sha256: blob::digest(&draft.bytes),
+        },
+        owner,
+        sequence: 1.try_into().map_err(|_| ArtifactStoreError::InvalidInput)?,
+        parent: None,
+        kind: draft.kind,
+        title: draft.title,
+        media_type: draft.media_type,
+        byte_length: draft.bytes.len() as u64,
+        created_at: Utc::now(),
+    };
+    confirmed_one(sqlx::query("INSERT INTO collaboration_artifacts (artifact_id, owner_id, head_revision_id, sequence) VALUES ($1, $2, $3, 1)")
+        .bind(artifact_id.as_uuid()).bind(owner.principal_id.as_uuid()).bind(revision_id.as_uuid())
+        .execute(&mut **tx).await?.rows_affected())?;
+    records::publish(writer, tx, &revision, draft.bytes).await?;
+    Ok(revision)
 }

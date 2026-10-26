@@ -141,7 +141,7 @@ test("workspace host preserves content reads beside empty creation and manifest 
     "Self::with_capacities(storage,4,4,4)", "with_content_capacities(", "with_create_capacities(", "with_replace_capacities("])
     assert.ok(source.includes(value), value);
   assert.match(source, /\[login_capacity,lifecycle_capacity,index_capacity,content_capacity,create_capacity,replace_capacity,?\]/);
-  assert.equal([...source.matchAll(/\.merge\(/g)].length, 6);
+  assert.equal([...source.split("ifletSome(text)=state.text")[0].matchAll(/\.merge\(/g)].length, 6);
   assert.equal([...source.matchAll(/\.fallback\(/g)].length, 1);
   assert.doesNotMatch(source, /build_task_content_router|build_text_artifact_router|\.await|PgPool/);
   const pair = compact(await read("engine/src/platform_host/session_pair.rs"));

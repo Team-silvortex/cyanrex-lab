@@ -1,8 +1,11 @@
 # Private task content index HTTP adapter
 
 Source **0.6.3** includes explicit loopback/TLS hosting, limited Session issuance and private
-Task create/list/reopen/manifest replacement. Browser/SDK saving, new-byte publication, LAN access
+Task create/list/reopen/manifest replacement. Browser/SDK saving, LAN access
 and migration remain absent; earlier implementation-stage labels retain their original scope.
+
+Unreleased [retained text publication](platform-text-artifact-connection.md) is explicitly selected by
+both CLI hosts (eight routes/seven lanes); old workspace constructors stay seven-route/six-lane.
 
 The later [retained platform connection](platform-task-index-connection.md), Unreleased after 0.6.2,
 adds an original-storage backend and explicit host mounting. The Source-based adapter below retains

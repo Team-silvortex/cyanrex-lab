@@ -5,6 +5,47 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.6.4] - 2026-10-26
+
+This patch source release adds retained private text publication and an explicit default-off platform
+page for Sessions, private Task reading and confirmed Draft display-information saves. Payload code
+and execution remain optional. Text-body editing, normal-app/SDK saving, automatic recovery and
+protected-LAN/browser-TLS acceptance remain separate. It also includes the post-0.6.3 dependency
+security fixes and bilingual documentation reorganization.
+See [local release validation](reports/releases/0.6.4/README.md).
+
+### Added
+
+- Add a retained-storage text Artifact connector with a fixed text profile, original
+  descriptor and four actual-worker slots, deferred exact-head/byte checks and fresh Session
+  authorization before confirmed commit. Existing pooled APIs remain unchanged;
+  this does not connect browser/SDK saving or automatic retry/recovery.
+- Add an independent retained text-publication POST adapter using the existing strict five-field
+  DTO and metadata response. Bound body collection and response-lifetime admission without adding
+  command timeouts, reads, implicit default mounting, browser/SDK saving or teaching-login changes.
+- Explicitly compose private text publication into both plain and native-TLS loopback CLI hosts.
+  Add an opt-in eight-route/seven-lane workspace constructor over one retained storage binding;
+  old constructors stay seven-route/six-lane without publication. Keep the 16-connection gate,
+  four actual text file-job slots and existing role grants; add only three Artifact INSERT grants
+  through trusted provisioning, without pooled reads, browser saving or automatic recovery.
+- Add an unmounted pure TypeScript content-save attempt for an existing manual Draft, with frozen
+  baseline/guard/allocation inputs, local SHA-256, single-use publication/PUT descriptors and strict
+  supplied-confirmation consistency. Preserve pending uncertainty and confirmed prefixes without
+  transport, authentication, UI saving, automatic dirty clearing, retry or durable recovery.
+- Add explicit default-off `--session-ui` to the loopback hosts: seven fixed same-origin assets,
+  five-language dedicated Session login/check/confirmed logout and explicit 20-entry owner-private
+  Task pages with inert text/empty-payload reopening. Validate bounded strict JSON, scope, revisions,
+  ordered pins and local SHA-256 before display; clear old data across Session/epoch changes.
+  Bounded browser waits preserve unknown outcomes, not rollback or retry authority. Keep Cookie
+  host/non-port-isolation, no Next.js/teaching-auth fallback, raw-text saving, Run writes, CORS,
+  proxying or local-draft connection; TLS-browser acceptance remains separately required.
+- Add explicit metadata-only saving for an existing owned manual Draft: title and display filename/
+  language edits preserve Artifact pins, order, bytes and count. Cancel-focused target/revision review
+  sends one existing PUT; strict HTTP 200 metadata confirms only that save, not a fresh content read.
+  Bound request/reply to 64 KiB/128 KiB, 4,096 reply frames and a ten-second browser wait. Dirty/unknown
+  leave guards and denial/pagehide quarantine prevent silent discard, replay or cross-Session restore.
+  No raw-text editing, new Artifact, normal Next.js draft/SDK integration, HTTP API or database grant.
+
 ### Changed
 
 - Separate concise project entry points, role-based documentation paths, current status, detailed

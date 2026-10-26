@@ -1,8 +1,11 @@
 # Linux platform process startup check
 
 Source **0.6.3** includes explicit loopback/TLS hosting, limited Session issuance and private
-Task create/list/reopen/manifest replacement. Browser/SDK saving, new-byte publication, LAN access
+Task create/list/reopen/manifest replacement. Browser/SDK saving, LAN access
 and migration remain absent; earlier implementation-stage labels retain their original scope.
+
+Unreleased [retained text publication](platform-text-artifact-connection.md) is explicitly selected by
+both CLI hosts (eight routes/seven lanes); old workspace constructors stay seven-route/six-lane.
 
 The Unreleased [loopback host](platform-loopback-host.md) now reuses these checks before private
 input and runtime creation. The `check-process` diagnostic below retains its check-only behavior.

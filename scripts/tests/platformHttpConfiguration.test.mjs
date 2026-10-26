@@ -129,7 +129,7 @@ test("retained Task configurations validate before allocating selected connector
 test("workspace preserves three four and five capacity APIs and validates all six lanes before splitting original storage", async () => {
   const workspace = compact(await read("workspace_router/mod.rs"));
   assert.deepEqual([...workspace.matchAll(/pubfn(\w+)\(/g)].map(match => match[1]),
-    ["new", "with_capacities", "with_content_capacities", "with_create_capacities", "with_replace_capacities", "build_platform_workspace_router"]);
+    ["new", "with_capacities", "with_content_capacities", "with_create_capacities", "with_replace_capacities", "with_text_publication_capacities", "build_platform_workspace_router"]);
   assert.ok(workspace.includes("Self::with_capacities(storage,4,4,4)"));
   const compatibility = workspace.slice(workspace.indexOf("pubfnwith_capacities("), workspace.indexOf("pubfnwith_content_capacities("));
   assert.deepEqual(compatibility.match(/pubfnwith_capacities\(([^)]*)\)/)?.[1].split(",").filter(Boolean),
@@ -146,7 +146,7 @@ test("workspace preserves three four and five capacity APIs and validates all si
     ["storage:PlatformStorageConnector", "login_capacity:usize", "lifecycle_capacity:usize", "index_capacity:usize", "content_capacity:usize", "create_capacity:usize"]);
   assert.ok(create.includes("Self::with_replace_capacities(storage,login_capacity,lifecycle_capacity,index_capacity,content_capacity,create_capacity,4,)"));
   assert.doesNotMatch(create, /Arc::new|Semaphore::new|split_platform_|\.connect\(|\.await/);
-  const replace = workspace.slice(workspace.indexOf("pubfnwith_replace_capacities("), workspace.indexOf("pubfnbuild_platform_workspace_router("));
+  const replace = workspace.slice(workspace.indexOf("pubfnwith_replace_capacities("), workspace.indexOf("pubfnwith_text_publication_capacities("));
   assert.deepEqual(replace.match(/pubfnwith_replace_capacities\(([^)]*)\)/)?.[1].split(",").filter(Boolean),
     ["storage:PlatformStorageConnector", "login_capacity:usize", "lifecycle_capacity:usize", "index_capacity:usize", "content_capacity:usize", "create_capacity:usize", "replace_capacity:usize"]);
   const capacities = replace.match(/config::validate\(storage.origin\(\),&\[([^\]]*)\],?\)\?;/)?.[1];

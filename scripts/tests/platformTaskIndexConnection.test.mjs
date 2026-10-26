@@ -110,7 +110,7 @@ test("workspace composition adds private manifest replacement beside creation an
     "TaskContentReplaceHttpState::with_capacity(replace,replace_capacity)",
     ".fallback(not_found)", ".layer(middleware::from_fn(security::response_headers))"])
     assert.ok(workspace.includes(value), value);
-  assert.equal([...workspace.matchAll(/\.merge\(/g)].length, 6);
+  assert.equal([...workspace.split("ifletSome(text)=state.text")[0].matchAll(/\.merge\(/g)].length, 6);
   assert.equal([...workspace.matchAll(/\.fallback\(/g)].length, 1);
   assert.doesNotMatch(workspace, /PgPool|DurableAuthSource|\.connect\(|\.await|build_task_content_router|build_text_artifact_router|file_distribution/);
   const pair = compact(await read("engine/src/platform_host/session_pair.rs"));
@@ -151,7 +151,7 @@ test("workspace composition adds private manifest replacement beside creation an
   assert.equal([...session.matchAll(/\.merge\(/g)].length, 2);
   assert.doesNotMatch(session, /TaskIndex|TaskCreate|TaskReplace|TaskContent(?:Index|Read|Replace)?HttpState|task_index::routes|task_content|task_create|\/platform\/v1\/tasks|PlatformWorkspace/);
   const host = compact(await read("engine/src/bin/cyanrex-platform/serve_loopback/mod.rs"));
-  assert.ok(host.includes("PlatformWorkspaceHttpState::new(storage)"));
+  assert.ok(host.includes("PlatformWorkspaceHttpState::with_text_publication_capacities(storage,4,4,4,4,4,4,4,)"));
   assert.ok(host.includes("build_platform_workspace_router(state)"));
   for (const path of ["engine/src/main.rs", "engine/src/state.rs", "engine/src/application.rs",
     "engine/openapi/openapi.json", "sdk-js/src/index.ts"])

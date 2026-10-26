@@ -75,14 +75,18 @@ The current text profile allows up to 32 items, each at most 256 KiB; JSON escap
 response beyond the raw-text total. Inbound metadata limits and the small index projection are not
 content-response size limits. A valid list entry does not prove its bytes can be reopened later.
 
-The explicit plain/TLS loopback hosts now use seven routes: three Session routes, the metadata index,
+Original workspace constructors keep seven routes: three Session routes, the metadata index,
 this Task-item GET, empty-create POST and manifest-replacement PUT. `PlatformWorkspaceHttpState::with_capacities(storage,
 login, lifecycle, index)` keeps its original signature and defaults content, creation and replacement to four.
 `with_content_capacities(storage, login, lifecycle, index, content)` also preserves its signature and defaults
 creation and replacement to four. `with_create_capacities(storage, login, lifecycle, index, content, create)`
 keeps its signature and defaults replacement to four. New `with_replace_capacities(storage, login, lifecycle,
 index, content, create, replace)` validates all six capacities before allocating or splitting the original
-binding. Each is 1–16, default four. Clones share each
+binding, with publication disabled. Both CLI hosts explicitly select `with_text_publication_capacities`
+to add [private text POST](platform-text-artifact-connection.md): eight routes/seven lanes, all seven
+capacities validated before splitting the same original storage Arc. This read connector gains no
+write methods or permissions. CLI lane capacities are four; global admission remains 16 connections,
+not guaranteed 28-request concurrency. Each trusted lane is 1–16. Clones share each
 response-lifetime lane through the final body frame/drop; lanes remain independent. These budgets
 are not one global connection, memory, worker or distributed-abuse quota. Session-only composition
 still has exactly three routes. Normal teaching AppState, frontend authentication, SDK/OpenAPI,

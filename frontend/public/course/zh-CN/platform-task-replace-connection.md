@@ -3,8 +3,24 @@
 **源码 0.6.3 已收录**：依据[宿主提案 3](https://github.com/Team-silvortex/cyanrex-lab/issues/3)，
 独立宿主可替换当前所有者手动 Draft 的整份 manifest。[创建空任务](platform-task-create-connection.md)
 后，可以修改标题、标签、顺序或对本人既有文本修订的引用，再[重开](platform-task-content-connection.md)。
-代码只是可选 payload，空清单仍合法。本命令不发布新的 Artifact 字节，不接通浏览器保存、Run、
+代码只是可选 payload，空清单仍合法。本命令不发布新的 Artifact 字节，不接通 Run、
 目录定义或原教学认证。
+
+## 未发布的浏览器显示信息保存
+
+默认关闭的 [Session 壳](platform-loopback-host.md#可选浏览器-session-壳)现仅以既有 PUT 修改本人
+手动 Draft 的标题及已有 payload 的显示文件名／语言提示，不改 Artifact 引用、顺序、字节或条数。
+七个编译资源不新增 HTTP API、数据库权限、正文／Artifact 发布、正常 Next.js 草稿或 SDK 接线。
+
+预览绑定目标／修订并默认取消，单次明确确认发送完整规范正文，不超过 64 KiB。只有 HTTP 200
+与严格匹配的三键 Task／manifest 回执才确认显示信息保存，不证明新鲜正文；正文仍是未变的
+先前核验副本。回执限制 128 KiB／4,096 帧、浏览器等待十秒，不是解析／服务端硬期限。
+严格保留 Task、owner、创建时间、Draft 状态及准确修订递增，拒绝重复／转义键、改引用或不安全
+数值；更新 UTC 时间不要求单调递增。
+
+dirty／冲突／未知工作在导航、Session 检查、登录及退出前触发默认取消的丢弃确认，不自动重试／
+变基／收编未知尝试。显示信息 401／403 响应头立即清私人 DOM／预览，上下文变化及 pagehide 同样隔离工作于封闭页面
+内存，后续 Session 不能恢复／重放；明确丢弃后才可继续，不宣称回滚或安全清零。
 
 ## 整份清单与乐观修订
 
@@ -58,7 +74,7 @@ reader／原根及原存储；所有等待后，紧接 COMMIT 前重复当前账
 回滚证明，也不授权自动重试、接管、删文件或补偿。后续陈旧修订不能判定先前未知结果。测试覆盖
 取消和交付丢弃，不模拟 COMMIT 确认丢失。
 
-## HTTP 与六条独立通道
+## HTTP 与兼容的独立通道
 
 `TaskContentReplaceHttpState::new(connector)` 或 `with_capacity(connector, capacity)` 仅选择换版
 能力，`build_task_content_replace_router` 仅挂载内容 PUT 路径。沿用准确 Origin、
@@ -67,12 +83,14 @@ reader／原根及原存储；所有等待后，紧接 COMMIT 前重复当前账
 `Allow: PUT`。派发前错误为 `not_attempted`；派发后均为 `unconfirmed`，包括陈旧修订和非法输入。
 响应保留 no-store／no-cache／nosniff，无 CORS、重定向或 token 披露。
 
-显式明文／原生 TLS 回环宿主现有七条具体路由、六条独立响应生命周期通道：登录、生命周期、
-索引、内容读、空创建和清单换版。`with_replace_capacities(storage, login, lifecycle, index,
+原工作区构造器保留七条路由、六条独立响应生命周期通道：登录、生命周期、
+索引、内容读、空创建和清单换版，不启用文本发布。`with_replace_capacities(storage, login, lifecycle, index,
 content, create, replace)` 在分配／拆分前验证全部六容量，将同一原存储 Arc 拆为六个能力。
 各容量 1–16、默认四；克隆共享名额直至正文最后一帧／丢弃。旧三／四／五容量签名保留，新增
-容量默认四。仅 Session、只读和仅空创建 builder 不变，不合并原完整连接池写路由。
-SDK/OpenAPI、前端传输、LAN／DNS 监听、Task 状态写入和文件分发仍是独立边界。
+容量默认四。仅 Session、只读和仅空创建 builder 不变。两个 CLI 宿主显式选择
+`with_text_publication_capacities`，增加私人文本 POST，成为八路由／七通道；七容量全验后才拆分
+同一原存储 Arc。CLI 各通道四名额，全局仍最多 16 连接，不保证 28 请求并发，不合并旧连接池写入／读取路由。
+SDK/OpenAPI、通用文本保存传输、LAN／DNS 监听、Task 状态写入和文件分发仍是独立边界。
 
 ## 初始化与验证
 
@@ -85,10 +103,17 @@ SDK/OpenAPI、前端传输、LAN／DNS 监听、Task 状态写入和文件分发
 ```bash
 env CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 cargo test --manifest-path engine/Cargo.toml --locked --lib platform_http::task_content_replace
 bash scripts/test-platform-task-replace-connection.sh
+bash scripts/test-platform-text-publication-host.sh
+bash scripts/test-platform-task-metadata-browser.sh
+bash scripts/test-platform-browser-task-metadata.sh
 ```
 
 运行器要求显式、可丢弃、具管理权限的 `CYANREX_TEST_DATABASE_URL`。准确 SQL／HTTP／宿主用例
 覆盖空编辑、旧新准确修订和顺序、当前所有权、损坏、延期故障、原绑定、乐观并发、真实等待后
 过期／取消、受限权限及实际回环保存／列举／重开。文件 oracle 比较名称、设备／inode、权限、
-链接和字节，不声称还原外部造成的损坏。不新增文本／二进制发布、浏览器冲突／恢复 UI、目录工作、
+链接和字节，不声称还原外部造成的损坏。不新增文本／二进制发布、浏览器自动冲突恢复、目录工作、
 状态转换、执行或局域网验收。
+第二个运行器清点六条真实 SQL／工作区／明文／TLS 选择，包含分开的发布／关联／重开链；
+库存不是通过结果，PUT 本身始终不发布字节。
+显示信息 UI runner 列举 12 条 mock API 浏览器用例，独立真实明文宿主 SQL／浏览器选择核确认
+元数据、冲突及撤权；两者都不证明通用文本保存或 TLS 浏览器验收。

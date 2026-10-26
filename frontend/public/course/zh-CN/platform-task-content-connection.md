@@ -62,12 +62,15 @@ HTML、执行请求、文件系统路径或编辑器要求。
 当前文本 profile 最多 32 项，每项不超过 256 KiB；JSON 转义可使响应大于原始文本总量。
 入站元数据限制和小型索引投影不是内容响应上限；列表存在也不证明稍后一定能重开字节。
 
-显式明文／TLS 回环宿主现在使用七条路由：三条 Session、元数据索引、此任务项 GET、独立空任务 POST 及清单换版 PUT。
+原工作区构造器保持七条路由：三条 Session、元数据索引、此任务项 GET、独立空任务 POST 及清单换版 PUT。
 `PlatformWorkspaceHttpState::with_capacities(storage, login, lifecycle, index)` 保留原签名，
 内容／创建／换版默认四；`with_content_capacities(storage, login, lifecycle, index, content)` 也保留
 签名，创建／换版默认四；`with_create_capacities(storage, login, lifecycle, index, content, create)`
 保持签名，换版默认四。新增 `with_replace_capacities(storage, login, lifecycle, index, content, create,
-replace)`，在分配或拆分原绑定之前验证全部六个容量。各为 1–16、默认四；克隆共享持续至正文最后一帧／
+replace)`，在分配或拆分原绑定之前验证全部六个容量，仍不启用发布。两个 CLI 宿主显式选择
+`with_text_publication_capacities` 增加[私人文本 POST](platform-text-artifact-connection.md)，为八路由／七通道；
+全部七容量全验后才拆分同一原存储 Arc。本读取连接器不增加写方法或权限。CLI 各通道四名额，
+全局仍最多 16 连接，不保证 28 请求并发；各可信容量范围 1–16。克隆共享持续至正文最后一帧／
 drop 的各自名额，通道彼此独立，不是全局连接、内存、worker 或分布式滥用配额。原 Session-only
 组合仍准确只有三条。正常教学 AppState、前端认证、SDK/OpenAPI、局域网／DNS 监听、通用 Run
 和文件分发挂载保持不变。

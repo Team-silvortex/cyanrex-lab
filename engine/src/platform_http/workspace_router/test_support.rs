@@ -4,6 +4,9 @@ use super::{build_platform_workspace_router, PlatformWorkspaceHttpState};
 pub(super) use crate::platform_http::session_login::test_support::{
     Backend as LoginBackend, Outcome as LoginOutcome,
 };
+pub(super) use crate::platform_http::text_artifact_publish::test_support::{
+    Backend as PublicationBackend, Outcome as PublicationOutcome,
+};
 use crate::{
     models::collaboration::{AuthorityId, WorkspaceRef},
     platform_http::{
@@ -31,6 +34,7 @@ pub(super) const SESSION: &str = "/platform/v1/session";
 pub(super) const LOGOUT: &str = "/platform/v1/session/logout";
 pub(super) const INDEX: &str = "/platform/v1/task-index";
 pub(super) const CREATE: &str = "/platform/v1/tasks";
+pub(super) const PUBLISH: &str = "/platform/v1/text-artifacts";
 pub(super) const REPLACE: &str = "/platform/v1/tasks/e3698554-8eb3-4b6d-884e-8074e1555136/content";
 pub(super) const CONTENT: &str = "/platform/v1/tasks/e3698554-8eb3-4b6d-884e-8074e1555136";
 pub(super) const TOKEN: &str = "ae0b35cd-c9b8-413c-a892-854b15959f41";
@@ -84,7 +88,40 @@ pub(super) async fn state(
             ORIGIN,
             capacities[5],
         ),
+        text: None,
     }
+}
+
+/// Synthetic explicit opt-in only; real tests separately establish one original retained binding.
+pub(super) async fn publication_state(
+    login: Arc<LoginBackend>,
+    publisher: Arc<PublicationBackend>,
+    capacities: [usize; 7],
+) -> PlatformWorkspaceHttpState {
+    let mut state = state(
+        login,
+        [
+            capacities[0],
+            capacities[1],
+            capacities[2],
+            capacities[3],
+            capacities[4],
+            capacities[5],
+        ],
+    )
+    .await;
+    state.text = Some(
+        crate::platform_http::text_artifact_publish::test_support::state(
+            publisher,
+            ORIGIN,
+            capacities[6],
+        ),
+    );
+    state
+}
+
+pub(super) fn publication_body() -> Body {
+    crate::platform_http::text_artifact_publish::test_support::body()
 }
 
 pub(super) async fn app(backend: Arc<LoginBackend>) -> Router {
@@ -116,7 +153,8 @@ pub(super) fn request(method: &str, path: &str, body: Body) -> Request<Body> {
         .header(header::CONTENT_TYPE, "application/json")
         .body(body)
         .unwrap();
-    if [SESSION, LOGOUT, INDEX, CONTENT, CREATE, REPLACE].contains(&path.split('?').next().unwrap())
+    if [SESSION, LOGOUT, INDEX, CONTENT, CREATE, REPLACE, PUBLISH]
+        .contains(&path.split('?').next().unwrap())
     {
         let mut cookie = format!("cyanrex_platform_session={TOKEN}")
             .parse::<axum::http::HeaderValue>()

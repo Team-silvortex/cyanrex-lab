@@ -31,7 +31,7 @@ async function productSources() {
 // Inventories supplement actual CLI, TCP and PostgreSQL behavior; they are not isolation proof.
 test("explicit loopback mode keeps main thin and never composes Engine or a diagnostic baseline", async () => {
   const main = await read("engine/src/bin/cyanrex-platform/main.rs");
-  for (const value of ["take(17)", "7 | 9 | 11 | 12 | 15 | 16", '"serve-loopback"', '"--notify-systemd"', 'text[9] == "--bind"',
+  for (const value of ["take(18)", "7 | 9 | 11 | 12 | 13 | 15 | 16 | 17", '"serve-loopback"', '"--notify-systemd"', 'text[9] == "--bind"',
     "serve_loopback::parse_bind", "serve_loopback::run", "platform loopback host failed",
     "platform loopback host stopped"]) assert.ok(main.includes(value), value);
   const usage = main.match(/"(usage: cyanrex-platform[^"\n]+)"/)?.[1];
@@ -44,7 +44,8 @@ test("explicit loopback mode keeps main thin and never composes Engine or a diag
   assert.doesNotMatch(strip(withoutNotify), /std::env|\benv::/);
   assert.doesNotMatch(source, /pub\s+(?:async\s+)?fn/);
   assert.equal([...source.matchAll(/open_platform_storage_expected\(/g)].length, 1);
-  assert.equal([...source.matchAll(/PlatformWorkspaceHttpState::new\(/g)].length, 1);
+  assert.equal([...source.matchAll(/PlatformWorkspaceHttpState::with_text_publication_capacities\(/g)].length, 1);
+  assert.doesNotMatch(source, /PlatformWorkspaceHttpState::new\(/);
   assert.doesNotMatch(source, /PlatformSessionHttpState::new\(|build_platform_session_router\(/);
   assert.match(source, /std::panic::set_hook\(Box::new\(\|_\| eprintln!\("platform loopback host failed"\)\)\)/);
   for (const path of ["engine/src/main.rs", "engine/src/state.rs", "engine/src/application.rs",

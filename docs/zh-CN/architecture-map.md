@@ -1,7 +1,7 @@
 # 当前架构与变更边界
 
 源码 **0.6.3** 已收录独立[绑定登录](platform-login-connection.md)，经原存储为已有账号受限签发
-Session；独立[登录 HTTP](platform-login-http.md)投影 Cookie，[共享 Session 路由](platform-session-router.md)组合同一绑定；显式[回环宿主](platform-loopback-host.md)接通[私人任务索引](platform-task-index-connection.md)、[只读重开](platform-task-content-connection.md)、[手动空 Draft 创建](platform-task-create-connection.md)及[预期修订清单换版](platform-task-replace-connection.md)，可选[原生 TLS](platform-loopback-tls-host.md)和[服务状态通知](platform-host-notifications.md)，不发布新 Artifact 字节、不写状态、不接局域网或浏览器／SDK 保存。
+Session；独立[登录 HTTP](platform-login-http.md)投影 Cookie，[共享 Session 路由](platform-session-router.md)组合同一绑定；显式[回环宿主](platform-loopback-host.md)接通[私人任务索引](platform-task-index-connection.md)、[只读重开](platform-task-content-connection.md)、[手动空 Draft 创建](platform-task-create-connection.md)及[预期修订清单换版](platform-task-replace-connection.md)，可选[原生 TLS](platform-loopback-tls-host.md)和[服务状态通知](platform-host-notifications.md)，不写状态、不接局域网或浏览器正文／SDK 保存。
 
 **2026-10-16 收录于 0.6.2** 的[绑定会话适配](platform-session-connection.md)将
 `platform_host/session_connection.rs` 接到共用的私有 Session 事务助手及显式 HTTP 后端。
@@ -13,9 +13,10 @@ Session；独立[登录 HTTP](platform-login-http.md)投影 Cookie，[共享 Ses
 源码 **0.5.9** 已收录，API **0.3.0**，梳理日期 **2026-10-13**。原整理属于0.5.8标签后的
 跟进，源码收录不改变存储Schema或服务挂载。
 
-Cyanrex目前有一条已连接的教学应用、另行组合的协作后端，以及本地Task payload编辑器。
-通用契约已不要求eBPF或可执行代码，但浏览器到平台保存、通用Task到Run尚未连接。模块分组
-描述职责，不是进程隔离；现用Engine仍同时承担控制与Linux特权执行。
+Cyanrex 有教学应用、本地 payload 编辑器及显式组合的后端，源码 **0.6.4** 收录
+[原绑定文本发布及 HTTP](platform-text-artifact-connection.md)，明文／TLS CLI 显式启用；旧构造器保持七路由／六通道且不发布，新组合为八路由／七通道；代码和 Run 都可选。
+默认关闭的 Session／Task 壳支持读取私人 Task 及仅保存手动 Draft 显示信息；正文／正常应用／SDK 保存和通用任务执行仍未接通，本机浏览器 TLS 尚未验收。模块分组描述职责，不是进程隔离；
+现用 Engine 仍同时承担控制与 Linux 特权执行。
 
 当前职责先读本图，实施决策见[详细架构](architecture.md)，功能边见[平台网络](platform-network.md)，
 分日期评分见[成熟度](capability-maturity.md)。[项目状态](project-status.md)与[测试指南](testing-guide.md)
@@ -35,12 +36,12 @@ Cyanrex目前有一条已连接的教学应用、另行组合的协作后端，�
 | 路径 | 当前实际连接 | 独立边界 |
 |---|---|---|
 | 教学应用 | 浏览器 → 原AuthService／路由守卫 → 教学、事件、部署与Runner服务 | 一次实验运行不自动创建通用Task或Artifact |
-| 显式协作后端 | 可信宿主 → DurableAuthSource会话命令 → 私人资源存储 | 不由AppState构建，platform HTTP路由仍未挂载 |
+| 显式协作后端 | 可信宿主 → 原绑定当前 Session 命令 → 私人资源存储 | 不构造教学 AppState；回环 Session／Task／文本能力显式组合 |
 | 本地payload编辑 | `/tasks/new`及兼容`/editor` → TaskDraftWorkspace 组合 useTaskDraftController → 受控文本编辑器 → 本地JSON | 本地ID与语言提示不是服务端引用或执行权限 |
 | 显式文件交付 | 当前准确文件grant → Source清单／分块核验 → 所给router → 受控客户端 → 所选保存 | 已有真实Source／HTTPS联验，正常应用／UI／SDK仍未接通 |
 
 教师管理现用教学与部署，单人模式同样如此；这不转化为读取他人私人Task、Artifact、Review
-或获接收授权字节的通用权限。在线AuthService与 `engine/src/services/auth_service/durable_source/`
+或获接收授权字节的通用权限。在线AuthService与 `engine/src/services/auth_service/durable_source/` 的 `DurableAuthSource`／原绑定助手
 是不同组合路径，不是可以直接互换的两种登录实现。
 
 ## 职责与依赖方向

@@ -1,23 +1,30 @@
 # System Architecture
 
-Source **0.6.3** includes explicit loopback/TLS hosting, limited Session issuance and private
-Task create/list/reopen/manifest replacement. Browser/SDK saving, new-byte publication, LAN access
-and migration remain absent; earlier implementation-stage labels retain their original scope.
+Source **0.6.4** includes explicit loopback/TLS hosting, limited Session issuance, private Task commands,
+retained text publication and a default-off Session/Task shell for reading and manual-Draft metadata saves.
+Raw-text/normal-app/SDK saving, LAN access and migration remain absent; browser TLS acceptance remains
+unverified locally. Earlier implementation-stage labels retain their original scope.
 
-The Unreleased [native HTTPS loopback mode](platform-loopback-tls-host.md) reuses that host's
+Included in 0.6.4, [retained text publication](platform-text-artifact-connection.md) adds a separate pool-free
+create connector and POST adapter with original storage and deferred exact-head checks, explicitly
+selected by both loopback CLI hosts without teaching AppState or browser/SDK saving.
+
+The [native HTTPS loopback mode](platform-loopback-tls-host.md) reuses that host's
 startup, original storage and HTTP driver with explicit private TLS identity and handshake admission.
 Client trust, Cookie-safe domain planning and deployed LAN/browser access remain separate.
 
 Optional [service notifications](platform-host-notifications.md) add a trusted, explicit Unix-datagram
 lifecycle channel after process checks, without installing supervision or changing Session authority.
 
-Unreleased after 0.6.2, the independent [Linux loopback Session host](platform-loopback-host.md)
+Introduced after 0.6.2, the independent [Linux loopback Session host](platform-loopback-host.md)
 now composes process/private-input gates, one original storage binding, three Session routes and
 the [owner-private Task metadata index](platform-task-index-connection.md), [read-only content reopening](platform-task-content-connection.md)
 and [empty manual Draft creation](platform-task-create-connection.md). Separate [Draft manifest replacement](platform-task-replace-connection.md)
-updates titles or existing exact owned text references; code and Run remain optional. Its seven routes share
-one original binding and six independent response lanes, without Artifact publication or status writes.
-It does not mount normal teaching AppState, LAN access, a proxy backend or platform browser saving.
+updates titles or existing exact owned text references; code and Run remain optional. Retained text
+publication makes the explicit CLI composition eight routes/seven independent response lanes over one
+original storage Arc; old constructors stay seven-route/six-lane without publication. All seven capacities
+are validated before splitting; global admission remains 16 connections and text actual-worker slots remain four.
+It does not mount pooled Artifact reads, status writes, normal teaching AppState, LAN access, a proxy backend or browser raw-text saving.
 
 Start with the concise [current architecture map](architecture-map.md):
 [runtime wiring](architecture-map.md#runtime-wiring), ownership and

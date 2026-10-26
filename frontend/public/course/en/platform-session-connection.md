@@ -1,8 +1,11 @@
 # Existing Sessions over retained platform storage
 
 Source **0.6.3** includes explicit loopback/TLS hosting, limited Session issuance and private
-Task create/list/reopen/manifest replacement. Browser/SDK saving, new-byte publication, LAN access
+Task create/list/reopen/manifest replacement. Browser/SDK saving, LAN access
 and migration remain absent; earlier implementation-stage labels retain their original scope.
+
+Unreleased [retained text publication](platform-text-artifact-connection.md) is explicitly selected by
+both CLI hosts (eight routes/seven lanes); old workspace constructors stay seven-route/six-lane.
 
 Unreleased after 0.6.2, the separate [bound login connector](platform-login-connection.md) adds
 explicit limited internal issuance. This query/logout capability and its HTTP state gain no login method.

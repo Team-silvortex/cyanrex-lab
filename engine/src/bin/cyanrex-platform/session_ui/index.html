@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title data-i18n="pageTitle">Platform session · Cyanrex</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%230c7168'/%3E%3Cpath d='M22 10a9 9 0 1 0 0 12' fill='none' stroke='white' stroke-width='4'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/platform/ui/style.css">
+  <script type="module" src="/platform/ui/app.js"></script>
+</head>
+<body data-busy="true">
+  <main class="shell">
+    <header class="masthead">
+      <a class="brand" href="/platform/" aria-label="Cyanrex Platform">C<span>CYANREX</span></a>
+      <div class="locale-control">
+        <label for="locale" data-i18n="language">Language</label>
+        <select id="locale" data-testid="locale" disabled>
+          <option value="en">English</option>
+          <option value="zh-CN">简体中文</option>
+          <option value="es">Español</option>
+          <option value="ja">日本語</option>
+          <option value="ko">한국어</option>
+        </select>
+      </div>
+    </header>
+
+    <section class="intro" aria-labelledby="page-title">
+      <p class="eyebrow" data-i18n="kicker">YOUR PRIVATE PLATFORM CONNECTION</p>
+      <h1 id="page-title" data-i18n="title">A clear place to sign in.</h1>
+      <p class="lede" data-i18n="intro">Manage only this platform host's dedicated session. Teaching login and Task saving are separate.</p>
+      <span class="scope-badge" data-i18n="privacyBadge">Explicit local access · No background retries</span>
+    </section>
+
+    <div class="workspace">
+      <section class="card login-card" aria-labelledby="login-title">
+        <p class="section-number" aria-hidden="true">01 / ACCESS</p>
+        <h2 id="login-title" data-i18n="loginTitle">Sign in to this host</h2>
+        <p class="muted" data-i18n="loginDescription">Use an existing platform account and its one-time code. This page does not create accounts.</p>
+        <form id="session-form" data-testid="session-form" method="post" action="/platform/v1/session/login" novalidate>
+          <div class="field">
+            <label for="username" data-i18n="username">Username</label>
+            <input id="username" data-testid="username" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" minlength="3" maxlength="64" pattern="[a-z0-9_.-]{3,64}" aria-describedby="username-hint" disabled required>
+            <p id="username-hint" class="hint" data-i18n="usernameHint">3–64 lowercase letters, digits, underscores, hyphens or dots.</p>
+          </div>
+          <div class="field">
+            <label for="password" data-i18n="password">Password</label>
+            <input id="password" data-testid="password" name="password" type="password" autocomplete="current-password" aria-describedby="password-hint" disabled required>
+            <p id="password-hint" class="hint" data-i18n="passwordHint">At most 4096 UTF-8 bytes. Never added to the address or stored by this page.</p>
+          </div>
+          <div class="field">
+            <label for="otp" data-i18n="otp">One-time code</label>
+            <input id="otp" data-testid="otp" name="otp" class="otp" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" aria-describedby="otp-hint" disabled required>
+            <p id="otp-hint" class="hint" data-i18n="otpHint">Enter the current six-digit code.</p>
+          </div>
+          <button id="login" data-testid="login" class="primary" type="submit" data-i18n="login" disabled>Sign in</button>
+        </form>
+        <p class="hint secret-note" data-i18n="secretsNote">Password and code fields are cleared when a request is handed off. Clearing fields is not secure memory erasure.</p>
+      </section>
+
+      <section class="card session-card" aria-labelledby="session-title">
+        <p class="section-number" aria-hidden="true">02 / SESSION</p>
+        <h2 id="session-title" data-i18n="sessionTitle">Know what is confirmed</h2>
+        <p class="muted" data-i18n="sessionDescription">A session check observes current access. It does not prove an earlier request succeeded or rolled back.</p>
+        <div class="status-box">
+          <span class="status-label" data-i18n="sessionState">CURRENT OBSERVATION</span>
+          <p id="status" data-testid="status" data-state="checking" data-i18n="checking" role="status" aria-live="polite" aria-atomic="true">Checking this platform session…</p>
+        </div>
+        <div class="session-actions">
+          <button id="check-session" data-testid="check-session" class="secondary" type="button" data-i18n="check" disabled>Check session</button>
+          <button id="logout" data-testid="logout" class="quiet-danger" type="button" data-i18n="logout" disabled>Sign out explicitly</button>
+        </div>
+        <p id="startup-note" class="hint" data-i18n="waitingScript">Actions stay disabled until the dedicated session script is ready.</p>
+        <noscript><p class="notice">JavaScript is required. No sign-in request can be submitted from this disabled form.</p></noscript>
+        <div class="boundary">
+          <h3 data-i18n="boundaryTitle">A small, deliberate boundary</h3>
+          <p data-i18n="boundaryText">This is a dedicated platform session, not a teaching session, verified role or saved Task.</p>
+          <p data-i18n="cookieWarning">Cookies are not isolated by port. Do not share this literal IP host with unrelated services; localhost, 127.0.0.1 and ::1 are not interchangeable.</p>
+          <p data-i18n="localTrustWarning">Trust this local host before entering credentials. HTTPS also requires a trusted certificate for the exact IP address.</p>
+        </div>
+      </section>
+    </div>
+    <section class="card tasks-card" aria-labelledby="tasks-title">
+      <p class="section-number" aria-hidden="true">03 / TASKS</p>
+      <h2 id="tasks-title" data-i18n="tasksTitle">Your private tasks</h2>
+      <p class="muted" data-i18n="tasksDescription">Load metadata explicitly, then reopen one task. A list entry does not prove its content is still readable.</p>
+      <div class="task-actions">
+        <button id="load-tasks" type="button" class="secondary" data-i18n="tasksLoad" disabled>Load first page</button>
+        <button id="next-tasks" type="button" class="secondary" data-i18n="tasksNext" disabled>Next page</button>
+      </div>
+      <p id="task-read-state" data-state="idle" role="status" aria-live="polite" data-i18n="tasksIdle">Check your platform session before loading private tasks.</p>
+      <ul id="task-list" class="task-list" aria-labelledby="tasks-title"></ul>
+      <section id="task-content" class="task-content" aria-labelledby="task-content-title" hidden>
+        <h3 id="task-content-title"></h3>
+        <p id="task-content-metadata" class="hint"></p>
+        <label for="task-payload-select" data-i18n="tasksPayload">Text payload</label>
+        <select id="task-payload-select" disabled></select>
+        <pre id="task-text" tabindex="0" aria-labelledby="task-content-title"></pre>
+      </section>
+      <div class="task-actions">
+        <button id="edit-task" type="button" class="secondary" data-i18n="metaStart" disabled>Edit Draft metadata</button>
+        <button id="discard-task-edit" type="button" class="quiet-danger" data-i18n="metaDiscard" hidden disabled>Discard local changes</button>
+      </div>
+      <p id="task-edit-state" data-state="clean" data-i18n="metaClean" role="status" aria-live="polite">Metadata editing has not started.</p>
+      <section id="task-metadata-editor" class="task-content" hidden>
+        <div class="field"><label for="task-edit-title" data-i18n="metaTitle">Task title</label><input id="task-edit-title" maxlength="256" disabled></div>
+        <div class="field"><label for="task-edit-item" data-i18n="metaItem">Existing payload</label><select id="task-edit-item" disabled></select></div>
+        <div class="field"><label for="task-edit-filename" data-i18n="metaFilename">Display filename</label><input id="task-edit-filename" maxlength="128" disabled></div>
+        <div class="field"><label for="task-edit-language" data-i18n="metaLanguage">Inert language hint</label><input id="task-edit-language" maxlength="64" autocapitalize="none" spellcheck="false" disabled></div>
+        <button id="save-task-metadata" type="button" class="secondary" data-i18n="metaSave" disabled>Review metadata save</button>
+      </section>
+      <p class="hint" data-i18n="tasksReadOnly">Text remains read-only. Metadata saving requires a separate explicit confirmation.</p>
+    </section>
+    <footer data-i18n="footer">Dedicated session and read-only private tasks. No Task edits are sent.</footer>
+  </main>
+
+  <dialog id="logout-dialog" data-testid="logout-dialog" aria-labelledby="logout-title" aria-describedby="logout-description">
+    <p class="eyebrow" data-i18n="kicker">YOUR PRIVATE PLATFORM CONNECTION</p>
+    <h2 id="logout-title" data-i18n="logoutTitle">Sign out of this platform host?</h2>
+    <p id="logout-description" data-i18n="logoutDescription">Only a confirmed response establishes sign-out. A timeout or connection error remains unknown and will not be retried.</p>
+    <div class="dialog-actions">
+      <button id="cancel-logout" data-testid="cancel-logout" class="secondary" type="button" data-i18n="cancelLogout" autofocus disabled>Cancel</button>
+      <button id="confirm-logout" data-testid="confirm-logout" class="danger" type="button" data-i18n="confirmLogout" disabled>Confirm sign-out</button>
+    </div>
+  </dialog>
+  <dialog id="save-metadata-dialog" aria-labelledby="metadata-save-title">
+    <h2 id="metadata-save-title" data-i18n="metaConfirmTitle">Save this Draft metadata?</h2>
+    <p id="metadata-save-target" class="hint"></p>
+    <pre id="metadata-save-summary" class="metadata-summary"></pre>
+    <p data-i18n="metaConfirmDescription">Only title and existing display metadata change. Text, references, order and payload count stay unchanged. A failed response may leave an unknown result.</p>
+    <div class="dialog-actions">
+      <button id="cancel-save-metadata" type="button" class="secondary" data-i18n="cancelLogout" autofocus disabled>Cancel</button>
+      <button id="confirm-save-metadata" type="button" class="primary" data-i18n="metaConfirm" disabled>Confirm save</button>
+    </div>
+  </dialog>
+  <dialog id="task-leave-dialog" aria-labelledby="task-leave-title">
+    <h2 id="task-leave-title" data-i18n="metaLeaveTitle">Discard local work?</h2>
+    <p id="task-leave-target" class="hint"></p>
+    <p id="task-leave-warning"></p>
+    <p id="task-leave-action"></p>
+    <div class="dialog-actions">
+      <button id="cancel-task-leave" type="button" class="secondary" data-i18n="cancelLogout" autofocus disabled>Cancel</button>
+      <button id="confirm-task-leave" type="button" class="danger" data-i18n="metaDiscardConfirm" disabled>Discard and continue</button>
+    </div>
+  </dialog>
+</body>
+</html>

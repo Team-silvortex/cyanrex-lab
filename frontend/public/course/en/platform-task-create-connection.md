@@ -5,8 +5,9 @@ Task under [host proposal 3](https://github.com/Team-silvortex/cyanrex-lab/issue
 small backend chain: create an empty Draft → [list private metadata](platform-task-index-connection.md)
 → [reopen the saved Task](platform-task-content-connection.md). Code is optional, not a prerequisite;
 no editor, assessment or Run is required. Separate [Draft manifest replacement](platform-task-replace-connection.md)
-now changes a title or existing exact owned text references. No Artifact publication or browser saving
-is connected; existing teaching authentication and local drafts are unchanged.
+now changes a title or existing exact owned text references. This empty-create command publishes no
+Artifacts; separate [retained text publication](platform-text-artifact-connection.md) is now explicitly
+hosted. This does not connect browser saving or change existing teaching authentication or local drafts.
 
 ## Strict empty-create contract
 
@@ -73,16 +74,19 @@ Responses retain `no-store`, `no-cache` and `nosniff`; there is no CORS, redirec
 Cookie issuance. Predispatch errors report `not_attempted`; all dispatched errors use `unconfirmed`,
 including generic private conflicts. Diagnostics do not expose storage paths or driver errors.
 
-The plain and native-TLS loopback hosts now expose seven concrete routes: three Session routes, private
-index GET, Task-item GET, empty-create POST and separate manifest-replacement PUT. `PlatformWorkspaceHttpState`
-splits one retained storage Arc into six capabilities and six independent fail-fast response-lifetime lanes. Each is
+Original `PlatformWorkspaceHttpState` constructors expose seven routes: three Session routes, private
+index GET, Task-item GET, empty-create POST and manifest-replacement PUT. They split one retained storage
+Arc into six capabilities and six independent fail-fast response-lifetime lanes, with publication disabled. Each is
 1–16, default four. Clones share permits until the final body frame/drop. These are not global memory,
 connection, worker, persistent-storage or distributed-abuse quotas.
 
 `with_create_capacities(storage, login, lifecycle, index, content, create)` preserves its signature,
 as do earlier `with_capacities` and `with_content_capacities`; all default the replacement lane to four.
 New `with_replace_capacities(storage, login, lifecycle, index, content, create, replace)` validates all six
-capacities before allocation/splitting. Session-only and standalone readonly/create-only routers
+capacities before allocation/splitting. Both CLI hosts explicitly use `with_text_publication_capacities`
+to add private text POST: eight routes/seven lanes, validating all seven before splitting the same
+original storage Arc. Each CLI lane has four slots; the global 16-connection gate is not 28-request
+concurrency. Session-only and standalone readonly/create-only routers
 are unchanged. The full pooled write router is not merged; SDK/OpenAPI, frontend transport, LAN/DNS
 listeners and teaching AppState remain separate.
 
@@ -97,6 +101,7 @@ automatic grant, role escalation, quota policy or automatic retry.
 ```bash
 env CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 cargo test --manifest-path engine/Cargo.toml --locked --lib platform_http::task_create
 bash scripts/test-platform-task-create-connection.sh
+bash scripts/test-platform-text-publication-host.sh
 ```
 
 The runner requires an explicit disposable `CYANREX_TEST_DATABASE_URL` with administration privileges.
@@ -106,3 +111,5 @@ cancellation, narrow role permissions, response admission and an actual low-priv
 Title/existing-reference replacement belongs to the separate retained capability, not this create-only
 router. Browser saving/recovery, text or binary publication, catalogue definitions, status transitions,
 Run dispatch and LAN deployment remain separate.
+The second runner inventories six real SQL/workspace/plain/TLS selectors, including old-constructor
+compatibility; its inventory is not a passing result. Text publication remains a separate command.

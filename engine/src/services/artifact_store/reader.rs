@@ -51,7 +51,7 @@ impl ArtifactContentReader {
     }
 
     /// Admission is fail-fast. The blocking closure, not its cancellable waiter, owns the slot.
-    async fn blocking<T: Send + 'static>(
+    pub(super) async fn blocking<T: Send + 'static>(
         &self,
         operation: impl FnOnce(Arc<blob::BlobDirectory>) -> Result<T> + Send + 'static,
     ) -> Result<T> {

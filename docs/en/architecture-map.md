@@ -3,7 +3,7 @@
 The **0.6.2** [bound Session adapter](platform-session-connection.md), included **2026-10-16**, connects
 `platform_host/session_connection.rs` to the shared private Session transaction helpers and an
 explicit HTTP backend. Retained storage and fresh Source checks share each command transaction;
-that query/logout capability has no pool fallback or issuer. Source **0.6.3** includes separate [bound login](platform-login-connection.md), [login HTTP](platform-login-http.md) and [shared Session router](platform-session-router.md) capabilities for limited issuance and Cookie projection; the explicit [loopback host](platform-loopback-host.md) adds the [private Task index](platform-task-index-connection.md), [read-only reopening](platform-task-content-connection.md), [empty manual Draft creation](platform-task-create-connection.md) and [expected-revision manifest replacement](platform-task-replace-connection.md), with optional [native TLS](platform-loopback-tls-host.md) and [service notifications](platform-host-notifications.md), not new Artifact bytes, status writes, LAN deployment or browser/SDK saving.
+that query/logout capability has no pool fallback or issuer. Source **0.6.3** includes separate [bound login](platform-login-connection.md), [login HTTP](platform-login-http.md) and [shared Session router](platform-session-router.md) capabilities for limited issuance and Cookie projection; the explicit [loopback host](platform-loopback-host.md) adds the [private Task index](platform-task-index-connection.md), [read-only reopening](platform-task-content-connection.md), [empty manual Draft creation](platform-task-create-connection.md) and [expected-revision manifest replacement](platform-task-replace-connection.md), with optional [native TLS](platform-loopback-tls-host.md) and [service notifications](platform-host-notifications.md), not status writes, LAN deployment or browser raw-text/SDK saving.
 
 Separate [format 3 diagnostics](platform-marker-expectation.md) bind complete catalog/five-marker
 declarations before row reads; the [expected-storage opener](platform-storage-open.md), included in **0.6.3**, returns retained bindings only after declared checks and close, without starting a host or migrating storage. Earlier implementation-stage labels retain their original scope and evidence.
@@ -11,10 +11,10 @@ declarations before row reads; the [expected-storage opener](platform-storage-op
 Included in source **0.5.9**, API **0.3.0**, reviewed **2026-10-13**. This organization originally
 followed the 0.5.8 tag; release inclusion does not change storage schemas or service mounting.
 
-Cyanrex has one connected teaching application, a separately composed collaboration backend and
-a local Task payload editor. Generic contracts no longer require eBPF or executable code, but the
-browser-to-platform save and general Task-to-Run connections are not implemented. Module groups
-describe ownership; the live Engine still combines control with privileged Linux execution.
+Cyanrex has one teaching application, a local payload editor and an explicitly composed backend. Source
+**0.6.4** includes [retained text publication and HTTP](platform-text-artifact-connection.md), explicitly enabled by plain/TLS CLI hosts; old workspace constructors remain seven-route/six-lane without publication, new composition is eight-route/seven-lane. Code and a Run are optional.
+The default-off Session/Task shell reads private Tasks and saves only manual-Draft display metadata; raw-text/normal-app/SDK saving, general Task execution and local browser TLS acceptance remain absent.
+Module groups describe ownership; the live Engine still combines control with privileged Linux execution.
 
 Read this map for current responsibilities, [detailed architecture](architecture.md) for decisions,
 [platform network](platform-network.md) for feature edges and [capability maturity](capability-maturity.md)
@@ -33,13 +33,13 @@ AppState; `engine/src/application.rs` builds its routes. Public/private/teacher 
 | Path | Current connection | Separate boundary |
 |---|---|---|
 | Teaching application | Browser → existing AuthService/route guards → teaching, events, deployment and Runner services | No generic Task or Artifact is created by a lab run |
-| Explicit collaboration backend | Trusted host → DurableAuthSource Session commands → private resource stores | Not constructed in AppState; platform HTTP routers are unmounted |
+| Explicit collaboration backend | Trusted host → retained current-Session commands → private resource stores | No teaching AppState; loopback Session/Task/text capabilities are explicitly composed |
 | Local payload editor | `/tasks/new`, compatible `/editor` → TaskDraftWorkspace with useTaskDraftController → controlled text editor → local JSON | Local IDs and language hints confer no server reference or execution authority |
 | Explicit file delivery | Current exact file grant → Source manifest/chunk checks → supplied router → controlled client → selected saving | Real Source/HTTPS tests exist; normal-app/UI/SDK mounting is still absent |
 
 Teacher authority manages the live teaching deployment, including single-user use. It does not become
 generic access to another person's private Tasks, Artifacts, Reviews or recipient-granted bytes.
-Live AuthService and `engine/src/services/auth_service/durable_source/` are distinct composition
+Live AuthService and the `DurableAuthSource`/retained helpers in `engine/src/services/auth_service/durable_source/` are distinct composition
 paths, not two interchangeable login implementations.
 
 ## Ownership and dependency direction

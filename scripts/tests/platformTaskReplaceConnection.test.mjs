@@ -77,7 +77,7 @@ test("replacement HTTP delegates the original strict manifest DTO without public
 
 test("replacement adds only an independent sixth workspace lane and leaves readonly capabilities unchanged", async () => {
   const workspace = compact(await read("engine/src/platform_http/workspace_router/mod.rs"));
-  assert.equal([...workspace.matchAll(/\.merge\(/g)].length, 6);
+  assert.equal([...workspace.split("ifletSome(text)=state.text")[0].matchAll(/\.merge\(/g)].length, 6);
   assert.equal([...workspace.matchAll(/\.fallback\(/g)].length, 1);
   ordered(workspace, ["config::validate(", "replace_capacity,", "split_platform_task_replace_connectors(storage)",
     "SessionLoginHttpState::with_capacity("]);

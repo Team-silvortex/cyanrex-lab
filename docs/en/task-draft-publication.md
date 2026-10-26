@@ -74,6 +74,39 @@ caller; binding is not proof of publication, storage provenance, a confirmed com
 permission. A publisher composing this pure layer must obtain results through current-Session Artifact commands, and
 C2-M must independently recheck the resulting pins, owner and Session before changing a Task.
 
+## Unreleased browser-side existing-Draft save attempt
+
+[`taskContentSave.ts`](../../frontend/src/features/tasks/taskContentSave.ts) and
+[`taskSaveContract.ts`](../../frontend/src/features/tasks/taskSaveContract.ts) add an unmounted,
+single-use content-save attempt. `prepareTaskContentSave(draft, {task, manifest}, guard, allocations)`
+freezes the inputs and computes local SHA-256 asynchronously. It performs no fetch, Cookie, environment,
+storage or UI work. `TaskDraftWorkspace` and its controller remain local-only.
+
+The strict baseline must describe an existing manual Draft with matching Task/manifest metadata.
+It pins target, owner, workspace and expected server revision; local item IDs/revisions are not uploaded.
+The caller explicitly supplies new Artifact/revision UUID allocations. The local guard's `generation`,
+`revision` and `contextEpoch` fence stale work; they do not authenticate a caller or grant permission.
+Creating a new Task is not this module's capability: a future adapter must first obtain an empty
+Task's confirmed 201 baseline or explicitly read an existing Task.
+
+Each text item yields one publication descriptor. Only exact supplied Artifact metadata agreeing with
+the allocated IDs, pinned owner/scope and planned text digest can advance to the next item. After all
+items, the attempt yields the complete manifest PUT with the pinned `expected_revision`. Empty/title-only
+payloads go directly to PUT. Completion requires an exact Task response at revision **expected + 1**
+matching the frozen attempt; it never automatically clears the current editor's dirty state.
+
+Handing out a descriptor records it as pending **before** any transport exists. Its outcome is
+conservatively unknown, not proof that I/O was dispatched. Stop, cancellation, stale guards, conflicts
+or invalid confirmations preserve the confirmed prefix and pending step without retry, adoption,
+deletion, checkpoint import or restoration. A late receipt after a stale guard cannot confirm that
+pending step. Public confirmation validates supplied DTO consistency only: even matching data proves
+neither network provenance nor COMMIT. A trusted actual adapter is still required.
+
+Same-origin browser UI delivery and a dedicated platform Session entry remain missing. This module
+adds no Origin configuration, proxy/CORS relaxation or fallback to the teaching AuthService Cookie.
+`npm --prefix frontend run test:task-content-save` selects pure state/contract tests, not live browser
+saving, authentication, durable recovery or deployment acceptance. The dated C2-O evidence below is unchanged.
+
 ## Secrets and untrusted content
 
 Draft text is inert data, including code, markup and configuration. Parsing and binding do not

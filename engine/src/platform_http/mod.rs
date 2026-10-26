@@ -38,6 +38,8 @@ mod task_create;
 mod task_index;
 mod text_artifact;
 #[cfg(unix)]
+mod text_artifact_publish;
+#[cfg(unix)]
 mod workspace_router;
 pub use catalog_task::{build_catalog_task_content_router, CatalogTaskContentHttpState};
 #[cfg(unix)]
@@ -63,6 +65,8 @@ pub use task_content_replace::{build_task_content_replace_router, TaskContentRep
 pub use task_create::{build_task_create_router, TaskCreateHttpState};
 pub use task_index::{build_task_content_index_router, TaskContentIndexHttpState};
 pub use text_artifact::{build_text_artifact_router, TextArtifactHttpState};
+#[cfg(unix)]
+pub use text_artifact_publish::{build_text_artifact_publish_router, TextArtifactPublishHttpState};
 #[cfg(unix)]
 pub use workspace_router::{build_platform_workspace_router, PlatformWorkspaceHttpState};
 

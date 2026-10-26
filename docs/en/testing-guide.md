@@ -1,8 +1,15 @@
 # Current project testing guide
 
 Source **0.6.3** includes explicit loopback/TLS hosting, limited Session issuance and private
-Task create/list/reopen/manifest replacement. Browser/SDK saving, new-byte publication, LAN access
+Task create/list/reopen/manifest replacement. Browser/SDK saving, LAN access
 and migration remain absent; earlier implementation-stage labels retain their original scope.
+
+Unreleased [retained text publication](platform-text-artifact-connection.md) adds the explicit
+`bash scripts/test-platform-text-publication-host.sh` inventory of six real SQL/workspace/plain/TLS
+selectors. It covers old seven-route/six-lane constructors and explicit eight-route/seven-lane CLI
+composition, original bindings, current authority, independent response lanes, minimal added INSERTs,
+private orphans and publish/attach/reopen. Inventory is not a passing result or browser/SDK acceptance.
+The global 16-connection gate, four actual text workers and existing login/Task/read grants remain.
 
 Unreleased [manual Draft manifest replacement](platform-task-replace-connection.md) adds ten HTTP units
 and ten exact SQL/HTTP/actual-host selections in `bash scripts/test-platform-task-replace-connection.sh`.
@@ -492,6 +499,89 @@ prove transaction rollback; inspect the test's assertions and retained evidence.
 Artifact publication or Task replacement is not permission to delete retained content automatically.
 
 ## Browser and transport suites
+
+### Optional independent-host Session page
+
+The native host's final `--session-ui` flag serves seven fixed assets at `/platform/`, including
+`tasks.js`, `task-edit.js` and `task-contract.js`; it is off by default. Its five-language private Task
+page reads text and confirms only manual-Draft title/display-label saves, with pins/order/bytes/count
+unchanged. It adds no raw-text editing, new Artifact, creation, Run writes, normal Next local-draft/SDK
+connection, authentication API/grant or teaching fallback. These opt-in tests
+need explicit absolute `CYANREX_PLAYWRIGHT_MODULE` and `CYANREX_CHROMIUM_PATH` paths:
+
+```bash
+bash scripts/test-platform-session-ui-browser.sh
+bash scripts/test-platform-task-reader-browser.sh
+bash scripts/test-platform-task-metadata-browser.sh
+# Also requires the explicit disposable PostgreSQL URL, OpenSSL and certutil:
+bash scripts/test-platform-browser-session.sh
+# Read-only Task path uses the real plain host; it does not establish TLS-browser acceptance:
+bash scripts/test-platform-browser-tasks.sh
+bash scripts/test-platform-browser-task-metadata.sh
+```
+
+The Session UI runner uses real Chrome and production assets/CSP with **mock Session APIs**. It checks
+locked confirmation, bounded responses, unknown outcomes/no write replay, five languages and 360px
+touch layout. Recovery events are synthetic persisted `pagehide/pageshow`, not actual BFCache
+navigation acceptance; the empty-frame and late-response cases explicitly substitute fetch.
+The Session SQL runner selects two exact ignored cases: actual plain and native-TLS browser login,
+Cookie round trip, cancel/confirmed logout, independent Session/OTP/account checks and unchanged
+Task/Artifact resources. The plain case also injects a real denied-delete logout, checks retained
+Cookie/Session and requires a new explicit confirmation after a manual status read.
+
+The Task-reader fixture inventories 12 real-Chrome cases with **mock APIs**: explicit 20-entry paging,
+inert text/empty payload/unknown language, ordered pins and hashes, malformed/oversized replies,
+revocation-shaped errors, Session changes, synthetic page lifecycle and late-epoch exclusion.
+These UI oracles do not prove SQL authority. `platformTaskReaderContract.test.mjs` adds 20 pure Node
+cases to the common suite: pre-parse duplicate/escaped-key, depth/token and safe-number checks,
+exact scope/revision/manifest/content matching, UTF-8 bounds and local SHA-256. Reader limits are
+128 KiB index/50 MiB content wire, 16,384 frames and 32 × 256 KiB decoded text; the ten-second wait
+does not preempt synchronous parsing or server work. Task 401/403, a Session check, confirmed-logout
+dispatch and pagehide must clear old data before any late response can be displayed.
+
+The Task SQL/browser runner selects one exact ignored plain-host case, using real current authority,
+private paging/reopening and revocation while checking no Task/Artifact writes. Fixture inventory
+does not assert that a selector passed, or establish TLS-browser, LAN, editing or save acceptance.
+
+The Unreleased metadata fixture inventories 12 mock-API browser cases: explicit Cancel-focused review,
+one PUT, strict HTTP 200 acknowledgement, empty Draft/non-Draft boundaries, local validation,
+dirty/unknown navigation guards, conflicts without replay, malformed/oversized/lost replies and
+denial/pagehide quarantine without cross-Session restore. Previews/private DOM clear; a controlled
+late ACK cannot revive the attempt. `platformTaskMetadataContract.test.mjs` inventories 20 pure Node
+cases for metadata-only descriptors and strict three-key receipts, including safe revision+1,
+same Task/owner/creation time, unchanged ordered pins and no rehash/provenance claim. Request/reply
+bounds are 64 KiB/128 KiB, 4,096 reply frames and a ten-second browser wait, not a hard parser/server
+deadline. Saved metadata retains the unchanged prior content copy; it does not prove a fresh read.
+
+The metadata SQL/browser runner selects one exact ignored plain-host case for confirmed metadata,
+competing revision conflict and revoked authority, comparing retained Artifact files and unchanged
+payload pins/order/count. This is separate from mock UI, raw-text saving and TLS-browser acceptance;
+inventory is not a passing result. No new database grants or HTTP APIs are introduced by the UI.
+
+TLS browser acceptance requires Chrome 146+ and **no existing legacy `~/.pki/nssdb`**. Chromium would
+prefer that database over the fixture's private XDG NSS directory. Refuse this environment; do not
+delete or alter user trust, override HOME, or bypass certificate verification. In an eligible worker,
+the fixture first requires rejection of its untrusted CA, then imports only that CA into its owned
+temporary NSS database and relaunches with normal verification. This machine's legacy NSS blocks
+that browser-TLS case; native TLS socket tests do not replace it. CI runs three mock and three SQL/browser runners through
+`scripts/test-platform-browser-ci.sh` with ephemeral pinned browser tooling. Wiring is not evidence
+of a remote CI pass. Keep default Rust/source checks, mocked UI, real SQL/browser and real TLS results
+separate in dated [project status](project-status.md).
+
+### 2026-10-26 local metadata-save validation
+
+On the uncommitted 0.6.3 working tree, `quality-gate.sh --backend-only` passed 636 common checks and
+1,451 default Rust tests, with 1,030 ignored and no warnings. The three mock-API Chrome suites passed
+12 cases each. Thirteen exact disposable SQL selections passed separately: the new metadata browser
+case, the original plain Session and read-only Task browser cases, and ten Task-replacement cases.
+Independent storage checks confirmed one saved revision/event, unchanged Artifact files, no stale
+overwrite and no revoked-Session write. Metadata contracts passed 20 units within the common count;
+the separate, still-unmounted content-save helper passed 36 units, not browser text-save acceptance.
+The held-denial-header test failed before the clearing fix and passed afterwards; synthetic lifecycle
+and controlled late-fetch cases retain their stated limits. Desktop/360px screenshots were checked.
+TLS-browser acceptance remains blocked as described above; CI wiring is not a remote result.
+The socket-only PostgreSQL 18 fixture was stopped and its 56 MiB generated data removed; logs and
+screenshots remain outside the repository. No version, commit or push was made for this slice.
 
 For Next-backed page suites, use a **production frontend build** with a fixture-only `NEXT_PUBLIC_ENGINE_URL`. At browser-test time,
 set matching `CYANREX_UI_ENGINE_URL` and the temporary frontend's `CYANREX_UI_BASE_URL`; configure

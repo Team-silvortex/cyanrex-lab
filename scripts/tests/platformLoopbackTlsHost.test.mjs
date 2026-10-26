@@ -12,14 +12,17 @@ const directory = "engine/src/bin/cyanrex-platform/serve_loopback";
 // Structural guards supplement actual native TLS, capless CLI and disposable SQL tests.
 test("TLS mode is fixed private CLI input and shares original startup without widening plain binding", async () => {
   const main = await read("engine/src/bin/cyanrex-platform/main.rs");
-  for (const value of ["take(17)", "7 | 9 | 11 | 12 | 15 | 16", '"serve-loopback-tls"', '"--notify-systemd"',
+  for (const value of ["take(18)", "7 | 9 | 11 | 12 | 13 | 15 | 16 | 17", '"serve-loopback-tls"', '"--notify-systemd"',
     'text[11] == "--cert"', 'text[13] == "--key"', "Path::new(text[12]).is_absolute()",
     "Path::new(text[14]).is_absolute()", "serve_loopback::parse_bind(text[10])", "serve_loopback::run_tls("])
     assert.ok(main.includes(value), value);
   assert.doesNotMatch(code(main), /tokio|rustls|TcpListener|PgPool|PgConnectOptions|open_platform_storage_expected|build_platform_(?:session|workspace)_router/);
   const source = await read(`${directory}/mod.rs`);
-  for (const value of ["run_with_transport(path, bind, process, None, notify_systemd)",
-    "run_with_transport(path, bind, process, Some((cert, key)), notify_systemd)",
+  const dense = compact(source);
+  for (const value of ["run_with_transport(path,bind,process,None,notify_systemd,session_ui)",
+    "run_with_transport(path,bind,process,Some((cert,key)),notify_systemd,session_ui)"])
+    assert.ok(dense.includes(value) || dense.includes(value.slice(0, -1) + ",)"), value);
+  for (const value of [
     'let scheme = if tls_paths.is_some() { "https" } else { "http" };',
     'input.config.origin() != format!("{scheme}://{bind}")', "tls::load_tls_identity(cert, key, bind.ip())",
     "http::serve_notified("])
@@ -29,7 +32,7 @@ test("TLS mode is fixed private CLI input and shares original startup without wi
     "tls::load_tls_identity(", "let checked = process.verify_before_runtime()", "let identity = identity?",
     "inspect_platform_artifact_root(", "new_current_thread()", "open_platform_storage_expected(",
     "let checked = process.verify_current_thread()", "let storage = opened.map_err(",
-    "PlatformWorkspaceHttpState::new(", "SignalKind::terminate()", "SignalKind::interrupt()",
+    "PlatformWorkspaceHttpState::with_text_publication_capacities(", "SignalKind::terminate()", "SignalKind::interrupt()",
     "TcpListener::bind(", "process.verify_current_thread()", 'println!("platform loopback host ready")'];
   let offset = -1;
   for (const value of sequence) {
