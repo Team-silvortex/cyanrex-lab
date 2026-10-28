@@ -6,7 +6,7 @@ import { join, isAbsolute } from "node:path";
 import { tmpdir } from "node:os";
 import { pathToFileURL } from "node:url";
 import { createInterface } from "node:readline";
-import { createObservations } from "./observations.mjs";
+import { createObservations, readObservedJson } from "./observations.mjs";
 
 const lines = createInterface({ input: process.stdin, terminal: false });
 const input = lines[Symbol.asyncIterator]();
@@ -74,8 +74,7 @@ async function run(config) {
     const incoming = page.waitForResponse(response => response.request().method() === method
       && response.url() === `${origin}${path}`, { timeout: 10000 });
     observations.track(method === "PUT" ? "reply-save" : "reply-task", async () => {
-      const response = await incoming;
-      replies.push({ path, status: response.status(), body: await response.json() });
+      replies.push({ path, ...await readObservedJson(incoming) });
     });
   };
   const flush = async () => { await observations.drain(); assert.deepEqual(errors, []); };

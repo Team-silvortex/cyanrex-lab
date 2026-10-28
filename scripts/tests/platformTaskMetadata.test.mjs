@@ -3,7 +3,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { createObservations } from "../../engine/tests/platform_browser_task_metadata/observations.mjs";
+import { createObservations, readObservedJson } from "../../engine/tests/platform_browser_task_metadata/observations.mjs";
 
 const root = new URL("../../", import.meta.url);
 const read = file => readFile(new URL(file, root), "utf8");
@@ -38,6 +38,42 @@ test("metadata fixture observation failures retain only fixed check codes withou
   await new Promise(resolve => setImmediate(resolve));
   await assert.rejects(observations.drain(), error => error.message === "private browser observation failed"
     && error.check === "reply-save" && !JSON.stringify(error).includes("private credentials"));
+});
+
+test("metadata response observation distinguishes event, body and JSON failures without private error values", async () => {
+  const cases = [
+    [Promise.reject(Object.assign(new Error("private event detail"), { name: "TimeoutError" })), "event-timeout"],
+    [Promise.reject(new Error("private event detail")), "event-failed"],
+    [Promise.resolve({ text: async () => { throw new Error("Network.getResponseBody: No resource with given identifier found; private detail"); } }), "body-resource-missing"],
+    [Promise.resolve({ text: async () => { throw new Error("Protocol error (Network.getResponseBody): private detail"); } }), "body-protocol"],
+    [Promise.resolve({ text: async () => { throw new Error("private body detail"); } }), "body-failed"],
+    [Promise.resolve({ text: async () => 'private invalid JSON' }), "json-invalid"],
+  ];
+  // Register every rejected event promise immediately, before awaiting any phase.
+  const observations = cases.map(([incoming, part]) => {
+    const checks = createObservations();
+    checks.track("reply-save", () => readObservedJson(incoming));
+    return { checks, part };
+  });
+  await new Promise(resolve => setImmediate(resolve));
+  for (const { checks, part } of observations) {
+    await assert.rejects(checks.drain(), error => error.check === `reply-save-${part}`
+      && error.message === "private browser observation failed"
+      && !JSON.stringify(error).includes("private detail"));
+  }
+});
+
+test("metadata response observation reads one body and never retries a failed or malformed reply", async () => {
+  let reads = 0;
+  const response = { status: () => 200, text: async () => { reads++; return '{"schema_version":1}'; },
+    json: () => assert.fail("body retrieval and JSON parsing must remain distinct") };
+  assert.deepEqual(await readObservedJson(Promise.resolve(response)), { status: 200, body: { schema_version: 1 } });
+  assert.equal(reads, 1);
+  response.text = async () => { reads++; return ""; };
+  const checks = createObservations();
+  checks.track("reply-task", () => readObservedJson(Promise.resolve(response)));
+  await assert.rejects(checks.drain(), error => error.check === "reply-task-json-invalid");
+  assert.equal(reads, 2);
 });
 
 test("the separate metadata editor has one explicit same-origin PUT and no Artifact publication transport", async () => {
@@ -147,15 +183,17 @@ test("twelve mocked Chrome cases and one distinct original-storage selector are 
   const actual = await read("engine/tests/platform_browser_task_metadata/browser.mjs");
   assert.match(actual, /ignoreHTTPSErrors: false/);
   assert.doesNotMatch(actual, /\.route\(|route\.fulfill|addCookies\(|ignoreHTTPSErrors:\s*true/);
-  for (const value of ['import { createObservations } from "./observations.mjs"',
+  for (const value of ['import { createObservations, readObservedJson } from "./observations.mjs"',
     "page.waitForResponse", 'response.request().method() === method', 'response.url() === `${origin}${path}`',
     'expectReply(taskPath, "GET")', 'expectReply(savePath, "PUT")', "await observations.drain()",
+    "...await readObservedJson(incoming)",
     'stage = "put-response-observed"', 'stage = "saved-rendered-title"',
     '"browser-wait-timeout"', 'emit({ phase: "failure", stage, check })'])
     assert.ok(actual.includes(value), value);
   assert.equal([...actual.matchAll(/expectReply\(savePath, "PUT"\)/g)].length, 3);
   assert.doesNotMatch(actual, /emit\([^\n]*(?:error\.message|error\.stack|reply\.body|config)/);
   const bootstrap = await read("scripts/test-platform-browser-ci.sh");
+  assert.ok(bootstrap.includes("Platform browser runtime: Node %s; %s"));
   const runners = ["session-ui-browser", "task-reader-browser", "task-metadata-browser",
     "browser-session", "browser-tasks", "browser-task-metadata"].map(name => `test-platform-${name}.sh`);
   assert.deepEqual([...bootstrap.matchAll(/^bash scripts\/(test-platform-[\w-]+\.sh)$/gm)].map(match => match[1]).sort(), runners.sort());

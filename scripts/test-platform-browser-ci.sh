@@ -32,6 +32,7 @@ export XDG_CACHE_HOME="$browser_ci_root/cache"
 npm install --prefix "$browser_ci_root" --ignore-scripts --no-audit --no-fund playwright@1.62.1
 export CYANREX_PLAYWRIGHT_MODULE="$browser_ci_root/node_modules/playwright/index.mjs"
 export CYANREX_CHROMIUM_PATH="$browser_ci_chrome"
+printf 'Platform browser runtime: Node %s; %s\n' "$(node --version)" "$browser_ci_version"
 sudo apt-get update -qq
 sudo apt-get install -y libnss3-tools
 bash scripts/test-platform-session-ui-browser.sh

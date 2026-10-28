@@ -5,6 +5,13 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- Distinguish metadata-browser CI response-event, body-retrieval and JSON-parsing failures using
+  fixed private-safe codes, and record browser/Node versions. Preserve one response observation,
+  all existing real HTTP/SQL/UI assertions and fail-closed behavior without retries. This adds
+  diagnostic evidence; the remote-only response observation failure is not yet resolved.
+
 ## [0.6.5] - 2026-10-28
 
 This patch source release adds Task-bound private text publication, a strict independent HTTP
