@@ -1,5 +1,5 @@
 // Passive, session-owned response bodies. Never replay a request to recover missing evidence.
-import { readObservedJson } from "./observations.mjs";
+import { loadingFailurePart, readObservedJson } from "./observations.mjs";
 
 function failure(part) {
   const error = new Error("private browser response observation failed");
@@ -59,7 +59,9 @@ export async function createCdpResponses(session, { timeoutMs = 10000 } = {}) {
       value => settle(item, null, value), error => settle(item, error));
   };
   const failed = event => {
-    const item = bound.get(event.requestId); if (item) fail(item, "event-loading-failed");
+    const item = bound.get(event.requestId);
+    if (item) fail(item, loadingFailurePart(event,
+      item.reading ? "body" : item.status !== null ? "response" : "request"));
   };
   const disconnected = () => {
     closed = true;

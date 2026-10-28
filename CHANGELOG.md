@@ -15,9 +15,11 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
   late run and all SQL checks. Either failure still fails CI; the two phases provide additional
   diagnostic evidence, not an automatic retry or proof of SQL-induced state changes.
 - Classify the passive metadata observer's request, response, completion, cancellation and Session
-  lifecycle failures with fixed private-safe codes. The remote early run failed a lifecycle check;
-  preserve every hard failure while identifying its branch without request IDs, URLs, headers,
-  body bytes or raw protocol errors. This is additional diagnosis, not a confirmed root-cause fix.
+  lifecycle failures with fixed private-safe codes, including allowlisted network causes and
+  request/response/body stages for `loadingFailed`. Remote early runs failed lifecycle checks,
+  including during conflict handling; preserve every hard failure while identifying its branch
+  without request IDs, URLs, headers, body bytes or raw protocol errors. This is additional
+  diagnosis, not a confirmed root-cause fix.
 
 ### Fixed
 

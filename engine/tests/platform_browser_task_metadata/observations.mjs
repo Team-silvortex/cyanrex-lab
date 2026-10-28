@@ -1,8 +1,36 @@
 // Private fixture observations only. Never expose assertion values or request data to IPC.
+const loadingCodes = new Map([
+  ["net::ERR_ABORTED", "event-loading-aborted"],
+  ["net::ERR_FAILED", "event-loading-network-failed"],
+  ["net::ERR_CONNECTION_RESET", "event-loading-connection-reset"],
+  ["net::ERR_CONNECTION_CLOSED", "event-loading-connection-closed"],
+  ["net::ERR_CONTENT_LENGTH_MISMATCH", "event-loading-length-mismatch"],
+  ["net::ERR_INCOMPLETE_CHUNKED_ENCODING", "event-loading-chunk-incomplete"],
+  ["net::ERR_HTTP_RESPONSE_CODE_FAILURE", "event-loading-http-status"],
+  ["net::ERR_BLOCKED_BY_CLIENT", "event-loading-client-blocked"],
+  ["net::ERR_BLOCKED_BY_RESPONSE", "event-loading-response-blocked"],
+  ["net::ERR_NETWORK_CHANGED", "event-loading-network-changed"],
+  ["net::ERR_CONTEXT_SHUT_DOWN", "event-loading-context-closed"],
+]);
+const loadingStages = ["request", "response", "body"];
+const loadingParts = [...loadingCodes.values(), "event-loading-failed", "event-loading-canceled",
+  "event-loading-policy-blocked", "event-loading-cors-blocked"];
 const responseParts = new Set(["event-timeout", "event-failed", "body-resource-missing",
   "body-protocol", "body-failed", "json-invalid", "event-request-reused", "event-request-duplicate",
   "event-redirect", "event-response-duplicate", "event-response-mismatch", "event-status-invalid",
-  "event-finished-before-response", "event-finished-duplicate", "event-loading-failed", "event-session-closed"]);
+  "event-finished-before-response", "event-finished-duplicate", "event-loading-failed", "event-session-closed",
+  ...loadingParts.flatMap(part => loadingStages.map(stage => `${part}-${stage}`))]);
+
+export function loadingFailurePart(event, stage) {
+  if (!loadingStages.includes(stage)) throw new Error("invalid private response stage");
+  // Exact known constants only: a private suffix or unknown protocol message is never echoed.
+  const reason = loadingCodes.get(event.errorText)
+    ?? (typeof event.blockedReason === "string" && event.blockedReason !== "" ? "event-loading-policy-blocked"
+      : event.corsErrorStatus && typeof event.corsErrorStatus === "object" ? "event-loading-cors-blocked"
+        : event.canceled === true ? "event-loading-canceled" : "event-loading-failed");
+  return `${reason}-${stage}`;
+}
+
 function responseFailure(part) {
   const error = new Error("private browser response observation failed");
   error.observationPart = part;

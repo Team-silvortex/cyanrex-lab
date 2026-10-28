@@ -138,7 +138,7 @@ const eventFailures = [
   ["duplicate finished during held body", "event-finished-duplicate", async session => {
     request(session); response(session); finished(session); await turn(); finished(session);
   }, true],
-  ["loading failure", "event-loading-failed", session => { request(session); session.emit("Network.loadingFailed", { requestId: "wanted", errorText: secret, canceled: true }); }],
+  ["loading failure", "event-loading-canceled-request", session => { request(session); session.emit("Network.loadingFailed", { requestId: "wanted", errorText: secret, canceled: true }); }],
   ["session closure", "event-session-closed", session => session.emit("close", { privateDetails: secret })],
 ];
 for (const [name, part, fail, readsBody = false] of eventFailures) test(`CDP ${name} is a classified private hard failure`, async t => {
@@ -160,6 +160,64 @@ for (const [name, part, fail, readsBody = false] of eventFailures) test(`CDP ${n
   } finally { release?.({ body: JSON.stringify(value), base64Encoded: false }); }
   finished(session); await turn(); commands(session, readsBody ? ["wanted"] : []);
 });
+
+const knownLoadingFailures = [
+  ["ERR_ABORTED", "event-loading-aborted"],
+  ["ERR_FAILED", "event-loading-network-failed"],
+  ["ERR_CONNECTION_RESET", "event-loading-connection-reset"],
+  ["ERR_CONNECTION_CLOSED", "event-loading-connection-closed"],
+  ["ERR_CONTENT_LENGTH_MISMATCH", "event-loading-length-mismatch"],
+  ["ERR_INCOMPLETE_CHUNKED_ENCODING", "event-loading-chunk-incomplete"],
+  ["ERR_HTTP_RESPONSE_CODE_FAILURE", "event-loading-http-status"],
+  ["ERR_BLOCKED_BY_CLIENT", "event-loading-client-blocked"],
+  ["ERR_BLOCKED_BY_RESPONSE", "event-loading-response-blocked"],
+  ["ERR_NETWORK_CHANGED", "event-loading-network-changed"],
+  ["ERR_CONTEXT_SHUT_DOWN", "event-loading-context-closed"],
+];
+const policyFields = { blockedReason: secret, corsErrorStatus: { corsError: secret, failedParameter: secret }, canceled: true };
+const loadingFailures = [
+  // A known exact value wins over every lower-priority policy/cancellation field.
+  ...knownLoadingFailures.map(([code, part]) => [code, part, { errorText: `net::${code}`, ...policyFields }]),
+  ["unknown private text", "event-loading-failed", { errorText: secret }],
+  ["policy wins over CORS and canceled", "event-loading-policy-blocked", { errorText: secret, ...policyFields }],
+  ["CORS wins over canceled", "event-loading-cors-blocked", { errorText: secret, ...policyFields, blockedReason: "" }],
+  ["strict canceled boolean", "event-loading-canceled", { errorText: secret, canceled: true }],
+  ["truthy canceled string is not true", "event-loading-failed", { errorText: secret, canceled: "true" }],
+  // Private suffixes must not make a substring or prefix look like an exact network code.
+  ...knownLoadingFailures.map(([code]) => [`nonexact ${code}`, "event-loading-failed", { errorText: `net::${code} ${secret}` }]),
+];
+for (const phase of ["request", "response", "body"]) {
+  for (const [name, reason, details] of loadingFailures) {
+    test(`CDP loadingFailed ${name} at ${phase} is a fixed private failure without replay`, async t => {
+      const session = new Session(); let release;
+      session.body = () => new Promise(resolve => { release = resolve; });
+      const replies = await createCdpResponses(session); t.after(() => replies.close());
+      const pending = replies.expect(`${url}/content`, "PUT"), observations = createObservations();
+      const part = `${reason}-${phase}`;
+      observations.track("reply-save", () => pending);
+      const rejected = rejectsSafe(pending, part);
+      const ledgerRejected = assert.rejects(observations.drain(), error => {
+        assert.equal(error.check, `reply-save-${part}`);
+        assert.equal(error.message, "private browser observation failed");
+        assert.doesNotMatch(JSON.stringify({ ...error, message: error.message, stack: error.stack, cause: error.cause }),
+          /sensitive-fixture|unredacted-body|net::ERR_/);
+        return true;
+      });
+      try {
+        request(session, "wanted", `${url}/content`, "PUT");
+        if (phase !== "request") response(session, "wanted", `${url}/content`, 409);
+        if (phase === "body") {
+          finished(session); await turn();
+          assert.equal(typeof release, "function", "body phase requires the original read to remain held");
+        }
+        session.emit("Network.loadingFailed", { requestId: "wanted", ...details });
+        await Promise.all([rejected, ledgerRejected]);
+      } finally { release?.({ body: JSON.stringify(value), base64Encoded: false }); }
+      // A late completion must not start a read after failure or replay an already-started read.
+      finished(session); await turn(); commands(session, phase === "body" ? ["wanted"] : []);
+    });
+  }
+}
 
 const bodyFailures = [
   ["missing resource", () => { throw new Error(`Network.getResponseBody: No resource with given identifier found ${secret}`); }, "body-resource-missing"],
