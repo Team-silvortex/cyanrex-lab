@@ -1,6 +1,8 @@
 // Private fixture observations only. Never expose assertion values or request data to IPC.
 const responseParts = new Set(["event-timeout", "event-failed", "body-resource-missing",
-  "body-protocol", "body-failed", "json-invalid"]);
+  "body-protocol", "body-failed", "json-invalid", "event-request-reused", "event-request-duplicate",
+  "event-redirect", "event-response-duplicate", "event-response-mismatch", "event-status-invalid",
+  "event-finished-before-response", "event-finished-duplicate", "event-loading-failed", "event-session-closed"]);
 function responseFailure(part) {
   const error = new Error("private browser response observation failed");
   error.observationPart = part;

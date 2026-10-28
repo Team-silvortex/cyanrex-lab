@@ -122,23 +122,43 @@ test("CDP distinct pending responses retain their IDs even when completion order
 
 test("CDP duplicate arm cannot allow one response to satisfy two expectations", async t => {
   const session = new Session(), replies = await createCdpResponses(session); t.after(() => replies.close());
-  const first = replies.expect(url, "GET"), firstRejected = rejectsSafe(first, "event-failed");
+  const first = replies.expect(url, "GET"), firstRejected = rejectsSafe(first, "event-session-closed");
   await rejectsSafe(async () => replies.expect(url, "GET"), "event-failed");
   await replies.close(); await firstRejected; commands(session, []);
 });
 
 const eventFailures = [
-  ["duplicate matching request", session => { request(session); request(session, "duplicate"); }],
-  ["redirect on initial match", session => request(session, "wanted", url, "GET", { redirectResponse: { url, status: 302 } })],
-  ["redirect after binding", session => { request(session); request(session, "wanted", `${url}/moved`, "GET", { redirectResponse: { url, status: 302 } }); }],
-  ["loading failure", session => { request(session); session.emit("Network.loadingFailed", { requestId: "wanted", errorText: secret, canceled: true }); }],
-  ["response URL mismatch", session => { request(session); response(session, "wanted", `${url}/wrong`); }],
-  ["noninteger response status", session => { request(session); response(session, "wanted", url, 200.5); }],
+  ["reused bound request ID", "event-request-reused", session => { request(session); request(session); }],
+  ["duplicate matching request", "event-request-duplicate", session => { request(session); request(session, "duplicate"); }],
+  ["redirect on initial match", "event-redirect", session => request(session, "wanted", url, "GET", { redirectResponse: { url, status: 302 } })],
+  ["duplicate response", "event-response-duplicate", session => { request(session); response(session); response(session); }],
+  ["response URL mismatch", "event-response-mismatch", session => { request(session); response(session, "wanted", `${url}/wrong`); }],
+  ["noninteger response status", "event-status-invalid", session => { request(session); response(session, "wanted", url, 200.5); }],
+  ["finished before response", "event-finished-before-response", session => { request(session); finished(session); }],
+  ["duplicate finished during held body", "event-finished-duplicate", async session => {
+    request(session); response(session); finished(session); await turn(); finished(session);
+  }, true],
+  ["loading failure", "event-loading-failed", session => { request(session); session.emit("Network.loadingFailed", { requestId: "wanted", errorText: secret, canceled: true }); }],
+  ["session closure", "event-session-closed", session => session.emit("close", { privateDetails: secret })],
 ];
-for (const [name, fail] of eventFailures) test(`CDP ${name} is a private hard failure`, async t => {
-  const session = new Session(), replies = await createCdpResponses(session); t.after(() => replies.close());
-  const rejected = rejectsSafe(replies.expect(url, "GET"), "event-failed");
-  fail(session); await rejected; finished(session); await turn(); commands(session, []);
+for (const [name, part, fail, readsBody = false] of eventFailures) test(`CDP ${name} is a classified private hard failure`, async t => {
+  const session = new Session(); let release;
+  session.body = () => new Promise(resolve => { release = resolve; });
+  const replies = await createCdpResponses(session); t.after(() => replies.close());
+  const pending = replies.expect(url, "GET"), observations = createObservations();
+  observations.track("reply-task", () => pending);
+  const rejected = rejectsSafe(pending, part);
+  const ledgerRejected = assert.rejects(observations.drain(), error => {
+    assert.equal(error.check, `reply-task-${part}`);
+    assert.equal(error.message, "private browser observation failed");
+    assert.doesNotMatch(JSON.stringify({ ...error, message: error.message, stack: error.stack }), /sensitive-fixture|unredacted-body/);
+    return true;
+  });
+  try {
+    await fail(session); await Promise.all([rejected, ledgerRejected]);
+    if (readsBody) assert.equal(typeof release, "function", "second finish must fail while the first body remains held");
+  } finally { release?.({ body: JSON.stringify(value), base64Encoded: false }); }
+  finished(session); await turn(); commands(session, readsBody ? ["wanted"] : []);
 });
 
 const bodyFailures = [
@@ -184,7 +204,7 @@ test("CDP delayed private body rejection remains a mandatory sanitized ledger fa
 
 test("CDP close rejects held work, removes listeners, and is idempotent", async () => {
   const session = new Session(), replies = await createCdpResponses(session);
-  const rejected = rejectsSafe(replies.expect(url, "GET"), "event-failed");
+  const rejected = rejectsSafe(replies.expect(url, "GET"), "event-session-closed");
   request(session); response(session);
   await replies.close(); await rejected; await replies.close();
   assert.equal(session.detachCount, 1);
@@ -195,7 +215,7 @@ test("CDP close rejects held work, removes listeners, and is idempotent", async 
 
 test("CDP session closure rejects pending observations instead of accepting missing replies", async t => {
   const session = new Session(), replies = await createCdpResponses(session); t.after(() => replies.close());
-  const rejected = rejectsSafe(replies.expect(url, "GET"), "event-failed");
+  const rejected = rejectsSafe(replies.expect(url, "GET"), "event-session-closed");
   session.emit("close", { privateDetails: secret }); await rejected; await replies.close();
   assert.equal(session.detachCount, 0); commands(session, []);
 });
@@ -203,7 +223,7 @@ test("CDP session closure rejects pending observations instead of accepting miss
 test("CDP close rejects an in-flight body and ignores its late completion", async () => {
   const session = new Session(); let release;
   session.body = () => new Promise(resolve => { release = resolve; });
-  const replies = await createCdpResponses(session), rejected = rejectsSafe(replies.expect(url, "GET"), "event-failed");
+  const replies = await createCdpResponses(session), rejected = rejectsSafe(replies.expect(url, "GET"), "event-session-closed");
   complete(session); await turn(); await replies.close(); await rejected;
   release({ body: JSON.stringify(value), base64Encoded: false }); await turn();
   assert.equal(session.detachCount, 1); commands(session, ["wanted"]);
