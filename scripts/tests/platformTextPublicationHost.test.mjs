@@ -32,9 +32,11 @@ test("workspace publication validates seven lanes before one original split and 
   assert.ok(added.includes("text:Some(TextArtifactPublishHttpState::with_capacity(text,publish_capacity,)?),"));
   assert.doesNotMatch(source, /\.await|\.connect\(|PgPool|std::(?:env|fs)|build_text_artifact_router/);
   const router = body(source, "pubfnbuild_platform_workspace_router(");
-  assert.equal([...router.matchAll(/\.merge\(/g)].length, 7);
+  assert.equal([...router.matchAll(/\.merge\(/g)].length, 8);
   assert.equal([...router.split("ifletSome(text)=state.text")[0].matchAll(/\.merge\(/g)].length, 6);
   assert.ok(router.includes("router.merge(text_artifact_publish::routes().with_state(text))"));
+  assert.ok(added.includes("task_text:None"), "old publication constructor must not add Task-bound publication");
+  assert.ok(router.includes("ifletSome(task_text)=state.task_text"));
   assert.equal([...router.matchAll(/\.fallback\(/g)].length, 1);
   assert.equal([...router.matchAll(/\.layer\(/g)].length, 1);
 });
@@ -62,8 +64,8 @@ test("plain and native TLS hosts opt in at the same startup point without wideni
   assert.equal(host.split(call).length - 1, 1);
   assert.ok(host.indexOf("open_platform_storage_expected(") < host.indexOf(call));
   assert.ok(host.indexOf(call) < host.indexOf("TcpListener::bind("));
-  assert.ok(host.includes("run_with_transport(path,bind,process,None,notify_systemd,session_ui)"));
-  assert.match(host, /run_with_transport\(path,bind,process,Some\(\(cert,key\)\),notify_systemd,session_ui,?\)/);
+  assert.match(host, /run_with_transport\(path,bind,process,None,task_text_publication,notify_systemd,session_ui,?\)/);
+  assert.match(host, /run_with_transport\(path,bind,process,Some\(\(cert,key\)\),task_text_publication,notify_systemd,session_ui,?\)/);
   const transport = compact(await read("engine/src/bin/cyanrex-platform/serve_loopback/http.rs"));
   for (const value of ["CONNECTIONS:usize=16", ".max_headers(32)", ".max_buf_size(16*1024)"])
     assert.ok(transport.includes(value), value);

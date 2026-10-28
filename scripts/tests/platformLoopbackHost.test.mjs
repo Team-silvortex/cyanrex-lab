@@ -31,7 +31,7 @@ async function productSources() {
 // Inventories supplement actual CLI, TCP and PostgreSQL behavior; they are not isolation proof.
 test("explicit loopback mode keeps main thin and never composes Engine or a diagnostic baseline", async () => {
   const main = await read("engine/src/bin/cyanrex-platform/main.rs");
-  for (const value of ["take(18)", "7 | 9 | 11 | 12 | 13 | 15 | 16 | 17", '"serve-loopback"', '"--notify-systemd"', 'text[9] == "--bind"',
+  for (const value of ["take(19)", "7 | 9 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18", '"serve-loopback"', '"--notify-systemd"', 'text[9] == "--bind"',
     "serve_loopback::parse_bind", "serve_loopback::run", "platform loopback host failed",
     "platform loopback host stopped"]) assert.ok(main.includes(value), value);
   const usage = main.match(/"(usage: cyanrex-platform[^"\n]+)"/)?.[1];

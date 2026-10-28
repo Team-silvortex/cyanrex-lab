@@ -4,6 +4,9 @@ use super::{build_platform_workspace_router, PlatformWorkspaceHttpState};
 pub(super) use crate::platform_http::session_login::test_support::{
     Backend as LoginBackend, Outcome as LoginOutcome,
 };
+pub(super) use crate::platform_http::task_text_artifact_publish::test_support::{
+    Backend as TaskPublicationBackend, Outcome as TaskPublicationOutcome, CREATE as TASK_PUBLISH,
+};
 pub(super) use crate::platform_http::text_artifact_publish::test_support::{
     Backend as PublicationBackend, Outcome as PublicationOutcome,
 };
@@ -89,6 +92,7 @@ pub(super) async fn state(
             capacities[5],
         ),
         text: None,
+        task_text: None,
     }
 }
 
@@ -124,6 +128,40 @@ pub(super) fn publication_body() -> Body {
     crate::platform_http::text_artifact_publish::test_support::body()
 }
 
+pub(super) async fn task_publication_state(
+    login: Arc<LoginBackend>,
+    publisher: Arc<PublicationBackend>,
+    task_publisher: Arc<TaskPublicationBackend>,
+    capacities: [usize; 8],
+) -> PlatformWorkspaceHttpState {
+    let mut state = publication_state(
+        login,
+        publisher,
+        [
+            capacities[0],
+            capacities[1],
+            capacities[2],
+            capacities[3],
+            capacities[4],
+            capacities[5],
+            capacities[6],
+        ],
+    )
+    .await;
+    state.task_text = Some(
+        crate::platform_http::task_text_artifact_publish::test_support::state(
+            task_publisher,
+            ORIGIN,
+            capacities[7],
+        ),
+    );
+    state
+}
+
+pub(super) fn task_publication_body() -> Body {
+    crate::platform_http::task_text_artifact_publish::test_support::body()
+}
+
 pub(super) async fn app(backend: Arc<LoginBackend>) -> Router {
     build_platform_workspace_router(state(backend, [4, 4, 4, 4, 4, 4]).await)
 }
@@ -153,8 +191,17 @@ pub(super) fn request(method: &str, path: &str, body: Body) -> Request<Body> {
         .header(header::CONTENT_TYPE, "application/json")
         .body(body)
         .unwrap();
-    if [SESSION, LOGOUT, INDEX, CONTENT, CREATE, REPLACE, PUBLISH]
-        .contains(&path.split('?').next().unwrap())
+    if [
+        SESSION,
+        LOGOUT,
+        INDEX,
+        CONTENT,
+        CREATE,
+        REPLACE,
+        PUBLISH,
+        TASK_PUBLISH,
+    ]
+    .contains(&path.split('?').next().unwrap())
     {
         let mut cookie = format!("cyanrex_platform_session={TOKEN}")
             .parse::<axum::http::HeaderValue>()

@@ -2,7 +2,7 @@
 use super::{
     PlatformLoginConnector, PlatformSessionConnector, PlatformStorageConnector,
     PlatformTaskContentConnector, PlatformTaskCreateConnector, PlatformTaskIndexConnector,
-    PlatformTaskReplaceConnector, PlatformTextArtifactConnector,
+    PlatformTaskReplaceConnector, PlatformTaskTextArtifactConnector, PlatformTextArtifactConnector,
 };
 use std::sync::Arc;
 
@@ -111,5 +111,30 @@ pub(crate) fn split_platform_task_replace_connectors(
         PlatformTaskContentConnector::from_shared(Arc::clone(&storage)),
         PlatformTaskCreateConnector::from_shared(Arc::clone(&storage)),
         PlatformTaskReplaceConnector::from_shared(storage),
+    )
+}
+
+pub(crate) fn split_platform_task_text_publication_connectors(
+    storage: PlatformStorageConnector,
+) -> (
+    PlatformLoginConnector,
+    PlatformSessionConnector,
+    PlatformTaskIndexConnector,
+    PlatformTaskContentConnector,
+    PlatformTaskCreateConnector,
+    PlatformTaskReplaceConnector,
+    PlatformTextArtifactConnector,
+    PlatformTaskTextArtifactConnector,
+) {
+    let storage = Arc::new(storage);
+    (
+        PlatformLoginConnector::from_shared(Arc::clone(&storage)),
+        PlatformSessionConnector::from_shared(Arc::clone(&storage)),
+        PlatformTaskIndexConnector::from_shared(Arc::clone(&storage)),
+        PlatformTaskContentConnector::from_shared(Arc::clone(&storage)),
+        PlatformTaskCreateConnector::from_shared(Arc::clone(&storage)),
+        PlatformTaskReplaceConnector::from_shared(Arc::clone(&storage)),
+        PlatformTextArtifactConnector::from_shared(Arc::clone(&storage)),
+        PlatformTaskTextArtifactConnector::from_shared(storage),
     )
 }

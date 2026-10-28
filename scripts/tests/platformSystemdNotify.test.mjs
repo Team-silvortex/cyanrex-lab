@@ -12,7 +12,7 @@ const directory = "engine/src/bin/cyanrex-platform/serve_loopback";
 // These are wiring inventories, not receipt, supervisor activation or deployment evidence.
 test("supervisor notification remains an explicit ordered serve suffix without changing diagnostic shapes", async () => {
   const main = await read("engine/src/bin/cyanrex-platform/main.rs");
-  for (const value of ["take(18)", "7 | 9 | 11 | 12 | 13 | 15 | 16 | 17", '"--notify-systemd"',
+  for (const value of ["take(19)", "7 | 9 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18", '"--notify-systemd"',
     '"check-process"', '"check-config"', '"check-storage"', '"serve-loopback"', '"serve-loopback-tls"'])
     assert.ok(main.includes(value), value);
   assert.doesNotMatch(strip(main), /NOTIFY_SOCKET|std::env::var|systemctl|Command::new|UnixDatagram/);

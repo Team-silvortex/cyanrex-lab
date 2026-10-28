@@ -1,14 +1,15 @@
 //! One retained storage binding for Session, private Task and opt-in text publication commands.
 use super::{
     config, errors::HttpError, security, session_lifecycle, session_login, task_content_read,
-    task_content_replace, task_create, task_index, text_artifact_publish,
-    SessionLifecycleHttpState, SessionLoginHttpState, TaskContentHttpConfigError,
-    TaskContentIndexHttpState, TaskContentReadHttpState, TaskContentReplaceHttpState,
-    TaskCreateHttpState, TextArtifactPublishHttpState,
+    task_content_replace, task_create, task_index, task_text_artifact_publish,
+    text_artifact_publish, SessionLifecycleHttpState, SessionLoginHttpState,
+    TaskContentHttpConfigError, TaskContentIndexHttpState, TaskContentReadHttpState,
+    TaskContentReplaceHttpState, TaskCreateHttpState, TaskTextArtifactPublishHttpState,
+    TextArtifactPublishHttpState,
 };
 use crate::platform_host::{
-    split_platform_task_replace_connectors, split_platform_text_publication_connectors,
-    PlatformStorageConnector,
+    split_platform_task_replace_connectors, split_platform_task_text_publication_connectors,
+    split_platform_text_publication_connectors, PlatformStorageConnector,
 };
 use axum::{
     http::StatusCode,
@@ -19,6 +20,8 @@ use axum::{
 
 #[cfg(test)]
 mod publication_tests;
+#[cfg(test)]
+mod task_publication_tests;
 #[cfg(test)]
 mod test_support;
 #[cfg(test)]
@@ -34,6 +37,7 @@ pub struct PlatformWorkspaceHttpState {
     create: TaskCreateHttpState,
     replace: TaskContentReplaceHttpState,
     text: Option<TextArtifactPublishHttpState>,
+    task_text: Option<TaskTextArtifactPublishHttpState>,
 }
 
 impl PlatformWorkspaceHttpState {
@@ -130,6 +134,7 @@ impl PlatformWorkspaceHttpState {
             create: TaskCreateHttpState::with_capacity(create, create_capacity)?,
             replace: TaskContentReplaceHttpState::with_capacity(replace, replace_capacity)?,
             text: None,
+            task_text: None,
         })
     }
 
@@ -173,6 +178,57 @@ impl PlatformWorkspaceHttpState {
                 text,
                 publish_capacity,
             )?),
+            task_text: None,
+        })
+    }
+
+    /// Explicit Task-bound publication with an eighth independent response lane. Earlier
+    /// constructors still omit this route; both text commands retain separate actual workers.
+    pub fn with_task_text_publication_capacities(
+        storage: PlatformStorageConnector,
+        login_capacity: usize,
+        lifecycle_capacity: usize,
+        index_capacity: usize,
+        content_capacity: usize,
+        create_capacity: usize,
+        replace_capacity: usize,
+        publish_capacity: usize,
+        task_publish_capacity: usize,
+    ) -> Result<Self, TaskContentHttpConfigError> {
+        // Validate all eight before allocating any capability; never recapture a baseline.
+        config::validate(
+            storage.origin(),
+            &[
+                login_capacity,
+                lifecycle_capacity,
+                index_capacity,
+                content_capacity,
+                create_capacity,
+                replace_capacity,
+                publish_capacity,
+                task_publish_capacity,
+            ],
+        )?;
+        let (login, lifecycle, index, content, create, replace, text, task_text) =
+            split_platform_task_text_publication_connectors(storage);
+        Ok(Self {
+            login: SessionLoginHttpState::with_capacity(login, login_capacity)?,
+            lifecycle: SessionLifecycleHttpState::with_platform_connector(
+                lifecycle,
+                lifecycle_capacity,
+            )?,
+            index: TaskContentIndexHttpState::with_platform_connector(index, index_capacity)?,
+            content: TaskContentReadHttpState::with_capacity(content, content_capacity)?,
+            create: TaskCreateHttpState::with_capacity(create, create_capacity)?,
+            replace: TaskContentReplaceHttpState::with_capacity(replace, replace_capacity)?,
+            text: Some(TextArtifactPublishHttpState::with_capacity(
+                text,
+                publish_capacity,
+            )?),
+            task_text: Some(TaskTextArtifactPublishHttpState::with_capacity(
+                task_text,
+                task_publish_capacity,
+            )?),
         })
     }
 }
@@ -188,6 +244,11 @@ pub fn build_platform_workspace_router(state: PlatformWorkspaceHttpState) -> Rou
         .merge(task_content_replace::routes().with_state(state.replace));
     let router = if let Some(text) = state.text {
         router.merge(text_artifact_publish::routes().with_state(text))
+    } else {
+        router
+    };
+    let router = if let Some(task_text) = state.task_text {
+        router.merge(task_text_artifact_publish::routes().with_state(task_text))
     } else {
         router
     };

@@ -59,8 +59,9 @@ impl Browser {
         let value: Value = serde_json::from_str(&line).unwrap();
         assert!(
             value["phase"] == expected,
-            "metadata browser phase {expected} failed at {}",
-            value["stage"].as_str().unwrap_or("protocol boundary")
+            "metadata browser phase {expected} failed at {} ({})",
+            value["stage"].as_str().unwrap_or("protocol boundary"),
+            value["check"].as_str().unwrap_or("protocol boundary")
         );
         value
     }

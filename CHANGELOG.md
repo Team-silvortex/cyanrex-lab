@@ -5,6 +5,53 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.6.5] - 2026-10-28
+
+This patch source release adds Task-bound private text publication, a strict independent HTTP
+adapter and explicit default-off loopback/native-TLS host composition. Current account authority
+and the complete existing Task baseline are checked before new bytes. Publication and later Task
+attachment remain separate operations; this does not connect browser body editing, normal-app/SDK
+saving, automatic recovery or protected-LAN/browser-TLS acceptance. It also strengthens metadata
+browser-test observation and private failure diagnostics without claiming the earlier remote CI
+failure's unique cause has been established.
+See [local release validation](reports/releases/0.6.5/README.md).
+
+### Added
+
+- Add an explicitly selected Task-bound retained text Artifact connector. One original
+  transaction locks the exact owned manual Draft and full supplied baseline, refreshes current
+  Source/actor/Session authority after that wait and before bytes, then validates deferred new-head/
+  byte and unchanged-Task results plus final original guards before COMMIT. Task title supplies the
+  Artifact title; old payload bytes are not checked and Task metadata/outbox are not changed or linked.
+  Trusted provisioning adds only Task SELECT/lock-column requirements to the existing publication
+  profile, not Task business writes or automatic grants. Keep the five-field text POST, old constructor/
+  default host behavior and seven UI assets unchanged; no implicit browser/SDK or teaching-authentication cutover.
+- Add a standalone Task-bound text HTTP state/router for exact private Task publication. Its separate
+  five-field DTO pins a complete manual Task/manifest baseline, requires map-only records, explicit
+  null definition and string status, and rejects path/scope inconsistencies before dispatch. Bound
+  collection to 2 MiB/two seconds and text to 256 KiB; clone-shared 1–16 response slots default to four.
+  Return only confirmed 201 Artifact metadata, with dedicated Artifact-conflict projection preserving
+  the old Task mapper. Accept equivalent timestamp offsets and single escaped known keys while
+  rejecting semantic duplicates; these values confer no authority. Workspace/CLI composition requires
+  the explicit opt-in below; do not connect UI, update Tasks, validate old payload bytes or add
+  idempotency, recovery, automatic retry/cleanup or whole-draft atomicity.
+- Add an explicit Task-bound text-publication workspace constructor and default-off serve-only
+  `--task-text-publication` flag in both plain/native-TLS CLI hosts. Validate all eight response
+  capacities before splitting one original storage Arc; the opt-in has nine routes/eight lanes and
+  retains unbound text publication. Preserve old constructors and default CLI eight-route/seven-lane
+  behavior. Both text capabilities keep independent four-worker gates, with the unchanged global
+  16-connection budget; add no grants, schemas, environment/JSON inputs, UI assets or body-saving client.
+  Keep optional suffix order, process/private-input/trust/Cookie and shutdown boundaries unchanged;
+  this is not complete Task saving, retry/recovery, browser-TLS or protected-LAN acceptance.
+
+### Fixed
+
+- Fix a reproduced metadata-browser test observation gap: drain asynchronous checks registered while
+  earlier checks wait, bind each explicit Task GET/PUT response before dispatch, and await its JSON
+  observation. Preserve strict real HTTP/SQL/private-data assertions and report only fixed safe failure
+  stages, without retry or private error values. The controlled observation defect is reproduced;
+  it is not established as the unique cause of the earlier remote CI failure.
+
 ## [0.6.4] - 2026-10-26
 
 This patch source release adds retained private text publication and an explicit default-off platform
@@ -1504,7 +1551,10 @@ cross-user collaboration. The frozen public API compatibility baseline remains 0
 The canonical package metadata advanced directly from `0.2.9` to `0.3.1`. Version `0.3.0` identifies
 the frozen API compatibility snapshot only; it was not a package release and must not be tagged.
 
-[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.6.2...HEAD
+[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.6.5...HEAD
+[0.6.5]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.6.4...v0.6.5
+[0.6.4]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.6.3...v0.6.4
+[0.6.3]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.6.2...v0.6.3
 [0.6.2]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.5.9...v0.6.0

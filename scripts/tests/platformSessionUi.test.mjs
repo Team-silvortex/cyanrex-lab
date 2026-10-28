@@ -9,7 +9,7 @@ const ui = "engine/src/bin/cyanrex-platform/session_ui";
 
 test("Session page is a final explicit CLI flag merged only inside the existing private host", async () => {
   const cli = await read("engine/src/bin/cyanrex-platform/main.rs");
-  assert.match(cli, /take\(18\)/);
+  assert.match(cli, /take\(19\)/);
   assert.match(cli, /text\.last\(\) == Some\(&"--session-ui"\)/);
   assert.match(cli, /without_ui - 1/);
   assert.match(cli, /\[--notify-systemd\] \[--session-ui\]/);

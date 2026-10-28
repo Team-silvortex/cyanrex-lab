@@ -1,8 +1,17 @@
 # Current platform feature and module network
 
-Source **0.6.3** includes explicit loopback/TLS hosting, limited Session issuance and private
-Task create/list/reopen/manifest replacement. Browser/SDK saving, LAN access
-and migration remain absent; earlier implementation-stage labels retain their original scope.
+Source **0.6.5** includes loopback/TLS hosting, limited Sessions, private Task commands, retained text
+publication and an opt-in metadata-save shell. It adds Task-bound publication/strict HTTP through
+default-off `--task-text-publication`; no browser raw-text/SDK saving, LAN access or migration.
+Earlier implementation-stage labels and dated evidence retain their original scope.
+
+The [Task-bound edge](platform-text-artifact-connection.md#unreleased-task-bound-publication-capability)
+is complete Task/manifest pin → current Session-owned manual Draft lock → fresh authority before
+bytes → verified new Artifact → unchanged Task/final guards → COMMIT. Its strict POST is enabled only
+by the new constructor or CLI flag: nine routes/eight lanes over one original storage Arc after all
+eight capacities are checked. Default CLI stays eight/seven; old constructors seven/six. Both text
+connectors keep four actual workers each, with the unchanged 16-connection budget. The seven UI assets
+still save metadata only; publication neither attaches to the Task nor completes browser text saving.
 
 The Unreleased [native TLS loopback branch](platform-loopback-tls-host.md) extends that host with
 private certificate/key → bounded handshake → the same HTTP Session routes and Secure Cookie.
@@ -17,8 +26,8 @@ and private format 3 gates → original expected storage → one shared workspac
 HTTP/1.1 login/query/logout, [private Task metadata](platform-task-index-connection.md), [read-only reopening](platform-task-content-connection.md)
 and [empty manual Draft creation](platform-task-create-connection.md). Separate [manifest replacement](platform-task-replace-connection.md)
 accepts an expected revision and a complete manifest of title and already-owned exact text references. Code and a Run remain
-optional. Unreleased [retained text publication](platform-text-artifact-connection.md) adds a separate
-private POST in both CLI hosts: eight routes/seven lanes over one retained storage Arc. Old constructors
+optional. Included in 0.6.4, [retained text publication](platform-text-artifact-connection.md) adds a separate
+private POST in both default CLI hosts: eight routes/seven lanes over one retained storage Arc. Old constructors
 stay seven-route/six-lane with publication disabled; all seven new capacities are validated before splitting.
 Global admission remains 16 connections and actual text workers remain four. This adds no status writes, normal teaching
 AppState, LAN listener, proxy backend, browser/SDK saving or distribution routes.

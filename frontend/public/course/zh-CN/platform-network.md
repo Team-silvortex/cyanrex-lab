@@ -1,7 +1,14 @@
 # 当前平台功能与模块网络
 
-源码 **0.6.3** 已收录显式回环／TLS 宿主、受限 Session 签发及私人 Task 创建／列举／重开／清单换版。
-不接通浏览器／SDK 保存、局域网或存储迁移；早期实施阶段标签保留原范围与证据。
+源码 **0.6.5** 已收录回环／TLS 宿主、受限 Session、私人 Task 命令、原绑定文本发布及可选显示信息保存壳，
+新增经默认关闭 `--task-text-publication` 启用的 Task 绑定发布／严格 HTTP，不接浏览器正文／SDK 保存、
+局域网或存储迁移；早期实施阶段标签与分日期证据保留原范围。
+
+[Task 绑定边](platform-text-artifact-connection.md#unreleased绑定-task-的发布能力)为完整 Task／清单固定 →
+当前 Session 本人手动 Draft 锁 → 字节前刷新权限 → 核验新 Artifact → Task 未变／最终守卫 → COMMIT。
+只有新构造器或 CLI 标志启用严格 POST：全部八容量验证后，同一原存储 Arc 上九路由／八通道。
+默认 CLI 仍为八／七，旧构造器仍为七／六；两个文本连接器各保留四个真实 worker，仍最多 16 网络连接。
+七个 UI 资源仍只保存显示信息；发布不自动挂接 Task，也不代表浏览器正文保存完成。
 
 未发布的[原生 TLS 回环分支](platform-loopback-tls-host.md)，将宿主扩展为私有证书／密钥 →
 有界握手 → 原 HTTP Session 路由与 Secure Cookie，不增加局域网／DNS 监听、公共资源路由
@@ -13,8 +20,8 @@ Ready → 监听关闭 → Stopping → 原排空，不代表已安装服务、�
 0.6.2 之后未发布的显式 Linux [回环宿主](platform-loopback-host.md)，接通进程与私有格式 3
 守卫 → 原声明式存储 → 同一共享工作区路由 → 真实有界 HTTP/1.1 登录／查询／退出及
 [私人任务元数据](platform-task-index-connection.md)、[只读重开](platform-task-content-connection.md)及[手动空 Draft 创建](platform-task-create-connection.md)。独立[清单换版](platform-task-replace-connection.md)
-按预期修订接受完整标题／已有本人文本引用清单，不要求代码或 Run。Unreleased [原绑定文本发布](platform-text-artifact-connection.md)
-在两个 CLI 宿主增加独立私人 POST，同一原存储 Arc 上八路由／七通道；旧构造器保持七路由／六通道且不发布。
+按预期修订接受完整标题／已有本人文本引用清单，不要求代码或 Run。0.6.4 收录的[原绑定文本发布](platform-text-artifact-connection.md)
+在两个默认 CLI 宿主增加独立私人 POST，同一原存储 Arc 上八路由／七通道；旧构造器保持七路由／六通道且不发布。
 新七容量全验后才拆分，全局仍最多 16 连接，真实文本 worker 名额仍为四。不接状态写入、正常教学 AppState、
 局域网、代理后端、浏览器／SDK 保存或分发路由。下文按日期记录的源码边仍保留原范围。
 

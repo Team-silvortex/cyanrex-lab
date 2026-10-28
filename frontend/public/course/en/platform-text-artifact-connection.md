@@ -1,6 +1,10 @@
 # Retained platform text Artifact publication
 
-Included in source version **0.6.4**, this capability extends
+Source **0.6.5** includes the Task-bound connector, strict HTTP adapter and default-off workspace/CLI
+opt-in below. Their `Unreleased` headings/anchors preserve implementation stages, not pending release
+status; dated evidence keeps its original scope. The seven UI assets still have no raw-text save client.
+
+The original unbound capability, included in source version **0.6.4**, extends
 [host proposal 3](https://github.com/Team-silvortex/cyanrex-lab/issues/3) with explicit creation of
 one private text Artifact over an original retained storage binding. Notes and configuration are
 valid content; code, a Task and a Run are not required.
@@ -68,7 +72,8 @@ listener or teaching login change. The older pooled text router remains separate
 seven independent response lanes**. It validates all seven capacities before splitting one retained
 storage `Arc` into seven capabilities. Original constructors, including `new` and
 `with_replace_capacities`, still disable publication: **seven routes and six lanes**.
-The [plain](platform-loopback-host.md) and [native-TLS](platform-loopback-tls-host.md) CLI hosts select the new constructor with four slots in every
+Without the Task-bound flag below, the [plain](platform-loopback-host.md) and
+[native-TLS](platform-loopback-tls-host.md) CLI hosts select this constructor with four slots in every
 lane. Their global **16-connection** admission remains; seven four-slot lanes do not promise 28
 concurrent requests. Original storage, four actual text file-job slots and private error outcomes
 are unchanged. No pooled text read, file/status route or teaching AppState is merged.
@@ -93,6 +98,127 @@ It does not override a database role's explicit `READ ONLY` policy or fall back 
 
 Artifact publication does not create a Task or replace its manifest. Linking the resulting exact
 revision to a Draft is a separate authorized operation.
+
+## Unreleased: Task-bound publication capability
+
+`PlatformTaskTextArtifactConnector::new(storage)` is a separately selected capability with the
+standalone HTTP adapter below and explicitly opted-in workspace/CLI composition; it is not a browser operation.
+`create_session_task_text_artifact(token, expected: TaskContentSnapshot, artifact, revision, text)`
+accepts a complete expected manual Task/manifest snapshot and new Artifact/revision identities.
+The Artifact title derives from that expected Task; the fixed text profile above still applies.
+The supplied owner is only an exact consistency pin against the current Session actor, not a selected
+account, grant or substitute for authentication. A teacher still cannot publish for another owner.
+
+Token, structural scope/manifest and text-profile checks precede the one original connection.
+One `PrivateWorkContext` in the same READ COMMITTED transaction then:
+
+1. Resolves current audited Session authority and locks the exact current owned Task. Scope, owner,
+   expected revision, Draft status and the complete Task/manifest baseline must agree before bytes.
+2. Calls `recheck_selected_for` after the Task lock wait: rechecks original Source, current actor and
+   fresh exact Session expiry, then returns to the same pinned Task target before file dispatch.
+3. Creates the new Artifact through the retained writer, flushes deferred constraints and verifies
+   its exact new head/revision/outbox and real bytes. It then rereads the unchanged complete Task.
+4. Rechecks original root/storage, followed by final fresh Source/actor/Session checks immediately
+   before acknowledged COMMIT. No detached Task GET or reusable authorization boolean is used.
+
+This is a **Task metadata guard**, not verification of old payload bytes or a completed Task save.
+It does not change the Task revision, manifest or outbox, attach the new reference, publish a whole
+draft atomically or restore a save attempt. Linking still requires a separately authorized replacement;
+its failure cannot undo this confirmed publication. Unknown outcomes retain files without retry,
+adoption or cleanup, as below.
+This is not idempotency or a one-publication-per-Task-revision rule: distinct new IDs may publish
+against the same unchanged baseline. Duplicate IDs conflict rather than recover an earlier receipt.
+
+Relative to the unbound publication profile, trusted provisioning also needs Task SELECT and the
+lock-only `UPDATE(task_id)` column grant. There is no Task business UPDATE/INSERT/DELETE or Task-outbox
+INSERT, Artifact-head UPDATE, password/TOTP SELECT, automatic grant or override of explicit READ ONLY.
+The three Artifact INSERT grants and existing marker locks remain unchanged. This capability keeps
+the original retained root and its own four actual-worker slots; it installs no schema or new storage binding.
+
+The existing strict five-field text POST and seven opt-in UI assets stay unchanged. Default CLI
+startup retains eight routes/seven lanes; the separate adapter and explicit opt-in composition below
+select this capability. Browser, SDK and teaching authentication remain disconnected. This adds no
+extra listener, Cookie issuer, migration or cross-owner permission.
+
+## Unreleased: standalone Task-bound HTTP
+
+`TaskTextArtifactPublishHttpState::new(connector)` accepts only the Task-bound retained connector.
+`build_task_text_artifact_publish_router(state)` supplies only exact
+`POST /platform/v1/tasks/{task_id}/text-artifacts`, without a query or trailing slash. Other methods
+on that canonical path return private **405**, `Allow: POST`. The standalone builder remains available;
+workspace/CLI inclusion requires the explicit constructor or flag below. The opt-in Session page,
+normal application and SDK do not call it.
+
+The body has exactly five fields: `schema_version: 1`, `expected`, `artifact_id`, `revision_id`
+and `text`. `expected` has exactly `task` and `manifest`: the complete existing manual Task snapshot
+and text manifest, not a desired new Task. The canonical path ID must match `expected.task.reference.task_id`.
+Trusted scope, owner-authority and manifest/Task structural agreement are checked before dispatch;
+only the connector's current-Session transaction establishes actual ownership and current state.
+The Artifact title derives from that Task; no separate title, owner selection or path is accepted.
+
+All record levels admit maps only, including Task/reference/owner/workspace, input-reference items
+and the manifest's nested records. Unknown, duplicate semantic or missing fields and positional
+record arrays fail before dispatch. `definition` is required and must be explicit `null`; status
+is one of the existing six strings, never a unit-enum object. Existing schema, canonical UUID,
+digest and JSON-safe integer rules still apply. Timestamps are time-value pins: equivalent RFC3339
+offsets may denote the same instant; no canonical UTC string spelling is promised. A single escaped
+known field name is ordinary JSON, but repeated names after unescaping are duplicates and rejected.
+These wire-only DTOs do not change the shared stored-model deserializers.
+
+Exact trusted Origin, marker and dedicated Session Cookie are required; Authorization is rejected.
+Cheap route/header checks precede admission and body polling. Actual wire collection is bounded to
+**2 MiB** and **two seconds**, with decoded text still **256 KiB**. Body/profile validation finishes
+before dispatch, and the HTTP deadline never wraps the admitted connector command. Each state has
+**four response slots** by default, configurable **1–16**; clones share them through admitted success
+or error body completion/drop. They are independent of the connector's actual-worker slots; default
+CLI composition is unchanged, while the explicit Task-bound opt-in adds a separate response lane.
+
+Only confirmed publication returns **201** with the existing `schema_version` and `artifact`
+metadata, not text, a Task, Location or Set-Cookie. Pre-dispatch errors report `not_attempted`;
+connector errors report `unconfirmed`. This adapter separately maps Artifact identifier conflicts
+to **409 `conflict`** and Artifact stale revisions to **409 `stale_revision`**, without changing
+the older Task error mapper. Missing and foreign-owned Tasks remain the same private 404.
+It does not attach content, change the Task, verify old payload bytes or supply retry, cleanup,
+whole-draft atomicity, idempotency, recovery or browser saving.
+
+## Unreleased: opt-in Task-bound workspace and CLI
+
+`PlatformWorkspaceHttpState::with_task_text_publication_capacities(storage, login, lifecycle,
+index, content, create, replace, publish, task_publish)` adds the Task-bound POST to the original
+eight routes. It validates **all eight capacities** (each **1–16**) before splitting one original
+storage `Arc` into eight capabilities, without opening or observing a replacement baseline.
+This opt-in has **nine routes/eight independent response lanes**. It retains the old unbound
+`POST /platform/v1/text-artifacts`; enabling it does not make the entire host Task-bound-only.
+
+Existing constructors and signatures retain their old defaults: `new`/`with_replace_capacities`
+have seven routes/six lanes, without either publication; `with_text_publication_capacities` has
+eight routes/seven lanes, without Task-bound publication. Cloned states share their original lane
+budgets. The standalone Task-bound builder still owns its private fallback/headers; explicit workspace
+composition merges only its fallback-free route under the workspace's existing private response policy.
+
+For either the [plain startup](platform-loopback-host.md#explicit-startup) or
+[native-TLS startup](platform-loopback-tls-host.md#explicit-private-inputs), add the default-off
+`--task-text-publication` after the required mode arguments. Optional suffixes must be in this order:
+
+```text
+[--task-text-publication] [--notify-systemd] [--session-ui]
+```
+
+The flag is accepted only by `serve-loopback` and `serve-loopback-tls`; diagnostics, repeated flags,
+aliases, reordered suffixes and trailing arguments are rejected. Without it both CLI hosts keep their
+existing eight-route/seven-lane composition. With it they explicitly select the new constructor with
+four slots per lane; it does not enable `--session-ui` or add a body-editing client to its seven assets.
+Process/private-input/original-storage checks, literal-loopback binding, native TLS verification,
+Cookie policy and signal drain retain their existing boundaries. There are no new environment/JSON
+configuration entries, schema installation, grants, migration or teaching/SDK fallback.
+
+The two publication connectors each retain **four actual blocking-worker slots**, independently:
+the enabled pair can hold eight actual file jobs, not a new shared four-job limit. Read/replace worker
+budgets remain separate too. Eight four-slot response lanes are not a guarantee of 32 concurrent
+requests; global network admission is still **16 connections**. Trusted provisioning must retain the
+combined role's existing login, Task and Artifact/row-lock profile; this opt-in adds no further grants.
+It still neither checks old payload bytes nor changes/attaches a Task, retries, cleans up, recovers
+uncertain outcomes or establishes browser TLS/LAN acceptance.
 
 ## Original files and worker ownership
 
@@ -136,6 +262,9 @@ Use only explicitly selected disposable storage:
 bash scripts/test-platform-text-artifact-connection.sh
 bash scripts/test-platform-retained-text-http.sh
 bash scripts/test-platform-text-publication-host.sh
+bash scripts/test-platform-task-text-artifact-connection.sh
+bash scripts/test-platform-task-text-artifact-http.sh
+bash scripts/test-platform-task-text-publication-host.sh
 ```
 
 The runner requires a disposable administrative `CYANREX_TEST_DATABASE_URL`; default Cargo selection
@@ -144,6 +273,21 @@ verify exact metadata and files, exercise deferred faults/current authority/orig
 retain cancellation-owned worker budgets. The second runner selects the retained HTTP target,
 not the older pooled text adapter. The third inventories six real SQL/workspace/plain/TLS selectors;
 inventory is not a passing result.
+
+The fourth runner explicitly inventories seven ignored Task-bound SQL cases: private publication with
+unchanged Task/Source, foreign/missing/scope rejection, stale/tampered/status/revoked rejection,
+deferred Task drift with retained uncertain blobs, original root/marker drift, narrow grants/READ ONLY,
+and an observed Task-row wait crossing Session expiry with zero new files. Its default constructor
+shape test is separate; neither inventory nor a source guard establishes that these cases passed.
+
+The fifth runner selects six exact ignored Task-bound HTTP SQL cases. It exercises the independent
+adapter with real retained storage; it does not mount the CLI, start a browser save, verify old
+payload bytes or establish deployment acceptance. Its selector inventory is not a passing result.
+
+The sixth runner selects six exact ignored workspace/host cases, including real plain/native-TLS
+children with explicit temporary client CA trust. Its inventory is not a passing result or browser
+TLS/LAN acceptance. It retains original-storage, current-owner/revision, response-budget, unknown-blob,
+default-off compatibility and signal-shutdown checks; publication still does not save a Task.
 
 Browser conflicts and uncertain-outcome handling, generic SDK/OpenAPI integration, cross-user grants
 and recovery remain separate work. No Artifact read route, extra listener, Cookie issuer, Task status

@@ -1,13 +1,20 @@
 # System Architecture
 
-Source **0.6.4** includes explicit loopback/TLS hosting, limited Session issuance, private Task commands,
-retained text publication and a default-off Session/Task shell for reading and manual-Draft metadata saves.
-Raw-text/normal-app/SDK saving, LAN access and migration remain absent; browser TLS acceptance remains
+Source **0.6.5** includes explicit loopback/TLS hosting, limited Sessions, private Task commands,
+retained/Task-bound text publication and a default-off shell for reading and manual-Draft metadata saves.
+Browser raw-text/normal-app/SDK saving, LAN access and migration remain absent; browser TLS remains
 unverified locally. Earlier implementation-stage labels retain their original scope.
 
 Included in 0.6.4, [retained text publication](platform-text-artifact-connection.md) adds a separate pool-free
 create connector and POST adapter with original storage and deferred exact-head checks, explicitly
 selected by both loopback CLI hosts without teaching AppState or browser/SDK saving.
+
+0.6.5 adds a [Task-bound connector and strict HTTP adapter](platform-text-artifact-connection.md#unreleased-task-bound-publication-capability):
+the current Session must own the complete manual-Draft baseline before any new file work.
+Only the new workspace constructor or default-off `--task-text-publication` selects nine routes/eight
+response lanes; default CLI remains eight/seven and old constructors seven/six. All eight capacities
+are checked before one original storage Arc split. The two text connectors each retain four actual workers;
+global network admission remains 16. Publication creates an Artifact, not a Task update or UI save.
 
 The [native HTTPS loopback mode](platform-loopback-tls-host.md) reuses that host's
 startup, original storage and HTTP driver with explicit private TLS identity and handshake admission.
@@ -21,7 +28,7 @@ now composes process/private-input gates, one original storage binding, three Se
 the [owner-private Task metadata index](platform-task-index-connection.md), [read-only content reopening](platform-task-content-connection.md)
 and [empty manual Draft creation](platform-task-create-connection.md). Separate [Draft manifest replacement](platform-task-replace-connection.md)
 updates titles or existing exact owned text references; code and Run remain optional. Retained text
-publication makes the explicit CLI composition eight routes/seven independent response lanes over one
+publication makes the default CLI composition eight routes/seven independent response lanes over one
 original storage Arc; old constructors stay seven-route/six-lane without publication. All seven capacities
 are validated before splitting; global admission remains 16 connections and text actual-worker slots remain four.
 It does not mount pooled Artifact reads, status writes, normal teaching AppState, LAN access, a proxy backend or browser raw-text saving.

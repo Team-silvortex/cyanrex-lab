@@ -1,7 +1,9 @@
 # 安全与部署边界
 
-源码 **0.6.3** 已收录显式回环／TLS 宿主、受限 Session 签发及私人 Task 创建／列举／重开／清单换版。
-该宿主不接通浏览器／SDK 保存、局域网或存储迁移；早期实施阶段标签保留原范围与证据。
+源码 **0.6.5** 已收录回环／TLS 宿主、受限 Session、私人 Task 命令及原绑定／Task 绑定文本发布。
+默认 CLI 仍为八路由／七响应通道；仅显式 `--task-text-publication` 才启用九／八。
+七个 UI 资源仍无正文保存；不接正常应用／SDK 保存、局域网或迁移。下文宿主能力的 `Unreleased`
+标签保留现已收录于 0.6.5 的实施阶段，不新增验证证据或扩大部署验收范围。
 
 Unreleased [原绑定文本发布](platform-text-artifact-connection.md)包含独立仅创建连接器与 POST 适配，
 由两个回环 CLI 宿主显式选择。
@@ -11,6 +13,37 @@ Unreleased [原绑定文本发布](platform-text-artifact-connection.md)包含�
 HTTP 响应、真实文本 worker（四名额）及全局连接（16）预算独立，不保证 28 请求并发。
 组合角色保留既有凭据／Task／行锁权限，只增加三项 Artifact INSERT；不自动授权，
 不接旧连接池 Artifact 读取、浏览器保存或教师全局权限。
+
+Unreleased `PlatformTaskTextArtifactConnector` 增加另行显式选择的
+[绑定 Task 文本发布命令](platform-text-artifact-connection.md#unreleased绑定-task-的发布能力)。
+同一原事务推导当前操作者、锁定并匹配完整本人手动 Draft 基线，再在 Task 等待后、
+新文件派发前刷新原 Source／操作者／Session 权威。延期的新 head／字节与未变 Task 检查、
+原根／存储守卫及最终新鲜 Session 检查先于 COMMIT；给定 owner 只是比较固定，不是权限。
+它不检查旧载荷字节，也不自动挂接新 Artifact 或完成 Task 保存。可信初始化另需 Task SELECT
+及仅供行锁的 `UPDATE(task_id)`，不增加 Task 业务写入／outbox INSERT 或 Artifact head UPDATE，
+不覆盖明确 READ ONLY。下述独立适配器及显式启用的工作区／CLI 组合选择此能力，
+不接浏览器、SDK 或教学认证。既有严格五键文本 POST 及七 UI 资源不变，默认 CLI 仍为八条路由／七通道。
+未知文件保留，不重试、收编或清理；另行挂接仍可能在发布已确认后失败。
+不同标识可针对同一未变 Task 基线分别发布，重复标识是冲突，不是幂等或先前回执。
+
+Unreleased `TaskTextArtifactPublishHttpState` 与 `build_task_text_artifact_publish_router` 只提供独立
+`POST /platform/v1/tasks/{task_id}/text-artifacts`。五字段正文携带完整 `expected: {task, manifest}`
+一致性固定、新标识及文本，不授予选择所有者的权限。全部记录层只接受对象，拒绝重复／未知／
+缺失字段，definition 必须明确 null，status 仅为字符串。等价时间偏移仍是时间值固定；单个转义
+已知键合法，语义重复键则拒绝。准确路径／作用域及文本规范检查先于派发，Origin／marker／
+专用 Cookie 守卫先于至多 2 MiB／两秒正文收集，解码文本仍至多 256 KiB。
+克隆共享四个响应名额（可配 1–16），已准入成功／错误都持有至正文完成或丢弃，与真实文件 worker 独立。
+确认 201 只返回 Artifact 元数据，局部映射将 Artifact 冲突投影为 409，不修改旧 Task 映射。
+派发前失败仍为 `not_attempted`，命令错误为 `unconfirmed`；不代表 Task 更新、旧字节验证、
+自动重试／清理、整份草稿事务或浏览器保存。
+
+Unreleased `with_task_text_publication_capacities` 在拆分同一原存储 Arc 前验证八项容量，不重新采纳观察。
+只有该构造器或默认关闭的 CLI `--task-text-publication` 才选择九条路由／八个响应通道；
+原构造器及默认 CLI 行为不变。标志只用于两个 serve 模式，先于可选 `--notify-systemd`、`--session-ui`，
+不启用 UI 客户端或增加环境／JSON 输入。此启用组合仍同时保留非绑定与 Task 绑定发布，
+不是只允许 Task 绑定发布的权限模式。两者各自四个真实文件 worker（合计八个），与响应名额、
+其他 worker 守卫及未变的 16 网络连接限制独立。原组合权限已经足够，不增加安装器、权限扩张、
+监听、信任变更或迁移；明文／原生 TLS 宿主测试不等于浏览器 TLS、受保护局域网或完整 Task 保存验收。
 
 未发布的[手动 Draft 清单换版](platform-task-replace-connection.md)只增加准确
 `PUT /platform/v1/tasks/{task_id}/content`，正文为版本、预期修订和完整清单。当前所有者可修改

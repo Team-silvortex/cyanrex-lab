@@ -2,7 +2,7 @@
 
 [简体中文](README.zh-CN.md)
 
-Version: `0.6.4`
+Version: `0.6.5`
 
 Cyanrex is a self-hosted collaboration and teaching platform. A Task owns its goal and optional
 content payload; code and execution are not required. eBPF teaching is the first supported domain,
@@ -35,7 +35,7 @@ The [documentation index](docs/en/README.md) provides role-based reading paths. 
 |---|---|---|
 | Teaching | Authenticated browser workflow, eBPF checks/runs, learning history and teacher feedback | Shared-kernel execution is not student isolation |
 | Task authoring | Local drafts, optional text payloads, 14 editor language profiles, reviewed imports and downloads | No generic browser server saving, autosave or Run dispatch |
-| Platform host | Explicit Linux loopback HTTP/native TLS host with bounded Sessions and owner-private Task create/list/reopen/manifest replacement | Separate startup and storage; not a LAN or browser deployment |
+| Platform host | Explicit Linux loopback HTTP/native TLS host with bounded Sessions, owner-private Task commands and optional Task-bound text publication | Separate startup/storage; no browser text saving or LAN deployment |
 | Large-file transfer | Authorized publication, grants, verified chunks and explicit delivery components | Not mounted in the normal application UI; no restart recovery |
 | SDK and AI adaptation | Typed Engine client, host profiles and explicit agent tool-format adapters | No autonomous AI orchestration or provider transport |
 
@@ -78,6 +78,9 @@ The [editor guide](docs/en/editor.md) explains persistence and navigation limits
 
 For the **independent platform host**, follow its [explicit startup guide](docs/en/platform-loopback-host.md).
 Starting the teaching application does not initialize or migrate collaboration storage.
+The default host retains eight routes/seven response lanes. Explicit `--task-text-publication` enables
+the ninth route/eighth lane; it publishes against an owned Draft baseline without saving that Task.
+The optional seven-asset Session UI still has no raw-text save client.
 Full launcher options, account settings and runtime endpoints are in the
 [runtime reference](docs/en/runtime-reference.md).
 
@@ -153,7 +156,7 @@ jobs. See the [runtime CI reference](docs/en/runtime-reference.md#ci-gate-ci-gat
 New annotated version tags trigger immutable metadata and offline-package acceptance checks;
 they do not publish a GitHub Release or deploy services. Follow the
 [release workflow](CONTRIBUTING.md#release-workflow), and keep dated outcomes in
-[release reports](reports/releases/0.6.4/README.md) rather than the homepage.
+[release reports](reports/releases/0.6.5/README.md) rather than the homepage.
 
 ## Contributing
 

@@ -36,6 +36,8 @@ mod task_content_replace;
 #[cfg(unix)]
 mod task_create;
 mod task_index;
+#[cfg(unix)]
+mod task_text_artifact_publish;
 mod text_artifact;
 #[cfg(unix)]
 mod text_artifact_publish;
@@ -64,6 +66,10 @@ pub use task_content_replace::{build_task_content_replace_router, TaskContentRep
 #[cfg(unix)]
 pub use task_create::{build_task_create_router, TaskCreateHttpState};
 pub use task_index::{build_task_content_index_router, TaskContentIndexHttpState};
+#[cfg(unix)]
+pub use task_text_artifact_publish::{
+    build_task_text_artifact_publish_router, TaskTextArtifactPublishHttpState,
+};
 pub use text_artifact::{build_text_artifact_router, TextArtifactHttpState};
 #[cfg(unix)]
 pub use text_artifact_publish::{build_text_artifact_publish_router, TextArtifactPublishHttpState};

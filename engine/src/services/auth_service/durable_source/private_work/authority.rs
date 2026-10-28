@@ -92,6 +92,22 @@ impl PrivateWorkContext {
         self.recheck_session_for(authority_id, tx).await
     }
 
+    /// Sample original current authority again after a target-lock wait, before file dispatch.
+    /// Return to that same pinned target; this is not a reusable or continuous permission.
+    pub(in super::super) async fn recheck_selected_for(
+        &self,
+        authority_id: AuthorityId,
+        tx: &mut Transaction<'_, Postgres>,
+    ) -> WorkResult<()> {
+        let selected = &self.targets[self.selected];
+        selected.verify(tx).await?;
+        self.check_authority_for(authority_id, tx).await?;
+        self.recheck_session_for(authority_id, tx).await?;
+        NamespacePin::select(tx, &selected.name).await?;
+        selected.verify(tx).await?;
+        Ok(())
+    }
+
     /// A host guard runs in Source after preparation. Refuse namespace drift before selecting
     /// anything, then recheck every original pin and membership before the final fresh Session.
     pub(in super::super) async fn finish_from_source_for(

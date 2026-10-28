@@ -129,7 +129,7 @@ test("retained Task configurations validate before allocating selected connector
 test("workspace preserves three four and five capacity APIs and validates all six lanes before splitting original storage", async () => {
   const workspace = compact(await read("workspace_router/mod.rs"));
   assert.deepEqual([...workspace.matchAll(/pubfn(\w+)\(/g)].map(match => match[1]),
-    ["new", "with_capacities", "with_content_capacities", "with_create_capacities", "with_replace_capacities", "with_text_publication_capacities", "build_platform_workspace_router"]);
+    ["new", "with_capacities", "with_content_capacities", "with_create_capacities", "with_replace_capacities", "with_text_publication_capacities", "with_task_text_publication_capacities", "build_platform_workspace_router"]);
   assert.ok(workspace.includes("Self::with_capacities(storage,4,4,4)"));
   const compatibility = workspace.slice(workspace.indexOf("pubfnwith_capacities("), workspace.indexOf("pubfnwith_content_capacities("));
   assert.deepEqual(compatibility.match(/pubfnwith_capacities\(([^)]*)\)/)?.[1].split(",").filter(Boolean),

@@ -81,6 +81,8 @@ pub(crate) mod task_index_transaction;
 #[cfg(unix)]
 pub(crate) mod task_replace_transaction;
 #[cfg(unix)]
+pub(crate) mod task_text_artifact_transaction;
+#[cfg(unix)]
 pub(crate) mod text_artifact_transaction;
 
 #[cfg(unix)]

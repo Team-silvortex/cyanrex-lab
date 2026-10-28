@@ -1,8 +1,10 @@
 # Security and deployment boundaries
 
-Source **0.6.3** includes explicit loopback/TLS hosting, limited Session issuance and private
-Task create/list/reopen/manifest replacement. Browser/SDK saving, LAN access
-and migration remain absent from that host; earlier implementation-stage labels retain their original scope.
+Source **0.6.5** includes loopback/TLS hosting, limited Sessions, private Task commands and retained/
+Task-bound text publication. Default CLI remains eight routes/seven response lanes; only explicit
+`--task-text-publication` enables nine/eight. The seven UI assets still lack raw-text saving; normal-app/
+SDK saving, LAN access and migration remain absent. The host capability `Unreleased` labels below
+preserve implementation stages now included in 0.6.5, not new evidence or broader deployment acceptance.
 
 Unreleased [retained text publication](platform-text-artifact-connection.md) has a separate create-only
 connector and POST adapter, explicitly selected by both loopback CLI hosts. Original root/storage checks,
@@ -14,6 +16,46 @@ storage Arc; old constructors retain seven routes/six lanes without publication.
 text workers (four) and global connections (16) remain distinct budgets, not 28 guaranteed requests.
 The combined role retains old credential/Task/row-lock grants and adds only three Artifact INSERTs;
 no automatic grants, pooled Artifact reads, browser save or teacher-wide permission are added.
+
+Unreleased `PlatformTaskTextArtifactConnector` adds a separately selected
+[Task-bound text publication command](platform-text-artifact-connection.md#unreleased-task-bound-publication-capability).
+One original transaction derives the current actor, locks and matches the complete owned manual
+Draft baseline, then refreshes original Source/actor/Session authority after the Task wait and before
+new file dispatch. Deferred new-head/byte and unchanged-Task checks, original root/storage guards and
+final fresh Session checks precede COMMIT. The supplied owner is a consistency pin, not authority;
+old payload bytes are not checked and the new Artifact is not attached to or saved into the Task.
+Trusted provisioning additionally needs Task SELECT and lock-only `UPDATE(task_id)`, not Task business
+writes/outbox INSERT or Artifact-head UPDATE. Explicit READ ONLY is never overridden. The separate
+adapter and explicit opt-in workspace/CLI composition below select this capability, without browser,
+SDK or teaching-authentication integration. The old five-field text POST and seven UI assets stay
+unchanged; default CLI startup remains eight routes/seven lanes. Unknown files remain without retry,
+adoption or cleanup; separate linking can still fail after confirmed publication. Distinct IDs may
+publish against one unchanged Task
+baseline; duplicate IDs are conflicts, not idempotency or an earlier receipt.
+
+Unreleased `TaskTextArtifactPublishHttpState` and `build_task_text_artifact_publish_router` provide
+only standalone `POST /platform/v1/tasks/{task_id}/text-artifacts`. Its five-field body carries a full
+`expected: {task, manifest}` consistency pin, new IDs and text, never permission to choose an owner.
+All record levels are map-only with duplicate/unknown/missing-field rejection, required null
+definition and string-only status. Equivalent timestamp offsets remain time-value pins; single
+escaped known keys are valid JSON, while semantic duplicate keys are rejected. Exact path/scope and
+profile checks precede dispatch; Origin/marker/dedicated Cookie gates precede bounded 2 MiB/two-second
+body collection, with 256 KiB decoded text. Clone-shared four response slots (1–16) last through
+admitted success/error body completion or drop, independently of actual file workers. Confirmed 201
+returns only Artifact metadata; a local mapper gives Artifact conflicts 409 without changing the old
+Task mapper. Pre-dispatch failures remain `not_attempted`, command errors `unconfirmed`. This is not
+a Task update, old-byte validation, automatic retry/cleanup, whole-draft transaction or browser save.
+
+Unreleased `with_task_text_publication_capacities` validates all eight capacities before splitting
+one original storage Arc, without recapturing observations. Only it or default-off CLI
+`--task-text-publication` selects nine routes/eight response lanes; old constructors and default
+CLI startup retain their original behavior. The flag is serve-only and precedes optional
+`--notify-systemd` then `--session-ui`; it enables no UI client or new environment/JSON input.
+Both unbound and Task-bound publication remain present in this opt-in: it is not a Task-only
+permission mode. Each has four independent actual file workers (eight together), separate from
+response slots, other worker gates and the unchanged 16-network-connection limit. Existing combined
+grants suffice; no installer, permission expansion, listener, trust change or migration is added.
+Plain/native-TLS host tests are not browser-TLS, protected-LAN or complete Task-save acceptance.
 
 Unreleased [manual Draft manifest replacement](platform-task-replace-connection.md) adds only exact
 `PUT /platform/v1/tasks/{task_id}/content` with schema version, expected revision and complete manifest.

@@ -38,10 +38,19 @@ pub(super) fn run(
     path: &Path,
     bind: SocketAddr,
     process: &PlatformProcessStartup,
+    task_text_publication: bool,
     notify_systemd: bool,
     session_ui: bool,
 ) -> Result<(), ()> {
-    run_with_transport(path, bind, process, None, notify_systemd, session_ui)
+    run_with_transport(
+        path,
+        bind,
+        process,
+        None,
+        task_text_publication,
+        notify_systemd,
+        session_ui,
+    )
 }
 
 pub(super) fn run_tls(
@@ -50,6 +59,7 @@ pub(super) fn run_tls(
     cert: &Path,
     key: &Path,
     process: &PlatformProcessStartup,
+    task_text_publication: bool,
     notify_systemd: bool,
     session_ui: bool,
 ) -> Result<(), ()> {
@@ -58,6 +68,7 @@ pub(super) fn run_tls(
         bind,
         process,
         Some((cert, key)),
+        task_text_publication,
         notify_systemd,
         session_ui,
     )
@@ -68,6 +79,7 @@ fn run_with_transport(
     bind: SocketAddr,
     process: &PlatformProcessStartup,
     tls_paths: Option<(&Path, &Path)>,
+    task_text_publication: bool,
     notify_systemd: bool,
     session_ui: bool,
 ) -> Result<(), ()> {
@@ -123,9 +135,15 @@ fn run_with_transport(
         let checked = process.verify_current_thread().map_err(|_| ());
         let storage = opened.map_err(|_| ())?;
         checked?;
-        let state = PlatformWorkspaceHttpState::with_text_publication_capacities(
-            storage, 4, 4, 4, 4, 4, 4, 4,
-        )
+        let state = if task_text_publication {
+            PlatformWorkspaceHttpState::with_task_text_publication_capacities(
+                storage, 4, 4, 4, 4, 4, 4, 4, 4,
+            )
+        } else {
+            PlatformWorkspaceHttpState::with_text_publication_capacities(
+                storage, 4, 4, 4, 4, 4, 4, 4,
+            )
+        }
         .map_err(|_| ())?;
         let router = build_platform_workspace_router(state);
         let router = if session_ui {

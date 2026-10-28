@@ -10,7 +10,7 @@ const codeOnly = source => source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/
 test("process command is explicit and independent of Engine, storage, listeners and environment defaults", async () => {
   const code = codeOnly(await read("engine/src/bin/cyanrex-platform/main.rs"));
   for (const value of ["check-process", "--uid", "--gid", "--groups", "prepare_platform_process",
-    "verify_current_thread", "spawn_scoped", "take(18)", "take(129)", "2048", "4096", "exit(64)", "exit(1)",
+    "verify_current_thread", "spawn_scoped", "take(19)", "take(129)", "2048", "4096", "exit(64)", "exit(1)",
     "platform process check passed; no host started"]) assert.ok(code.includes(value), value);
   assert.doesNotMatch(code, /tokio|build_state|AppState|AuthService|TcpListener|PgPool|PgConnectOptions|dotenv|env::vars|env::var\(|set_var|remove_var|capset|setuid|setgid|setgroups/);
   assert.ok(code.indexOf("let checked = prepare_platform_process") < code.indexOf("spawn_scoped"));

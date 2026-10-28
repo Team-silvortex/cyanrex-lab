@@ -1,9 +1,9 @@
 # Project status
 
-Reviewed **2026-10-26**. Product version is **0.6.4**; the public API compatibility baseline remains
-**0.3.0**. This release includes retained text publication and the default-off Session/private Task
-shell with reading and manual-Draft metadata saves, not raw-text saving or browser TLS acceptance.
-Earlier 0.6.3 artifacts and dated release evidence retain their original scope.
+Reviewed **2026-10-26**. Product version is **0.6.5**; the public API compatibility baseline remains
+**0.3.0**. Task-bound publication/strict HTTP and default-off `--task-text-publication` extend the
+0.6.4 text/Session-page metadata paths, not browser raw-text saving or browser TLS acceptance. See the
+[0.6.5 report](../../reports/releases/0.6.5/README.md); earlier artifacts and dated evidence retain their scope.
 
 Cyanrex is a self-hosted **collaboration and teaching platform**. A Task describes work; code is
 one optional payload, not the organizing center. Notes, configuration and code can use the text
@@ -22,7 +22,7 @@ Three application paths coexist. They are not interchangeable authentication or 
 |---|---|---|
 | Teaching application | Existing browser authentication, classrooms, five labs, feedback, execution and teacher deployment management | Uses the existing AuthService and teaching storage; old attempts are not generic Tasks or Runs |
 | Local Task editor | Optional text payload, controlled editors, reviewed import and local JSON export | Page-memory drafts; no generic server save, autosave or browser persistence |
-| Explicit platform host | Linux plain/native-TLS loopback hosting, limited Sessions, private Task commands and opt-in reading/Draft metadata saves | Separately provisioned original storage; no normal-app/text-save/SDK cutover or LAN listener |
+| Explicit platform host | Linux plain/native-TLS loopback hosting, limited Sessions, private Tasks, metadata saves and optional Task-bound publication | Original provisioned storage; no normal-app/text-save/SDK cutover or LAN listener |
 
 Additional Rust stores, HTTP adapters, draft-publication helpers and file-delivery components can be
 composed explicitly. Their availability does not mean that the normal application mounts them.
@@ -66,12 +66,11 @@ not imply Korean course bodies. See [Task editing](editor.md) and [local file im
 
 ## Private platform host
 
-Source 0.6.4 includes explicit `cyanrex-platform serve-loopback` and `serve-loopback-tls` modes.
-They verify low-privilege process identity, private format 3 input, the declared original catalog,
-five storage markers and the original Artifact root. They do not construct teaching AppState.
+Source 0.6.5 retains `cyanrex-platform serve-loopback` and `serve-loopback-tls`, verifying low-privilege
+identity, private format 3 input, the original catalog/five markers/Artifact root, without teaching AppState.
 
-Included in 0.6.4, retained text publication is explicit in both CLI modes. The host now combines
-eight concrete routes over one original retained storage binding:
+The 0.6.4 unbound text route remains enabled in both CLI modes; 0.6.5 adds one default-off Task-bound
+route. Both use the same original retained storage binding:
 
 | Method and path | Implemented command |
 |---|---|
@@ -83,17 +82,19 @@ eight concrete routes over one original retained storage binding:
 | POST `/platform/v1/tasks` | Create an empty manual Draft using a strict version/Task-ID/title request |
 | PUT `/platform/v1/tasks/{task_id}/content` | Replace a manual Draft manifest with an expected revision and existing exact owned text references |
 | POST `/platform/v1/text-artifacts` | Create a private fixed-profile text Artifact; return only confirmed metadata |
+| POST `/platform/v1/tasks/{task_id}/text-artifacts` | Explicit opt-in: publish against a complete owned manual-Draft baseline; do not update or attach to the Task |
 
 The private index is metadata, not proof that every content file remains readable. Reopening checks
 the exact referenced content rather than trusting the index. Creation requires neither payload nor
 code. Replacement can change a title, labels, order or references; it publishes no new Artifact bytes.
 Task status, catalogue creation, assessment and execution are not mounted by these commands.
 
-Seven independent response-lifetime lanes cover login, Session lifecycle, index, content read, empty
-creation, manifest replacement and text publication. The CLI opts into `with_text_publication_capacities`;
-old constructors remain seven-route/six-lane with publication disabled. All seven capacities are checked
-before splitting one original storage Arc. Global admission is still 16 connections, not 28 guaranteed
-requests. The pooled write/read and file-distribution routers are not merged into the host.
+Default CLI construction stays eight-route/seven-lane; old constructors stay seven-route/six-lane
+without publication. Only `with_task_text_publication_capacities` or `--task-text-publication` opts into
+nine routes/eight response-lifetime lanes. All eight capacities are checked before one original storage
+Arc split. Strict HTTP pins the full Task/manifest; current ownership is rechecked before any new file work.
+Each text connector has four actual workers (eight together); global admission is still 16 connections,
+not 32 guaranteed requests. Pooled write/read and file-distribution routers remain separate.
 
 Native TLS adds private certificate/key checks, exact IP SAN matching, bounded handshake work and
 Secure Cookies. Optional service notifications report verified Ready and pre-drain Stopping.
@@ -144,13 +145,13 @@ cross-user acceptance and automatic rule execution remain absent.
 ### Artifacts and Review
 
 Artifact storage supports private immutable revisions, digest-bound references and transactional
-metadata/events. Internal current-Session publication and reads, plus independent text HTTP
-preparation, exist outside the retained host's mounted Task surface.
+metadata/events. Generic pooled publication/read APIs remain separate from the retained host;
+its independently selected text commands use the original storage binding instead.
 
-[Retained text publication](platform-text-artifact-connection.md), included in 0.6.4, supplies a create-only
-connector, standalone POST and explicit plain/TLS host composition, with a fixed text profile and
-deferred-work exact-head checks. This does not connect browser text saving or update a Task. The
-combined host role retains old grants and adds only three Artifact INSERTs.
+[Retained text publication](platform-text-artifact-connection.md) began in 0.6.4; 0.6.5 adds a Task-bound
+connector/strict POST and explicit host opt-in. Both use fixed text profiles and deferred exact-head
+checks, without browser text saving or Task updates. Existing combined login/Task/lock grants and
+three Artifact INSERTs suffice; the Task-bound opt-in adds no grant or old-payload byte verification.
 
 Task content storage atomically updates Task/manifest/outbox metadata. Existing text replacement
 validates the complete old/new reference union, including removed content, around deferred writes.
@@ -233,9 +234,9 @@ without one whole-project completion percentage.
 The immediate mainline is a **private, payload-neutral Task workflow**. The retained host supplies
 a bounded server edge, not the completed browser product. Work should proceed in this order:
 
-1. Define browser-to-host Task integration, including Cookie-safe Origin/client trust and separate
-   publication/Task-update outcomes. Preserve current authority and private file ownership;
-   do not mount an old pooled router or infer permission from a local draft ID.
+1. Connect the reviewed Task-bound edge to a browser contract with Cookie-safe Origin/client trust
+   and separate publication/Task-update outcomes. Preserve current authority/private file ownership;
+   do not mount pooled routers or infer permission from a local draft ID.
 2. Extend the opt-in metadata-save page to text publication only through separately reviewed
    contracts. Preserve separate local drafts, unsaved edits, expected revisions, conflicts and cancel/unknown states.
    A local export and a successful metadata PUT must remain distinct operations.
@@ -246,9 +247,8 @@ a bounded server edge, not the completed browser product. Work should proceed in
 5. Advance protected-LAN operation, distribution UI and desktop exchange only with explicit trust,
    credential, deployment and compatibility decisions; loopback TLS is not their acceptance.
 
-Automatic recovery/retry, storage migration, generic Run scheduling, AI delegation and executable
-plugins need separately reviewed designs. They should not be incidental side effects of connecting
-the private content workflow. No calendar or new version is promised by this ordering.
+Automatic recovery/retry, migration, generic Run scheduling, AI delegation and executable plugins
+need separate review, not incidental inclusion in private saving. This ordering promises no date or version.
 
 ## Verification and evidence
 

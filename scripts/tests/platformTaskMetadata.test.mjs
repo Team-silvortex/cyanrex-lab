@@ -3,10 +3,42 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { createObservations } from "../../engine/tests/platform_browser_task_metadata/observations.mjs";
 
 const root = new URL("../../", import.meta.url);
 const read = file => readFile(new URL(file, root), "utf8");
 const directory = "engine/src/bin/cyanrex-platform/session_ui";
+
+test("metadata fixture drain includes observations registered while earlier checks are pending", async () => {
+  const observations = createObservations();
+  let releaseHeader, releaseBody, bodyStarted, bodyChecked = false;
+  const headers = new Promise(resolve => { releaseHeader = resolve; });
+  const body = new Promise(resolve => { releaseBody = resolve; });
+  const enteredBody = new Promise(resolve => { bodyStarted = resolve; });
+  observations.track("request-headers", async () => {
+    await headers;
+    observations.track("reply-json", async () => {
+      bodyStarted(); await body; bodyChecked = true;
+    });
+  });
+  const drained = observations.drain();
+  releaseHeader(); await enteredBody;
+  try {
+    const order = await Promise.race([drained.then(() => "early-drain"),
+      new Promise(resolve => setImmediate(() => resolve("body-still-held")))]);
+    assert.equal(order, "body-still-held");
+  } finally { releaseBody(); await drained; }
+  assert.equal(bodyChecked, true);
+});
+
+test("metadata fixture observation failures retain only fixed check codes without leaking private assertions", async () => {
+  const observations = createObservations();
+  observations.track("reply-save", async () => { throw new Error("private credentials and Task body"); });
+  // Give a rejected observer a full turn before draining; it must not become unhandled.
+  await new Promise(resolve => setImmediate(resolve));
+  await assert.rejects(observations.drain(), error => error.message === "private browser observation failed"
+    && error.check === "reply-save" && !JSON.stringify(error).includes("private credentials"));
+});
 
 test("the separate metadata editor has one explicit same-origin PUT and no Artifact publication transport", async () => {
   const source = await read(`${directory}/task-edit.js`);
@@ -115,6 +147,14 @@ test("twelve mocked Chrome cases and one distinct original-storage selector are 
   const actual = await read("engine/tests/platform_browser_task_metadata/browser.mjs");
   assert.match(actual, /ignoreHTTPSErrors: false/);
   assert.doesNotMatch(actual, /\.route\(|route\.fulfill|addCookies\(|ignoreHTTPSErrors:\s*true/);
+  for (const value of ['import { createObservations } from "./observations.mjs"',
+    "page.waitForResponse", 'response.request().method() === method', 'response.url() === `${origin}${path}`',
+    'expectReply(taskPath, "GET")', 'expectReply(savePath, "PUT")', "await observations.drain()",
+    'stage = "put-response-observed"', 'stage = "saved-rendered-title"',
+    '"browser-wait-timeout"', 'emit({ phase: "failure", stage, check })'])
+    assert.ok(actual.includes(value), value);
+  assert.equal([...actual.matchAll(/expectReply\(savePath, "PUT"\)/g)].length, 3);
+  assert.doesNotMatch(actual, /emit\([^\n]*(?:error\.message|error\.stack|reply\.body|config)/);
   const bootstrap = await read("scripts/test-platform-browser-ci.sh");
   const runners = ["session-ui-browser", "task-reader-browser", "task-metadata-browser",
     "browser-session", "browser-tasks", "browser-task-metadata"].map(name => `test-platform-${name}.sh`);

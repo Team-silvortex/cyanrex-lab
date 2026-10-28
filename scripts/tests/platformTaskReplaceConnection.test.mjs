@@ -85,7 +85,8 @@ test("replacement adds only an independent sixth workspace lane and leaves reado
     "TaskContentReplaceHttpState::with_capacity(replace,replace_capacity)", "task_content_replace::routes().with_state(state.replace)"])
     assert.ok(workspace.includes(value), value);
   const pair = compact(await read("engine/src/platform_host/session_pair.rs"));
-  const split = pair.slice(pair.indexOf("pub(crate)fnsplit_platform_task_replace_connectors("));
+  const split = pair.slice(pair.indexOf("pub(crate)fnsplit_platform_task_replace_connectors("))
+    .split("pub(crate)fnsplit_platform_task_text_publication_connectors(")[0];
   assert.ok(split.includes("PlatformTaskReplaceConnector::from_shared(storage)"));
   assert.equal([...split.matchAll(/Arc::new\(storage\)/g)].length, 1);
   assert.equal([...split.matchAll(/Arc::clone\(&storage\)/g)].length, 5);
