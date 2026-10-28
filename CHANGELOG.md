@@ -11,6 +11,9 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
   fixed private-safe codes, and record browser/Node versions. Preserve one response observation,
   all existing real HTTP/SQL/UI assertions and fail-closed behavior without retries. This adds
   diagnostic evidence; the remote-only response observation failure is not yet resolved.
+- Add a required early run of the existing platform browser suite while retaining its original
+  late run and all SQL checks. Either failure still fails CI; the two phases provide additional
+  diagnostic evidence, not an automatic retry or proof of SQL-induced state changes.
 
 ## [0.6.5] - 2026-10-28
 
