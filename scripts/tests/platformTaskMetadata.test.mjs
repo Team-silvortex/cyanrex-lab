@@ -183,17 +183,31 @@ test("twelve mocked Chrome cases and one distinct original-storage selector are 
   const actual = await read("engine/tests/platform_browser_task_metadata/browser.mjs");
   assert.match(actual, /ignoreHTTPSErrors: false/);
   assert.doesNotMatch(actual, /\.route\(|route\.fulfill|addCookies\(|ignoreHTTPSErrors:\s*true/);
-  for (const value of ['import { createObservations, readObservedJson } from "./observations.mjs"',
-    "page.waitForResponse", 'response.request().method() === method', 'response.url() === `${origin}${path}`',
+  for (const value of ['import { createObservations } from "./observations.mjs"',
+    'import { createCdpResponses } from "./cdp-responses.mjs"',
+    'await createCdpResponses(await context.newCDPSession(page))',
+    'responses.expect(`${origin}${path}`, method)',
     'expectReply(taskPath, "GET")', 'expectReply(savePath, "PUT")', "await observations.drain()",
-    "...await readObservedJson(incoming)",
+    "replies.push({ path, ...await incoming })", "await responses.close()",
     'stage = "put-response-observed"', 'stage = "saved-rendered-title"',
     '"browser-wait-timeout"', 'emit({ phase: "failure", stage, check })'])
     assert.ok(actual.includes(value), value);
   assert.equal([...actual.matchAll(/expectReply\(savePath, "PUT"\)/g)].length, 3);
+  assert.ok(actual.indexOf("await createCdpResponses(") < actual.indexOf("await page.goto("));
+  assert.doesNotMatch(actual, /waitForResponse|\.text\(\)|\.json\(\)/);
+  const cdp = await read("engine/tests/platform_browser_task_metadata/cdp-responses.mjs");
+  for (const value of ['"Network.requestWillBeSent"', '"Network.responseReceived"',
+    '"Network.loadingFinished"', '"Network.loadingFailed"', 'await session.send("Network.enable")',
+    'event.request.url !== item.url || event.request.method !== item.method',
+    'item.id = event.requestId', 'bound.get(event.requestId)', 'url !== item.url',
+    'await session.send("Network.getResponseBody", { requestId: item.id })',
+    'readObservedJson(Promise.resolve(response))']) assert.ok(cdp.includes(value), value);
+  assert.equal([...cdp.matchAll(/session.send\("Network.getResponseBody"/g)].length, 1);
+  assert.doesNotMatch(cdp, /loadNetworkResource|replayXHR|fetch\(|\.route\(|\.text\(\)|addCookies|setExtraHTTPHeaders/);
   assert.doesNotMatch(actual, /emit\([^\n]*(?:error\.message|error\.stack|reply\.body|config)/);
   const bootstrap = await read("scripts/test-platform-browser-ci.sh");
   assert.ok(bootstrap.includes("Platform browser runtime: Node %s; %s"));
+  assert.ok(bootstrap.includes("node --test scripts/tests/platformMetadataCdp.browser.mjs"));
   const runners = ["session-ui-browser", "task-reader-browser", "task-metadata-browser",
     "browser-session", "browser-tasks", "browser-task-metadata"].map(name => `test-platform-${name}.sh`);
   assert.deepEqual([...bootstrap.matchAll(/^bash scripts\/(test-platform-[\w-]+\.sh)$/gm)].map(match => match[1]).sort(), runners.sort());

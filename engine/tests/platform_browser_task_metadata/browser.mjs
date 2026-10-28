@@ -6,7 +6,8 @@ import { join, isAbsolute } from "node:path";
 import { tmpdir } from "node:os";
 import { pathToFileURL } from "node:url";
 import { createInterface } from "node:readline";
-import { createObservations, readObservedJson } from "./observations.mjs";
+import { createObservations } from "./observations.mjs";
+import { createCdpResponses } from "./cdp-responses.mjs";
 
 const lines = createInterface({ input: process.stdin, terminal: false });
 const input = lines[Symbol.asyncIterator]();
@@ -38,6 +39,7 @@ async function run(config) {
     "/platform/ui/style.css", "/platform/ui/tasks.js", "/platform/ui/task-contract.js",
     "/platform/ui/task-edit.js", "/favicon.ico"]);
   const calls = [], replies = [], observations = createObservations(), errors = [];
+  const responses = await createCdpResponses(await context.newCDPSession(page));
   page.on("pageerror", () => errors.push("unexpected metadata browser runtime error"));
   page.on("request", request => {
     const url = new URL(request.url()), method = request.method();
@@ -69,12 +71,10 @@ async function run(config) {
     });
   });
   const expectReply = (path, method) => {
-    // Register before the explicit action. UI state and Node's response/body callbacks
-    // travel independently; a rendered saved state is not a response-observer barrier.
-    const incoming = page.waitForResponse(response => response.request().method() === method
-      && response.url() === `${origin}${path}`, { timeout: 10000 });
+    // Arm synchronously before the action, using the dedicated session's own request id.
+    const incoming = responses.expect(`${origin}${path}`, method);
     observations.track(method === "PUT" ? "reply-save" : "reply-task", async () => {
-      replies.push({ path, ...await readObservedJson(incoming) });
+      replies.push({ path, ...await incoming });
     });
   };
   const flush = async () => { await observations.drain(); assert.deepEqual(errors, []); };
@@ -247,7 +247,7 @@ async function run(config) {
   assert.equal(calls.filter(call => call.method !== "GET").length, 4, "one login and exactly three separately confirmed PUT attempts");
   assert.equal(count("/platform/v1/task-index"), 2); assert.equal(count(taskPath), 2);
   await clean(cookie.value); emit({ phase: "denied" }); await advance();
-  await context.close(); context = undefined; emit({ phase: "complete" });
+  await responses.close(); await context.close(); context = undefined; emit({ phase: "complete" });
 }
 
 try { await run(await read()); }

@@ -15,6 +15,15 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
   late run and all SQL checks. Either failure still fails CI; the two phases provide additional
   diagnostic evidence, not an automatic retry or proof of SQL-induced state changes.
 
+### Fixed
+
+- Replace the metadata fixture's Playwright response-body observation with a dedicated passive
+  CDP session, armed before each action and bound to its own request ID. Read each body once after
+  transfer completion, without recovery HTTP requests; retain all real HTTP/SQL/UI assertions and
+  fail on missing, cancelled, empty or invalid evidence. Add deterministic lifecycle tests and real
+  Chrome synthetic-response checks to CI. The late remote failure is confirmed as missing response
+  body evidence, but its unique triggering cause is not established by this observer replacement.
+
 ## [0.6.5] - 2026-10-28
 
 This patch source release adds Task-bound private text publication, a strict independent HTTP

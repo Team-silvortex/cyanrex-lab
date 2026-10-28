@@ -35,6 +35,7 @@ export CYANREX_CHROMIUM_PATH="$browser_ci_chrome"
 printf 'Platform browser runtime: Node %s; %s\n' "$(node --version)" "$browser_ci_version"
 sudo apt-get update -qq
 sudo apt-get install -y libnss3-tools
+node --test scripts/tests/platformMetadataCdp.browser.mjs
 bash scripts/test-platform-session-ui-browser.sh
 bash scripts/test-platform-task-reader-browser.sh
 bash scripts/test-platform-task-metadata-browser.sh
