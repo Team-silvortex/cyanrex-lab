@@ -18,7 +18,7 @@ use tower::ServiceExt;
 
 const ORIGIN: &str = "http://127.0.0.1:43127";
 const HTML: &str = "/platform/";
-const PATHS: [(&str, &str); 7] = [
+const PATHS: [(&str, &str); 13] = [
     (HTML, "text/html; charset=utf-8"),
     ("/platform/ui/app.js", "text/javascript; charset=utf-8"),
     ("/platform/ui/labels.js", "text/javascript; charset=utf-8"),
@@ -30,6 +30,27 @@ const PATHS: [(&str, &str); 7] = [
     ),
     (
         "/platform/ui/task-contract.js",
+        "text/javascript; charset=utf-8",
+    ),
+    ("/platform/ui/request.js", "text/javascript; charset=utf-8"),
+    (
+        "/platform/ui/body-contract.js",
+        "text/javascript; charset=utf-8",
+    ),
+    (
+        "/platform/ui/task-save/taskContentSave.js",
+        "text/javascript; charset=utf-8",
+    ),
+    (
+        "/platform/ui/task-save/taskSaveContract.js",
+        "text/javascript; charset=utf-8",
+    ),
+    (
+        "/platform/ui/task-save/taskDraft.js",
+        "text/javascript; charset=utf-8",
+    ),
+    (
+        "/platform/ui/task-save/taskPayloadLanguage.js",
         "text/javascript; charset=utf-8",
     ),
 ];
@@ -557,3 +578,6 @@ async fn session_ui_unknown_paths_preserve_the_original_router_fallback_without_
         );
     }
 }
+
+#[path = "tests/capability.rs"]
+mod capability;

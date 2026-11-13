@@ -538,3 +538,56 @@ async fn task_text_publish_media_encoding_trailers_and_stream_errors_reject_befo
     assert_eq!(capture(app, valid).await.status, StatusCode::CREATED);
     assert_eq!(backend.calls(), 1);
 }
+
+#[tokio::test]
+async fn task_text_publish_shared_frontend_vector_preserves_original_baseline_and_exact_new_bytes()
+{
+    // A shared synthetic wire vector, not proof of authentication, storage or a real COMMIT.
+    let vector: Value = serde_json::from_str(include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/fixtures/task-bound-content-save.json"
+    )))
+    .unwrap();
+    let original = &vector["baseline"];
+    let body = &vector["publication_body"];
+    assert_eq!(body["expected"], *original);
+    assert_ne!(original["task"]["title"], vector["draft"]["title"]);
+    let workspace: WorkspaceRef =
+        serde_json::from_value(original["task"]["reference"]["workspace"].clone()).unwrap();
+    let backend = Backend::new(Outcome::Success);
+    let configured = TaskTextArtifactPublishHttpState::configured(
+        PublishBackend::Test(backend.clone()),
+        ORIGIN,
+        workspace,
+        4,
+    )
+    .unwrap();
+    let path = format!(
+        "/platform/v1/tasks/{}/text-artifacts",
+        original["task"]["reference"]["task_id"].as_str().unwrap()
+    );
+    let reply = capture(
+        build_task_text_artifact_publish_router(configured),
+        request("POST", &path, Body::from(body.to_string())),
+    )
+    .await;
+    assert_eq!(reply.status, StatusCode::CREATED);
+    assert_eq!(backend.calls(), 1);
+    let received = backend.received();
+    let item = &received[0];
+    assert_eq!(
+        json!({"task":item.expected.task,"manifest":item.expected.manifest}),
+        *original
+    );
+    assert_eq!(json!(item.id), vector["allocations"][0]["artifact_id"]);
+    assert_eq!(
+        json!(item.revision),
+        vector["allocations"][0]["revision_id"]
+    );
+    let text = vector["draft"]["payload"][0]["text"].as_str().unwrap();
+    assert_eq!(item.text.as_bytes(), text.as_bytes());
+    assert!(item.text.contains("\r\n") && item.text.contains("한국어"));
+    assert_eq!(reply.json["artifact"]["byte_length"], text.len());
+    assert_eq!(reply.json["artifact"]["title"], original["task"]["title"]);
+    assert_ne!(reply.json["artifact"]["title"], vector["draft"]["title"]);
+}

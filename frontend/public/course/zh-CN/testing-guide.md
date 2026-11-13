@@ -442,21 +442,37 @@ bash scripts/test-session-task-revisions.sh
 
 ### 可选的独立宿主 Session 网页
 
-原生宿主尾部的 `--session-ui` 参数在 `/platform/` 提供七个固定资源，含 `tasks.js`、
-`task-edit.js` 与 `task-contract.js`，默认关闭。五语言私人 Task 页只读正文，并确认手动 Draft
-标题／显示标签保存，不改引用／顺序／字节／条数。不接原文修改、新 Artifact、创建、Run 写入、
-正常 Next 本地草稿／SDK、认证 API／权限或教学认证回退。以下显式测试均需绝对路径
+原生宿主尾部的 `--session-ui` 参数在 `/platform/` 提供十三个固定资源，含原八个、`body-contract.js`
+及四个生成的 `task-save` 镜像，默认关闭。只开 UI 时，五语言私人 Task 页读取正文并确认手动 Draft
+标题／显示标签保存，不改引用／顺序／字节／条数。同时开启发布／UI 开关才启用下述固定槽正文流程。
+不接创建、Run 写入、正常 Next 本地草稿／SDK、认证 API／权限或教学认证回退。以下显式测试均需绝对路径
 `CYANREX_PLAYWRIGHT_MODULE` 与 `CYANREX_CHROMIUM_PATH`：
+
+默认 `scripts/tests/platformSessionRequest.test.mjs` 检查实际挂载传输的规范路径／正文准入、
+固定响应预算、原生流、失权／交出请求钩子、取消／迟到回复与资源释放。它使用本地 fetch 替身，
+加上 Task 绑定规范及十项生命周期测试，32 项原生 Node22 传输测试已通过。clone 必须在原字节／
+帧预算内完整 EOF 且通过 fatal UTF-8，才能开始原 Response 的原生 `arrayBuffer()`，再核长度和
+每个字节。失败并行取消两个 tee 分支，保留中止／迟到守卫，不回退、不补 HTTP。会同时保留多份
+有界字节／字符串副本，不是一份 buffer 或进程级配额。原生 tee source 在真实关闭后仍可内部
+locked；断言现核 EOF／error／cancel 一次及无继续 pull、双取消都 settle、owned guard 已释放，
+clone 前拒绝仍检查 body 未锁。fetch 替身不证明真实认证或 COMMIT。
+
+`scripts/tests/platformRequestCdp.browser.mjs` 新增八项真实 Chrome：挂载实际帮助层、合成真实 HTTP，
+不伪造响应。已复现同类 `ERR_ABORTED`，修正后必须 helper 字节准确且原请求 CDP 完整结束，不补
+GET 或忽略 loadingFailed；八项全部通过，原 55 项 Chrome、真实显示信息链及三条明文正文／前缀链
+也通过。这修复本机确凿复现的生命周期故障，不证明旧远端故障唯一根因；探针已纳入原 CI bootstrap。
 
 ```bash
 bash scripts/test-platform-session-ui-browser.sh
 bash scripts/test-platform-task-reader-browser.sh
 bash scripts/test-platform-task-metadata-browser.sh
+bash scripts/test-platform-task-body-browser.sh
 # 另需显式一次性 PostgreSQL URL、OpenSSL 和 certutil：
 bash scripts/test-platform-browser-session.sh
 # 只读 Task 路径使用真实明文宿主，不证明 TLS 浏览器验收：
 bash scripts/test-platform-browser-tasks.sh
 bash scripts/test-platform-browser-task-metadata.sh
+bash scripts/test-platform-browser-task-body.sh
 ```
 
 Session UI runner 使用真实 Chrome、生产资源与 CSP，但 **Session API 为 mock**，检查确认锁、
@@ -486,6 +502,65 @@ ACK 不能恢复尝试。`platformTaskMetadataContract.test.mjs` 另列举 20 �
 不重新 hash 或宣称来源证明。请求／回执为 64 KiB／128 KiB，回执最多 4,096 帧，浏览器等待
 十秒，不是解析／服务端硬期限。元数据保存后正文仍是先前未变副本，不证明新鲜读取。
 
+Unreleased `scripts/tests/platformTaskBody.browser.mjs` 另列举 13 条真实 Chrome、**mock API** 用例。
+只有正文变化才按原槽顺序逐项发布全部既有槽，每次使用同一完整原基线；严格 HTTP 201 回执匹配
+原 Task 标题后，最后才以原修订 PUT，并由严格 HTTP 200 Task 回执确认。仅元数据修改仍只有
+一次 PUT／零 POST；能力关闭时保持仅元数据编辑。覆盖默认取消的预览、固定顺序／CRLF、独立
+确认前缀、冲突／未知不重放、POST／最终 PUT 超时及迟到成功封闭、401／403 响应头隔离、
+pagehide／迟到响应、五语言和 360px 布局。
+mock 结果不证明 SQL 权限或真实部分前缀／迟到确认。成功视图组合确认元数据与冻结的已提交文本，
+不是新鲜正文读取。
+
+独立 `test-platform-browser-task-body.sh` 列举并必须执行 `platform_browser_task_body_tdd` 四条准确
+ignored 选择；不会把被阻挡的 TLS 选择替换为明文：
+
+- `behavior::postgres_platform_browser_task_body_plain_confirmed_replace_conflict_and_revocation`
+- `behavior::postgres_platform_browser_task_body_tls_confirmed_replace_conflict_and_revocation`
+- `partial::postgres_platform_browser_task_body_partial_prefix_second_lock_timeout_retains_confirmed_artifact`
+- `partial::postgres_platform_browser_task_body_partial_prefix_second_session_revoked_retains_confirmed_artifact`
+
+**2026-11-13** 明文选择已分别在 Node 24.21 和 22.23.3、Google Chrome 156.0.8078.73、
+Playwright 1.57.0、一次性 PG 16.15 通过。自然密码／OTP 登录和 Cookie 回读后，两次按序 POST
+使用相同完整原基线／原标题并核严格 201，随后独立原修订 PUT／严格 200。另行 SQL 核验 Artifact
+head、revision／outbox，以及私有单链接 `0400` 文件字节／摘要和 Task head／修订／outbox。
+竞争修订与撤销 Session 均在首 POST 拒绝，不产生新 Artifact／Task 写入或 PUT；不代表真实迟到
+确认／BFCache、TLS 正文或部署验收。原明文 Session 与显示信息 SQL／浏览器回归也已通过；
+这是限定范围的运行，不是完整门禁。
+
+新增部分前缀选择使用自然登录、真实原生明文宿主及独占 owner 行锁连接，准确观察数据库／角色／
+application／PID／语句／blocker。首 Artifact 确认后，第二请求才等待；一条保留 Task 锁直到
+原产品锁期限返回 503，另一条在第二请求等待时撤销准确已签发 Session。两条均已通过。
+断言要求首 head／revision／outbox 与单链接 `0400` 文件／摘要准确保留、第二目标
+零行／零字节、Task／outbox 不变、仅两次 POST／无 PUT／重试，以及终止草稿或私人隔离状态。
+401 夹具最初在通知 parent 撤销前，等待 Playwright 依赖 response 的 `allHeaders()` 而阻塞；
+现将 provisional 请求／正文通知置于等待前，终态全部响应头检查仍必须通过。修复的是夹具协调，
+不是产品授权。不靠 DDL／trigger、伪造响应、更改期限或 kill backend 协调；不证明浏览器超时、丢失 ACK、
+真实导航／BFCache 或自动恢复。
+
+被动 CDP 观察器通过 `expectMany` 在动作前一次预登记有界队列，以独立 requestId 绑定同 URL
+请求，不必等前一正文读取完成。完成批次 guard 与 `check()` 拒绝多余请求，批次失败会拒绝所有
+仍待观察的工作。现在每个已绑定请求从自身 `requestWillBeSent` 起独立计时；下一未发送步骤只在
+前项全部确认后才开始独立发送等待，整批另有 `(2 × count + 1) × timeoutMs` 保守上界。
+已完成 guard 不保留 timer，旧单项 `expect` 仍从 arm 起计时。虚拟时钟 Red 复现两次各 75ms 请求
+错误共享 120ms；原 140 加 12 项期限测试（**152**）及六项 Chrome 合成用例在 Node 24.21／22.23.3
+均通过。这是确凿观察器缺陷，但不能认定为旧远端故障唯一根因。缺失证据不能用额外 fetch、
+重放、回退或第二次正文读取补齐；固定安全错误不记录
+requestId、URL、头、私有正文或原始协议错误内容。
+
+`platformTaskBodyContract.test.mjs` 有 20 条纯测试，覆盖固定槽、32 × 256 KiB 和完整 8 MiB 草稿
+预算、摘要前快照、换行保留、严格原始回执及计划器守卫。回执字符串必须先通过既有 128 KiB
+词法 decoder 才做语义确认；重复／转义键、不安全／非规范数值、超过 16 层深度或超量 token
+均在 JSON.parse 前失败。`platformTaskBodyRequest.test.mjs` 独立覆盖固定 Task 绑定 POST 传输规范。
+`scripts/generate-platform-task-save-assets.mjs` 使用 Node 内置类型剥离处理固定四份 TypeScript 源；
+`--check` 与六项 `platformTaskSaveAssets.test.mjs` 测试拒绝镜像／导入图漂移。Node 24.21 已验证
+生成、检查及运行，22.22 仅验证输出 ESM 运行；经官方 SHA-256 核验的 Node 22.23.3 已通过生成器
+`--check` 与全部六项测试，输出字节与 24.21 一致。修改 TypeScript 源后重新生成，再运行不改写文件的检查：
+
+```bash
+node scripts/generate-platform-task-save-assets.mjs
+node scripts/generate-platform-task-save-assets.mjs --check
+```
+
 显示信息 SQL／浏览器 runner 精确选择一条 ignored 明文宿主用例，核确认元数据、竞争修订冲突
 和撤权，并比较保留 Artifact 文件及不变的引用／顺序／条数。它与 mock UI、原文保存和 TLS
 浏览器验收分开，库存不构成通过结果；UI 不增加数据库权限或 HTTP API。
@@ -493,10 +568,43 @@ ACK 不能恢复尝试。`platformTaskMetadataContract.test.mjs` 另列举 20 �
 TLS 浏览器验收需 Chrome 146+，且 **不能已有旧 `~/.pki/nssdb`**：Chromium 会优先使用该库，
 而非夹具的私有 XDG NSS 目录。遇到此环境必须拒绝，不得删除或修改用户信任库、覆盖 HOME，
 或跳过证书校验。合适的一次性工作机先验证不信任测试 CA，再只将该 CA 导入自己临时 NSS 库，
-重新启动浏览器并正常校验证书。本机旧 NSS 阻塞该浏览器 TLS 用例，原生 TLS socket 回归不能
-替代。CI 通过 `scripts/test-platform-browser-ci.sh` 安装临时固定版本浏览器工具后运行三个 mock
-及三个 SQL／浏览器 runner；接入不等于远端 CI 已通过。默认 Rust／源码检查、mock UI、真实 SQL／浏览器和真实
+重新启动浏览器并正常校验证书。本机旧 NSS 仍在正文 SQL 建立前正确拒绝原账号；下面独立容器
+通过结果不改变宿主信任。CI 通过 `scripts/test-platform-browser-ci.sh`
+安装临时固定版本工具后必须执行四个 mock、四个 SQL／浏览器 runner、六项 CDP 和八项挂载传输 Chrome 用例；
+接入不等于远端 CI 已通过。默认 Rust／源码检查、mock UI、真实 SQL／浏览器和真实
 TLS 结果须在[项目进度](project-status.md)中分开记录。
+[先前远端 CI](https://github.com/Team-silvortex/cyanrex-lab/actions/runs/40689737062)及最终 gate 已绿，
+仅覆盖 `f0b5048`，不覆盖之后这些未提交改动。
+
+### 隔离浏览器 TLS 工作机
+
+宿主账号旧 NSS 阻挡原选择时，可显式使用 `scripts/test-platform-browser-container.sh`，输入
+从 `docker/platform-browser-tests.Dockerfile` 预先构建的本地镜像、既有 Node22／Chrome／Playwright
+工具及已编译测试。该脚本不构建／拉取镜像，也不修复宿主信任；真实镜像账号使用原默认 HOME，
+不挂载宿主 HOME／NSS、不覆盖系统库。容器禁外部网络、根只读、capability 全空、禁止提权，
+源码／工具只读挂载，临时目录和 SQL 使用有界私有 tmpfs。
+默认 preflight 仅核账号／旧 NSS 缺失、运行时版本／ABI、准确选择和实际浏览器启动，不建立 SQL
+也不构成 TLS 通过。提供已存在的绝对路径：
+
+```bash
+bash scripts/test-platform-browser-container.sh \
+  --image cyanrex-platform-browser-tests:local \
+  --node-dir /absolute/node-v22.23.3-linux-x64 \
+  --chrome-dir /absolute/google-chrome \
+  --playwright-dir /absolute/node_modules/playwright \
+  --session-test /absolute/repo/engine/target/debug/deps/platform_browser_session_tdd-HASH \
+  --body-test /absolute/repo/engine/target/debug/deps/platform_browser_task_body_tdd-HASH
+```
+
+只有明确追加 `--run-tls` 才初始化一次性容器 PostgreSQL 并执行两条原 TLS 选择：先拒绝不可信
+CA，再只接受私有测试 CA，正常校验证书和 Secure Cookie。收尾须核对仅初始数据库／管理角色、
+无其他客户端并确认 PostgreSQL 已停止。修正有界 Fetch 生命周期后，2026-11-13 最终容器命令
+退出零：原 Session TLS **3.47s**、正文 TLS **5.22s** 均通过严格 CA／Secure Cookie／当前权限／
+SQL／文件核验。收尾仅初始数据库／一个管理员／零其他 `client backend`，五个 PostgreSQL 自身
+后台不算客户端；fast-stop 确认数据库停止，容器已移除，镜像／工具保留。原账号旧 NSS 拒绝不变。
+修正前正文／显示信息的 `reply-task-event-loading-aborted-response` 确有本机复现，旧远端 CI
+故障唯一根因仍未证实；不重试掩盖、不回退或放宽断言。此本地结果不覆盖未推送代码的远端验证；
+该入口只隔离测试运行时，不宣称部署验收或共享内核安全隔离。
 
 ### 2026-10-26 本地显示信息保存验证
 
@@ -526,8 +634,8 @@ npm --prefix frontend run test:editor-intelligence-browser
 
 payload helper 使用真实页面和 Monaco，仅允许模拟的身份/未读读取，拒绝 payload 网络写入及
 WebSocket。这证明本地行为边界，不是服务端保存测试。其它浏览器套件会模拟认证、课堂、学习、事件、
-设置、Runner 管理和安全交互的 Engine 路由。当前不存在能证明尚未实现的通用 Task HTTP 保存闭环的
-浏览器套件。
+设置、Runner 管理和安全交互的 Engine 路由；它们不证明尚未挂载的正常应用／SDK Task 保存，
+上方独立平台宿主的 SQL／TLS 验收属于另一条路径。
 
 ### 0.5.3 的生成 Monaco 清理器夹具
 
@@ -573,6 +681,27 @@ Monaco 实例，阻止外网请求，不求值模板表达式，也不验证 Nex
 真实传输另行验证。ignored 的 `runner_agent_client_tdd` 用例启动回环 HTTP 服务并使用支持 BPF
 目标的 Linux Clang，只编译、不挂载程序。事件流压力夹具检查真实节奏发送、过载和阻塞连接。
 两者都不证明真实局域网浏览器/教师/学生流程、TLS 部署或 VM 隔离。
+
+### 显式隔离联合节点发现
+
+未发布 F1b Linux IPv4 适配器包含纯计算／默认 `federation_mdns_*_tdd` 用例，以及七条显式真实
+UDP 用例。后者只能通过带隔离守卫的 runner 运行：
+
+```bash
+./scripts/test-federation-mdns-netns.sh
+```
+
+需要已缓存的锁定 Cargo 依赖、Node、Python 3、Linux user／network namespace，以及
+`unshare`、`nsenter`、`ip` 和 `setpriv`。runner 创建两个匿名网络命名空间和两条一次性虚拟链路，
+均无宿主网络连接或默认路由。Python 标准库对端仅是测试夹具，不新增应用运行时依赖。
+六条普通用例在零 capability 下运行；仅地址移除用例在临时命名空间内保留 `net_admin`。
+不支持 namespace 属于前置失败，不能回退宿主网络。
+
+覆盖准确查询与完整 DNS／TXT → F0 → 缓存链路、TTL／端口／目的地／尺寸拒绝、另一接口流量、
+同来源 goodbye、取消、描述符释放及地址移除。结束时停止自有对端进程，销毁 namespace 并移除
+其虚拟链路／路由；私有构建证据保留于输出的 `/tmp/cyanrex-mdns-netns-*` 目录。
+不使用应用数据库、真实局域网对端、凭据或生产 payload。这不是通用 mDNS 互通、物理局域网部署、
+配对或穿透验收；配置边界见[联合节点发现](federation-discovery.md)。
 
 ## 真实与发布验收
 

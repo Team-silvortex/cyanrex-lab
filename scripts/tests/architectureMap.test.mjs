@@ -10,6 +10,7 @@ const groups = {
   "Signed Runner Agent services": ["runner_agent_authenticator", "runner_agent_client", "runner_agent_executor", "runner_agent_registry", "runner_job_queue"],
   "Event telemetry": ["event_bus", "event_bus_codec", "event_bus_db", "event_bus_db_config", "event_bus_db_parser", "event_bus_filter", "event_bus_policy"],
   "Prepared identity and SQL support": ["collaboration_identity_store", "legacy_workspace", "prepared_resource_sql"],
+  "Prepared federation": ["federation_discovery", "federation_mdns"],
   "Prepared Task and content": ["artifact_store", "draft_intent_journal", "review_store", "task_catalog", "task_content", "task_draft_import", "task_store"],
   "Prepared file distribution": ["file_chunk_client", "file_chunk_receiver", "file_publisher_grant_store", "file_recipient_grant_store", "file_transfer", "file_upload_chunk_journal", "file_upload_publication", "file_upload_staging", "file_upload_store"],
 };
@@ -19,14 +20,15 @@ const modules = source => [...source.matchAll(/((?:#\[[^\n]*\]\n)*)(pub )?mod (\
 const names = values => values.map(value => value.name).sort();
 
 // Structural drift checks only; comments do not provide runtime isolation or authorization.
-test("service ownership groups retain every original module visibility and Unix gate", async () => {
+test("service ownership groups retain original visibility and Unix gates plus pure federation", async () => {
   const source = await read("engine/src/services/mod.rs");
   const expected = Object.values(groups).flat();
   const actual = modules(source);
-  assert.equal(new Set(expected).size, 44);
+  assert.equal(new Set(expected).size, 46);
   assert.deepEqual(names(actual), [...expected].sort());
   for (const module of actual) {
-    assert.equal(module.attributes, unix.has(module.name) ? "#[cfg(unix)]" : "", module.name);
+    const attributes = module.name === "federation_mdns" ? '#[cfg(target_os = "linux")]' : unix.has(module.name) ? "#[cfg(unix)]" : "";
+    assert.equal(module.attributes, attributes, module.name);
     assert.equal(module.public, !internal.has(module.name), module.name);
   }
   const sections = [...source.matchAll(/^\/\/ Group: (.+)$/gm)];

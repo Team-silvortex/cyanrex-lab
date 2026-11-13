@@ -1,5 +1,9 @@
 # 当前架构与变更边界
 
+**0.6.6 收录，2026-11-13 核对：**[联合节点方向](federation-discovery.md)有纯 F0／F1a 和显式 Linux F1b 单次浏览，未自动挂载。
+不可信公告 → 兼容／策略筛选 → `UnverifiedPeerCandidate` 不等于身份证明、配对或工作区授权。
+教学角色留在领域内；现有 Source 同权威检查和回环宿主绑定保持不变。
+
 源码 **0.6.3** 已收录独立[绑定登录](platform-login-connection.md)，经原存储为已有账号受限签发
 Session；独立[登录 HTTP](platform-login-http.md)投影 Cookie，[共享 Session 路由](platform-session-router.md)组合同一绑定；显式[回环宿主](platform-loopback-host.md)接通[私人任务索引](platform-task-index-connection.md)、[只读重开](platform-task-content-connection.md)、[手动空 Draft 创建](platform-task-create-connection.md)及[预期修订清单换版](platform-task-replace-connection.md)，可选[原生 TLS](platform-loopback-tls-host.md)和[服务状态通知](platform-host-notifications.md)，不写状态、不接局域网或浏览器正文／SDK 保存。
 
@@ -15,7 +19,8 @@ Session；独立[登录 HTTP](platform-login-http.md)投影 Cookie，[共享 Ses
 
 Cyanrex 有教学应用、本地 payload 编辑器及显式组合的后端，源码 **0.6.4** 收录
 [原绑定文本发布及 HTTP](platform-text-artifact-connection.md)，明文／TLS CLI 显式启用；旧构造器保持七路由／六通道且不发布，新组合为八路由／七通道；代码和 Run 都可选。
-默认关闭的 Session／Task 壳支持读取私人 Task 及仅保存手动 Draft 显示信息；正文／正常应用／SDK 保存和通用任务执行仍未接通，本机浏览器 TLS 尚未验收。模块分组描述职责，不是进程隔离；
+默认关闭的 Session／Task 壳另支持 0.6.6 收录的双开关固定槽正文保存；限定明文／前缀／隔离 TLS 核验
+不等于正常应用／SDK、迟到确认／BFCache 或局域网验收。模块分组描述职责，不是进程隔离；
 现用 Engine 仍同时承担控制与 Linux 特权执行。
 
 当前职责先读本图，实施决策见[详细架构](architecture.md)，功能边见[平台网络](platform-network.md)，
@@ -39,6 +44,7 @@ Cyanrex 有教学应用、本地 payload 编辑器及显式组合的后端，源
 | 显式协作后端 | 可信宿主 → 原绑定当前 Session 命令 → 私人资源存储 | 不构造教学 AppState；回环 Session／Task／文本能力显式组合 |
 | 本地payload编辑 | `/tasks/new`及兼容`/editor` → TaskDraftWorkspace 组合 useTaskDraftController → 受控文本编辑器 → 本地JSON | 本地ID与语言提示不是服务端引用或执行权限 |
 | 显式文件交付 | 当前准确文件grant → Source清单／分块核验 → 所给router → 受控客户端 → 所选保存 | 已有真实Source／HTTPS联验，正常应用／UI／SDK仍未接通 |
+| 联合准备 | 给定公告／时间／策略 → 严格兼容与提示筛选 | 无监听、节点证明、配对、穿透或跨权威授权 |
 
 教师管理现用教学与部署，单人模式同样如此；这不转化为读取他人私人Task、Artifact、Review
 或获接收授权字节的通用权限。在线AuthService与 `engine/src/services/auth_service/durable_source/` 的 `DurableAuthSource`／原绑定助手
@@ -49,6 +55,7 @@ Cyanrex 有教学应用、本地 payload 编辑器及显式组合的后端，源
 | 职责 | 源码入口 | 依赖规则 |
 |---|---|---|
 | 共享契约 | `engine/src/models/collaboration/` | 准确身份、引用、Task／Artifact／Review／文件值；解码只核结构，不授权 |
+| 发现准备 | `engine/src/services/federation_discovery/`、`engine/src/services/federation_mdns/` | 纯声明／缓存；另有显式 Linux 浏览，无 Session、存储、密钥证明或资源命令 |
 | 定义与纯内容规划 | `engine/src/services/task_catalog/definitions.rs`、`engine/src/services/task_content.rs`、`engine/src/services/task_draft_import/` | TaskDefinitionCatalog是冻结元数据，不要求评估器、数据库、发现或执行 |
 | 强类型领域评估 | `engine/src/services/task_catalog.rs`、`engine/src/domain_packs/ebpf_teaching/` | TaskCatalog<P>持有提供器证据及评估，内置教学包不进入中立契约 |
 | 当前会话命令 | `engine/src/services/auth_service/durable_source/`、`engine/src/services/collaboration_identity_store/` | 派生准确当前执行者、审计成员及原始pin；资源检查和最终权限留在Source事务 |
@@ -96,8 +103,8 @@ Session 事务继续保留原释放／授权边界。不增加全局 HTTP 配额
 
 ## 服务导航
 
-`engine/src/services/mod.rs`把原 **44** 个声明按职责分组，名称、可见性及Unix条件保持不变。
-不增加模块命名空间、公开API或在线服务。
+`engine/src/services/mod.rs` 按职责分组，保留既有名称、可见性及 Unix 条件。
+新增联合导出只是纯准备层，不是在线服务。
 
 | 索引分组 | 主要职责 |
 |---|---|
@@ -106,6 +113,7 @@ Session 事务继续保留原释放／授权边界。不增加全局 HTTP 配额
 | 签名Runner Agent服务 | 认证计算协议、库存、执行与作业，不是AI身份 |
 | 事件遥测 | 在线EventBus及私人持久化／过滤／策略辅助 |
 | 准备层身份与SQL支持 | 显式身份注册、离线legacy预览及私人存储机制 |
+| 准备层联合 | 纯编解码／缓存及显式 Linux 单次 mDNS 浏览，不配对或连接业务 |
 | 准备层Task与内容 | 纯目录／内容计划，以及显式Task／Artifact／Review／journal存储 |
 | 准备层文件分发 | 流／描述符核验、上传／发布／grant账本、receiver与client |
 

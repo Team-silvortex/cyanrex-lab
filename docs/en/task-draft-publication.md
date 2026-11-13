@@ -4,7 +4,8 @@ Status: **C2-O internal preparation, included in 0.5.3**. Decision date: **2026-
 This pure boundary translates a whole text draft into a bounded publication plan, then checks supplied
 Artifact content against that plan to construct the existing [Task content manifest](task-content-manifest.md).
 It performs no file, database or network I/O, publishes nothing and does not call C2-M or mount HTTP.
-The browser editor remains local-only. A plan or matching supplied content is not a saved Task.
+The normal Next.js editor remains local-only; the separate opt-in host flow is described below.
+A plan or matching supplied content is not a saved Task.
 
 ## Import contract and compatibility
 
@@ -76,11 +77,25 @@ C2-M must independently recheck the resulting pins, owner and Session before cha
 
 ## Unreleased browser-side existing-Draft save attempt
 
-[`taskContentSave.ts`](../../frontend/src/features/tasks/taskContentSave.ts) and
-[`taskSaveContract.ts`](../../frontend/src/features/tasks/taskSaveContract.ts) add an unmounted,
+Included and extended in **0.6.6**; this heading retains its implementation-stage anchor. [`taskContentSave.ts`](../../frontend/src/features/tasks/taskContentSave.ts) and
+[`taskSaveContract.ts`](../../frontend/src/features/tasks/taskSaveContract.ts) provide a pure,
 single-use content-save attempt. `prepareTaskContentSave(draft, {task, manifest}, guard, allocations)`
 freezes the inputs and computes local SHA-256 asynchronously. It performs no fetch, Cookie, environment,
 storage or UI work. `TaskDraftWorkspace` and its controller remain local-only.
+
+`prepareTaskBoundContentSave(draft, {task, manifest}, guard, allocations)` separately prepares
+the [Task-bound publication contract](platform-text-artifact-connection.md#unreleased-standalone-task-bound-http).
+Each publish step has an outer `task_id`; its body contains exactly `schema_version`, `expected`,
+`artifact_id`, `revision_id` and `text`. Every `expected` is the same frozen complete **original**
+Task/manifest, never the desired manifest or a baseline rewritten after a publication. All complete
+publication envelopes are checked against 2 MiB before hashing; each text still has the 256 KiB limit.
+This factory does not silently select or fall back to the older unbound factory, whose shape and behavior stay compatible.
+
+Task-bound Artifact confirmations require the **original Task title**, even when the draft title has
+changed. Only the final, separately confirmed manifest PUT uses the edited title and new exact pins;
+its `expected_revision` remains the original Task revision. A confirmed Artifact is not a saved Task.
+The shared synthetic `engine/tests/fixtures/task-bound-content-save.json` is checked by both the
+browser planner and the strict Rust HTTP adapter; this proves wire agreement, not actual storage or authority.
 
 The strict baseline must describe an existing manual Draft with matching Task/manifest metadata.
 It pins target, owner, workspace and expected server revision; local item IDs/revisions are not uploaded.
@@ -102,10 +117,35 @@ deletion, checkpoint import or restoration. A late receipt after a stale guard c
 pending step. Public confirmation validates supplied DTO consistency only: even matching data proves
 neither network provenance nor COMMIT. A trusted actual adapter is still required.
 
-Same-origin browser UI delivery and a dedicated platform Session entry remain missing. This module
-adds no Origin configuration, proxy/CORS relaxation or fallback to the teaching AuthService Cookie.
+The platform Session page included in 0.6.6 calls `prepareTaskBoundContentSave` only when both default-off
+`--task-text-publication` and `--session-ui` are enabled and text actually changes. A fixed-slot bridge
+converts its verified snapshot/edited title, labels and text into local `slot-N` revision-1 items;
+these are editing identities only. It publishes every existing slot in order, then confirms the
+separate manifest replacement. Metadata-only edits retain the existing single PUT/no POST path.
+Unchanged slots retain exact CRLF; textarea edits replace only the changed middle, keeping original
+prefixes/suffixes and applying the first original newline style to newly inserted lines. The entire
+portable draft, including JSON metadata/escaping, stays within 8 MiB. Preview defaults to Cancel.
+Denial headers, pagehide and terminal conflict/unknown outcomes cannot advance or revive that plan.
+Success uses confirmed metadata plus frozen submitted text, not a fresh server content read.
+
+[`scripts/generate-platform-task-save-assets.mjs`](../../scripts/generate-platform-task-save-assets.mjs)
+uses Node's built-in TypeScript stripping to generate only `taskContentSave.js`, `taskSaveContract.js`,
+`taskDraft.js` and `taskPayloadLanguage.js` under the host's `session_ui/task-save` directory.
+The fixed source list/import graph and `--check` reject drift; six generator tests cover this boundary.
+There is no hand-maintained planner copy or new package dependency. Generation/check and runtime were
+verified on Node 24.21; emitted ESM runtime was also checked on 22.22. Official SHA-256-verified
+Node 22.23.3 passed generator `--check` and all six tests, producing identical bytes to 24.21.
+The host serves thirteen fixed assets including this bridge
+and the four mirrors. Normal Next.js drafts/SDK remain separate, with no Origin/CORS/Cookie policy change.
 `npm --prefix frontend run test:task-content-save` selects pure state/contract tests, not live browser
-saving, authentication, durable recovery or deployment acceptance. The dated C2-O evidence below is unchanged.
+saving, authentication, durable recovery or deployment acceptance. `platformTaskBodyContract.test.mjs`
+adds 20 pure bridge/receipt/newline cases; the separate 13-case body browser fixture uses mock APIs.
+The separate [real body runner](testing-guide.md#optional-independent-host-session-page) requires plain
+and TLS selectors; the plain case passed natural login, two strict publications, independent Task
+replacement and exact SQL/file checks, including first-POST conflict/revocation refusal. The additional
+real second-POST 503/401 cases retain one confirmed Artifact without a Task change; both passed
+exact SQL/file/UI checks. Both original Session/body TLS selectors passed separately in an isolated
+worker, including confirmed SQL shutdown. Late-ACK/BFCache and deployment remain unaccepted; dated C2-O evidence stays unchanged.
 
 ## Secrets and untrusted content
 

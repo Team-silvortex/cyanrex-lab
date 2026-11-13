@@ -6,7 +6,9 @@ import { content, copy } from "../platformTasks/data.mjs";
 // Owned HTTP mock only: production assets/CSP, but NO real authentication, SQL, TLS,
 // teaching Engine or server commit provenance. Exactly one fixed metadata PUT is permitted.
 const root = new URL("../../../engine/src/bin/cyanrex-platform/session_ui/", import.meta.url);
-const files = ["app.js", "labels.js", "tasks.js", "task-contract.js", "task-edit.js", "style.css"];
+const files = ["app.js", "labels.js", "tasks.js", "task-contract.js", "task-edit.js", "request.js", "style.css",
+  "body-contract.js", "task-save/taskContentSave.js", "task-save/taskSaveContract.js", "task-save/taskDraft.js",
+  "task-save/taskPayloadLanguage.js"];
 export const SESSION = "/platform/v1/session", LOGOUT = `${SESSION}/logout`;
 export const INDEX = "/platform/v1/task-index", TASK = "/platform/v1/tasks/";
 export const active = '{"schema_version":1,"authenticated":true}';
@@ -29,6 +31,8 @@ export function saved(record, original = content()) {
 
 export async function setup(browser, options = {}) {
   const assets = new Map([["/platform/", { type: "text/html; charset=utf-8", body: await readFile(new URL("index.html", root)) }]]);
+  assert.match(assets.get("/platform/").body.toString("utf8"), /data-task-text-publication="disabled"/);
+  assert.doesNotMatch(assets.get("/platform/").body.toString("utf8"), /data-task-text-publication="enabled"/);
   for (const file of files) {
     try { assets.set(`/platform/ui/${file}`, { type: `${file.endsWith("css") ? "text/css" : "text/javascript"}; charset=utf-8`,
       body: await readFile(new URL(file, root)) }); }

@@ -147,7 +147,10 @@ fn run_with_transport(
         .map_err(|_| ())?;
         let router = build_platform_workspace_router(state);
         let router = if session_ui {
-            router.merge(super::session_ui::routes(&format!("{scheme}://{bind}")))
+            router.merge(super::session_ui::with_task_text_publication(
+                &format!("{scheme}://{bind}"),
+                task_text_publication,
+            ))
         } else {
             router
         };

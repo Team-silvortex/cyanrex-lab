@@ -1,5 +1,6 @@
 import { parseIndex, parseContent } from './task-contract.js';
 import { createMetadataEditor } from './task-edit.js';
+import { platformRequest } from './request.js';
 
 // Owner-private read view; the separate editor alone owns metadata PUT and unsaved work.
 export function createTaskReader({ run, isActive, sessionRejected, label }) {
@@ -9,13 +10,13 @@ export function createTaskReader({ run, isActive, sessionRejected, label }) {
   const metadata = byId("task-content-metadata"), select = byId("task-payload-select"), text = byId("task-text");
   let busy = true, generation = 0, controller = null, entries = [], cursor = null, scope = null;
   let snapshot = null, stateKey = "tasksIdle";
-  const editor = createMetadataEditor({ run, isActive, sessionRejected, label, onSaved(value) {
+  const editor = createMetadataEditor({ run, isActive, sessionRejected, label, onSaved(value, bodySaved = false) {
     snapshot = value;
     entries = entries.map(entry => entry.reference.task_id !== value.task.reference.task_id ? entry
       : Object.freeze({ reference: value.task.reference, revision: value.task.revision, title: value.task.title,
         status: value.task.status, definition_ref: null, updated_at: value.task.updated_at,
         payload_items: value.manifest.payload.length }));
-    renderList(); renderDetail(); observe("opened", "metaCachedContent");
+    renderList(); renderDetail(); observe("opened", bodySaved ? "bodyCachedContent" : "metaCachedContent");
   } });
 
   function controls() {
@@ -55,65 +56,11 @@ export function createTaskReader({ run, isActive, sessionRejected, label }) {
     controls();
   }
 
-  async function read(path, budget) {
+  async function read(path) {
     const own = new AbortController();
-    let deniedStatus = null;
     controller = own;
-    let rejectAbort;
-    const interrupted = new Promise((_resolve, reject) => { rejectAbort = reject; });
-    const abort = () => rejectAbort(new Error("taskRead.unknown"));
-    own.signal.addEventListener("abort", abort, { once: true });
-    // Bounds waiting only. Dispatched server work and synchronous parsing are not killed.
-    const timer = setTimeout(() => own.abort(), 10_000);
-    const work = (async () => {
-      const response = await fetch(path, { method: "GET", mode: "same-origin",
-        credentials: "same-origin", cache: "no-store", redirect: "error", signal: own.signal,
-        headers: { "X-Cyanrex-Platform-Request": "1" } });
-      if (response.status === 401 || response.status === 403) deniedStatus = response.status;
-      if (own.signal.aborted) {
-        void response.body?.cancel().catch(() => undefined);
-        own.signal.throwIfAborted();
-      }
-      if (!/^application\/json(?:;\s*charset=utf-8)?$/i.test(response.headers.get("content-type") || "")
-        || !response.body) {
-        void response.body?.cancel().catch(() => undefined);
-        throw new Error("taskRead.unknown");
-      }
-      const reader = response.body.getReader(), chunks = [];
-      let size = 0, frames = 0;
-      const cancel = () => { void reader.cancel().catch(() => undefined); };
-      own.signal.addEventListener("abort", cancel, { once: true });
-      try {
-        while (true) {
-          const { value, done } = await reader.read();
-          own.signal.throwIfAborted();
-          if (done) break;
-          size += value.byteLength;
-          if (++frames > 16_384 || size > budget) {
-            cancel();
-            throw new Error("taskRead.unknown");
-          }
-          chunks.push(value);
-        }
-        const bytes = new Uint8Array(size);
-        let offset = 0;
-        for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
-        return { status: response.status, raw: new TextDecoder("utf-8", { fatal: true }).decode(bytes) };
-      } finally {
-        own.signal.removeEventListener("abort", cancel);
-        reader.releaseLock();
-      }
-    })();
-    try { return await Promise.race([work, interrupted]); }
-    catch {
-      // A known denial must invalidate the old active observation even if its body is unusable.
-      const failure = new Error("taskRead.unknown");
-      failure.deniedStatus = deniedStatus;
-      throw failure;
-    }
+    try { return await platformRequest(path, "GET", { signal: own.signal }); }
     finally {
-      clearTimeout(timer);
-      own.signal.removeEventListener("abort", abort);
       if (controller === own) controller = null;
     }
   }
@@ -185,7 +132,7 @@ export function createTaskReader({ run, isActive, sessionRejected, label }) {
       clearList();
       observe("loading", "tasksLoading");
       try {
-        const response = await read(`/platform/v1/task-index?limit=20${after ? `&after=${after}` : ""}`, 128 * 1024);
+        const response = await read(`/platform/v1/task-index?limit=20${after ? `&after=${after}` : ""}`);
         if (!current() || rejectResponse(response)) return;
         const page = parseIndex(response.raw, { after, scope: expectedScope, limit: 20 });
         if (!current()) return;
@@ -209,7 +156,7 @@ export function createTaskReader({ run, isActive, sessionRejected, label }) {
       observe("loading", "tasksLoading");
       try {
         // Content can be much larger than index metadata; decoding/hashing completes before render.
-        const response = await read(`/platform/v1/tasks/${entry.reference.task_id}`, 50 * 1024 * 1024);
+        const response = await read(`/platform/v1/tasks/${entry.reference.task_id}`);
         if (!current() || rejectResponse(response)) return;
         const value = await parseContent(response.raw, entry, selectedScope);
         if (!current()) return;

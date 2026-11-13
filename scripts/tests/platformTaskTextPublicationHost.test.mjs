@@ -61,6 +61,7 @@ test("the bounded CLI explicitly selects Task text publication without changing 
   assert.ok(choice.includes("}else{PlatformWorkspaceHttpState::with_text_publication_capacities(storage,4,4,4,4,4,4,4,)"));
   assert.ok(choice.indexOf("open_platform_storage_expected(") < choice.indexOf("if task_text_publication".replaceAll(" ", "")));
   assert.ok(choice.indexOf("with_task_text_publication_capacities(") < choice.indexOf("TcpListener::bind("));
+  assert.ok(choice.includes('ifsession_ui{router.merge(super::session_ui::with_task_text_publication(&format!("{scheme}://{bind}"),task_text_publication,))}else{router}'));
   const defaults = await read("engine/tests/platform_task_text_publication_defaults_tdd.rs");
   assert.equal([...defaults.matchAll(/^#\[test\]/gm)].length, 3);
   const transport = compact(await read("engine/src/bin/cyanrex-platform/serve_loopback/http.rs"));

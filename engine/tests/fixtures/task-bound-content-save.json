@@ -1,0 +1,140 @@
+{
+  "draft": {
+    "format": "cyanrex.task-draft",
+    "version": 1,
+    "title": "Updated collaboration seminar · 새로운 수업",
+    "payload": [
+      {
+        "id": "local_only",
+        "revision": 7,
+        "kind": "text",
+        "filename": "研讨会说明.txt",
+        "language": "future-notes+v9",
+        "text": "合作教学笔记，不需要代码或 Run。\r\n한국어 설명 😀\t保留原样。\r\n"
+      }
+    ]
+  },
+  "baseline": {
+    "task": {
+      "schema_version": 1,
+      "reference": {
+        "workspace": {
+          "authority_id": "00000000-0000-4000-8000-000000000001",
+          "workspace_id": "00000000-0000-4000-8000-000000000002"
+        },
+        "task_id": "00000000-0000-4000-8000-000000000003"
+      },
+      "owner": {
+        "authority_id": "00000000-0000-4000-8000-000000000001",
+        "principal_id": "00000000-0000-4000-8000-000000000004"
+      },
+      "title": "Original collaboration handout",
+      "definition": null,
+      "input_refs": [
+        {
+          "workspace": {
+            "authority_id": "00000000-0000-4000-8000-000000000001",
+            "workspace_id": "00000000-0000-4000-8000-000000000002"
+          },
+          "artifact_id": "00000000-0000-4000-8000-00000000000a",
+          "revision_id": "00000000-0000-4000-8000-00000000000b",
+          "sha256": "d96ab538c599536fdcdb89c57be3aea1b4dc92c0b5c264400681ea694c50f940"
+        }
+      ],
+      "status": "draft",
+      "revision": 5,
+      "created_at": "2026-10-26T01:02:03Z",
+      "updated_at": "2026-10-26T01:02:03Z"
+    },
+    "manifest": {
+      "schema_version": 1,
+      "title": "Original collaboration handout",
+      "payload": [
+        {
+          "kind": "text",
+          "filename": "old-handout.txt",
+          "language": "plaintext",
+          "artifact": {
+            "workspace": {
+              "authority_id": "00000000-0000-4000-8000-000000000001",
+              "workspace_id": "00000000-0000-4000-8000-000000000002"
+            },
+            "artifact_id": "00000000-0000-4000-8000-00000000000a",
+            "revision_id": "00000000-0000-4000-8000-00000000000b",
+            "sha256": "d96ab538c599536fdcdb89c57be3aea1b4dc92c0b5c264400681ea694c50f940"
+          }
+        }
+      ]
+    }
+  },
+  "guard": {
+    "generation": 2,
+    "revision": 8,
+    "contextEpoch": 3
+  },
+  "allocations": [
+    {
+      "artifact_id": "00000000-0000-4000-8000-000000000064",
+      "revision_id": "00000000-0000-4000-8000-0000000000c8"
+    }
+  ],
+  "publication_body": {
+    "schema_version": 1,
+    "expected": {
+      "task": {
+        "schema_version": 1,
+        "reference": {
+          "workspace": {
+            "authority_id": "00000000-0000-4000-8000-000000000001",
+            "workspace_id": "00000000-0000-4000-8000-000000000002"
+          },
+          "task_id": "00000000-0000-4000-8000-000000000003"
+        },
+        "owner": {
+          "authority_id": "00000000-0000-4000-8000-000000000001",
+          "principal_id": "00000000-0000-4000-8000-000000000004"
+        },
+        "title": "Original collaboration handout",
+        "definition": null,
+        "input_refs": [
+          {
+            "workspace": {
+              "authority_id": "00000000-0000-4000-8000-000000000001",
+              "workspace_id": "00000000-0000-4000-8000-000000000002"
+            },
+            "artifact_id": "00000000-0000-4000-8000-00000000000a",
+            "revision_id": "00000000-0000-4000-8000-00000000000b",
+            "sha256": "d96ab538c599536fdcdb89c57be3aea1b4dc92c0b5c264400681ea694c50f940"
+          }
+        ],
+        "status": "draft",
+        "revision": 5,
+        "created_at": "2026-10-26T01:02:03Z",
+        "updated_at": "2026-10-26T01:02:03Z"
+      },
+      "manifest": {
+        "schema_version": 1,
+        "title": "Original collaboration handout",
+        "payload": [
+          {
+            "kind": "text",
+            "filename": "old-handout.txt",
+            "language": "plaintext",
+            "artifact": {
+              "workspace": {
+                "authority_id": "00000000-0000-4000-8000-000000000001",
+                "workspace_id": "00000000-0000-4000-8000-000000000002"
+              },
+              "artifact_id": "00000000-0000-4000-8000-00000000000a",
+              "revision_id": "00000000-0000-4000-8000-00000000000b",
+              "sha256": "d96ab538c599536fdcdb89c57be3aea1b4dc92c0b5c264400681ea694c50f940"
+            }
+          }
+        ]
+      }
+    },
+    "artifact_id": "00000000-0000-4000-8000-000000000064",
+    "revision_id": "00000000-0000-4000-8000-0000000000c8",
+    "text": "合作教学笔记，不需要代码或 Run。\r\n한국어 설명 😀\t保留原样。\r\n"
+  }
+}

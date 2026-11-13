@@ -15,26 +15,57 @@ test("Session page is a final explicit CLI flag merged only inside the existing 
   assert.match(cli, /\[--notify-systemd\] \[--session-ui\]/);
   const host = await read("engine/src/bin/cyanrex-platform/serve_loopback/mod.rs");
   assert.match(host, /let router = if session_ui/);
-  assert.match(host, /router\.merge\(super::session_ui::routes\(&format!\("\{scheme\}:\/\/\{bind\}"\)\)\)/);
+  assert.ok(host.replace(/\s+/g, "").includes('router.merge(super::session_ui::with_task_text_publication(&format!("{scheme}://{bind}"),task_text_publication,))'));
   const merge = host.indexOf("let router = if session_ui");
   assert.ok(host.indexOf("open_platform_storage_expected(") < merge);
   assert.ok(merge < host.indexOf("TcpListener::bind("));
   for (const file of ["engine/src/main.rs", "engine/src/state.rs", "engine/src/application.rs",
     "engine/openapi/openapi.json", "sdk-js/src/index.ts"])
-    assert.doesNotMatch(await read(file), /session_ui::routes|--session-ui/, file);
+    assert.doesNotMatch(await read(file), /session_ui::(?:routes|with_task_text_publication)|--session-ui/, file);
 });
 
 test("closed compile-time static assets have no directory, fallback, storage, proxy or teaching integration", async () => {
   const source = await read(`${ui}.rs`);
-  assert.deepEqual([...source.matchAll(/\.route\("([^"]+)"/g)].map(match => match[1]),
-    ["/platform/", "/platform/ui/app.js", "/platform/ui/labels.js", "/platform/ui/style.css", "/platform/ui/tasks.js", "/platform/ui/task-contract.js", "/platform/ui/task-edit.js"]);
+  assert.deepEqual([...source.matchAll(/\.route\(\s*"([^"]+)"/g)].map(match => match[1]),
+    ["/platform/", "/platform/ui/app.js", "/platform/ui/labels.js", "/platform/ui/style.css", "/platform/ui/tasks.js",
+      "/platform/ui/task-contract.js", "/platform/ui/task-edit.js", "/platform/ui/request.js", "/platform/ui/body-contract.js",
+      "/platform/ui/task-save/taskContentSave.js", "/platform/ui/task-save/taskSaveContract.js",
+      "/platform/ui/task-save/taskDraft.js", "/platform/ui/task-save/taskPayloadLanguage.js"]);
   assert.deepEqual([...source.matchAll(/include_str!\("session_ui\/([^"]+)"\)/g)].map(match => match[1]),
-    ["index.html", "app.js", "labels.js", "style.css", "tasks.js", "task-contract.js", "task-edit.js"]);
+    ["index.html", "app.js", "labels.js", "style.css", "tasks.js", "task-contract.js", "task-edit.js", "request.js",
+      "body-contract.js", "task-save/taskContentSave.js", "task-save/taskSaveContract.js", "task-save/taskDraft.js",
+      "task-save/taskPayloadLanguage.js"]);
+  assert.match(source, /fn routes\(origin: &str\) -> Router \{\s*with_task_text_publication\(origin, false\)/);
+  assert.match(source, /dest == "document" && state\.task_text_publication/);
+  assert.match(source, /content\.replacen\(/);
   assert.doesNotMatch(source, /\.fallback\(|ServeDir|std::(?:fs|env)|tokio::fs|PgPool|AppState|AuthService|reqwest|SetCookie/);
   for (const value of ["form-action 'none'", "frame-ancestors 'none'", "connect-src 'self'",
     "base-uri 'none'", "object-src 'none'", "worker-src 'none'", "no-store", "no-referrer", "nosniff"])
     assert.ok(source.includes(value), value);
   assert.doesNotMatch(source, /access-control-allow|strict-transport-security/i);
+});
+
+test("existing mock and real browser asset inventories stay fixed at thirteen with body editing disabled", async () => {
+  const source = await read(`${ui}.rs`);
+  const expected = [...source.matchAll(/\.route\(\s*"([^"]+)"/g)].map(match => match[1]).sort();
+  assert.equal(expected.length, 13);
+  for (const name of ["platformSessionUi", "platformTasks"]) {
+    const fixture = await read(`scripts/tests/${name}/browserFixture.mjs`);
+    assert.deepEqual([...fixture.matchAll(/\["([^"\n]+)", \["/g)].map(match => match[1]).sort(), expected);
+    assert.ok(fixture.includes('data-task-text-publication="disabled"'), name);
+    assert.ok(fixture.includes('data-task-text-publication="enabled"'), name);
+  }
+  const metadata = await read("scripts/tests/platformTaskMetadata/browserFixture.mjs");
+  const files = [...metadata.match(/const files = \[([\s\S]+?)\];/)[1].matchAll(/"([^"\n]+)"/g)].map(match => match[1]);
+  assert.deepEqual(["/platform/", ...files.map(file => `/platform/ui/${file}`)].sort(), expected);
+  assert.ok(metadata.includes('data-task-text-publication="disabled"'));
+  for (const name of ["platform_browser_tasks", "platform_browser_task_metadata"]) {
+    const browser = await read(`engine/tests/${name}/browser.mjs`);
+    const paths = [...browser.match(/const staticPaths = new Set\(\[([\s\S]+?)\]\);/)[1]
+      .matchAll(/"([^"\n]+)"/g)].map(match => match[1]).sort();
+    assert.deepEqual(paths, [...expected, "/favicon.ico"].sort());
+    assert.ok(browser.includes('getAttribute("data-task-text-publication"), "disabled"'), name);
+  }
 });
 
 test("static requests reject ambiguity before bounded body collection without treating metadata as auth", async () => {
@@ -47,24 +78,39 @@ test("static requests reject ambiguity before bounded body collection without tr
   assert.ok(source.indexOf("preflight(request.headers()") < source.indexOf("empty_body(request.into_body())"));
   const tests = await read(`${ui}/tests.rs`);
   assert.equal([...tests.matchAll(/#\[tokio::test\]/g)].length, 15);
+  assert.match(tests, /#\[path = "tests\/capability\.rs"\]/);
+  const capability = await read(`${ui}/tests/capability.rs`);
+  assert.equal([...capability.matchAll(/#\[tokio::test\]/g)].length, 4);
+  for (const value of ["only_one_trusted_html_marker", "every_static_asset_byte_mime_and_csp",
+    "client_inputs_cannot_select", "merged_api_routes_or_api_headers"])
+    assert.ok(capability.includes(value), value);
   const cli = await read("engine/tests/platform_session_ui_defaults_tdd.rs");
   assert.equal([...cli.matchAll(/#\[test\]/g)].length, 3);
   for (const value of ["private_fifo_open", "wrong_identity", "notify_then_ui"]) assert.ok(cli.includes(value), value);
 });
 
 test("browser script uses only three same-origin Session APIs and keeps ambiguous outcomes unknown", async () => {
-  const app = await read(`${ui}/app.js`);
+  const app = await read(`${ui}/app.js`), transport = (await read(`${ui}/request.js`)).replaceAll("'", '"');
   assert.deepEqual([...app.matchAll(/request\("([^"]+)"/g)].map(match => match[1]),
     ["/platform/v1/session", "/platform/v1/session/login", "/platform/v1/session/logout"]);
+  assert.match(app, /import \{ platformRequest \} from '\.\/request\.js'/);
+  assert.match(app, /platformRequest\(path, method,/);
+  assert.equal([...app.matchAll(/\bplatformRequest\(/g)].length, 1);
+  assert.doesNotMatch(app, /\bfetch\(/);
   for (const value of ['mode: "same-origin"', 'credentials: "same-origin"', 'cache: "no-store"',
-    'redirect: "error"', '"X-Cyanrex-Platform-Request": "1"', 'observe("unknown", "unknown")',
-    "Promise.race([work, interrupted])", "10_000", "frames > 4096", "length > 4096",
-    'new TextDecoder("utf-8", { fatal: true })', "finally { handedOff(); }",
+    'redirect: "error"', '"X-Cyanrex-Platform-Request": "1"', "10_000",
+    'new TextDecoder("utf-8", { fatal: true })', "4096"])
+    assert.ok(transport.includes(value), value);
+  for (const value of ['observe("unknown", "unknown")', "onHandedOff: handedOff",
     'window.addEventListener("pagehide"', 'window.addEventListener("pageshow"',
     "generation++", "if (!event.persisted) return", "mounted && generation === epoch",
     'element("cancel-logout").focus()', "if (busy || !mounted || !dialog.open) return"])
     assert.ok(app.includes(value), value);
-  assert.doesNotMatch(app, /localStorage|sessionStorage|document\.cookie|indexedDB|console\.|setInterval|NEXT_PUBLIC|\/api\/|authorization\s*:/i);
+  assert.match(transport, /Promise\.race\(/);
+  assert.match(transport, /finally\s*\{[^}]*onHandedOff/s);
+  assert.equal([...transport.matchAll(/return \{ bytes: 4096, frames: 4096 \}/g)].length, 3);
+  assert.match(transport, /\+\+frames > budget\.frames \|\| size > budget\.bytes/);
+  assert.doesNotMatch(app + transport, /localStorage|sessionStorage|document\.cookie|indexedDB|console\.|setInterval|NEXT_PUBLIC|\/api\/|authorization\s*:/i);
   const html = await read(`${ui}/index.html`);
   assert.match(html, /method="post" action="\/platform\/v1\/session\/login"/);
   assert.match(html, /<script type="module" src="\/platform\/ui\/app\.js"><\/script>/);

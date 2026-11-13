@@ -37,7 +37,9 @@ async function run(config) {
   const taskPath = `/platform/v1/tasks/${config.text_id}`, savePath = `${taskPath}/content`;
   const staticPaths = new Set(["/platform/", "/platform/ui/app.js", "/platform/ui/labels.js",
     "/platform/ui/style.css", "/platform/ui/tasks.js", "/platform/ui/task-contract.js",
-    "/platform/ui/task-edit.js", "/favicon.ico"]);
+    "/platform/ui/task-edit.js", "/platform/ui/request.js", "/platform/ui/body-contract.js",
+    "/platform/ui/task-save/taskContentSave.js", "/platform/ui/task-save/taskSaveContract.js",
+    "/platform/ui/task-save/taskDraft.js", "/platform/ui/task-save/taskPayloadLanguage.js", "/favicon.ico"]);
   const calls = [], replies = [], observations = createObservations(), errors = [];
   const responses = await createCdpResponses(await context.newCDPSession(page));
   page.on("pageerror", () => errors.push("unexpected metadata browser runtime error"));
@@ -154,6 +156,7 @@ async function run(config) {
   };
 
   await page.goto(`${origin}/platform/`); await state("status", "unauthenticated");
+  assert.equal(await page.locator("body").getAttribute("data-task-text-publication"), "disabled");
   assert.equal(count("/platform/v1/task-index"), 0);
   assert.ok(!Object.hasOwn(config, "otp")); emit({ phase: "ready_login" });
   const fresh = await read(); assert.deepEqual(Object.keys(fresh), ["otp"]); assert.match(fresh.otp, /^[0-9]{6}$/); config.otp = fresh.otp;

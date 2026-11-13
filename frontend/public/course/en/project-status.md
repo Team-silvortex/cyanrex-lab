@@ -1,18 +1,18 @@
 # Project status
 
-Reviewed **2026-10-26**. Product version is **0.6.5**; the public API compatibility baseline remains
-**0.3.0**. Task-bound publication/strict HTTP and default-off `--task-text-publication` extend the
-0.6.4 text/Session-page metadata paths, not browser raw-text saving or browser TLS acceptance. See the
-[0.6.5 report](../../reports/releases/0.6.5/README.md); earlier artifacts and dated evidence retain their scope.
+Reviewed **2026-11-13**. Product version is **0.6.6**; the public API compatibility baseline remains
+**0.3.0**. Fixed-slot Session-page body saving requires both default-off publication/UI flags;
+the scoped plain/prefix/isolated-TLS results below are not late-ACK/BFCache or deployed acceptance. See the
+[0.6.6 report](../../reports/releases/0.6.6/README.md); earlier artifacts and dated evidence retain their scope.
 
 Cyanrex is a self-hosted **collaboration and teaching platform**. A Task describes work; code is
 one optional payload, not the organizing center. Notes, configuration and code can use the text
 editor without requiring execution, automatic assessment or a Run. eBPF teaching remains the
 first supported domain and its existing workflow stays compatible.
 
-The mainline now has an explicit low-privilege platform host and a bounded private Task backend.
-The normal browser still edits local drafts rather than saving generic Tasks to that backend.
-Shared collaboration, reliable generic execution and deployed-LAN acceptance remain later work.
+The mainline has an explicit low-privilege private Task host; the normal browser still edits local drafts.
+The [federated direction](federation-discovery.md) has pure F0/F1a and explicit Linux F1b one-shot browsing, not startup discovery or pairing.
+Shared collaboration, traversal/relay transport, generic execution and deployed-LAN acceptance remain later work.
 
 ## Current operating boundaries
 
@@ -22,7 +22,7 @@ Three application paths coexist. They are not interchangeable authentication or 
 |---|---|---|
 | Teaching application | Existing browser authentication, classrooms, five labs, feedback, execution and teacher deployment management | Uses the existing AuthService and teaching storage; old attempts are not generic Tasks or Runs |
 | Local Task editor | Optional text payload, controlled editors, reviewed import and local JSON export | Page-memory drafts; no generic server save, autosave or browser persistence |
-| Explicit platform host | Linux plain/native-TLS loopback hosting, limited Sessions, private Tasks, metadata saves and optional Task-bound publication | Original provisioned storage; no normal-app/text-save/SDK cutover or LAN listener |
+| Explicit platform host | Linux plain/native-TLS loopback, limited Sessions/private Tasks, metadata saves and dual-flag fixed-slot body saving | Original provisioned storage; scoped plain SQL/browser check, no normal-app/SDK cutover or LAN listener |
 
 Additional Rust stores, HTTP adapters, draft-publication helpers and file-delivery components can be
 composed explicitly. Their availability does not mean that the normal application mounts them.
@@ -66,7 +66,7 @@ not imply Korean course bodies. See [Task editing](editor.md) and [local file im
 
 ## Private platform host
 
-Source 0.6.5 retains `cyanrex-platform serve-loopback` and `serve-loopback-tls`, verifying low-privilege
+Source 0.6.6 retains `cyanrex-platform serve-loopback` and `serve-loopback-tls`, verifying low-privilege
 identity, private format 3 input, the original catalog/five markers/Artifact root, without teaching AppState.
 
 The 0.6.4 unbound text route remains enabled in both CLI modes; 0.6.5 adds one default-off Task-bound
@@ -101,15 +101,20 @@ Secure Cookies. Optional service notifications report verified Ready and pre-dra
 Neither mode supplies DNS/LAN hosting, an installed service, automatic restart, a proxy backend or
 a complete browser Task workflow. Plain loopback availability alone is not a Cookie-safe deployment plan.
 
-Included in 0.6.4, `--session-ui` is default-off: seven fixed assets/five languages, dedicated Sessions,
+Introduced in 0.6.4, `--session-ui` is default-off: now thirteen fixed assets/five languages, dedicated Sessions,
 explicit 20-entry private pages and inert text/empty-payload reopening. Strict scope/revision/pins/hash
 checks use 128 KiB index/50 MiB content wire, 16,384 frames and 32 × 256 KiB decoded limits. A narrow
 manual-Draft title/display-label save preserves pins/order/bytes/count: one 64 KiB PUT, strict HTTP 200
 metadata ACK (128 KiB/4,096 frames), not a fresh text read. Save/dirty/unknown leave dialogs default Cancel.
 Ten seconds bounds waiting, not parsing/server work. Denial/context changes/pagehide clear private DOM
 and quarantine local work without cross-Session restore/replay; explicit discard is required to continue.
-No raw-text save, new Artifact, Task creation/Run, normal Next draft/SDK, new API or grant is connected.
-Unknown is not rollback/retry authority. Cookies are not port-isolated; legacy NSS still blocks browser TLS.
+Both publication/UI flags enable the fixed-slot body editor included in 0.6.6. Changed text publishes every
+existing slot in order against the original full baseline; strict 201 confirms original-title Artifacts,
+then the original-revision PUT and strict 200 confirm the edited title/labels/new refs. Metadata-only
+changes retain one PUT/no POST. CRLF and unchanged edit prefixes/suffixes stay exact; 32 × 256 KiB/8 MiB
+draft limits apply. Closed plans preserve prefixes without retry/adoption/deletion/restoration; normal
+Next drafts/SDK, Task creation/Run and new APIs/grants remain absent. Plain save and second-POST 503-prefix checks passed.
+The 401-prefix check and both original isolated Session/body TLS selectors also passed; host-account legacy NSS still correctly refuses.
 
 For setup and exact contracts, start at the [platform references](reference-index.md).
 The [loopback guide](platform-loopback-host.md), [TLS guide](platform-loopback-tls-host.md) and
@@ -150,7 +155,7 @@ its independently selected text commands use the original storage binding instea
 
 [Retained text publication](platform-text-artifact-connection.md) began in 0.6.4; 0.6.5 adds a Task-bound
 connector/strict POST and explicit host opt-in. Both use fixed text profiles and deferred exact-head
-checks, without browser text saving or Task updates. Existing combined login/Task/lock grants and
+checks; publication itself does not update a Task. The dual-flag page separately confirms its PUT. Existing grants and
 three Artifact INSERTs suffice; the Task-bound opt-in adds no grant or old-payload byte verification.
 
 Task content storage atomically updates Task/manifest/outbox metadata. Existing text replacement
@@ -159,8 +164,8 @@ It preserves immutable Artifact files and prior Review history.
 
 Review supports revisioned private human opinions on exact Artifact targets/evidence. It does not
 supply cross-user reviewer grants, generic Task acceptance, automatic assessment or AI review.
-A complete browser text-save workflow still needs reviewed browser authentication/transport integration
-and client conflict/uncertain-outcome handling, not just another editor button.
+The fixed-slot page now has real 503/401-after-prefix evidence with exact retained files/SQL and no Task update.
+Real lost/late-ACK/BFCache and Cookie-safe deployment remain separate; isolated TLS checks are not deployment acceptance.
 
 ### Draft publication and recovery
 
@@ -168,11 +173,13 @@ Internal import/planning, create-only publication steps, checkpoints, immutable 
 dispatch and read-only observation are implemented as distinct capabilities. Manual and catalogue
 paths preserve their own definition, identity and outcome rules.
 
-An Unreleased [browser-side content-save attempt](task-draft-publication.md#unreleased-browser-side-existing-draft-save-attempt)
-freezes a draft and existing manual Task baseline, hashes text locally, then hands out single-use
-Artifact/manifest descriptors with separate pending outcomes. Supplied confirmations establish only
-consistency; no fetch, Session/Origin configuration, UI saving or persistent recovery is connected.
-Completion covers the frozen attempt only and does not clear the current local editor's dirty state.
+The [browser-side content-save attempt](task-draft-publication.md#unreleased-browser-side-existing-draft-save-attempt), extended in 0.6.6,
+now has explicit `prepareTaskBoundContentSave`: freeze the complete original baseline, hash locally,
+confirm original-title Artifacts, then separately replace with the edited title. The legacy planner stays compatible.
+The page reuses four generated TS-to-JS mirrors and a strict raw-receipt bridge, not a handwritten planner.
+Node 24.21 generation/runtime and 22.22 emitted ESM were checked; official SHA-256-verified 22.23.3 passed
+six generator tests/`--check` with identical output. The plain save/conflict/revocation selector also passed
+with Node 24.21/22.23.3, Chrome 156.0.8078.73, Playwright 1.57.0 and PG 16.15; no TLS/recovery acceptance follows.
 
 These helpers do not create a whole-draft transaction. Confirmed prefixes can survive a failed later
 step; metadata agreement is not a historical receipt. Reading an intent or checkpoint does not
@@ -231,20 +238,13 @@ without one whole-project completion percentage.
 
 ## Next Decision Points
 
-The immediate mainline is a **private, payload-neutral Task workflow**. The retained host supplies
-a bounded server edge, not the completed browser product. Work should proceed in this order:
+The immediate mainline is a **private, payload-neutral Task workflow**. Next decisions are:
 
-1. Connect the reviewed Task-bound edge to a browser contract with Cookie-safe Origin/client trust
-   and separate publication/Task-update outcomes. Preserve current authority/private file ownership;
-   do not mount pooled routers or infer permission from a local draft ID.
-2. Extend the opt-in metadata-save page to text publication only through separately reviewed
-   contracts. Preserve separate local drafts, unsaved edits, expected revisions, conflicts and cancel/unknown states.
-   A local export and a successful metadata PUT must remain distinct operations.
-3. Verify the real browser-to-server chain with actual authentication/storage, competing edits,
-   rejected authority, restart behavior and uncertain delivery before calling private saving complete.
-4. Add separately reviewed sharing/reviewer grants and version-specific acceptance. Demonstrate
+1. Extend verified plain/prefix/isolated-TLS chains to late-confirmation/uncertain delivery and
+   Cookie-safe TLS/Origin/client trust. Keep Artifact/Task outcomes and local Next drafts separate; local IDs grant no permission.
+2. Add separately reviewed sharing/reviewer grants and version-specific acceptance. Demonstrate
    a non-teaching collaboration workflow that requires neither teacher/student roles nor a Run.
-5. Advance protected-LAN operation, distribution UI and desktop exchange only with explicit trust,
+3. Advance protected-LAN operation, distribution UI and desktop exchange only with explicit trust,
    credential, deployment and compatibility decisions; loopback TLS is not their acceptance.
 
 Automatic recovery/retry, migration, generic Run scheduling, AI delegation and executable plugins
@@ -278,9 +278,9 @@ For the sanitizer, the actual old 3.4.16 asset produced 20 failures in 33 cases;
 3.4.17 asset passed all 33, including the original ten. These opt-in component/browser fixtures
 block external networking and do not establish Next.js exploitability or a deployed asset version.
 
-Remote CI, release artifacts and deployed services require their own verified results. This status
-does not claim that the post-release commits passed remote CI, upgraded installed instances or
-re-ran every optional suite. Documentation reorganization is not another product acceptance run.
+The [earlier CI run](https://github.com/Team-silvortex/cyanrex-lab/actions/runs/40689737062) and final gate passed only `f0b5048`.
+Later 0.6.6 changes have local EOF/native-byte and isolated-TLS checks, not that remote coverage; the old unique CI cause is unknown.
+Release artifacts/deployments need separate results; documentation is not another acceptance run.
 
 ### 2026-10-26 Unreleased Session-page validation
 
@@ -292,8 +292,8 @@ passed separately, including the failed-logout/manual-check/explicit-confirmatio
 handed off only after the browser is ready, with no login retry. Existing plain/TLS host and text
 publication regressions passed **22** exact SQL selectors. The adjacent pure content-save attempt
 passed **36** units; this is not Task saving through the new page. Desktop/360px screenshots were
-checked. TLS-browser acceptance remains blocked by local legacy NSS; no CA/HOME/verification bypass
-was used, and CI wiring is not a remote pass. The owned socket-only PostgreSQL 18 fixture was stopped
+checked. At that 2026-10-26 checkpoint legacy NSS blocked TLS; [later isolated evidence](testing-guide.md#isolated-browser-tls-worker) is separate.
+No CA/HOME/verification bypass was used, and CI wiring was not a remote pass. The owned PostgreSQL 18 fixture was stopped
 and its 56 MiB generated data removed; logs/screenshots remain outside the repository. No version,
 commit or push was made for this slice.
 

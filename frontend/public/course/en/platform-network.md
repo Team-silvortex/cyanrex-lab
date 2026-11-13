@@ -1,8 +1,13 @@
 # Current platform feature and module network
 
-Source **0.6.5** includes loopback/TLS hosting, limited Sessions, private Task commands, retained text
-publication and an opt-in metadata-save shell. It adds Task-bound publication/strict HTTP through
-default-off `--task-text-publication`; no browser raw-text/SDK saving, LAN access or migration.
+**F0/F1a/F1b included in 0.6.6, reviewed 2026-11-13:** [federation discovery](federation-discovery.md) adds explicit Linux one-shot mDNS → TXT/cache ingestion:
+supplied bounded announcement + local policy/time → compatible `UnverifiedPeerCandidate`.
+It is unmounted; node proof → explicit pairing → scoped workspace grant and direct/traversal/relay
+transport remain missing edges. Existing classroom, Runner, Source and loopback paths stay unchanged.
+
+Source **0.6.6** includes loopback/TLS hosting, limited Sessions, private Task commands, retained text
+publication and an opt-in save shell. Fixed-slot body saving added in 0.6.6 requires both
+default-off `--task-text-publication` and `--session-ui`; normal-app/SDK saving, LAN platform hosting and migration remain absent.
 Earlier implementation-stage labels and dated evidence retain their original scope.
 
 The [Task-bound edge](platform-text-artifact-connection.md#unreleased-task-bound-publication-capability)
@@ -10,10 +15,19 @@ is complete Task/manifest pin → current Session-owned manual Draft lock → fr
 bytes → verified new Artifact → unchanged Task/final guards → COMMIT. Its strict POST is enabled only
 by the new constructor or CLI flag: nine routes/eight lanes over one original storage Arc after all
 eight capacities are checked. Default CLI stays eight/seven; old constructors seven/six. Both text
-connectors keep four actual workers each, with the unchanged 16-connection budget. The seven UI assets
-still save metadata only; publication neither attaches to the Task nor completes browser text saving.
+connectors keep four actual workers each, with the unchanged 16-connection budget. The thirteen UI assets
+reuse four generated TS planner mirrors: changed text → all existing slots in order, each with the
+same original full baseline → strict 201 original-title Artifact receipts → original-revision PUT
+with edited title/labels/new refs → strict 200 Task confirmation. Metadata-only edits retain one PUT/no POST.
+Count/order and unchanged CRLF/prefix/suffix bytes stay fixed; cancel/conflict/unknown, denial headers
+or pagehide close the plan without retry/adoption/deletion/restoration. The 13 body-browser cases use
+mock APIs; an independent plain SQL/browser selector passed two original-baseline/title publications,
+separate Task replacement and exact SQL/file checks, with first-POST conflict/revocation rejection.
+Separate real second-POST 503/401 cases retain the confirmed prefix with no Task change; both passed
+exact SQL/file/UI checks. Both original Session/body TLS selectors also passed in an isolated worker,
+with confirmed SQL shutdown. Late-ACK/BFCache and Cookie-safe deployment remain separate.
 
-The Unreleased [native TLS loopback branch](platform-loopback-tls-host.md) extends that host with
+The [native TLS loopback branch](platform-loopback-tls-host.md), included in 0.6.3, extends that host with
 private certificate/key → bounded handshake → the same HTTP Session routes and Secure Cookie.
 It adds no LAN/DNS listener, public resource routes or browser workflow.
 
@@ -21,7 +35,7 @@ Optional [service notifications](platform-host-notifications.md) connect explici
 original verified startup/bind → Ready → listener closure → Stopping → existing drain.
 This is not an installed service, continuous health probe or restart/retry path.
 
-Unreleased after 0.6.2, the explicit Linux [loopback host](platform-loopback-host.md) connects process
+Introduced after 0.6.2 and included in 0.6.3, the explicit Linux [loopback host](platform-loopback-host.md) connects process
 and private format 3 gates → original expected storage → one shared workspace router → actual bounded
 HTTP/1.1 login/query/logout, [private Task metadata](platform-task-index-connection.md), [read-only reopening](platform-task-content-connection.md)
 and [empty manual Draft creation](platform-task-create-connection.md). Separate [manifest replacement](platform-task-replace-connection.md)
@@ -461,10 +475,10 @@ evidence or topology; matching/invisibility does not establish prior commit/roll
 | Source → local Runner → observation → teaching pack → attempt → teacher feedback | Connected teaching path; an assessment result is not a generic durable Review. |
 | Browser remote check → owner-bound job → signed Agent → compile report | Connected optional compiler path; no local-execution fallback is granted by Agent failure. |
 | Local TaskDraft → selected payload → controlled editor → local export | Connected entirely in the browser; login/unread reads are shell behavior, not payload saving. |
-| Durable Session → own Artifact revision → own Task exact inputs → Draft replacement | Implemented preparatory backend path; public API and browser adapter are absent. |
+| Durable Session → own Artifact revision → own Task exact inputs → Draft replacement | Dual-flag page plus scoped plain save/503/401-prefix and isolated TLS evidence; normal-app/SDK, late-ACK/BFCache and deployment remain separate. |
 | Durable Session → exact owned Artifact target/evidence → human Review history | Implemented preparatory backend path; cross-user review authority and acceptance remain absent. |
 | Legacy accounts/scripts/attempts → durable identity/Artifacts/Tasks/Reviews | Planned migration, writer fencing and cutover; no implicit dual write or adoption. |
-| Browser task save → Artifact publication → Task create/replace → conflict recovery | W10–W16 and W23 retain their prepared scopes. A separate retained text POST and Task commands are now explicitly hosted on loopback; browser authentication/transport, save/conflict handling and durable recovery remain missing. |
+| Session page → Task-bound publication → existing Draft replacement | Dual flags connect fixed slots through separate strict Artifact/Task receipts, with mock UI, plain/prefix SQL/browser and isolated TLS checks; no create, recovery, normal-app/SDK cutover or deployed acceptance. |
 | Supplied Artifact content → draft plan binding → Task content manifest | W02 ⇢ W14 ⇢ W10 checks supplied bytes and metadata only; no storage call, current authorization or proof of prior publication. Local U03 → W14 remains unconnected. |
 | Draft plan → explicit Session publication steps → Task create | W14 ⇢ W15 ⇢ W12 uses I04 and W05 independently for current authorization/publication. Separate transactions, in-memory outcome tracking; no browser bridge or automatic recovery. |
 | Unconfirmed attempt → current target observation | W15 ⇢ W16 uses I04 and one W05 or W12 read. Separate observation times, no returned body or state restoration; this read branch adds no representative write chain. |

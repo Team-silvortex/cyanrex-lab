@@ -6,6 +6,15 @@ Target repository: `Team-silvortex/cyanrex-lab` · This work does not reset the 
 
 Product position: collaboration software for humans, AI Agents and compute resources, preceding the Nuis OS work collaboration environment.
 
+## Federated direction added 2026-11-13
+
+[Proposal #4](https://github.com/Team-silvortex/cyanrex-lab/issues/4) extends the target to independently
+operated nodes and workspaces, LAN-first discovery and direct connections, with explicitly configured
+self-hosted encrypted relays when direct connection fails. No mandatory unique official center or global
+teacher authority is intended. The [federation contract and stages](federation-discovery.md) distinguish
+pure Unreleased F0 candidate selection from later identity proofs, pairing, traversal and workspace grants.
+This addition does not rewrite the historical baseline or claim those later connections are implemented.
+
 ## 0. Scope, evidence and key decisions
 
 This design is based on the `main` snapshot of `Team-silvortex/cyanrex-lab` at

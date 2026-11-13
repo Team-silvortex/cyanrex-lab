@@ -1,5 +1,6 @@
 import { labels, chooseLocale } from './labels.js';
 import { createTaskReader } from './tasks.js';
+import { platformRequest } from './request.js';
 
 const element = id => document.getElementById(id);
 const form = element("session-form");
@@ -55,77 +56,12 @@ function knownError(raw, code, outcome) {
 const invalidSession = raw => knownError(raw, "invalid_session", '"(?:not_attempted|unconfirmed)"');
 const sessionPresent = raw => knownError(raw, "session_present", '"not_attempted"');
 
-async function readBounded(response, signal) {
-  if (!/^application\/json(?:;\s*charset=utf-8)?$/i.test(response.headers.get("content-type") || "")
-    || !response.body) {
-    void response.body?.cancel().catch(() => undefined);
-    throw new Error("unconfirmed");
-  }
-  const reader = response.body.getReader(), chunks = [];
-  let length = 0, frames = 0;
-  const cancel = () => { void reader.cancel().catch(() => undefined); };
-  signal.addEventListener("abort", cancel, { once: true });
-  try {
-    signal.throwIfAborted();
-    while (true) {
-      const { value, done } = await reader.read();
-      signal.throwIfAborted();
-      if (done) break;
-      if (++frames > 4096) {
-        cancel();
-        throw new Error("unconfirmed");
-      }
-      length += value.byteLength;
-      if (length > 4096) {
-        cancel();
-        throw new Error("unconfirmed");
-      }
-      chunks.push(value);
-    }
-    const bytes = new Uint8Array(length);
-    let offset = 0;
-    for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
-    return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
-  } finally {
-    signal.removeEventListener("abort", cancel);
-    reader.releaseLock();
-  }
-}
-
 async function request(path, method, body, handedOff = () => undefined) {
   const controller = new AbortController();
   activeRequest = controller;
-  let rejectAbort;
-  const interrupted = new Promise((_resolve, reject) => { rejectAbort = reject; });
-  const abort = () => rejectAbort(new Error("unconfirmed"));
-  controller.signal.addEventListener("abort", abort, { once: true });
-  // This limits a browser wait, not server work, a transaction or a rollback guarantee.
-  const timer = setTimeout(() => controller.abort(), 10_000);
   try {
-    const work = (async () => {
-      let pending;
-      try {
-        pending = fetch(path, {
-          method, mode: "same-origin", credentials: "same-origin", cache: "no-store",
-          redirect: "error", signal: controller.signal,
-          headers: { "X-Cyanrex-Platform-Request": "1",
-            ...(method === "POST" ? { "Content-Type": "application/json" } : {}) },
-          ...(body === undefined ? {} : { body }),
-        });
-      } finally { handedOff(); }
-      const response = await pending;
-      if (controller.signal.aborted) {
-        void response.body?.cancel().catch(() => undefined);
-        controller.signal.throwIfAborted();
-      }
-      const raw = await readBounded(response, controller.signal);
-      controller.signal.throwIfAborted();
-      return { status: response.status, raw };
-    })();
-    return await Promise.race([work, interrupted]);
+    return await platformRequest(path, method, { body, signal: controller.signal, onHandedOff: handedOff });
   } finally {
-    clearTimeout(timer);
-    controller.signal.removeEventListener("abort", abort);
     if (activeRequest === controller) activeRequest = null;
   }
 }

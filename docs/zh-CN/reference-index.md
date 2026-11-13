@@ -25,6 +25,7 @@
 - [当前架构与变更边界](architecture-map.md)
 - [详细系统架构](architecture.md)
 - [目标平台架构](next-architecture.md)
+- [联合节点、发现与穿透阶段](federation-discovery.md)
 - [当前功能与模块网络](platform-network.md)
 - [能力张量与分日期成熟度证据](capability-maturity.md)
 - [平台与 eBPF 概念](concepts.md)

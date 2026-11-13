@@ -43,6 +43,12 @@ pub mod collaboration_identity_store;
 pub mod legacy_workspace;
 mod prepared_resource_sql;
 
+// Group: Prepared federation
+// Discovery contracts stay pure; the separate Linux one-shot browser is explicit, never startup.
+pub mod federation_discovery;
+#[cfg(target_os = "linux")]
+pub mod federation_mdns;
+
 // Group: Prepared Task and content
 // Pure definitions/plans and explicit stores coexist here; listing a store installs nothing.
 #[cfg(unix)]

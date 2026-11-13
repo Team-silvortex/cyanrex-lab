@@ -1,9 +1,10 @@
 # System Architecture
 
-Source **0.6.5** includes explicit loopback/TLS hosting, limited Sessions, private Task commands,
-retained/Task-bound text publication and a default-off shell for reading and manual-Draft metadata saves.
-Browser raw-text/normal-app/SDK saving, LAN access and migration remain absent; browser TLS remains
-unverified locally. Earlier implementation-stage labels retain their original scope.
+Source **0.6.6** includes explicit loopback/TLS hosting, limited Sessions, private Task commands,
+retained/Task-bound text publication and a default-off shell for metadata and fixed-slot text saves.
+Body saving requires both `--task-text-publication` and `--session-ui`; normal-app/SDK saving, LAN
+hosting and migration remain absent. Scoped plain/prefix/isolated-TLS checks are not late-ACK/BFCache
+or deployed acceptance. Earlier implementation-stage labels retain their original scope.
 
 Included in 0.6.4, [retained text publication](platform-text-artifact-connection.md) adds a separate pool-free
 create connector and POST adapter with original storage and deferred exact-head checks, explicitly
@@ -14,7 +15,7 @@ the current Session must own the complete manual-Draft baseline before any new f
 Only the new workspace constructor or default-off `--task-text-publication` selects nine routes/eight
 response lanes; default CLI remains eight/seven and old constructors seven/six. All eight capacities
 are checked before one original storage Arc split. The two text connectors each retain four actual workers;
-global network admission remains 16. Publication creates an Artifact, not a Task update or UI save.
+global network admission remains 16. Publication creates an Artifact, not a Task update; the 0.6.6 dual-flag page separately confirms its manifest PUT.
 
 The [native HTTPS loopback mode](platform-loopback-tls-host.md) reuses that host's
 startup, original storage and HTTP driver with explicit private TLS identity and handshake admission.
@@ -31,7 +32,7 @@ updates titles or existing exact owned text references; code and Run remain opti
 publication makes the default CLI composition eight routes/seven independent response lanes over one
 original storage Arc; old constructors stay seven-route/six-lane without publication. All seven capacities
 are validated before splitting; global admission remains 16 connections and text actual-worker slots remain four.
-It does not mount pooled Artifact reads, status writes, normal teaching AppState, LAN access, a proxy backend or browser raw-text saving.
+It does not mount pooled Artifact reads, status writes, normal teaching AppState, LAN access or a proxy backend; fixed-slot body saving needs both explicit flags.
 
 Start with the concise [current architecture map](architecture-map.md):
 [runtime wiring](architecture-map.md#runtime-wiring), ownership and

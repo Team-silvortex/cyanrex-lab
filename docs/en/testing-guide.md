@@ -502,22 +502,42 @@ Artifact publication or Task replacement is not permission to delete retained co
 
 ### Optional independent-host Session page
 
-The native host's final `--session-ui` flag serves seven fixed assets at `/platform/`, including
-`tasks.js`, `task-edit.js` and `task-contract.js`; it is off by default. Its five-language private Task
-page reads text and confirms only manual-Draft title/display-label saves, with pins/order/bytes/count
-unchanged. It adds no raw-text editing, new Artifact, creation, Run writes, normal Next local-draft/SDK
-connection, authentication API/grant or teaching fallback. These opt-in tests
+The native host's final `--session-ui` flag serves thirteen fixed assets at `/platform/`, including
+the original eight, `body-contract.js` and four generated `task-save` mirrors; it is off by default.
+UI alone reads text and confirms manual-Draft title/display-label saves with pins/order/bytes/count
+unchanged. Both publication/UI flags enable the fixed-slot body flow described below. Creation,
+Run writes, normal Next local-draft/SDK connection, new authentication API/grants and teaching fallback remain absent. These opt-in tests
 need explicit absolute `CYANREX_PLAYWRIGHT_MODULE` and `CYANREX_CHROMIUM_PATH` paths:
+
+Default `scripts/tests/platformSessionRequest.test.mjs` exercises the mounted transport's canonical
+route/body admission, fixed response budgets, native streams, denial/handoff hooks, abort/late replies
+and resource cleanup. Together with the Task-bound profile and ten lifecycle cases, 32 native Node22
+transport tests passed. A clone must reach guarded byte/frame-bounded EOF and fatal UTF-8 before the
+original Response's native `arrayBuffer()` begins; native length/every byte must match. Failure cancels
+both tee branches concurrently, with abort/late-result fences and no fallback/extra HTTP. Multiple
+bounded copies/string storage coexist, not one buffer or a process-wide quota. Native tee sources
+can remain internally locked after actual closure; checks now prove EOF/error/cancel-once and no
+further pulls, both cancellation settlements and release of the owned guard. Pre-clone refusal still
+requires an unlocked body. These local fetch substitutes prove neither authentication nor COMMIT.
+
+`scripts/tests/platformRequestCdp.browser.mjs` adds eight real-Chrome tests using the mounted helper
+and synthetic actual HTTP, not fulfilled responses. It reproduced the same-family `ERR_ABORTED`
+failure and now requires exact helper bytes plus original-request CDP completion, with no extra GET
+or ignored loading failure. All eight passed, as did the original 55 Chrome cases, real metadata and
+three plain body/prefix cases. This fixes a locally reproduced lifecycle failure; it does not prove
+the earlier remote failure's unique cause. The probe is mandatory in the existing CI bootstrap.
 
 ```bash
 bash scripts/test-platform-session-ui-browser.sh
 bash scripts/test-platform-task-reader-browser.sh
 bash scripts/test-platform-task-metadata-browser.sh
+bash scripts/test-platform-task-body-browser.sh
 # Also requires the explicit disposable PostgreSQL URL, OpenSSL and certutil:
 bash scripts/test-platform-browser-session.sh
 # Read-only Task path uses the real plain host; it does not establish TLS-browser acceptance:
 bash scripts/test-platform-browser-tasks.sh
 bash scripts/test-platform-browser-task-metadata.sh
+bash scripts/test-platform-browser-task-body.sh
 ```
 
 The Session UI runner uses real Chrome and production assets/CSP with **mock Session APIs**. It checks
@@ -553,6 +573,74 @@ same Task/owner/creation time, unchanged ordered pins and no rehash/provenance c
 bounds are 64 KiB/128 KiB, 4,096 reply frames and a ten-second browser wait, not a hard parser/server
 deadline. Saved metadata retains the unchanged prior content copy; it does not prove a fresh read.
 
+The Unreleased `scripts/tests/platformTaskBody.browser.mjs` runner inventories 13 real-Chrome cases
+with **mock APIs**. Only actual text changes select sequential publication of every existing slot
+against the same full original baseline, strict 201 original-title Artifact receipts, then one
+original-revision PUT and strict 200 Task receipt. Metadata-only edits still issue one PUT/no POST;
+disabled capability remains metadata-only. Cases cover Cancel-focused review, fixed order/CRLF,
+separate confirmed prefixes, conflict/unknown without replay, 401/403-header quarantine, pagehide/late
+replies, final-PUT timeout/late-200 refusal, five languages and 360px layout. These mock results do not
+prove SQL authority or real partial-prefix/late-confirmation behavior.
+Success combines confirmed metadata with frozen submitted bytes; it is not a fresh content reread.
+
+The separate `test-platform-browser-task-body.sh` runner requires four exact ignored
+`platform_browser_task_body_tdd` selectors; it does not replace a blocked TLS selection with plain:
+
+- `behavior::postgres_platform_browser_task_body_plain_confirmed_replace_conflict_and_revocation`
+- `behavior::postgres_platform_browser_task_body_tls_confirmed_replace_conflict_and_revocation`
+- `partial::postgres_platform_browser_task_body_partial_prefix_second_lock_timeout_retains_confirmed_artifact`
+- `partial::postgres_platform_browser_task_body_partial_prefix_second_session_revoked_retains_confirmed_artifact`
+
+On **2026-11-13**, the plain selector passed independently with Node 24.21 and 22.23.3, Google Chrome
+156.0.8078.73, Playwright 1.57.0 and disposable PG 16.15. It uses natural password/OTP login and Cookie
+round trip, then two ordered POSTs with the same original full baseline/title and strict 201 receipts,
+followed by independent original-revision PUT/strict 200. Separate SQL checks verify Artifact heads,
+revisions/outboxes and private single-link `0400` file bytes/hashes, plus the Task head/revision/outbox.
+Competing revision and revoked Session each reject the first POST, with no new Artifact/Task writes or
+PUT. This is not real late-ACK/BFCache, TLS-body or deployed acceptance. The original plain
+Session and metadata SQL/browser regressions also passed; these are scoped runs, not the full gate.
+
+The additional partial-prefix selectors use natural login, the real native plain host and dedicated
+owner row-lock connections, with exact database/role/application/PID/statement/blocker observations.
+The first Artifact is confirmed before the second request waits; one selector holds its Task lock
+until the unchanged product lock timeout returns 503, and the other revokes the exact issued Session
+while its second request waits. Both cases passed. Checks
+require the exact first head/revision/outbox and single-link `0400` file/hash, zero second rows/bytes,
+unchanged Task/outbox, two POSTs/no PUT/retry and preserved terminal UI or private quarantine. No
+DDL/trigger, manufactured response, changed timeout or backend kill coordinates these cases.
+The 401 fixture initially blocked on Playwright's response-bound `allHeaders()` before asking the
+parent to revoke; provisional request/body notification now precedes that wait, with all terminal
+header checks still mandatory. This fixes the test coordination, not production authorization.
+These cases do not establish browser timeout, lost ACK, real navigation/BFCache or automatic recovery.
+
+The passive CDP observer pre-arms bounded `expectMany` queues once before an action, binding each
+same-URL request to its independent request ID even while an earlier body read is pending. Completed
+batch guards and `check()` reject overruns; any batch failure invalidates pending observations.
+Each bound queue response now gets its own deadline from `requestWillBeSent`; next-send waiting starts
+only after earlier confirmations and is separately bounded. The whole batch has a conservative
+`(2 × count + 1) × timeoutMs` ceiling; completed guards retain no timers. Single `expect` keeps its old
+arm-time budget. A virtual-clock Red reproduced two 75ms requests wrongly sharing 120ms; the original
+140 plus 12 deadline cases (**152**) and six Chrome synthetic cases pass on Node 24.21/22.23.3.
+This is a proven observer bug, not an established unique cause of the earlier remote failures.
+No extra fetch, replay, fallback or second body read supplies missing evidence;
+fixed safe errors never log request IDs, URLs, headers, private text or protocol error contents.
+
+`platformTaskBodyContract.test.mjs` has 20 pure checks for fixed slots, 32 × 256 KiB and the full
+8 MiB draft budget, pre-digest snapshots, newline preservation, strict raw receipts and planner guards.
+Receipt strings must pass the existing 128 KiB lexical decoder before semantic confirmation: duplicate
+or escaped keys, unsafe/noncanonical numbers, depth above 16 and excessive tokens fail before JSON.parse.
+`platformTaskBodyRequest.test.mjs` separately covers the fixed Task-bound POST transport profile.
+`scripts/generate-platform-task-save-assets.mjs` strips the four fixed TS sources with Node's built-in
+support; its `--check` and six `platformTaskSaveAssets.test.mjs` cases reject mirror/import-graph drift.
+Generation/check and runtime were verified on Node 24.21, emitted ESM runtime on 22.22. Official
+SHA-256-verified Node 22.23.3 passed generator `--check` and all six tests with output identical to 24.21.
+Regenerate after TS changes, then check without rewriting:
+
+```bash
+node scripts/generate-platform-task-save-assets.mjs
+node scripts/generate-platform-task-save-assets.mjs --check
+```
+
 The metadata SQL/browser runner selects one exact ignored plain-host case for confirmed metadata,
 competing revision conflict and revoked authority, comparing retained Artifact files and unchanged
 payload pins/order/count. This is separate from mock UI, raw-text saving and TLS-browser acceptance;
@@ -562,11 +650,49 @@ TLS browser acceptance requires Chrome 146+ and **no existing legacy `~/.pki/nss
 prefer that database over the fixture's private XDG NSS directory. Refuse this environment; do not
 delete or alter user trust, override HOME, or bypass certificate verification. In an eligible worker,
 the fixture first requires rejection of its untrusted CA, then imports only that CA into its owned
-temporary NSS database and relaunches with normal verification. This machine's legacy NSS blocks
-that browser-TLS case; native TLS socket tests do not replace it. CI runs three mock and three SQL/browser runners through
+temporary NSS database and relaunches with normal verification. This native account's legacy NSS
+refusal still applies before body-fixture SQL setup; the isolated passing result below changes no host trust.
+CI requires four mock and four SQL/browser runners plus six CDP and eight mounted-transport Chrome cases through
 `scripts/test-platform-browser-ci.sh` with ephemeral pinned browser tooling. Wiring is not evidence
 of a remote CI pass. Keep default Rust/source checks, mocked UI, real SQL/browser and real TLS results
-separate in dated [project status](project-status.md).
+separate in dated [project status](project-status.md). The earlier
+[remote run](https://github.com/Team-silvortex/cyanrex-lab/actions/runs/40689737062) and final gate passed
+for `f0b5048` only; none of this later uncommitted work is covered by that run.
+
+### Isolated browser TLS worker
+
+When host-account legacy NSS blocks the unchanged selectors, the optional
+`scripts/test-platform-browser-container.sh` uses a pre-existing local image from
+`docker/platform-browser-tests.Dockerfile`, existing Node22/Chrome/Playwright tools and compiled tests.
+It never builds/pulls an image or repairs host trust. The actual image account keeps its default
+HOME, with no host HOME/NSS mount or system-library overlay. The container is network-off, read-only,
+capless and no-new-privileges, with read-only source/tool mounts and bounded private tmpfs/SQL.
+Default preflight checks the account, missing legacy NSS, runtime versions/ABI, exact selectors and
+an actual browser launch; it does not run SQL or accept TLS. Supply absolute existing paths:
+
+```bash
+bash scripts/test-platform-browser-container.sh \
+  --image cyanrex-platform-browser-tests:local \
+  --node-dir /absolute/node-v22.23.3-linux-x64 \
+  --chrome-dir /absolute/google-chrome \
+  --playwright-dir /absolute/node_modules/playwright \
+  --session-test /absolute/repo/engine/target/debug/deps/platform_browser_session_tdd-HASH \
+  --body-test /absolute/repo/engine/target/debug/deps/platform_browser_task_body_tdd-HASH
+```
+
+Only explicitly adding `--run-tls` initializes disposable container PostgreSQL and runs both original
+TLS selectors. They must reject an untrusted CA before accepting only their private test CA, with
+normal certificate verification and Secure Cookie checks. Cleanup requires the original database/
+administrator inventory, no other clients and confirmed PostgreSQL shutdown. After the bounded
+Fetch lifecycle fix, the final 2026-11-13 container run exited zero: original Session TLS **3.47s**
+and body TLS **5.22s** passed strict CA/Secure Cookie/current-authority/SQL/file checks. Cleanup
+confirmed only initial databases/one administrator/zero other `client backend` processes and a
+successful fast PostgreSQL stop; five PostgreSQL background processes are not clients. The container
+was removed, while image/tools were retained. Native-account legacy NSS refusal remains unchanged.
+Earlier body/metadata `reply-task-event-loading-aborted-response` failures were actually reproduced
+before the fix; the older remote CI failure's unique cause remains unproven. No retry, fallback or
+relaxed assertion supplies passing evidence. This local result does not cover remote uncommitted code.
+This is test-runtime isolation, not a deployment or shared-kernel security guarantee.
 
 ### 2026-10-26 local metadata-save validation
 
@@ -579,7 +705,7 @@ overwrite and no revoked-Session write. Metadata contracts passed 20 units withi
 the separate, still-unmounted content-save helper passed 36 units, not browser text-save acceptance.
 The held-denial-header test failed before the clearing fix and passed afterwards; synthetic lifecycle
 and controlled late-fetch cases retain their stated limits. Desktop/360px screenshots were checked.
-TLS-browser acceptance remains blocked as described above; CI wiring is not a remote result.
+At this 2026-10-26 checkpoint legacy NSS blocked TLS; the later [isolated result](#isolated-browser-tls-worker) is separate.
 The socket-only PostgreSQL 18 fixture was stopped and its 56 MiB generated data removed; logs and
 screenshots remain outside the repository. No version, commit or push was made for this slice.
 
@@ -600,8 +726,8 @@ npm --prefix frontend run test:editor-intelligence-browser
 The payload helper uses real pages and Monaco, permits only mocked identity/unread reads, and rejects
 payload network writes and WebSockets. This is useful proof of local-only behavior, not a server-save
 test. Other browser suites mock Engine routes for auth, classroom, learning, events, settings, Runner
-administration and safety scenarios. No currently implemented browser suite can prove the absent
-generic Task HTTP save workflow.
+administration and safety scenarios. They do not prove normal-application/SDK Task saving, which
+remains unmounted; the independent platform-host SQL/TLS acceptance above is a separate path.
 
 ### Generated Monaco sanitizer fixture in 0.5.3
 
@@ -654,6 +780,30 @@ Real transport checks are separate. The ignored `runner_agent_client_tdd` case s
 server and uses Linux Clang with the BPF target; it compiles without attaching a program. The event
 stream pressure harness checks real paced, overloaded and stalled sockets. Neither proves a real
 LAN browser/teacher/student workflow, TLS deployment or VM isolation.
+
+### Explicit isolated federation discovery
+
+The Unreleased F1b Linux IPv4 adapter has pure/default `federation_mdns_*_tdd` cases and seven
+opt-in real UDP cases. The latter must run only through the guarded runner:
+
+```bash
+./scripts/test-federation-mdns-netns.sh
+```
+
+Prerequisites are cached locked Cargo dependencies, Node, Python 3, Linux user/network namespaces,
+and `unshare`, `nsenter`, `ip` and `setpriv`. The runner creates two anonymous network namespaces
+and two disposable virtual links; neither namespace has a host-network attachment or default route.
+The Python standard-library peer is a test-only fixture, not a new application runtime dependency.
+Six ordinary cases run with zero capabilities; only the address-removal case retains `net_admin`
+inside the disposable namespace. Unsupported namespaces are a failed precondition: no host fallback.
+
+Coverage includes the exact query and complete DNS/TXT → F0 → cache chain, TTL/port/destination/size
+rejection, another interface's traffic, same-source goodbye, cancellation, descriptor cleanup and
+address removal. Owned peer processes are stopped and namespace destruction removes their virtual
+links/routes. Private build evidence stays in the reported `/tmp/cyanrex-mdns-netns-*` directory;
+no application database, real LAN peer, credential or production payload is used. This is not generic
+mDNS interoperability, physical-LAN deployment, pairing or traversal acceptance; see
+[the federation profile](federation-discovery.md).
 
 ## Live and release acceptance
 

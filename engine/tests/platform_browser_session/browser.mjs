@@ -72,6 +72,8 @@ async function run(config) {
   }
   const origin = new URL(config.origin).origin;
   const paths = new Set(["/platform/", "/platform/ui/app.js", "/platform/ui/labels.js", "/platform/ui/style.css", "/platform/ui/tasks.js", "/platform/ui/task-contract.js", "/platform/ui/task-edit.js", "/favicon.ico",
+    "/platform/ui/request.js", "/platform/ui/body-contract.js", "/platform/ui/task-save/taskContentSave.js",
+    "/platform/ui/task-save/taskSaveContract.js", "/platform/ui/task-save/taskDraft.js", "/platform/ui/task-save/taskPayloadLanguage.js",
     "/platform/v1/session/login", "/platform/v1/session", "/platform/v1/session/logout"]);
   const calls = [], checks = [], errors = [];
   page.on("pageerror", () => errors.push("unexpected page runtime error"));
@@ -120,6 +122,7 @@ async function run(config) {
     assert.equal(page.frames().length, 1); assert.equal(context.pages().length, 1);
   };
   await page.goto(`${origin}/platform/`);
+  assert.equal(await page.locator("body").getAttribute("data-task-text-publication"), "disabled");
   await state("unauthenticated"); assert.equal(count("/platform/v1/session"), 1);
   assert.ok(!Object.hasOwn(config, "otp"), "startup configuration must not contain a prematurely sampled OTP");
   emit({ phase: "ready_login" });

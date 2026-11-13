@@ -5,12 +5,82 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.6.6] - 2026-11-13
+
+This patch source release connects explicit Session-page fixed-slot body saving, strengthens Fetch
+completion and passive browser observation, and adds bounded federation discovery preparation with
+an explicit Linux IPv4 one-query adapter. Discovery candidates remain unverified; pairing, traversal,
+relay transport, application discovery startup and cross-authority access are not implemented.
+See [local release validation](reports/releases/0.6.6/README.md).
+
+### Added
+
+- Add an explicit Linux IPv4 one-query mDNS browser, separate from the pure discovery contracts
+  and existing host startup. Pin namespace/interface/address before socket creation, bind only the
+  multicast group, validate ancillary provenance and bounded single-packet DNS-SD chains, and close
+  on cancellation, interface changes or exhausted budgets. No service registration, business-port
+  connection, pairing, dependency, automatic startup or authorization change is introduced.
+- Add F1a LAN discovery data preparation: one bounded DNS-SD TXT envelope with strict framing,
+  and a policy-fixed candidate cache keyed by local interface incarnation/instance alias. Preserve
+  initial wall/monotonic expiry, reject live-source changes and capacity overflow, limit admission
+  and clear/close on clock rollback or stop. No mDNS dependency, socket, interface enumeration,
+  pairing, automatic connection or host startup integration is added.
+- Add the pure, unmounted F0 federation discovery contract under proposal #4: strict bounded
+  announcements, independent claimed node fingerprints, mutual protocol/capability selection and
+  private-first hints with explicit public/relay opt-ins. Candidates remain unverified; no network,
+  pairing, cross-authority grant, migration or new runtime dependency is introduced. Document the
+  decentralized-node direction and later LAN discovery, secure pairing and self-hosted relay stages.
+- Add an explicit, pure Task-bound browser content-save planner alongside the compatible unbound
+  planner. Freeze the full original Task/manifest into each bounded publication body, validate Artifact
+  receipts against the original Task title, and only then prepare the separate edited-title manifest
+  replacement. Preserve one-shot handoff, stale guards, confirmed prefixes and unknown outcomes without
+  planner-owned transport, authentication, retries or new execution capability. Share a synthetic wire
+  fixture with the strict Rust HTTP adapter and include the new state/contract matrix in the existing gate.
+- Connect the default-off Session page to fixed-slot body saving only when `--task-text-publication`
+  and `--session-ui` are both enabled. Changed text publishes every existing slot in order against the
+  original full baseline; strict 201 confirms original-title Artifacts before an original-revision PUT
+  and strict 200 Task confirmation. Metadata-only edits retain one PUT/no POST. Preserve CRLF and
+  unchanged edit prefixes/suffixes, separate confirmed prefixes and closed cancel/conflict/unknown/
+  denial/pagehide outcomes without retry, adoption, deletion or restoration. Add 20 pure bridge checks
+  and 13 mocked-API body-browser cases, plus independent plain/TLS SQL-browser selectors. The plain
+  selector passed natural login, two confirmed publications, independent Task replacement and exact
+  SQL/file checks, including first-POST conflict/revocation rejection. Local legacy NSS blocks the TLS
+  selector before database setup. A separate real partial-prefix case confirms one retained Artifact
+  before a second Task-row lock produces 503, or a revoked exact Session produces 401. Both passed
+  real SQL/file/UI checks; the 401 fixture no longer waits for response-bound Playwright headers
+  before releasing its SQL fence, while every terminal header check remains required.
+  Real late-confirmation/BFCache and deployed saving remain unaccepted; isolated TLS evidence is separate below.
+- Add an explicit offline disposable-container browser runner and reviewed runtime Dockerfile. Its
+  preflight checks a real non-root image account/default HOME, empty legacy NSS, zero capabilities,
+  native test ABI and pinned local browser tools; `--run-tls` alone selects both original TLS tests.
+  It does not pull/build an image, modify host trust, bypass TLS or substitute plain HTTP. This adds a
+  reproducible isolation path, not a deployment/kernel-isolation guarantee. After the Fetch lifecycle
+  fix below, both original Session/body TLS selectors passed with strict CA/Cookie/SQL/file checks.
+  The final container run exited zero after filtering actual client backends separately from five
+  PostgreSQL background processes, verifying only initial databases/one administrator/zero other
+  clients and confirmed database shutdown. The native account still correctly refuses legacy NSS.
+- Generate four fixed host JS planner mirrors from TS through Node's built-in strip support, with
+  six generation/drift checks and no new dependency. Generation/runtime were verified on Node 24.21,
+  emitted ESM runtime on 22.22. Official SHA-256-verified Node 22.23.3 passed generator `--check` and
+  all six generator tests, producing bytes identical to Node 24.21.
+
 ### Changed
 
+- Share one mounted, route-profiled same-origin request collector across the independent Session page,
+  private Task reader and editor. The fixed asset set is now thirteen: the original eight plus a
+  body bridge and four generated planner mirrors. Admit only the Task-bound publication POST alongside
+  existing routes; retain fixed byte/frame/wait limits, strict raw receipts, immediate denial quarantine
+  and terminal unknown outcomes. Reject URL/header/credential overrides and unbound publication;
+  test native streams, cancellation, late settlement and existing browser flows without a new API/grant.
+- Extend the passive test observer with bounded, pre-action response queues for automatic
+  same-URL publications and a completed-batch overrun check. Keep one body read per original request,
+  fixed private-safe failures and no replay/fallback; a failed batch invalidates pending observations.
+  The existing 112 and 28 queue tests plus six Chrome synthetic cases passed. CI now requires four
+  mock-API and four SQL/browser runners; selector wiring is not proof of remote CI or TLS acceptance.
 - Distinguish metadata-browser CI response-event, body-retrieval and JSON-parsing failures using
   fixed private-safe codes, and record browser/Node versions. Preserve one response observation,
   all existing real HTTP/SQL/UI assertions and fail-closed behavior without retries. This adds
-  diagnostic evidence; the remote-only response observation failure is not yet resolved.
+  diagnostic evidence, not a proven unique cause of the remote-only observation failure.
 - Add a required early run of the existing platform browser suite while retaining its original
   late run and all SQL checks. Either failure still fails CI; the two phases provide additional
   diagnostic evidence, not an automatic retry or proof of SQL-induced state changes.
@@ -23,6 +93,26 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ### Fixed
 
+- Preserve Chromium Fetch completion for mounted platform replies: consume a clone with unchanged
+  byte/frame limits through fatal-UTF-8 EOF, then consume the original Response natively and require
+  equal length and every byte. Native consumption cannot race ahead of the guard; failures never
+  fall back to guarded bytes, replay HTTP or relax receipts. Cancel both tee branches without waiting
+  on either first, retaining abort/late-result fences. Multiple bounded byte/string copies coexist,
+  not one buffer or a whole-process memory quota. Thirty-two native transport cases, including ten
+  lifecycle checks, and eight real-Chrome mounted/CDP cases pass; the original 55 Chrome cases, real
+  metadata chain and three plain body/prefix cases also pass. Native tee-source cleanup assertions
+  check actual EOF/error/cancel-once rather than an internally retained lock bit, with owned-guard
+  release and both cancellation settlements tested independently. A same-family local `ERR_ABORTED`
+  failure was reproduced and repaired; the old remote failure's unique cause remains unknown.
+  No storage grant, trust policy or HTTP recovery path is added.
+- Give each queued CDP response its own request-bind-time deadline instead of sharing the batch's
+  arm-time budget. Keep bounded next-request waiting, an absolute batch ceiling, completed overrun
+  guards and unchanged single-response deadlines. A virtual-clock Red reproduced two legal 75ms
+  responses wrongly exceeding one 120ms batch budget; 152 pure checks and six real-Chrome synthetic
+  cases now pass on Node 24.21 and 22.23.3. This proven bug is not established as the old CI root cause.
+- Verify the earlier [remote run](https://github.com/Team-silvortex/cyanrex-lab/actions/runs/40689737062)
+  and final CI gate passed for `f0b5048` only. This does not cover subsequent 0.6.6 body-editor,
+  partial-prefix or container changes, nor establish the original failure's unique cause.
 - Replace the metadata fixture's Playwright response-body observation with a dedicated passive
   CDP session, armed before each action and bound to its own request ID. Read each body once after
   transfer completion, without recovery HTTP requests; retain all real HTTP/SQL/UI assertions and
@@ -1576,7 +1666,8 @@ cross-user collaboration. The frozen public API compatibility baseline remains 0
 The canonical package metadata advanced directly from `0.2.9` to `0.3.1`. Version `0.3.0` identifies
 the frozen API compatibility snapshot only; it was not a package release and must not be tagged.
 
-[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.6.5...HEAD
+[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.6.6...HEAD
+[0.6.6]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.6.5...v0.6.6
 [0.6.5]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.6.4...v0.6.5
 [0.6.4]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.6.3...v0.6.4
 [0.6.3]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.6.2...v0.6.3

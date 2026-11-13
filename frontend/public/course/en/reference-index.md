@@ -27,6 +27,7 @@ Use the map for current wiring, the full architecture for implementation detail,
 - [Current architecture and change boundaries](architecture-map.md)
 - [Detailed system architecture](architecture.md)
 - [Target platform architecture](next-architecture.md)
+- [Federated nodes, discovery and traversal stages](federation-discovery.md)
 - [Current platform feature and module network](platform-network.md)
 - [Capability tensor and dated maturity evidence](capability-maturity.md)
 - [Platform and eBPF concepts](concepts.md)

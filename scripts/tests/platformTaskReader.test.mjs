@@ -7,9 +7,9 @@ const root = new URL("../../", import.meta.url);
 const read = file => readFile(new URL(file, root), "utf8");
 const directory = "engine/src/bin/cyanrex-platform/session_ui";
 
-test("private Task reading retains its two fixed assets inside the seven-asset optional shell", async () => {
+test("private Task reading retains its two fixed assets inside the thirteen-asset optional shell", async () => {
   const source = await read(`${directory}.rs`);
-  assert.equal([...source.matchAll(/\.route\(/g)].length, 7);
+  assert.equal([...source.matchAll(/\.route\(/g)].length, 13);
   for (const name of ["tasks.js", "task-contract.js"]) {
     assert.ok(source.includes(`.route("/platform/ui/${name}", any(dispatch))`));
     assert.ok(source.includes(`include_str!("session_ui/${name}")`));
@@ -22,11 +22,21 @@ test("private Task reading retains its two fixed assets inside the seven-asset o
 });
 
 test("private task transport is explicit GET-only, same-origin and bounded independently from Session replies", async () => {
-  const source = await read(`${directory}/tasks.js`);
-  for (const value of ['method: "GET"', 'mode: "same-origin"', 'credentials: "same-origin"',
+  const source = await read(`${directory}/tasks.js`), transport = (await read(`${directory}/request.js`)).replaceAll("'", '"');
+  assert.match(source, /import \{ platformRequest \} from '\.\/request\.js'/);
+  assert.match(source, /platformRequest\(path, "GET",/);
+  assert.equal([...source.matchAll(/\bplatformRequest\(/g)].length, 1);
+  assert.doesNotMatch(source, /\bfetch\(/);
+  for (const value of ['mode: "same-origin"', 'credentials: "same-origin"',
     'cache: "no-store"', 'redirect: "error"', '"X-Cyanrex-Platform-Request": "1"',
-    "128 * 1024", "50 * 1024 * 1024", "16_384", "10_000", "Promise.race([work, interrupted])",
-    'new TextDecoder("utf-8", { fatal: true })', "/platform/v1/task-index?limit=20",
+    "128 * 1024", "50 * 1024 * 1024", "16_384", "10_000",
+    'new TextDecoder("utf-8", { fatal: true })'])
+    assert.ok(transport.includes(value), value);
+  assert.match(transport, /Promise\.race\(/);
+  assert.match(transport, /return \{ bytes: 128 \* 1024, frames: 16_384 \}/);
+  assert.match(transport, /return \{ bytes: 50 \* 1024 \* 1024, frames: 16_384 \}/);
+  assert.match(transport, /\+\+frames > budget\.frames \|\| size > budget\.bytes/);
+  for (const value of ["/platform/v1/task-index?limit=20",
     "/platform/v1/tasks/${entry.reference.task_id}", "parseIndex(response.raw", "await parseContent(response.raw"])
     assert.ok(source.includes(value), value);
   assert.doesNotMatch(source, /method:\s*["'](?:POST|PUT|PATCH|DELETE)|innerHTML|insertAdjacentHTML|DOMParser|localStorage|sessionStorage|indexedDB|document\.cookie|console\.|setInterval|location\.|\/api\/|TaskDraft/);
@@ -36,12 +46,14 @@ test("private task transport is explicit GET-only, same-origin and bounded indep
 });
 
 test("current page and fresh authority observations fence the GET-only content reader", async () => {
-  const source = await read(`${directory}/tasks.js`), app = await read(`${directory}/app.js`);
+  const source = await read(`${directory}/tasks.js`), app = await read(`${directory}/app.js`),
+    transport = await read(`${directory}/request.js`);
   for (const value of ["generation++", "controller?.abort()", "generation === epoch && isActive()",
     "clearDetail();", "clearList();", "if (!current() || rejectResponse(response)) return",
-    "response.status === 401 || response.status === 403", "sessionRejected(response)",
-    "deniedStatus = response.status", "failure.deniedStatus = deniedStatus", "error?.deniedStatus === 401"])
+    "response.status === 401 || response.status === 403", "sessionRejected(response)", "error?.deniedStatus === 401"])
     assert.ok(source.includes(value), value);
+  assert.match(transport, /deniedStatus\s*=\s*response\.status/);
+  assert.match(transport, /\.deniedStatus\s*=\s*deniedStatus/);
   assert.match(app, /if \(state !== "active"\) taskReader\?\.clear\(\)/);
   assert.match(app, /taskReader\?\.setBusy\(value\)/);
   assert.match(app, /response\.status === 401 && invalidSession\(response\.raw\)/);

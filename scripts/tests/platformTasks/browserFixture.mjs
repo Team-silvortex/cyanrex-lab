@@ -13,6 +13,12 @@ const assets = new Map([
   ["/platform/ui/tasks.js", ["tasks.js", "text/javascript; charset=utf-8"]],
   ["/platform/ui/task-contract.js", ["task-contract.js", "text/javascript; charset=utf-8"]],
   ["/platform/ui/task-edit.js", ["task-edit.js", "text/javascript; charset=utf-8"]],
+  ["/platform/ui/request.js", ["request.js", "text/javascript; charset=utf-8"]],
+  ["/platform/ui/body-contract.js", ["body-contract.js", "text/javascript; charset=utf-8"]],
+  ["/platform/ui/task-save/taskContentSave.js", ["task-save/taskContentSave.js", "text/javascript; charset=utf-8"]],
+  ["/platform/ui/task-save/taskSaveContract.js", ["task-save/taskSaveContract.js", "text/javascript; charset=utf-8"]],
+  ["/platform/ui/task-save/taskDraft.js", ["task-save/taskDraft.js", "text/javascript; charset=utf-8"]],
+  ["/platform/ui/task-save/taskPayloadLanguage.js", ["task-save/taskPayloadLanguage.js", "text/javascript; charset=utf-8"]],
 ]);
 export const SESSION = "/platform/v1/session";
 export const LOGOUT = `${SESSION}/logout`;
@@ -40,6 +46,8 @@ export async function setup(browser, options = {}) {
       if (error.code !== "ENOENT" || !["tasks.js", "task-contract.js"].includes(file)) throw error;
     }
   }
+  assert.match(bytes.get("/platform/").body.toString("utf8"), /data-task-text-publication="disabled"/);
+  assert.doesNotMatch(bytes.get("/platform/").body.toString("utf8"), /data-task-text-publication="enabled"/);
   const rust = await readFile(new URL("../session_ui.rs", root), "utf8");
   const policy = rust.match(/const POLICY: &str = "([^"\n]+)";/)?.[1];
   assert.ok(policy, "use the actual production CSP, not a relaxed fixture policy");

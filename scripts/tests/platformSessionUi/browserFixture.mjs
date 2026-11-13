@@ -13,6 +13,12 @@ const routes = new Map([
   ["/platform/ui/tasks.js", ["tasks.js", "text/javascript; charset=utf-8"]],
   ["/platform/ui/task-contract.js", ["task-contract.js", "text/javascript; charset=utf-8"]],
   ["/platform/ui/task-edit.js", ["task-edit.js", "text/javascript; charset=utf-8"]],
+  ["/platform/ui/request.js", ["request.js", "text/javascript; charset=utf-8"]],
+  ["/platform/ui/body-contract.js", ["body-contract.js", "text/javascript; charset=utf-8"]],
+  ["/platform/ui/task-save/taskContentSave.js", ["task-save/taskContentSave.js", "text/javascript; charset=utf-8"]],
+  ["/platform/ui/task-save/taskSaveContract.js", ["task-save/taskSaveContract.js", "text/javascript; charset=utf-8"]],
+  ["/platform/ui/task-save/taskDraft.js", ["task-save/taskDraft.js", "text/javascript; charset=utf-8"]],
+  ["/platform/ui/task-save/taskPayloadLanguage.js", ["task-save/taskPayloadLanguage.js", "text/javascript; charset=utf-8"]],
 ]);
 export const SESSION = "/platform/v1/session";
 export const LOGIN = `${SESSION}/login`;
@@ -37,6 +43,8 @@ export async function setup(browser, options = {}) {
   for (const [path, [file, type]] of routes) assets.set(path, {
     type, bytes: await readFile(new URL(file, assetRoot)),
   });
+  assert.match(assets.get("/platform/").bytes.toString("utf8"), /data-task-text-publication="disabled"/);
+  assert.doesNotMatch(assets.get("/platform/").bytes.toString("utf8"), /data-task-text-publication="enabled"/);
   const rust = await readFile(new URL("../session_ui.rs", assetRoot), "utf8");
   const policy = rust.match(/const POLICY: &str = "([^"\n]+)";/)?.[1];
   assert.ok(policy, "read the actual fixed Rust CSP as data, never execute Rust source");

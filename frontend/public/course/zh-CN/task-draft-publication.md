@@ -3,7 +3,7 @@
 状态：**C2-O 内部准备层，已收录于 0.5.3**。决策日期：**2026-10-07**。
 这一纯逻辑边界将整份文本草稿转换为有界发布计划，再核对给定 Artifact 内容与计划是否一致，
 构造既有的[任务内容清单](task-content-manifest.md)。它不进行文件、数据库或网络 I/O，不发布内容，
-不调用 C2-M，也不挂载 HTTP。浏览器编辑器仍仅在本地工作，计划或匹配的给定内容不等于 Task 已保存。
+不调用 C2-M，也不挂载 HTTP。正常 Next.js 编辑器仍仅在本地工作，计划或匹配的给定内容不等于 Task 已保存。
 
 ## 导入契约与兼容范围
 
@@ -63,15 +63,27 @@ Artifact/修订坐标，但允许同一 Artifact 的不同修订。若两项正�
 
 ## 未发布的浏览器侧既有 Draft 保存尝试
 
-[`taskContentSave.ts`](../../frontend/src/features/tasks/taskContentSave.ts) 与
-[`taskSaveContract.ts`](../../frontend/src/features/tasks/taskSaveContract.ts) 增加未挂载、单次内容保存尝试。
+**0.6.6 已收录并扩展**；本节标题保留实施阶段锚点。[`taskContentSave.ts`](../../frontend/src/features/tasks/taskContentSave.ts) 与
+[`taskSaveContract.ts`](../../frontend/src/features/tasks/taskSaveContract.ts) 提供纯逻辑、单次内容保存尝试。
 `prepareTaskContentSave(draft, {task, manifest}, guard, allocations)` 冻结输入并异步计算本地 SHA-256，
 不做 fetch、Cookie、环境、存储或 UI 操作；`TaskDraftWorkspace` 及其控制器仍只在本地工作。
+
+`prepareTaskBoundContentSave(draft, {task, manifest}, guard, allocations)` 独立准备
+[Task 绑定发布契约](platform-text-artifact-connection.md#unreleased独立-task-绑定-http)。
+每个 publish 步骤在外层固定 `task_id`，正文严格只有 `schema_version`、`expected`、
+`artifact_id`、`revision_id` 和 `text`。每次 `expected` 都是同一份深冻结的完整**原始**
+Task／manifest，不是期望写入的新清单，也不随发布前缀改写基线。哈希前检查全部完整发布包络
+不超过 2 MiB，每项正文仍限 256 KiB。新工厂不会隐式选择或回退到旧的不绑定工厂；旧外形和行为保持兼容。
+
+Task 绑定 Artifact 确认要求**原 Task 标题**，即使本地草案同时改了标题。只有最后独立确认的
+清单 PUT 使用新标题和新准确引用，其 `expected_revision` 仍为原 Task 修订。确认 Artifact 不等于
+Task 已保存。合成共享样本 `engine/tests/fixtures/task-bound-content-save.json` 同时由浏览器计划器和
+严格 Rust HTTP 适配器验证，只证明报文一致，不证明真实存储或权限。
 
 严格基线必须是 Task／manifest 元数据一致的既有手工 Draft，固定目标、所有者、工作区及服务端预期修订。
 本地项 ID／修订不上传；新的 Artifact／修订 UUID 由调用者显式分配。
 guard 中的 `generation`、`revision`、`contextEpoch` 只阻止本地陈旧工作，不认证调用者或授予权限。
-本模块不创建新 Task：未来适配器须先取得空 Task 的确认 201 基线，或明确读取既有 Task。
+本模块不创建新 Task：调用方须先取得空 Task 的确认 201 基线，或明确读取既有 Task。
 
 每项文本只交出一次发布描述，给定 Artifact 元数据须与分配 ID、固定 owner／scope 和计划文本摘要准确一致，
 才能推进下一项。全部项之后才交出带固定 `expected_revision` 的完整清单 PUT；空／仅标题 payload 直接 PUT。
@@ -80,10 +92,31 @@ guard 中的 `generation`、`revision`、`contextEpoch` 只阻止本地陈旧工
 交出描述时即先记为 pending，此时尚无实际传输；只能保守称结果未知，不能证明已经派发 I/O。
 停止、取消、guard 陈旧、冲突或非法确认都保留确认前缀及 pending，不重试、收编、删除、导入检查点或恢复。
 guard 陈旧后晚到的回执不能确认该 pending。公开确认只检查给定 DTO 的一致性，即使匹配也不证明
-网络来源或 COMMIT；仍缺可信的真实适配器。
+网络来源或 COMMIT；可信传输及结果处理仍由调用方负责。
 
-同源浏览器 UI 交付和专用平台 Session 入口仍缺失，不新增 Origin 配置、代理／CORS 放宽或旧教学
-AuthService Cookie 回退。`npm --prefix frontend run test:task-content-save` 只选择纯状态／契约测试，
+**0.6.6** 可选平台 Session 页通过 `body-contract.js` 及四个生成 ESM 镜像调用绑定计划器，
+只有同时启用默认关闭的 `--task-text-publication` 和 `--session-ui`，并明确收到宿主能力声明后，
+才允许本人手动 Draft 的既有固定文本槽编辑。数量与顺序固定；未修改槽和 textarea 未变前后缀
+保留原 CRLF／混合换行。只有正文变化才按原槽顺序 POST 全部槽，每次携带相同完整原基线；
+严格 HTTP 201 Artifact 回执匹配原 Task 标题后才能推进，最后才以原修订 PUT 新标题及新引用，
+严格 HTTP 200 才确认 Task 保存。仅改元数据仍只 PUT，不发 POST。
+
+确认前限制为最多 32 槽、每槽 256 KiB、完整转义草稿 8 MiB。取消、未知、冲突、401／403 响应头
+或 pagehide 封闭计划并保留确认前缀及未知步骤；迟到回执不能推进，不自动重试、收编、删除或恢复。
+失权／离页清私人 DOM，后续 Session 不能恢复工作；已确认发布可能仍未挂接 Task。
+
+十三个资源为旧八个加纯桥及 `task-save/{taskContentSave,taskSaveContract,taskDraft,taskPayloadLanguage}.js`。
+`scripts/generate-platform-task-save-assets.mjs` 用 Node 内置类型剥离从同名四份 TypeScript 源生成，
+六项测试与 `--check` 检查漂移。Node 24.21 已完整验证，22.22 仅验证 ESM 运行；经官方 SHA-256
+核验的 Node 22.23.3 已通过生成器 `--check` 与全部六项测试，输出字节与 24.21 一致。
+正文浏览器 runner 新增 13 条 mock API 用例；[独立真实正文 runner](testing-guide.md#可选的独立宿主-session-网页)
+必须分别选择明文和 TLS。明文已通过自然登录、两次严格发布、独立 Task 换版及准确 SQL／文件核验，
+冲突／撤销首 POST 拒绝且无新写入；新增真实第二 POST 503／401 用例均核验通过，保留首确认
+Artifact 且 Task 不变；两条原 Session／正文 TLS 选择另在隔离工作机通过并确认 SQL 停止。
+真实迟到确认／BFCache 和部署仍未验收。
+正常 Next 草稿与 SDK 仍未调用这些计划器；不增加 Session 入口、Origin 配置、代理／CORS 放宽
+或旧教学 AuthService Cookie 回退，也不接 Cookie 安全部署、DNS 或局域网。
+`npm --prefix frontend run test:task-content-save` 只选择纯状态／契约测试，
 不证明实网浏览器保存、认证、持久恢复或部署验收；下方分日期 C2-O 证据保持原样。
 
 ## 秘密与不可信内容

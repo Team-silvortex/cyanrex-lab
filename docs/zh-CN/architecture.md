@@ -1,8 +1,9 @@
 # 系统架构
 
-源码 **0.6.5** 已收录显式回环／TLS 宿主、受限 Session 签发、私人 Task 命令、原绑定／Task 绑定文本发布，
-以及默认关闭、支持读取与手动 Draft 显示信息保存的 Session／Task 壳。不接浏览器正文／正常应用／SDK
-保存、局域网或存储迁移；本机浏览器 TLS 仍未验收，早期实施阶段标签保留原范围与证据。
+源码 **0.6.6** 已收录显式回环／TLS 宿主、受限 Session、私人 Task 命令、原绑定／Task 绑定文本发布，
+以及默认关闭、支持显示信息与固定槽正文保存的 Session／Task 壳。正文保存须同时启用
+`--task-text-publication` 和 `--session-ui`；不接正常应用／SDK 保存、局域网宿主或存储迁移。
+限定明文／前缀／隔离 TLS 核验不等于迟到确认／BFCache 或部署验收；早期实施阶段标签保留原范围与证据。
 
 0.6.4 收录的[原绑定文本发布](platform-text-artifact-connection.md)另加无池创建连接器及独立 POST 适配，
 核原存储及延期后的准确 head，由两个回环 CLI 宿主显式选择，不接教学 AppState 或浏览器／SDK 保存。
@@ -11,7 +12,7 @@
 新文件工作前必须由当前 Session 拥有完整手动 Draft 基线。只有新工作区构造器或默认关闭的
 `--task-text-publication` 才选择九路由／八响应通道；默认 CLI 仍为八／七，旧构造器仍为七／六。
 全部八容量验证后才拆分同一原存储 Arc；两个文本连接器各保留四个真实 worker，全局仍最多 16 连接。
-发布只创建 Artifact，不修改 Task，也不接通 UI 正文保存。
+发布只创建 Artifact，不修改 Task；0.6.6 双开关页面另行确认清单 PUT。
 
 [原生 HTTPS 回环模式](platform-loopback-tls-host.md)在原宿主启动／存储／HTTP
 驱动上增加显式私有 TLS 身份及握手准入，客户端信任、Cookie 安全域及局域网／浏览器部署仍独立。
@@ -25,7 +26,7 @@
 修改标题或已有的本人准确文本引用，不要求代码或 Run。原绑定文本发布使默认 CLI 组合成为
 同一原存储 Arc 上八路由／七个独立响应通道；旧构造器保持七路由／六通道且不启用发布。
 先验证全部七容量再拆分；全局仍最多 16 连接，文本真实 worker 名额仍为四。
-不挂旧连接池 Artifact 读取、状态写入、正常教学 AppState、局域网、代理后端或浏览器正文保存。
+不挂旧连接池 Artifact 读取、状态写入、正常教学 AppState、局域网或代理后端；固定槽正文保存须显式双开关。
 
 先读精简的[当前架构图](architecture-map.md)：[运行接线](architecture-map.md#runtime-wiring)、
 职责与[变更边界](architecture-map.md#change-boundaries)。本文保留展开的实施决策及分日期

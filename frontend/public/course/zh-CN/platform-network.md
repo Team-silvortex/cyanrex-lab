@@ -1,23 +1,42 @@
 # 当前平台功能与模块网络
 
-源码 **0.6.5** 已收录回环／TLS 宿主、受限 Session、私人 Task 命令、原绑定文本发布及可选显示信息保存壳，
-新增经默认关闭 `--task-text-publication` 启用的 Task 绑定发布／严格 HTTP，不接浏览器正文／SDK 保存、
-局域网或存储迁移；早期实施阶段标签与分日期证据保留原范围。
+**0.6.6 收录 F0／F1a／F1b，2026-11-13 核对：**[联合发现](federation-discovery.md)有显式 Linux 单次 mDNS → TXT／缓存接入链路：
+给定有界公告 + 本地策略／时间 → 兼容的 `UnverifiedPeerCandidate`。
+它未挂载；节点证明 → 明确配对 → 窄范围工作区授权，以及直连／穿透／中继传输均是缺边。
+现有课堂、Runner、Source 和回环链路保持不变。
+
+源码 **0.6.6** 已收录回环／TLS 宿主、受限 Session、私人 Task 命令、原绑定文本发布及可选保存壳，
+Task 绑定发布／严格 HTTP 经默认关闭 `--task-text-publication` 启用；0.6.6 正文切片还要求
+同时开启 `--session-ui`，不接正常应用／SDK 保存、局域网平台宿主或存储迁移；早期实施阶段标签与分日期证据保留原范围。
 
 [Task 绑定边](platform-text-artifact-connection.md#unreleased绑定-task-的发布能力)为完整 Task／清单固定 →
 当前 Session 本人手动 Draft 锁 → 字节前刷新权限 → 核验新 Artifact → Task 未变／最终守卫 → COMMIT。
 只有新构造器或 CLI 标志启用严格 POST：全部八容量验证后，同一原存储 Arc 上九路由／八通道。
 默认 CLI 仍为八／七，旧构造器仍为七／六；两个文本连接器各保留四个真实 worker，仍最多 16 网络连接。
-七个 UI 资源仍只保存显示信息；发布不自动挂接 Task，也不代表浏览器正文保存完成。
+单次发布不自动挂接 Task。0.6.6 的 Session 页正文边为双开关及明确宿主能力 → 本人手动 Draft
+固定槽编辑 → 默认取消的冻结预览 → 按原槽顺序 POST 全部槽 → 严格原 Task 标题 HTTP 201 回执 →
+原修订 PUT 新标题／新准确引用 → 严格 HTTP 200。各 POST 使用同一完整原 Task／manifest；只有正文
+变化才进入此流程，元数据修改仍只 PUT。槽数量和顺序固定，未改槽及 textarea 未变前后缀保留 CRLF。
+取消、未知、冲突、401／403 响应头及 pagehide 封闭计划并保留前缀，迟到回执不能推进；失权／离页
+清私人 DOM，不自动重试、收编、删除或跨 Session 恢复。
 
-未发布的[原生 TLS 回环分支](platform-loopback-tls-host.md)，将宿主扩展为私有证书／密钥 →
+十三个编译资源为旧八个加 `body-contract.js` 和四个 `task-save/*.js` 生成 ESM 镜像，复用纯计划器与
+严格 decoder。生成器经 Node 内置类型剥离读取四份 TypeScript 源，六项测试与 `--check` 检查漂移。
+Node 24.21 已完整验证，22.22 仅验证 ESM 运行；经官方 SHA-256 核验的 Node 22.23.3 已通过生成器
+`--check` 与全部六项测试，输出字节与 24.21 一致。正文 runner 新增 13 条 mock API
+浏览器用例；另行明文 SQL／浏览器选择已通过两次原基线／原标题发布、独立 Task 换版及准确
+SQL／文件核验，冲突／撤销首 POST 拒绝且无新写入。新增真实第二 POST 503／401 用例均核验通过，
+保留确认前缀且 Task 不变；两条原 Session／正文 TLS 选择亦在隔离容器通过且确认 SQL 停止。
+真实迟到确认／BFCache 和局域网仍未验收；本轮不新增版本。
+
+0.6.3 收录的[原生 TLS 回环分支](platform-loopback-tls-host.md)，将宿主扩展为私有证书／密钥 →
 有界握手 → 原 HTTP Session 路由与 Secure Cookie，不增加局域网／DNS 监听、公共资源路由
 或浏览器工作流。
 
 可选[服务状态通知](platform-host-notifications.md)接通显式管理器开关 → 原校验启动／绑定 →
 Ready → 监听关闭 → Stopping → 原排空，不代表已安装服务、持续健康探针或重启／重试路径。
 
-0.6.2 之后未发布的显式 Linux [回环宿主](platform-loopback-host.md)，接通进程与私有格式 3
+0.6.2 之后引入、0.6.3 收录的显式 Linux [回环宿主](platform-loopback-host.md)，接通进程与私有格式 3
 守卫 → 原声明式存储 → 同一共享工作区路由 → 真实有界 HTTP/1.1 登录／查询／退出及
 [私人任务元数据](platform-task-index-connection.md)、[只读重开](platform-task-content-connection.md)及[手动空 Draft 创建](platform-task-create-connection.md)。独立[清单换版](platform-task-replace-connection.md)
 按预期修订接受完整标题／已有本人文本引用清单，不要求代码或 Run。0.6.4 收录的[原绑定文本发布](platform-text-artifact-connection.md)
@@ -386,10 +405,10 @@ Session 内容执行器组合。显式目录句柄准入完整的准确定义；
 | 源码 → 本地 Runner → 观测 → 教学包 → 尝试 → 教师反馈 | 已连接教学链路；规则评估结果不是通用持久化 Review。 |
 | 浏览器远程检查 → 所有者作业 → 签名 Agent → 编译报告 | 已连接可选编译链路；Agent 失败不授予自动回退到本地执行的权限。 |
 | 本地 TaskDraft → 选中 payload → 受控编辑器 → 本地导出 | 完全在浏览器内连接；登录/未读请求属于外层界面，不是保存 payload。 |
-| 持久化 Session → 本人 Artifact 修订 → 本人 Task 精确输入 → Draft 换版 | 后端准备链已实现；尚无公共 API 或浏览器适配器。 |
+| 持久化 Session → 本人 Artifact 修订 → 本人 Task 精确输入 → Draft 换版 | 后端准备链已实现；可选 Session 页双开关正文切片消费 Task 绑定 POST 及清单 PUT，正常应用／SDK 仍未连接。 |
 | 持久化 Session → 精确的本人 Artifact 目标/证据 → 人工 Review 历史 | 后端准备链已实现；尚无跨用户审阅权限与验收。 |
 | 旧账户/脚本/尝试 → 持久化身份/Artifact/Task/Review | 迁移、旧写入方隔离与切换待实现；没有隐式双写或数据收编。 |
-| 浏览器保存任务 → 发布 Artifact → 创建/换版 Task → 冲突恢复 | W10–W16 与 W23 保留各自准备层范围；另行原绑定文本 POST 和 Task 命令现已显式挂入回环宿主。浏览器认证／传输、保存／冲突处理和持久恢复仍缺失。 |
+| 浏览器保存任务 → 发布 Artifact → 创建/换版 Task → 冲突恢复 | W10–W16 与 W23 保留原分日期范围；双开关页有明文保存／503／401 前缀及隔离 TLS 核验。正常应用、创建／恢复、真实迟到确认／BFCache 和部署验收仍独立。 |
 | 给定 Artifact 内容 → 草稿计划绑定 → 任务内容清单 | W02 ⇢ W14 ⇢ W10 只核对给定字节和元数据，不调用存储、不授权当前会话或证明过去发布；本地 U03 → W14 仍未连接。 |
 | 草稿计划 → 显式会话发布步骤 → Task 创建 | W14 ⇢ W15 ⇢ W12 分别使用 I04 与 W05 进行当前授权/发布；独立事务、内存结果记录，不接浏览器或自动恢复。 |
 | 未知尝试 → 当前目标观察 | W15 ⇢ W16 使用 I04 及一次 W05 或 W12 读取；观察时点独立，不返回正文或恢复状态。这条读分支不新增代表写入链。 |

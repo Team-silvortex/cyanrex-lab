@@ -48,7 +48,7 @@ test("Task-bound text publication guards the exact owned Draft before bytes and 
   assert.doesNotMatch(connector + transaction, /PgPool|PoolOptions|connect_lazy|\.validate_session\(|SET ROLE|SET TRANSACTION READ WRITE|std::(?:env|fs)|replace_manual_content|verify_pinned_contents|create_session_content_task|TaskProvider|Runner/);
 });
 
-test("Task-bound capability remains absent from ordinary UI while old five-field text POST and profile inventories stay compatible", async () => {
+test("Task-bound capability stays absent from normal application and SDK while the optional UI remains default off", async () => {
   assert.match(await read("engine/src/platform_host/mod.rs"), /pub use task_text_artifact_connection::PlatformTaskTextArtifactConnector;/);
   for (const path of ["engine/src/platform_http/text_artifact_publish/mod.rs", "engine/src/platform_http/text_artifact_publish/handlers.rs",
     "engine/src/bin/cyanrex-platform/main.rs", "engine/src/bin/cyanrex-platform/session_ui.rs",
@@ -71,8 +71,12 @@ test("Task-bound capability remains absent from ordinary UI while old five-field
     routes.push(...[...compact(await read(`engine/src/platform_http/${name}/mod.rs`)).matchAll(/\.route\("([^"]+)"/g)].map(match => match[1]));
   assert.equal(routes.length, 8); assert.equal(new Set(routes).size, 8);
   const assets = code(await read("engine/src/bin/cyanrex-platform/session_ui.rs"));
-  assert.equal([...assets.matchAll(/\.route\(/g)].length, 7);
-  assert.equal([...assets.matchAll(/include_str!\(/g)].length, 7);
+  assert.equal([...assets.matchAll(/\.route\(/g)].length, 13);
+  assert.equal([...assets.matchAll(/include_str!\(/g)].length, 13);
+  assert.match(assets, /fn routes\(origin: &str\) -> Router \{\s*with_task_text_publication\(origin, false\)/);
+  const html = await read("engine/src/bin/cyanrex-platform/session_ui/index.html");
+  assert.match(html, /data-task-text-publication="disabled"/);
+  assert.doesNotMatch(html, /data-task-text-publication="enabled"/);
 });
 
 test("seven Task-bound real SQL boundaries are explicitly ignored inventoried and selected once by CI", async () => {

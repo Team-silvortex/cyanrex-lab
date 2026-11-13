@@ -1,12 +1,19 @@
 # Security and deployment boundaries
 
-Source **0.6.5** includes loopback/TLS hosting, limited Sessions, private Task commands and retained/
-Task-bound text publication. Default CLI remains eight routes/seven response lanes; only explicit
-`--task-text-publication` enables nine/eight. The seven UI assets still lack raw-text saving; normal-app/
-SDK saving, LAN access and migration remain absent. The host capability `Unreleased` labels below
-preserve implementation stages now included in 0.6.5, not new evidence or broader deployment acceptance.
+Included in 0.6.6, [federation F0/F1a](federation-discovery.md) parses bounded claims/TXT and caches only
+inert source-bound hints. Claimed fingerprints and foreign Authority IDs do not prove identity or grant access.
+Private addresses do not prove same-LAN trust; explicit public/relay opt-ins are not egress authority.
+Only separate explicit Linux F1b can open a selected-interface multicast socket; no startup listener,
+pairing, traversal, gateway mapping or cross-authority exception is added. Its private-address/TTL
+checks are provenance filters, not authentication; see the limited profile and isolated fixture scope.
 
-Unreleased [retained text publication](platform-text-artifact-connection.md) has a separate create-only
+Source **0.6.6** includes loopback/TLS hosting, limited Sessions, private Task commands and retained/
+Task-bound text publication. Default CLI remains eight routes/seven response lanes; only explicit
+`--task-text-publication` enables nine/eight. Fixed-slot body saving added in 0.6.6 requires that flag plus
+`--session-ui`; normal-app/SDK saving, LAN platform hosting and migration remain absent. The older host `Unreleased` labels below
+preserve original implementation stages, not pending source inclusion, new evidence or broader deployment acceptance.
+
+Included in 0.6.4, [retained text publication](platform-text-artifact-connection.md) has a separate create-only
 connector and POST adapter, explicitly selected by both loopback CLI hosts. Original root/storage checks,
 deferred exact-head/byte validation and final
 fresh Session authorization precede confirmed COMMIT; unknown outcomes preserve files without retry,
@@ -15,9 +22,9 @@ precede that command. The new constructor validates seven capacities before spli
 storage Arc; old constructors retain seven routes/six lanes without publication. HTTP response, actual
 text workers (four) and global connections (16) remain distinct budgets, not 28 guaranteed requests.
 The combined role retains old credential/Task/row-lock grants and adds only three Artifact INSERTs;
-no automatic grants, pooled Artifact reads, browser save or teacher-wide permission are added.
+no automatic grants, pooled Artifact reads or teacher-wide permission are added by the connector.
 
-Unreleased `PlatformTaskTextArtifactConnector` adds a separately selected
+Included in 0.6.5, `PlatformTaskTextArtifactConnector` adds a separately selected
 [Task-bound text publication command](platform-text-artifact-connection.md#unreleased-task-bound-publication-capability).
 One original transaction derives the current actor, locks and matches the complete owned manual
 Draft baseline, then refreshes original Source/actor/Session authority after the Task wait and before
@@ -26,14 +33,14 @@ final fresh Session checks precede COMMIT. The supplied owner is a consistency p
 old payload bytes are not checked and the new Artifact is not attached to or saved into the Task.
 Trusted provisioning additionally needs Task SELECT and lock-only `UPDATE(task_id)`, not Task business
 writes/outbox INSERT or Artifact-head UPDATE. Explicit READ ONLY is never overridden. The separate
-adapter and explicit opt-in workspace/CLI composition below select this capability, without browser,
-SDK or teaching-authentication integration. The old five-field text POST and seven UI assets stay
-unchanged; default CLI startup remains eight routes/seven lanes. Unknown files remain without retry,
+adapter and explicit opt-in workspace/CLI composition below select this capability; the separate
+dual-flag Session editor calls it without normal-app/SDK or teaching-authentication integration.
+The old five-field text POST and default eight-route/seven-lane CLI stay unchanged. Unknown files remain without retry,
 adoption or cleanup; separate linking can still fail after confirmed publication. Distinct IDs may
 publish against one unchanged Task
 baseline; duplicate IDs are conflicts, not idempotency or an earlier receipt.
 
-Unreleased `TaskTextArtifactPublishHttpState` and `build_task_text_artifact_publish_router` provide
+Included in 0.6.5, `TaskTextArtifactPublishHttpState` and `build_task_text_artifact_publish_router` provide
 only standalone `POST /platform/v1/tasks/{task_id}/text-artifacts`. Its five-field body carries a full
 `expected: {task, manifest}` consistency pin, new IDs and text, never permission to choose an owner.
 All record levels are map-only with duplicate/unknown/missing-field rejection, required null
@@ -44,52 +51,52 @@ body collection, with 256 KiB decoded text. Clone-shared four response slots (1�
 admitted success/error body completion or drop, independently of actual file workers. Confirmed 201
 returns only Artifact metadata; a local mapper gives Artifact conflicts 409 without changing the old
 Task mapper. Pre-dispatch failures remain `not_attempted`, command errors `unconfirmed`. This is not
-a Task update, old-byte validation, automatic retry/cleanup, whole-draft transaction or browser save.
+a Task update, old-byte validation, automatic retry/cleanup or whole-draft transaction.
 
-Unreleased `with_task_text_publication_capacities` validates all eight capacities before splitting
+Included in 0.6.5, `with_task_text_publication_capacities` validates all eight capacities before splitting
 one original storage Arc, without recapturing observations. Only it or default-off CLI
 `--task-text-publication` selects nine routes/eight response lanes; old constructors and default
 CLI startup retain their original behavior. The flag is serve-only and precedes optional
-`--notify-systemd` then `--session-ui`; it enables no UI client or new environment/JSON input.
+`--notify-systemd` then `--session-ui`; only both publication/UI flags enable body editing, with no new environment/JSON input.
 Both unbound and Task-bound publication remain present in this opt-in: it is not a Task-only
 permission mode. Each has four independent actual file workers (eight together), separate from
 response slots, other worker gates and the unchanged 16-network-connection limit. Existing combined
 grants suffice; no installer, permission expansion, listener, trust change or migration is added.
 Plain/native-TLS host tests are not browser-TLS, protected-LAN or complete Task-save acceptance.
 
-Unreleased [manual Draft manifest replacement](platform-task-replace-connection.md) adds only exact
+Included in 0.6.3, [manual Draft manifest replacement](platform-task-replace-connection.md) adds only exact
 `PUT /platform/v1/tasks/{task_id}/content` with schema version, expected revision and complete manifest.
 The current owner may revise a Draft title or existing exact owned text references; old and new bytes
 are checked around the Task/outbox mutation before final fresh authorization and COMMIT. The route
 does not publish Artifacts, change status, accept a claimed owner or grant teacher-wide access.
-Its Unreleased browser metadata-only use below is not generic text/SDK saving. Unconfirmed results
+Its metadata-only browser path below remains distinct from the dual-flag body flow and SDK. Unconfirmed results
 still grant no retry, adoption or rollback certainty.
 
-Unreleased [empty Task creation](platform-task-create-connection.md) adds only current-owner manual Drafts
+Included in 0.6.3, [empty Task creation](platform-task-create-connection.md) adds only current-owner manual Drafts
 at `POST /platform/v1/tasks`. Its strict body contains only `schema_version`, `task_id` and `title`;
 owner and workspace derive from current audited membership and the original storage binding. Exact POST
 Origin/marker/Cookie and final fresh Session checks precede confirmed creation. No payload/Artifact
 publication, browser saving, teacher-wide permission, retry, adoption or rollback certainty is granted.
 
-The separate Unreleased [retained Task content read](platform-task-content-connection.md) adds only
+The separate [retained Task content read](platform-task-content-connection.md), included in 0.6.3, adds only
 GET reopening of current-owner empty/text Tasks. Exact bytes inherit the original root descriptor,
 actual workers retain slots after cancellation, and final root/storage checks precede fresh Session
 authorization and commit. No content writes, cross-owner review or browser saving is authorized.
 
-The Unreleased [retained Task index](platform-task-index-connection.md) exposes only the current
+The [retained Task index](platform-task-index-connection.md), included in 0.6.3, exposes only the current
 owner's metadata in the explicit workspace host. Original storage checks precede final fresh Session
 authorization; a teacher role grants no cross-owner listing. No credential-wide SELECT, content route,
 automatic grant, schema installation or normal teaching-auth fallback is added.
 
-The Unreleased [native HTTPS loopback host](platform-loopback-tls-host.md) uses private TLS material
+The [native HTTPS loopback host](platform-loopback-tls-host.md), included in 0.6.3, uses private TLS material
 and the original unprivileged Session path, without exposing Engine or providing a plaintext proxy.
 Clients must validate their explicit CA and exact IP; server key/SAN matching is not PKI trust.
 Secure Cookies are not port-isolated. LAN/DNS listeners and Cookie-safe browser deployment remain separate.
 
-The default-off `--session-ui` flag adds seven fixed compiled assets on the exact literal-loopback
+The default-off `--session-ui` flag adds thirteen fixed compiled assets on the exact literal-loopback
 Origin, with external scripts/styles, restrictive CSP and five-language labels. It calls existing
 dedicated platform Session login/check/confirmed logout, current-owner Task index/content GETs and
-the existing metadata-only manifest PUT. It adds no Next.js/teaching-auth fallback, raw-text saving,
+the existing manifest PUT, plus Task-bound POST when both flags enable body editing. It adds no Next.js/teaching-auth fallback,
 Task creation, Run writes, CORS, proxy,
 storage or database grants. Explicit 20-entry pages do not establish content readability; reopening
 validates exact scope, safe revisions, ordered pins and local SHA-256 before inert text display.
@@ -98,20 +105,49 @@ and 32 × 256 KiB decoded text. The ten-second browser bound limits waiting, not
 or server work. Task 401/403, Session checks, confirmed-logout dispatch and pagehide clear old private
 data; stale replies cannot revive it. Malformed replies or disconnects remain unknown, not rollback
 or automatic retry authority. Clearing password/OTP inputs on handoff is not secure erasure, and
-Cookies remain host-scoped rather than port-isolated. The local draft/save-attempt paths stay separate.
-An **Unreleased** editor changes only an existing manual Draft's title and display filename/language
-hints; pins/order/bytes/count stay fixed. Target/revision-bound preview and dirty/unknown leave dialogs
+Cookies remain host-scoped rather than port-isolated. The normal Next.js local draft and SDK stay separate.
+Without Task-bound publication opt-in, the editor changes only a manual Draft's title and display
+filename/language hints; pins/order/bytes/count stay fixed. Preview and dirty/unknown leave dialogs
 default to Cancel. A single PUT is bounded to 64 KiB; only strict matching HTTP 200 metadata is confirmed,
 with a 128 KiB/4,096-frame reply and ten-second browser wait, not a fresh content read. Conflict or
 unknown never replays. Metadata 401/403 headers immediately empty private DOM, including previews;
 context changes/pagehide also quarantine work in closed page memory. Only that same bounded denial
 envelope may refine Session status, never reveal the buffer; changed epochs fence its completion.
 A later Session cannot reveal, restore or replay it; explicit discard is required before continuing.
-This is not secure erasure or rollback. No new Artifact,
-SDK surface, HTTP API or database grant is added.
+This is not secure erasure or rollback. No SDK surface, HTTP API or database grant is added.
+
+The 0.6.6 body flow requires both flags; an actual text change freezes all existing slots before hashing and publishes them
+in order against the same original full baseline. Every strict 201 receipt must match the allocated
+IDs, exact bytes, owner/scope and original Task title before the final original-revision PUT can
+change the edited title/labels and references. Strict 200 confirms that separate Task step; earlier
+Artifact confirmations alone never do. Count/order stay fixed, with 32 × 256 KiB text and an 8 MiB
+portable-draft budget including escaping. Unchanged CRLF and edited text's unchanged prefixes/suffixes
+remain exact. Metadata-only edits still issue no POST. Cancel, conflict/unknown, 401/403 headers or
+pagehide close the plan and preserve its confirmed prefix without retry, adoption, deletion or restoration.
+The success view uses confirmed metadata plus frozen submitted text, not a fresh content reread.
+
+The shared `request.js` admits only fixed canonical Session/read/PUT/Task-bound POST profiles;
+arbitrary URLs, caller credential/header injection and unbound Artifact POST remain rejected.
+Its clone guard must reach complete EOF within the original byte/frame budgets and pass fatal UTF-8
+before native consumption of the original Response begins. Native length/every byte must agree;
+failure cancels both tee branches without serial waiting, fallback or extra HTTP. Several bounded
+copies and a decoded string coexist; these route budgets are not single-copy or process-wide memory quotas.
+Raw responses first pass the existing lexical decoder (128 KiB save receipts, duplicate/escaped-key,
+safe-number, token/depth checks), then the shared planner's exact semantic checks and current guards.
+Four JS planner mirrors are generated from TS by the [fixed strip-only tool](task-draft-publication.md#unreleased-browser-side-existing-draft-save-attempt).
+Mock body-browser tests alone do not establish SQL authority. A separate plain SQL/browser selector
+passed natural login, two original-baseline/title POSTs and independent PUT, verifying exact Artifact
+rows/outboxes/private files and Task revision/outbox. Conflict/revocation stop at the first POST with
+no new writes. A further real 503-after-prefix case independently checks that the first confirmed
+Artifact remains exact, the rejected second target has no rows/bytes and the Task never advances;
+the real 401-after-prefix selector also passed. This is not late-ACK/BFCache, deployment or new trust.
 The [browser runner](platform-loopback-tls-host.md#cookie-and-verification-boundaries) needs explicit
-SQL/browser/trust prerequisites; local legacy NSS currently blocks TLS-browser coverage. Native TLS
-acceptance does not establish browser TLS acceptance; do not bypass verification or modify system trust.
+SQL/browser/trust prerequisites; local legacy NSS correctly blocks this native account's TLS selection.
+Both original Session/body TLS selectors passed separately in the isolated worker, with strict
+CA/Cookie/SQL/file checks and confirmed SQL shutdown. Do not bypass verification or modify host trust.
+The [offline isolated-worker option](testing-guide.md#isolated-browser-tls-worker) uses an actual image
+account, default HOME and container-owned SQL/NSS, not a host HOME/trust overlay. Preflight and selector
+inventory do not prove TLS acceptance; network-off/capless containers are not kernel isolation.
 
 Optional [service notifications](platform-host-notifications.md) send only fixed Ready/Stopping values
 to an explicitly selected local datagram peer. Delivery is not manager acknowledgement, continuous
@@ -143,8 +179,8 @@ untrusted networks or treat application roles as kernel isolation.
 | Surface | Current guarantee | Not a guarantee |
 |---|---|---|
 | Local task payload editor | Bounded text/JSON, parent-owned revisions and target-bound confirmations | Persistence, server identity, execution safety or isolated JS/TS workers |
-| Opt-in private Task reader/metadata editor | Explicit private pages, epoch-fenced text and confirmed metadata-only Draft PUT with leave guards | Index/metadata proves fresh bytes readable, continuous revocation detection, raw-text saving or automatic recovery |
-| Unmounted content-save attempt | Frozen existing-Draft pins, local hashes and single-use descriptors; supplied DTO consistency | Authentication, actual dispatch, network/COMMIT provenance, current-editor save or durable recovery |
+| Opt-in private Task editor | Explicit epochs; independent receipts, scoped plain/prefix and isolated TLS checks | Fresh reread, continuous revocation detection, late-ACK/BFCache or deployment acceptance, atomicity/recovery |
+| Pure content-save attempt | Frozen existing-Draft pins, local hashes and single-use descriptors; supplied DTO consistency | Authentication, actual dispatch, network/COMMIT provenance, current-editor save or durable recovery |
 | Direct Task/Artifact/Review stores | Explicit scope and trusted-owner filtering, bounded records and confirmed database writes | Authentication of a caller-supplied owner or historical Session provenance |
 | Session resource commands | Current account incarnation, audited membership, namespace pins and final Session checks in one transaction | Teacher access to others' private content, cross-user Review authority or Task acceptance |
 | Artifact publication and Task replacement | Immutable exact references; Draft changes check old/new inputs and expected revision | Atomic file/database rollback, automatic adoption or permission to delete newly published files on failure |
@@ -155,8 +191,8 @@ The [browser-side attempt](task-draft-publication.md#unreleased-browser-side-exi
 uses generation/revision/context-epoch guards only as local stale-work fences. Handed-out descriptors
 stay conservatively unknown until a valid supplied confirmation; stale/late receipts cannot erase
 pending uncertainty or authorize retry, deletion or restoration. It adds no transport or Cookie/Origin
-configuration. The separate opt-in Session shell does not mount this attempt; Task-save transport
-and Cookie-safe deployment still need review.
+configuration. The dual-flag Session shell reuses its generated mirror with fixed transport and
+strict raw receipts; Cookie-safe deployment and late-ACK/BFCache remain separate from the scoped isolated TLS result.
 
 Preparatory installers accept only explicit empty namespaces. Task storage schema 2 rejects schema 1;
 do not edit a version number, drop data or rerun bootstrap to bypass refusal. Live teaching tables,

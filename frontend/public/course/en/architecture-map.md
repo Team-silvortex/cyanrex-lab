@@ -1,23 +1,25 @@
 # Current architecture and change boundaries
 
+**Included in 0.6.6, reviewed 2026-11-13:** [federated nodes](federation-discovery.md) have pure F0/F1a plus explicit Linux F1b one-shot browsing:
+untrusted announcements → compatibility/policy selection → `UnverifiedPeerCandidate`, not identity proof,
+pairing or workspace authority. Teaching roles stay domain-local; Source and loopback boundaries stay unchanged.
+
 The **0.6.2** [bound Session adapter](platform-session-connection.md), included **2026-10-16**, connects
 `platform_host/session_connection.rs` to the shared private Session transaction helpers and an
 explicit HTTP backend. Retained storage and fresh Source checks share each command transaction;
 that query/logout capability has no pool fallback or issuer. Source **0.6.3** includes separate [bound login](platform-login-connection.md), [login HTTP](platform-login-http.md) and [shared Session router](platform-session-router.md) capabilities for limited issuance and Cookie projection; the explicit [loopback host](platform-loopback-host.md) adds the [private Task index](platform-task-index-connection.md), [read-only reopening](platform-task-content-connection.md), [empty manual Draft creation](platform-task-create-connection.md) and [expected-revision manifest replacement](platform-task-replace-connection.md), with optional [native TLS](platform-loopback-tls-host.md) and [service notifications](platform-host-notifications.md), not status writes, LAN deployment or browser raw-text/SDK saving.
 
-Separate [format 3 diagnostics](platform-marker-expectation.md) bind complete catalog/five-marker
-declarations before row reads; the [expected-storage opener](platform-storage-open.md), included in **0.6.3**, returns retained bindings only after declared checks and close, without starting a host or migrating storage. Earlier implementation-stage labels retain their original scope and evidence.
+Separate [format 3 diagnostics](platform-marker-expectation.md) bind complete catalog/five-marker declarations before row reads; the [expected-storage opener](platform-storage-open.md), included in **0.6.3**, returns retained bindings only after declared checks and close, without starting a host or migrating storage. Earlier implementation-stage labels retain their original scope and evidence.
 
-Included in source **0.5.9**, API **0.3.0**, reviewed **2026-10-13**. This organization originally
-followed the 0.5.8 tag; release inclusion does not change storage schemas or service mounting.
+Included in source **0.5.9**, API **0.3.0**, reviewed **2026-10-13**. This organization followed the 0.5.8 tag; inclusion changes no storage schema or mounting.
 
 Cyanrex has one teaching application, a local payload editor and an explicitly composed backend. Source
 **0.6.4** includes [retained text publication and HTTP](platform-text-artifact-connection.md), explicitly enabled by plain/TLS CLI hosts; old workspace constructors remain seven-route/six-lane without publication, new composition is eight-route/seven-lane. Code and a Run are optional.
-The default-off Session/Task shell reads private Tasks and saves only manual-Draft display metadata; raw-text/normal-app/SDK saving, general Task execution and local browser TLS acceptance remain absent.
+The default-off Session/Task shell also supports dual-flag fixed-slot body saving included in 0.6.6;
+scoped plain/prefix/isolated-TLS checks are not normal-app/SDK, late-ACK/BFCache or LAN acceptance.
 Module groups describe ownership; the live Engine still combines control with privileged Linux execution.
 
-Read this map for current responsibilities, [detailed architecture](architecture.md) for decisions,
-[platform network](platform-network.md) for feature edges and [capability maturity](capability-maturity.md)
+Read this map for responsibilities, [detailed architecture](architecture.md) for decisions, [platform network](platform-network.md) for edges and [capability maturity](capability-maturity.md)
 for dated scores. [Project status](project-status.md) and [testing guide](testing-guide.md) retain
 their own progress and evidence scopes; no aggregate completion score is implied here.
 
@@ -47,6 +49,7 @@ paths, not two interchangeable login implementations.
 | Responsibility | Source entry | Dependency rule |
 |---|---|---|
 | Shared contracts | `engine/src/models/collaboration/` | Exact identity/reference/Task/Artifact/Review/file values; decoding validates structure, not authority |
+| Prepared discovery | `engine/src/services/federation_discovery/`, `engine/src/services/federation_mdns/` | Pure claims/cache; separate explicit Linux browser, no Session, storage, key proof or resource command |
 | Definitions and pure content planning | `engine/src/services/task_catalog/definitions.rs`, `engine/src/services/task_content.rs`, `engine/src/services/task_draft_import/` | TaskDefinitionCatalog is frozen metadata; no evaluator, database, discovery or execution is required |
 | Typed domain evaluation | `engine/src/services/task_catalog.rs`, `engine/src/domain_packs/ebpf_teaching/` | TaskCatalog<P> owns provider-bound evidence and assessment; the teaching pack stays outside neutral contracts |
 | Current-Session commands | `engine/src/services/auth_service/durable_source/`, `engine/src/services/collaboration_identity_store/` | Derive exact current actor, audited membership and original pins; resource checks and final authority stay in the source-owned transaction |
@@ -54,15 +57,13 @@ paths, not two interchangeable login implementations.
 | HTTP projection | `engine/src/platform_http/` | Validate and project explicit commands; only the separate login adapter delivers confirmed Session Cookies; no duplicate permissions, schema installation or listener |
 | Local host interaction | `frontend/src/features/tasks/useTaskDraftController.ts`, `frontend/src/features/editor/`, `sdk-js/src/agents/` | Task-local controller owns payload/lifecycle; view renders/picks files; editor owns display/tools; SDK retains current Engine authority and host approval |
 
-Neutral contracts and frozen definition metadata do not depend on the teaching provider. Domain
-evidence is not interchangeable with ordinary Task payload: code, notes and configuration may all
+Neutral contracts and frozen definitions do not depend on teaching. Domain evidence is not ordinary Task payload: code, notes and configuration may all
 be content without requiring assessment or a Run. Review records, rule outcomes and Task status
 changes are distinct operations, not automatic transitions.
 
 `prepared_resource_sql` shares private SQL setup and table checks, not policy decisions.
 `legacy_workspace` is an offline permission preview, not live authentication or migration.
-The broad durable_source directory currently contains three responsibilities: account/Session source,
-transaction authorization and explicit resource commands. Their co-location does not authorize moving
+The broad durable_source directory owns account/Session source, transaction authorization and resource commands. Co-location does not authorize moving
 command transactions into a generic permission precheck.
 
 ## Platform preparation ownership
@@ -95,16 +96,14 @@ Origin first, then each capacity in **1–16**. Task, catalogue, index, text Art
 manifest and chunk states delegate validation without sharing admission. File distribution
 checks both capacities before its cached workspace, retaining the same error priority.
 
-Each of the seven state families still owns its Origin string and creates its own `Arc<Semaphore>`.
-Clones share that state's slots; new states are independent. Defaults remain **4**, or **4/4** for
+Each of the seven state families owns its Origin and `Arc<Semaphore>`; clones share slots and new states are independent. Defaults remain **4**, or **4/4** for
 distribution. The helper creates no semaphore, reads no storage and sets no deadline. Bodies,
 byte owners, Source workspaces and Session transactions retain their release/authorization
 boundaries; no global HTTP budget, public configuration API or runtime mounting is added.
 
 ## Service navigation
 
-`engine/src/services/mod.rs` groups all **44** existing declarations by responsibility while retaining
-their names, visibility and Unix gates. It adds no module namespace, public API or runtime service.
+`engine/src/services/mod.rs` groups declarations, retaining existing names, visibility and Unix gates. The federation export is pure preparation, not a runtime service.
 
 | Index group | Main responsibility |
 |---|---|
@@ -113,6 +112,7 @@ their names, visibility and Unix gates. It adds no module namespace, public API 
 | Signed Runner Agent services | Authenticated compute protocol, inventory, execution and jobs; not AI identity |
 | Event telemetry | Live EventBus and its private persistence/filter/policy helpers |
 | Prepared identity and SQL support | Explicit registry, offline legacy preview and private storage mechanics |
+| Prepared federation | Pure codec/cache and explicit Linux one-shot mDNS browser; no pairing/business connection |
 | Prepared Task and content | Pure catalogue/content planning plus explicit Task/Artifact/Review/journal stores |
 | Prepared file distribution | Stream/descriptor verification, upload/publication/grant ledgers, receiver and client |
 

@@ -1,6 +1,8 @@
 import { prepareMetadataSave, parseMetadataSaved } from './task-contract.js';
+import { platformRequest } from './request.js';
+import { prepareBodySave, decodeSaveReceipt, editTextareaText } from './body-contract.js';
 
-// One page-memory metadata editor. Existing bytes/pins/order are never edited or published.
+// One page-memory editor. Only the trusted host's explicit capability enables fixed-slot body saves.
 export function createMetadataEditor({ run, isActive, sessionRejected, label, onSaved }) {
   const byId = id => document.getElementById(id);
   const start = byId("edit-task"), panel = byId("task-metadata-editor"), state = byId("task-edit-state");
@@ -8,6 +10,9 @@ export function createMetadataEditor({ run, isActive, sessionRejected, label, on
   const filename = byId("task-edit-filename"), language = byId("task-edit-language");
   const save = byId("save-task-metadata"), discard = byId("discard-task-edit");
   const confirmation = byId("save-metadata-dialog"), leaving = byId("task-leave-dialog");
+  const text = byId("task-edit-text"), progress = byId("task-save-progress");
+  const bodyEnabled = document.body.dataset.taskTextPublication === "enabled";
+  let texts = null, bodyProgress = null, reviewFocus = false;
   let baseline = null, draft = null, attempt = null, staged = null, departure = null;
   let busy = true, editing = false, dirty = false, quarantined = false, generation = 0;
   let phase = "clean", stateKey = "metaClean", controller = null, collectingDenial = false;
@@ -15,13 +20,33 @@ export function createMetadataEditor({ run, isActive, sessionRejected, label, on
   const terminal = () => attempt !== null;
   const copy = value => ({ title: value.title,
     items: value.payload.map(binding => ({ filename: binding.filename, language: binding.language })) });
+  const textChanged = () => bodyEnabled && Boolean(texts?.some((value, index) => value !== baseline?.contents[index]?.text));
+  const bodyGuard = () => Object.freeze({ generation, revision: baseline.task.revision, contextEpoch: generation });
+  function localLabel(id, key) {
+    const node = byId(id); node.dataset.i18n = key; node.textContent = label(key);
+  }
+  function showProgress() {
+    progress.hidden = !bodyProgress || quarantined;
+    progress.dataset.confirmedArtifacts = String(bodyProgress?.confirmedArtifacts || 0);
+    progress.dataset.taskConfirmed = String(Boolean(bodyProgress?.taskConfirmed));
+    progress.textContent = bodyProgress && !quarantined ? label("bodyProgress")
+      .replace("{count}", String(bodyProgress.confirmedArtifacts))
+      .replace("{task}", label(bodyProgress.taskConfirmed ? "bodyTaskConfirmed" : "bodyTaskUnconfirmed")) : "";
+  }
 
   function observe(value, key) {
+    if (bodyEnabled) key = ({ metaClean: "bodyClean", metaDirty: "bodyDirty", metaInvalid: "bodyInvalid" })[key] || key;
     phase = value; stateKey = key;
     state.dataset.state = value; state.dataset.i18n = key;
     state.textContent = label(key);
   }
   function controls() {
+    if (bodyEnabled) {
+      localLabel("edit-task", "bodyStart"); localLabel("save-task-metadata", "bodySave");
+      localLabel("tasks-text-boundary", "bodyBoundary");
+      localLabel("platform-footer", "bodyFooter");
+    }
+    byId("task-text-editor").hidden = !bodyEnabled || !editing || quarantined;
     start.hidden = editing && !quarantined;
     start.disabled = busy || !isActive() || !baseline || baseline.task.status !== "draft" || held();
     panel.hidden = !editing || quarantined;
@@ -32,12 +57,17 @@ export function createMetadataEditor({ run, isActive, sessionRejected, label, on
     item.disabled ||= !draft?.items.length;
     filename.disabled ||= !draft?.items.length;
     language.disabled ||= !draft?.items.length;
+    text.disabled = !bodyEnabled || busy || !isActive() || quarantined || !draft?.items.length;
+    text.readOnly = terminal();
     save.disabled = busy || !isActive() || quarantined || !editing || !dirty || terminal();
     for (const id of ["confirm-save-metadata", "cancel-save-metadata", "confirm-task-leave", "cancel-task-leave"])
       byId(id).disabled = busy;
+    showProgress();
+    if (!busy && reviewFocus && confirmation.open) { reviewFocus = false; byId("cancel-save-metadata").focus(); }
   }
   function emptyDom() {
     title.value = ""; item.replaceChildren(); filename.value = ""; language.value = "";
+    text.value = ""; bodyProgress = null; showProgress();
     byId("metadata-save-target").textContent = "";
     byId("metadata-save-summary").textContent = "";
     byId("task-leave-target").textContent = "";
@@ -45,19 +75,21 @@ export function createMetadataEditor({ run, isActive, sessionRejected, label, on
   function closeDialogs() {
     if (confirmation.open) confirmation.close();
     if (leaving.open) leaving.close();
-    staged = null; departure = null;
+    staged = null; departure = null; reviewFocus = false;
   }
   function reset(keepBaseline = false) {
     generation++;
     controller?.abort(); controller = null;
+    attempt?.stop?.("cancelled");
     closeDialogs(); emptyDom();
     if (!keepBaseline) baseline = null;
-    draft = null; attempt = null; editing = false; dirty = false; quarantined = false;
+    draft = null; texts = null; attempt = null; editing = false; dirty = false; quarantined = false;
     observe("clean", "metaClean"); controls();
   }
   function invalidate() {
     if (!held()) { reset(); return; }
     generation++;
+    attempt?.stop?.("stale");
     // A known denial hides private DOM immediately. Only that same request may finish its
     // bounded error envelope; another context change still aborts it and fences its result.
     if (!collectingDenial) { controller?.abort(); controller = null; }
@@ -80,24 +112,32 @@ export function createMetadataEditor({ run, isActive, sessionRejected, label, on
       item.selectedIndex = Math.min(selected, draft.items.length - 1);
       filename.value = draft.items[item.selectedIndex].filename;
       language.value = draft.items[item.selectedIndex].language;
-    } else { filename.value = ""; language.value = ""; }
+      text.value = texts?.[item.selectedIndex] || "";
+    } else { filename.value = ""; language.value = ""; text.value = ""; }
     controls();
   }
   function inputChanged() {
-    if (!baseline || !draft || quarantined) return;
+    if (!baseline || !draft || quarantined || busy || terminal() || !editing) return;
     draft.title = title.value;
     const selected = draft.items[item.selectedIndex];
     if (selected) { selected.filename = filename.value; selected.language = language.value; }
     generation++;
-    dirty = JSON.stringify(draft) !== JSON.stringify(copy(baseline.manifest));
+    dirty = JSON.stringify(draft) !== JSON.stringify(copy(baseline.manifest)) || textChanged();
+    bodyProgress = null;
     if (!terminal()) observe(dirty ? "dirty" : "clean", dirty ? "metaDirty" : "metaClean");
     controls();
   }
   for (const field of [title, filename, language]) field.addEventListener("input", inputChanged);
+  text.addEventListener("input", () => {
+    if (!bodyEnabled || busy || terminal() || quarantined || !editing || !texts || item.selectedIndex < 0) return;
+    texts[item.selectedIndex] = editTextareaText(texts[item.selectedIndex], text.value);
+    inputChanged();
+  });
   item.addEventListener("change", () => {
     if (!draft || quarantined || busy) return;
     const selected = draft.items[item.selectedIndex];
     filename.value = selected?.filename || ""; language.value = selected?.language || "";
+    text.value = texts?.[item.selectedIndex] || "";
   });
 
   function target() {
@@ -109,7 +149,8 @@ export function createMetadataEditor({ run, isActive, sessionRejected, label, on
     if (!held()) { action(); return; }
     departure = { generation, action };
     byId("task-leave-target").textContent = target();
-    byId("task-leave-warning").textContent = label(terminal() || quarantined ? "metaLeaveUnknown" : "metaLeaveDirty");
+    byId("task-leave-warning").textContent = label(terminal() || quarantined ? "metaLeaveUnknown"
+      : bodyEnabled ? "bodyLeaveDirty" : "metaLeaveDirty");
     byId("task-leave-action").textContent = label(reason === "logout" ? "metaLeaveLogout"
       : reason === "login" ? "metaLeaveLogin" : "metaLeaveAction");
     leaving.showModal(); byId("cancel-task-leave").focus();
@@ -133,6 +174,7 @@ export function createMetadataEditor({ run, isActive, sessionRejected, label, on
   start.addEventListener("click", () => {
     if (busy || !isActive() || !baseline || baseline.task.status !== "draft" || held()) return;
     draft = copy(baseline.manifest); editing = true;
+    texts = bodyEnabled ? baseline.contents.map(item => item.text) : null;
     observe("clean", "metaClean"); renderDraft(); title.focus();
   });
 
@@ -144,56 +186,103 @@ export function createMetadataEditor({ run, isActive, sessionRejected, label, on
 
   async function write(descriptor, onDenial) {
     const own = new AbortController(); controller = own;
-    let deniedStatus = null, rejectAbort;
-    const interrupted = new Promise((_resolve, reject) => { rejectAbort = reject; });
-    const abort = () => rejectAbort(new Error("taskMetadata.unknown"));
-    own.signal.addEventListener("abort", abort, { once: true });
-    // This is a browser wait bound, never a server transaction deadline or rollback proof.
-    const timer = setTimeout(() => own.abort(), 10_000);
-    const work = (async () => {
-      const response = await fetch(`/platform/v1/tasks/${descriptor.task_id}/content`, {
-        method: "PUT", mode: "same-origin", credentials: "same-origin", cache: "no-store",
-        redirect: "error", signal: own.signal, headers: { "Content-Type": "application/json",
-          "X-Cyanrex-Platform-Request": "1" }, body: JSON.stringify(descriptor.body),
+    const publishing = descriptor.kind === "publish";
+    try {
+      return await platformRequest(`/platform/v1/tasks/${descriptor.task_id}/${publishing ? "text-artifacts" : "content"}`, publishing ? "POST" : "PUT", {
+        signal: own.signal, body: JSON.stringify(descriptor.body), onDenied: onDenial,
       });
-      if (own.signal.aborted) { void response.body?.cancel().catch(() => undefined); own.signal.throwIfAborted(); }
-      if (response.status === 401 || response.status === 403) {
-        deniedStatus = response.status;
-        onDenial(response.status);
-      }
-      if (!/^application\/json(?:;\s*charset=utf-8)?$/i.test(response.headers.get("content-type") || "") || !response.body) {
-        void response.body?.cancel().catch(() => undefined); throw new Error("taskMetadata.unknown");
-      }
-      const reader = response.body.getReader(), chunks = [];
-      let size = 0, frames = 0;
-      const cancel = () => { void reader.cancel().catch(() => undefined); };
-      own.signal.addEventListener("abort", cancel, { once: true });
-      try {
-        while (true) {
-          const { value, done } = await reader.read(); own.signal.throwIfAborted();
-          if (done) break;
-          size += value.byteLength;
-          if (++frames > 4096 || size > 128 * 1024) { cancel(); throw new Error("taskMetadata.unknown"); }
-          chunks.push(value);
-        }
-        const bytes = new Uint8Array(size); let offset = 0;
-        for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
-        return { status: response.status, raw: new TextDecoder("utf-8", { fatal: true }).decode(bytes) };
-      } finally { own.signal.removeEventListener("abort", cancel); reader.releaseLock(); }
-    })();
-    try { return await Promise.race([work, interrupted]); }
-    catch { const error = new Error("taskMetadata.unknown"); error.deniedStatus = deniedStatus; throw error; }
-    finally {
-      clearTimeout(timer); own.signal.removeEventListener("abort", abort);
+    } finally {
       if (controller === own) controller = null;
     }
   }
 
+  function reviewBody() {
+    if (!bodyEnabled || !textChanged()) return;
+    const selected = { baseline, generation, guard: bodyGuard(),
+      edits: Object.freeze({ title: draft.title, items: Object.freeze(draft.items.map((binding, index) =>
+        Object.freeze({ ...binding, text: texts[index] }))) }) };
+    void run(async parentCurrent => {
+      const current = () => parentCurrent() && generation === selected.generation
+        && baseline === selected.baseline && isActive() && !quarantined;
+      try {
+        const allocations = selected.edits.items.map(() => ({ artifact_id: crypto.randomUUID(), revision_id: crypto.randomUUID() }));
+        const plan = await prepareBodySave(selected.baseline, selected.edits, selected.guard, allocations);
+        if (!current()) { plan.stop("stale"); return; }
+        staged = { ...selected, plan };
+        localLabel("metadata-save-title", "bodyConfirmTitle");
+        localLabel("task-save-description", "bodyConfirmDescription");
+        byId("metadata-save-target").textContent = target();
+        byId("metadata-save-summary").textContent = `${label("metaTitle")}: ${selected.edits.title}\n`
+          + selected.edits.items.map((binding, index) => `${index + 1}. ${binding.filename} · ${binding.language} · ${new TextEncoder().encode(binding.text).length} B`).join("\n");
+        reviewFocus = true; confirmation.showModal();
+      } catch { if (current()) { observe("invalid-local", "bodyInvalid"); controls(); } }
+    });
+  }
+
+  async function saveBody(selected, parentCurrent) {
+    const plan = selected.plan;
+    attempt = plan; bodyProgress = plan.progress();
+    observe("pending", "bodyPending"); controls();
+    const current = () => parentCurrent() && generation === selected.generation && baseline === selected.baseline
+      && attempt === plan && !quarantined && isActive();
+    try {
+      while (current()) {
+        const step = plan.next(selected.guard);
+        if (!step) throw new Error("taskSave.invalid");
+        bodyProgress = plan.progress(); showProgress();
+        let deniedGeneration = null;
+        const response = await write(step, status => {
+          if (!current()) return;
+          collectingDenial = true;
+          try { sessionRejected({ status, raw: "" }); }
+          finally { collectingDenial = false; }
+          deniedGeneration = generation;
+        });
+        if (deniedGeneration !== null) {
+          if (parentCurrent() && generation === deniedGeneration && quarantined && attempt === plan)
+            sessionRejected(response);
+          return;
+        }
+        if (!current()) { plan.stop("stale"); return; }
+        if (response.status !== (step.kind === "publish" ? 201 : 200)) {
+          const conflicted = response.status === 409 && conflict.test(response.raw);
+          plan.stop(conflicted ? "conflict" : "unconfirmed");
+          bodyProgress = plan.progress();
+          observe(conflicted ? "conflict" : "unknown", conflicted ? "metaConflict" : "metaUnknown");
+          return;
+        }
+        const receipt = decodeSaveReceipt(response.raw);
+        if (!plan.confirm(step, receipt, selected.guard)) {
+          bodyProgress = plan.progress(); observe("unknown", "metaUnknown"); return;
+        }
+        bodyProgress = plan.progress(); showProgress();
+        if (step.kind === "replace" && bodyProgress.taskConfirmed) {
+          const snapshot = Object.freeze({ ...receipt, contents: Object.freeze(selected.edits.items.map((binding, index) =>
+            Object.freeze({ artifact: receipt.manifest.payload[index].artifact, text: binding.text }))) });
+          baseline = snapshot; draft = copy(snapshot.manifest);
+          texts = snapshot.contents.map(binding => binding.text); attempt = null; dirty = false;
+          observe("saved", "bodySaved"); renderDraft(); onSaved(snapshot, true); return;
+        }
+      }
+      plan.stop("stale");
+    } catch (error) {
+      plan.stop("unconfirmed");
+      if (current()) {
+        bodyProgress = plan.progress(); observe("unknown", "metaUnknown");
+        if (error?.deniedStatus === 401 || error?.deniedStatus === 403)
+          sessionRejected({ status: error.deniedStatus, raw: "" });
+      }
+    } finally { controls(); }
+  }
+
   save.addEventListener("click", () => {
     if (busy || !isActive() || !editing || !dirty || terminal() || quarantined || confirmation.open) return;
+    if (textChanged()) { reviewBody(); return; }
     try {
       const descriptor = prepareMetadataSave(baseline, draft);
       staged = { descriptor, generation, baseline };
+      localLabel("metadata-save-title", "metaConfirmTitle");
+      localLabel("task-save-description", "metaConfirmDescription");
       byId("metadata-save-target").textContent = target();
       byId("metadata-save-summary").textContent = `${label("metaTitle")}: ${descriptor.body.manifest.title}\n`
         + descriptor.body.manifest.payload.map((binding, index) => `${index + 1}. ${binding.filename} · ${binding.language}`).join("\n");
@@ -208,6 +297,7 @@ export function createMetadataEditor({ run, isActive, sessionRejected, label, on
     const selected = staged;
     staged = null; confirmation.close();
     if (selected.generation !== generation || selected.baseline !== baseline) return;
+    if (selected.plan) { void run(parentCurrent => saveBody(selected, parentCurrent)); return; }
     void run(async parentCurrent => {
       // Mark pending before fetch. A failed/lost/late response never re-arms this descriptor.
       attempt = selected.descriptor;
@@ -239,6 +329,7 @@ export function createMetadataEditor({ run, isActive, sessionRejected, label, on
           if (!current()) return;
           const snapshot = Object.freeze({ ...receipt, contents: selected.baseline.contents });
           baseline = snapshot; draft = copy(receipt.manifest); attempt = null; dirty = false;
+          texts = bodyEnabled ? snapshot.contents.map(binding => binding.text) : null;
           observe("saved", "metaSaved"); renderDraft(); onSaved(snapshot);
         } else {
           observe(response.status === 409 && conflict.test(response.raw) ? "conflict" : "unknown",

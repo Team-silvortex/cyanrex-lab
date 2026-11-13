@@ -1,20 +1,26 @@
 # 安全与部署边界
 
-源码 **0.6.5** 已收录回环／TLS 宿主、受限 Session、私人 Task 命令及原绑定／Task 绑定文本发布。
-默认 CLI 仍为八路由／七响应通道；仅显式 `--task-text-publication` 才启用九／八。
-七个 UI 资源仍无正文保存；不接正常应用／SDK 保存、局域网或迁移。下文宿主能力的 `Unreleased`
-标签保留现已收录于 0.6.5 的实施阶段，不新增验证证据或扩大部署验收范围。
+0.6.6 收录的[联合 F0／F1a](federation-discovery.md)只解析不可信有界声明／TXT，缓存来源绑定的惰性提示。
+声明指纹和外部 Authority ID 不证明身份或授予访问；私网地址不证明同局域网可信。
+明确启用公网／中继提示也不是出站权限；仅独立显式 Linux F1b 可打开指定接口组播 socket，
+不自动启动监听，不配对、穿透、映射网关或新增跨权威例外。其私网／TTL 筛选不是认证，范围见专题及隔离夹具。
 
-Unreleased [原绑定文本发布](platform-text-artifact-connection.md)包含独立仅创建连接器与 POST 适配，
+源码 **0.6.6** 已收录回环／TLS 宿主、受限 Session、私人 Task 命令及原绑定／Task 绑定文本发布。
+默认 CLI 仍为八路由／七响应通道；仅显式 `--task-text-publication` 才启用九／八。
+0.6.6 的 Session 页正文切片只有同时启用 `--task-text-publication` 和 `--session-ui` 才开放固定槽编辑；
+不接正常应用／SDK 保存、局域网平台宿主或迁移。下文既有宿主能力的 `Unreleased`
+标签保留原实施阶段，不表示仍待源码收录，不新增验证证据或扩大部署验收范围。
+
+0.6.4 收录的[原绑定文本发布](platform-text-artifact-connection.md)包含独立仅创建连接器与 POST 适配，
 由两个回环 CLI 宿主显式选择。
 原根／存储、延期后的准确 head／字节及最终新鲜 Session 授权均先于确认 COMMIT；
 未知结果保留文件，不自动重试、收编或清理。准确 Origin／marker／Cookie、有界收包及响应生命周期准入
 先于该命令。新构造器验证七容量后才拆分同一原存储 Arc；原构造器仍是七路由／六通道且不发布。
 HTTP 响应、真实文本 worker（四名额）及全局连接（16）预算独立，不保证 28 请求并发。
 组合角色保留既有凭据／Task／行锁权限，只增加三项 Artifact INSERT；不自动授权，
-不接旧连接池 Artifact 读取、浏览器保存或教师全局权限。
+不接旧连接池 Artifact 读取、正常应用保存或教师全局权限。
 
-Unreleased `PlatformTaskTextArtifactConnector` 增加另行显式选择的
+0.6.5 收录的 `PlatformTaskTextArtifactConnector` 增加另行显式选择的
 [绑定 Task 文本发布命令](platform-text-artifact-connection.md#unreleased绑定-task-的发布能力)。
 同一原事务推导当前操作者、锁定并匹配完整本人手动 Draft 基线，再在 Task 等待后、
 新文件派发前刷新原 Source／操作者／Session 权威。延期的新 head／字节与未变 Task 检查、
@@ -22,11 +28,11 @@ Unreleased `PlatformTaskTextArtifactConnector` 增加另行显式选择的
 它不检查旧载荷字节，也不自动挂接新 Artifact 或完成 Task 保存。可信初始化另需 Task SELECT
 及仅供行锁的 `UPDATE(task_id)`，不增加 Task 业务写入／outbox INSERT 或 Artifact head UPDATE，
 不覆盖明确 READ ONLY。下述独立适配器及显式启用的工作区／CLI 组合选择此能力，
-不接浏览器、SDK 或教学认证。既有严格五键文本 POST 及七 UI 资源不变，默认 CLI 仍为八条路由／七通道。
+不接正常应用、SDK 或教学认证。既有严格五键文本 POST 不变，默认 CLI 仍为八条路由／七通道。
 未知文件保留，不重试、收编或清理；另行挂接仍可能在发布已确认后失败。
 不同标识可针对同一未变 Task 基线分别发布，重复标识是冲突，不是幂等或先前回执。
 
-Unreleased `TaskTextArtifactPublishHttpState` 与 `build_task_text_artifact_publish_router` 只提供独立
+0.6.5 收录的 `TaskTextArtifactPublishHttpState` 与 `build_task_text_artifact_publish_router` 只提供独立
 `POST /platform/v1/tasks/{task_id}/text-artifacts`。五字段正文携带完整 `expected: {task, manifest}`
 一致性固定、新标识及文本，不授予选择所有者的权限。全部记录层只接受对象，拒绝重复／未知／
 缺失字段，definition 必须明确 null，status 仅为字符串。等价时间偏移仍是时间值固定；单个转义
@@ -37,57 +43,87 @@ Unreleased `TaskTextArtifactPublishHttpState` 与 `build_task_text_artifact_publ
 派发前失败仍为 `not_attempted`，命令错误为 `unconfirmed`；不代表 Task 更新、旧字节验证、
 自动重试／清理、整份草稿事务或浏览器保存。
 
-Unreleased `with_task_text_publication_capacities` 在拆分同一原存储 Arc 前验证八项容量，不重新采纳观察。
+0.6.5 收录的 `with_task_text_publication_capacities` 在拆分同一原存储 Arc 前验证八项容量，不重新采纳观察。
 只有该构造器或默认关闭的 CLI `--task-text-publication` 才选择九条路由／八个响应通道；
 原构造器及默认 CLI 行为不变。标志只用于两个 serve 模式，先于可选 `--notify-systemd`、`--session-ui`，
-不启用 UI 客户端或增加环境／JSON 输入。此启用组合仍同时保留非绑定与 Task 绑定发布，
+不自动启用 Session UI 或增加环境／JSON 输入。此启用组合仍同时保留非绑定与 Task 绑定发布，
 不是只允许 Task 绑定发布的权限模式。两者各自四个真实文件 worker（合计八个），与响应名额、
 其他 worker 守卫及未变的 16 网络连接限制独立。原组合权限已经足够，不增加安装器、权限扩张、
 监听、信任变更或迁移；明文／原生 TLS 宿主测试不等于浏览器 TLS、受保护局域网或完整 Task 保存验收。
 
-未发布的[手动 Draft 清单换版](platform-task-replace-connection.md)只增加准确
+0.6.3 收录的[手动 Draft 清单换版](platform-task-replace-connection.md)只增加准确
 `PUT /platform/v1/tasks/{task_id}/content`，正文为版本、预期修订和完整清单。当前所有者可修改
 Draft 标题或已有本人准确文本引用，Task／outbox 修改前后核旧／新字节，再进行最终新鲜授权
-及 COMMIT。不发布 Artifact、不改状态、不接受自报所有者或授予教师全局权限；下述未发布的
-浏览器显示信息切片不是通用文本／SDK 保存。未确认结果仍不授予重试、收编或回滚确定性。
+及 COMMIT。不发布 Artifact、不改状态、不接受自报所有者或授予教师全局权限；下述仅元数据
+浏览器路径仍独立于双开关正文流程及 SDK。未确认结果仍不授予重试、收编或回滚确定性。
 
-未发布的[空任务创建](platform-task-create-connection.md)只在 `POST /platform/v1/tasks` 创建当前
+0.6.3 收录的[空任务创建](platform-task-create-connection.md)只在 `POST /platform/v1/tasks` 创建当前
 所有者的手动 Draft。严格正文仅含 `schema_version`、`task_id`、`title`；所有者和工作区来自
 当前经审计成员与原存储绑定。准确 POST Origin／marker／Cookie 及最终新鲜会话检查先于确认
 创建；不授予载荷／Artifact 发布、浏览器保存、教师全局权限、重试、收编或回滚确定性。
 
-独立未发布的[原绑定任务内容读取](platform-task-content-connection.md)只增加当前所有者空／文本
+0.6.3 收录的独立[原绑定任务内容读取](platform-task-content-connection.md)只增加当前所有者空／文本
 任务的 GET 重开。准确字节继承原根描述符，取消后实际 worker 仍持名额，最终原根／存储检查
 先于新鲜会话授权和提交；不授权内容写入、跨所有者审阅或浏览器保存。
 
-未发布的[原绑定任务索引](platform-task-index-connection.md)只在显式工作区宿主返回当前所有者
+0.6.3 收录的[原绑定任务索引](platform-task-index-connection.md)只在显式工作区宿主返回当前所有者
 元数据。原存储检查先于最终新鲜会话授权；教师角色不授予跨所有者列表权限。不增加密码整表
 读取、内容路由、自动授权、Schema 安装或正常教学认证回退。
 
-未发布的[原生 HTTPS 回环宿主](platform-loopback-tls-host.md)，复用私有 TLS 材料及原无特权
+0.6.3 收录的[原生 HTTPS 回环宿主](platform-loopback-tls-host.md)，复用私有 TLS 材料及原无特权
 Session 路径，不暴露 Engine 或提供明文代理。客户端仍须验证明确 CA 与准确 IP，服务端密钥／
 SAN 匹配不证明 PKI 信任；Secure Cookie 不按端口隔离。局域网／DNS 及浏览器安全域部署仍独立。
 
-默认关闭的 `--session-ui` 在准确字面回环 Origin 增加七个固定编译资源，使用外部脚本／样式、
-严格 CSP 和五语言标签。只调用既有专用平台 Session 登录／检查／经确认退出及本人私人 Task
-索引／内容 GET 及仅改显示信息的既有清单 PUT，不增加 Next.js／教学认证回退、原文保存、
+默认关闭的 `--session-ui` 在准确字面回环 Origin 增加十三个固定编译资源，使用外部脚本／样式、
+严格 CSP 和五语言标签。调用既有专用平台 Session 登录／检查／经确认退出、本人私人 Task
+索引／内容 GET 和清单 PUT；双开关启用后再调用 Task 绑定文本 POST，不增加 Next.js／教学认证回退、
 Task 创建、Run 写入、CORS、代理、
 存储或数据库权限。显式每页 20 项的元数据不证明内容可读；重开须核准确作用域、安全修订、
 有序引用和本地 SHA-256，再以惰性纯文本显示。拒绝重复／转义 JSON 键。限制为索引报文 128 KiB、
 内容报文 50 MiB、16,384 帧及解码后 32 × 256 KiB。十秒只约束浏览器等待，不抢占同步解析或
 服务端工作。Task 401／403、Session 检查、确认退出开始派发及 pagehide 均清旧私人数据，
 陈旧响应不能恢复它。畸形回执或断连保留未知，不证明回滚或授予自动重试；交出请求时清空
-密码／OTP 不等于安全清零，Cookie 仍按 host 而非端口隔离，本地草稿／保存尝试仍独立。
-**Unreleased** 编辑器只改既有手动 Draft 的标题和显示文件名／语言提示，不改引用／顺序／字节／
+密码／OTP 不等于安全清零，Cookie 仍按 host 而非端口隔离，正常 Next 本地草稿仍独立。
+未启用 Task 绑定发布时，编辑器只改既有手动 Draft 的标题和显示文件名／语言提示，不改引用／顺序／字节／
 条数。绑定目标／修订的预览及 dirty／未知离开确认均默认取消。单次 PUT 最多 64 KiB；只有严格
 匹配的 HTTP 200 元数据才确认保存，回执限制 128 KiB／4,096 帧及十秒浏览器等待，不代表新鲜
 正文读取。冲突或未知不重放；显示信息请求的 401／403 响应头立即清私人 DOM／预览，上下文
 变化和 pagehide 同样将工作隔离于封闭页面内存。仅同次有界拒绝正文可收紧 Session 观察，不显示
 缓冲；代次变化阻止其迟到完成。后续 Session 不能显示、恢复或重放，明确丢弃后才可继续；
-这不是安全清零或回滚，不新增 Artifact、SDK 表面、HTTP API 或数据库权限。
+这不是安全清零或回滚，不新增 SDK 表面、HTTP API 或数据库权限。仅改元数据时仍只有一次 PUT，没有文本 POST。
+
+**0.6.6 正文切片**要求同时启用 `--task-text-publication` 和 `--session-ui`；缺失、关闭或未知的
+宿主能力声明均保持仅元数据编辑。本人手动 Draft 的既有槽数量及顺序固定，不增加、删除或重排。
+未改槽保留原文，textarea 最小替换保留未变前后缀和 CRLF／混合换行。正文变化后，确认前冻结全部
+槽及完整原 Task／manifest，最多 32 槽、每槽 256 KiB、完整转义草稿 8 MiB。按原槽顺序逐项 POST
+全部槽，每次使用同一完整原基线；严格 HTTP 201 回执须匹配原 Task 标题、准确分配标识、owner／scope、
+长度及摘要。所有 Artifact 确认后才以原修订 PUT 新标题和新引用，严格 HTTP 200 才确认 Task 保存。
+每个 POST 上限 2 MiB，回执为 128 KiB／4,096 帧，十秒只限制浏览器等待及收集。
+
+取消、未知、冲突、401／403 响应头和 pagehide 会封闭计划，保留确认前缀及未知步骤；晚到确认不能
+继续。失权／离页清私人 DOM，不跨 Session 恢复或重放，不自动重试、收编或删除。已发布前缀可能
+没有挂接 Task，失败不证明整份草稿回滚。旧八资源另加 `body-contract.js` 和四个生成 ESM 镜像；
+`scripts/generate-platform-task-save-assets.mjs` 从四份 TypeScript 源经 Node 内置类型剥离生成，六项
+测试与 `--check` 拒绝漂移。Node 24.21 已完整验证，22.22 仅验证生成后 ESM 运行；经官方 SHA-256 核验的
+Node 22.23.3 已通过生成器 `--check` 与全部六项测试，输出字节与 24.21 一致。
+新增 13 条浏览器用例使用 mock API，另行明文 SQL／浏览器选择已通过自然登录、两次原基线／原标题
+POST 与独立 PUT，并核准确 Artifact 行／outbox／私有文件及 Task 修订／outbox。
+冲突／撤权均在首 POST 停止且无新写入。新增真实 503-after-prefix 用例另核首 Artifact 行／outbox／
+字节准确保留、第二目标无行／字节且 Task 不换版；真实 401-after-prefix 也通过。它不是迟到确认／
+真实 BFCache、Cookie 安全部署或新信任。
+
+0.6.6 共享 `request.js` 被 Session、Task 读取、显示信息和正文保存共同调用，
+只接受规范路径／方法和固定预算，正文 POST 只准入准确 Task 绑定路径，拒绝任意 URL、调用方凭据／头注入和非绑定发布。
+原始 UTF-8 仍须原有严格 JSON／回执检查与当前代次守卫，不改变权限、Cookie 信任及未知／重放规则。
+clone guard 必须在原字节／帧预算内完整 EOF 并通过 fatal UTF-8，才能原生消费原 Response，再核
+长度与每个字节；失败同时取消双 tee 分支，不串行等待、不回退或补 HTTP。会同时保留多份有界
+字节／字符串副本；路由预算不是单副本或进程级内存配额。
 [浏览器 runner](platform-loopback-tls-host.md#cookie-与验证边界)
-需要显式 SQL／浏览器／信任前提；本机 legacy NSS 目前阻塞 TLS 浏览器覆盖。原生 TLS 验收
-不等于浏览器 TLS 验收，不得绕过验证或修改系统信任。
+需要显式 SQL／浏览器／信任前提；本机 legacy NSS 仍正确拒绝原账号 TLS。两条原 Session／正文
+TLS 选择已另在隔离工作机通过，严格核 CA／Cookie／SQL／文件并确认 SQL 停止；不得绕过验证或改宿主信任。
+[离线隔离工作机入口](testing-guide.md#隔离浏览器-tls-工作机)使用真实镜像账号／默认 HOME 及容器
+私有 SQL／NSS，不覆盖宿主 HOME／信任。Preflight 或选择库存不是 TLS 通过；无网络／无 capability
+容器也不构成内核隔离保证。
 
 可选[服务状态通知](platform-host-notifications.md)只向显式选择的本地 datagram 对端发送固定
 Ready／Stopping；发送不代表管理器确认、持续健康或回滚，通知错误也不能跳过原停机排空。
@@ -116,8 +152,8 @@ Docker 配置需要访问宿主机或虚拟机的 eBPF、tracefs、BTF 和 bpffs
 | 入口 | 当前保证 | 不能据此推导 |
 |---|---|---|
 | 本地任务 payload 编辑器 | 文本/JSON 上限、父任务修订和目标绑定确认 | 持久化、服务端身份、执行安全或独立 JS/TS 工作线程 |
-| 可选私人 Task 读取／显示信息编辑器 | 显式私人分页、代次隔离正文、有离开守卫的 Draft 显示信息确认 PUT | 索引／元数据证明新鲜正文可读、持续撤权检测、原文保存或自动恢复 |
-| 未挂载的内容保存尝试 | 既有 Draft 固定快照、本地摘要和单次描述；给定 DTO 一致性 | 认证、真实派发、网络／COMMIT 来源、当前编辑器已保存或持久恢复 |
+| 可选私人 Task 编辑器 | 显式分页／代次、独立严格回执及限定明文／前缀／隔离 TLS 核验 | 新鲜读取、持续撤权、真实迟到确认／BFCache、部署、原子性／恢复 |
+| 纯内容保存尝试 | 既有 Draft 固定快照、本地摘要和单次描述；给定 DTO 一致性 | 纯模块本身提供认证、真实派发、网络／COMMIT 来源、当前编辑器已保存或持久恢复 |
 | 直接 Task/Artifact/Review 存储 | 明确作用域、可信所有者过滤、有界记录及确认数据库写入 | 调用方自报所有者已认证，或历史写入来自 Session |
 | Session 资源命令 | 同一事务复核账号世代、审计成员、命名空间身份和最终会话 | 教师可读他人私人内容、跨用户审阅权或 Task 验收 |
 | Artifact 发布与任务换版 | 不可变准确引用，Draft 检查旧/新输入及预期修订 | 文件/数据库原子回滚、自动接管或失败后删除新内容的许可 |
@@ -127,7 +163,8 @@ Docker 配置需要访问宿主机或虚拟机的 eBPF、tracefs、BTF 和 bpffs
 [浏览器侧尝试](task-draft-publication.md#未发布的浏览器侧既有-draft-保存尝试)中的 generation／revision／
 context epoch 只阻止本地陈旧工作。交出的描述保守保持未知，直至有效的给定确认；陈旧／晚到回执
 不能抹除 pending 未知或授权重试、删除、恢复。该模块不增加传输或 Cookie／Origin 配置。
-独立可选 Session 壳仍未挂载此尝试；Task 保存传输及 Cookie 安全部署仍须另行审阅。
+独立可选 Session 壳通过生成镜像及纯桥挂载 Task 绑定尝试；正常 Next 草稿／SDK、Cookie 安全部署、
+DNS／局域网、真实迟到确认／BFCache 及部署仍独立于限定隔离 TLS 结果。
 
 准备层安装器只接受显式空命名空间。Task 存储 Schema 2 拒绝 Schema 1，不能修改版本号、删除数据
 或重新引导来绕过拒绝。在线教学表、凭据、私人 Artifact 根目录和回退材料不能当作合成测试夹具。

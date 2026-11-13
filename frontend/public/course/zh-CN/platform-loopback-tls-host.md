@@ -5,20 +5,21 @@
 原三条 [Session 路由](platform-session-router.md)、[私人索引](platform-task-index-connection.md)、[内容 GET](platform-task-content-connection.md)
 及[手动空 Draft POST](platform-task-create-connection.md)，另加[Draft 清单 PUT](platform-task-replace-connection.md)。复用[明文回环宿主](platform-loopback-host.md)
 的原存储、进程及 HTTP 边界，不经本地明文代理。仅支持 `127.0.0.1`、`::1` 的 1024–65535
-端口，不增加局域网／DNS 监听、通用文本 payload 保存或部署验收。
+端口，不增加局域网／DNS 监听、正常应用文本保存或部署验收。
 
 0.6.4 经同一明文／TLS 启动显式挂载[原绑定私人文本 POST](platform-text-artifact-connection.md)；
 原工作区构造器仍不启用发布。
 
-可选尾部开关按 `[--notify-systemd] [--session-ui]` 排列。通知仅增加
-[服务状态报告](platform-host-notifications.md)，不证明客户端信任或持续健康。两个开关默认
-均关闭，不带开关的启动不变。显式 `--session-ui` 在 `/platform/` 及六个编译内嵌 JS／CSS
+可选尾部开关按 `[--task-text-publication] [--notify-systemd] [--session-ui]` 排列。通知仅增加
+[服务状态报告](platform-host-notifications.md)，不证明客户端信任或持续健康。三个开关均默认关闭，
+不带开关的启动不变。显式 `--session-ui` 在 `/platform/` 及十二个编译内嵌 JS／CSS
 资源提供[固定 Session／私人 Task 壳](platform-loopback-host.md#可选浏览器-session-壳)，在准确 HTTPS Origin
-支持五种语言；不是 Next.js、通用文本保存、教学登录、CORS 服务或代理，也不增加数据库权限。
+支持五种语言。只有同时启用 `--task-text-publication` 才开放既有固定槽正文编辑；不是 Next.js、
+教学登录、CORS 服务或代理，也不增加数据库权限。
 
 ## 显式私有输入
 
-不带通知开关时，命令固定为 15 个参数：
+不带可选开关时，命令固定为 15 个参数：
 
 ```text
 cyanrex-platform serve-loopback-tls --uid UID --gid GID --groups GID,...|none --config /absolute/private/input.json --bind 127.0.0.1:PORT --cert /absolute/private/chain.pem --key /absolute/private/key.pem
@@ -93,8 +94,9 @@ Secure；确认退出用同一 Secure 政策清除。JSON 不返回 token。明�
 Secure 不提供 Cookie 端口隔离，真实 TCP／TLS 交付也不证明浏览器收到。不要混用该 Cookie
 host 上的无关服务，也不要把 HTTPS 回环描述为已完成 Cookie 安全域规划。独立 HTTPS
 host／域名、授权局域网及更广泛的浏览器接入仍属后续；特权教学 Engine 及其 Cookie 不变。
-可选壳只调用既有专用 Session 登录／检查／经确认退出及本人私人 Task 索引／内容 GET。
-显式每页 20 项及惰性纯文本／空 payload 重开，不接正文编辑、Run 或正常 Next.js 本地草稿。
+可选壳调用既有专用 Session 登录／检查／经确认退出、本人私人 Task 索引／内容 GET 和清单 PUT；
+双开关启用后再调用 Task 绑定文本 POST。显式每页 20 项及惰性纯文本／空 payload 重开，
+不接 Run 或正常 Next.js 本地草稿。
 沿用[明文宿主的读取上限与校验](platform-loopback-host.md#可选浏览器-session-壳)：索引报文 128 KiB、
 内容报文 50 MiB、16,384 帧、解码后 32 × 256 KiB，展示前严格核作用域／修订／引用和本地 SHA-256。
 Session 变化及 pagehide 清除旧私人数据，迟到代次不能恢复它；十秒等待期限或无效回执保留未知，
@@ -105,7 +107,17 @@ Session 变化及 pagehide 清除旧私人数据，迟到代次不能恢复它�
 正文最多 64 KiB，只有严格匹配的 HTTP 200 元数据回执确认保存，回执限制 128 KiB／4,096 帧、
 浏览器等待十秒，不代表新鲜正文读取。显示信息 401／403 响应头立即清私人 DOM，pagehide 同样
 将工作隔离于封闭页面内存，不跨 Session 恢复或重放，明确丢弃后才可继续。
-不增加新 Artifact、原文保存、SDK、HTTP API 或数据库权限。
+仅元数据变化仍只发一次 PUT，不发文本 POST。
+
+**0.6.6** 正文保存还要求默认关闭的 `--task-text-publication`。本人手动 Draft 保留固定槽数量
+及顺序，未改槽和 textarea 未变前后缀保留原 CRLF／混合换行。任一正文改变时，确认后按既有槽
+顺序 POST 全部槽，每次携带同一完整原 Task／manifest 基线。严格 HTTP 201 Artifact 回执须匹配
+原 Task 标题及准确标识／owner／scope／字节摘要；全部确认后才以原修订 PUT 新标题和新引用，
+严格 HTTP 200 才确认 Task 保存。发布前缀不代表 Task 已挂接，也不是整份草稿事务；成功视图
+使用确认元数据和冻结的已提交文本，不是新鲜正文读取。
+取消、未知、冲突、401／403 响应头及 pagehide 封闭计划并保留前缀；失权／离页清私人 DOM，
+晚到确认不能恢复工作，不自动重试、收编、删除或跨 Session 恢复。沿用明文宿主的 13 资源、
+生成镜像和有界传输；不改变 Cookie／DNS／局域网、SDK、HTTP API 或数据库权限。
 
 ```bash
 cargo test --manifest-path engine/Cargo.toml --locked --bin cyanrex-platform
@@ -114,9 +126,11 @@ bash scripts/test-platform-loopback-tls-host.sh
 bash scripts/test-platform-text-publication-host.sh
 bash scripts/test-platform-task-reader-browser.sh
 bash scripts/test-platform-task-metadata-browser.sh
+bash scripts/test-platform-task-body-browser.sh
 bash scripts/test-platform-browser-session.sh
 bash scripts/test-platform-browser-tasks.sh
 bash scripts/test-platform-browser-task-metadata.sh
+bash scripts/test-platform-browser-task-body.sh
 ```
 
 原生 TLS 测试需要 OpenSSL 有界生成一次性 CA／证书／私钥，产品宿主不调用它；不安装
@@ -129,7 +143,18 @@ TLS 通知；不证明已部署局域网或浏览器工作流，这些原生 TLS
 浏览器 Session runner 清点明文与 TLS 两条真实 SQL／浏览器选择；须显式提供一次性
 `CYANREX_TEST_DATABASE_URL`、绝对 `CYANREX_PLAYWRIGHT_MODULE`、`CYANREX_CHROMIUM_PATH`，
 以及 OpenSSL、`certutil` 和可用的隔离浏览器／NSS 信任环境。不安装用户／系统 CA，也不忽略
-证书错误。本机 legacy NSS 环境目前阻塞 TLS 浏览器用例，该覆盖仍是明确缺口，不宣称已通过。
+证书错误。本机 legacy NSS 仍正确拒绝原账号，下面单独的隔离工作机通过结果不关闭该守卫。
 只读 Task runner 另选一条明文宿主 SQL／浏览器用例，不是 TLS 验收；Task UI 与显示信息夹具各
-列举 12 条 mock API 用例，显示信息 SQL／浏览器 runner 再选独立明文用例。CI 分列三个 mock
-和三个 SQL／浏览器 runner，不宣称 TLS 保存验收。
+列举 12 条 mock API 用例，显示信息 SQL／浏览器 runner 再选独立明文用例。CI 必须执行四个 mock、
+四个 SQL／浏览器 runner、六项 CDP 和八项挂载传输 Chrome 用例；接线不等于远端验收。
+正文 mock runner 另有 13 条用例；独立 SQL／浏览器 runner 必须分别选择明文和 TLS。
+2026-11-13 明文选择已通过两次确认发布、独立 Task 换版、准确 SQL／文件及首 POST 冲突／撤权拒绝。
+TLS 选择在数据库建立前拒绝本机旧 NSS，不改 HOME／信任、不回退明文。独立明文部分前缀选择
+覆盖第二步 503 与 401，两条均通过准确 SQL／文件／UI 核验；其自身不代表迟到确认／真实 BFCache 或 TLS 正文验收。
+[离线隔离工作机入口](testing-guide.md#隔离浏览器-tls-工作机)使用真实镜像账号与容器私有 SQL／信任，
+不挂载宿主 HOME／NSS。默认 preflight 不是 TLS 通过，须明确 `--run-tls` 才执行两条原 TLS 选择；
+2026-11-13 修正挂载 Fetch 生命周期后，隔离环境中的两条原 Session／正文 TLS 选择均通过。
+最终容器命令退出零，核准确 CA／Secure Cookie／SQL／文件，仅初始数据库／一个管理员／零其他
+client backend，并确认 PostgreSQL 停止；五个 PostgreSQL 自身后台不误计为客户端。
+不改宿主 HOME／NSS／系统信任；这只是限定浏览器／TLS 验收，不是部署局域网、Cookie host 规划
+或真实丢失 ACK／BFCache 覆盖。分日期旧证据保留原范围。

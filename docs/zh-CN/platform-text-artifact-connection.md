@@ -2,7 +2,8 @@
 
 源码 **0.6.5** 已收录下文 Task 绑定连接器、严格 HTTP 及默认关闭的工作区／CLI 开关。
 其 `Unreleased` 标题／锚点保留实施阶段，不表示尚未发布；分日期证据保持原范围。
-七个 UI 资源仍无正文保存客户端。
+0.6.6 收录的 Session 页正文保存切片只有同时启用默认关闭的 `--task-text-publication` 和 `--session-ui`
+才接入下述 Task 绑定 POST 及既有清单 PUT；十三个静态资源及验证范围见[回环宿主](platform-loopback-host.md#可选浏览器-session-壳)。
 
 原非 Task 绑定能力已收录于源码版本 **0.6.4**，依据
 [宿主提案 3](https://github.com/Team-silvortex/cyanrex-lab/issues/3)，经原保留存储绑定显式创建
@@ -10,7 +11,7 @@
 
 连接器本身不增加传输；独立 `TextArtifactPublishHttpState` 和
 `build_text_artifact_publish_router` 将其适配为独立 HTTP；显式宿主组合见下文。
-两者都不改变既有 [Task 清单换版](platform-task-replace-connection.md)，不接通浏览器正文／SDK 保存，
+两者都不改变既有 [Task 清单换版](platform-task-replace-connection.md)，不接通正常应用／SDK 保存，
 也不替换教学认证。原连接池 Artifact API 保持各自策略。
 
 ## 显式能力
@@ -122,8 +123,8 @@ Token、结构化作用域／清单及文本规范检查先于唯一原连接。
 不自动授权，也不覆盖明确 READ ONLY。三项 Artifact INSERT 与既有 marker 锁不变。
 该能力沿用原保留根，独立持有四个真实 worker 名额，不安装 Schema 或选择新存储绑定。
 
-既有严格五键文本 POST 及七个可选 UI 资源不变，默认 CLI 启动仍为八条路由／七个通道。
-下述独立适配器和显式启用组合选择此能力，浏览器、SDK 与教学认证仍未接通；
+既有严格五键文本 POST 不变，默认 CLI 启动仍为八条路由／七个通道。
+下述独立适配器和显式启用组合选择此能力；可选 Session 正文页还须双开关启用，SDK 与教学认证仍未接通；
 不增加额外监听、Cookie 签发器、迁移或跨所有者权限。
 
 ## Unreleased：独立 Task 绑定 HTTP
@@ -132,13 +133,17 @@ Token、结构化作用域／清单及文本规范检查先于唯一原连接。
 `build_task_text_artifact_publish_router(state)` 只提供无查询、无尾斜线的准确
 `POST /platform/v1/tasks/{task_id}/text-artifacts`；准确路径上的其他方法返回私人 **405**、
 `Allow: POST`。独立构造器仍保留，只有下述显式构造器或标志才启用工作区／CLI 组合；
-可选 Session 页、正常应用及 SDK 不调用它。
+0.6.6 的可选 Session 正文页只有双开关启用后才调用它，正常应用及 SDK 不调用。
 
 正文严格包含五字段：`schema_version: 1`、`expected`、`artifact_id`、`revision_id` 和 `text`。
 `expected` 严格包含 `task` 和 `manifest`，表示完整既有手动 Task 快照及文本清单，不是期望写入的新 Task。
 规范路径标识必须匹配 `expected.task.reference.task_id`；可信作用域、owner 权威以及清单／Task
 结构一致性在派发前检查，真实所有权和当前状态仍只由连接器的当前 Session 事务确认。
 Artifact 标题从该 Task 推导，不另接标题、所有者选择或路径。
+
+纯浏览器 [`prepareTaskBoundContentSave`](task-draft-publication.md#未发布的浏览器侧既有-draft-保存尝试)
+现可准备这套准确正文，分别核对原标题 Artifact 回执和后续新标题 Task 换版。它不提供 HTTP／Session
+能力；0.6.6 的 Session 页通过生成 ESM 镜像和 `body-contract.js` 调用，SDK 仍未接入。
 
 全部记录层都只接受对象，包含 Task／reference／owner／workspace、输入引用条目及清单内部记录；
 未知、语义重复、缺失字段及记录位置数组均在派发前拒绝。`definition` 必须存在且明确为 `null`；
@@ -157,7 +162,7 @@ status 只接受既有六种字符串，不接受单元枚举对象。Schema、�
 不含文本、Task、Location 或 Set-Cookie。派发前失败为 `not_attempted`，连接器错误为 `unconfirmed`；
 适配器单独将 Artifact 标识冲突投影为 **409 `conflict`**，Artifact 陈旧修订为 **409 `stale_revision`**，
 不修改旧 Task 错误映射。不存在与他人 Task 仍同为私人 404。
-它不挂接内容、不修改 Task、不验证旧载荷字节，也不提供重试、清理、整份草稿原子性、幂等、恢复或浏览器保存。
+该 POST 本身不挂接内容、不修改 Task、不验证旧载荷字节，也不提供重试、清理、整份草稿原子性、幂等或恢复。
 
 ## Unreleased：显式启用 Task 绑定工作区与 CLI
 
@@ -181,7 +186,8 @@ index, content, create, replace, publish, task_publish)` 在原八条路由上�
 
 标志只用于 `serve-loopback` 和 `serve-loopback-tls`，诊断模式、重复标志、别名、后缀乱序和多余参数均拒绝。
 不加时两种 CLI 都保持原八路由／七通道；加上后明确选择新构造器，各通道四名额。
-它不自动启用 `--session-ui`，也不为七个既有资源添加正文编辑客户端。
+它不自动启用 `--session-ui`。只有两个开关同时启用，Session 页才允许编辑本人手动 Draft 的既有固定槽；
+缺失、关闭或未知的宿主能力声明都保留仅元数据编辑。
 进程／私有输入／原存储检查、字面回环绑定、原生 TLS 验证、Cookie 策略及信号排空保持原边界；
 不增加环境变量／JSON 配置项、Schema 安装、授权、迁移或教学／SDK 回退。
 
@@ -190,6 +196,19 @@ index, content, create, replace, publish, task_publish)` 在原八条路由上�
 全局网络准入仍为 **16 个连接**。可信初始化须保留组合角色的原登录、Task、Artifact／行锁权限，
 本次启用不增加额外授权。它仍不验证旧载荷字节、不修改／挂接 Task、不重试、清理、恢复未知结果，
 也不代表浏览器 TLS 或局域网验收。
+
+## Unreleased：可选 Session 页正文保存
+
+**0.6.6 已收录**；本节标题保留实施阶段锚点。正文未变时仍只发既有清单 PUT，不发布 Artifact。任一槽正文改变后，默认取消的预览确认会冻结
+完整原 Task／manifest 及全部本地槽，按原槽顺序逐项 POST 全部槽，包括未改槽。每次携带同一完整
+原基线；严格 HTTP 201 Artifact 回执必须匹配原 Task 标题及准确引用／owner／scope／字节摘要。
+全部发布确认后，才以原 `expected_revision` PUT 新标题和新引用；只有严格 HTTP 200 确认 Task 保存。
+槽的数量和顺序固定，不增加、删除或重排；未改槽和 textarea 未变前后缀保留 CRLF／混合换行。
+
+取消、未知、冲突、401／403 响应头及 pagehide 会封闭计划并保留确认前缀及未知步骤，迟到回执不能
+继续发布或挂接。失权／离页清私人 DOM，不自动重试、收编、删除或跨 Session 恢复；已确认 Artifact
+可能仍未挂接 Task。十三个编译资源包括旧八个、`body-contract.js` 及四个生成的 `task-save/*.js` 镜像。
+它们复用纯计划器和严格回执 decoder，不接正常 Next 草稿、SDK、Cookie 安全部署、DNS 或局域网。
 
 ## 原文件与真实任务额度
 
@@ -230,6 +249,8 @@ bash scripts/test-platform-text-publication-host.sh
 bash scripts/test-platform-task-text-artifact-connection.sh
 bash scripts/test-platform-task-text-artifact-http.sh
 bash scripts/test-platform-task-text-publication-host.sh
+bash scripts/test-platform-task-body-browser.sh
+bash scripts/test-platform-browser-task-body.sh
 ```
 
 运行器要求可丢弃且具管理权限的 `CYANREX_TEST_DATABASE_URL`，默认 Cargo 选择不执行忽略 SQL 用例。
@@ -249,5 +270,20 @@ bash scripts/test-platform-task-text-publication-host.sh
 明文／原生 TLS 子进程。库存不等于通过结果或浏览器 TLS／局域网验收；它保留原存储、当前所有者／
 修订、响应预算、未知 blob、默认关闭兼容性及信号停止检查，发布仍不代表 Task 已保存。
 
-浏览器冲突／未知结果处理、通用 SDK／OpenAPI、跨用户授权和恢复均属后续工作。
+正文 runner `bash scripts/test-platform-task-body-browser.sh` 与 `scripts/tests/platformTaskBody.browser.mjs`
+新增 13 条 mock API 浏览器用例。另一个 `bash scripts/test-platform-browser-task-body.sh` 必须分别
+选择 `platform_browser_task_body_tdd` 的明文和 TLS 用例；仅明文已有本地真实 SQL／浏览器验收。
+自然登录、两次同原基线／原标题 POST 201 后独立 PUT 200、Artifact head／revision／outbox／文件
+`0400`／摘要及 Task 修订／outbox 均通过；冲突／撤销各在首 POST 拒绝且无新写入。
+TLS 选择在数据库建立前拒绝本机旧 NSS，不回退、不改信任。生成镜像的六项测试及
+`node scripts/generate-platform-task-save-assets.mjs --check` 检查漂移。Node 24.21 已完整验证，
+22.22 仅验证 ESM 运行；经官方 SHA-256 核验的 Node 22.23.3 已通过生成器 `--check` 与全部六项测试，
+输出字节与 24.21 一致。
+
+新增真实部分前缀 503／401 用例均通过准确 SQL／文件／UI 核验：首 Artifact 确认后保留，
+第二请求拒绝且没有新字节或 Task 换版。两者自身不等于迟到确认／真实 BFCache 或 TLS 验收；另有
+[隔离工作机入口](testing-guide.md#隔离浏览器-tls-工作机)，不改宿主 HOME／NSS。
+有界 Fetch 生命周期修正后，两条原 Session／正文 TLS 选择已在该入口通过，严格核 CA／Cookie／
+SQL／文件并确认一次性数据库停止；远端运行不覆盖这些未提交改动。
+真实迟到确认／BFCache、部署验收、通用 SDK／OpenAPI、跨用户授权和恢复均属后续工作。
 这里不增加 Artifact 读取路由、额外监听、Cookie 签发器、Task 状态转换或 Run。

@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="/platform/ui/style.css">
   <script type="module" src="/platform/ui/app.js"></script>
 </head>
-<body data-busy="true">
+<body data-busy="true" data-task-text-publication="disabled">
   <main class="shell">
     <header class="masthead">
       <a class="brand" href="/platform/" aria-label="Cyanrex Platform">C<span>CYANREX</span></a>
@@ -107,11 +107,17 @@
         <div class="field"><label for="task-edit-item" data-i18n="metaItem">Existing payload</label><select id="task-edit-item" disabled></select></div>
         <div class="field"><label for="task-edit-filename" data-i18n="metaFilename">Display filename</label><input id="task-edit-filename" maxlength="128" disabled></div>
         <div class="field"><label for="task-edit-language" data-i18n="metaLanguage">Inert language hint</label><input id="task-edit-language" maxlength="64" autocapitalize="none" spellcheck="false" disabled></div>
+        <div id="task-text-editor" class="field" hidden>
+          <label for="task-edit-text" data-i18n="bodyText">Payload text</label>
+          <textarea id="task-edit-text" rows="9" autocapitalize="none" spellcheck="false" disabled></textarea>
+          <p class="hint" data-i18n="bodyTextHint">At most 256 KiB per item. Text is inert; code and execution are optional.</p>
+        </div>
         <button id="save-task-metadata" type="button" class="secondary" data-i18n="metaSave" disabled>Review metadata save</button>
       </section>
-      <p class="hint" data-i18n="tasksReadOnly">Text remains read-only. Metadata saving requires a separate explicit confirmation.</p>
+      <p id="task-save-progress" class="hint" data-confirmed-artifacts="0" data-task-confirmed="false" role="status" aria-live="polite" hidden></p>
+      <p id="tasks-text-boundary" class="hint" data-i18n="tasksReadOnly">Text remains read-only. Metadata saving requires a separate explicit confirmation.</p>
     </section>
-    <footer data-i18n="footer">Dedicated session and read-only private tasks. No Task edits are sent.</footer>
+    <footer id="platform-footer" data-i18n="footer">Private tasks: read text, explicitly confirm Draft metadata saves. No code is executed.</footer>
   </main>
 
   <dialog id="logout-dialog" data-testid="logout-dialog" aria-labelledby="logout-title" aria-describedby="logout-description">
@@ -127,7 +133,7 @@
     <h2 id="metadata-save-title" data-i18n="metaConfirmTitle">Save this Draft metadata?</h2>
     <p id="metadata-save-target" class="hint"></p>
     <pre id="metadata-save-summary" class="metadata-summary"></pre>
-    <p data-i18n="metaConfirmDescription">Only title and existing display metadata change. Text, references, order and payload count stay unchanged. A failed response may leave an unknown result.</p>
+    <p id="task-save-description" data-i18n="metaConfirmDescription">Only title and existing display metadata change. Text, references, order and payload count stay unchanged. A failed response may leave an unknown result.</p>
     <div class="dialog-actions">
       <button id="cancel-save-metadata" type="button" class="secondary" data-i18n="cancelLogout" autofocus disabled>Cancel</button>
       <button id="confirm-save-metadata" type="button" class="primary" data-i18n="metaConfirm" disabled>Confirm save</button>

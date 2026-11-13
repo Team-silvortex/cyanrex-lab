@@ -76,22 +76,37 @@ test("metadata response observation reads one body and never retries a failed or
   assert.equal(reads, 2);
 });
 
-test("the separate metadata editor has one explicit same-origin PUT and no Artifact publication transport", async () => {
-  const source = await read(`${directory}/task-edit.js`);
-  assert.equal([...source.matchAll(/\bfetch\(/g)].length, 1);
-  assert.match(source, /fetch\(`\/platform\/v1\/tasks\/\$\{descriptor\.task_id\}\/content`/);
-  for (const value of ['method: "PUT"', 'mode: "same-origin"', 'credentials: "same-origin"',
+test("the editor preserves default metadata PUT and gates fixed Task-bound POST on changed text and the host hint", async () => {
+  const source = await read(`${directory}/task-edit.js`), transport = (await read(`${directory}/request.js`)).replaceAll("'", '"');
+  assert.equal([...source.matchAll(/\bfetch\(/g)].length, 0);
+  assert.equal([...transport.matchAll(/\bfetch\(/g)].length, 1);
+  assert.match(source, /import \{ platformRequest \} from '\.\/request\.js'/);
+  assert.ok(source.includes('const publishing = descriptor.kind === "publish"'));
+  assert.ok(source.includes('platformRequest(`/platform/v1/tasks/${descriptor.task_id}/${publishing ? "text-artifacts" : "content"}`, publishing ? "POST" : "PUT",'));
+  assert.equal([...source.matchAll(/\bplatformRequest\(/g)].length, 1);
+  for (const value of ['const bodyEnabled = document.body.dataset.taskTextPublication === "enabled"',
+    'const textChanged = () => bodyEnabled &&', 'if (!bodyEnabled || !textChanged()) return;',
+    'if (textChanged()) { reviewBody(); return; }', 'const descriptor = prepareMetadataSave(baseline, draft)'])
+    assert.ok(source.includes(value), value);
+  for (const value of ['mode: "same-origin"', 'credentials: "same-origin"',
     'cache: "no-store"', 'redirect: "error"', '"Content-Type": "application/json"',
-    '"X-Cyanrex-Platform-Request": "1"', "body: JSON.stringify(descriptor.body)"])
+    '"X-Cyanrex-Platform-Request": "1"']) assert.ok(transport.includes(value), value);
+  for (const value of ["body: JSON.stringify(descriptor.body)", "onDenied: onDenial"])
     assert.ok(source.includes(value), value);
   assert.doesNotMatch(source, /method:\s*["'](?:GET|POST|PATCH|DELETE)|\/platform\/v1\/(?:text-artifacts|artifacts)|localStorage|sessionStorage|indexedDB|document\.cookie|innerHTML|insertAdjacentHTML|console\.|setInterval|WebSocket|\/api\//);
+  assert.doesNotMatch(transport, /\/platform\/v1\/(?:text-artifacts|artifacts)|localStorage|sessionStorage|indexedDB|document\.cookie|innerHTML|insertAdjacentHTML|console\.|setInterval|WebSocket|\/api\//);
+  assert.ok(transport.includes('task[2] === "/text-artifacts" && method === "POST"'));
+  assert.ok(transport.includes('encoder.encode(body).length <= 2 * 1024 * 1024'));
+  const html = await read(`${directory}/index.html`);
+  assert.match(html, /data-task-text-publication="disabled"/);
+  assert.doesNotMatch(html, /data-task-text-publication="enabled"/);
   const reader = await read(`${directory}/tasks.js`);
   assert.match(reader, /import \{ createMetadataEditor \} from '\.\/task-edit\.js'/);
   assert.doesNotMatch(reader, /method:\s*["'](?:POST|PUT|PATCH|DELETE)/);
 });
 
 test("metadata preparation and acknowledgement retain independent wire, frame and waiting budgets", async () => {
-  const contract = await read(`${directory}/task-contract.js`), source = await read(`${directory}/task-edit.js`);
+  const contract = await read(`${directory}/task-contract.js`), source = (await read(`${directory}/request.js`)).replaceAll("'", '"');
   for (const value of ["export function prepareMetadataSave", "export function parseMetadataSaved",
     "items.length !== baseline.manifest.payload.length", "artifact: baseline.manifest.payload[index].artifact",
     "!same(content.payload.map(item => item.artifact), baseline.task.input_refs)",
@@ -100,10 +115,13 @@ test("metadata preparation and acknowledgement retain independent wire, frame an
     "record(decode(raw, INDEX_BYTES)", "const INDEX_BYTES = 128 * 1024",
     "result.revision !== expected.body.expected_revision + 1", "!same(content, expected.body.manifest)"])
     assert.ok(contract.includes(value), value);
-  for (const value of ["++frames > 4096", "size > 128 * 1024", "10_000",
-    "Promise.race([work, interrupted])", 'new TextDecoder("utf-8", { fatal: true })',
+  for (const value of ["4096", "128 * 1024", "10_000",
+    'new TextDecoder("utf-8", { fatal: true })',
     "reader.releaseLock()", "clearTimeout(timer)"])
     assert.ok(source.includes(value), value);
+  assert.match(source, /Promise\.race\(/);
+  assert.match(source, /method === "PUT"[\s\S]*?encoder\.encode\(body\)\.length <= 64 \* 1024\) return \{ bytes: 128 \* 1024, frames: 4096 \}/);
+  assert.match(source, /\+\+frames > budget\.frames \|\| size > budget\.bytes/);
   assert.doesNotMatch(contract, /fetch\(|document\.|localStorage|sessionStorage|AuthService/);
 });
 
@@ -120,8 +138,9 @@ test("metadata confirmation fences the exact target and freezes terminal attempt
     "contents: selected.baseline.contents", 'observe("saved", "metaSaved")',
     '"conflict" : "unknown"', "save.disabled = busy || !isActive() || quarantined || !editing || !dirty || terminal()"])
     assert.ok(source.includes(value), value);
-  assert.ok(source.indexOf("attempt = selected.descriptor") < source.indexOf("await write("));
-  assert.equal([...source.matchAll(/await write\(/g)].length, 1);
+  const metadata = source.slice(source.indexOf("const cancelSave ="));
+  assert.ok(metadata.indexOf("attempt = selected.descriptor") < metadata.indexOf("await write("));
+  assert.equal([...metadata.matchAll(/await write\(/g)].length, 1);
   assert.doesNotMatch(source, /\/platform\/v1\/task-index|location\.reload|requestSubmit|setInterval/);
 });
 
@@ -144,11 +163,13 @@ test("quarantine clears private DOM while Cancel-focused leave and lifecycle gen
     assert.ok(reader.includes(value), value);
 });
 
-test("metadata is the seventh fixed opt-in asset with complete inert five-language controls", async () => {
+test("metadata remains a fixed opt-in asset alongside the shared transport with complete inert five-language controls", async () => {
   const source = await read(`${directory}.rs`), { labels } = await import(new URL(`${directory}/labels.js`, root));
-  assert.deepEqual([...source.matchAll(/\.route\("([^"]+)"/g)].map(match => match[1]),
+  assert.deepEqual([...source.matchAll(/\.route\(\s*"([^"]+)"/g)].map(match => match[1]),
     ["/platform/", "/platform/ui/app.js", "/platform/ui/labels.js", "/platform/ui/style.css",
-      "/platform/ui/tasks.js", "/platform/ui/task-contract.js", "/platform/ui/task-edit.js"]);
+      "/platform/ui/tasks.js", "/platform/ui/task-contract.js", "/platform/ui/task-edit.js", "/platform/ui/request.js",
+      "/platform/ui/body-contract.js", "/platform/ui/task-save/taskContentSave.js", "/platform/ui/task-save/taskSaveContract.js",
+      "/platform/ui/task-save/taskDraft.js", "/platform/ui/task-save/taskPayloadLanguage.js"]);
   assert.ok(source.includes('include_str!("session_ui/task-edit.js")'));
   assert.doesNotMatch(source, /\.fallback\(|ServeDir|std::(?:fs|env)|tokio::fs|PgPool|AuthService|reqwest/);
   const keys = Object.keys(labels.en).filter(key => key.startsWith("meta"));
@@ -209,7 +230,14 @@ test("twelve mocked Chrome cases and one distinct original-storage selector are 
   assert.ok(bootstrap.includes("Platform browser runtime: Node %s; %s"));
   assert.ok(bootstrap.includes("node --test scripts/tests/platformMetadataCdp.browser.mjs"));
   const runners = ["session-ui-browser", "task-reader-browser", "task-metadata-browser",
-    "browser-session", "browser-tasks", "browser-task-metadata"].map(name => `test-platform-${name}.sh`);
+    "task-body-browser", "browser-session", "browser-tasks", "browser-task-metadata", "browser-task-body"].map(name => `test-platform-${name}.sh`);
   assert.deepEqual([...bootstrap.matchAll(/^bash scripts\/(test-platform-[\w-]+\.sh)$/gm)].map(match => match[1]).sort(), runners.sort());
+  const bodyBrowser = await read("scripts/tests/platformTaskBody.browser.mjs");
+  for (const value of ["absent, disabled or unrecognized host capability", "never publishes bodies",
+    "metadata-only save sends no publication", "original full baseline before one content PUT",
+    "partial progress", "never retries", "pagehide", "denial headers quarantine"])
+    assert.ok(bodyBrowser.includes(value), value);
+  assert.ok((await read("scripts/test-platform-task-body-browser.sh"))
+    .includes("node --test scripts/tests/platformTaskBody.browser.mjs"));
   assert.match(await read(".github/workflows/ci.yml"), /&& bash scripts\/test-platform-browser-ci\.sh/);
 });

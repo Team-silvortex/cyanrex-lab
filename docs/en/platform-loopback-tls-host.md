@@ -6,17 +6,20 @@ and [empty manual Draft POST](platform-task-create-connection.md), plus [Draft m
 [host proposal 3](https://github.com/Team-silvortex/cyanrex-lab/issues/3). It shares the
 [plain loopback host](platform-loopback-host.md)'s original storage, process and HTTP boundaries,
 without a local plaintext proxy. Only `127.0.0.1` and `::1` on ports 1024–65535 are supported.
-It does not add LAN/DNS listening, generic text-payload saving or deployment acceptance.
+It does not add LAN/DNS listening, normal-app saving or deployment acceptance.
 
 Included in 0.6.4, both CLI hosts explicitly mount [retained private text POST](platform-text-artifact-connection.md)
 through the same plain/TLS startup. Existing workspace constructors still leave publication disabled.
 
-Optional trailing flags are ordered `[--notify-systemd] [--session-ui]`. Notifications add only
+Optional trailing flags are ordered `[--task-text-publication] [--notify-systemd] [--session-ui]`. Notifications add only
 [service-state reporting](platform-host-notifications.md), not client trust or continuous health.
-Both flags default off; unflagged startup remains unchanged. Explicit `--session-ui` enables the
+All flags default off; unflagged startup remains unchanged. Explicit `--session-ui` enables the
 [fixed Session/private Task shell](platform-loopback-host.md#optional-browser-session-shell) at `/platform/`
-and its six compiled JS/CSS assets, in five languages on this exact HTTPS Origin. It is not Next.js,
-generic text saving, teaching login, a CORS service or a proxy, and adds no database grants.
+and its twelve compiled JS/CSS assets, in five languages on this exact HTTPS Origin. Only combining
+it with `--task-text-publication` enables the 0.6.6 fixed-slot body editor: sequential strict
+201 original-title Artifact confirmations, then the original-revision manifest PUT and strict 200.
+Metadata-only edits retain one PUT/no POST. This adds no Next.js/SDK/teaching login, CORS, proxy or grants;
+mock body-browser coverage does not establish real SQL saving, browser TLS or Cookie-safe deployment.
 
 ## Explicit private inputs
 
@@ -113,7 +116,7 @@ domain planning. Dedicated HTTPS host/domain policy and broader authorized LAN/b
 separate; the privileged teaching Engine and its cookies are unchanged.
 The optional shell uses existing dedicated Session login/check/confirmed logout and owner-private
 Task index/content GETs. Explicit 20-entry pages and inert text/empty-payload reopening stay separate
-from raw-text editing, execution and normal Next.js local drafts. It inherits the [plain host's reader bounds and validation](platform-loopback-host.md#optional-browser-session-shell):
+from execution and normal Next.js local drafts. It inherits the [plain host's reader bounds and validation](platform-loopback-host.md#optional-browser-session-shell):
 128 KiB index/50 MiB content wire, 16,384 frames, 32 × 256 KiB decoded text, strict scope/revision/pins
 and local SHA-256 before display. Session changes and pagehide clear old private data; late epochs
 cannot revive it. Its ten-second waiting
@@ -127,7 +130,9 @@ only strict matching HTTP 200 metadata confirms save, with a 128 KiB/4,096-frame
 browser wait. It is not a fresh text read. Metadata 401/403 headers immediately clear private DOM;
 pagehide also quarantines work in closed page memory, without cross-Session restore or replay;
 explicit discard is required to continue.
-No new Artifact, raw-text save, SDK, HTTP API or database grant is added.
+The dual-flag body flow described above separately publishes all fixed slots and confirms the final PUT;
+cancel/conflict/unknown or denial/pagehide closes its confirmed prefix without retry or recovery.
+CRLF and unchanged edit prefixes/suffixes stay exact. No SDK, HTTP API or database grant is added.
 
 ```bash
 cargo test --manifest-path engine/Cargo.toml --locked --bin cyanrex-platform
@@ -136,9 +141,11 @@ bash scripts/test-platform-loopback-tls-host.sh
 bash scripts/test-platform-text-publication-host.sh
 bash scripts/test-platform-task-reader-browser.sh
 bash scripts/test-platform-task-metadata-browser.sh
+bash scripts/test-platform-task-body-browser.sh
 bash scripts/test-platform-browser-session.sh
 bash scripts/test-platform-browser-tasks.sh
 bash scripts/test-platform-browser-task-metadata.sh
+bash scripts/test-platform-browser-task-body.sh
 ```
 
 Native TLS test fixtures require OpenSSL for bounded generation of disposable CA/certificates/keys;
@@ -154,8 +161,22 @@ does not establish a passing run or browser acceptance.
 The browser Session runner inventories two real SQL/browser selectors, plain and TLS. Supply an
 explicit disposable `CYANREX_TEST_DATABASE_URL`, absolute `CYANREX_PLAYWRIGHT_MODULE` and
 `CYANREX_CHROMIUM_PATH`, OpenSSL, `certutil` and usable isolated browser/NSS trust. It never installs
-a user/system CA or ignores certificate errors. The local legacy NSS environment currently blocks
-the TLS-browser case, so that coverage remains an explicit gap rather than a claimed passing run.
+a user/system CA or ignores certificate errors. Local legacy NSS correctly blocks this native
+account; the separate isolated-worker passing result below does not disable that guard.
 The read-only Task runner selects a separate plain-host SQL/browser case, not TLS acceptance;
 the Task UI and metadata fixtures each inventory 12 mock-API cases. The metadata SQL/browser runner
-selects a separate plain-host case. CI inventories three mock and three SQL/browser runners, not TLS-save acceptance.
+selects a separate plain-host case. CI requires four mock and four SQL/browser runners, six CDP and
+eight mounted-transport Chrome cases; wiring is not remote acceptance. The body mock runner has 13 cases.
+Its separate SQL/browser runner requires independent plain/TLS selectors. The plain selector passed
+on 2026-11-13, checking two confirmed publications, independent Task replacement, exact SQL/files and
+first-POST conflict/revocation rejection. The TLS selector refuses this machine's legacy NSS before
+database setup, with no HOME/trust change or plain fallback. Two separate plain partial-prefix
+selectors cover second-step 503 and 401; both passed exact SQL/file/UI checks. They do
+not establish late-ACK/BFCache or TLS saving by themselves. The [offline isolated-worker runner](testing-guide.md#isolated-browser-tls-worker)
+uses an actual image account and private container SQL/trust without mounting host HOME/NSS; default
+preflight is not TLS acceptance, and both original TLS selectors require explicit `--run-tls`.
+On 2026-11-13 both original Session and body TLS selectors passed in isolation after the mounted Fetch
+lifecycle fix. The final container command exited zero with exact CA/Secure Cookie/SQL/file checks,
+only initial databases/one administrator/zero other client backends and confirmed PostgreSQL stop;
+five PostgreSQL background processes are not clients. No host HOME/NSS/system trust changed.
+This is scoped browser/TLS acceptance, not deployed LAN, Cookie-host planning or real lost-ACK/BFCache coverage.

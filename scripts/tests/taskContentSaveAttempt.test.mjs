@@ -29,7 +29,8 @@ test("content-save snapshots all inputs before local hashing and exposes no chec
   assert.match(source, /step !== this\.#step/);
   assert.match(source, /this\.#state = "pending";\s*return this\.#step/);
   assert.match(source, /this\.#state = "stopped"; this\.#reason = "invalid_confirmation"/);
-  assert.deepEqual([...source.matchAll(/export (?:async )?function (\w+)\(/g)].map(match => match[1]), ["prepareTaskContentSave"]);
+  assert.deepEqual([...source.matchAll(/export (?:async )?function (\w+)\(/g)].map(match => match[1]),
+    ["prepareTaskContentSave", "prepareTaskBoundContentSave"]);
   assert.doesNotMatch(source, /export class|restore|resume|retry|adopt|clearDirty|setDirty/);
   const contract = code(await read("frontend/src/features/tasks/taskSaveContract.ts"));
   for (const value of ["Object.getOwnPropertyDescriptors", "Number.isSafeInteger", 'input.definition !== null',
@@ -40,19 +41,22 @@ test("content-save snapshots all inputs before local hashing and exposes no chec
 
 test("executable content-save matrix is selected by the frontend gate and CI", async () => {
   const script = JSON.parse(await read("frontend/package.json")).scripts["test:task-content-save"];
-  assert.equal(script, "node --experimental-strip-types --test tests/taskContentSave.test.mjs");
+  assert.equal(script, "node --experimental-strip-types --test tests/taskContentSave.test.mjs tests/taskBoundContentSave.test.mjs");
   assert.match(await read("scripts/quality-gate.sh"), /npm --prefix "\$PROJECT_ROOT\/frontend" run test:task-content-save/);
   assert.match(await read(".github/workflows/ci.yml"), /npm run test:editor-languages && npm run test:task-content-save/);
   const tests = await read("frontend/tests/taskContentSave.test.mjs");
   for (const value of ["named-empty.json", "multilingual.json", "future-language.json", "contextEpoch", "cancelled",
     "invalid_confirmation", "localStorage", "taskResponse", "artifactResponse"])
     assert.ok(tests.includes(value), value);
+  const bound = await read("frontend/tests/taskBoundContentSave.test.mjs");
+  for (const value of ["prepareTaskBoundContentSave", "task-bound-content-save.json", "expected", "invalid_confirmation"])
+    assert.ok(bound.includes(value), value);
 });
 
 test("bilingual content-save boundaries stay reachable and do not claim a connected browser", async () => {
   for (const lang of ["en", "zh-CN"]) {
     const path = `docs/${lang}/task-draft-publication.md`, guide = await read(path);
-    for (const value of ["prepareTaskContentSave", "taskContentSave.ts", "taskSaveContract.ts", "generation", "contextEpoch",
+    for (const value of ["prepareTaskContentSave", "prepareTaskBoundContentSave", "taskContentSave.ts", "taskSaveContract.ts", "generation", "contextEpoch",
       "expected_revision", "SHA-256", "test:task-content-save"])
       assert.ok(guide.includes(value), `${lang}: ${value}`);
     assert.equal(guide, await read(`frontend/public/course/${lang}/task-draft-publication.md`));

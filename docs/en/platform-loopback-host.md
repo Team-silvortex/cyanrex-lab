@@ -3,9 +3,9 @@
 The separate [native HTTPS mode](platform-loopback-tls-host.md) adds private TLS material and bounded
 handshakes. The `serve-loopback` mode below remains HTTP-only and never becomes its fallback or proxy backend.
 
-Optional trailing flags are ordered `[--notify-systemd] [--session-ui]`. The first adds
-[service-state notifications](platform-host-notifications.md); the second enables the Session/private Task
-browser shell described below. Both default off; unflagged startup remains unchanged.
+Optional trailing flags are ordered `[--task-text-publication] [--notify-systemd] [--session-ui]`.
+They select Task-bound publication, [service-state notifications](platform-host-notifications.md) and
+the Session/private Task shell. All default off; body editing requires both publication and UI flags.
 
 Included in source **0.6.4**, Linux `cyanrex-platform serve-loopback` runs the three existing [Session](platform-session-router.md)
 routes plus the [private Task index](platform-task-index-connection.md), [read-only reopening](platform-task-content-connection.md)
@@ -15,7 +15,7 @@ and [empty manual Draft creation](platform-task-create-connection.md), plus [Dra
 the platform to a LAN, add TLS, or serve as a supported TLS reverse-proxy backend.
 
 Included in 0.6.4, [retained text publication](platform-text-artifact-connection.md) is explicit in both
-CLI hosts. This separate POST is not browser text saving or the older pooled text/read router.
+CLI hosts. This separate unbound POST remains independent of the Task-bound browser path and older pooled router.
 
 ## Explicit startup
 
@@ -104,16 +104,41 @@ HTTPS host before broader browser or LAN deployment. Do not forward this plainte
 
 ## Optional browser Session shell
 
-Explicit `--session-ui` enables only seven compiled assets: `/platform/`, `/platform/ui/app.js`,
-`/platform/ui/labels.js`, `/platform/ui/tasks.js`, `/platform/ui/task-edit.js`, `/platform/ui/task-contract.js` and
-`/platform/ui/style.css`. Without it those paths remain absent. Open
+Explicit `--session-ui` enables only thirteen compiled assets: `/platform/`, `/platform/ui/app.js`,
+`/platform/ui/labels.js`, `/platform/ui/tasks.js`, `/platform/ui/task-edit.js`, `/platform/ui/task-contract.js`, `/platform/ui/request.js` and
+`/platform/ui/style.css`, plus `/platform/ui/body-contract.js` and the four
+`/platform/ui/task-save/{taskContentSave,taskSaveContract,taskDraft,taskPayloadLanguage}.js` mirrors.
+Without it those paths remain absent. Open
 `/platform/` on the configured literal-loopback Origin; the shell offers English, Simplified Chinese,
 Spanish, Japanese and Korean with an in-memory language selector. It is not Next.js, a directory
 server, a proxy or a replacement for the teaching application.
 
+The shared `request.js` serves Session, reader and editor requests. It admits only canonical relative
+paths/methods, including Task-bound publication, sets the same-origin Cookie mode and fixed marker,
+and rejects redirects, credential/header overrides and the unbound Artifact POST. Its ten-second
+bound covers waiting through body collection. Response
+profiles stay independent; callers cannot supply larger budgets:
+
+| Existing request | Response bytes | Body frames |
+|---|---:|---:|
+| Session check/login/logout | 4 KiB | 4,096 |
+| Task index | 128 KiB | 16,384 |
+| Task content read | 50 MiB | 16,384 |
+| Manifest PUT / Task-bound text POST | 128 KiB | 4,096 |
+
+Login JSON stays within 32 KiB, manifest PUT within 64 KiB and Task-bound POST within 2 MiB;
+GET/logout have no body. The helper reads a guarded clone through complete bounded EOF/fatal UTF-8,
+then consumes the original Response via native `arrayBuffer()` and requires equal length and every
+byte. Native consumption never starts before guard EOF, so it cannot race the limits. Both tee
+branches are cancelled together on failure; there is no fallback or extra HTTP. Several bounded
+byte/string copies coexist, not one response-sized allocation or a process-wide memory quota.
+It returns raw UTF-8 only: strict JSON/receipt validation, current epochs, confirmed outcomes and denial
+UI handling remain owned by the callers. Cancellation cancels browser collection, not server work;
+late replies cannot rearm a write. Cookie-safe deployment and new APIs remain outside this change.
+
 External scripts/styles and a restrictive CSP keep the shell on the same Origin. It calls only the
 existing dedicated platform Session login/check/confirmed logout, private Task index/content GETs and
-the metadata-only use of the existing manifest PUT described below. Login success
+the existing manifest PUT, plus Task-bound text POST only when both flags enable body editing. Login success
 is followed by one read-only check of the browser Cookie roundtrip; it does not establish a username
 or role. Password/OTP fields clear on handoff, not by secure memory erasure. No secret is put in a URL,
 browser storage or logs. Unknown/malformed replies and the ten-second browser waiting deadline remain
@@ -123,15 +148,15 @@ with Cancel focused by default. Cookie host/Path/Secure policy and non-port-isol
 After an active Session observation, users explicitly load 20-entry owner-private pages and select
 a Task to reopen; neither listing nor selecting is automatic. Pages replace rather than accumulate.
 Index metadata does not prove content readability. Empty payloads are valid; text is displayed inertly,
-including duplicate filenames and unknown valid language hints, without an editor or Run.
+including duplicate filenames and unknown valid language hints, without execution or a Run.
 
 Index wire data is bounded to 128 KiB and content wire data to 50 MiB, with at most 16,384 body frames
 and a ten-second browser waiting bound. Parsing is not preempted by that timer. Strict JSON rejects
 duplicate/escaped keys and unsafe numbers; exact scope/revision/ordered pins and local SHA-256 must
 match before display. Decoded content remains at most 32 items of 256 KiB each. Task 401/403, a new
 Session check, confirmed-logout dispatch and pagehide clear old private data; epoch checks discard
-late replies. Text editing, Task creation and execution are not connected; the normal Next.js local
-draft editor and generic save-attempt helper remain separate. No authentication API or database grant is added.
+late replies. Task creation and execution are not connected; the normal Next.js local draft editor
+and SDK remain separate. No authentication API or database grant is added.
 
 The **0.6.4 metadata-save slice** lets the owner explicitly edit only an existing manual Draft's
 title and existing payload display filenames/language hints. Artifact pins, order, bytes and item count
@@ -145,7 +170,23 @@ Dirty or unknown work guards Task navigation, Session checks, login and logout w
 discard dialog, again defaulting to Cancel. Metadata 401/403 headers immediately clear private DOM;
 context changes/pagehide also isolate work in closed page memory. A later Session cannot restore or replay it.
 Explicit discard is required before continuing. This is neither secure erasure nor rollback or recovery.
-No raw-text edit, new Artifact, SDK integration, new HTTP API or database privilege is introduced.
+No SDK integration, new HTTP API or database privilege is introduced.
+
+The body editor included in 0.6.6 requires both `--task-text-publication` and `--session-ui`; UI alone
+keeps the metadata-only path. Only a changed text slot selects body saving. After a Cancel-focused
+review, it publishes **every existing slot in order**, each against the same complete original
+Task/manifest baseline. Each strict HTTP 201 Artifact receipt must match its allocated IDs, bytes,
+owner/scope and the **original Task title**. Only after all receipts does one manifest PUT use the
+original expected revision, edited title/labels and new ordered pins; strict HTTP 200 confirms that Task step.
+Slots cannot be added, removed or reordered. The local draft stays within 32 × 256 KiB and 8 MiB
+including JSON metadata/escaping. Unchanged slots retain exact CRLF bytes; textarea edits retain
+unchanged prefixes/suffixes, including mixed endings. Metadata-only changes still issue one PUT and no POST.
+
+Cancellation, conflicts, unknown delivery, denial headers or pagehide close the plan without further
+steps, retries, adoption, deletion or restoration. Confirmed Artifact prefixes remain distinct from
+Task confirmation. Success combines the confirmed metadata with the frozen submitted text; it is
+not a fresh content reread. The generated planner is shared with the local TS contract
+[without hand-maintained duplication](task-draft-publication.md#unreleased-browser-side-existing-draft-save-attempt).
 
 ## Shutdown and failure
 
@@ -174,9 +215,11 @@ bash scripts/test-platform-loopback-host.sh
 bash scripts/test-platform-text-publication-host.sh
 bash scripts/test-platform-task-reader-browser.sh
 bash scripts/test-platform-task-metadata-browser.sh
+bash scripts/test-platform-task-body-browser.sh
 bash scripts/test-platform-browser-session.sh
 bash scripts/test-platform-browser-tasks.sh
 bash scripts/test-platform-browser-task-metadata.sh
+bash scripts/test-platform-browser-task-body.sh
 ```
 
 Default tests exercise actual TCP with private synthetic routers and actual CLI rejection paths;
@@ -189,7 +232,7 @@ is not a passing result or browser acceptance.
 The browser Session runner inventories two real SQL/browser selectors for plain and TLS hosts. It
 requires an explicit disposable `CYANREX_TEST_DATABASE_URL`, absolute `CYANREX_PLAYWRIGHT_MODULE`
 and `CYANREX_CHROMIUM_PATH`, OpenSSL, `certutil` and usable isolated browser/NSS trust. It does not
-modify user/system trust or bypass certificate checks. The local legacy NSS environment currently
+modify user/system trust or bypass certificate checks. This native account's legacy NSS correctly
 blocks TLS-browser verification; native TLS acceptance is not evidence that a browser TLS flow passed.
 
 The Task-reader browser runner uses production assets with mock APIs; its 12 cases are UI evidence,
@@ -197,9 +240,19 @@ not SQL authorization. The separate Task browser runner selects one real plain-h
 for private paging/reopening and revocation without Task/Artifact writes; it does not claim TLS-browser coverage.
 The metadata fixture separately inventories 12 mock-API browser cases; its SQL/browser runner selects
 one real plain-host metadata-save/conflict/revocation case. These are separate from TLS-browser acceptance.
+The body fixture adds 13 mock-API browser cases. The separate body SQL/browser runner requires both
+exact plain and TLS selectors; it never substitutes plain for TLS. On 2026-11-13 the plain selector
+passed natural login, two original-baseline/title POST 201 receipts and a separate PUT 200, with
+independent Artifact head/revision/outbox/file `0400`/hash and Task revision/outbox checks. Conflict
+and revoked-Session cases stop at the first POST with no new writes. A separate real partial-prefix
+cases retain the first confirmed Artifact after the second POST receives SQL lock-timeout 503 or
+revoked-Session 401; both passed with exact SQL/file/UI checks. Neither
+late-ACK/BFCache nor deployment acceptance follows. Local legacy NSS blocks native-account TLS;
+both original TLS selectors passed separately in the [optional isolated runner](testing-guide.md#isolated-browser-tls-worker),
+including exact SQL/files and confirmed disposable-database shutdown.
 
 This explicit binary mode does not mount the normal teaching AppState or Next.js frontend authentication,
 Task status writes, pooled Artifact read routes, OpenAPI or SDK operations. Task writes are limited to
 empty Draft POST and expected-revision manifest PUT; the separate text POST creates only private Artifacts.
 TLS/domain planning, authorized LAN access,
-installed service supervision and browser Task-saving integration remain separate work.
+installed service supervision, normal-app saving and broader browser/TLS acceptance remain separate work.

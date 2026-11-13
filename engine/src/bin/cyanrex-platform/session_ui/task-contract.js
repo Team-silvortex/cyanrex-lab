@@ -76,6 +76,9 @@ function decode(raw, budget) {
   try { return JSON.parse(raw); } catch { return invalid(); }
 }
 
+/** Lexically strict raw save DTO. The save planner still validates every response field. */
+export function decodeSaveReceipt(raw) { return decode(raw, INDEX_BYTES); }
+
 function record(value, keys, partial = false) {
   if (!value || typeof value !== "object" || Array.isArray(value)) invalid();
   const prototype = Object.getPrototypeOf(value);
@@ -229,7 +232,7 @@ export async function parseContent(raw, selectedEntry, selectedScope = null) {
 
 // Metadata preparation only checks supplied baseline agreement. It neither rehashes those bytes
 // nor establishes that the baseline was obtained from a current authorized server response.
-function metadataBaseline(value) {
+export function metadataBaseline(value) {
   const input = record(value, ["schema_version", "task", "manifest", "contents"]);
   if (input.schema_version !== 1) invalid();
   const baseline = task(input.task), content = manifest(input.manifest, baseline.reference.workspace);
