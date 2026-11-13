@@ -1,19 +1,27 @@
-//! Explicit, Linux IPv4 single-query discovery. No registration, host integration or peer trust.
+//! Explicit Linux IPv4 single-query discovery and pure announcement encoding, never peer trust.
 //! The pure F0/F1a modules remain independent of this networking adapter.
 use crate::services::federation_discovery::{lan::LanDiscoveryError, DiscoveryError};
 use std::{net::Ipv4Addr, time::Duration};
 
+mod announcement;
+mod controller;
 mod interface;
 mod packet;
+mod probing;
 mod runtime;
 mod socket;
+mod wire;
 
+pub use announcement::{MdnsAnnouncement, ProbeObservation};
+pub use controller::{MdnsProbeController, ProbeControllerState};
 pub use interface::VerifiedInterface;
 pub use packet::{
     browse_query, parse_response, MdnsEvent, MAX_MDNS_PACKET_BYTES, MAX_MDNS_RECORDS,
 };
+pub use probing::{probe_once, ProbeRunObservation};
+pub use probing::{probe_retained_once, MdnsRetainedProbe, RetainedProbeOutcome};
 pub use runtime::discover_once;
-pub use socket::{MdnsSocket, ReceivedMdns};
+pub use socket::{MdnsSocket, MdnsUnicastReceiver, ReceivedMdns};
 
 pub const MDNS_GROUP: Ipv4Addr = Ipv4Addr::new(224, 0, 0, 251);
 pub const MDNS_PORT: u16 = 5353;
@@ -46,6 +54,12 @@ pub enum MdnsError {
     BudgetExceeded,
     #[error("invalid mDNS clock")]
     ClockInvalid,
+    #[error("mDNS probe deadline exceeded")]
+    DeadlineExceeded,
+    #[error("mDNS probe entropy unavailable")]
+    EntropyUnavailable,
+    #[error("mDNS probe retry is cooling down")]
+    CoolingDown,
 }
 type Result<T> = std::result::Result<T, MdnsError>;
 

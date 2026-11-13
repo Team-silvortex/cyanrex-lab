@@ -1,6 +1,6 @@
 # Current architecture and change boundaries
 
-**Included in 0.6.6, reviewed 2026-11-13:** [federated nodes](federation-discovery.md) have pure F0/F1a plus explicit Linux F1b one-shot browsing:
+**Source 0.6.7 includes F0/F1a–F1i, reviewed 2026-11-13:** [federated nodes](federation-discovery.md) add explicit CLI/preparation, separate unicast/probing/retries and retained quiet review:
 untrusted announcements → compatibility/policy selection → `UnverifiedPeerCandidate`, not identity proof,
 pairing or workspace authority. Teaching roles stay domain-local; Source and loopback boundaries stay unchanged.
 
@@ -49,7 +49,7 @@ paths, not two interchangeable login implementations.
 | Responsibility | Source entry | Dependency rule |
 |---|---|---|
 | Shared contracts | `engine/src/models/collaboration/` | Exact identity/reference/Task/Artifact/Review/file values; decoding validates structure, not authority |
-| Prepared discovery | `engine/src/services/federation_discovery/`, `engine/src/services/federation_mdns/` | Pure claims/cache; separate explicit Linux browser, no Session, storage, key proof or resource command |
+| Prepared discovery | `engine/src/services/federation_discovery/`, `engine/src/services/federation_mdns/`, `engine/src/bin/cyanrex-discovery/` | Pure claims/cache/wire observations; explicit Linux browser/CLI, exact-local receiver or bounded probe attempt, no Session, storage, key proof, publication permit or resource command |
 | Definitions and pure content planning | `engine/src/services/task_catalog/definitions.rs`, `engine/src/services/task_content.rs`, `engine/src/services/task_draft_import/` | TaskDefinitionCatalog is frozen metadata; no evaluator, database, discovery or execution is required |
 | Typed domain evaluation | `engine/src/services/task_catalog.rs`, `engine/src/domain_packs/ebpf_teaching/` | TaskCatalog<P> owns provider-bound evidence and assessment; the teaching pack stays outside neutral contracts |
 | Current-Session commands | `engine/src/services/auth_service/durable_source/`, `engine/src/services/collaboration_identity_store/` | Derive exact current actor, audited membership and original pins; resource checks and final authority stay in the source-owned transaction |
@@ -103,7 +103,7 @@ boundaries; no global HTTP budget, public configuration API or runtime mounting 
 
 ## Service navigation
 
-`engine/src/services/mod.rs` groups declarations, retaining existing names, visibility and Unix gates. The federation export is pure preparation, not a runtime service.
+`engine/src/services/mod.rs` preserves visibility/gates. F0/F1a stay pure; Linux F1b/CLI run only when explicitly called, never at host startup.
 
 | Index group | Main responsibility |
 |---|---|

@@ -1,6 +1,6 @@
 # 当前架构与变更边界
 
-**0.6.6 收录，2026-11-13 核对：**[联合节点方向](federation-discovery.md)有纯 F0／F1a 和显式 Linux F1b 单次浏览，未自动挂载。
+**源码 0.6.7 收录 F0／F1a–F1i，2026-11-13 核对：**[联合节点方向](federation-discovery.md)新增显式 CLI／准备／独立单播、probe、有限重试及保留静默复核，未自动挂载。
 不可信公告 → 兼容／策略筛选 → `UnverifiedPeerCandidate` 不等于身份证明、配对或工作区授权。
 教学角色留在领域内；现有 Source 同权威检查和回环宿主绑定保持不变。
 
@@ -44,7 +44,7 @@ Cyanrex 有教学应用、本地 payload 编辑器及显式组合的后端，源
 | 显式协作后端 | 可信宿主 → 原绑定当前 Session 命令 → 私人资源存储 | 不构造教学 AppState；回环 Session／Task／文本能力显式组合 |
 | 本地payload编辑 | `/tasks/new`及兼容`/editor` → TaskDraftWorkspace 组合 useTaskDraftController → 受控文本编辑器 → 本地JSON | 本地ID与语言提示不是服务端引用或执行权限 |
 | 显式文件交付 | 当前准确文件grant → Source清单／分块核验 → 所给router → 受控客户端 → 所选保存 | 已有真实Source／HTTPS联验，正常应用／UI／SDK仍未接通 |
-| 联合准备 | 给定公告／时间／策略 → 严格兼容与提示筛选 | 无监听、节点证明、配对、穿透或跨权威授权 |
+| 联合准备 | 给定公告／时间／策略 → 严格兼容筛选；显式 Linux 查询／单播／有界 probe | 无自动启动监听、名称发布许可、节点证明、配对、穿透或跨权威授权 |
 
 教师管理现用教学与部署，单人模式同样如此；这不转化为读取他人私人Task、Artifact、Review
 或获接收授权字节的通用权限。在线AuthService与 `engine/src/services/auth_service/durable_source/` 的 `DurableAuthSource`／原绑定助手
@@ -55,7 +55,7 @@ Cyanrex 有教学应用、本地 payload 编辑器及显式组合的后端，源
 | 职责 | 源码入口 | 依赖规则 |
 |---|---|---|
 | 共享契约 | `engine/src/models/collaboration/` | 准确身份、引用、Task／Artifact／Review／文件值；解码只核结构，不授权 |
-| 发现准备 | `engine/src/services/federation_discovery/`、`engine/src/services/federation_mdns/` | 纯声明／缓存；另有显式 Linux 浏览，无 Session、存储、密钥证明或资源命令 |
+| 发现准备 | `engine/src/services/federation_discovery/`、`engine/src/services/federation_mdns/`、`engine/src/bin/cyanrex-discovery/` | 纯声明／缓存／公告／probe 字节及观察；显式 Linux 浏览／CLI，无 Session、存储、密钥证明或资源命令 |
 | 定义与纯内容规划 | `engine/src/services/task_catalog/definitions.rs`、`engine/src/services/task_content.rs`、`engine/src/services/task_draft_import/` | TaskDefinitionCatalog是冻结元数据，不要求评估器、数据库、发现或执行 |
 | 强类型领域评估 | `engine/src/services/task_catalog.rs`、`engine/src/domain_packs/ebpf_teaching/` | TaskCatalog<P>持有提供器证据及评估，内置教学包不进入中立契约 |
 | 当前会话命令 | `engine/src/services/auth_service/durable_source/`、`engine/src/services/collaboration_identity_store/` | 派生准确当前执行者、审计成员及原始pin；资源检查和最终权限留在Source事务 |
@@ -104,7 +104,7 @@ Session 事务继续保留原释放／授权边界。不增加全局 HTTP 配额
 ## 服务导航
 
 `engine/src/services/mod.rs` 按职责分组，保留既有名称、可见性及 Unix 条件。
-新增联合导出只是纯准备层，不是在线服务。
+F0／F1a 保持纯计算；Linux F1b／CLI 仅显式调用，不随宿主启动。
 
 | 索引分组 | 主要职责 |
 |---|---|

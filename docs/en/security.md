@@ -1,11 +1,42 @@
 # Security and deployment boundaries
 
+Source **0.6.7** includes F1c–F1i described below. Older `Unreleased` labels retain implementation
+stages, not pending source inclusion or deployed acceptance; no announcement service is enabled.
+
 Included in 0.6.6, [federation F0/F1a](federation-discovery.md) parses bounded claims/TXT and caches only
 inert source-bound hints. Claimed fingerprints and foreign Authority IDs do not prove identity or grant access.
 Private addresses do not prove same-LAN trust; explicit public/relay opt-ins are not egress authority.
-Only separate explicit Linux F1b can open a selected-interface multicast socket; no startup listener,
+Only explicit Linux F1b (or Unreleased F1c CLI) can open a selected-interface multicast socket; no startup listener,
 pairing, traversal, gateway mapping or cross-authority exception is added. Its private-address/TTL
 checks are provenance filters, not authentication; see the limited profile and isolated fixture scope.
+F1c requires the existing non-root process gate and reports only unverified, non-reusable snapshots.
+It does not read private configuration, modify accounts, advertise services or open business connections.
+Unreleased F1d only prepares bounded announcement/goodbye bytes; cache-flush is not verified name
+ownership. It adds no sender or permission to publish/withdraw, and leaves the fixed-query socket unchanged.
+Unreleased F1e prepares probes and observes conservative per-packet claims, never name availability.
+The browse socket does not receive all QU unicast defenses; its timeout cannot establish probing success.
+Unreleased F1f separately opens an explicit receive-only exact-local IPv4:5353 socket. No port reuse,
+wildcard bind or multicast-only fallback is allowed; an overlapping system listener makes it unavailable.
+It retains selected ingress/local address, exact destination, TTL/source and interface-change checks.
+It adds no probe sender, flow quota, startup listener, identity proof or name-availability decision.
+Unreleased F1g separately composes both channels for one explicit, timed probe attempt. A private
+typed sender checks current lease/source/MTU and forbids fragmentation; all consumed datagrams share
+one budget and final silence still grants nothing. Poll faults, stale clocks/lease, cancellation or
+interface changes terminate without partial quiet results. No automatic retry, announcement, startup
+mounting, name-ownership permit, pairing or authorization is added; strict-profile and cross-call
+cooldown limitations remain explicit in the federation guide.
+Unreleased F1h adds per-object explicit retry history: four admissions within thirty seconds of
+first use, and five seconds after conflicts. It freezes the original claim lease and interface;
+active I/O checks both across attempts. Early `CoolingDown` does no interface/entropy/socket work;
+other errors close. Checks are adjacent observations, not real-time syscall preemption. New objects
+and direct `probe_once` calls bypass this history: no process-wide limiter is claimed. Quiet finish
+retains no sockets or publication authority; no announcement, automatic retry, pairing or grant is added.
+Unreleased F1i independently retains a quiet attempt's original dual I/O for receive-only review.
+The fixed 250 ms window cannot renew the original timeout, F0 expiry or ingress accounting. Relevant
+late claims/errors close and release both channels; no public constructor, clone, FD export or sender
+exists. Even expired idle handles keep FDs until close/Drop or a closing review; a quiet review keeps
+them. There is no background validity/cancel monitoring. F1h's guard/history does not transfer here.
+This continuity preparation is not publication, retained name authority or a complete responder.
 
 Source **0.6.6** includes loopback/TLS hosting, limited Sessions, private Task commands and retained/
 Task-bound text publication. Default CLI remains eight routes/seven response lanes; only explicit

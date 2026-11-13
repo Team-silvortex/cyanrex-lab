@@ -783,6 +783,9 @@ LAN browser/teacher/student workflow, TLS deployment or VM isolation.
 
 ### Explicit isolated federation discovery
 
+F1b first shipped in source 0.6.6; F1c–F1i are included in 0.6.7. Older `Unreleased` labels below
+preserve implementation stages and dated evidence, not pending source inclusion or deployment acceptance.
+
 The Unreleased F1b Linux IPv4 adapter has pure/default `federation_mdns_*_tdd` cases and seven
 opt-in real UDP cases. The latter must run only through the guarded runner:
 
@@ -804,6 +807,76 @@ links/routes. Private build evidence stays in the reported `/tmp/cyanrex-mdns-ne
 no application database, real LAN peer, credential or production payload is used. This is not generic
 mDNS interoperability, physical-LAN deployment, pairing or traversal acceptance; see
 [the federation profile](federation-discovery.md).
+
+Unreleased F1c adds pure argument/output and no-network command tests in
+`federation_discovery_cli_{args,output}_tdd` and `federation_discovery_cli_tdd`. Its real CLI target is
+explicitly ignored by default: use `scripts/test-federation-mdns-netns.sh --with-cli` to also select
+it in the isolated topology. This mode additionally needs existing `getsubids`, `newuidmap` and
+`newgidmap` authorization for one subordinate UID/GID; it does not create accounts or change mappings
+on the host. Child-only group clearing and a nested nonzero identity preserve the product process
+gate. Lack of prerequisites fails, never skips a positive control or falls back to host networking.
+
+Unreleased F1d `federation_mdns_announcement_tdd` is pure default coverage: independent DNS fields,
+strict names/endpoint/time/size limits, unchanged goodbye data and parser/cache composition. Private
+writer units cover the packet hard bound; no new UDP, interoperability or publication acceptance is implied.
+
+Unreleased F1e `federation_mdns_probe_tdd` adds pure probe wire/time and per-packet claim tests,
+including incomplete DNS-SD chains, questions/known answers/Authority distinctions, compressed names,
+malformed tails and exact framing limits. Private decoder tests preserve raw class bits and sections.
+No probe scheduling, live QU unicast reception, tiebreak/backoff or availability is accepted by these tests.
+
+Unreleased F1f adds a private exact-destination/provenance unit and ten ignored
+`federation_mdns_unicast_network_tdd` cases. Explicitly select
+`scripts/test-federation-mdns-netns.sh --with-unicast`, optionally with `--with-cli`. Nine new
+ordinary cases require all capability sets zero and no-new-privileges; the separate new address
+deletion case retains only namespace-local `net_admin`. After it succeeds, the owned parent restores
+only its fixture address before running the unchanged old deletion case. Existing zero-argument and
+`--with-cli` selections stay seven/thirteen cases without the new flag. Tests cover exact-local
+unicast → conservative F1e observation, multicast isolation in both open orders, two local interfaces,
+TTL/port/foreign-source/empty/size rejection with positive controls, same-local/wildcard/dual-stack
+collisions with every reuse mode, reverse collision, Drop/failed-open FD cleanup, bounded silence
+and unchanged UDP-send/TCP-open counters. This is not product probe sending, physical-LAN/system-daemon
+interoperability, a whole-flow quota or name-availability proof.
+
+Unreleased F1g adds default pure schedule/lease/budget/classification/MTU/poll-failure cases and a
+separate ignored `federation_mdns_probing_network_tdd` target. Select only through
+`scripts/test-federation-mdns-netns.sh --with-probe`, optionally with both existing flags. Thirteen
+new capability-free cases capture exact source port, TTL and complete probe layout; verify three
+spaced sends plus the final listening interval, matching unicast defenses after sends 1/2/3,
+multicast defense/competition, unrelated responses, port collision, cancellation, expired claims
+and a valid TXT packet exceeding the selected MTU. Every case checks exact UDP-send deltas,
+unchanged TCP opens, descriptor/listener cleanup and no later announcement. Real receive timestamps
+use a conservative 240 ms lower-bound tolerance; pure units enforce exact 250 ms and sub-millisecond
+boundaries. The peer captures at most four packets for 2.2 seconds with at most one fixed-target reply.
+This is restricted isolated probing, not physical LAN, complete mDNS interoperability, process-wide
+retry/cooldown, announcement lifecycle, authentication or ownership acceptance.
+
+Unreleased F1h adds pure finite-gate/frozen-lifetime units, pure controller admission checks and
+private guard-ordering regressions. `federation_mdns_controller_network_tdd` stays entirely ignored
+by default. Explicit `--with-controller` selects eight new isolated cases, optionally combined with
+all three existing flags; without it, the original selections remain unchanged. Seven ordinary
+cases require all five capability sets to be zero: pure construction/drop, invalid source/timeout,
+pre-cancel, expired claim, socket failure, cancellation while cooling and conflict → early cooldown
+→ explicit quiet retry. Check exact counts/FDs/ports, permanent closure and no announcement; the
+first retry packet must arrive at least five seconds after the conflict returned, without tolerance.
+One separately guarded NET_ADMIN-only case renames the owned fixture interface after conflict:
+early cooldown must not look it up; after cooldown the fixed pin must return `InterfaceChanged`,
+close and send no extra packet. The owned parent restores only that interface's name before the old
+address-removal tests. No host interface, route, account or daemon is modified. This verifies only
+per-object history, not process-wide limiting, retained-I/O publication or physical-LAN acceptance.
+
+Unreleased F1i adds pure review-window, inherited-bound handoff and retained-entry regressions, plus
+ignored `federation_mdns_retained_network_tdd`. Explicit `--with-retained` adds eleven isolated
+cases, optionally with all four existing flags. Ten ordinary cases require all five capability sets
+zero: quiet retains two exact listeners/FDs and exclusive port, repeated reviews keep socket inodes,
+close/Drop releases, queued late multicast response/proposal and unicast response close, cancellation
+latches, repeated review cannot renew 250 ms, malformed data fails, early conflicts return no handle,
+and invalid/cancelled preflight has no I/O. In late-packet cases, the existing peer injects synthetic
+packets after quiet handoff; the fixture confirms queue occupancy before review. One NET_ADMIN-only case renames
+the owned selected interface after quiet, requiring `InterfaceChanged`/release/terminal closure.
+Its parent restores that exact name before the original mutation cases. Every case checks exact
+UDP/TCP counts, descriptor/port cleanup, and no fourth probe/announcement/goodbye. No host networking,
+account, peer protocol, startup, controller handoff or publication capability changes are implied.
 
 ## Live and release acceptance
 

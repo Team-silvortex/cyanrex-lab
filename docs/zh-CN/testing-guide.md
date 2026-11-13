@@ -684,6 +684,9 @@ Monaco 实例，阻止外网请求，不求值模板表达式，也不验证 Nex
 
 ### 显式隔离联合节点发现
 
+F1b 首次收录于源码 0.6.6，F1c–F1i 收录于 0.6.7；下文旧 `Unreleased`／未发布标签保留
+实施阶段和分日期证据，不表示仍待源码收录或已经部署验收。
+
 未发布 F1b Linux IPv4 适配器包含纯计算／默认 `federation_mdns_*_tdd` 用例，以及七条显式真实
 UDP 用例。后者只能通过带隔离守卫的 runner 运行：
 
@@ -702,6 +705,61 @@ UDP 用例。后者只能通过带隔离守卫的 runner 运行：
 其虚拟链路／路由；私有构建证据保留于输出的 `/tmp/cyanrex-mdns-netns-*` 目录。
 不使用应用数据库、真实局域网对端、凭据或生产 payload。这不是通用 mDNS 互通、物理局域网部署、
 配对或穿透验收；配置边界见[联合节点发现](federation-discovery.md)。
+
+未发布 F1c 的纯参数／输出及无网络命令测试为 `federation_discovery_cli_{args,output}_tdd` 和
+`federation_discovery_cli_tdd`。真实 CLI 目标默认显式忽略，须使用
+`scripts/test-federation-mdns-netns.sh --with-cli` 在上述隔离拓扑中一并选择。
+该模式额外要求已有 `getsubids`、`newuidmap`、`newgidmap` 对一个 subordinate UID／GID 的授权；
+不创建账户或修改宿主映射。在子进程命名空间内清组，再使用嵌套非零身份，保留产品进程门禁。
+前置条件不足即失败，不跳过正向对照，也不回退宿主网络。
+
+未发布 F1d `federation_mdns_announcement_tdd` 属于默认纯测试：独立 DNS 字段、名称／端点／时间／
+大小边界、goodbye 原数据不变及解析／缓存组合；私有 writer 单元另测包硬上限。
+这不新增 UDP、互通或真实发布验收。
+
+未发布 F1e `federation_mdns_probe_tdd` 新增纯 probe 字节／时间及逐包声明测试，覆盖不完整 DNS-SD 链、
+question／known-answer／Authority 区分、压缩名称、畸形尾部与准确 framing 上限。
+私有 decoder 测试保留原 class 位与 section；不验收调度、真实 QU 单播接收、胜负／退避或名称可用性。
+
+未发布 F1f 新增准确目的地／来源私有单元和十条默认忽略的
+`federation_mdns_unicast_network_tdd`。显式使用
+`scripts/test-federation-mdns-netns.sh --with-unicast`，可组合 `--with-cli`。九条新普通用例
+要求全部 capability 集合为零及 no-new-privileges；独立新地址删除仅保留命名空间内 `net_admin`。
+新删除成功后，自有父 namespace 仅恢复夹具地址，再执行未改动的原删除用例。不加新标志时，
+原零参数／`--with-cli` 选择仍为七／十三条。覆盖准确本机单播 → F1e 保守观察、两打开顺序的组播
+隔离、两个本机接口、TTL／端口／外部来源／空包／大小拒绝及正向对照、所有 reuse 组合下的相同
+本机／通配／双栈占用与反向冲突、Drop／失败打开 FD 释放、有界静默和 UDP 发送／TCP 打开计数不变。
+这不是产品 probe 发送、物理局域网／系统 daemon 互通、整流程额度或名称可用证明。
+
+未发布 F1g 新增默认纯时序／租约／预算／分类／MTU／poll 失败测试，以及独立默认忽略的
+`federation_mdns_probing_network_tdd`。只能通过
+`scripts/test-federation-mdns-netns.sh --with-probe` 选择，可组合原两个开关。十三条新零
+capability 用例捕获准确源端口、TTL 和完整 probe 布局，验证三次间隔发送／最终收听、发 1／2／3
+次后的匹配单播防御、组播防御／竞争、无关响应、端口冲突、取消、过期声明及 TXT 合法但超过
+指定 MTU 的报文。每例检查精确 UDP 发送差额、TCP 不增、描述符／监听清理及无后续公告。
+真实接收时间使用保守的 240 ms 下界容差；纯单元硬验准确 250 ms 和亚毫秒边界。对端至多捕获
+四包／2.2 秒，至多一次固定目标回复。这是受限隔离探测，不是物理局域网、完整 mDNS 互通、
+进程级重试／冷却、公告生命周期、认证或名称归属验收。
+
+未发布 F1h 新增纯有限 gate／固定生命周期单测、纯控制器准入及私有 guard 顺序回归。
+`federation_mdns_controller_network_tdd` 默认全部忽略；只有 `--with-controller` 选择八条新隔离
+用例，可组合原三个开关；不带新开关的原选择保持不变。七条普通用例要求五组 capability 全零，
+覆盖纯构造／Drop、无效来源／timeout、预取消、过期声明、socket 失败、冷却取消，以及冲突 →
+提前冷却 → 显式静默重试。核验准确计数／FD／端口、永久关闭及无公告；首个重试包须在冲突
+返回至少五秒后到达，不使用容差。一条独立受限 NET_ADMIN 用例在冲突后改名自有接口：冷却
+内不得查询，冷却后原 pin 必须返回 `InterfaceChanged`、关闭且不再发包。自有父命名空间仅恢复
+该接口名后再跑原地址删除用例。不修改宿主接口、路由、账户或 daemon；只验证对象内历史，
+不是进程级限速、保留 I/O 的发布生命周期或物理局域网验收。
+
+未发布 F1i 新增纯复核窗口、原边界移交及保留入口回归，另有默认忽略的
+`federation_mdns_retained_network_tdd`。显式 `--with-retained` 增加十一条隔离用例，可组合原四个
+开关。十条普通用例要求五组 capability 全零：静默保留两个准确监听／FD 和排他端口，反复复核
+保持同一 socket inode；close／Drop 释放；排队的迟到组播响应／提案和单播响应关闭；取消锁定；
+反复复核不续 250 ms；坏包失败；早期冲突不返回句柄；无效／预取消前置零 I/O。迟到包用例在
+静默移交后由原对端注入合成包，夹具确认已排队再复核。另有一条仅 NET_ADMIN 用例在静默后改名自有
+指定接口，要求 `InterfaceChanged`、释放并永久关闭；父命名空间恢复准确原名后再跑旧变更用例。
+每例检查准确 UDP／TCP 计数、FD／端口清理及无第四次 probe／公告／goodbye。不表示宿主联网、
+账户、对端协议、启动、控制器移交或发布能力发生变化。
 
 ## 真实与发布验收
 

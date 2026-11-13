@@ -5,6 +5,56 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.6.7] - 2026-11-13
+
+This patch source release includes F1c–F1i: an explicit Linux discovery CLI, frozen wire preparation,
+exclusive unicast reception, bounded probing, finite conflict cooldown and receive-only retained
+quiet review. Discovered claims and quiet observations grant no trust or publication authority.
+There is no announcement service, application startup discovery, verified pairing, traversal,
+relay transport or cross-authority access. Existing teaching and loopback-host boundaries stay unchanged.
+See [local release validation](reports/releases/0.6.7/README.md): the full local gate and 55 isolated
+network cases passed; default ignored cases, remote CI and deployed acceptance remain separate.
+
+### Added
+
+- Add separate F1i retained quiet probing: move the original two sockets, queues, lease/deadline and
+  ingress accounting into an opaque receive-only handle, with a fixed 250 ms review window that
+  cannot renew any original bound. Late conflicts, malformed input, cancellation and interface or
+  time failures close permanently. Close/Drop sends nothing; old F1g/F1h returns still release all
+  sockets. No announcement, controller handoff, automatic retry, startup or permission is added.
+- Add the explicit F1h `MdnsProbeController`: freeze configuration, claim expiry and the original
+  interface across at most four admitted attempts within thirty seconds of first use. Conflict
+  completion starts a five-second cooldown; early calls perform no interface/entropy/socket work.
+  Recheck the original lease, deadline and interface around active I/O; silence finishes and other
+  errors close without automatic retry, retained sockets, announcements or publication authority.
+  This is per-object history, not a process-wide limit or a new CLI/startup service.
+- Add explicit Linux F1g `probe_once` with owned multicast/unicast channels, bounded nonblocking
+  entropy, three spaced typed proposals and a final listening interval. Share ingress budgets,
+  freeze wall/monotonic lease bounds, reject interface/clock/deadline/cancellation failures and
+  oversized-MTU proposals, and conservatively stop on observed claims. Keep all existing browse
+  APIs unchanged; no announcement, ownership permit, tiebreak/retry, CLI/startup, pairing or grant.
+- Add an explicit Linux F1f receive-only `MdnsUnicastReceiver`, exclusively bound to the selected
+  local IPv4 address at port 5353. Keep multicast and unicast destination admission separate while
+  sharing bounded ancillary/provenance validation; reject overlapping listeners without port reuse
+  or fallback. Add opt-in isolated network coverage without probe sending, startup integration,
+  name-availability proof, pairing, dependencies or permission changes.
+- Add pure F1e ANY/QU probe preparation and conservative per-packet observation over frozen
+  announcement names/data. Preserve DNS questions, raw class bits and RR sections in private shared
+  framing; keep old candidate-response admission unchanged. Distinguish existing responses and
+  competing Authority proposals from unrelated packets without a winner/name-availability result.
+  No probe sending, timer, retry/backoff, unicast receiver, startup, dependency or authorization is added.
+- Add pure F1d DNS-SD announcement/goodbye preparation with frozen canonical names, a single exact
+  private IPv4 endpoint, unchanged F0 claims and TTLs capped by declared expiry. Bound complete
+  PTR/SRV/TXT/A packets without truncation; preserve all goodbye record data with zero TTLs.
+  This adds no announcement sender, name-ownership proof, CLI option, dependency or startup change;
+  the existing socket still sends only its fixed browse query.
+- Add the separate explicit Linux `cyanrex-discovery browse-lan` command. Require bounded local
+  interface/compatibility policy and the existing non-root process gate before a single mDNS query;
+  emit only complete bounded unverified JSON snapshots, without startup mounting, service
+  announcement, pairing, business connections or new dependencies. Reject output/diagnostic pipe
+  failures without panicking, and keep environment defaults, relay/public options and private
+  configuration outside the command. Discovery leases are not exported as reusable authority.
+
 ## [0.6.6] - 2026-11-13
 
 This patch source release connects explicit Session-page fixed-slot body saving, strengthens Fetch
@@ -1666,7 +1716,8 @@ cross-user collaboration. The frozen public API compatibility baseline remains 0
 The canonical package metadata advanced directly from `0.2.9` to `0.3.1`. Version `0.3.0` identifies
 the frozen API compatibility snapshot only; it was not a package release and must not be tagged.
 
-[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.6.6...HEAD
+[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.6.7...HEAD
+[0.6.7]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.6.6...v0.6.7
 [0.6.6]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.6.5...v0.6.6
 [0.6.5]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.6.4...v0.6.5
 [0.6.4]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.6.3...v0.6.4

@@ -11,6 +11,11 @@ type Result<T> = std::result::Result<T, MdnsError>;
 const GROUP: Ipv4Addr = Ipv4Addr::new(224, 0, 0, 251);
 const PORT: u16 = 5_353;
 
+mod unicast;
+pub use unicast::MdnsUnicastReceiver;
+mod probing;
+pub(super) use probing::{Channel, Ingress, ProbeIo};
+
 #[derive(Debug)]
 pub struct ReceivedMdns {
     pub bytes: Vec<u8>,
@@ -150,67 +155,85 @@ impl MdnsSocket {
     }
 
     pub fn receive(&mut self) -> Result<Option<ReceivedMdns>> {
-        self.interface.verify_unchanged()?;
-        let mut bytes = [0_u8; MAX_MDNS_PACKET_BYTES];
-        let mut control = [0_usize; 16];
-        // SAFETY: plain output structs are zero-initialized before passing their real bounds.
-        let mut source: libc::sockaddr_storage = unsafe { zeroed() };
-        let mut vector = libc::iovec {
-            iov_base: bytes.as_mut_ptr().cast(),
-            iov_len: bytes.len(),
-        };
-        // SAFETY: all fields are assigned before kernel use; zero is valid for unused fields.
-        let mut message: libc::msghdr = unsafe { zeroed() };
-        message.msg_name = (&mut source as *mut libc::sockaddr_storage).cast();
-        message.msg_namelen = size_of_val(&source) as _;
-        message.msg_iov = &mut vector;
-        message.msg_iovlen = 1;
-        message.msg_control = control.as_mut_ptr().cast();
-        message.msg_controllen = size_of_val(&control);
-        // SAFETY: every output pointer has live writable backing for its advertised bound.
-        let length =
-            unsafe { libc::recvmsg(self.fd.as_raw_fd(), &mut message, libc::MSG_CMSG_CLOEXEC) };
-        // Capture errno before the interface recheck can make another syscall.
-        let failure = (length < 0).then(|| io::Error::last_os_error().kind());
-        self.interface.verify_unchanged()?;
-        if let Some(failure) = failure {
-            return match failure {
-                io::ErrorKind::WouldBlock
-                | io::ErrorKind::TimedOut
-                | io::ErrorKind::Interrupted => Ok(None),
-                _ => Err(MdnsError::SocketUnavailable),
-            };
-        }
-        validate_envelope(
-            length as usize,
-            message.msg_namelen as usize,
-            source.ss_family,
-            message.msg_flags,
-            message.msg_controllen,
-            size_of_val(&control),
-        )?;
-        // SAFETY: checked AF_INET and exact kernel output size establish sockaddr_in layout.
-        let source =
-            unsafe { &*(&source as *const libc::sockaddr_storage).cast::<libc::sockaddr_in>() };
-        // SAFETY: control is fully initialized; the checked length cannot exceed its allocation.
-        let controls = unsafe {
-            std::slice::from_raw_parts(control.as_ptr().cast::<u8>(), message.msg_controllen)
-        };
-        let metadata = ancillary(controls)?;
-        let source_ip = Ipv4Addr::from(source.sin_addr.s_addr.to_ne_bytes());
-        validate_metadata(
-            self.interface.index(),
-            self.interface.local_address(),
-            self.interface.netmask(),
-            source_ip,
-            u16::from_be(source.sin_port),
-            &metadata,
-        )?;
-        Ok(Some(ReceivedMdns {
-            bytes: bytes[..length as usize].to_vec(),
-            source: source_ip,
-        }))
+        receive(&self.fd, &self.interface, GROUP)
     }
+}
+
+fn receive(
+    fd: &OwnedFd,
+    interface: &VerifiedInterface,
+    expected_destination: Ipv4Addr,
+) -> Result<Option<ReceivedMdns>> {
+    receive_with_flags(fd, interface, expected_destination, 0)
+}
+
+fn receive_with_flags(
+    fd: &OwnedFd,
+    interface: &VerifiedInterface,
+    expected_destination: Ipv4Addr,
+    flags: libc::c_int,
+) -> Result<Option<ReceivedMdns>> {
+    interface.verify_unchanged()?;
+    let mut bytes = [0_u8; MAX_MDNS_PACKET_BYTES];
+    let mut control = [0_usize; 16];
+    // SAFETY: plain output structs are zero-initialized before passing their real bounds.
+    let mut source: libc::sockaddr_storage = unsafe { zeroed() };
+    let mut vector = libc::iovec {
+        iov_base: bytes.as_mut_ptr().cast(),
+        iov_len: bytes.len(),
+    };
+    // SAFETY: all fields are assigned before kernel use; zero is valid for unused fields.
+    let mut message: libc::msghdr = unsafe { zeroed() };
+    message.msg_name = (&mut source as *mut libc::sockaddr_storage).cast();
+    message.msg_namelen = size_of_val(&source) as _;
+    message.msg_iov = &mut vector;
+    message.msg_iovlen = 1;
+    message.msg_control = control.as_mut_ptr().cast();
+    message.msg_controllen = size_of_val(&control);
+    // SAFETY: every output pointer has live writable backing for its advertised bound.
+    let length =
+        unsafe { libc::recvmsg(fd.as_raw_fd(), &mut message, libc::MSG_CMSG_CLOEXEC | flags) };
+    // Capture errno before the interface recheck can make another syscall.
+    let failure = (length < 0).then(|| io::Error::last_os_error().kind());
+    interface.verify_unchanged()?;
+    if let Some(failure) = failure {
+        return match failure {
+            io::ErrorKind::WouldBlock | io::ErrorKind::TimedOut | io::ErrorKind::Interrupted => {
+                Ok(None)
+            }
+            _ => Err(MdnsError::SocketUnavailable),
+        };
+    }
+    validate_envelope(
+        length as usize,
+        message.msg_namelen as usize,
+        source.ss_family,
+        message.msg_flags,
+        message.msg_controllen,
+        size_of_val(&control),
+    )?;
+    // SAFETY: checked AF_INET and exact kernel output size establish sockaddr_in layout.
+    let source =
+        unsafe { &*(&source as *const libc::sockaddr_storage).cast::<libc::sockaddr_in>() };
+    // SAFETY: control is fully initialized; the checked length cannot exceed its allocation.
+    let controls = unsafe {
+        std::slice::from_raw_parts(control.as_ptr().cast::<u8>(), message.msg_controllen)
+    };
+    let metadata = ancillary(controls)?;
+    let source_ip = Ipv4Addr::from(source.sin_addr.s_addr.to_ne_bytes());
+    validate_metadata(
+        interface.index(),
+        interface.local_address(),
+        interface.netmask(),
+        source_ip,
+        u16::from_be(source.sin_port),
+        &metadata,
+        expected_destination,
+    )?;
+    Ok(Some(ReceivedMdns {
+        bytes: bytes[..length as usize].to_vec(),
+        source: source_ip,
+    }))
 }
 
 #[derive(Debug)]
@@ -308,6 +331,7 @@ fn validate_metadata(
     source: Ipv4Addr,
     port: u16,
     metadata: &Metadata,
+    expected_destination: Ipv4Addr,
 ) -> Result<()> {
     if port != PORT
         || source == local
@@ -316,7 +340,7 @@ fn validate_metadata(
         || metadata.index <= 0
         || metadata.index as u32 != index
         || metadata.local != local
-        || metadata.destination != GROUP
+        || metadata.destination != expected_destination
         || metadata.ttl != 255
     {
         return Err(MdnsError::InvalidPacket);
@@ -407,9 +431,16 @@ mod tests {
         let local = Ipv4Addr::new(10, 2, 3, 4);
         let mask = Ipv4Addr::new(255, 255, 255, 0);
         let source = Ipv4Addr::new(10, 2, 3, 5);
-        assert!(
-            validate_metadata(7, local, mask, source, PORT, &ancillary(&packet()).unwrap()).is_ok()
-        );
+        assert!(validate_metadata(
+            7,
+            local,
+            mask,
+            source,
+            PORT,
+            &ancillary(&packet()).unwrap(),
+            GROUP
+        )
+        .is_ok());
         for bad in [
             Ipv4Addr::new(10, 2, 3, 0),
             Ipv4Addr::new(10, 2, 3, 255),
@@ -418,10 +449,16 @@ mod tests {
             Ipv4Addr::new(127, 0, 0, 1),
             Ipv4Addr::new(8, 8, 8, 8),
         ] {
-            assert!(
-                validate_metadata(7, local, mask, bad, PORT, &ancillary(&packet()).unwrap())
-                    .is_err()
-            );
+            assert!(validate_metadata(
+                7,
+                local,
+                mask,
+                bad,
+                PORT,
+                &ancillary(&packet()).unwrap(),
+                GROUP
+            )
+            .is_err());
         }
         for port in [0, 53, 5_354] {
             assert!(validate_metadata(
@@ -430,7 +467,8 @@ mod tests {
                 mask,
                 source,
                 port,
-                &ancillary(&packet()).unwrap()
+                &ancillary(&packet()).unwrap(),
+                GROUP
             )
             .is_err());
         }
@@ -443,7 +481,44 @@ mod tests {
                 3 => metadata.destination = local,
                 _ => metadata.ttl = 254,
             }
-            assert!(validate_metadata(7, local, mask, source, PORT, &metadata).is_err());
+            assert!(validate_metadata(7, local, mask, source, PORT, &metadata, GROUP).is_err());
+        }
+    }
+
+    #[test]
+    fn unicast_metadata_requires_exact_local_destination_and_all_original_provenance() {
+        let local = Ipv4Addr::new(10, 2, 3, 4);
+        let mask = Ipv4Addr::new(255, 255, 255, 0);
+        let source = Ipv4Addr::new(10, 2, 3, 5);
+        let mut valid = ancillary(&packet()).unwrap();
+        valid.destination = local;
+        assert!(validate_metadata(7, local, mask, source, PORT, &valid, local).is_ok());
+        for mode in 0..7 {
+            let mut metadata = ancillary(&packet()).unwrap();
+            metadata.destination = local;
+            match mode {
+                0 => metadata.index = 8,
+                1 => metadata.index = 0,
+                2 => metadata.index = -1,
+                3 => metadata.local = source,
+                4 => metadata.destination = GROUP,
+                5 => metadata.destination = source,
+                _ => metadata.ttl = 254,
+            }
+            assert!(validate_metadata(7, local, mask, source, PORT, &metadata, local).is_err());
+        }
+        for bad in [
+            Ipv4Addr::new(10, 2, 3, 0),
+            Ipv4Addr::new(10, 2, 3, 255),
+            local,
+            Ipv4Addr::new(10, 2, 4, 5),
+            Ipv4Addr::new(127, 0, 0, 1),
+            Ipv4Addr::new(8, 8, 8, 8),
+        ] {
+            assert!(validate_metadata(7, local, mask, bad, PORT, &valid, local).is_err());
+        }
+        for port in [0, 53, 5_354] {
+            assert!(validate_metadata(7, local, mask, source, port, &valid, local).is_err());
         }
     }
 

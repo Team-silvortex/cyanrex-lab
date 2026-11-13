@@ -1,6 +1,6 @@
 # 当前平台功能与模块网络
 
-**0.6.6 收录 F0／F1a／F1b，2026-11-13 核对：**[联合发现](federation-discovery.md)有显式 Linux 单次 mDNS → TXT／缓存接入链路：
+**源码 0.6.7 收录 F0／F1a–F1i，2026-11-13 核对：**[联合发现](federation-discovery.md)新增 CLI → 单次 mDNS → TXT／缓存、纯线格式准备、单播／探测／重试及保留静默复核：
 给定有界公告 + 本地策略／时间 → 兼容的 `UnverifiedPeerCandidate`。
 它未挂载；节点证明 → 明确配对 → 窄范围工作区授权，以及直连／穿透／中继传输均是缺边。
 现有课堂、Runner、Source 和回环链路保持不变。

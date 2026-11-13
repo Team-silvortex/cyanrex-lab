@@ -125,9 +125,66 @@ class QueryWorker:
             self.result = None
 
 
+class ProbeWorker:
+    """Bounded observation of one round, with at most one fixed-target defense."""
+    def __init__(self, reply_after, destination, reply):
+        ready_network()
+        self.result = None
+        self.receiver = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            self.receiver.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            self.receiver.setsockopt(socket.IPPROTO_IP,
+                                     getattr(socket, "IP_MULTICAST_ALL", 49), 0)
+            self.receiver.setsockopt(socket.IPPROTO_IP,
+                                     getattr(socket, "IP_RECVTTL", 12), 1)
+            membership = multicast_interface(self.receiver, "10.23.0.2")
+            self.receiver.bind((GROUP, 5353))
+            self.receiver.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP,
+                                     membership)
+            self.thread = threading.Thread(target=self.capture,
+                                           args=(reply_after, destination, reply))
+            self.thread.start()
+        except Exception:
+            self.receiver.close()
+            raise
+
+    def capture(self, reply_after, destination, reply):
+        captured = []
+        deadline = time.monotonic() + 2.2
+        try:
+            with self.receiver:
+                while len(captured) < 4:
+                    remaining = deadline - time.monotonic()
+                    if remaining <= 0:
+                        break
+                    self.receiver.settimeout(remaining)
+                    try:
+                        data, controls, flags, source = self.receiver.recvmsg(
+                            MAX_DATAGRAM_BYTES + 1, socket.CMSG_SPACE(4))
+                    except socket.timeout:
+                        break
+                    received_ns = time.monotonic_ns()
+                    require(not flags and len(data) <= MAX_DATAGRAM_BYTES)
+                    require(source == ("10.23.0.1", 5353))
+                    require(len(controls) == 1)
+                    level, kind, value = controls[0]
+                    require(level == socket.IPPROTO_IP and kind == socket.IP_TTL
+                            and len(value) == 4)
+                    ttl = struct.unpack("=i", value)[0]
+                    captured.append({"source": source[0], "port": source[1],
+                                     "ttl": ttl, "ns": received_ns,
+                                     "data": list(data)})
+                    if len(captured) == reply_after:
+                        send_datagram("10.23.0.2", 5353, 255, destination, reply)
+            self.result = captured
+        except Exception:
+            self.result = None
+
+
 class PeerServer:
     def __init__(self):
         self.workers = []
+        self.probe_worker = None
 
     def dispatch(self, request):
         require(type(request) is dict and type(request.get("op")) is str)
@@ -138,7 +195,7 @@ class PeerServer:
             require(type(request["port"]) is int and request["port"] in (5353, 5354))
             require(type(request["ttl"]) is int and request["ttl"] in (254, 255))
             require(type(request["destination"]) is str
-                    and request["destination"] in (GROUP, "10.23.0.1"))
+                    and request["destination"] in (GROUP, "10.23.0.1", "10.24.0.1"))
             data = byte_array(request["data"])
             send_datagram(request["ip"], request["port"], request["ttl"],
                           request["destination"], data)
@@ -159,6 +216,24 @@ class PeerServer:
             if any(worker.result is None for worker in workers):
                 return {"ok": False}
             return {"ok": True, "queries": [worker.result for worker in workers]}
+        if operation == "arm-probes":
+            require(set(request) == {"op", "reply_after", "destination", "data"})
+            require(self.probe_worker is None and not self.workers)
+            after, destination = request["reply_after"], request["destination"]
+            require(type(after) is int and type(destination) is str)
+            reply = byte_array(request["data"])
+            require((after == 0 and destination == "none" and not reply)
+                    or (after in (1, 2, 3)
+                        and destination in (GROUP, "10.23.0.1")
+                        and 1 <= len(reply) <= 4096))
+            self.probe_worker = ProbeWorker(after, destination, reply)
+            return {"ok": True}
+        if operation == "wait-probes":
+            require(set(request) == {"op"} and self.probe_worker is not None)
+            worker, self.probe_worker = self.probe_worker, None
+            worker.thread.join(timeout=2.4)
+            require(not worker.thread.is_alive() and worker.result is not None)
+            return {"ok": True, "queries": worker.result}
         raise ValueError("fixture rejected")
 
 

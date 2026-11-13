@@ -1,9 +1,9 @@
 # Project status
 
-Reviewed **2026-11-13**. Product version is **0.6.6**; the public API compatibility baseline remains
+Reviewed **2026-11-13**. Product version is **0.6.7**; the public API compatibility baseline remains
 **0.3.0**. Fixed-slot Session-page body saving requires both default-off publication/UI flags;
 the scoped plain/prefix/isolated-TLS results below are not late-ACK/BFCache or deployed acceptance. See the
-[0.6.6 report](../../reports/releases/0.6.6/README.md); earlier artifacts and dated evidence retain their scope.
+[0.6.7 report](../../reports/releases/0.6.7/README.md); earlier artifacts and dated evidence retain their scope.
 
 Cyanrex is a self-hosted **collaboration and teaching platform**. A Task describes work; code is
 one optional payload, not the organizing center. Notes, configuration and code can use the text
@@ -11,7 +11,7 @@ editor without requiring execution, automatic assessment or a Run. eBPF teaching
 first supported domain and its existing workflow stays compatible.
 
 The mainline has an explicit low-privilege private Task host; the normal browser still edits local drafts.
-The [federated direction](federation-discovery.md) has pure F0/F1a and explicit Linux F1b one-shot browsing, not startup discovery or pairing.
+Source 0.6.7 includes the [federated direction](federation-discovery.md): F1c CLI/F1d–e preparation/F1f unicast/F1g probing/F1h finite retries/F1i retained quiet review atop F0/F1a/Linux F1b, not publication, ownership permission or pairing.
 Shared collaboration, traversal/relay transport, generic execution and deployed-LAN acceptance remain later work.
 
 ## Current operating boundaries

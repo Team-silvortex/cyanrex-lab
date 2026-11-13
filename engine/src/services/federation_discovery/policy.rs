@@ -52,6 +52,29 @@ impl DiscoveryPolicy {
 }
 
 impl PeerAdvertisement {
+    /// Local wire preparation only: exact one private IPv4 claim and a supplied current sample.
+    /// Unlike reception, a publisher must not announce before its own declared issue time.
+    /// This proves neither address ownership nor the right to announce a DNS name.
+    #[cfg(target_os = "linux")]
+    pub(crate) fn lan_announcement_remaining(
+        &self,
+        expected: std::net::SocketAddrV4,
+        now: u64,
+    ) -> Result<u64> {
+        if now == 0 || now > MAX_SAFE_TIME || now < self.issued_at {
+            return Err(DiscoveryError::InvalidTime);
+        }
+        if now >= self.expires_at {
+            return Err(DiscoveryError::Expired);
+        }
+        if !matches!(self.hints.as_slice(), [ConnectionHint::Direct(SocketAddr::V4(address))]
+            if *address == expected && address.ip().is_private() && address.port() != 0)
+        {
+            return Err(DiscoveryError::InvalidAdvertisement);
+        }
+        Ok(self.expires_at - now)
+    }
+
     /// Use the supplied observation time once; the caller owns clock freshness and later expiry.
     pub fn select(&self, policy: &DiscoveryPolicy, now: u64) -> Result<UnverifiedPeerCandidate> {
         if now == 0 || now > MAX_SAFE_TIME || self.issued_at > now + MAX_FUTURE_SKEW_SECONDS {
