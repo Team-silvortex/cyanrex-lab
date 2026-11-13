@@ -1,6 +1,6 @@
 # Current platform feature and module network
 
-**Source 0.6.7 includes F0/F1a–F1i, reviewed 2026-11-13:** [federation discovery](federation-discovery.md) adds CLI → one-shot mDNS → TXT/cache, pure wire preparation, unicast/probing/retries and retained quiet review:
+**Source 0.6.8 includes F1j–o, reviewed 2026-11-13:** [federation discovery](federation-discovery.md) adds explicit diagnostics, TXT/cache/wire, original-bound review, pure announcement/query analysis and response-byte preparation:
 supplied bounded announcement + local policy/time → compatible `UnverifiedPeerCandidate`.
 It is unmounted; node proof → explicit pairing → scoped workspace grant and direct/traversal/relay
 transport remain missing edges. Existing classroom, Runner, Source and loopback paths stay unchanged.

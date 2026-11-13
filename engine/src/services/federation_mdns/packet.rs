@@ -1,6 +1,6 @@
 //! Conservative single-packet DNS-SD profile; never resolve, cache or authenticate a peer.
 use super::{
-    wire::{invalid, name, read_message, word, Name, Record},
+    wire::{complete_name, invalid, read_message, word, Name, Record},
     MdnsError,
 };
 use crate::services::federation_discovery::lan::{decode_txt, LanDiscoveryError, LanSource};
@@ -72,15 +72,6 @@ fn instance_name(target: &Name) -> Result<String> {
     Ok(instance.clone())
 }
 
-fn rdata_name(bytes: &[u8], record: &Record, start: usize) -> Result<Name> {
-    let mut offset = start;
-    let result = name(bytes, &mut offset)?;
-    if offset != record.end {
-        return invalid();
-    }
-    Ok(result)
-}
-
 fn unique_record<'a>(records: &'a [Record], owner: &Name, kind: u16) -> Result<Option<&'a Record>> {
     let mut matching = records
         .iter()
@@ -100,7 +91,7 @@ fn srv(bytes: &[u8], record: &Record) -> Result<Service> {
         return invalid();
     }
     let port = word(bytes, record.start + 4)?;
-    let target = rdata_name(bytes, record, record.start + 6)?;
+    let target = complete_name(bytes, record.start + 6, record.end)?;
     let alphanumeric = |byte: u8| byte.is_ascii_lowercase() || byte.is_ascii_digit();
     if port == 0
         || target.0.len() < 2
@@ -149,7 +140,7 @@ pub fn parse_response(bytes: &[u8]) -> Result<Vec<MdnsEvent>> {
         .iter()
         .filter(|record| record.class() == 1 && record.kind == 12 && record.owner == service_name())
     {
-        let target = rdata_name(bytes, record, record.start)?;
+        let target = complete_name(bytes, record.start, record.end)?;
         let instance = instance_name(&target)?;
         if targets.iter().any(|(existing, _, _)| existing == &target) {
             return invalid();

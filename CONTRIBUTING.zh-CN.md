@@ -86,10 +86,30 @@ Rust 开发和测试构建保留行级调试信息，并关闭增量编译，以
 （测试则使用 `CARGO_PROFILE_TEST_DEBUG=2`）覆盖默认值。设置 `CARGO_INCREMENTAL=1`
 可重新启用增量编译，用更多磁盘空间换取更快的重复构建。
 
-停止本地构建及使用构建产物的进程后，可用 `cargo clean --manifest-path engine/Cargo.toml`
-回收 Rust 构建产物；下次构建会重新编译依赖。前端 `.next/`、SDK `dist/` 和 TypeScript
-`*.tsbuildinfo` 也是生成产物，不是源码或备份。常规缓存清理不得包含运行数据、`.env` 文件、
-`.run/` 维护配置、数据库卷、迁移备份或回滚镜像。
+先查看占用，并停止使用目标产物的构建／进程。优先只清理本项目 package，保留第三方依赖
+产物。在仓库根目录先预演准确 target，再执行同一条去掉 `--dry-run` 的命令：
+
+```bash
+cargo clean --manifest-path engine/Cargo.toml --target-dir engine/target --locked --offline -p cyanrex-engine --dry-run --verbose
+cargo clean --manifest-path engine/Cargo.toml --target-dir engine/target --locked --offline -p cyanrex-engine
+```
+
+它会清理本 package 缓存的各版本产物，而非只清某个旧版本；下次仍需重新编译／链接本项目。
+完整 `cargo clean` 还会丢弃依赖构建，属于更大的重置，不是常规清理默认项。紧凑本地验证可显式
+设置 `CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 CARGO_BUILD_JOBS=2`，不改变发布 profile。
+
+| 路径 | 所有者与清理边界 |
+|---|---|
+| `engine/target/` | 可重建 Cargo 输出；优先上述按 package 限定的预演 |
+| `frontend/.next/cache/` | 可重建 Next 缓存；确认没有构建／开发进程写入后才删除，保留已构建应用时不删其余 `.next/` |
+| `node_modules/`、`sdk-js/dist/`、`*.tsbuildinfo` | 已安装依赖／构建输出；不打算重新安装／构建时保留仍有用的依赖 |
+| `frontend/public/course/`、`frontend/public/monaco/` | 已跟踪的生成资源；用各自脚本生成／核验，不当缓存删掉 |
+| `.git/`、`docs/`、`reports/` | 源码历史、维护文档及验证证据，不是构建缓存 |
+| 运行数据、`.env`、`.run/`、数据库卷、迁移备份、回滚镜像 | 持久／私有或恢复状态，排除在常规清理之外 |
+
+先检查文件系统挂载，再判断 `/tmp` 是否占用仓库磁盘；单独 tmpfs 回收的是内存，不是仓库存储。
+不要替换成全局 Docker／npm／Cargo prune、删除 home 或清除其他项目产物。不确定是否在用时，
+保留该目标，不擅自停止服务或删除用途不明的数据。
 
 ## 仓库规则
 

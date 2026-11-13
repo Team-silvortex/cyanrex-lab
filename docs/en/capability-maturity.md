@@ -5,6 +5,21 @@ retained text publication and a default-off Session/Task shell for reading and m
 Raw-text/normal-app/SDK saving, LAN access and migration remain absent; browser TLS is not locally accepted.
 Earlier implementation-stage labels and dated tensor scores retain their original scope.
 
+Included in **0.6.8**, [federation F1j](federation-discovery.md#f1j-explicit-controller-to-retained-handoff)
+connects finite probe history to original-bound receive-only review. It adds no publication, pairing,
+transport or workspace authority and does not rescore the dated tensor or establish LAN deployment.
+
+Included in **0.6.8**, [F1k](federation-discovery.md#f1k-explicit-one-round-probe-command) makes one existing
+probe attempt callable as an explicit low-privilege diagnostic. Its historical observations grant
+no publication or identity; this adds no automatic service or new dated maturity score.
+
+Included in **0.6.8**, [F1l](federation-discovery.md#f1l-pure-initial-announcement-schedule) adds bounded
+caller-driven timing preparation only. Two model completions are not actual announcements,
+retained publication authority or new evidence for a dated tensor score.
+
+Included in **0.6.8**, [F1m–o](federation-discovery.md) add pure response comparison, direct-query selection and response-byte preparation,
+not a live responder, ownership proof or new dated maturity score. Old conservative probes are unchanged.
+
 [Retained text publication](platform-text-artifact-connection.md), included in 0.6.4, is explicitly selected by
 both CLI hosts (eight routes/seven lanes); old workspace constructors stay seven-route/six-lane.
 

@@ -783,7 +783,7 @@ LAN browser/teacher/student workflow, TLS deployment or VM isolation.
 
 ### Explicit isolated federation discovery
 
-F1b first shipped in source 0.6.6; F1c–F1i are included in 0.6.7. Older `Unreleased` labels below
+F1b first shipped in 0.6.6; F1c–F1i in 0.6.7; F1j–F1o are included in **0.6.8**. Older `Unreleased` labels below
 preserve implementation stages and dated evidence, not pending source inclusion or deployment acceptance.
 
 The Unreleased F1b Linux IPv4 adapter has pure/default `federation_mdns_*_tdd` cases and seven
@@ -877,6 +877,56 @@ the owned selected interface after quiet, requiring `InterfaceChanged`/release/t
 Its parent restores that exact name before the original mutation cases. Every case checks exact
 UDP/TCP counts, descriptor/port cleanup, and no fourth probe/announcement/goodbye. No host networking,
 account, peer protocol, startup, controller handoff or publication capability changes are implied.
+
+Included in 0.6.8, F1j adds pure original-controller-bound handoff checks and ignored
+`federation_mdns_controller_retained_network_tdd`. Explicit `--with-controller-retained` adds ten
+isolated cases and can combine with every old selector; default selections are unchanged. Nine
+ordinary cases require all five capability sets zero. They cover a quiet terminal controller with
+the same socket inodes and no fourth send, Drop release, conflict/cooldown followed by explicit
+retained quiet retry, queued late multicast/unicast responses and multicast proposals, cancellation,
+the nonrenewing review deadline and occupied-port zero-send refusal. One NET_ADMIN-only case renames
+the owned interface after handoff, requires permanent release and restores its exact name before
+the original mutation tests. Existing peer RPCs and packet-capture limits stay unchanged. These tests
+do not establish process-wide limiting, publication, pairing or physical-LAN/deployed acceptance.
+
+Included in 0.6.8, F1k adds pure `federation_probe_cli_{args,output}_tdd` and no-host-network
+`federation_probe_cli_command_tdd` cases. They cover the new 23-argument shape, exact byte/count
+bounds, original duplicate/unknown-field decoding, endpoint/name/time/TXT preparation, fixed inert
+observations, process-gate priority and broken pipes while preserving old browse tests.
+`federation_probe_cli_network_tdd` stays entirely ignored by default; explicit `--with-probe-cli`
+selects ten new cases. That selector independently requires the same existing subordinate-ID mapping
+and nested non-root capability-free process as `--with-cli`, without implicitly selecting old CLI cases.
+Coverage includes exact quiet proposals/timing/output, early/third-probe unicast responses, competing
+proposals, malformed input, occupied-port zero-send refusal, identity-before-expired-input rejection,
+missing interfaces and SIGINT/SIGTERM cleanup with no false quiet output. Actual traffic is confined
+to disconnected namespaces; no host LAN, publication, automatic retries or pairing is exercised.
+
+Included in 0.6.8, F1l's default `federation_mdns_announcement_schedule_tdd` is pure and opens no sockets.
+It covers two caller-reported intents, completion-relative spacing, nanosecond clock/wait bounds,
+frozen F0 lifetime/timeout, cancellation, invalid call order and permanent closure. Source guards
+keep scheduling out of live probes, retained contexts, sockets, CLI and startup. These checks do
+not validate actual announcement delivery, query responses, conflict resolution or withdrawal.
+
+Included in 0.6.8, F1m's default `federation_mdns_response_conflict_tdd` remains pure. It covers all three
+frozen unique tuples, each RR section, duplicate/equal/different records, TXT raw-byte differences,
+SRV numeric and compressed/case-folded name equality, receive-header compatibility, zero-length
+TXT and complete packet/record/question bounds. Earlier conflicts cannot hide later malformed
+known IN RDATA. Unknown types/non-IN data remain opaque, and old probe behavior stays unchanged.
+No live sender, ongoing conflict resolution, TTL rescue, cross-type CNAME logic or LAN acceptance
+is established by these cases or the source guard keeping the entry disconnected from I/O.
+
+Included in 0.6.8, F1n's default `federation_mdns_query_plan_tdd` covers exact/ANY direct matching,
+Answer-only suppression with odd/capped TTLs and no summing of low TTLs, full known-IN validation,
+compressed names and separate context reasons. No-match and all-suppressed sets remain distinct;
+unsupported routing/sequence cases cannot become empty success. Keep the old F1m conflict tests
+alongside the shared private record validator. No I/O, actual query response, NSEC/additionals,
+continuous cache, timing, rate control or physical-LAN acceptance is established by these cases.
+
+Included in 0.6.8, F1o's default `federation_mdns_query_response_tdd` checks separate Answer/Additional
+sections, all direct/known masks, dependency suppression without revival, canonical frozen data,
+fresh/odd/capped TTLs and context/error priority. Independent byte fixtures preserve the old
+announcement, probe and goodbye layouts. Source guards keep response preparation out of live
+I/O, CLI and startup; no MTU, network response delivery or complete responder acceptance is claimed.
 
 ## Live and release acceptance
 

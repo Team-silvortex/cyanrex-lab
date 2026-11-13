@@ -8,7 +8,7 @@ operate their own nodes and workspaces; code remains one optional Task payload. 
 stays local to its teaching domain, not a global owner of peers or their private resources.
 
 **F0 and F1a in 0.6.6 are pure Rust preparation modules**, not a running federation service.
-F1a adds compact TXT data handling and a bounded local candidate cache; product version is 0.6.7.
+F1a adds compact TXT data handling and a bounded local candidate cache; product version is 0.6.8.
 The separate F1b adapter adds an explicitly called Linux IPv4 single-query browser;
 it is not mounted in either application. Device pairing, traversal, relay transport and cross-authority
 workspace access are subsequent slices.
@@ -19,6 +19,12 @@ F1f adds a separate explicit exact-local unicast receiver, not a running probe c
 F1g adds an explicit bounded three-probe library attempt, not an announcer or ownership permit.
 F1h adds finite caller-driven retries with frozen lifetime/interface and conflict cooldown, not publication.
 F1i adds a separate original-socket quiet continuation with bounded receive-only review, not announcements.
+Included in source 0.6.8, F1j connects explicit controller attempts to that same quiet continuation without renewing original bounds.
+Included in source 0.6.8, F1k adds an explicit one-round `probe-lan` diagnostic command; it sends proposals, not service announcements.
+Included in source 0.6.8, F1l adds a pure two-announcement timing plan, without a sender or publication permit.
+Included in source 0.6.8, F1m adds pure response-conflict comparison against three frozen records, without a listener or sender.
+Included in source 0.6.8, F1n adds pure direct-query selection and single-packet known-answer suppression, without a responder.
+Included in source 0.6.8, F1o prepares bounded multicast response bytes from fresh private query analysis, without sending them.
 Older `Unreleased` labels below preserve implementation stages and dated evidence, not pending source inclusion.
 
 ## Trust and responsibility
@@ -440,18 +446,306 @@ Checks are adjacent observations, not real-time preemption or atomic protection 
 
 Existing `probe_once` and F1h `attempt` still drop all sockets before returning; the local F1h guard
 does **not** escape into a retained handle. The new independent entry inherits no controller retry
-history or 30-second bound. Neither a quiet observation nor that controller can manufacture this
-context. This is not process-wide limiting, a publication permit, a complete responder or an
+history or 30-second bound. Neither a copied quiet observation nor an old `attempt` result can
+manufacture this context. This is not process-wide limiting, a publication permit, a complete responder or an
 announcement/defense/withdrawal lifecycle. Those require a separately bounded retained-I/O composition;
 this short window cannot serve as an indefinite lease. No CLI/startup/pairing/grant is added.
 `--with-retained` selects guarded isolated tests only, not a product networking option.
+
+## F1j explicit controller-to-retained handoff
+
+`MdnsProbeController::attempt_retained(cancelled)` uses the same explicit admission, frozen first
+interface, four-attempt limit and five-second conflict cooldown as `attempt`. Conflicts return no
+handle; errors close the controller except for unchanged `CoolingDown`. The old `attempt`,
+`probe_once` and independent `probe_retained_once` retain their existing behavior.
+
+Only a live quiet branch transfers its original two sockets, queued packets and spent per-attempt
+ingress counters into `MdnsRetainedProbe`. A private concrete `ControllerReviewBounds` moves the
+original controller lifetime, monotonic origin and final watermark into that handle; its thirty-second
+deadline is still measured from first controller use, not quiet completion. The original interface
+pin is retained without reopening sockets. No callback, copied observation or caller-supplied bound
+can manufacture this context, and no lease or packet allowance is refreshed at handoff.
+
+Every active receive-only `review` checks those controller bounds alongside the unchanged original
+1–2 second attempt timeout, absolute/monotonic F0 expiry and fixed 250 ms quiet-review window. A
+relevant claim, malformed/provenance-invalid packet, cancellation, interface change or clock/deadline
+failure releases both channels permanently. Quiet review, `close` and Drop send nothing.
+
+The returned handle borrows the controller's frozen announcement, preventing another mutable
+controller call until the handle is dropped. Quiet completion leaves the controller terminal;
+its reported state describes the completed attempt, not continued handle validity or idle monitoring.
+Closing/failing/dropping the handle never creates another retry. Idle expired handles still require
+review, close or Drop to release descriptors. These remain adjacent checks, not real-time preemption.
+
+Explicit `--with-controller-retained` selects isolated network tests only. This adds no product CLI,
+startup listener, announcement/defense/withdrawal lifecycle, publication permit, node proof, pairing
+or Workspace grant. Independent controllers still do not share a process-wide rate limit.
+
+## F1k explicit one-round probe command
+
+`cyanrex-discovery probe-lan` makes the existing `probe_once` adapter explicitly callable from the
+low-privilege command. It does not call the retry controller or retain a quiet handle. Old
+`browse-lan` arguments and snapshot schema remain unchanged; global `--help` describes both modes
+within 512 bytes. Neither mode is installed or started automatically.
+
+The new mode requires exactly **23 arguments**, in this fixed order. This is a template, not a
+ready-to-run command: review your exact non-root identity/groups and interface, and supply a fresh
+nonsecret original F0 declaration as `REVIEWED_F0_JSON`. Do not run it unchanged or through sudo.
+
+```bash
+engine/target/debug/cyanrex-discovery probe-lan \
+  --uid 1000 --gid 1000 --groups 27,1000 \
+  --interface enp3s0 --address 192.168.1.10 --timeout-ms 2000 \
+  --instance node-one --host host-one --port 4433 --ttl 60 \
+  --advertisement "$REVIEWED_F0_JSON"
+```
+
+This explicit argument is not an environment default or a file/stdin input. Only its F0 JSON value
+may occupy **4,096 bytes**; all other arguments stay at **2,048 bytes**, with **16,384 total**. The
+parser reads at most one excess argument and rejects non-UTF-8, missing/extra/reordered flags and
+aliases. Declaration data is nonsecret and may be visible in the local process argument list: never
+put credentials or private Task content there. Diagnostics never reflect that declaration or labels.
+
+The original non-root process gate and before-runtime check precede declaration preparation and
+network work. `prepare_at(now)` uses strict original-byte F0 decoding and the existing announcement
+profile: canonical labels, TTL 1–120, exactly one RFC1918 IPv4 hint equal to `--address:--port`,
+fresh supplied issued/expiry values, and the complete TXT budget. It does not create or refresh a
+claim, key or timestamp. Timeout is **1,000–2,000 ms**, counting the existing attempt setup/schedule;
+prefer two seconds. Interface/MTU, entropy, exclusive unicast port, timing and ingress checks remain
+the existing adapter's responsibility. Setup/output backpressure is not a whole-command hard deadline.
+
+Success buffers one JSON document plus newline, at most **512 bytes**, with `schema_version: 1`,
+`kind: "unverified_lan_probe_observation"`, `observation_only: true`, `verified: false`,
+`name_ownership_verified: false`, `publication_permitted: false` and `announcement_sent: false`.
+`observation` is only `no_conflict_observed`, `existing_response` or `competing_probe`. All three
+completed observations exit **0**; that means the diagnostic completed, not that a name is available.
+No raw input/packet, peer identity, reusable lease or guaranteed three-send count is returned.
+
+Malformed/expired preparation is **64**, unsafe process **77**, clock/probe/output failure **74**,
+unsupported platform **69**. Failures emit no observation; consumers still need complete JSON and
+exit 0 because output interruption may truncate stdout. The calling thread is rechecked after the
+probe and before output; no worker/child/signal handler, retry, rename, fourth probe, announcement,
+goodbye, publication permit, pairing or grant is installed. Independent invocations share no history.
+
+Only `scripts/test-federation-mdns-netns.sh --with-probe-cli` selects the ignored real CLI fixture.
+It requires the same pre-existing subordinate-ID mapping as the old CLI fixture, even when selected
+without `--with-cli`; that old selector still selects only its original tests. Missing prerequisites
+fail instead of editing accounts, relaxing the process gate or falling back to the host LAN.
+
+## F1l pure initial-announcement schedule
+
+`MdnsAnnouncement::initial_schedule(initial_wall, timeout)` prepares a borrowing
+`MdnsAnnouncementSchedule<'_>` from the original frozen declaration and caller-supplied `Duration`
+values. Construction is pure: no clock, interface, socket, probe observation or retained handle is
+read or accepted. The fixed **2–5 second inclusive** timeout is a project planning budget, not an RFC rule or
+promise of completion. A shorter remaining F0 lease may validly construct a plan that later expires.
+
+The plan freezes the declaration's original whole-second F0 expiry and preserves the initial wall
+sample's fractional part: its monotonic lease is exactly `expiry - initial_wall`. Separate wall and
+elapsed watermarks reject either clock moving backwards. Every `step(elapsed, wall, cancelled)`
+and `record_completion(elapsed, wall, cancelled)` checks cancellation, clock watermarks, absolute
+F0 expiry, frozen monotonic lease and timeout, including the step that would return `Complete`.
+These supplied samples do not monitor idle time or preempt work between calls.
+
+`AnnouncementStep` is only `Wait(Duration)`, `Prepare { ordinal: 1 | 2 }` or `Complete`. The first
+eligible step requests preparation of ordinal 1. Its caller must explicitly report completion;
+the second due time is that reported completion plus **one second**. Late calls never schedule
+catch-up or periodic announcements. `Wait` is capped by the minimum remaining time to the next due
+step, timeout, monotonic F0 lease and wall-clock F0 expiry. The spacing follows the initial pair in
+[RFC 6762 §8.3](https://www.rfc-editor.org/rfc/rfc6762.html#section-8.3), without implementing its sender.
+
+`Prepare` contains no bytes, TTL or sending authority. A caller-reported completion is not a send
+receipt or proof that any peer received a packet. Calling `step` while preparation is pending,
+completion without a pending preparation, repeated completion or any validation error closes the
+plan permanently. After two reported completions, `step` can return `Complete` once; later calls
+return `Closed`. `close()` is idempotent local state closure, with no I/O or goodbye.
+
+The schedule's elapsed origin is new and independent of the probe/controller origins. A future
+composition must preserve the retained **250 ms**, attempt **1–2 second** and controller **30-second**
+bounds; constructing this plan cannot reset or extend them. Actual sending, continued query handling,
+[conflict resolution](https://www.rfc-editor.org/rfc/rfc6762.html#section-9) and
+[withdrawal](https://www.rfc-editor.org/rfc/rfc6762.html#section-10.1) need a separately reviewed
+lifecycle. No CLI, application startup, source version, identity or permission changes in this slice.
+
+## F1m pure response-conflict observation
+
+`MdnsAnnouncement::observe_response_conflict(bytes)` is a pure, clock-free comparison against the
+original frozen records. `ResponseConflictObservation` is only `NoConflictingRecord` or
+`ConflictingRecord`. This is separate from `observe_probe_packet`: the old probe observer still
+reports an identical relevant response as `ExistingResponse`. That conservative probe observation
+cannot be substituted for announcement-phase conflict comparison. Identical RDATA is not a conflict;
+different RDATA for a protected unique record is, following
+[RFC 6762 §6.6](https://www.rfc-editor.org/rfc/rfc6762.html#section-6.6) and
+[§9](https://www.rfc-editor.org/rfc/rfc6762.html#section-9).
+
+Only these three frozen IN tuples are compared, in any resource-record section:
+
+| Protected owner/type | RDATA equality |
+|---|---|
+| Frozen host / A | Exactly four address bytes |
+| Frozen instance / SRV | The first six priority/weight/port bytes, then the decoded target name with ASCII case folding |
+| Frozen instance / TXT | Exact original bytes, including string-length bytes; no case folding, sorting or F0 decoding |
+
+SRV priority, weight and port accept every `u16` value; candidate-admission restrictions, including
+nonzero-port policy, are not receive-side syntax rules. SRV targets can use valid name compression
+within the complete packet, as described by [RFC 6762 §18.14](https://www.rfc-editor.org/rfc/rfc6762.html#section-18.14).
+Owner and target names retain the existing ASCII/no-control profile, not the broader general mDNS
+character handling in [§16](https://www.rfc-editor.org/rfc/rfc6762.html#section-16). TXT is opaque data;
+both zero-length TXT RDATA and `[0]` are accepted on reception and differ from the frozen nonempty
+TXT. Reception does not apply the local F0 application profile; see
+[RFC 6763 §6.1](https://www.rfc-editor.org/rfc/rfc6763.html#section-6.1) and
+[§6.5](https://www.rfc-editor.org/rfc/rfc6763.html#section-6.5).
+
+The complete framing is bounded to **4,096 bytes / 8 questions / 64 resource records**. Every IN
+A, PTR, TXT and SRV record receives basic RDATA syntax validation, including unrelated owners and
+records after an observed difference. Errors take precedence: there is no early conflict return
+that could hide a later malformed record. Other types, including CNAME, AAAA and NSEC, retain
+bounded opaque RDATA; non-IN records do not receive IN-specific RDATA rules. Identical duplicates
+are harmless, while any differing protected record is conflicting. TTL and cache-flush bits are
+excluded from equality; a differing TTL-zero record is still conflicting.
+
+This observer applies the receive-side header rules in
+[RFC 6762 §18](https://www.rfc-editor.org/rfc/rfc6762.html#section-18): ID and AA/TC/RD/RA/Z/AD/CD
+are ignored, with QR 1, OPCODE 0 and RCODE 0 required. Queries, nonzero opcode or nonzero rcode
+return an error, never `NoConflictingRecord`. Ignoring TC does not admit truncated data: all declared
+records and the final byte boundary must still be complete. These rules do not change old probe
+header acceptance or mount this observer into an existing receiver.
+
+`NoConflictingRecord` means only that this packet contained no differing member of those three
+tuples. It establishes no name availability, identity, previous send, ownership or permission. Cross-type CNAME
+conflicts and opaque-type semantics are not detected. Low-TTL rescue, known-answer suppression,
+query responses, probe tiebreaking, automatic renaming and retained continuous listening remain
+separate. Actual sending, conflict resolution and withdrawal still need their own reviewed lifecycle.
+This pure entry stays separate from I/O, CLI, application startup and the F1l schedule; no version changes.
+
+## F1n pure direct-query plan
+
+`MdnsAnnouncement::plan_query(bytes, source_port, multicast_destination, now)` plans against the
+original four frozen records without clocks or I/O. `MdnsQueryPlan` is either
+`Multicast { requested, suppressed }` or `RequiresContext(MdnsQueryContext)`. Both record sets are
+`MdnsQueryRecordSet`, with public boolean `ptr`, `srv`, `txt` and `a` fields. They contain no TTL,
+packet bytes, delivery result, ownership proof or sending permission. Source port and destination
+are caller declarations, not verified ingress provenance; source port zero is `InvalidConfig`.
+
+The complete packet retains **4,096-byte / 8-question / 64-record** framing. This query profile
+requires QR 0, OPCODE 0 and RCODE 0; ID and AA/RD/RA/Z/AD/CD are ignored under
+[RFC 6762 §18](https://www.rfc-editor.org/rfc/rfc6762.html#section-18). TC requests context, never
+permission to omit declared bytes. Original F0 freshness and all basic IN A/PTR/TXT/SRV validation
+are checked before either context reporting or selection, including unrelated owners and later
+records. Unknown types and non-IN RDATA remain bounded opaque data; OPT class fields are not decoded.
+An Answer-section IN record of one of those four types with its cache-flush high bit set is an
+error in this strict query profile, following [§10.2](https://www.rfc-editor.org/rfc/rfc6762.html#section-10.2).
+That rule does not change F1m's response comparison, which still ignores cache-flush in equality.
+
+Any one of these context flags diverts the **whole packet**, even for an unrelated QU question or
+Authority record; no partial multicast selection is returned:
+
+| `MdnsQueryContext` field | Meaning |
+|---|---|
+| `truncated` | TC is set |
+| `unicast_question` | Any question has the QU high bit |
+| `authority_records` | Any record appears in the Authority section |
+| `legacy_port` | The declared source port is not 5353 |
+| `direct_unicast` | `multicast_destination` is false |
+| `no_questions` | The question section is empty |
+
+These branches require handling beyond one multicast QM packet: see
+[RFC 6762 §5.4](https://www.rfc-editor.org/rfc/rfc6762.html#section-5.4),
+[§5.5](https://www.rfc-editor.org/rfc/rfc6762.html#section-5.5),
+[§6.7](https://www.rfc-editor.org/rfc/rfc6762.html#section-6.7) and
+[§7.2](https://www.rfc-editor.org/rfc/rfc6762.html#section-7.2). Returning flags does not implement
+unicast routing, legacy replies, probe defense or multipacket known-answer collection.
+
+Without context flags, exact decoded owner/type questions with class IN or ANY select direct
+records; qtype ANY selects every matching frozen type, per
+[RFC 6762 §6.5](https://www.rfc-editor.org/rfc/rfc6762.html#section-6.5). Repeated questions only set
+the same booleans. A service PTR question selects PTR alone; an instance ANY question selects SRV
+and TXT, and a host ANY question selects A. PTR does not automatically select SRV/TXT/A additionals;
+the additional-record behavior in [RFC 6763 §12](https://www.rfc-editor.org/rfc/rfc6763.html#section-12)
+remains separate.
+
+Known-answer suppression uses only equal IN Answer records for the same frozen tuple, following
+[RFC 6762 §7.1](https://www.rfc-editor.org/rfc/rfc6762.html#section-7.1). PTR compares its decoded
+target to the frozen instance; A/SRV/TXT retain the equality rules above. At this supplied sample,
+`local_ttl = min(original_requested_ttl, F0_expiry - now)`; `now` must be at least the original
+preparation time and strictly before F0 expiry. A matching answer suppresses its record only when
+`2 * u64(known_ttl) >= local_ttl`, so odd local TTLs require the half threshold rounded up. Several
+low-TTL duplicates cannot add together; any one equal answer above threshold suffices. Authority
+and Additional records never supply suppression. The final `suppressed` set is intersected with
+`requested`, so it can contain only requested records.
+
+Empty `requested` means no direct match; nonempty `requested == suppressed` means every selected
+direct record passed this suppression test. Neither means that a complete responder needs no
+response. NSEC negatives, low-TTL rescue, additionals, rate control, QU routing, multipacket caching
+and probe defense are not implemented here. This stateless call records no cross-call clock
+watermark and does not keep its snapshot valid after return.
+
+Private `records.rs` shares only basic IN syntax and equality for the four frozen tuples. F1m still
+treats differences in only its three unique tuples as conflicts; differing shared PTR data is not
+a conflict. Old probe, CLI, wire, retained and schedule behavior stays unchanged. This adds no
+receiver, sender, startup path, dependency or version change.
+
+## F1o pure query-response preparation
+
+`MdnsAnnouncement::prepare_query_response(bytes, source_port, multicast_destination, now)` performs
+one fresh private analysis of the original query. It does not accept a publicly constructible
+`MdnsQueryPlan` as authority to encode. Framing, header, F0 freshness, known IN syntax, strict query
+cache-flush rules and whole-packet context checks remain the F1n rules and precede every successful
+outcome. Source port and destination remain unverified caller declarations. The same supplied `now`
+determines the local TTL and original F0 expiry bound for both analysis and encoding.
+
+`MdnsQueryResponse` has four outcomes:
+
+| Outcome | Meaning |
+|---|---|
+| `NoMatchingQuestion` | No direct frozen record was requested |
+| `AllDirectAnswersSuppressed` | Direct records were requested, but all passed known-answer suppression |
+| `RequiresContext(MdnsQueryContext)` | At least one F1n context flag requires processing outside this profile |
+| `Packet(Vec<u8>)` | One complete bounded response was prepared from frozen local records |
+
+Let `D` be directly requested records and `K` all four frozen records with an equal known answer
+whose TTL satisfies `2 * u64(known_ttl) >= local_ttl`. Unlike F1n's public `suppressed` projection,
+this private `K` retains qualifying records even when not directly requested. Direct Answers are
+`A = D - K`. Empty `D` returns `NoMatchingQuestion`; empty `A` returns
+`AllDirectAnswersSuppressed`. Neither branch creates an Additional-only packet.
+
+Only direct Answers that survive suppression generate dependencies:
+
+| Surviving direct Answer | Dependencies |
+|---|---|
+| PTR | SRV, TXT and A |
+| SRV | A |
+| TXT or A | None |
+
+The Additional set is `dependencies - K - A`: known answers suppress additionals too, and an
+Answer is not duplicated as an Additional. This dependency/suppression formula is the policy of
+this slice, drawing on [RFC 6763 §12](https://www.rfc-editor.org/rfc/rfc6763.html#section-12) and
+[RFC 6762 §7.1](https://www.rfc-editor.org/rfc/rfc6762.html#section-7.1). It does not turn a
+suppressed PTR into a reason to encode its dependencies alone.
+
+Each section uses fixed PTR, SRV, TXT, A order. The header has ID 0, flags `0x8400`, zero questions
+and Authority records, and Answer/Additional counts matching the selected sets. PTR uses IN with
+cache-flush clear; SRV/TXT/A use `0x8001` in either section. Every owner, RDATA and TTL comes from
+the frozen local declaration and current bounded TTL; no input RDATA is copied into the response.
+This is a prepared multicast projection under
+[RFC 6762 §6](https://www.rfc-editor.org/rfc/rfc6762.html#section-6) and
+[§10.2](https://www.rfc-editor.org/rfc/rfc6762.html#section-10.2), not a transmission. Each unique
+RRSet currently has one local member; future multi-member RRSets require review of complete-set
+and cache-flush constraints. The complete encoded packet is bounded to **4,096 bytes**, but can
+still exceed an actual interface MTU.
+
+`NoMatchingQuestion` and `AllDirectAnswersSuppressed` are limited direct-answer outcomes, not proof
+that a complete responder needs no response. Prepared bytes likewise supply no source provenance,
+name ownership, sending permission, send timing or rate control. QU/legacy handling, probe defense,
+live I/O and a responder lifecycle remain separate. The old CLI, probe and schedule paths do not
+call this entry; no application startup, dependency or version changes are added.
 
 ## Delivery stages
 
 | Stage | Scope | State |
 |---|---|---|
 | F0 | Bounded announcements, compatibility and policy-filtered unverified hints | Pure preparation module; not mounted |
-| F1 | Opt-in LAN mDNS/DNS-SD adapter, bounded candidate cache, expiry and interface controls | Source 0.6.7 includes F1a TXT/cache, F1b Linux single query, F1c CLI/F1d–e preparation/F1f unicast/F1g probing/F1h finite retries/F1i retained quiet review; publication lifecycle, broader interop and UI remain |
+| F1 | Opt-in LAN mDNS/DNS-SD adapter, bounded candidate cache, expiry and interface controls | Source 0.6.8 includes F1a–F1o: F1j preserves controller quiet bounds, F1k exposes one diagnostic probe round, F1l prepares announcement timing, F1m compares response RDATA, F1n plans direct queries and F1o prepares response bytes only; sending/publication lifecycle, broader interop and UI remain |
 | F2 | Persistent node key, challenge proof, explicit invitation/approval, revocation and replay defense | Planned; no paired-node registry yet |
 | F3 | Native direct connection and traversal, explicitly configured self-hosted encrypted relay fallback | Planned; no transport dependency selected |
 | F4 | Narrow cross-authority workspace grants and separately verified resource commands | Planned; current same-authority rejection remains |
@@ -567,10 +861,85 @@ was corrected for multiline formatting; the previous ten stayed unchanged. This 
 unannounced continuity, not controller handoff, publication, full backend/frontend/SDK, physical LAN,
 authentication, deployment or new remote CI acceptance. No application database or host LAN was used.
 
+The **2026-11-13 Unreleased F1j scoped run** passed **16** new pure cases (14 original-controller
+review-bound/active-guard checks and two retained-entry checks), alongside **453** preceding selected
+Rust cases: **469** total, no failures, ignored cases or warnings. All **10** new controller-retained
+network cases and the preceding **55** passed in fresh disconnected namespaces (**65** distinct).
+The new selector alone separately repassed the overlapping **17**; this is not additional coverage.
+Nine new ordinary cases were capability-free; the separate owned-netns NET_ADMIN rename case
+required closure and exact-name restoration before the old mutation cases. The new target's default
+run confirmed **10 ignored**, no network. Common/format passed **893** script checks plus tooling and
+formatting. Missing API/bounds and missing active-guard-helper regressions failed before implementation;
+the guard extraction retains original pre/body/post ordering. Source guards now explicitly permit only
+the new handoff and retain old-entry/no-startup/no-sender checks. Independent read-only review found no
+blocking issue. This is not full backend/frontend/SDK, publication, physical LAN, node authentication,
+pairing, traversal, deployment or remote CI acceptance. No application database or host LAN was used.
+
+The **2026-11-13 Unreleased F1k scoped run** passed **24** new default Rust cases (15 pure arguments/
+preparation, two output projections and seven no-host-network command cases), plus **469** preceding
+selected cases: **493** total, no failures, ignored cases or warnings. All **10** new real probe-CLI
+cases and the preceding **65** passed together in fresh disconnected namespaces (**75** distinct).
+The new selector alone separately passed the overlapping **17**; this is not extra coverage.
+All new CLI cases used the nested non-root, capability-free process; its target's default run
+confirmed **10 ignored**, no network. Common/format passed **894** script checks plus tooling and
+formatting. Missing modules and old-command dispatch tests failed before implementation; the latter
+failed with the actual old 64 result where the gated probe required 77, not a fixture bypass.
+Old browse argument/output files and the previous retained-controller core stayed unchanged.
+The seven-selector runner passed 128 selection combinations and nine invalid/duplicate argument checks;
+independent read-only review found no blocking issue. This is not full backend/frontend/SDK, physical
+LAN, generic mDNS interop, publication, pairing, traversal, deployment or remote CI acceptance.
+
+The **2026-11-13 Unreleased F1l scoped run** passed **43** new pure schedule cases plus the
+preceding **493** selected Rust cases: **536** total, no failures, ignored cases or warnings.
+Common/format passed **895** script checks plus tooling and Rust formatting; the focused source/
+architecture selection passed **20** overlapping guards. Missing API and source-guard regressions
+failed before implementation. The first combined guard run found only unsynchronized generated
+course copies; synchronization and the unchanged assertion made it green. Independent read-only
+review found no blocking issue. Ten prior F1k CLI/test/runner fingerprints remained identical.
+No real-network suite was rerun in this pure slice; prior dated network acceptance is unchanged.
+This is not a full backend/frontend/SDK gate, an announcement sender, physical-LAN interoperability,
+pairing, traversal, deployment or remote CI acceptance. No application database or host LAN was used.
+
+The **2026-11-13 Unreleased F1m scoped run** passed **63** new pure response-comparison cases plus
+the preceding **536** selected Rust cases: **599** total, no failures, ignored cases or warnings.
+Common/format passed **896** script checks plus tooling and Rust formatting; the focused **21**
+source/architecture guards are overlapping coverage. Missing API tests failed first, followed by
+three actual receive-compatibility failures for ID, ignored header bits and zero-length TXT; all
+then passed without changing the old probe rules. Independent read-only review found no blocking
+issue. Ten prior F1k CLI/test/runner and three F1l schedule/test fingerprints remained identical.
+No real-network suite was rerun in this pure slice, and prior dated network acceptance is unchanged.
+These results are not a full backend/frontend/SDK gate, live conflict-resolution/announcement
+lifecycle, general DNS validation, physical-LAN interoperability, pairing, traversal, deployment
+or remote CI acceptance. No application database or host LAN was used.
+
+The **2026-11-13 Unreleased F1n scoped run** passed **59** new pure query-selection cases plus
+the preceding **599** selected Rust cases: **658** total, no failures, ignored cases or warnings.
+Common/format passed **897** script checks plus tooling and Rust formatting; the focused **22**
+source/architecture guards are overlapping coverage. Missing API tests failed before implementation.
+The original **63** F1m cases also passed after private RDATA extraction; its guard now follows the
+explicit shared validator instead of requiring decoding to stay in the old file. Independent read-only
+review found no blocking issue. Sixteen prior CLI/runner, schedule and conflict-test fingerprints
+remained unchanged. No real-network suite was rerun or prior dated network acceptance promoted.
+These results are not a full backend/frontend/SDK gate, an actual query responder, known-answer
+sequence collector, physical-LAN interoperability, pairing, traversal, deployment or remote CI
+acceptance. No application database or host LAN was used.
+
+The **2026-11-13 Unreleased F1o scoped run** passed **62** new pure response-preparation cases
+plus the preceding **658** selected Rust cases: **720** total, no failures, ignored cases or warnings.
+One new case checks all **256** direct/known masks; independent byte fixtures preserve old
+announcement, probe and goodbye layouts. Common/format passed **898** script checks plus tooling
+and Rust formatting; the focused **23** source/architecture guards overlap that coverage. Three
+initial missing-API cases failed before implementation. Independent review found no product
+blocker; a same-instance cross-call time regression was strengthened and passed. The F1n guard
+now follows the private analysis owner while preserving complete validation and public projection.
+No real-network suite was rerun. This is not the full backend/frontend/SDK gate, actual response
+delivery, live MTU validation, a complete responder, pairing, traversal, deployment or remote CI
+acceptance. No application database or host LAN was used; version, commits and tags are unchanged.
+
 The [architecture map](architecture-map.md), [platform network](platform-network.md) and
 [security guide](security.md) retain the current host and authorization boundaries. F0 adds no route,
 listener, configuration flag, schema, permission, migration, runtime dependency or deployed service;
 the same limits apply to F1a. F1b, including an explicit F1c invocation, still opens only its requested
 multicast socket; F1f's separate exact-local receiver requires an explicit library call. Existing
 host routes, authentication, storage, dependencies and application startup remain unchanged;
-F1g/F1h/F1i's separate explicit library calls add no caller authority or product startup integration.
+F1g/F1h/F1i and F1j's explicit library calls add no caller authority or product startup integration.

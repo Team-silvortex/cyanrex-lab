@@ -1,6 +1,6 @@
 # Security and deployment boundaries
 
-Source **0.6.7** includes F1c–F1i described below. Older `Unreleased` labels retain implementation
+Source **0.6.8** includes F1c–F1o described below. Older `Unreleased` labels retain implementation
 stages, not pending source inclusion or deployed acceptance; no announcement service is enabled.
 
 Included in 0.6.6, [federation F0/F1a](federation-discovery.md) parses bounded claims/TXT and caches only
@@ -29,14 +29,57 @@ Unreleased F1h adds per-object explicit retry history: four admissions within th
 first use, and five seconds after conflicts. It freezes the original claim lease and interface;
 active I/O checks both across attempts. Early `CoolingDown` does no interface/entropy/socket work;
 other errors close. Checks are adjacent observations, not real-time syscall preemption. New objects
-and direct `probe_once` calls bypass this history: no process-wide limiter is claimed. Quiet finish
+and direct `probe_once` calls bypass this history: no process-wide limiter is claimed. Quiet `attempt` finish
 retains no sockets or publication authority; no announcement, automatic retry, pairing or grant is added.
 Unreleased F1i independently retains a quiet attempt's original dual I/O for receive-only review.
 The fixed 250 ms window cannot renew the original timeout, F0 expiry or ingress accounting. Relevant
 late claims/errors close and release both channels; no public constructor, clone, FD export or sender
 exists. Even expired idle handles keep FDs until close/Drop or a closing review; a quiet review keeps
-them. There is no background validity/cancel monitoring. F1h's guard/history does not transfer here.
+them. There is no background validity/cancel monitoring. The independent F1i entry inherits no F1h history.
 This continuity preparation is not publication, retained name authority or a complete responder.
+
+Included in 0.6.8, F1j explicitly adds `MdnsProbeController::attempt_retained`: only a live quiet branch
+moves original dual I/O and concrete frozen controller bounds into short receive-only review. The
+original thirty-second origin, F0 expiry/watermarks, interface pin, per-attempt quota and 250 ms
+window are not renewed. No callback escapes, copied observation creates a handle, or sender is added.
+Quiet finishes the controller; handle failure/release cannot restart it. Idle FDs still require
+review/close/Drop, not background monitoring. No CLI/startup, publication, pairing or grant is added.
+
+Included in 0.6.8, F1k's explicit `probe-lan` command gates the process before strict original F0 preparation
+and one `probe_once` call; it exposes neither controller nor retained context. The fixed bounded
+JSON reports only an unverified historical observation, with ownership/publication/announcement
+flags false. Nonsecret declaration argv is bounded and never reflected; no file/stdin/environment
+input, timestamp renewal, automatic retry, service announcement, identity proof or grant is added.
+Old browse arguments/output remain unchanged. Only the isolated `--with-probe-cli` fixture enables
+its real network tests, using existing subordinate-ID authorization and the unchanged process gate.
+
+Included in 0.6.8, F1l's `initial_schedule` is only a caller-driven two-intent model over frozen F0 expiry
+and an explicit 2–5 second planning budget. `Prepare` has no bytes/TTL/permission; caller-reported
+`record_completion` is not a send receipt. Cancellation, clock rollback, expiry, timeout or invalid
+call order closes permanently; no model progress renews a declaration or the old probe/controller
+bounds. It has no I/O, retained-context conversion, startup hook or actual withdrawal. Real
+announcement/query/conflict handling still needs a separately reviewed live composition.
+
+Included in 0.6.8, F1m's `observe_response_conflict` compares only three frozen unique IN tuples.
+It validates all known IN A/PTR/TXT/SRV records before returning, including after a conflict;
+identical data is not conflict, and no result is a sending/ownership permit. Unknown types and
+non-IN RDATA stay bounded opaque data; `NoConflictingRecord` excludes neither cross-type semantics
+nor required TTL rescue. It has no provenance/time checks, continuous monitoring or live action,
+and leaves the old conservative probe observer, CLI, retained bounds and startup unchanged.
+
+Included in 0.6.8, F1n's `plan_query` is a pure direct-record selection snapshot with Answer-only
+known-answer suppression. Supplied source-port/destination metadata is not provenance; QU, TC,
+Authority, legacy/direct-unicast and questionless cases explicitly require more context. Frozen
+declaration checks and complete known-IN validation precede a successful result. No selected set
+is a send permit, reusable TTL/clock lease, received record cache or complete responder decision.
+Private shared record validation preserves F1m, while probes, CLI, sockets and startup stay unchanged.
+
+Included in 0.6.8, F1o's `prepare_query_response` revalidates the raw query once; it never accepts a public
+plan as authority. Frozen local data alone supplies positive Answer/Additional records with one
+bounded TTL sample, full known-answer suppression and no Additional-only packet. Context and
+complete validation precede nonpacket results too. Prepared bytes are not ingress/ownership proof,
+a send receipt, live MTU validation or sending permission; no responder, scheduling, CLI or startup
+wiring is added. Current unique RRSets have one member; multi-member flush rules remain separate.
 
 Source **0.6.6** includes loopback/TLS hosting, limited Sessions, private Task commands and retained/
 Task-bound text publication. Default CLI remains eight routes/seven response lanes; only explicit

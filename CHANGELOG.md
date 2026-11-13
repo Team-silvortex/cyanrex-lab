@@ -5,6 +5,40 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.6.8] - 2026-11-13
+
+This patch source release includes F1j–F1o: original-bound controller quiet handoff, explicit probe
+diagnostics, pure initial-announcement timing, response comparison, direct-query planning and frozen
+response-byte preparation. It also consolidates private DNS decoding and clarifies scoped disk cleanup.
+These are not a live announcement/query responder, verified pairing, traversal or workspace grants.
+See [local release validation](reports/releases/0.6.8/README.md); remote and deployed acceptance remain separate.
+
+### Changed
+
+- Add pure query-response preparation with distinct direct Answer and DNS-SD Additional sections,
+  complete frozen known-answer suppression and one fresh bounded TTL sample. Preserve old wire
+  encoders and keep prepared bytes separate from live sending, ownership and startup authority.
+- Add pure direct-query selection and Answer-only known-answer suppression, with exact half-TTL
+  thresholds and explicit routing/sequence context instead of implicit response decisions. Share
+  private frozen-record validation without changing conservative probes or enabling any sender.
+- Add pure response-conflict comparison for the frozen unique A/SRV/TXT tuples, preserving
+  semantic DNS-name equality, raw TXT data and whole-packet error priority. Keep existing conservative
+  probing unchanged and do not connect observation results to sending, ownership or application startup.
+- Add a pure two-intent initial-announcement schedule with completion-relative spacing, frozen
+  declaration/time bounds and terminal cancellation; keep its caller-reported progress separate
+  from actual sending, retained probe continuity, service publication and application startup.
+- Add an explicit low-privilege `probe-lan` diagnostic over the existing one-round adapter,
+  with bounded original declarations and fixed unverified observations; preserve browse compatibility
+  and keep announcements, automatic retries, pairing and application startup disconnected.
+- Add explicit controller-to-retained quiet handoff with the original retry lifetime, interface,
+  clocks and spent ingress bounds; retain receive-only review and unchanged legacy entry points.
+  Include separately selected isolated-network regression coverage without enabling publication,
+  startup integration, pairing or workspace authority.
+- Share private exact-name DNS decoding across PTR/SRV and frozen probe names while preserving
+  full-packet compression offsets, profile-specific validation and existing runtime lifetimes.
+  Refresh architecture ownership notes and document package-scoped disk cleanup that preserves
+  dependency builds, tracked generated assets, private state and validation evidence.
+
 ## [0.6.7] - 2026-11-13
 
 This patch source release includes F1c–F1i: an explicit Linux discovery CLI, frozen wire preparation,
@@ -1716,7 +1750,8 @@ cross-user collaboration. The frozen public API compatibility baseline remains 0
 The canonical package metadata advanced directly from `0.2.9` to `0.3.1`. Version `0.3.0` identifies
 the frozen API compatibility snapshot only; it was not a package release and must not be tagged.
 
-[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.6.7...HEAD
+[Unreleased]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.6.8...HEAD
+[0.6.8]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.6.7...v0.6.8
 [0.6.7]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.6.6...v0.6.7
 [0.6.6]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.6.5...v0.6.6
 [0.6.5]: https://github.com/Team-silvortex/cyanrex-lab/compare/v0.6.4...v0.6.5

@@ -1,7 +1,8 @@
 //! Service ownership index. Groups are navigation, not new namespaces or process isolation.
 //! `state::build_state` and `application::build_router` decide actual runtime composition.
 //! In particular, auth_service contains BOTH live AuthService and explicit durable_source commands;
-//! the latter remain unmounted preparation. A declaration here grants no authority or execution.
+//! the latter stay outside teaching AppState; explicit hosts compose selected retained commands.
+//! A declaration here grants no authority or execution.
 
 // Group: Live instance services
 pub mod ai_agent_settings;
@@ -44,7 +45,7 @@ pub mod legacy_workspace;
 mod prepared_resource_sql;
 
 // Group: Prepared federation
-// Discovery contracts stay pure; the separate Linux one-shot browser is explicit, never startup.
+// Contracts stay pure; Linux browse/unicast/probe/retry/retained-review calls are explicit, never startup.
 pub mod federation_discovery;
 #[cfg(target_os = "linux")]
 pub mod federation_mdns;

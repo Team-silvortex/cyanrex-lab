@@ -69,6 +69,17 @@ struct Run<'a, 'i, 'g> {
     guard: &'g mut dyn FnMut() -> Result<()>,
 }
 
+/// Synchronous borrowed guards surround each active check; no callback is retained in a handle.
+pub(super) fn guarded_check<T>(
+    guard: &mut dyn FnMut() -> Result<()>,
+    body: impl FnOnce() -> Result<T>,
+) -> Result<T> {
+    guard()?;
+    let result = body()?;
+    guard()?;
+    Ok(result)
+}
+
 impl Run<'_, '_, '_> {
     fn poll(&mut self, io: &mut ProbeIo, requested: Duration) -> Result<Vec<Ingress>> {
         let sample = self.check()?;
@@ -77,19 +88,26 @@ impl Run<'_, '_, '_> {
     }
 
     fn check(&mut self) -> Result<Sample> {
-        cancelled(self.cancelled)?;
-        (self.guard)()?;
-        let elapsed = self.started.elapsed();
-        let wall = wall_time()?;
-        self.limits.check(elapsed, wall)?;
-        self.announcement
-            .probe_remaining(self.interface.local_address(), wall.as_secs())?;
-        self.interface.verify_unchanged()?;
-        cancelled(self.cancelled)?;
-        (self.guard)()?;
-        Ok(Sample {
-            elapsed,
-            wall: wall.as_secs(),
+        let Self {
+            started,
+            limits,
+            announcement,
+            interface,
+            cancelled: cancellation,
+            guard,
+        } = self;
+        cancelled(cancellation)?;
+        guarded_check(*guard, || {
+            let elapsed = started.elapsed();
+            let wall = wall_time()?;
+            limits.check(elapsed, wall)?;
+            announcement.probe_remaining(interface.local_address(), wall.as_secs())?;
+            interface.verify_unchanged()?;
+            cancelled(cancellation)?;
+            Ok(Sample {
+                elapsed,
+                wall: wall.as_secs(),
+            })
         })
     }
 
@@ -204,6 +222,17 @@ pub(super) fn probe_guarded(
     // Historical APIs still drop both original sockets before returning. In particular a local
     // controller guard never escapes into a retained handle after its callback has gone away.
     Ok(run_probe(config, announcement, cancellation, guard)?.observation())
+}
+
+// The stack-borrowed guard protects active probing only. Its owner separately transfers concrete
+// original bounds into a quiet handle after the controller's final completion checks.
+pub(super) fn probe_retained_guarded<'a>(
+    config: &MdnsConfig,
+    announcement: &'a MdnsAnnouncement,
+    cancellation: &AtomicBool,
+    guard: &mut dyn FnMut() -> Result<()>,
+) -> Result<RetainedProbeOutcome<'a>> {
+    run_probe(config, announcement, cancellation, guard)
 }
 
 /// One explicit attempt whose quiet branch retains the ORIGINAL two sockets and original bounds.

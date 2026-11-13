@@ -1,6 +1,6 @@
 # Current architecture and change boundaries
 
-**Source 0.6.7 includes F0/F1a–F1i, reviewed 2026-11-13:** [federated nodes](federation-discovery.md) add explicit CLI/preparation, separate unicast/probing/retries and retained quiet review:
+**Source 0.6.8 includes F1j–o, reviewed 2026-11-13:** [federated nodes](federation-discovery.md) add explicit diagnostics, original-bound review, pure announcement/query analysis and response-byte preparation:
 untrusted announcements → compatibility/policy selection → `UnverifiedPeerCandidate`, not identity proof,
 pairing or workspace authority. Teaching roles stay domain-local; Source and loopback boundaries stay unchanged.
 
@@ -49,7 +49,7 @@ paths, not two interchangeable login implementations.
 | Responsibility | Source entry | Dependency rule |
 |---|---|---|
 | Shared contracts | `engine/src/models/collaboration/` | Exact identity/reference/Task/Artifact/Review/file values; decoding validates structure, not authority |
-| Prepared discovery | `engine/src/services/federation_discovery/`, `engine/src/services/federation_mdns/`, `engine/src/bin/cyanrex-discovery/` | Pure claims/cache/wire observations; explicit Linux browser/CLI, exact-local receiver or bounded probe attempt, no Session, storage, key proof, publication permit or resource command |
+| Prepared discovery | `engine/src/services/federation_discovery/`, `engine/src/services/federation_mdns/`, `engine/src/bin/cyanrex-discovery/` | Pure claims/cache/wire; explicit Linux browser/CLI, unicast, probing, bounded retries and retained review have separate lifetimes; no Session, storage, key proof, publication permit or resource command |
 | Definitions and pure content planning | `engine/src/services/task_catalog/definitions.rs`, `engine/src/services/task_content.rs`, `engine/src/services/task_draft_import/` | TaskDefinitionCatalog is frozen metadata; no evaluator, database, discovery or execution is required |
 | Typed domain evaluation | `engine/src/services/task_catalog.rs`, `engine/src/domain_packs/ebpf_teaching/` | TaskCatalog<P> owns provider-bound evidence and assessment; the teaching pack stays outside neutral contracts |
 | Current-Session commands | `engine/src/services/auth_service/durable_source/`, `engine/src/services/collaboration_identity_store/` | Derive exact current actor, audited membership and original pins; resource checks and final authority stay in the source-owned transaction |
@@ -103,7 +103,7 @@ boundaries; no global HTTP budget, public configuration API or runtime mounting 
 
 ## Service navigation
 
-`engine/src/services/mod.rs` preserves visibility/gates. F0/F1a stay pure; Linux F1b/CLI run only when explicitly called, never at host startup.
+`engine/src/services/mod.rs` preserves visibility/gates. F0/F1a stay pure; Linux browse/unicast/probe/retry/retained-review calls stay explicit, never at host startup.
 
 | Index group | Main responsibility |
 |---|---|
@@ -112,7 +112,7 @@ boundaries; no global HTTP budget, public configuration API or runtime mounting 
 | Signed Runner Agent services | Authenticated compute protocol, inventory, execution and jobs; not AI identity |
 | Event telemetry | Live EventBus and its private persistence/filter/policy helpers |
 | Prepared identity and SQL support | Explicit registry, offline legacy preview and private storage mechanics |
-| Prepared federation | Pure codec/cache and explicit Linux one-shot mDNS browser; no pairing/business connection |
+| Prepared federation | Pure codec/cache/wire plus explicit Linux browse/unicast/probe/bounded retries/retained review; no pairing/business connection |
 | Prepared Task and content | Pure catalogue/content planning plus explicit Task/Artifact/Review/journal stores |
 | Prepared file distribution | Stream/descriptor verification, upload/publication/grant ledgers, receiver and client |
 
@@ -166,10 +166,10 @@ mechanics; adapters retain six/seven fields, typed IDs/digests, trusted scope, g
 Further candidates are manual/catalogue target allocation and typed legacy teaching-evidence conversion;
 their admission, fingerprints, assessment and transaction boundaries must remain separate.
 
-New runtime composition requires a separately reviewed proposal: secure durable Session issuance,
-an unprivileged host boundary, explicit storage provisioning, then public/UI/SDK contract and real-LAN
-acceptance. A route export or passing loopback fixture cannot substitute for those steps. Recovery,
-automatic retry/cleanup, desktop peer transfer and generic scheduling are separate changes.
+The explicit low-privilege loopback host already composes limited Session issuance and declared storage.
+Broader public/UI/SDK/LAN or federation composition needs a separately reviewed proposal and fresh
+authorization/transport acceptance; existing exports or loopback tests cannot substitute. Recovery,
+automatic retry/cleanup, desktop peer transfer and generic scheduling remain separate changes.
 
 ## Documentation ownership
 

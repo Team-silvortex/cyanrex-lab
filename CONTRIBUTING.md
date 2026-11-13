@@ -99,12 +99,33 @@ override with `CARGO_PROFILE_DEV_DEBUG=2` (or `CARGO_PROFILE_TEST_DEBUG=2` for t
 You can opt back into incremental compilation with `CARGO_INCREMENTAL=1`; this
 trades more disk space for faster rebuilds.
 
-After stopping local builds and any processes using their output, reclaim Rust
-build artifacts with `cargo clean --manifest-path engine/Cargo.toml`. The next
-build will recompile dependencies. Frontend `.next/`, SDK `dist/`, and TypeScript
-`*.tsbuildinfo` are also generated outputs, not source or backups. Keep runtime
-data, `.env` files, `.run/` maintenance configuration, database volumes, migration
-backups, and rollback images out of routine cache cleanup.
+Inspect disk usage first and stop builds/processes using the selected output. Prefer cleaning only
+the project package, keeping third-party dependency artifacts. From the repository root, preview
+the exact target before applying the same command without `--dry-run`:
+
+```bash
+cargo clean --manifest-path engine/Cargo.toml --target-dir engine/target --locked --offline -p cyanrex-engine --dry-run --verbose
+cargo clean --manifest-path engine/Cargo.toml --target-dir engine/target --locked --offline -p cyanrex-engine
+```
+
+This removes this package's outputs across cached versions, not just an old version. The next
+build must compile/link the project again. Full `cargo clean` also discards dependency builds;
+it is a larger reset, not the default for routine cleanup. Compact local validation can explicitly
+set `CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 CARGO_BUILD_JOBS=2` without changing release profiles.
+
+| Path | Owner and cleanup boundary |
+|---|---|
+| `engine/target/` | Rebuildable Cargo output; prefer the package-scoped preview above |
+| `frontend/.next/cache/` | Rebuildable Next cache; remove only with no active build/dev writer, keeping the rest of `.next/` when preserving a built app |
+| `node_modules/`, `sdk-js/dist/`, `*.tsbuildinfo` | Installed dependencies/build outputs; keep useful installed dependencies unless reinstall/rebuild is intended |
+| `frontend/public/course/`, `frontend/public/monaco/` | Tracked generated assets; regenerate/check with their scripts, do not delete as cache |
+| `.git/`, `docs/`, `reports/` | Source history, maintained documentation and validation evidence; not build caches |
+| Runtime data, `.env`, `.run/`, database volumes, migration backups, rollback images | Persistent/private or recovery state; excluded from routine cleanup |
+
+Check filesystem mounts before treating `/tmp` as repository disk usage; a separate tmpfs reclaims
+memory, not repository storage. Do not replace scoped cleanup with global Docker/npm/Cargo pruning,
+home-directory deletion or removal of other projects' artifacts. If it is unclear whether a target
+is in use, leave it alone rather than stopping services or deleting uncertain data.
 
 ## Repository Rules
 

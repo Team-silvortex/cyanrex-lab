@@ -2,7 +2,7 @@
 set -euo pipefail
 
 if [[ ${1:-} == --help && $# == 1 ]]; then
-  printf '%s\n' 'Usage: scripts/test-federation-mdns-netns.sh [--with-cli] [--with-unicast] [--with-probe] [--with-controller] [--with-retained]' 'Build locked/offline; test only inside a fresh anonymous user/network namespace. No host LAN fallback.' '--with-cli requires existing subordinate ID delegation and mapping helpers; never edits it.' '--with-unicast explicitly adds receive-only exact-local socket acceptance.' '--with-probe explicitly adds bounded, one-shot probing; no announcement or ownership permit.' '--with-controller explicitly adds finite opt-in retries with conflict cooldown; no publication authority.' '--with-retained explicitly adds short-lived receive-only review of one quiet round; no announcement or ownership permit.'
+  printf '%s\n' 'Usage: scripts/test-federation-mdns-netns.sh [--with-cli] [--with-unicast] [--with-probe] [--with-controller] [--with-retained] [--with-controller-retained] [--with-probe-cli]' 'Build locked/offline; test only inside a fresh anonymous user/network namespace. No host LAN fallback.' '--with-cli requires existing subordinate ID delegation and mapping helpers; never edits it.' '--with-unicast explicitly adds receive-only exact-local socket acceptance.' '--with-probe explicitly adds bounded, one-shot probing; no announcement or ownership permit.' '--with-controller explicitly adds finite opt-in retries with conflict cooldown; no publication authority.' '--with-retained explicitly adds short-lived receive-only review of one quiet round; no announcement or ownership permit.' '--with-controller-retained explicitly adds controller-to-retained quiet handoff; no announcement or ownership permit.' '--with-probe-cli explicitly adds the non-root single-round probe CLI and requires existing CLI mapping prerequisites; no publication authority.'
   exit 0
 fi
 task_mdns_with_cli=0
@@ -10,6 +10,8 @@ task_mdns_with_unicast=0
 task_mdns_with_probe=0
 task_mdns_with_controller=0
 task_mdns_with_retained=0
+task_mdns_with_controller_retained=0
+task_mdns_with_probe_cli=0
 for task_mdns_argument in "$@"; do
   case "$task_mdns_argument" in
     --with-cli) [[ "$task_mdns_with_cli" == 0 ]] || { printf '%s\n' 'Duplicate arguments.' >&2; exit 2; }; task_mdns_with_cli=1 ;;
@@ -17,9 +19,15 @@ for task_mdns_argument in "$@"; do
     --with-probe) [[ "$task_mdns_with_probe" == 0 ]] || { printf '%s\n' 'Duplicate arguments.' >&2; exit 2; }; task_mdns_with_probe=1 ;;
     --with-controller) [[ "$task_mdns_with_controller" == 0 ]] || { printf '%s\n' 'Duplicate arguments.' >&2; exit 2; }; task_mdns_with_controller=1 ;;
     --with-retained) [[ "$task_mdns_with_retained" == 0 ]] || { printf '%s\n' 'Duplicate arguments.' >&2; exit 2; }; task_mdns_with_retained=1 ;;
+    --with-controller-retained) [[ "$task_mdns_with_controller_retained" == 0 ]] || { printf '%s\n' 'Duplicate arguments.' >&2; exit 2; }; task_mdns_with_controller_retained=1 ;;
+    --with-probe-cli) [[ "$task_mdns_with_probe_cli" == 0 ]] || { printf '%s\n' 'Duplicate arguments.' >&2; exit 2; }; task_mdns_with_probe_cli=1 ;;
     *) printf '%s\n' 'Unexpected arguments.' >&2; exit 2 ;;
   esac
 done
+task_mdns_mapped_cli=0
+if [[ "$task_mdns_with_cli" == 1 || "$task_mdns_with_probe_cli" == 1 ]]; then
+  task_mdns_mapped_cli=1
+fi
 task_mdns_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 for task_mdns_tool in cargo node unshare ip nsenter setpriv readlink python3; do
   command -v "$task_mdns_tool" >/dev/null || { printf 'Missing tool: %s\n' "$task_mdns_tool" >&2; exit 1; }
@@ -39,7 +47,16 @@ fi
 if [[ "$task_mdns_with_retained" == 1 ]]; then
   task_mdns_targets+=(--test federation_mdns_retained_network_tdd)
 fi
+if [[ "$task_mdns_with_controller_retained" == 1 ]]; then
+  task_mdns_targets+=(--test federation_mdns_controller_retained_network_tdd)
+fi
 if [[ "$task_mdns_with_cli" == 1 ]]; then
+  task_mdns_targets+=(--test federation_discovery_cli_network_tdd)
+fi
+if [[ "$task_mdns_with_probe_cli" == 1 ]]; then
+  task_mdns_targets+=(--test federation_probe_cli_network_tdd)
+fi
+if [[ "$task_mdns_mapped_cli" == 1 ]]; then
   for task_mdns_tool in getsubids newuidmap newgidmap; do
     command -v "$task_mdns_tool" >/dev/null || { printf '%s\n' 'CLI namespace mapping prerequisite unavailable.' >&2; exit 1; }
   done
@@ -70,7 +87,6 @@ process.exit(1);' "$1"
   task_mdns_namespace=(--user "--map-users=1000:$task_mdns_uid:1" "--map-users=0:$task_mdns_subuid:1"
     "--map-groups=1000:$task_mdns_gid:1" "--map-groups=0:$task_mdns_subgid:1" --setgroups=allow --keep-caps --net --fork)
   task_mdns_preexec=(setpriv --clear-groups)
-  task_mdns_targets+=(--test federation_discovery_cli_network_tdd)
 fi
 task_mdns_logs=$(mktemp -d /tmp/cyanrex-mdns-netns-XXXXXX)
 chmod 0700 "$task_mdns_logs"
@@ -123,6 +139,20 @@ if [[ "$task_mdns_with_retained" == 1 ]]; then
     && "$(basename "$task_mdns_retained_binary")" =~ ^federation_mdns_retained_network_tdd-[a-f0-9]+$ \
     && -x "$task_mdns_retained_binary" ]] || exit 1
 fi
+task_mdns_controller_retained_binary=
+if [[ "$task_mdns_with_controller_retained" == 1 ]]; then
+  task_mdns_controller_retained_binary=$(task_mdns_exact_binary federation_mdns_controller_retained_network_tdd)
+  [[ "$(dirname "$task_mdns_controller_retained_binary")" == "$task_mdns_root/engine/target/debug/deps" \
+    && "$(basename "$task_mdns_controller_retained_binary")" =~ ^federation_mdns_controller_retained_network_tdd-[a-f0-9]+$ \
+    && -x "$task_mdns_controller_retained_binary" ]] || exit 1
+fi
+task_mdns_probe_cli_binary=
+if [[ "$task_mdns_with_probe_cli" == 1 ]]; then
+  task_mdns_probe_cli_binary=$(task_mdns_exact_binary federation_probe_cli_network_tdd)
+  [[ "$(dirname "$task_mdns_probe_cli_binary")" == "$task_mdns_root/engine/target/debug/deps" \
+    && "$(basename "$task_mdns_probe_cli_binary")" =~ ^federation_probe_cli_network_tdd-[a-f0-9]+$ \
+    && -x "$task_mdns_probe_cli_binary" ]] || exit 1
+fi
 
 unshare "${task_mdns_namespace[@]}" "${task_mdns_preexec[@]}" bash -euo pipefail -c '
   task_mdns_binary=$1
@@ -139,6 +169,11 @@ unshare "${task_mdns_namespace[@]}" "${task_mdns_preexec[@]}" bash -euo pipefail
   task_mdns_controller_binary=${12}
   task_mdns_with_retained=${13}
   task_mdns_retained_binary=${14}
+  task_mdns_with_controller_retained=${15}
+  task_mdns_controller_retained_binary=${16}
+  task_mdns_mapped_cli=${17}
+  task_mdns_with_probe_cli=${18}
+  task_mdns_probe_cli_binary=${19}
   task_mdns_current=$(readlink /proc/self/ns/net)
   [[ "$task_mdns_current" != "$task_mdns_parent" ]] || exit 1
   export CYANREX_MDNS_TEST_PARENT_NETNS="$task_mdns_parent"
@@ -195,6 +230,10 @@ unshare "${task_mdns_namespace[@]}" "${task_mdns_preexec[@]}" bash -euo pipefail
     CYANREX_MDNS_TEST_WITH_CLI=1 setpriv --bounding-set=-all --inh-caps=-all \
       --ambient-caps=-all --no-new-privs "$task_mdns_cli_binary" --ignored --test-threads=1
   fi
+  if [[ "$task_mdns_with_probe_cli" == 1 ]]; then
+    CYANREX_MDNS_TEST_WITH_PROBE_CLI=1 setpriv --bounding-set=-all --inh-caps=-all \
+      --ambient-caps=-all --no-new-privs "$task_mdns_probe_cli_binary" --ignored --test-threads=1
+  fi
   if [[ "$task_mdns_with_unicast" == 1 ]]; then
     CYANREX_MDNS_TEST_WITH_UNICAST=1 setpriv --bounding-set=-all --inh-caps=-all \
       --ambient-caps=-all --no-new-privs "$task_mdns_unicast_binary" --ignored --test-threads=1 \
@@ -214,9 +253,24 @@ unshare "${task_mdns_namespace[@]}" "${task_mdns_preexec[@]}" bash -euo pipefail
       --ambient-caps=-all --no-new-privs "$task_mdns_retained_binary" --ignored --test-threads=1 \
       --skip a_renamed_retained_interface_fails_review_and_releases_the_original_channels
   fi
+  if [[ "$task_mdns_with_controller_retained" == 1 ]]; then
+    CYANREX_MDNS_TEST_WITH_CONTROLLER_RETAINED=1 CYANREX_MDNS_TEST_WITH_RETAINED=1 \
+      setpriv --bounding-set=-all --inh-caps=-all --ambient-caps=-all --no-new-privs \
+      "$task_mdns_controller_retained_binary" --ignored --test-threads=1 \
+      --skip a_renamed_controller_retained_interface_closes_and_releases_original_channels
+  fi
   task_mdns_mutation_caps=(--inh-caps=-all --ambient-caps=-all)
-  if [[ "$task_mdns_with_cli" == 1 ]]; then
+  if [[ "$task_mdns_mapped_cli" == 1 ]]; then
     task_mdns_mutation_caps=(--inh-caps=-all,+net_admin --ambient-caps=-all,+net_admin)
+  fi
+  if [[ "$task_mdns_with_controller_retained" == 1 ]]; then
+    CYANREX_MDNS_TEST_WITH_CONTROLLER_RETAINED=1 CYANREX_MDNS_TEST_WITH_RETAINED=1 \
+      CYANREX_MDNS_TEST_MUTATE=1 setpriv --bounding-set=-all,+net_admin \
+      "${task_mdns_mutation_caps[@]}" --no-new-privs \
+      "$task_mdns_controller_retained_binary" --ignored --test-threads=1 \
+      --exact a_renamed_controller_retained_interface_closes_and_releases_original_channels
+    # Restore the exact fixture name before the independently selected older mutation cases.
+    ip link set dev crx4 name crx0
   fi
   if [[ "$task_mdns_with_retained" == 1 ]]; then
     CYANREX_MDNS_TEST_WITH_RETAINED=1 CYANREX_MDNS_TEST_MUTATE=1 \
@@ -250,5 +304,7 @@ unshare "${task_mdns_namespace[@]}" "${task_mdns_preexec[@]}" bash -euo pipefail
   "$task_mdns_root/scripts/tests/federationMdnsPeer.py" "$task_mdns_logs/peer.sock" \
   "$task_mdns_with_cli" "$task_mdns_cli_binary" "$task_mdns_with_unicast" "$task_mdns_unicast_binary" \
   "$task_mdns_with_probe" "$task_mdns_probe_binary" "$task_mdns_with_controller" "$task_mdns_controller_binary" \
-  "$task_mdns_with_retained" "$task_mdns_retained_binary"
+  "$task_mdns_with_retained" "$task_mdns_retained_binary" \
+  "$task_mdns_with_controller_retained" "$task_mdns_controller_retained_binary" \
+  "$task_mdns_mapped_cli" "$task_mdns_with_probe_cli" "$task_mdns_probe_cli_binary"
 printf 'Isolated mDNS acceptance passed; build evidence: %s\n' "$task_mdns_logs"

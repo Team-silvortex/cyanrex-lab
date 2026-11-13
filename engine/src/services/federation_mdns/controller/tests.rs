@@ -98,3 +98,47 @@ fn expired_claims_close_before_a_missing_interface_can_be_looked_up() {
         Err(MdnsError::Closed)
     );
 }
+
+#[test]
+fn retained_pre_cancellation_is_terminal_without_starting_or_opening_an_attempt() {
+    let mut controller =
+        MdnsProbeController::new(config("10.23.0.1", Duration::from_secs(2)), announcement())
+            .unwrap();
+    assert!(matches!(
+        controller.attempt_retained(&AtomicBool::new(true)),
+        Err(MdnsError::Cancelled)
+    ));
+    assert_eq!(controller.state(), ProbeControllerState::Closed);
+    assert_eq!(controller.attempts_started(), 0);
+    assert!(
+        controller.origin.is_none()
+            && controller.lifetime.is_none()
+            && controller.interface.is_none()
+    );
+    assert!(matches!(
+        controller.attempt_retained(&AtomicBool::new(false)),
+        Err(MdnsError::Closed)
+    ));
+    assert_eq!(
+        controller.attempt(&AtomicBool::new(false)),
+        Err(MdnsError::Closed)
+    );
+}
+
+#[test]
+fn retained_initial_expiry_closes_before_interface_lookup_and_cannot_revive() {
+    let mut controller =
+        MdnsProbeController::new(config("10.23.0.1", Duration::from_secs(2)), announcement())
+            .unwrap();
+    assert!(matches!(
+        controller.attempt_retained(&AtomicBool::new(false)),
+        Err(MdnsError::RejectedAdvertisement(_))
+    ));
+    assert_eq!(controller.state(), ProbeControllerState::Closed);
+    assert_eq!(controller.attempts_started(), 0);
+    assert!(controller.interface.is_none());
+    assert!(matches!(
+        controller.attempt_retained(&AtomicBool::new(false)),
+        Err(MdnsError::Closed)
+    ));
+}

@@ -4,11 +4,14 @@ import test from "node:test";
 
 const root = new URL("../../", import.meta.url);
 const read = file => readFile(new URL(file, root), "utf8");
-async function sources(directory) {
+const probeCliFiles = ["probe_arguments.rs", "probe.rs", "probe_output.rs"]
+  .map(name => `engine/src/bin/cyanrex-discovery/${name}`);
+async function sources(directory, excluded = []) {
   const result = [];
   for (const item of await readdir(new URL(`${directory}/`, root), { withFileTypes: true })) {
     const file = `${directory}/${item.name}`;
-    if (item.isDirectory()) result.push(...await sources(file));
+    if (excluded.includes(file)) continue;
+    if (item.isDirectory()) result.push(...await sources(file, excluded));
     else if (item.name.endsWith(".rs")) result.push(await read(file));
   }
   return result;
@@ -121,7 +124,7 @@ test("F1d announcement encoding stays pure and cannot widen the explicit browse 
   for (const file of ["engine/src/main.rs", "engine/src/state.rs", "engine/src/application.rs",
     "engine/src/platform_host/mod.rs", "engine/src/bin/cyanrex-platform/main.rs"])
     assert.doesNotMatch(await read(file), /\bMdnsAnnouncement\b|\bencode_goodbye\b|federation_mdns::announcement/, file);
-  assert.doesNotMatch((await sources("engine/src/bin/cyanrex-discovery")).join("\n"),
+  assert.doesNotMatch((await sources("engine/src/bin/cyanrex-discovery", probeCliFiles)).join("\n"),
     /\bMdnsAnnouncement\b|\bencode_goodbye\b|federation_mdns::announcement/);
   assert.match(await read("engine/tests/federation_mdns_announcement_tdd.rs"), /#!\[cfg\(target_os = "linux"\)\]/);
   for (const locale of ["en", "zh-CN"]) {
@@ -235,7 +238,7 @@ test("F1g explicit probing has bounded typed private I/O and no publication or o
     "engine/src/platform_host/mod.rs", "engine/src/bin/cyanrex-platform/main.rs",
     "engine/src/services/federation_mdns/runtime.rs"])
     assert.doesNotMatch(await read(file), entrypoints, file);
-  assert.doesNotMatch((await sources("engine/src/bin/cyanrex-discovery")).join("\n"), entrypoints);
+  assert.doesNotMatch((await sources("engine/src/bin/cyanrex-discovery", probeCliFiles)).join("\n"), entrypoints);
   assert.match(await read("scripts/test-federation-mdns-netns.sh"), /--with-probe/);
   const network = await read("engine/tests/federation_mdns_probing_network_tdd.rs");
   assert.ok((network.match(/#\[test\]/g) || []).length > 0);
@@ -255,14 +258,17 @@ test("F1h finite retry history cannot accept observations as publication authori
   const module = await read("engine/src/services/federation_mdns/mod.rs");
   assert.match(module, /pub use controller::\{MdnsProbeController, ProbeControllerState\};/);
   assert.deepEqual(controller.match(/pub fn [a-z_]+\(/g),
-    ["pub fn new(", "pub fn state(", "pub fn attempts_started(", "pub fn retry_after(", "pub fn attempt("]);
+    ["pub fn new(", "pub fn state(", "pub fn attempts_started(", "pub fn retry_after(", "pub fn attempt(", "pub fn attempt_retained("]);
   assert.doesNotMatch(controller, /impl Clone for MdnsProbeController|pub fn (?:finish|publish|announce|set_|renew)/);
   assert.match(controller, /self\.gate\.begin\(elapsed\)\?;[\s\S]*VerifiedInterface::inspect/);
   for (const required of ["lifetime.check(elapsed, wall)", "gate.check_in_flight(elapsed)",
     "interface.verify_unchanged()", "super::probing::probe_guarded", "self.gate.close()"])
     assert.ok(controller.includes(required), required);
   assert.match(runtime, /pub\(super\) fn probe_guarded\(/);
-  assert.equal((runtime.match(/\(self\.guard\)\(\)\?;/g) || []).length, 2);
+  const guarded = runtime.slice(runtime.indexOf("pub(super) fn guarded_check"), runtime.indexOf("impl Run<"));
+  assert.match(guarded, /guard\(\)\?;\s*let result = body\(\)\?;\s*guard\(\)\?;\s*Ok\(result\)/);
+  const runCheck = runtime.slice(runtime.indexOf("fn check(&mut self)"), runtime.indexOf("fn observe("));
+  assert.match(runCheck, /cancelled\(cancellation\)\?;\s*guarded_check\(\*guard, \|\|/);
   assert.match(runtime, /probe_guarded\(config, announcement, cancellation, &mut \|\| Ok\(\(\)\)\)/);
   for (const required of ["MAX_ATTEMPTS: u8 = 4", "Duration::from_secs(30)", "Duration::from_secs(5)", "CoolingDown", "checked_add(RETRY_DELAY)"])
     assert.ok(gate.includes(required), required);
@@ -317,7 +323,7 @@ test("F1i quiet handoff retains original I/O and bounds without becoming a sende
   const names = /\b(?:probe_retained_once|MdnsRetainedProbe|RetainedProbeOutcome)\b/;
   for (const file of ["engine/src/main.rs", "engine/src/state.rs", "engine/src/application.rs",
     "engine/src/platform_host/mod.rs", "engine/src/bin/cyanrex-platform/main.rs",
-    "engine/src/services/federation_mdns/runtime.rs", "engine/src/services/federation_mdns/controller.rs"])
+    "engine/src/services/federation_mdns/runtime.rs"])
     assert.doesNotMatch(await read(file), names, file);
   assert.doesNotMatch((await sources("engine/src/bin/cyanrex-discovery")).join("\n"), names);
   const network = await read("engine/tests/federation_mdns_retained_network_tdd.rs");
@@ -327,6 +333,223 @@ test("F1i quiet handoff retains original I/O and bounds without becoming a sende
   for (const locale of ["en", "zh-CN"]) {
     const text = await read(`docs/${locale}/federation-discovery.md`);
     for (const required of ["F1i", "probe_retained_once", "MdnsRetainedProbe", "RetainedProbeOutcome", "--with-retained"])
+      assert.ok(text.includes(required), `${locale}: ${required}`);
+  }
+});
+
+test("F1j explicit controller handoff preserves named original bounds without creating a sender", async () => {
+  const controller = await read("engine/src/services/federation_mdns/controller.rs");
+  assert.match(controller, /pub fn attempt_retained\(/);
+  const retained = await read("engine/src/services/federation_mdns/probing/retained.rs");
+  const controlSources = (await sources("engine/src/services/federation_mdns/controller")).join("\n");
+  assert.match(controlSources, /struct ControllerReviewBounds/);
+  const bounds = (await read("engine/src/services/federation_mdns/controller/review.rs")).split("#[cfg(test)]")[0];
+  for (const required of ["origin: Instant", "lifetime: Lifetime", "watermark: completed", "self.origin.elapsed()",
+    "elapsed < self.watermark", "self.lifetime.check(elapsed, wall)", "elapsed >= MAX_LIFETIME", "self.closed = true"])
+    assert.ok(bounds.includes(required), required);
+  assert.doesNotMatch(bounds, /Lifetime::new|Instant::now|derive\([^)]*Clone|impl Clone/);
+  assert.match(controller, /lifetime\.take\(\)/);
+  assert.match(retained, /controller: Option<ControllerReviewBounds>/);
+  assert.match(retained, /controller: None/);
+  assert.match(retained, /controller\.check\(\)\?;/);
+  assert.match(retained, /if live\.controller\.is_some\(\)\s*\{\s*return Err\(MdnsError::Closed\)/);
+  assert.doesNotMatch(retained + controlSources, /Box\s*<\s*dyn\s+Fn|Arc\s*<\s*dyn\s+Fn/);
+  assert.deepEqual(retained.match(/pub fn [a-z_]+\(/g), ["pub fn review(", "pub fn close("]);
+  const legacyAttempt = controller.slice(controller.indexOf("pub fn attempt("), controller.indexOf("pub fn attempt_retained("));
+  assert.match(legacyAttempt, /attempt_inner\(cancellation\)/);
+  for (const file of ["engine/src/main.rs", "engine/src/state.rs", "engine/src/application.rs",
+    "engine/src/platform_host/mod.rs", "engine/src/bin/cyanrex-platform/main.rs"])
+    assert.doesNotMatch(await read(file), /attempt_retained|ControllerReviewBounds/, file);
+  assert.doesNotMatch((await sources("engine/src/bin/cyanrex-discovery")).join("\n"),
+    /attempt_retained|ControllerReviewBounds/);
+  const runner = await read("scripts/test-federation-mdns-netns.sh");
+  assert.match(runner, /--with-controller-retained/);
+  assert.match(runner, /task_mdns_targets=\(--test federation_mdns_network_tdd\)/);
+  assert.match(runner, /if \[\[ "\$task_mdns_with_controller_retained" == 1 \]\]; then\s*task_mdns_targets\+=\(--test federation_mdns_controller_retained_network_tdd\)/);
+  const network = await read("engine/tests/federation_mdns_controller_retained_network_tdd.rs");
+  assert.match(network, /#!\[cfg\(target_os = "linux"\)\]/);
+  assert.ok((network.match(/#\[test\]/g) || []).length > 0);
+  assert.equal((network.match(/#\[test\]/g) || []).length, (network.match(/#\[ignore/g) || []).length);
+  const mutation = "a_renamed_controller_retained_interface_closes_and_releases_original_channels";
+  assert.ok(runner.includes(`--exact ${mutation}`));
+  assert.ok(network.includes(`fn ${mutation}()`));
+  for (const locale of ["en", "zh-CN"]) {
+    const text = await read(`docs/${locale}/federation-discovery.md`);
+    for (const required of ["F1j", "attempt_retained", "--with-controller-retained"])
+      assert.ok(text.includes(required), `${locale}: ${required}`);
+  }
+});
+
+test("F1k probe CLI uses one gated attempt and fixed observations without publication or automatic modes", async () => {
+  const main = await read("engine/src/bin/cyanrex-discovery/main.rs");
+  assert.ok(main.includes('"probe-lan"'));
+  const probe = await read(probeCliFiles[1]);
+  for (const required of ["prepare_platform_process", "verify_before_runtime", "prepare_at(", "probe_once(", "verify_current_thread"])
+    assert.ok(probe.includes(required), required);
+  assert.ok(probe.indexOf("verify_before_runtime") < probe.indexOf("prepare_at("));
+  assert.ok(probe.indexOf("prepare_at(") < probe.indexOf("probe_once("));
+  assert.equal((probe.match(/\bprobe_once\(/g) || []).length, 1);
+  const input = await read(probeCliFiles[0]);
+  assert.match(input, /PeerAdvertisement::parse\(/);
+  assert.match(input, /MdnsAnnouncement::new\(/);
+  assert.match(input, /take\(24\)/);
+  assert.doesNotMatch(input, /SystemTime|Instant|std::(?:fs|env|process|thread)|serde_json::(?:Value|from_value)/);
+  const output = await read(probeCliFiles[2]);
+  for (const required of ["unverified_lan_probe_observation", "observation_only", "name_ownership_verified",
+    "publication_permitted", "announcement_sent", "no_conflict_observed", "existing_response", "competing_probe"])
+    assert.ok(output.includes(required), required);
+  const cli = (await sources("engine/src/bin/cyanrex-discovery")).join("\n");
+  assert.doesNotMatch(cli, /\b(?:MdnsProbeController|MdnsRetainedProbe|RetainedProbeOutcome|ProbeIo|MdnsUnicastReceiver|MdnsSocket)\b/);
+  assert.doesNotMatch(cli, /encode_at\(|encode_goodbye\(|send_probe\(|libc::|std::(?:fs|thread)|std::env::var|std::io::stdin/);
+  const legacy = (await sources("engine/src/bin/cyanrex-discovery", probeCliFiles)).join("\n");
+  assert.doesNotMatch(legacy, /\bprobe_once\(|\bProbeRunObservation\b|\bMdnsAnnouncement\b/);
+  const network = await read("engine/tests/federation_probe_cli_network_tdd.rs");
+  assert.ok((network.match(/#\[test\]/g) || []).length > 0);
+  assert.equal((network.match(/#\[test\]/g) || []).length, (network.match(/#\[ignore/g) || []).length);
+  const runner = await read("scripts/test-federation-mdns-netns.sh");
+  assert.match(runner, /--with-probe-cli/);
+  assert.match(runner, /task_mdns_targets=\(--test federation_mdns_network_tdd\)/);
+  for (const locale of ["en", "zh-CN"]) {
+    const text = await read(`docs/${locale}/federation-discovery.md`);
+    for (const required of ["F1k", "probe-lan", "--with-probe-cli", "publication_permitted"])
+      assert.ok(text.includes(required), `${locale}: ${required}`);
+  }
+});
+
+test("F1l initial announcement scheduling stays caller-driven preparation without a publication path", async () => {
+  const schedule = await read("engine/src/services/federation_mdns/announcement/schedule.rs");
+  for (const method of ["initial_schedule", "step", "record_completion", "close"])
+    assert.match(schedule, new RegExp(`pub fn ${method}\\b`));
+  for (const name of ["MdnsAnnouncementSchedule", "AnnouncementStep", "Prepare", "Complete", "Wait"])
+    assert.ok(schedule.includes(name), name);
+  assert.match(schedule, /_?announcement: &'a MdnsAnnouncement/);
+  assert.doesNotMatch(schedule, /#\[derive\([^)]*Clone[^)]*\)\]\s*pub struct MdnsAnnouncementSchedule|impl(?:<[^>]*>)? Clone for MdnsAnnouncementSchedule/);
+  assert.doesNotMatch(schedule,
+    /\b(?:SystemTime|Instant|libc|tokio|reqwest|UdpSocket|MdnsSocket|ProbeIo|MdnsRetainedProbe|RetainedProbeOutcome|ProbeRunObservation|MdnsProbeController|AuthService|SessionToken|WorkspaceGrant)\b/);
+  assert.doesNotMatch(schedule,
+    /std::(?:fs|env|thread|process)|\.(?:connect|bind|send_to|recv_from|send_query)\s*\(|\b(?:encode_at|encode_goodbye|encode_probe_at)\s*\(/);
+  for (const name of ["MdnsAnnouncementSchedule", "AnnouncementStep"])
+    assert.ok((await read("engine/src/services/federation_mdns/mod.rs")).includes(name), name);
+  const prepared = /\b(?:initial_schedule|MdnsAnnouncementSchedule|AnnouncementStep)\b/;
+  for (const file of ["engine/src/main.rs", "engine/src/state.rs", "engine/src/application.rs",
+    "engine/src/platform_host/mod.rs", "engine/src/bin/cyanrex-platform/main.rs",
+    "engine/src/services/federation_mdns/runtime.rs", "engine/src/services/federation_mdns/probing.rs",
+    "engine/src/services/federation_mdns/probing/retained.rs", "engine/src/services/federation_mdns/controller.rs",
+    "engine/src/services/federation_mdns/socket.rs"])
+    assert.doesNotMatch(await read(file), prepared, file);
+  assert.doesNotMatch((await sources("engine/src/bin/cyanrex-discovery")).join("\n"), prepared);
+  assert.match(await read("engine/tests/federation_mdns_announcement_schedule_tdd.rs"), /#!\[cfg\(target_os = "linux"\)\]/);
+  for (const locale of ["en", "zh-CN"]) {
+    const text = await read(`docs/${locale}/federation-discovery.md`);
+    for (const required of ["F1l", "initial_schedule", "record_completion", "AnnouncementStep"])
+      assert.ok(text.includes(required), `${locale}: ${required}`);
+  }
+});
+
+test("F1m response comparison is pure and separate from conservative probing or live publication", async () => {
+  const conflict = await read("engine/src/services/federation_mdns/announcement/conflict.rs");
+  assert.match(conflict, /pub fn observe_response_conflict\(/);
+  const observation = conflict.match(/pub enum ResponseConflictObservation\s*\{([^}]*)\}/s);
+  assert.ok(observation);
+  assert.deepEqual(observation[1].split(",").map(value => value.trim()).filter(Boolean),
+    ["NoConflictingRecord", "ConflictingRecord"]);
+  assert.match(conflict, /wire::read_message\(bytes\)/);
+  assert.match(conflict, /FrozenRecords::new\(self\)/);
+  assert.match(conflict, /frozen\.match_record\(bytes, record\)/);
+  assert.match(conflict, /conflicting \|= kind != RecordKind::Ptr/);
+  const records = await read("engine/src/services/federation_mdns/announcement/records.rs");
+  assert.match(records, /wire::complete_name\(bytes, record\.start \+ 6, record\.end\)/);
+  assert.doesNotMatch(conflict + records,
+    /\b(?:SystemTime|Instant|Duration|libc|tokio|reqwest|UdpSocket|MdnsSocket|ProbeIo|MdnsRetainedProbe|ProbeObservation|AuthService|SessionToken|WorkspaceGrant|DiscoveryPolicy)\b/);
+  assert.doesNotMatch(conflict + records,
+    /std::(?:fs|env|thread|process)|\b(?:decode_txt|parse_response|observe_probe_packet|encode_at|encode_goodbye)\s*\(|return Ok\(ResponseConflictObservation::ConflictingRecord\)/);
+  assert.ok((await read("engine/src/services/federation_mdns/mod.rs")).includes("ResponseConflictObservation"));
+  const comparison = /\b(?:observe_response_conflict|ResponseConflictObservation)\b/;
+  for (const file of ["engine/src/main.rs", "engine/src/state.rs", "engine/src/application.rs",
+    "engine/src/platform_host/mod.rs", "engine/src/bin/cyanrex-platform/main.rs",
+    "engine/src/services/federation_mdns/runtime.rs", "engine/src/services/federation_mdns/probing.rs",
+    "engine/src/services/federation_mdns/probing/retained.rs", "engine/src/services/federation_mdns/controller.rs",
+    "engine/src/services/federation_mdns/packet.rs", "engine/src/services/federation_mdns/socket.rs",
+    "engine/src/services/federation_mdns/announcement/probe.rs", "engine/src/services/federation_mdns/announcement/schedule.rs"])
+    assert.doesNotMatch(await read(file), comparison, file);
+  assert.doesNotMatch((await sources("engine/src/bin/cyanrex-discovery")).join("\n"), comparison);
+  assert.match(await read("engine/tests/federation_mdns_response_conflict_tdd.rs"), /#!\[cfg\(target_os = "linux"\)\]/);
+  for (const locale of ["en", "zh-CN"]) {
+    const text = await read(`docs/${locale}/federation-discovery.md`);
+    for (const required of ["F1m", "observe_response_conflict", "ResponseConflictObservation", "NoConflictingRecord"])
+      assert.ok(text.includes(required), `${locale}: ${required}`);
+  }
+});
+
+test("F1n query selection retains explicit context and shared validation without a sender", async () => {
+  const query = await read("engine/src/services/federation_mdns/announcement/query.rs");
+  assert.match(query, /pub fn plan_query\(/);
+  for (const name of ["MdnsQueryRecordSet", "MdnsQueryContext", "MdnsQueryPlan"])
+    assert.ok(query.includes(name) && (await read("engine/src/services/federation_mdns/mod.rs")).includes(name), name);
+  for (const field of ["ptr", "srv", "txt", "a", "truncated", "unicast_question", "authority_records", "legacy_port", "direct_unicast", "no_questions"])
+    assert.match(query, new RegExp(`pub ${field}: bool`));
+  for (const required of ["wire::read_message(bytes)", "self.ttl_at(now)", "FrozenRecords::new(self)",
+    "frozen.match_record(bytes, record)", "Section::Answer", "source_port == 0", "source_port != 5353",
+    "direct_unicast: !multicast_destination", "no_questions: message.questions.is_empty()",
+    "suppressed: known_suppressed.intersect(requested)", "MdnsQueryPlan::RequiresContext(context)"])
+    assert.ok(query.includes(required), required);
+  const analysis = query.slice(query.indexOf("pub(super) fn analyze_query("));
+  assert.ok(analysis.includes("QueryAnalysis::RequiresContext(context)"));
+  assert.ok(analysis.indexOf("frozen.match_record(bytes, record)") < analysis.indexOf("QueryAnalysis::RequiresContext(context)"));
+  assert.match(query.slice(0, query.indexOf("pub(super) fn analyze_query(")),
+    /self\.analyze_query\(bytes, source_port, multicast_destination, now\)/);
+  assert.doesNotMatch(query,
+    /\b(?:SystemTime|Instant|libc|tokio|reqwest|UdpSocket|MdnsSocket|ProbeIo|VerifiedInterface|AuthService|SessionToken|WorkspaceGrant)\b|std::(?:fs|env|thread|process)|\b(?:encode_at|encode_goodbye|parse_response|decode_txt)\s*\(/);
+  const names = /\b(?:plan_query|MdnsQueryPlan|MdnsQueryContext|MdnsQueryRecordSet)\b/;
+  for (const file of ["engine/src/main.rs", "engine/src/state.rs", "engine/src/application.rs",
+    "engine/src/platform_host/mod.rs", "engine/src/bin/cyanrex-platform/main.rs",
+    "engine/src/services/federation_mdns/runtime.rs", "engine/src/services/federation_mdns/probing.rs",
+    "engine/src/services/federation_mdns/probing/retained.rs", "engine/src/services/federation_mdns/controller.rs",
+    "engine/src/services/federation_mdns/packet.rs", "engine/src/services/federation_mdns/socket.rs",
+    "engine/src/services/federation_mdns/announcement/probe.rs", "engine/src/services/federation_mdns/announcement/schedule.rs"])
+    assert.doesNotMatch(await read(file), names, file);
+  assert.doesNotMatch((await sources("engine/src/bin/cyanrex-discovery")).join("\n"), names);
+  assert.match(await read("engine/tests/federation_mdns_query_plan_tdd.rs"), /#!\[cfg\(target_os = "linux"\)\]/);
+  for (const locale of ["en", "zh-CN"]) {
+    const text = await read(`docs/${locale}/federation-discovery.md`);
+    for (const required of ["F1n", "plan_query", "RequiresContext", "suppressed"])
+      assert.ok(text.includes(required), `${locale}: ${required}`);
+  }
+});
+
+test("F1o response preparation reanalyzes raw input once and encodes only bounded frozen records", async () => {
+  const response = await read("engine/src/services/federation_mdns/announcement/response.rs");
+  const query = await read("engine/src/services/federation_mdns/announcement/query.rs");
+  assert.match(response, /pub fn prepare_query_response\(/);
+  for (const name of ["NoMatchingQuestion", "AllDirectAnswersSuppressed", "RequiresContext", "Packet(Vec<u8>)"])
+    assert.ok(response.includes(name), name);
+  assert.equal(response.match(/self\.analyze_query\(/g)?.length, 1);
+  assert.match(response, /bytes: &\[u8\]/);
+  assert.doesNotMatch(response, /(?:plan|requested|suppressed): (?:&)?MdnsQuery(?:Plan|RecordSet)/);
+  assert.match(query, /pub\(super\) enum QueryAnalysis/);
+  assert.equal(query.match(/wire::read_message\(bytes\)/g)?.length, 1);
+  assert.equal(query.match(/self\.ttl_at\(now\)/g)?.length, 1);
+  for (const required of ["requested.difference(known_suppressed)", "srv: answers.ptr", "txt: answers.ptr",
+    "a: answers.ptr || answers.srv", ".difference(known_suppressed)", ".difference(answers)",
+    "self.frozen_record(&mut packet, kind, class, ttl)", "Packet(Vec::new())", "Ok(MdnsQueryResponse::Packet(packet.0))"])
+    assert.ok(response.includes(required), required);
+  assert.ok(response.indexOf("AllDirectAnswersSuppressed") < response.indexOf("let dependencies"));
+  assert.doesNotMatch(response,
+    /\b(?:SystemTime|Instant|libc|tokio|reqwest|UdpSocket|MdnsSocket|ProbeIo|VerifiedInterface|AuthService|SessionToken|WorkspaceGrant)\b|std::(?:fs|env|thread|process)|\b(?:ttl_at|plan_query|read_message|encode_at|encode_goodbye|parse_response|decode_txt)\s*\(/);
+  const prepared = /\b(?:prepare_query_response|MdnsQueryResponse)\b/;
+  assert.ok((await read("engine/src/services/federation_mdns/mod.rs")).includes("MdnsQueryResponse"));
+  for (const file of ["engine/src/main.rs", "engine/src/state.rs", "engine/src/application.rs",
+    "engine/src/platform_host/mod.rs", "engine/src/bin/cyanrex-platform/main.rs",
+    "engine/src/services/federation_mdns/runtime.rs", "engine/src/services/federation_mdns/probing.rs",
+    "engine/src/services/federation_mdns/probing/retained.rs", "engine/src/services/federation_mdns/controller.rs",
+    "engine/src/services/federation_mdns/packet.rs", "engine/src/services/federation_mdns/socket.rs",
+    "engine/src/services/federation_mdns/announcement/probe.rs", "engine/src/services/federation_mdns/announcement/schedule.rs"])
+    assert.doesNotMatch(await read(file), prepared, file);
+  assert.doesNotMatch((await sources("engine/src/bin/cyanrex-discovery")).join("\n"), prepared);
+  assert.match(await read("engine/tests/federation_mdns_query_response_tdd.rs"), /#!\[cfg\(target_os = "linux"\)\]/);
+  for (const locale of ["en", "zh-CN"]) {
+    const text = await read(`docs/${locale}/federation-discovery.md`);
+    for (const required of ["F1o", "prepare_query_response", "AllDirectAnswersSuppressed", "NoMatchingQuestion"])
       assert.ok(text.includes(required), `${locale}: ${required}`);
   }
 });

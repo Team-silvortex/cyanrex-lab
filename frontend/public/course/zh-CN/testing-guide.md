@@ -684,7 +684,7 @@ Monaco 实例，阻止外网请求，不求值模板表达式，也不验证 Nex
 
 ### 显式隔离联合节点发现
 
-F1b 首次收录于源码 0.6.6，F1c–F1i 收录于 0.6.7；下文旧 `Unreleased`／未发布标签保留
+F1b 首次收录于 0.6.6，F1c–F1i 收录于 0.6.7，F1j–F1o 收录于 **0.6.8**；下文旧标签保留
 实施阶段和分日期证据，不表示仍待源码收录或已经部署验收。
 
 未发布 F1b Linux IPv4 适配器包含纯计算／默认 `federation_mdns_*_tdd` 用例，以及七条显式真实
@@ -760,6 +760,46 @@ capability 用例捕获准确源端口、TTL 和完整 probe 布局，验证三�
 指定接口，要求 `InterfaceChanged`、释放并永久关闭；父命名空间恢复准确原名后再跑旧变更用例。
 每例检查准确 UDP／TCP 计数、FD／端口清理及无第四次 probe／公告／goodbye。不表示宿主联网、
 账户、对端协议、启动、控制器移交或发布能力发生变化。
+
+0.6.8 收录的 F1j 新增原控制器边界移交纯测试和默认忽略的
+`federation_mdns_controller_retained_network_tdd`。显式 `--with-controller-retained` 增加十条
+隔离用例，可组合全部旧选择器；默认选择不变。九条普通用例要求五组 capability 全零，覆盖
+静默终态控制器保留同一 socket inode 且不发第四包、Drop 释放、冲突／冷却后显式保留静默重试、
+排队迟到组播／单播响应和组播提案、取消、不续期复核窗口及占端口零发送拒绝。一条仅
+NET_ADMIN 用例在移交后改名自有接口，要求永久释放，并在旧变更测试前恢复准确原名。
+原对端 RPC 与捕获限制不变；不证明进程级限速、发布、配对或物理局域网／已部署验收。
+
+0.6.8 收录的 F1k 新增纯 `federation_probe_cli_{args,output}_tdd` 和不使用宿主网络的
+`federation_probe_cli_command_tdd`，覆盖新 23 参数形状、准确字节／数量界限、原始重复／未知
+字段解码、端点／名称／时间／TXT 准备、固定惰性观察、门禁优先级及坏管道，并保留旧浏览测试。
+`federation_probe_cli_network_tdd` 默认全部忽略，只有显式 `--with-probe-cli` 选择十条新用例。
+该开关独立要求与 `--with-cli` 相同的已有 subordinate-ID 映射及嵌套非 root、零 capability
+进程，不隐式选择旧 CLI 用例。覆盖准确静默提案／时序／输出、首／第三包后的单播响应、竞争
+提案、畸形包、占端口零发送、身份先于过期输入拒绝、缺接口和 SIGINT／SIGTERM 清理且无伪
+静默输出。真实流量仅在断网 namespace 内，不验收宿主局域网、发布、自动重试或配对。
+
+0.6.8 收录的 F1l 默认 `federation_mdns_announcement_schedule_tdd` 为纯计算，不打开 socket。
+覆盖两个调用方报告意图、完成后计间隔、纳秒时钟／等待边界、冻结 F0／timeout、取消、
+错误调用顺序和永久关闭。源码守卫阻止其接入活动探测、保留上下文、socket、CLI 与启动。
+这些检查不验收实际公告送达、查询响应、冲突解决或撤回。
+
+0.6.8 收录的 F1m 默认 `federation_mdns_response_conflict_tdd` 仍为纯计算，覆盖三个冻结唯一
+tuple、各 RR 区段、重复／相同／不同记录、TXT 原字节差异、SRV 数值及压缩／大小写折叠
+名称等值、接收头兼容、零长度 TXT 和完整包／记录／question 界限。前面的冲突不能隐藏
+后续畸形已知 IN RDATA；未知类型／非 IN 数据保持 opaque，旧 probe 行为不变。源码守卫
+防止接入 I/O；这些用例不证明活动发送器、持续冲突解决、TTL rescue、跨类型 CNAME 逻辑
+或局域网验收。
+
+0.6.8 收录的 F1n 默认 `federation_mdns_query_plan_tdd` 覆盖准确／ANY 直接匹配、仅 Answer
+抑制、奇数／到期裁剪 TTL、不累加低 TTL、全部已知 IN 校验、压缩名称和分立上下文原因。
+无匹配与全部被抑制保持不同，未支持的路由／序列情况不能变成空成功；共享私有记录校验
+须同时回归旧 F1m 冲突用例。这些测试不证明 I/O、实际查询响应、NSEC／附加记录、持续
+缓存、时序、限速或物理局域网验收。
+
+0.6.8 收录的 F1o 默认 `federation_mdns_query_response_tdd` 检查 Answer／Additional 分区、全部
+直接／已知集合组合、无复活的依赖抑制、规范冻结数据、新鲜／奇数／裁剪 TTL 及上下文／错误
+优先级。独立字节夹具锁定旧公告、probe 与 goodbye 布局。源码守卫阻止响应准备接入真实
+I/O、CLI 或启动；不证明 MTU、网络响应送达或完整 responder 验收。
 
 ## 真实与发布验收
 

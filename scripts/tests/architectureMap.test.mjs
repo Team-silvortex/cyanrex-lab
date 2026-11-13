@@ -91,3 +91,26 @@ test("architecture navigation separates current modules dated scores and histori
     assert.equal(await read(`frontend/public/course/${lang}/architecture-map.md`), source);
   }
 });
+
+test("federation framing and cache documentation preserve separate runtime and resource owners", async () => {
+  const wire = await read("engine/src/services/federation_mdns/wire.rs");
+  const packet = await read("engine/src/services/federation_mdns/packet.rs");
+  const probe = await read("engine/src/services/federation_mdns/announcement/probe.rs");
+  assert.match(wire, /pub\(super\) fn complete_name\(/);
+  assert.match(packet, /complete_name\(bytes, record\.start, record\.end\)/);
+  assert.match(packet, /complete_name\(bytes, record\.start \+ 6, record\.end\)/);
+  assert.match(probe, /wire::complete_name\(&self\.instance, 0, self\.instance\.len\(\)\)/);
+  assert.match(probe, /wire::complete_name\(&self\.host, 0, self\.host\.len\(\)\)/);
+  assert.doesNotMatch(packet, /fn rdata_name\(/);
+  assert.doesNotMatch(probe, /fn decoded_name\(/);
+  const index = await read("engine/src/services/mod.rs");
+  assert.ok(index.slice(0, index.indexOf("// Group: Live")).includes("explicit hosts"));
+  for (const lang of ["en", "zh-CN"]) {
+    const source = await read(`docs/${lang}/architecture-map.md`);
+    const row = source.split("\n").find(line => line.startsWith(lang === "en" ? "| Prepared federation |" : "| 联合准备 |"));
+    assert.ok(row?.includes(lang === "en" ? "retained" : "保留"), `${lang}: current federation ownership`);
+    const contributing = await read(lang === "en" ? "CONTRIBUTING.md" : "CONTRIBUTING.zh-CN.md");
+    for (const phrase of ["--dry-run", "-p cyanrex-engine", "frontend/public/course/", "frontend/public/monaco/", "node_modules", ".run/"])
+      assert.ok(contributing.includes(phrase), `${lang}: ${phrase}`);
+  }
+});

@@ -1,8 +1,14 @@
-//! Explicit one-query LAN diagnostic; never an Engine, service advertisement or pairing authority.
+//! Explicit LAN diagnostics; never an Engine, service advertisement or pairing authority.
 #[cfg(target_os = "linux")]
 mod arguments;
 #[cfg(target_os = "linux")]
 mod output;
+#[cfg(target_os = "linux")]
+mod probe;
+#[cfg(target_os = "linux")]
+mod probe_arguments;
+#[cfg(target_os = "linux")]
+mod probe_output;
 
 fn fail(code: i32, message: &str) -> ! {
     use std::io::Write;
@@ -48,20 +54,41 @@ fn main() {
         let first = args.next();
         if first.as_deref() == Some(std::ffi::OsStr::new("--help")) {
             if args.next().is_none() {
-                if writeln!(std::io::stdout().lock(), "{}", arguments::USAGE).is_err() {
+                if writeln!(
+                    std::io::stdout().lock(),
+                    "{}\n{}",
+                    arguments::USAGE,
+                    probe_arguments::USAGE
+                )
+                .is_err()
+                {
                     fail(74, "discovery output failed; snapshot not confirmed");
                 }
                 return;
             }
             fail(64, arguments::USAGE);
         }
-        let options = match arguments::parse(first.into_iter().chain(args)) {
-            Ok(options) => options,
-            Err(()) => {
-                fail(64, arguments::USAGE);
-            }
+        let (result, write_failure) = if first.as_deref() == Some(std::ffi::OsStr::new("probe-lan"))
+        {
+            let options = match probe_arguments::parse(first.into_iter().chain(args)) {
+                Ok(options) => options,
+                Err(()) => fail(64, probe_arguments::USAGE),
+            };
+            (
+                probe::run(options),
+                "probe output failed; observation not confirmed",
+            )
+        } else {
+            let options = match arguments::parse(first.into_iter().chain(args)) {
+                Ok(options) => options,
+                Err(()) => fail(64, arguments::USAGE),
+            };
+            (
+                browse(options),
+                "discovery output failed; snapshot not confirmed",
+            )
         };
-        let bytes = match browse(options) {
+        let bytes = match result {
             Ok(bytes) => bytes,
             Err((code, message)) => {
                 fail(code, message);
@@ -70,7 +97,7 @@ fn main() {
         // Bound bytes before the first write; stdout backpressure is not part of the network
         // deadline. A write error may leave a truncated stream, never a successful process result.
         if std::io::stdout().lock().write_all(&bytes).is_err() {
-            fail(74, "discovery output failed; snapshot not confirmed");
+            fail(74, write_failure);
         }
     }
     #[cfg(not(target_os = "linux"))]

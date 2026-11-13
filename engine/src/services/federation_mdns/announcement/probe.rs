@@ -1,7 +1,7 @@
 //! Pure per-packet evidence, never a name-availability result, winner or announcement permit.
 //! All bytes are untrusted. A future adapter must supply complete live ingress and its provenance.
 use super::{MdnsAnnouncement, MdnsError, Packet, Result};
-use crate::services::federation_mdns::wire::{self, Name, Section};
+use crate::services::federation_mdns::wire::{self, Section};
 
 /// Conservative claims only; errors and absence must never become permission to use a name.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -37,7 +37,10 @@ impl MdnsAnnouncement {
         if message.id != 0 || !matches!(message.flags, 0 | 0x8000 | 0x8400) {
             return Err(MdnsError::InvalidPacket);
         }
-        let protected = [decoded_name(&self.instance)?, decoded_name(&self.host)?];
+        let protected = [
+            wire::complete_name(&self.instance, 0, self.instance.len())?,
+            wire::complete_name(&self.host, 0, self.host.len())?,
+        ];
         let relevant =
             |record: &wire::Record| record.class() == 1 && protected.contains(&record.owner);
         if message.flags & 0x8000 != 0 {
@@ -68,13 +71,4 @@ impl MdnsAnnouncement {
             ProbeObservation::NoRelevantClaim
         })
     }
-}
-
-fn decoded_name(bytes: &[u8]) -> Result<Name> {
-    let mut offset = 0;
-    let name = wire::name(bytes, &mut offset)?;
-    if offset != bytes.len() {
-        return Err(MdnsError::InvalidPacket);
-    }
-    Ok(name)
 }

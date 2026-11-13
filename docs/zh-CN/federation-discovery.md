@@ -7,7 +7,7 @@ Cyanrex 将向去中心化的合作与教学平台演进：个人和组织运营
 代码仍只是可选 Task payload。教师权威留在教学域内，不成为其他节点及其私人资源的全局所有者。
 
 **0.6.6 中的 F0 和 F1a 都是纯 Rust 准备模块**，不是运行中的联合服务。
-F1a 新增紧凑 TXT 数据处理和有界本地候选缓存；产品版本为 0.6.7。
+F1a 新增紧凑 TXT 数据处理和有界本地候选缓存；产品版本为 0.6.8。
 独立 F1b 适配器新增显式调用的 Linux IPv4 单次查询，未挂载到两个应用。
 设备配对、跨网穿透、中继传输及跨权威工作区访问属于后续切片。
 源码 0.6.7 收录 F1c 独立显式 `cyanrex-discovery` 命令，不接应用启动。
@@ -17,6 +17,12 @@ F1f 新增独立显式的准确本机地址单播接收器，不是运行中的 
 F1g 新增显式有界三次探测库调用，不是公告服务或名称归属许可。
 F1h 新增固定生命周期／接口及冲突冷却的有限显式重试，不是发布入口。
 F1i 新增原 socket 静默续接及有界只接收复核，不是公告。
+源码 0.6.8 收录 F1j，将显式控制器尝试接到同一静默续接，不重置原有边界。
+源码 0.6.8 收录 F1k，新增显式单轮 `probe-lan` 诊断命令，只发探测提案，不发服务公告。
+源码 0.6.8 收录 F1l，新增纯双次初始公告时序计划，不包含发送器或发布许可。
+源码 0.6.8 收录 F1m，新增针对三条冻结记录的纯响应冲突比较，不包含监听或发送器。
+源码 0.6.8 收录 F1n，新增纯直接查询选择及单包已知答案抑制，不包含 responder。
+源码 0.6.8 收录 F1o，通过新的私有查询分析准备有界多播响应字节，不发送报文。
 下文旧 `Unreleased`／未发布标签保留实施阶段和分日期证据，不表示仍待源码收录。
 
 ## 信任与职责
@@ -372,17 +378,272 @@ elapsed 水位。首次验证的接口保持固定；跨轮不续租声明，不
 保留 FD 不等于保留有效性；检查仍是相邻观测，不是实时抢占或对管理员变更的原子保护。
 
 原 `probe_once` 和 F1h `attempt` 仍在返回前释放全部 socket；F1h 局部 guard **不**随保留句柄
-逸出。新独立入口不继承控制器的重试历史或三十秒上限，静默观察值及该控制器都不能制造这个
-上下文。这不是进程级限速、发布许可、完整响应器或公告／防御／撤销生命周期；后者需要另行
+逸出。新独立入口不继承控制器的重试历史或三十秒上限；静默观察值副本或旧 `attempt` 结果
+都不能制造该上下文。这不是进程级限速、发布许可、完整响应器或公告／防御／撤销生命周期；后者需要另行
 限时的保留 I/O 组合，不能把短窗口当无限租约。不接 CLI／启动、配对或 grant；
 `--with-retained` 仅选择受保护的隔离测试，不是产品联网开关。
+
+## F1j 显式控制器到保留上下文移交
+
+`MdnsProbeController::attempt_retained(cancelled)` 沿用 `attempt` 的显式准入、冻结首接口、
+最多四次尝试及冲突后五秒冷却。冲突不返回句柄；除原有 `CoolingDown` 外，错误关闭控制器。
+旧 `attempt`、`probe_once` 和独立 `probe_retained_once` 保留原行为。
+
+只有真实静默分支把原两个 socket、排队数据及已经消费的单轮入站计数交给
+`MdnsRetainedProbe`。私有具体 `ControllerReviewBounds` 移入原控制器生命周期、单调起点及
+最终时间水位；三十秒截止仍从控制器首次使用起算，不从静默完成起算。保留原接口 pin，
+不关闭重开 socket。回调、可复制观察值或调用者给定边界均不能制造该上下文；移交不刷新
+租约或报文额度。
+
+每次主动只接收 `review` 都同时检查原控制器边界、未改变的原 1–2 秒整轮 timeout、F0
+绝对／单调到期及固定 250 ms 静默复核窗口。相关声明、坏包／来源拒绝、取消、接口变化或
+时钟／截止失败永久释放两个通道；静默复核、`close` 和 Drop 都不发送报文。
+
+返回句柄借用控制器冻结公告，句柄 Drop 前不能再次可变借用控制器。静默完成让控制器进入
+终态；所报状态仅描述已完成尝试，不表示句柄持续有效或后台监控。关闭／失败／丢弃句柄
+不能获得另一次重试。空闲过期句柄仍须 review、close 或 Drop 才释放 FD；检查仍是相邻观测，
+不是实时抢占。
+
+显式 `--with-controller-retained` 仅选择隔离网络测试，不增加产品 CLI、启动监听、公告／
+防御／撤销生命周期、发布许可、节点证明、配对或 Workspace grant。独立控制器仍不共享
+进程级限速历史。
+
+## F1k 显式单轮探测命令
+
+`cyanrex-discovery probe-lan` 在低权限命令中显式调用原 `probe_once`，不调用重试控制器，
+不保留静默句柄。旧 `browse-lan` 参数和快照 Schema 不变；全局 `--help` 在 512 字节内说明
+两种模式，均不安装或自动启动。
+
+新模式严格要求以下固定顺序的 **23 个参数**。这只是模板，不能直接执行：审阅准确非 root
+身份／组及接口，并通过 `REVIEWED_F0_JSON` 提供新鲜、非秘密的原 F0 声明。不要原样运行或用 sudo。
+
+```bash
+engine/target/debug/cyanrex-discovery probe-lan \
+  --uid 1000 --gid 1000 --groups 27,1000 \
+  --interface enp3s0 --address 192.168.1.10 --timeout-ms 2000 \
+  --instance node-one --host host-one --port 4433 --ttl 60 \
+  --advertisement "$REVIEWED_F0_JSON"
+```
+
+这是明确命令参数，不是环境默认值或文件／stdin 入口。只有 F0 JSON 值可占 **4,096 字节**，
+其他项仍为 **2,048 字节**，总量 **16,384**；最多读取一个多余参数。非 UTF-8、缺失／多余／
+换序参数及别名均拒绝。声明必须是非秘密数据，可能出现在本机进程参数列表，不能放凭据或
+私人 Task 内容；诊断不回显原声明或标签。
+
+原非 root 进程门禁及 before-runtime 复查先于声明准备和网络工作。`prepare_at(now)` 严格
+解码原始 F0 字节，再沿用公告准备配置：规范标签、TTL 1–120、唯一 RFC1918 IPv4 hint 必须
+等于 `--address:--port`、所给 issued／expiry 新鲜及完整 TXT 限额。不生成或刷新声明、密钥
+或时间戳。timeout 为 **1,000–2,000 ms**，包含原单轮设置／调度，建议两秒。接口／MTU、
+随机源、排他单播端口、时序与入站检查继续由原适配器负责；准备／输出背压不构成整条命令硬截止。
+
+成功完整缓冲一份 JSON 加换行，至多 **512 字节**，固定 `schema_version: 1`、
+`kind: "unverified_lan_probe_observation"`、`observation_only: true`、`verified: false`、
+`name_ownership_verified: false`、`publication_permitted: false` 和 `announcement_sent: false`。
+`observation` 只有 `no_conflict_observed`、`existing_response` 或 `competing_probe`。
+三种完成观察都退出 **0**，仅表示诊断完成，不表示名称可用。不返回原输入／报文、对端身份、
+可复用租约或保证发送三包的计数。
+
+畸形／过期准备返回 **64**，不安全进程 **77**，时钟／探测／输出失败 **74**，不支持的平台
+**69**。失败不输出观察；消费者仍须同时要求完整 JSON 和 exit 0，因为输出中断可能留下截断
+stdout。探测后和输出前复查原线程，不安装 worker／子进程／信号处理，不自动重试、改名、
+发第四包、公告或 goodbye，也不授予发布、配对或 grant。独立调用不共享历史。
+
+只有 `scripts/test-federation-mdns-netns.sh --with-probe-cli` 选择默认忽略的真实 CLI 夹具。
+即使不带 `--with-cli` 也要求原 CLI 夹具已有的 subordinate-ID 映射授权；旧开关仍只选原测试。
+前置不足即失败，不修改账户、不放宽产品进程门禁，也不回退宿主局域网。
+
+## F1l 纯初始公告时序计划
+
+`MdnsAnnouncement::initial_schedule(initial_wall, timeout)` 以原冻结声明和调用者给定的
+`Duration` 值准备借用型 `MdnsAnnouncementSchedule<'_>`。构造是纯计算：不读取时钟、接口
+或 socket，也不接收 probe 观察值或 retained 句柄。冻结的 **2–5 秒（含边界）** timeout 是项目规划
+预算，不是 RFC 要求或完成承诺；剩余 F0 租约较短时仍可合法构造，但计划可能在完成前到期。
+
+计划冻结声明原有整秒 F0 到期点，并保留初始 wall 样本的小数部分：单调租约准确等于
+`expiry - initial_wall`。wall 与 elapsed 各持独立水位，任一回退都拒绝。每次
+`step(elapsed, wall, cancelled)` 和 `record_completion(elapsed, wall, cancelled)` 都检查
+取消、时钟水位、F0 绝对到期、冻结单调租约及 timeout，包括即将返回 `Complete` 的 step。
+给定样本不表示空闲期有后台监控，也不抢占两次调用之间的工作。
+
+`AnnouncementStep` 只有 `Wait(Duration)`、`Prepare { ordinal: 1 | 2 }` 和 `Complete`。
+首个有效 step 请求准备 ordinal 1，调用者必须明确报告完成；第二次 due 是该完成样本再加
+**一秒**。迟到调用不触发追赶或周期公告。`Wait` 取下次 due、timeout、单调 F0 租约及 wall
+F0 到期四种剩余时间的最小值。间隔参考 [RFC 6762 §8.3](https://www.rfc-editor.org/rfc/rfc6762.html#section-8.3)
+中的初始双次公告要求，但不实现发送器。
+
+`Prepare` 不含字节、TTL 或发送权限；调用者报告完成不是发送回执，也不证明对端收到了报文。
+已有待完成准备时重入 step、无待完成准备时报告完成、重复报告或任一验证错误，都会永久
+关闭计划。两次完成报告之后，step 只可返回一次 `Complete`，后续调用返回 `Closed`。
+`close()` 是幂等本地状态关闭，不执行 I/O 或发送 goodbye。
+
+该计划的 elapsed 起点独立于 probe／controller 起点。未来组合必须保留 retained 的
+**250 ms**、单轮的 **1–2 秒**及控制器的 **30 秒**原边界，不能借新计划重置或延长它们。
+真实发送、持续查询处理、[冲突解决](https://www.rfc-editor.org/rfc/rfc6762.html#section-9)及
+[撤销](https://www.rfc-editor.org/rfc/rfc6762.html#section-10.1)仍需另行评审生命周期。
+本切片不改变 CLI、应用启动、源码版本、身份或权限。
+
+## F1m 纯响应冲突观察
+
+`MdnsAnnouncement::observe_response_conflict(bytes)` 只与原冻结记录做纯比较，不读取时钟。
+`ResponseConflictObservation` 只有 `NoConflictingRecord` 和 `ConflictingRecord`。
+它独立于 `observe_probe_packet`：旧 probe 观察器仍将完全相同的相关响应报告为
+`ExistingResponse`，不能用这一保守探测结论代替公告期冲突比较。相同 RDATA 不冲突；
+受保护唯一记录的不同 RDATA 才冲突，依据
+[RFC 6762 §6.6](https://www.rfc-editor.org/rfc/rfc6762.html#section-6.6)及
+[§9](https://www.rfc-editor.org/rfc/rfc6762.html#section-9)。
+
+只比较以下三个冻结 IN tuple，可出现在任一资源记录区段：
+
+| 受保护 owner／type | RDATA 等值规则 |
+|---|---|
+| 冻结 host／A | 准确四字节地址 |
+| 冻结 instance／SRV | 前六个 priority／weight／port 字节，再加解码后进行 ASCII 大小写折叠的 target 名称 |
+| 冻结 instance／TXT | 原始字节完全相同，包括字符串长度字节；不做大小写折叠、排序或 F0 解码 |
+
+SRV 的 priority、weight 和 port 都接受任意 `u16` 值，候选准入的非零端口等策略不是接收
+语法规则。SRV target 支持完整包内的有效名称压缩，见
+[RFC 6762 §18.14](https://www.rfc-editor.org/rfc/rfc6762.html#section-18.14)。owner／target
+继续使用现有 ASCII／拒绝控制字符的名称配置，不声称实现 [§16](https://www.rfc-editor.org/rfc/rfc6762.html#section-16)
+中更广的 mDNS 字符处理。TXT 是不透明数据；接收零长度 TXT RDATA 和 `[0]`，两者都与
+本地冻结的非空 TXT 不同。不把本地 F0 应用准入规则用于接收，见
+[RFC 6763 §6.1](https://www.rfc-editor.org/rfc/rfc6763.html#section-6.1)及
+[§6.5](https://www.rfc-editor.org/rfc/rfc6763.html#section-6.5)。
+
+完整帧上限为 **4,096 字节／8 个 question／64 条资源记录**。遍历所有 IN A、PTR、TXT
+和 SRV 的基础 RDATA 语法，包括无关 owner 和已发现差异之后的记录。错误优先，不能因先
+看到冲突而提前返回、漏过后续坏记录。其他类型，包括 CNAME、AAAA、NSEC，仅保留有界
+不透明 RDATA；非 IN 记录不套用 IN 特有的 RDATA 规则。重复相同记录无冲突，任意不同的
+受保护记录均冲突。TTL 和 cache-flush 位不进入等值比较；TTL 为零但 RDATA 不同也冲突。
+
+新观察器采用 [RFC 6762 §18](https://www.rfc-editor.org/rfc/rfc6762.html#section-18) 的接收头部规则：
+忽略 ID 及 AA／TC／RD／RA／Z／AD／CD，只要求 QR 1、OPCODE 0、RCODE 0。query、非零
+opcode 或非零 rcode 都返回错误，不能成为 `NoConflictingRecord`。忽略 TC 不允许截断字节：
+全部声明记录及最终字节边界仍须完整。这些规则不改变旧 probe 的头部接纳，也不把新观察器
+挂到现有接收器。
+
+`NoConflictingRecord` 只表示该包未见上述三个 tuple 中的不同记录，不证明名称可用、身份、
+此前发送、名称归属或许可。不检测 CNAME 跨类型冲突及不透明类型语义。低 TTL rescue、
+known-answer suppression、查询响应、probe 平局处理、自动改名和 retained 持续监听均另行
+处理。真实发送、冲突解决及撤销仍需独立评审生命周期。本纯入口不连接 I/O、CLI、应用启动
+或 F1l 时序计划；版本不变。
+
+## F1n 纯直接查询计划
+
+`MdnsAnnouncement::plan_query(bytes, source_port, multicast_destination, now)` 只针对原四条
+冻结记录制定计划，不读时钟或执行 I/O。`MdnsQueryPlan` 只有 `Multicast { requested,
+suppressed }` 或 `RequiresContext(MdnsQueryContext)`。两个集合都是 `MdnsQueryRecordSet`，
+公开 `ptr`、`srv`、`txt`、`a` 四个布尔字段，不包含 TTL、字节、送达结果、名称归属证明或
+发送许可。source port 和 destination 只是调用者声明，不是已核验的入站来源；源端口零
+返回 `InvalidConfig`。
+
+完整包继续受 **4,096 字节／8 个 question／64 条记录**限制。查询配置要求 QR 0、OPCODE 0、
+RCODE 0，按 [RFC 6762 §18](https://www.rfc-editor.org/rfc/rfc6762.html#section-18) 忽略 ID 及
+AA／RD／RA／Z／AD／CD。TC 只要求上下文，不允许缺失声明字节。在返回上下文或选择记录
+之前，先验证原 F0 新鲜度及全部已知 IN A／PTR／TXT／SRV 基础语法，包括无关 owner 和
+后续记录。未知类型和非 IN RDATA 保持有界不透明数据，不解码 OPT class。Answer 中上述
+四类 IN 记录若带 cache-flush 高位，本严格查询配置返回错误，依据
+[§10.2](https://www.rfc-editor.org/rfc/rfc6762.html#section-10.2)；不改变 F1m 响应等值比较忽略
+cache-flush 的原语义。
+
+以下任一上下文标志都会把**整包**转入 `RequiresContext`，包括无关的 QU question 或
+Authority 记录，不返回部分多播选择：
+
+| `MdnsQueryContext` 字段 | 含义 |
+|---|---|
+| `truncated` | TC 置位 |
+| `unicast_question` | 任一 question 带 QU 高位 |
+| `authority_records` | 任一记录位于 Authority 区段 |
+| `legacy_port` | 所声明源端口不是 5353 |
+| `direct_unicast` | `multicast_destination` 为 false |
+| `no_questions` | question 区段为空 |
+
+这些分支需要超出单个多播 QM 包的处理，见
+[RFC 6762 §5.4](https://www.rfc-editor.org/rfc/rfc6762.html#section-5.4)、
+[§5.5](https://www.rfc-editor.org/rfc/rfc6762.html#section-5.5)、
+[§6.7](https://www.rfc-editor.org/rfc/rfc6762.html#section-6.7)及
+[§7.2](https://www.rfc-editor.org/rfc/rfc6762.html#section-7.2)。返回标志不表示已实现单播路由、
+legacy 回复、探测防御或多包已知答案收集。
+
+没有上下文标志时，解码后准确 owner／type 且 class 为 IN／ANY 的 question 选择直接记录；
+qtype ANY 按 [RFC 6762 §6.5](https://www.rfc-editor.org/rfc/rfc6762.html#section-6.5) 选择匹配的全部
+冻结类型。重复 question 只置同一布尔值。service PTR 问题仅选择 PTR；instance ANY 选择
+SRV 与 TXT；host ANY 选择 A。PTR 不自动带出 SRV／TXT／A 附加记录；
+[RFC 6763 §12](https://www.rfc-editor.org/rfc/rfc6763.html#section-12) 的附加记录行为仍独立。
+
+已知答案抑制只使用 Answer 区段中同一冻结 tuple、RDATA 等值的 IN 记录，依据
+[RFC 6762 §7.1](https://www.rfc-editor.org/rfc/rfc6762.html#section-7.1)。PTR 将解码后 target
+与冻结 instance 比较；A／SRV／TXT 沿用上文等值规则。当前给定样本下，
+`local_ttl = min(original_requested_ttl, F0_expiry - now)`；`now` 不得早于原准备时间，且
+必须严格早于 F0 到期。只有 `2 * u64(known_ttl) >= local_ttl` 才抑制该记录，奇数 local TTL
+的半值阈值向上取整。多条低 TTL 重复记录不累加；任一同值答案达到阈值即可。Authority 与
+Additional 均不提供抑制。最终 `suppressed` 与 `requested` 取交集，只能包含所请求记录。
+
+`requested` 为空表示无直接匹配；非空且 `requested == suppressed` 表示所选直接记录全部
+通过本抑制检查。两者都不表示完整 responder 无需响应。NSEC 否定回答、低 TTL rescue、
+附加记录、速率控制、QU 路由、多包缓存和探测防御均未实现。本无状态调用不记录跨调用
+时钟水位，也不保持返回后的快照有效性。
+
+私有 `records.rs` 只共享基础 IN 语法及四个冻结 tuple 的等值比较。F1m 仍只将三条唯一
+记录的不同数据视为冲突，共享 PTR 差异不冲突。旧 probe、CLI、wire、retained 和 schedule
+行为不变，不增加接收器、发送器、启动路径、依赖或版本变更。
+
+## F1o 纯查询响应准备
+
+`MdnsAnnouncement::prepare_query_response(bytes, source_port, multicast_destination, now)` 对原
+查询做一次新的私有分析，不接受公开可构造的 `MdnsQueryPlan` 作为编码权限。完整帧、头部、
+F0 新鲜度、已知 IN 语法、严格查询 cache-flush 规则及整包上下文检查均沿用 F1n，且先于
+任何成功结果。源端口与是否多播目标仍只是调用者声明，不证明真实来源。同一给定 `now` 同时
+确定分析和编码的本地 TTL 及原 F0 到期界限。
+
+`MdnsQueryResponse` 有四种结果：
+
+| 结果 | 含义 |
+|---|---|
+| `NoMatchingQuestion` | 未请求任何直接冻结记录 |
+| `AllDirectAnswersSuppressed` | 请求了直接记录，但全部通过已知答案抑制 |
+| `RequiresContext(MdnsQueryContext)` | 至少一个 F1n 上下文标志要求本配置以外的处理 |
+| `Packet(Vec<u8>)` | 已用冻结本地记录准备一份完整有界响应 |
+
+令 `D` 为直接请求集合，`K` 为四条冻结记录中具有同值已知答案、且答案 TTL 满足
+`2 * u64(known_ttl) >= local_ttl` 的完整集合。不同于 F1n 对外 `suppressed` 投影，私有 `K`
+保留并未直接请求但已达到阈值的记录。直接 Answer 为 `A = D - K`。`D` 为空返回
+`NoMatchingQuestion`；`A` 为空返回 `AllDirectAnswersSuppressed`。这两种分支都不生成
+只有 Additional 的报文。
+
+只有抑制后仍存活的直接 Answer 生成依赖：
+
+| 存活的直接 Answer | 依赖 |
+|---|---|
+| PTR | SRV、TXT 和 A |
+| SRV | A |
+| TXT 或 A | 无 |
+
+Additional 集合为 `dependencies - K - A`：已知答案也可抑制附加记录，Answer 不会重复出现在
+Additional。该依赖／抑制公式是本切片的策略，参考
+[RFC 6763 §12](https://www.rfc-editor.org/rfc/rfc6763.html#section-12)及
+[RFC 6762 §7.1](https://www.rfc-editor.org/rfc/rfc6762.html#section-7.1)，不会因已抑制的 PTR
+而单独准备其依赖报文。
+
+每个区段都固定按 PTR、SRV、TXT、A 排序。头部 ID 为 0、flags 为 `0x8400`，question 和
+Authority 计数为零，Answer／Additional 计数与所选集合一致。PTR 使用 IN 且清除 cache-flush；
+SRV／TXT／A 在两个区段中都使用 `0x8001`。owner、RDATA 及 TTL 全部来自冻结本地声明与
+当前有界 TTL，绝不把输入 RDATA 复制进响应。这只是依据
+[RFC 6762 §6](https://www.rfc-editor.org/rfc/rfc6762.html#section-6)及
+[§10.2](https://www.rfc-editor.org/rfc/rfc6762.html#section-10.2) 准备多播投影，不执行发送。
+当前每个唯一 RRSet 只有一个本地成员；将来多成员 RRSet 的完整组与 cache-flush 约束需要
+重新评审。完整编码上限为 **4,096 字节**，仍可能超过真实接口 MTU。
+
+`NoMatchingQuestion` 和 `AllDirectAnswersSuppressed` 只描述直接答案，不证明完整 responder
+无需响应。准备好的字节也不提供真实来源、名称归属、发送许可、发送时序或速率控制。
+QU／legacy 处理、探测防御、真实 I/O 和 responder 生命周期仍独立。旧 CLI、probe 和
+schedule 不调用本入口；不增加应用启动、依赖或版本变更。
 
 ## 交付阶段
 
 | 阶段 | 范围 | 状态 |
 |---|---|---|
 | F0 | 有界公告、兼容协商及策略过滤后的未验证提示 | 纯准备模块，未挂载 |
-| F1 | 明确启用的局域网 mDNS／DNS-SD 适配、有界候选缓存、过期与接口控制 | 源码 0.6.7 收录 F1a TXT／缓存、F1b Linux 单查询、F1c CLI／F1d–e 准备／F1f 单播／F1g 探测／F1h 有限重试／F1i 保留静默复核；发布生命周期、更广互通及 UI 仍待完成 |
+| F1 | 明确启用的局域网 mDNS／DNS-SD 适配、有界候选缓存、过期与接口控制 | 源码 0.6.8 收录 F1a–F1o：F1j 保留控制器静默边界，F1k 开放单轮诊断，F1l 准备公告时序，F1m 比较响应 RDATA，F1n 制定直接查询计划，F1o 仅准备响应字节；真实发送／发布生命周期、更广互通及 UI 仍待完成 |
 | F2 | 持久节点密钥、挑战证明、明确邀请／批准、撤销与防重放 | 计划中，尚无已配对节点注册表 |
 | F3 | 原生直连与穿透，失败时使用明确配置的自托管加密中继 | 计划中，尚未选择传输依赖 |
 | F4 | 窄范围跨权威工作区授权及另行核验的资源命令 | 计划中，现有跨权威拒绝不变 |
@@ -474,8 +735,64 @@ netns NET_ADMIN 改名用例要求关闭，父恢复准确接口名后再跑原�
 匹配失败，仅修正 regex，原十条不变。这只验收短期未公告连续性，不是控制器移交、发布、
 完整后端／前端／SDK、物理局域网、认证、部署或新远端 CI；不使用应用数据库或宿主局域网。
 
+**2026-11-13 未发布 F1j 限定验证**通过 **16** 条新增纯测试（14 原控制器复核边界／活动 guard、
+2 保留入口）及此前 **453** 条选定 Rust，共 **469** 条，无失败、忽略或 warning。
+新增 **10** 条控制器保留网络用例与原 **55** 条在全新断网命名空间一起通过，共 **65** 条独立用例。
+新选择器单独运行另通过重叠的 **17** 条，不计为额外覆盖。
+九条新普通用例零 capability；独立自有 NET_ADMIN 改名例要求关闭，并在旧变更用例前恢复准确原名。
+新 target 默认确认 **10 ignored**，没有联网。公共／格式门禁 **893** 条及工具／格式检查通过。
+缺 API／边界及缺活动 guard helper 的回归先失败再实现；guard 提取保留原 pre／body／post 顺序。
+源码守卫仅明确放行新移交，保留旧入口、不接启动及无发送器约束；独立只读复核没有发现阻断问题。
+这不是完整后端／前端／SDK、发布、物理局域网、节点认证、配对、穿透、部署或远端 CI 验收。
+没有使用应用数据库或宿主局域网。
+
+**2026-11-13 未发布 F1k 限定验证**通过 **24** 条新增默认 Rust（15 纯参数／准备、2 输出投影、
+7 不使用宿主网络的命令测试）及此前 **469** 条选定回归，共 **493** 条，无失败、忽略或 warning。
+新增 **10** 条真实探测 CLI 用例与此前 **65** 条一起在全新断网命名空间通过，共 **75** 条独立用例；
+新选择器单独运行另通过重叠的 **17** 条，不计额外覆盖。新 CLI 用例均使用嵌套非 root、零
+capability 进程；新 target 默认确认 **10 ignored**、不联网。公共／格式 **894** 条及工具／
+格式检查通过。缺模块和旧命令分派回归先失败再实现；后者以旧命令实际返回 64、预期门禁 77
+失败，而非绕过夹具。旧浏览参数／输出文件及上一轮保留控制器核心均未改变。
+七选择器 runner 的 128 种组合及九项非法／重复参数检查通过，独立只读复核没有阻断问题。
+这不是完整后端／前端／SDK、物理局域网、通用 mDNS 互通、发布、配对、穿透、部署或远端 CI 验收。
+
+**2026-11-13 未发布 F1l 限定验证**通过新增 **43** 项纯时序用例及此前 **493** 项相关 Rust：
+共 **536** 项，无失败、忽略或警告。公共／格式检查通过 **895** 条脚本及工具／Rust 格式检查；
+单独选择的源码／架构 **20** 条守卫为重叠覆盖。缺接口与源码守卫先失败再实现；首次组合
+守卫只发现生成课程副本尚未同步，同步后以原断言通过。独立只读复核无阻断问题，上一轮
+F1k 的十份 CLI／测试／runner 指纹保持一致。本轮为纯计算，未重跑真实网络套件，也未改变
+之前分日期网络验收；不是完整后端／前端／SDK、公告发送器、物理局域网互通、配对、穿透、
+部署或远端 CI 验收，没有使用应用数据库或宿主局域网。
+
+**2026-11-13 未发布 F1m 限定验证**通过新增 **63** 项纯响应比较及此前 **536** 项相关 Rust：
+共 **599** 项，无失败、忽略或警告。公共／格式检查通过 **896** 条脚本及工具／Rust 格式检查；
+单选源码／架构 **21** 条守卫为重叠覆盖。缺接口先失败，随后 ID、被忽略头部位和零长度 TXT
+三项接收兼容性以真实错误先失败再通过，没有改变旧 probe 规则。独立只读复核无阻断问题；
+此前 F1k 的十份 CLI／测试／runner 与 F1l 的三份时序／测试指纹保持一致。本轮纯计算，未
+重跑真实网络套件，也不改变旧分日期验收；不是完整后端／前端／SDK、实际冲突解决／公告
+生命周期、通用 DNS 校验、物理局域网互通、配对、穿透、部署或远端 CI 验收。
+没有使用应用数据库或宿主局域网。
+
+**2026-11-13 未发布 F1n 限定验证**通过新增 **59** 项纯查询选择及此前 **599** 项相关 Rust：
+共 **658** 项，无失败、忽略或警告。公共／格式检查通过 **897** 条脚本及工具／Rust 格式检查；
+单选源码／架构 **22** 条守卫为重叠覆盖。缺接口用例先失败再实现；私有 RDATA 提取后原
+**63** 项 F1m 同样通过，其守卫改为跟踪明确共享校验，而不是要求解码仍留在旧文件。
+独立只读复核无阻断问题，十六份此前 CLI／runner、时序和冲突测试指纹保持不变。本轮未
+重跑真实网络套件，也不提升旧分日期验收；不是完整后端／前端／SDK、实际查询响应器、
+已知答案序列收集器、物理局域网互通、配对、穿透、部署或远端 CI 验收。
+没有使用应用数据库或宿主局域网。
+
+**2026-11-13 未发布 F1o 限定验证**通过新增 **62** 项纯响应准备及此前 **658** 项相关 Rust：
+共 **720** 项，无失败、忽略或警告。其中一项穷举 **256** 组直接／已知集合；独立字节夹具
+锁定旧公告、probe 与 goodbye 布局。公共／格式检查通过 **898** 条脚本及工具／Rust 格式
+检查；单选源码／架构 **23** 条守卫为重叠覆盖。初始三项缺接口用例先失败再实现。独立
+复核无产品阻断；补强了同一对象跨调用时间回退的测试并通过。F1n 守卫改为跟踪私有分析
+所属层，同时保留完整校验和公开投影检查。本轮未重跑真实网络；不是完整后端／前端／SDK
+门禁、真实响应送达、真实 MTU 验证、完整 responder、配对、穿透、部署或远端 CI 验收。
+没有使用应用数据库或宿主局域网，版本、提交和标签未改变。
+
 [架构地图](architecture-map.md)、[平台链路](platform-network.md)与[安全指南](security.md)
 保留当前宿主和授权边界。F0 不新增路由、监听、配置开关、Schema、权限、迁移、运行依赖或部署服务，
 F1a 同样遵守这些限制。F1b（包括显式 F1c 调用）仍仅打开明确请求的组播 socket；F1f 独立准确
 本机地址接收器需要显式库调用。现有宿主路由、认证、存储、依赖和应用启动不变；
-F1g／F1h／F1i 独立显式库调用不新增调用者权限或产品启动接入。
+F1g／F1h／F1i 及 F1j 显式库调用不新增调用者权限或产品启动接入。

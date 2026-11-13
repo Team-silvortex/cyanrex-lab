@@ -1,6 +1,7 @@
-//! Caller-owned finite retry history; no automatic retry, retained socket or publication permit.
+//! Caller-owned finite retry history; retained quiet review is explicit, never a sending permit.
 use super::{
-    MdnsAnnouncement, MdnsConfig, MdnsError, ProbeRunObservation, Result, VerifiedInterface,
+    MdnsAnnouncement, MdnsConfig, MdnsError, ProbeRunObservation, Result, RetainedProbeOutcome,
+    VerifiedInterface,
 };
 use std::{
     sync::atomic::{AtomicBool, Ordering},
@@ -9,10 +10,12 @@ use std::{
 
 mod gate;
 mod lifetime;
+mod review;
 #[cfg(test)]
 mod tests;
 use gate::RetryGate;
 use lifetime::Lifetime;
+pub(super) use review::ControllerReviewBounds;
 
 /// Last observed state, not current lease validity or permission to send a packet.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -77,6 +80,88 @@ impl MdnsProbeController {
         result
     }
 
+    /// Retain only a quiet attempt's original sockets and original controller bounds for review.
+    /// The borrowed handle prevents another controller call until it is dropped. Quiet finishes
+    /// retry history permanently; later review conflicts cannot reopen that history or send.
+    pub fn attempt_retained(
+        &mut self,
+        cancellation: &AtomicBool,
+    ) -> Result<RetainedProbeOutcome<'_>> {
+        // Split fields before creating an outcome borrowing the frozen announcement. No callback
+        // escapes: only concrete owned bounds are attached after all completion checks succeed.
+        let Self {
+            config,
+            announcement,
+            gate,
+            origin,
+            lifetime,
+            interface,
+        } = self;
+        let result = (|| {
+            check_cancelled(cancellation)?;
+            if matches!(
+                gate.state(),
+                ProbeControllerState::Finished | ProbeControllerState::Closed
+            ) {
+                return Err(MdnsError::Closed);
+            }
+            let elapsed = sample_fields(config, announcement, origin, lifetime)?;
+            gate.begin(elapsed)?;
+            if let Some(pinned) = interface.as_ref() {
+                pinned.verify_unchanged()?;
+            } else {
+                *interface = Some(VerifiedInterface::inspect(config)?);
+            }
+            check_cancelled(cancellation)?;
+            let mut outcome = {
+                let pinned = interface.as_ref().ok_or(MdnsError::Closed)?;
+                let started = origin.ok_or(MdnsError::Closed)?;
+                let frozen = lifetime.as_mut().ok_or(MdnsError::Closed)?;
+                let mut guard = || {
+                    let wall = SystemTime::now()
+                        .duration_since(UNIX_EPOCH)
+                        .map_err(|_| MdnsError::ClockInvalid)?;
+                    let elapsed = started.elapsed();
+                    frozen.check(elapsed, wall)?;
+                    gate.check_in_flight(elapsed)?;
+                    pinned.verify_unchanged()
+                };
+                super::probing::probe_retained_guarded(
+                    config,
+                    announcement,
+                    cancellation,
+                    &mut guard,
+                )?
+            };
+            interface
+                .as_ref()
+                .ok_or(MdnsError::Closed)?
+                .verify_unchanged()?;
+            check_cancelled(cancellation)?;
+            let completed = sample_fields(config, announcement, origin, lifetime)?;
+            gate.finish(
+                completed,
+                !matches!(outcome, RetainedProbeOutcome::Quiet(_)),
+            )?;
+            if let RetainedProbeOutcome::Quiet(handle) = &mut outcome {
+                let bounds = ControllerReviewBounds::from_controller(
+                    origin.ok_or(MdnsError::Closed)?,
+                    lifetime.take().ok_or(MdnsError::Closed)?,
+                    completed,
+                )?;
+                handle.bind_controller(
+                    bounds,
+                    interface.as_ref().ok_or(MdnsError::Closed)?.clone(),
+                )?;
+            }
+            Ok(outcome)
+        })();
+        if matches!(result, Err(error) if error != MdnsError::CoolingDown) {
+            gate.close();
+        }
+        result
+    }
+
     fn attempt_inner(&mut self, cancellation: &AtomicBool) -> Result<ProbeRunObservation> {
         check_cancelled(cancellation)?;
         if matches!(
@@ -131,24 +216,36 @@ impl MdnsProbeController {
     }
 
     fn sample(&mut self) -> Result<Duration> {
-        let started = self.origin.unwrap_or_else(Instant::now);
-        let wall = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .map_err(|_| MdnsError::ClockInvalid)?;
-        let remaining = self
-            .announcement
-            .probe_remaining(self.config.local_address(), wall.as_secs())?;
-        if self.lifetime.is_none() {
-            self.lifetime = Some(Lifetime::new(wall, remaining)?);
-            self.origin = Some(started);
-        }
-        let elapsed = started.elapsed();
-        self.lifetime
-            .as_mut()
-            .ok_or(MdnsError::Closed)?
-            .check(elapsed, wall)?;
-        Ok(elapsed)
+        sample_fields(
+            &self.config,
+            &self.announcement,
+            &mut self.origin,
+            &mut self.lifetime,
+        )
     }
+}
+
+fn sample_fields(
+    config: &MdnsConfig,
+    announcement: &MdnsAnnouncement,
+    origin: &mut Option<Instant>,
+    lifetime: &mut Option<Lifetime>,
+) -> Result<Duration> {
+    let started = origin.unwrap_or_else(Instant::now);
+    let wall = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map_err(|_| MdnsError::ClockInvalid)?;
+    let remaining = announcement.probe_remaining(config.local_address(), wall.as_secs())?;
+    if lifetime.is_none() {
+        *lifetime = Some(Lifetime::new(wall, remaining)?);
+        *origin = Some(started);
+    }
+    let elapsed = started.elapsed();
+    lifetime
+        .as_mut()
+        .ok_or(MdnsError::Closed)?
+        .check(elapsed, wall)?;
+    Ok(elapsed)
 }
 
 fn check_cancelled(cancellation: &AtomicBool) -> Result<()> {

@@ -9,6 +9,16 @@ use std::net::{Ipv4Addr, SocketAddrV4};
 
 mod probe;
 pub use probe::ProbeObservation;
+mod schedule;
+pub use schedule::{AnnouncementStep, MdnsAnnouncementSchedule};
+mod conflict;
+pub use conflict::ResponseConflictObservation;
+mod query;
+mod records;
+pub use query::{MdnsQueryContext, MdnsQueryPlan, MdnsQueryRecordSet};
+mod response;
+use records::RecordKind;
+pub use response::MdnsQueryResponse;
 
 type Result<T> = std::result::Result<T, MdnsError>;
 const SERVICE: &[u8] = b"\x08_cyanrex\x04_udp\x05local\0";
@@ -104,19 +114,43 @@ impl MdnsAnnouncement {
         let mut packet = Packet(Vec::new());
         // Unsolicited-announcement layout (RFC 6762 section 8.3), not a PTR query-response layout.
         packet.append(&[0, 0, 0x84, 0, 0, 0, 0, 4, 0, 0, 0, 0])?;
-        packet.record(SERVICE, 12, 1, ttl, &self.instance)?;
+        self.frozen_record(&mut packet, RecordKind::Ptr, 1, ttl)?;
         self.unique_records(&mut packet, 0x8001, ttl)?;
         Ok(packet.0)
     }
 
     fn unique_records(&self, packet: &mut Packet, class: u16, ttl: u32) -> Result<()> {
-        let mut srv = vec![0, 0, 0, 0];
-        srv.extend_from_slice(&self.endpoint.port().to_be_bytes());
-        srv.extend_from_slice(&self.host);
-        // Cache-flush bits are only wire fields: no uniqueness probe has been performed here.
-        packet.record(&self.instance, 33, class, ttl, &srv)?;
-        packet.record(&self.instance, 16, class, ttl, &self.txt)?;
-        packet.record(&self.host, 1, class, ttl, &self.endpoint.ip().octets())
+        for kind in [RecordKind::Srv, RecordKind::Txt, RecordKind::A] {
+            self.frozen_record(packet, kind, class, ttl)?;
+        }
+        Ok(())
+    }
+
+    fn frozen_record(
+        &self,
+        packet: &mut Packet,
+        kind: RecordKind,
+        class: u16,
+        ttl: u32,
+    ) -> Result<()> {
+        // Class/cache-flush are supplied wire fields, not proof that uniqueness was established.
+        match kind {
+            RecordKind::Ptr => packet.record(SERVICE, kind.code(), class, ttl, &self.instance),
+            RecordKind::Srv => {
+                let mut srv = vec![0, 0, 0, 0];
+                srv.extend_from_slice(&self.endpoint.port().to_be_bytes());
+                srv.extend_from_slice(&self.host);
+                packet.record(&self.instance, kind.code(), class, ttl, &srv)
+            }
+            RecordKind::Txt => packet.record(&self.instance, kind.code(), class, ttl, &self.txt),
+            RecordKind::A => packet.record(
+                &self.host,
+                kind.code(),
+                class,
+                ttl,
+                &self.endpoint.ip().octets(),
+            ),
+        }
     }
 }
 

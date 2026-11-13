@@ -1,5 +1,6 @@
-//! Explicit Linux IPv4 single-query discovery and pure announcement encoding, never peer trust.
+//! DNS wire preparation and explicit Linux IPv4 discovery/probing, never peer trust.
 //! The pure F0/F1a modules remain independent of this networking adapter.
+//! Browse, probe, finite retries and retained receive-only review keep distinct runtime owners.
 use crate::services::federation_discovery::{lan::LanDiscoveryError, DiscoveryError};
 use std::{net::Ipv4Addr, time::Duration};
 
@@ -12,7 +13,10 @@ mod runtime;
 mod socket;
 mod wire;
 
-pub use announcement::{MdnsAnnouncement, ProbeObservation};
+pub use announcement::{
+    AnnouncementStep, MdnsAnnouncement, MdnsAnnouncementSchedule, MdnsQueryContext, MdnsQueryPlan,
+    MdnsQueryRecordSet, MdnsQueryResponse, ProbeObservation, ResponseConflictObservation,
+};
 pub use controller::{MdnsProbeController, ProbeControllerState};
 pub use interface::VerifiedInterface;
 pub use packet::{

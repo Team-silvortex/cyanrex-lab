@@ -3,6 +3,7 @@ use super::{
     cancelled, Limits, MdnsAnnouncement, MdnsError, ProbeIo, ProbeRunObservation, Result, Run,
     VerifiedInterface,
 };
+use crate::services::federation_mdns::controller::ControllerReviewBounds;
 use std::{sync::atomic::AtomicBool, time::Instant};
 
 mod window;
@@ -49,6 +50,7 @@ struct Live<'a> {
     interface: VerifiedInterface,
     io: ProbeIo,
     bounds: ReviewBounds,
+    controller: Option<ControllerReviewBounds>,
 }
 
 impl<'a> MdnsRetainedProbe<'a> {
@@ -64,8 +66,25 @@ impl<'a> MdnsRetainedProbe<'a> {
                 interface: run.interface.clone(),
                 io,
                 bounds: ReviewBounds::from_probe(run.limits, quiet_at)?,
+                controller: None,
             }),
         })
+    }
+
+    /// Only a completed quiet controller attempt can add its owned original bounds and first pin.
+    pub(in crate::services::federation_mdns) fn bind_controller(
+        &mut self,
+        bounds: ControllerReviewBounds,
+        interface: VerifiedInterface,
+    ) -> Result<()> {
+        let mut live = self.live.take().ok_or(MdnsError::Closed)?;
+        if live.controller.is_some() {
+            return Err(MdnsError::Closed);
+        }
+        live.controller = Some(bounds);
+        live.interface = interface;
+        self.live = Some(live);
+        Ok(())
     }
 
     /// Drain the original two queues without waiting or sending. Quiet remains historical evidence,
@@ -77,7 +96,13 @@ impl<'a> MdnsRetainedProbe<'a> {
         cancelled(cancellation)?;
         let outcome = {
             let started = live.started;
-            let mut guard = || live.bounds.window.check(started.elapsed());
+            let mut guard = || {
+                live.bounds.window.check(started.elapsed())?;
+                if let Some(controller) = &mut live.controller {
+                    controller.check()?;
+                }
+                Ok(())
+            };
             let mut run = Run {
                 started,
                 limits: live.bounds.limits,
