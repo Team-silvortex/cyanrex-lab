@@ -61,7 +61,7 @@
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
     "monaco-editor": "^0.55.1",
-    "next": "^15.5.28",
+    "next": "^15.5.29",
     "qrcode": "^1.5.4",
     "react": "19.0.0",
     "react-dom": "19.0.0"

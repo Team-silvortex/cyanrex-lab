@@ -5,9 +5,9 @@ import test from "node:test";
 // Offline guards for these named advisories, not a replacement for the live npm audit.
 // DOMPurify GHSA-cg2g-xh64-v4q7, GHSA-mrv2-3pqr-j5jr and GHSA-c6gr-qvv4-5v3f.
 const floors = { dompurify: "3.4.17", sharp: "0.35.5", "source-map-js": "1.2.2" };
-// Also retain the earlier cache fixes; these two newer advisories require 15.5.28.
-// GHSA-2464-fhr4-w9xw and GHSA-p3m5-59mp-jv5r.
-const nextFloor = "15.5.28";
+// Retain the earlier cache fixes (GHSA-2464-fhr4-w9xw, GHSA-p3m5-59mp-jv5r).
+// GHSA-7qx7-33qx-rqx2, GHSA-f3mh-rxg3-f5g2 and GHSA-pc58-hwjq-p385 require 15.5.29.
+const nextFloor = "15.5.29";
 const readJson = async file => JSON.parse(await readFile(new URL(file, import.meta.url), "utf8"));
 
 function atLeast(version, floor) {
@@ -28,7 +28,8 @@ function supportedNext(version) {
 test("frontend dependencies retain the Next, DOMPurify, sharp and source-map-js security floors", async () => {
   assert.equal(supportedNext("15.5.26"), false);
   assert.equal(supportedNext("15.5.27"), false);
-  assert.equal(supportedNext("15.5.28"), true);
+  assert.equal(supportedNext("15.5.28"), false);
+  assert.equal(supportedNext("15.5.29"), true);
   assert.equal(supportedNext("16.0.0"), false);
   const manifest = await readJson("../../frontend/package.json");
   const nextRange = manifest.dependencies?.next;
@@ -53,6 +54,18 @@ test("every locked Next, DOMPurify, sharp and source-map-js copy includes its na
         assert.ok(atLeast(value.version, floor), `${file}@${value.version} must be at least ${floor}`);
       }
     }
+  }
+});
+
+test("locked Next environment and cross-platform compilers match the reviewed patched release", async () => {
+  const { packages } = await readJson("../../frontend/package-lock.json");
+  const version = packages["node_modules/next"]?.version;
+  assert.ok(supportedNext(version));
+  for (const suffix of ["env", "swc-darwin-arm64", "swc-darwin-x64", "swc-linux-arm64-gnu",
+    "swc-linux-arm64-musl", "swc-linux-x64-gnu", "swc-linux-x64-musl",
+    "swc-win32-arm64-msvc", "swc-win32-x64-msvc"]) {
+    const file = `node_modules/@next/${suffix}`;
+    assert.equal(packages[file]?.version, version, file);
   }
 });
 

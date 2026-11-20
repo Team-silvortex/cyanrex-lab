@@ -5,6 +5,14 @@ All notable changes to Cyanrex Lab are recorded here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- Update locked `quinn-proto` to 0.11.19 and `quinn-udp` to 0.5.16 for
+  RUSTSEC-2026-0523, RUSTSEC-2026-0524 and RUSTSEC-2026-0538. Add offline regression guards
+  for both UDP patched ranges without enabling HTTP/3, adding audit exceptions or changing release tags.
+- Upgrade Next.js and its platform companions to 15.5.29 for GHSA-7qx7-33qx-rqx2,
+  GHSA-f3mh-rxg3-f5g2 and GHSA-pc58-hwjq-p385, retaining the reviewed 15.x branch and audit thresholds.
+
 ## [0.6.8] - 2026-11-13
 
 This patch source release includes F1j–F1o: original-bound controller quiet handoff, explicit probe
